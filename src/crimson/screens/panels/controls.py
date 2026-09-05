@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from enum import Enum, auto
+
 import msgspec
 
 from crimson.screens.actions import Route, ScreenAction
+from crimson.ui.animation import ui_element_anim
+from crimson.ui.menu_chrome import draw_ui_quad
+from crimson.ui.menu_layout import MENU_PANEL_HEIGHT, MENU_PANEL_WIDTH
 from grim.assets import RuntimeResources, TextureId
 from grim.config import (
     default_crimson_cfg,
@@ -18,11 +23,6 @@ from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
-from ..menu import (
-    MENU_PANEL_HEIGHT,
-    MENU_PANEL_WIDTH,
-    MenuView,
-)
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     RebindRowSpec,
@@ -174,6 +174,12 @@ class RebindCapture(msgspec.Struct):
     skip_frames: int = 1
 
 
+class ControlsDropdown(Enum):
+    MOVEMENT = auto()
+    AIM = auto()
+    PLAYER = auto()
+
+
 class ControlsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -184,20 +190,16 @@ class ControlsMenuView(PanelMenuView):
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
         self._config_player = 1
-        self._move_method_open = False
-        self._aim_method_open = False
-        self._player_profile_open = False
+        self._dropdown: ControlsDropdown | None = None
         self._dirty = False
         self._capture: RebindCapture | None = None
 
     def open(self) -> None:
         super().open()
         self._config_player = max(1, min(4, int(self._config_player)))
-        self._move_method_open = False
-        self._aim_method_open = False
-        self._player_profile_open = False
+        self._dropdown = None
         self._dirty = False
-        self._clear_rebind_capture()
+        self._capture = None
 
     def update(self, dt: float) -> None:
         if not self._update_panel(dt):
@@ -214,11 +216,17 @@ class ControlsMenuView(PanelMenuView):
             self._update_back_button(dt, enabled=False)
             self._update_rebind_capture(right_top_left=right_top_left, panel_scale=panel_scale, font=font)
             return
+        dropdown_was_open = self._dropdown is not None
+        if dropdown_was_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._dropdown = None
+            self._update_back_button(dt, enabled=False)
+            return
         click_consumed = self._update_method_dropdowns(
             left_top_left=left_top_left,
             panel_scale=panel_scale,
             font=font,
         )
+        click_consumed = click_consumed or dropdown_was_open
         if not click_consumed:
             click_consumed = self._update_rebind_capture(
                 right_top_left=right_top_left,
@@ -249,17 +257,9 @@ class ControlsMenuView(PanelMenuView):
     def _current_player_index(self) -> int:
         return max(0, min(3, int(self._config_player) - 1))
 
-    def _rebind_active(self) -> bool:
-        return self._capture is not None
-
-    def _clear_rebind_capture(self) -> None:
-        self._capture = None
-
     def _start_rebind_capture(self, *, row: RebindRowSpec, player_index: int) -> None:
         self._capture = RebindCapture(row, player_index)
-        self._move_method_open = False
-        self._aim_method_open = False
-        self._player_profile_open = False
+        self._dropdown = None
 
     @staticmethod
     def _capture_prompt_for_binding(row: RebindRowSpec) -> str:
@@ -278,8 +278,8 @@ class ControlsMenuView(PanelMenuView):
 
     def _left_panel_top_left(self, panel_scale: float) -> Vec2:
         panel_w = MENU_PANEL_WIDTH * panel_scale
-        _, slide_x = MenuView._ui_element_anim(
-            self,
+        _, slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -295,8 +295,8 @@ class ControlsMenuView(PanelMenuView):
 
     def _right_panel_top_left(self, panel_scale: float) -> Vec2:
         panel_w = MENU_PANEL_WIDTH * panel_scale
-        _, slide_x = MenuView._ui_element_anim(
-            self,
+        _, slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=3,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -318,7 +318,7 @@ class ControlsMenuView(PanelMenuView):
         self.state.config.controls.player(self._current_player_index()).show_direction_arrow = bool(enabled)
 
     def _checkbox_enabled(self) -> bool:
-        return not (self._move_method_open or self._aim_method_open or self._rebind_active())
+        return self._capture is None and self._dropdown in (None, ControlsDropdown.PLAYER)
 
     def _checkbox_hovered(
         self,
@@ -437,7 +437,7 @@ class ControlsMenuView(PanelMenuView):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
                 rl.MouseButton.MOUSE_BUTTON_RIGHT,
             ):
-                self._clear_rebind_capture()
+                self._capture = None
                 return True
 
             if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
@@ -447,13 +447,13 @@ class ControlsMenuView(PanelMenuView):
                     code=self._binding_default_code(player_index=active_player, row=active_row),
                 )
                 self._dirty = True
-                self._clear_rebind_capture()
+                self._capture = None
                 return True
 
             if rl.is_key_pressed(rl.KeyboardKey.KEY_DELETE):
                 self._set_binding_code(player_index=active_player, row=active_row, code=INPUT_CODE_UNBOUND)
                 self._dirty = True
-                self._clear_rebind_capture()
+                self._capture = None
                 return True
 
             if capture.skip_frames > 0:
@@ -472,10 +472,10 @@ class ControlsMenuView(PanelMenuView):
             if captured is not None:
                 self._set_binding_code(player_index=active_player, row=active_row, code=int(captured))
                 self._dirty = True
-                self._clear_rebind_capture()
+                self._capture = None
             return True
 
-        if self._move_method_open or self._aim_method_open or self._player_profile_open:
+        if self._dropdown is not None:
             return False
 
         if not rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
@@ -604,18 +604,19 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
 
-        rebind_active = self._rebind_active()
-        move_enabled = not (self._aim_method_open or self._player_profile_open or rebind_active)
-        aim_enabled = not (self._move_method_open or self._player_profile_open or rebind_active)
-        player_enabled = not (self._move_method_open or self._aim_method_open or rebind_active)
+        move_enabled = self._capture is None and self._dropdown in (None, ControlsDropdown.MOVEMENT)
+        aim_enabled = self._capture is None and self._dropdown in (None, ControlsDropdown.AIM)
+        player_enabled = self._capture is None and self._dropdown in (None, ControlsDropdown.PLAYER)
 
-        self._move_method_open, move_selected, consumed = self._update_dropdown(
+        is_open, move_selected, consumed = self._update_dropdown(
             layout=move_layout,
             item_count=len(move_items),
-            is_open=self._move_method_open,
+            is_open=(self._dropdown is ControlsDropdown.MOVEMENT),
             enabled=move_enabled,
             scale=panel_scale,
         )
+        if consumed:
+            self._dropdown = ControlsDropdown.MOVEMENT if is_open else None
         if move_selected is not None:
             selected_idx = max(0, min(int(move_selected), len(move_mode_ids) - 1))
             self._set_player_move_mode(player_index=player_idx, move_mode=move_mode_ids[selected_idx])
@@ -623,13 +624,15 @@ class ControlsMenuView(PanelMenuView):
         if consumed:
             return True
 
-        self._aim_method_open, aim_selected, consumed = self._update_dropdown(
+        is_open, aim_selected, consumed = self._update_dropdown(
             layout=aim_layout,
             item_count=len(aim_items),
-            is_open=self._aim_method_open,
+            is_open=(self._dropdown is ControlsDropdown.AIM),
             enabled=aim_enabled,
             scale=panel_scale,
         )
+        if consumed:
+            self._dropdown = ControlsDropdown.AIM if is_open else None
         if aim_selected is not None:
             selected_idx = max(0, min(int(aim_selected), len(aim_item_ids) - 1))
             self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_item_ids[selected_idx])
@@ -637,13 +640,15 @@ class ControlsMenuView(PanelMenuView):
         if consumed:
             return True
 
-        self._player_profile_open, player_selected, consumed = self._update_dropdown(
+        is_open, player_selected, consumed = self._update_dropdown(
             layout=player_layout,
             item_count=len(player_items),
-            is_open=self._player_profile_open,
+            is_open=(self._dropdown is ControlsDropdown.PLAYER),
             enabled=player_enabled,
             scale=panel_scale,
         )
+        if consumed:
+            self._dropdown = ControlsDropdown.PLAYER if is_open else None
         if player_selected is not None:
             self._config_player = max(1, min(4, player_selected + 1))
         return bool(consumed)
@@ -728,7 +733,7 @@ class ControlsMenuView(PanelMenuView):
 
         # --- Left panel: "Configure for" + method selectors (state_3 in trace) ---
         text_controls = resources.texture(TextureId.UI_TEXT_CONTROLS)
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=text_controls,
             src=rl.Rectangle(0.0, 0.0, float(text_controls.width), float(text_controls.height)),
             dst=rl.Rectangle(
@@ -768,7 +773,7 @@ class ControlsMenuView(PanelMenuView):
             if self._direction_arrow_enabled()
             else resources.texture(TextureId.UI_CHECK_OFF)
         )
-        MenuView._draw_ui_quad(
+        draw_ui_quad(
             texture=check_tex,
             src=rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
             dst=rl.Rectangle(
@@ -798,25 +803,25 @@ class ControlsMenuView(PanelMenuView):
 
         dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (
-                self._player_profile_open,
+                (self._dropdown is ControlsDropdown.PLAYER),
                 player_layout,
                 player_items,
                 player_selected,
-                not (self._move_method_open or self._aim_method_open or self._rebind_active()),
+                self._capture is None and self._dropdown in (None, ControlsDropdown.PLAYER),
             ),
             (
-                self._aim_method_open,
+                (self._dropdown is ControlsDropdown.AIM),
                 aim_layout,
                 aim_items,
                 aim_selected,
-                not (self._move_method_open or self._player_profile_open or self._rebind_active()),
+                self._capture is None and self._dropdown in (None, ControlsDropdown.AIM),
             ),
             (
-                self._move_method_open,
+                (self._dropdown is ControlsDropdown.MOVEMENT),
                 move_layout,
                 move_items,
                 move_selected,
-                not (self._aim_method_open or self._player_profile_open or self._rebind_active()),
+                self._capture is None and self._dropdown in (None, ControlsDropdown.MOVEMENT),
             ),
         )
         # Active list must render last so overlapping widgets don't occlude open options.
@@ -884,8 +889,7 @@ class ControlsMenuView(PanelMenuView):
         )
         row_iter = iter(rows)
         mouse = Vec2.from_xy(rl.get_mouse_position())
-        dropdown_blocked = self._move_method_open or self._aim_method_open or self._player_profile_open
-        rebind_active = self._rebind_active()
+        dropdown_blocked = self._dropdown is not None
 
         y = right_top_left.y + 64.0 * panel_scale
         for section_title, section_rows in sections:
@@ -895,7 +899,7 @@ class ControlsMenuView(PanelMenuView):
                 row = next(row_iter)
                 capture = self._capture
                 active_row = capture is not None and capture.row == row.row and capture.player_index == player_idx
-                hovered_row = (not rebind_active) and (not dropdown_blocked) and row.value_rect.contains(mouse)
+                hovered_row = (capture is None) and (not dropdown_blocked) and row.value_rect.contains(mouse)
                 value_text = (
                     self._capture_prompt_for_binding(row.row)
                     if active_row
@@ -933,7 +937,10 @@ class ControlsMenuView(PanelMenuView):
                 right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0) * panel_scale,
             )
             draw_small_text(
-                font, "Esc/Right: cancel  Backspace: default  Delete: unbind", hint_pos, rl.Color(255, 226, 188, 220),
+                font,
+                "Esc/Right: cancel  Backspace: default  Delete: unbind",
+                hint_pos,
+                rl.Color(255, 226, 188, 220),
             )
 
     def _draw_dropdown(

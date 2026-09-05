@@ -9,11 +9,35 @@ from crimson.screens.panels.controls_labels import RebindRowSpec, RebindTarget
 from grim.raylib_api import rl
 
 
+@pytest.mark.parametrize("dropdown", list(controls.ControlsDropdown))
+def test_dropdown_consumes_escape_before_back(controls_view, dropdown, mocker) -> None:
+    view = controls_view
+    view._capture = None
+    view._dropdown = dropdown
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
+    view.update(0.016)
+    assert view._dropdown is None
+    assert not view._transition.closing
+    view.update(0.016)
+    assert view._transition.action is Route.BACK
+
+
+@pytest.mark.parametrize("dropdown", list(controls.ControlsDropdown))
+def test_open_dropdown_blocks_enter_navigation(controls_view, dropdown, mocker) -> None:
+    view = controls_view
+    view._capture = None
+    view._dropdown = dropdown
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
+    view.update(0.016)
+    assert view._dropdown is dropdown
+    assert not view._transition.closing
+
+
 @pytest.fixture
 def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuView:
     view = ControlsMenuView(make_game_state(resources=screen_resources))
     view.open()
-    view._timeline_ms = view._timeline_max_ms
+    view._transition.timeline_ms = view._transition.duration_ms
     view._capture = RebindCapture(RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE), 0, skip_frames=0)
     return view
 
@@ -22,12 +46,12 @@ def test_escape_cancels_capture_before_navigation(controls_view, mocker) -> None
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     controls_view.update(0.016)
     assert controls_view._capture is None
-    assert not controls_view._closing
+    assert not controls_view._transition.closing
     assert controls_view.take_action() is None
 
     # A subsequent Escape can leave the screen after capture releases input.
     controls_view.update(0.016)
-    assert controls_view._close_action is Route.BACK
+    assert controls_view._transition.action is Route.BACK
 
 
 def test_enter_is_captured_instead_of_leaving(controls_view, mocker) -> None:
@@ -37,7 +61,7 @@ def test_enter_is_captured_instead_of_leaving(controls_view, mocker) -> None:
     assert controls_view.state.config.controls.player(0).fire_code == 0x1C
     assert controls_view._capture is None
     assert controls_view._dirty
-    assert not controls_view._closing
+    assert not controls_view._transition.closing
     assert controls_view.take_action() is None
 
 

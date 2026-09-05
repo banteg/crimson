@@ -7,6 +7,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.screens.actions import ResultAction
+from crimson.ui.animation import ui_element_anim
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -31,13 +32,7 @@ from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_ordinal, format_time_mm_ss
 from ...ui.layout import menu_widescreen_y_shift, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import (
-    UiButtonState,
-    button_draw,
-    button_update,
-    button_width,
-    draw_ui_text,
-)
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
@@ -361,16 +356,13 @@ class QuestResultsUi(msgspec.Struct):
         )
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> _QuestResultsPanelLayout:
-        # Match MenuView._ui_element_anim offset math (linear, with a 100ms hold hidden).
-        t_ms = float(self._intro_ms)
-        if t_ms < PANEL_SLIDE_END_MS:
-            panel_slide_x = -QUEST_RESULTS_PANEL_W
-        elif t_ms < PANEL_SLIDE_START_MS:
-            span = float(PANEL_SLIDE_START_MS - PANEL_SLIDE_END_MS)
-            p = (t_ms - PANEL_SLIDE_END_MS) / span if span > 1e-6 else 1.0
-            panel_slide_x = -((1.0 - p) * QUEST_RESULTS_PANEL_W)
-        else:
-            panel_slide_x = 0.0
+        _, panel_slide_x = ui_element_anim(
+            self._intro_ms,
+            index=1,
+            start_ms=PANEL_SLIDE_START_MS,
+            end_ms=PANEL_SLIDE_END_MS,
+            width=QUEST_RESULTS_PANEL_W,
+        )
 
         panel_pos = Vec2((QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x) * scale, 0.0)
         layout_w = screen_w / scale if scale else screen_w

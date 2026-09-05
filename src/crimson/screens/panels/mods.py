@@ -4,15 +4,13 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.ui.animation import ui_element_anim
+from crimson.ui.menu_layout import MENU_PANEL_WIDTH
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ..menu import (
-    MENU_PANEL_WIDTH,
-    MenuView,
-)
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
@@ -34,8 +32,8 @@ class ModsMenuView(PanelMenuView):
     def _content_layout(self) -> _ModsContentLayout:
         panel_scale, _local_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * panel_scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -95,4 +93,6 @@ class ModsMenuView(PanelMenuView):
         for line in self._lines:
             draw_small_text(font, line, line_pos, text_color)
             line_pos = line_pos.offset(dy=line_step)
+
+
 from ..assets import require_runtime_resources

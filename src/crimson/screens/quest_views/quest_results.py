@@ -11,6 +11,7 @@ from crimson.screens.actions import (
     ShowScores,
     StartRun,
 )
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -20,7 +21,6 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...modes.quest_mode import QuestRunOutcome
 from ...quests import quest_by_level
-from ..menu import ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
 from .shared import _next_quest_level, _player_name_default
 
@@ -208,16 +208,11 @@ class QuestResultsView:
             return
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
         ui = self._ui
         bg_alpha = 1.0
         if ui is not None:
             bg_alpha = float(ui.world_entity_alpha())
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=bg_alpha)
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
+        draw_screen_background(self.state, self._ground, entity_alpha=bg_alpha)
         _draw_screen_fade(self.state)
         if ui is not None:
             ui.draw()

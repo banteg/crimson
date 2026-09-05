@@ -29,13 +29,7 @@ from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_ordinal, format_time_mm_ss
 from ...ui.layout import menu_widescreen_y_shift, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import (
-    UiButtonState,
-    button_draw,
-    button_update,
-    button_width,
-    draw_ui_text,
-)
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
 from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 

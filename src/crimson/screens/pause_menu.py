@@ -3,16 +3,12 @@ from __future__ import annotations
 import math
 
 from crimson.screens.actions import Route, ScreenAction
-from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
-from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
-from grim.sfx_map import SfxId
-
-from ..game.types import GameState
-from ..pause_background import PauseBackground
-from .assets import require_runtime_resources
-from .menu import (
+from crimson.screens.chrome import draw_screen_background, draw_screen_cursor
+from crimson.screens.transitions import ScreenTransition
+from crimson.ui.animation import ui_element_anim
+from crimson.ui.layout import menu_widescreen_y_shift
+from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
+from crimson.ui.menu_layout import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
     MENU_LABEL_BASE_Y,
@@ -26,18 +22,21 @@ from .menu import (
     MENU_LABEL_STEP,
     MENU_LABEL_WIDTH,
     MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
     MenuEntry,
-    MenuView,
-    _draw_menu_cursor,
+    label_alpha,
+    menu_slot_end_ms,
+    menu_slot_pos_x,
+    menu_slot_start_ms,
 )
+from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
+from grim.assets import TextureId
+from grim.audio import play_sfx, update_audio
+from grim.geom import Rect, Vec2
+from grim.raylib_api import rl
+from grim.sfx_map import SfxId
+
+from ..game.types import GameState
+from .assets import require_runtime_resources
 from .transitions import _draw_screen_fade
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
@@ -51,20 +50,17 @@ class PauseMenuView:
         self._selected_index = 0
         self._focus_timer_ms = 0
         self._hovered_index: int | None = None
-        self._timeline_ms = 0
-        self._timeline_max_ms = 0
+        self._transition = ScreenTransition()
+        self._transition.duration_ms = 0
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
-        self._closing = False
-        self._close_action: ScreenAction | None = None
-        self._pending_action: ScreenAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         ys = [
             MENU_LABEL_BASE_Y + self._widescreen_y_shift,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP + self._widescreen_y_shift,
@@ -78,20 +74,14 @@ class PauseMenuView:
         self._selected_index = 0 if self._menu_entries else -1
         self._focus_timer_ms = 0
         self._hovered_index = None
-        self._timeline_ms = 0
-        self._timeline_max_ms = max(300, *(MenuView._menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
+        self._transition.reset()
+        self._transition.duration_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
         self._cursor_pulse_time = 0.0
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
         self._panel_open_sfx_played = False
         self._is_open = True
 
     def resume(self) -> None:
-        self._timeline_ms = 0
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
+        self._transition.reset()
         self._hovered_index = None
         self._panel_open_sfx_played = False
 
@@ -106,19 +96,13 @@ class PauseMenuView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
+        if not self._transition.advance(dt_ms):
+            self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             return
 
         if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
-            if self._timeline_ms >= self._timeline_max_ms:
+            if self._transition.timeline_ms >= self._transition.duration_ms:
                 self.state.menu_sign_locked = True
                 if (not self._panel_open_sfx_played) and (self.state.audio is not None):
                     play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -164,38 +148,35 @@ class PauseMenuView:
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        pause_background = self._pause_background()
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=self._pause_background_entity_alpha())
+        draw_screen_background(self.state, None, entity_alpha=self._pause_background_entity_alpha())
         _draw_screen_fade(self.state)
 
         self._draw_menu_items()
-        self._draw_menu_sign()
-        _draw_menu_cursor(
-            self.state,
+        draw_menu_sign(
+            require_runtime_resources(self.state),
+            width=self.state.config.display.width,
+            shadows=self.state.config.display.shadows_enabled,
+            locked=self.state.menu_sign_locked,
+            timeline_ms=self._transition.timeline_ms,
+        )
+        draw_screen_cursor(
             resources=require_runtime_resources(self.state),
             pulse_time=self._cursor_pulse_time,
         )
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        action = self._pending_action
-        self._pending_action = None
-        return action
+        return self._transition.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "PauseMenuView must be opened before use"
 
-    def _pause_background(self) -> PauseBackground | None:
-        return self.state.pause_background
-
     def _pause_background_entity_alpha(self) -> float:
         # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
         # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
-        if (not self._closing) or (self._close_action != Route.MENU):
+        if (not self._transition.closing) or (self._transition.action != Route.MENU):
             return 1.0
-        alpha = float(self._timeline_ms) / float(PAUSE_MENU_TO_MAIN_MENU_FADE_MS)
+        alpha = float(self._transition.timeline_ms) / float(PAUSE_MENU_TO_MAIN_MENU_FADE_MS)
         if alpha < 0.0:
             return 0.0
         if alpha > 1.0:
@@ -224,44 +205,14 @@ class PauseMenuView:
         return None
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._closing:
+        if self._transition.closing:
             return
-        self._closing = True
-        self._close_action = action
+        self._transition.begin(action)
 
     def _menu_item_scale(self, slot: int) -> tuple[float, float]:
         if self._menu_screen_width < (MENU_SCALE_SMALL_THRESHOLD + 1):
             return 0.9, float(slot) * 11.0
         return 1.0, 0.0
-
-    def _ui_element_anim(
-        self,
-        *,
-        index: int,
-        start_ms: int,
-        end_ms: int,
-        width: float,
-    ) -> tuple[float, float]:
-        # Matches ui_element_update: angle lerps pi/2 -> 0 over [end_ms, start_ms].
-        # Direction flag (element+0x314) appears to be 0 for menu elements.
-        if start_ms <= end_ms or width <= 0.0:
-            return 0.0, 0.0
-        t = self._timeline_ms
-        if t < end_ms:
-            angle = 1.5707964
-            offset_x = -abs(width)
-        elif t < start_ms:
-            elapsed = t - end_ms
-            span = float(start_ms - end_ms)
-            p = float(elapsed) / span
-            angle = 1.5707964 * (1.0 - p)
-            offset_x = -((1.0 - p) * abs(width))
-        else:
-            angle = 0.0
-            offset_x = 0.0
-        if index == 0:
-            angle = -abs(angle)
-        return angle, offset_x
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
@@ -277,7 +228,7 @@ class PauseMenuView:
             (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
         )
         size = offset_max - offset_min
-        pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
+        pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
         top_left = pos + Vec2(offset_min.x + size.x * 0.54, offset_min.y + size.y * 0.28)
         bottom_right = pos + Vec2(offset_max.x - size.x * 0.05, offset_max.y - size.y * 0.10)
         return Rect.from_pos_size(top_left, bottom_right - top_left)
@@ -310,7 +261,7 @@ class PauseMenuView:
             entry.hover_amount = max(0, min(1000, entry.hover_amount))
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._timeline_ms >= MenuView._menu_slot_start_ms(entry.slot)
+        return self._transition.timeline_ms >= menu_slot_start_ms(entry.slot)
 
     def _draw_menu_items(self) -> None:
         if not self._menu_entries:
@@ -323,11 +274,12 @@ class PauseMenuView:
         shadows_enabled = self.state.config.display.shadows_enabled
         for idx in range(len(self._menu_entries) - 1, -1, -1):
             entry = self._menu_entries[idx]
-            pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
-            angle_rad, slide_x = self._ui_element_anim(
+            pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
+            angle_rad, slide_x = ui_element_anim(
+                self._transition.timeline_ms,
                 index=entry.slot + 2,
-                start_ms=MenuView._menu_slot_start_ms(entry.slot),
-                end_ms=MenuView._menu_slot_end_ms(entry.slot),
+                start_ms=menu_slot_start_ms(entry.slot),
+                end_ms=menu_slot_end_ms(entry.slot),
                 width=item_w,
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
@@ -343,14 +295,14 @@ class PauseMenuView:
             origin = rl.Vector2(-offset_x, -offset_y)
             rotation_deg = math.degrees(angle_rad)
             if shadows_enabled:
-                MenuView._draw_ui_quad_shadow(
+                draw_ui_quad_shadow(
                     texture=item,
                     src=rl.Rectangle(0.0, 0.0, item_w, item_h),
                     dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
                     origin=origin,
                     rotation_deg=rotation_deg,
                 )
-            MenuView._draw_ui_quad(
+            draw_ui_quad(
                 texture=item,
                 src=rl.Rectangle(0.0, 0.0, item_w, item_h),
                 dst=dst,
@@ -361,7 +313,7 @@ class PauseMenuView:
             counter_value = entry.hover_amount
             if idx == self._selected_index and self._focus_timer_ms > 0:
                 counter_value = self._focus_timer_ms
-            alpha = MenuView._label_alpha(counter_value)
+            alpha = label_alpha(counter_value)
             tint = rl.Color(255, 255, 255, alpha)
             src = rl.Rectangle(
                 0.0,
@@ -378,7 +330,7 @@ class PauseMenuView:
                 MENU_LABEL_HEIGHT * item_scale,
             )
             label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
-            MenuView._draw_ui_quad(
+            draw_ui_quad(
                 texture=label_tex,
                 src=src,
                 dst=label_dst,
@@ -391,7 +343,7 @@ class PauseMenuView:
                 if 0 <= entry.ready_timer_ms < 0x100:
                     glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
                 rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                MenuView._draw_ui_quad(
+                draw_ui_quad(
                     texture=label_tex,
                     src=src,
                     dst=label_dst,
@@ -400,46 +352,6 @@ class PauseMenuView:
                     tint=rl.Color(255, 255, 255, glow_alpha),
                 )
                 rl.end_blend_mode()
-
-    def _draw_menu_sign(self) -> None:
-        screen_w = float(self.state.config.display.width)
-        scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
-        )
-        sign_w = MENU_SIGN_WIDTH * scale
-        sign_h = MENU_SIGN_HEIGHT * scale
-        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * scale
-        rotation_deg = 0.0
-        if not self.state.menu_sign_locked:
-            angle_rad, slide_x = self._ui_element_anim(
-                index=0,
-                start_ms=300,
-                end_ms=0,
-                width=sign_w,
-            )
-            _ = slide_x
-            rotation_deg = math.degrees(angle_rad)
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        shadows_enabled = self.state.config.display.shadows_enabled
-        if shadows_enabled:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
 
     def _entry_index_for_row(self, row: int) -> int | None:
         for idx, entry in enumerate(self._menu_entries):

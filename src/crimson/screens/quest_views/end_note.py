@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route, ScreenAction, StartRun
+from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.ui.layout import menu_widescreen_y_shift
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text
@@ -14,7 +16,6 @@ from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -103,7 +104,7 @@ class EndNoteView:
         scale = 1.0
 
         layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
+        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
 
         panel_top_left = Vec2(
             (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
@@ -180,12 +181,7 @@ class EndNoteView:
             return
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
+        draw_screen_background(self.state, self._ground, entity_alpha=self._world_entity_alpha())
         _draw_screen_fade(self.state)
 
         resources = require_runtime_resources(self.state)
@@ -193,7 +189,7 @@ class EndNoteView:
         screen_w = float(rl.get_screen_width())
         scale = 1.0
         layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = MenuView._menu_widescreen_y_shift(layout_w)
+        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
 
         panel_top_left = Vec2(
             (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
@@ -208,7 +204,10 @@ class EndNoteView:
 
         shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=shadows_enabled,
+            resources.texture(TextureId.UI_MENU_PANEL),
+            dst=panel,
+            tint=rl.WHITE,
+            shadow=shadows_enabled,
         )
 
         font = resources.small_font
@@ -273,7 +272,7 @@ class EndNoteView:
         )
         button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
+        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> ScreenAction | None:
         action = self._action

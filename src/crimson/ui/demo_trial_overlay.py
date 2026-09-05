@@ -10,12 +10,7 @@ from grim.raylib_api import rl
 
 from ..demo_trial import DemoTrialOverlayInfo
 from .cursor import draw_menu_cursor
-from .perk_menu import (
-    UiButtonState,
-    button_draw,
-    button_update,
-    button_width,
-)
+from .perk_menu import UiButtonState, button_draw, button_update, button_width
 
 DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
 _DEMO_HEADER_TEXT = "You've been playing the Demo version of"
@@ -154,9 +149,13 @@ class DemoTrialOverlayUi:
 
         font = self._font
         if font is not None:
-            draw_small_text(font, _DEMO_HEADER_TEXT, Vec2(panel_pos.x + 131.0, panel_pos.y + 9.0), rl.Color(220, 220, 220, 255))
+            draw_small_text(
+                font, _DEMO_HEADER_TEXT, Vec2(panel_pos.x + 131.0, panel_pos.y + 9.0), rl.Color(220, 220, 220, 255),
+            )
         else:
-            rl.draw_text(_DEMO_HEADER_TEXT, int(panel_pos.x + 131.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
+            rl.draw_text(
+                _DEMO_HEADER_TEXT, int(panel_pos.x + 131.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255),
+            )
 
         body_x = panel_pos.x + 26.0
         body_color = rl.Color(220, 220, 220, 255)

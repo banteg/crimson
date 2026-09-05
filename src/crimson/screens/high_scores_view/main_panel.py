@@ -42,7 +42,7 @@ def draw_main_panel(
     mode_id: GameMode,
     quest_major: int,
     quest_minor: int,
-    request: ScoreQuery | None,
+    request: ScoreQuery,
 ) -> int | None:
     match mode_id:
         case GameMode.QUESTS:
@@ -131,7 +131,7 @@ def draw_main_panel(
     end = min(len(view._records), start + rows)
     y = left_panel_top_left.y + 103.0 * scale
     selected_rank = (
-        int(request.highlight_rank) if (request is not None and request.highlight_rank is not None) else None
+        int(request.highlight_rank) if (request.highlight_rank is not None) else None
     )
     mouse = Vec2.from_xy(rl.get_mouse_position())
     frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale

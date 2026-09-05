@@ -1,10 +1,17 @@
 from __future__ import annotations
 
-import math
-
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
+from crimson.screens.chrome import draw_screen_cursor, ensure_menu_ground, menu_ground_camera
+from crimson.screens.transitions import ScreenTransition
+from crimson.ui.animation import ui_element_anim
+from crimson.ui.layout import menu_widescreen_y_shift
+from crimson.ui.menu_chrome import draw_menu_sign
+from crimson.ui.menu_layout import (
+    MENU_PANEL_OFFSET_Y,
+    MENU_PANEL_WIDTH,
+)
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
@@ -19,23 +26,6 @@ from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import (
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
-    MenuView,
-    _draw_menu_cursor,
-    ensure_menu_ground,
-    menu_ground_camera,
-)
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -88,29 +78,23 @@ class QuestsMenuView:
         self._widescreen_y_shift = 0.0
 
         self._stage = 1
-        self._action: ScreenAction | None = None
         self._dirty = False
         self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: ScreenAction | None = None
+        self._transition = ScreenTransition()
+        self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         # Sign and ground match the main menu/panels.
         self._init_ground()
-        self._action = None
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
         self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
+        self._transition.reset()
+        self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
@@ -140,21 +124,14 @@ class QuestsMenuView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        if self._closing:
-            if dt_ms > 0 and self._action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._action = self._close_action
-                    self._close_action = None
+        if not self._transition.advance(dt_ms):
             return
 
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
-            if self._timeline_ms >= self._timeline_max_ms:
-                self.state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-                    self._panel_open_sfx_played = True
+        if dt_ms > 0 and self._transition.timeline_ms >= self._transition.duration_ms:
+            self.state.menu_sign_locked = True
+            if (not self._panel_open_sfx_played) and (self.state.audio is not None):
+                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
+                self._panel_open_sfx_played = True
 
         config = self.state.config
         status = self.state.status
@@ -172,7 +149,7 @@ class QuestsMenuView:
                 status.quest_unlock_index_full = unlock
             self.state.console.log.log("debug: unlocked all quests")
 
-        enabled = self._timeline_ms >= self._timeline_max_ms
+        enabled = self._transition.timeline_ms >= self._transition.duration_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(Route.BACK)
@@ -240,19 +217,22 @@ class QuestsMenuView:
         _draw_screen_fade(self.state)
 
         self._draw_panel()
-        self._draw_sign()
+        draw_menu_sign(
+            require_runtime_resources(self.state),
+            width=self.state.config.display.width,
+            shadows=self.state.config.display.shadows_enabled,
+            locked=self.state.menu_sign_locked,
+            timeline_ms=self._transition.timeline_ms,
+        )
         self._draw_contents()
-        _draw_menu_cursor(
-            self.state,
+        draw_screen_cursor(
             resources=require_runtime_resources(self.state),
             pulse_time=self._cursor_pulse_time,
         )
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        action = self._action
-        self._action = None
-        return action
+        return self._transition.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "QuestsMenuView must be opened before use"
@@ -261,8 +241,8 @@ class QuestsMenuView:
         self._ground = ensure_menu_ground(self.state)
 
     def _layout(self) -> _QuestMenuLayout:
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -577,50 +557,9 @@ class QuestsMenuView:
             scale=1.0,
         )
 
-    def _draw_sign(self) -> None:
-        screen_w = float(self.state.config.display.width)
-        scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
-        )
-        sign_w = MENU_SIGN_WIDTH * scale
-        sign_h = MENU_SIGN_HEIGHT * scale
-        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * scale
-        rotation_deg = 0.0
-        if not self.state.menu_sign_locked:
-            angle_rad, slide_x = MenuView._ui_element_anim(
-                self,
-                index=0,
-                start_ms=300,
-                end_ms=0,
-                width=sign_w,
-            )
-            _ = slide_x
-            rotation_deg = math.degrees(angle_rad)
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        shadows_enabled = self.state.config.display.shadows_enabled
-        if shadows_enabled:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
-
     def _draw_panel(self) -> None:
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -639,15 +578,14 @@ class QuestsMenuView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._closing:
+        if self._transition.closing:
             return
         if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._closing = True
-        self._close_action = action
+        self._transition.begin(action)
 
 
 __all__ = ["QuestsMenuView"]

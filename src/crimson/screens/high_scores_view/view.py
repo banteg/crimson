@@ -2,6 +2,16 @@ from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
+from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.transitions import ScreenTransition
+from crimson.ui.animation import ui_element_anim
+from crimson.ui.layout import menu_widescreen_y_shift
+from crimson.ui.menu_chrome import draw_menu_sign
+from crimson.ui.menu_layout import (
+    MENU_PANEL_OFFSET_X,
+    MENU_PANEL_OFFSET_Y,
+    MENU_PANEL_WIDTH,
+)
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
 from grim.config import HighScoreDateMode
@@ -49,30 +59,12 @@ from ..high_scores_layout import (
     hs_right_options_x_shift,
     hs_right_panel_pos_x,
 )
-from ..menu import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
-    MenuView,
-    _draw_menu_cursor,
-    ensure_menu_ground,
-    menu_ground_camera,
-)
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..panels.hit_test import mouse_inside_rect_with_padding
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
 from .records import load_records
-from .right_panel import draw_right_panel
+from .right_panel import ScoreDropdown, draw_right_panel
 
 
 class _ScoresDropdownLayout(DropdownLayoutBase, frozen=True):
@@ -84,13 +76,10 @@ class HighScoresView:
         self.state = state
         self._is_open = False
         self._ground: GroundRenderer | None = None
-        self._action: ScreenAction | None = None
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: ScreenAction | None = None
+        self._transition = ScreenTransition()
+        self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -102,31 +91,22 @@ class HighScoresView:
         self._dirty = False
 
         # Right-panel list widget state (quests variant).
-        self._player_count_open = False
-        self._game_mode_open = False
-        self._show_scores_open = False
-        self._score_list_open = False
+        self._dropdown: ScoreDropdown | None = None
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
-        self._action = None
+        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
+        self._transition.reset()
+        self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._scroll_index = 0
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        self._player_count_open = False
-        self._game_mode_open = False
-        self._show_scores_open = False
-        self._score_list_open = False
+        self._dropdown = None
 
         request = self._request
         self._records = load_records(self.state, request)
@@ -140,12 +120,7 @@ class HighScoresView:
         self._records = []
         self._scroll_index = 0
         self._dirty = False
-        self._player_count_open = False
-        self._game_mode_open = False
-        self._show_scores_open = False
-        self._score_list_open = False
-        self._closing = False
-        self._close_action = None
+        self._dropdown = None
 
     def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
         return Vec2(
@@ -162,19 +137,15 @@ class HighScoresView:
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
-        if self._closing:
-            if dt_ms > 0 and self._action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._action = self._close_action
-                    self._close_action = None
+        if not self._transition.advance(dt_ms):
             return
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
 
-        enabled = self._timeline_ms >= self._timeline_max_ms
+        enabled = self._transition.timeline_ms >= self._transition.duration_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+            if self._dropdown is not None:
+                self._dropdown = None
+                return
             self._begin_close_transition(Route.BACK)
             return
 
@@ -185,16 +156,16 @@ class HighScoresView:
 
         # Compute animated panel positions so hit-tests match the draw path even while sliding.
         panel_w = MENU_PANEL_WIDTH * scale
-        _angle_rad, left_slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, left_slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
             width=panel_w,
             direction_flag=0,
         )
-        _angle_rad, right_slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, right_slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -209,12 +180,15 @@ class HighScoresView:
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         if enabled:
+            dropdown_was_open = self._dropdown is not None
             if self._update_right_panel_widgets(
                 right_top_left=right_panel_top_left,
                 scale=scale,
                 resources=resources,
                 font=font,
             ):
+                return
+            if dropdown_was_open:
                 return
             if self._update_quest_arrows(
                 left_panel_top_left=left_panel_top_left,
@@ -228,7 +202,10 @@ class HighScoresView:
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             w = button_width(
-                resources, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide,
+                resources,
+                self._update_button.label,
+                scale=scale,
+                force_wide=self._update_button.force_wide,
             )
             if button_update(
                 self._update_button,
@@ -255,7 +232,10 @@ class HighScoresView:
                 self._start_selected_game()
                 return
             back_w = button_width(
-                resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide,
+                resources,
+                self._back_button.label,
+                scale=scale,
+                force_wide=self._back_button.force_wide,
             )
             if button_update(
                 self._back_button,
@@ -290,7 +270,7 @@ class HighScoresView:
                 self._scroll_index = max_scroll
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._closing:
+        if self._transition.closing:
             return
         if action == Route.BACK and self._return_context is not None:
             self._return_context.restore(self.state.config)
@@ -306,12 +286,10 @@ class HighScoresView:
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._closing = True
-        self._close_action = action
+        self._transition.begin(action)
 
     def _start_selected_game(self) -> None:
         request = self._request
-        assert request is not None
         if request.game_mode_id == GameMode.QUESTS:
             level = request.quest_level
             assert level is not None
@@ -384,8 +362,6 @@ class HighScoresView:
 
     def _reload_records(self) -> None:
         request = self._request
-        if request is None:
-            return
         self._records = load_records(self.state, request)
         rows = 10
         self._scroll_index = max(0, min(int(self._scroll_index), max(0, len(self._records) - rows)))
@@ -399,14 +375,10 @@ class HighScoresView:
         font: SmallFontData,
     ) -> bool:
         request = self._request
-        if request is None:
-            return False
 
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
-        dropdown_blocked = (
-            self._player_count_open or self._game_mode_open or self._show_scores_open or self._score_list_open
-        )
+        dropdown_blocked = self._dropdown is not None
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x * scale, 0.0)
 
@@ -435,7 +407,8 @@ class HighScoresView:
         # Dropdown: show scores date filter (config.highscore_date_mode).
         show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
         show_scores_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_SHOW_SCORES_WIDGET_X * scale, HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale,
+            HS_RIGHT_SHOW_SCORES_WIDGET_X * scale,
+            HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale,
         )
         show_scores_layout = self._dropdown_layout(
             pos=show_scores_pos,
@@ -443,30 +416,29 @@ class HighScoresView:
             item_count=len(show_scores_items),
             scale=scale,
         )
-        show_scores_enabled = not (self._player_count_open or self._game_mode_open or self._score_list_open)
-        self._show_scores_open, show_scores_selected, consumed = self._update_dropdown(
+        show_scores_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.PROFILE})
+        is_open, show_scores_selected, consumed = self._update_dropdown(
             layout=show_scores_layout,
             item_count=len(show_scores_items),
-            is_open=self._show_scores_open,
+            is_open=(self._dropdown is ScoreDropdown.DATE),
             enabled=bool(show_scores_enabled),
             scale=scale,
         )
+        if consumed:
+            self._dropdown = ScoreDropdown.DATE if is_open else None
         if show_scores_selected is not None:
             self.state.config.profile.score_date_mode = HighScoreDateMode(int(show_scores_selected))
             self._dirty = True
             self._reload_records()
         if consumed:
             # Close other dropdowns when this one opens.
-            if self._show_scores_open:
-                self._player_count_open = False
-                self._game_mode_open = False
-                self._score_list_open = False
             return True
 
         # Dropdown: player count (config.player_count).
         player_items = ("1 player", "2 players", "3 players", "4 players")
         player_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale, HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale,
+            HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale,
+            HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale,
         )
         player_layout = self._dropdown_layout(
             pos=player_pos,
@@ -474,14 +446,16 @@ class HighScoresView:
             item_count=len(player_items),
             scale=scale,
         )
-        player_enabled = not (self._game_mode_open or self._show_scores_open or self._score_list_open)
-        self._player_count_open, player_selected, consumed = self._update_dropdown(
+        player_enabled = not (self._dropdown in {ScoreDropdown.MODE, ScoreDropdown.DATE, ScoreDropdown.PROFILE})
+        is_open, player_selected, consumed = self._update_dropdown(
             layout=player_layout,
             item_count=len(player_items),
-            is_open=self._player_count_open,
+            is_open=(self._dropdown is ScoreDropdown.PLAYERS),
             enabled=bool(player_enabled),
             scale=scale,
         )
+        if consumed:
+            self._dropdown = ScoreDropdown.PLAYERS if is_open else None
         if player_selected is not None:
             new_count = int(player_selected) + 1
             if self.state.config.gameplay.player_count != new_count:
@@ -489,10 +463,6 @@ class HighScoresView:
                 self._dirty = True
                 self._reload_records()
         if consumed:
-            if self._player_count_open:
-                self._game_mode_open = False
-                self._show_scores_open = False
-                self._score_list_open = False
             return True
 
         # Dropdown: game mode (config.game_mode / request.game_mode_id).
@@ -505,7 +475,8 @@ class HighScoresView:
         if int(self.state.status.quest_unlock_index) >= 0x28:
             mode_items.append(("Typ'o'Shooter", GameMode.TYPO))
         game_mode_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale,
+            HS_RIGHT_GAME_MODE_WIDGET_X * scale,
+            HS_RIGHT_GAME_MODE_WIDGET_Y * scale,
         )
         game_mode_layout = self._dropdown_layout(
             pos=game_mode_pos,
@@ -513,14 +484,16 @@ class HighScoresView:
             item_count=len(mode_items),
             scale=scale,
         )
-        game_mode_enabled = not (self._player_count_open or self._show_scores_open or self._score_list_open)
-        self._game_mode_open, game_mode_selected, consumed = self._update_dropdown(
+        game_mode_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.DATE, ScoreDropdown.PROFILE})
+        is_open, game_mode_selected, consumed = self._update_dropdown(
             layout=game_mode_layout,
             item_count=len(mode_items),
-            is_open=self._game_mode_open,
+            is_open=(self._dropdown is ScoreDropdown.MODE),
             enabled=bool(game_mode_enabled),
             scale=scale,
         )
+        if consumed:
+            self._dropdown = ScoreDropdown.MODE if is_open else None
         if game_mode_selected is not None:
             _label, mode_id = mode_items[max(0, min(int(game_mode_selected), len(mode_items) - 1))]
             self.state.config.gameplay.mode = mode_id
@@ -538,18 +511,15 @@ class HighScoresView:
             self._dirty = True
             self._reload_records()
         if consumed:
-            if self._game_mode_open:
-                self._player_count_open = False
-                self._show_scores_open = False
-                self._score_list_open = False
             return True
 
         # Dropdown: selected score list (profile slots). We currently expose the selection
         # but do not emulate the full native add/delete flow.
-        score_list_enabled = not (self._player_count_open or self._game_mode_open or self._show_scores_open)
+        score_list_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.DATE})
         names = list(self.state.config.profile.saved_name_labels())
         score_list_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale,
+            HS_RIGHT_SCORE_LIST_WIDGET_X * scale,
+            HS_RIGHT_SCORE_LIST_WIDGET_Y * scale,
         )
         score_list_layout = self._dropdown_layout(
             pos=score_list_pos,
@@ -557,25 +527,20 @@ class HighScoresView:
             item_count=len(names),
             scale=scale,
         )
-        self._score_list_open, score_list_selected, consumed = self._update_dropdown(
+        is_open, score_list_selected, consumed = self._update_dropdown(
             layout=score_list_layout,
             item_count=len(names),
-            is_open=self._score_list_open,
+            is_open=(self._dropdown is ScoreDropdown.PROFILE),
             enabled=bool(score_list_enabled),
             scale=scale,
         )
+        if consumed:
+            self._dropdown = ScoreDropdown.PROFILE if is_open else None
         if score_list_selected is not None:
             self.state.config.profile.selected_saved_name_slot = int(score_list_selected)
             self._dirty = True
             self._reload_records()
-        if consumed:
-            if self._score_list_open:
-                self._player_count_open = False
-                self._game_mode_open = False
-                self._show_scores_open = False
-            return True
-
-        return False
+        return bool(consumed)
 
     def _update_quest_arrows(
         self,
@@ -585,8 +550,6 @@ class HighScoresView:
         resources: RuntimeResources,
     ) -> bool:
         request = self._request
-        if request is None:
-            return False
         if request.game_mode_id != GameMode.QUESTS:
             return False
 
@@ -634,41 +597,30 @@ class HighScoresView:
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
+        draw_screen_background(self.state, self._ground, entity_alpha=self._world_entity_alpha())
         _draw_screen_fade(self.state)
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
         request = self._request
-        if request is not None:
-            mode_id = request.game_mode_id
-        else:
-            try:
-                mode_id = GameMode(self.state.config.gameplay.mode)
-            except ValueError:
-                mode_id = GameMode.DEMO
-        quest_major = int(request.quest_level.major) if request is not None and request.quest_level is not None else 0
-        quest_minor = int(request.quest_level.minor) if request is not None and request.quest_level is not None else 0
+        mode_id = request.game_mode_id
+        quest_major = int(request.quest_level.major) if request.quest_level is not None else 0
+        quest_minor = int(request.quest_level.minor) if request.quest_level is not None else 0
 
         screen_width = float(self.state.config.display.width)
         scale = 1.0
         shadows_enabled = self.state.config.display.shadows_enabled
         panel_w = MENU_PANEL_WIDTH * scale
-        _angle_rad, left_slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, left_slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
             width=panel_w,
             direction_flag=0,
         )
-        _angle_rad, right_slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, right_slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -717,47 +669,20 @@ class HighScoresView:
             scale=scale,
             highlight_rank=selected_rank,
         )
-        self._draw_sign(resources=resources)
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
-
-    def _draw_sign(self, *, resources: RuntimeResources) -> None:
-        sign = resources.texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.display.width)
-        sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        draw_menu_sign(
+            require_runtime_resources(self.state),
+            width=self.state.config.display.width,
+            shadows=self.state.config.display.shadows_enabled,
         )
-        sign_w = MENU_SIGN_WIDTH * sign_scale
-        sign_h = MENU_SIGN_HEIGHT * sign_scale
-        offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * sign_scale
-        rotation_deg = 0.0
-        shadows_enabled = self.state.config.display.shadows_enabled
-        if shadows_enabled:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
+        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
 
     def _world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self._transition.closing:
             return 1.0
         span = PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS
         if span <= 0:
             return 0.0
-        alpha = (float(self._timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
+        alpha = (float(self._transition.timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
         if alpha < 0.0:
             return 0.0
         if alpha > 1.0:
@@ -766,9 +691,7 @@ class HighScoresView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        action = self._action
-        self._action = None
-        return action
+        return self._transition.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "HighScoresView must be opened before use"

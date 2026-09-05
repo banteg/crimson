@@ -48,7 +48,9 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     view.update(0.1)
 
     mocker.patch.object(
-        end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
+        end_note_module.rl,
+        "is_key_pressed",
+        side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
     )
     view.update(0.1)
 
@@ -78,7 +80,7 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
     mocker.patch.object(end_note_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(end_note_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(end_note_module, "button_width", side_effect=lambda *_args, **_kwargs: 96.0)
-    mocker.patch.object(end_note_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(end_note_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
 
     view = EndNoteView(state)
     view.open()

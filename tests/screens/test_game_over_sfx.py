@@ -154,7 +154,8 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     state.resources = _runtime_resources_stub(tex=dummy_tex)
     draw_pause_background_mock = mocker.Mock()
     install_background(
-        state, cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock)),
+        state,
+        cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock)),
     )
 
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
@@ -163,13 +164,13 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(high_scores_view_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(HighScoresView, "_draw_sign", return_value=None)
+    mocker.patch.object(high_scores_view_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "draw_menu_sign", return_value=None)
 
     view = HighScoresView(state, ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))
     view.open()
-    view._closing = True
-    view._timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view._transition.closing = True
+    view._transition.timeline_ms = PANEL_TIMELINE_START_MS // 2
     view.draw()
 
     draw_pause_background_mock.assert_called()

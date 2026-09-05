@@ -3,7 +3,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from crimson.screens.actions import Route
-from crimson.screens.menu import MENU_DEMO_IDLE_START_MS, MenuEntry, MenuView
+from crimson.screens.menu import MENU_DEMO_IDLE_START_MS, MenuView
+from crimson.ui.menu_layout import MenuEntry
 
 
 def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
@@ -14,8 +15,8 @@ def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
-    view._timeline_max_ms = 0
-    view._timeline_ms = 0
+    view._transition.duration_ms = 0
+    view._transition.timeline_ms = 0
     view._idle_ms = MENU_DEMO_IDLE_START_MS
 
     mocker.patch.object(MenuView, "_hovered_entry_index", return_value=None)
@@ -23,7 +24,7 @@ def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
     mocker.patch.object(menu_mod.rl, "is_key_down", return_value=False)
 
     view.update(0.0)
-    assert view._closing is True
+    assert view._transition.closing is True
 
     view.update(0.1)
     assert view.take_action() == Route.DEMO
@@ -37,8 +38,8 @@ def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) 
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
-    view._timeline_max_ms = 0
-    view._timeline_ms = 0
+    view._transition.duration_ms = 0
+    view._transition.timeline_ms = 0
     view._idle_ms = MENU_DEMO_IDLE_START_MS
 
     mocker.patch.object(MenuView, "_hovered_entry_index", return_value=None)
@@ -47,7 +48,7 @@ def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) 
 
     view.update(0.0)
     assert view.take_action() is None
-    assert view._closing is False
+    assert view._transition.closing is False
 
 
 def test_menu_idle_resets_on_key_press(mocker, make_game_state) -> None:
@@ -58,8 +59,8 @@ def test_menu_idle_resets_on_key_press(mocker, make_game_state) -> None:
     view = MenuView(state)
     view._is_open = True
     view._menu_entries = [MenuEntry(slot=0, row=1, y=0.0)]
-    view._timeline_max_ms = 0
-    view._timeline_ms = 0
+    view._transition.duration_ms = 0
+    view._transition.timeline_ms = 0
     view._idle_ms = 1234
 
     mocker.patch.object(MenuView, "_hovered_entry_index", return_value=None)

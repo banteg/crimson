@@ -7,9 +7,36 @@ from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScoreQuery, ScoreReturnContext, ShowScores, StartRun
 from crimson.screens.high_scores_layout import HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y
 from crimson.screens.high_scores_view import view as scores_module
+from crimson.screens.high_scores_view.right_panel import ScoreDropdown
 from crimson.screens.high_scores_view.view import HighScoresView
 from grim.geom import Vec2
 from grim.raylib_api import rl
+
+
+@pytest.mark.parametrize("dropdown", list(ScoreDropdown))
+def test_dropdown_consumes_escape_before_back(scores_view, dropdown, mocker) -> None:
+    view = scores_view
+    view.open()
+    view._transition.timeline_ms = view._transition.duration_ms
+    view._dropdown = dropdown
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
+    view.update(0.016)
+    assert view._dropdown is None
+    assert not view._transition.closing
+    view.update(0.016)
+    assert view._transition.action is Route.BACK
+
+
+def test_dismissing_dropdown_does_not_click_through_to_play(scores_view, mocker) -> None:
+    view = scores_view
+    view.open()
+    view._dropdown = ScoreDropdown.MODE
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
+    click_button(view, "Play a game", mocker)
+    assert view._dropdown is None
+    assert not view._transition.closing
+    click_button(view, "Play a game", mocker)
+    assert isinstance(view._transition.action, StartRun)
 
 
 @pytest.fixture
@@ -24,7 +51,7 @@ def scores_view(make_game_state, screen_resources, screen_io, mocker) -> HighSco
 
 
 def click_button(view: HighScoresView, label: str, mocker) -> None:
-    view._timeline_ms = view._timeline_max_ms
+    view._transition.timeline_ms = view._transition.duration_ms
     mocker.patch.object(scores_module, "button_update", side_effect=lambda button, **_k: button.label == label)
     view.update(0.016)
 
@@ -75,7 +102,9 @@ def test_play_starts_selected_mode(scores_view, mode, mocker) -> None:
     view._request.game_mode_id = mode
     view.open()
     click_button(view, "Play a game", mocker)
-    assert view._close_action == StartRun.from_config(view.state.config, mode, quest_level=view._request.quest_level)
+    assert view._transition.action == StartRun.from_config(
+        view.state.config, mode, quest_level=view._request.quest_level,
+    )
     assert view.state.screen_fade_ramp
 
 
@@ -86,5 +115,5 @@ def test_play_locked_quest_does_not_transition(scores_view, hardcore, mocker) ->
     view._request.quest_level = QuestLevel(5, 10)
     view.open()
     click_button(view, "Play a game", mocker)
-    assert view._close_action is None
+    assert view._transition.action is None
     assert not view.state.screen_fade_ramp

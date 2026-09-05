@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import webbrowser
 
+from crimson.screens.chrome import ensure_menu_ground
 from grim.raylib_api import rl
 
 from ..debug import debug_enabled
@@ -11,7 +12,6 @@ from ..input_codes import input_begin_frame
 from ..modes.quest_mode import QuestMode
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome
-from ..screens.menu import ensure_menu_ground
 from ..screens.transitions import _update_screen_fade
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .navigation import ScreenNavigator

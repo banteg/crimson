@@ -69,7 +69,7 @@ def test_menu_options_controls_back_preserves_parent_and_config(loop, mocker) ->
     finish_transition(loop)
     assert loop.state.screens.active is options
     assert options._slider_sfx.value == 3
-    assert not options._closing
+    assert not options._transition.closing
     controls_close.assert_called_once()
     options._begin_close_transition(Route.BACK)
     finish_transition(loop)
@@ -122,7 +122,10 @@ def test_scores_back_restores_original_run_context_through_loop(loop, screen_res
         ],
     )
     scores._update_right_panel_widgets(
-        right_top_left=Vec2(), scale=1, resources=screen_resources, font=screen_resources.small_font,
+        right_top_left=Vec2(),
+        scale=1,
+        resources=screen_resources,
+        font=screen_resources.small_font,
     )
     assert state.config.gameplay.mode == GameMode.RUSH
     scores._begin_close_transition(Route.BACK)

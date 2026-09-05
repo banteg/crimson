@@ -3,6 +3,16 @@ from __future__ import annotations
 import msgspec
 
 from crimson.screens.actions import Route, ScreenAction
+from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.transitions import ScreenTransition
+from crimson.ui.animation import ui_element_anim
+from crimson.ui.layout import menu_widescreen_y_shift
+from crimson.ui.menu_chrome import draw_menu_sign
+from crimson.ui.menu_layout import (
+    MENU_PANEL_OFFSET_X,
+    MENU_PANEL_OFFSET_Y,
+    MENU_PANEL_WIDTH,
+)
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -16,24 +26,6 @@ from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
-    MENU_SIGN_HEIGHT,
-    MENU_SIGN_OFFSET_X,
-    MENU_SIGN_OFFSET_Y,
-    MENU_SIGN_POS_X_PAD,
-    MENU_SIGN_POS_Y,
-    MENU_SIGN_POS_Y_SMALL,
-    MENU_SIGN_WIDTH,
-    UI_SHADOW_OFFSET,
-    MenuView,
-    _draw_menu_cursor,
-    ensure_menu_ground,
-    menu_ground_camera,
-)
 from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
@@ -230,12 +222,8 @@ class CreditsView:
 
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action: ScreenAction | None = None
-        self._pending_action: ScreenAction | None = None
-        self._action: ScreenAction | None = None
+        self._transition = ScreenTransition()
+        self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
@@ -250,15 +238,11 @@ class CreditsView:
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._cursor_pulse_time = 0.0
-        self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._action = None
+        self._transition.reset()
+        self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
         self._lines, self._line_max_index, self._secret_line_base_index = _credits_build_lines()
         self._secret_unlock = False
@@ -276,32 +260,18 @@ class CreditsView:
     def close(self) -> None:
         self._is_open = False
         self._ground = None
-        self._closing = False
-        self._close_action = None
-        self._pending_action = None
-        self._action = None
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        if self._pending_action is not None:
-            action = self._pending_action
-            self._pending_action = None
-            self._closing = False
-            self._close_action = None
-            self._timeline_ms = self._timeline_max_ms
-            return action
-        action = self._action
-        self._action = None
-        return action
+        return self._transition.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "CreditsView must be opened before use"
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._closing:
+        if self._transition.closing:
             return
-        self._closing = True
-        self._close_action = action
+        self._transition.begin(action)
 
     def _panel_top_left(self, *, scale: float) -> Vec2:
         return Vec2(
@@ -330,8 +300,8 @@ class CreditsView:
 
     def _panel_slide_x(self, *, scale: float) -> float:
         panel_w = MENU_PANEL_WIDTH * scale
-        _angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
+        _angle_rad, slide_x = ui_element_anim(
+            self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
@@ -450,20 +420,13 @@ class CreditsView:
         dt_ms = int(dt_clamped * 1000.0)
         self._cursor_pulse_time += dt_clamped * 1.1
 
-        if self._closing:
-            if dt_ms > 0 and self._pending_action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._pending_action = self._close_action
-                    self._close_action = None
+        if not self._transition.advance(dt_ms):
             return
 
-        if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, int(self._timeline_ms + dt_ms))
         self._scroll_time_s += dt_clamped
         self._update_scroll_window()
 
-        interactive = self._timeline_ms >= self._timeline_max_ms
+        interactive = self._transition.timeline_ms >= self._transition.duration_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
@@ -527,12 +490,7 @@ class CreditsView:
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background()
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
+        draw_screen_background(self.state, self._ground)
         _draw_screen_fade(self.state)
 
         resources = require_runtime_resources(self.state)
@@ -549,12 +507,18 @@ class CreditsView:
         )
         shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled,
+            resources.texture(TextureId.UI_MENU_PANEL),
+            dst=dst,
+            tint=rl.WHITE,
+            shadow=shadows_enabled,
         )
 
         font = resources.small_font
         draw_small_text(
-            font, "credits", panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale), rl.Color(255, 255, 255, 255),
+            font,
+            "credits",
+            panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale),
+            rl.Color(255, 255, 255, 255),
         )
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
@@ -598,36 +562,11 @@ class CreditsView:
                 scale=scale,
             )
 
-        self._draw_sign()
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
-
-    def _draw_sign(self) -> None:
-        sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        screen_w = float(self.state.config.display.width)
-        sign_scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
-        sign_pos = Vec2(
-            screen_w + MENU_SIGN_POS_X_PAD,
-            MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL,
+        draw_menu_sign(
+            require_runtime_resources(self.state),
+            width=self.state.config.display.width,
+            shadows=self.state.config.display.shadows_enabled,
+            locked=True,
+            timeline_ms=self._transition.timeline_ms,
         )
-        sign_w = MENU_SIGN_WIDTH * sign_scale
-        sign_h = MENU_SIGN_HEIGHT * sign_scale
-        offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
-        offset_y = MENU_SIGN_OFFSET_Y * sign_scale
-        rotation_deg = 0.0
-        shadows_enabled = self.state.config.display.shadows_enabled
-        if shadows_enabled:
-            MenuView._draw_ui_quad_shadow(
-                texture=sign,
-                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-                origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=rotation_deg,
-            )
-        MenuView._draw_ui_quad(
-            texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=rotation_deg,
-            tint=rl.WHITE,
-        )
+        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)

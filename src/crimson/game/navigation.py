@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.chrome import ensure_menu_ground
 from grim.audio import stop_music
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -15,7 +16,7 @@ from ..modes.typo_mode import TypoShooterMode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome, ShowScores, StartRun
 from ..screens.boot import BootView
 from ..screens.high_scores_view import HighScoresView
-from ..screens.menu import MenuView, ensure_menu_ground
+from ..screens.menu import MenuView
 from ..screens.panels.alien_zookeeper import AlienZooKeeperView
 from ..screens.panels.base import PanelMenuView
 from ..screens.panels.controls import ControlsMenuView
@@ -139,7 +140,11 @@ class ScreenNavigator:
             GameMode.TUTORIAL: TutorialMode,
         }[mode_id]
         mode = mode_type(
-            ctx, config=self.state.config, console=self.state.console, audio=self.state.audio, audio_rng=self.state.rng,
+            ctx,
+            config=self.state.config,
+            console=self.state.console,
+            audio=self.state.audio,
+            audio_rng=self.state.rng,
         )
         mode.demo_mode_active = self.state.demo_enabled if mode_id in {GameMode.QUESTS, GameMode.TUTORIAL} else False
         self._modes[mode_id] = mode

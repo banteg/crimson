@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from grim.assets import RuntimeResources, TextureId
@@ -82,6 +83,13 @@ from .shared import format_elapsed_mm_ss, format_score_date, ordinal
 
 if TYPE_CHECKING:
     from .view import HighScoresView
+
+
+class ScoreDropdown(Enum):
+    DATE = auto()
+    PLAYERS = auto()
+    MODE = auto()
+    PROFILE = auto()
 
 
 def _saved_score_names(view: HighScoresView) -> list[str]:
@@ -239,11 +247,36 @@ def _draw_right_panel_quest_options(
         0.0,
         rl.WHITE,
     )
-    draw_small_text(font, "Show internet scores", options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale), text_color)
-    draw_small_text(font, "Number of players", options_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale), text_color)
-    draw_small_text(font, "Game mode", options_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale), text_color)
-    draw_small_text(font, "Show scores:", options_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X * scale, HS_RIGHT_SHOW_SCORES_Y * scale), text_color)
-    draw_small_text(font, "Selected score list:", options_top_left + Vec2(HS_RIGHT_SCORE_LIST_X * scale, HS_RIGHT_SCORE_LIST_Y * scale), text_color)
+    draw_small_text(
+        font,
+        "Show internet scores",
+        options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale),
+        text_color,
+    )
+    draw_small_text(
+        font,
+        "Number of players",
+        options_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale),
+        text_color,
+    )
+    draw_small_text(
+        font,
+        "Game mode",
+        options_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale),
+        text_color,
+    )
+    draw_small_text(
+        font,
+        "Show scores:",
+        options_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X * scale, HS_RIGHT_SHOW_SCORES_Y * scale),
+        text_color,
+    )
+    draw_small_text(
+        font,
+        "Selected score list:",
+        options_top_left + Vec2(HS_RIGHT_SCORE_LIST_X * scale, HS_RIGHT_SCORE_LIST_Y * scale),
+        text_color,
+    )
 
     # Dropdown widgets (state_14 quest variant).
     show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
@@ -266,44 +299,44 @@ def _draw_right_panel_quest_options(
 
     dropdowns = (
         (
-            view._player_count_open,
+            (view._dropdown is ScoreDropdown.PLAYERS),
             Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X, HS_RIGHT_PLAYER_COUNT_WIDGET_Y),
             float(HS_RIGHT_PLAYER_COUNT_WIDGET_W),
             list(player_items),
             player_selected,
             Vec2(HS_RIGHT_PLAYER_COUNT_VALUE_X, HS_RIGHT_PLAYER_COUNT_VALUE_Y),
             Vec2(HS_RIGHT_PLAYER_COUNT_DROP_X, HS_RIGHT_PLAYER_COUNT_DROP_Y),
-            not (view._game_mode_open or view._show_scores_open or view._score_list_open),
+            not (view._dropdown in {ScoreDropdown.MODE, ScoreDropdown.DATE, ScoreDropdown.PROFILE}),
         ),
         (
-            view._game_mode_open,
+            (view._dropdown is ScoreDropdown.MODE),
             Vec2(HS_RIGHT_GAME_MODE_WIDGET_X, HS_RIGHT_GAME_MODE_WIDGET_Y),
             float(HS_RIGHT_GAME_MODE_WIDGET_W),
             [label for label, _id in mode_items],
             mode_selected,
             Vec2(HS_RIGHT_GAME_MODE_VALUE_X, HS_RIGHT_GAME_MODE_VALUE_Y),
             Vec2(HS_RIGHT_GAME_MODE_DROP_X, HS_RIGHT_GAME_MODE_DROP_Y),
-            not (view._player_count_open or view._show_scores_open or view._score_list_open),
+            not (view._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.DATE, ScoreDropdown.PROFILE}),
         ),
         (
-            view._show_scores_open,
+            (view._dropdown is ScoreDropdown.DATE),
             Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X, HS_RIGHT_SHOW_SCORES_WIDGET_Y),
             float(HS_RIGHT_SHOW_SCORES_WIDGET_W),
             list(show_scores_items),
             show_scores_selected,
             Vec2(HS_RIGHT_SHOW_SCORES_VALUE_X, HS_RIGHT_SHOW_SCORES_VALUE_Y),
             Vec2(HS_RIGHT_SHOW_SCORES_DROP_X, HS_RIGHT_SHOW_SCORES_DROP_Y),
-            not (view._player_count_open or view._game_mode_open or view._score_list_open),
+            not (view._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.PROFILE}),
         ),
         (
-            view._score_list_open,
+            (view._dropdown is ScoreDropdown.PROFILE),
             Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X, HS_RIGHT_SCORE_LIST_WIDGET_Y),
             float(HS_RIGHT_SCORE_LIST_WIDGET_W),
             names,
             name_selected,
             Vec2(HS_RIGHT_SCORE_LIST_VALUE_X, HS_RIGHT_SCORE_LIST_VALUE_Y),
             Vec2(HS_RIGHT_SCORE_LIST_DROP_X, HS_RIGHT_SCORE_LIST_DROP_Y),
-            not (view._player_count_open or view._game_mode_open or view._show_scores_open),
+            not (view._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.DATE}),
         ),
     )
     # Active list must render last so overlapping widgets don't occlude open options.
@@ -371,7 +404,9 @@ def _draw_right_panel_local_score(
     if not name:
         name = "???"
     draw_small_text(font, name, card_top_left + Vec2(HS_LOCAL_NAME_X * scale, HS_LOCAL_NAME_Y * scale), text_color)
-    draw_small_text(font, "Local score", card_top_left + Vec2(HS_LOCAL_LABEL_X * scale, HS_LOCAL_LABEL_Y * scale), text_color)
+    draw_small_text(
+        font, "Local score", card_top_left + Vec2(HS_LOCAL_LABEL_X * scale, HS_LOCAL_LABEL_Y * scale), text_color,
+    )
     rl.draw_line(
         int(card_top_left.x + 78.0 * scale),
         int(card_top_left.y + 57.0 * scale),
@@ -382,7 +417,9 @@ def _draw_right_panel_local_score(
 
     date_text = format_score_date(entry)
     if date_text:
-        draw_small_text(font, date_text, card_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale), text_color)
+        draw_small_text(
+            font, date_text, card_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale), text_color,
+        )
     rl.draw_line(
         int(card_top_left.x + 74.0 * scale),
         int(card_top_left.y + 72.0 * scale),
@@ -391,7 +428,9 @@ def _draw_right_panel_local_score(
         separator_color,
     )
 
-    draw_small_text(font, "Score", card_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X * scale, HS_LOCAL_SCORE_LABEL_Y * scale), text_color)
+    draw_small_text(
+        font, "Score", card_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X * scale, HS_LOCAL_SCORE_LABEL_Y * scale), text_color,
+    )
 
     mode_raw = int(entry.game_mode_id)
     try:
@@ -406,7 +445,12 @@ def _draw_right_panel_local_score(
         case _:
             time_label = "Game time"
 
-    draw_small_text(font, time_label, card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale), game_time_color)
+    draw_small_text(
+        font,
+        time_label,
+        card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
+        game_time_color,
+    )
     rl.draw_line(
         int(card_top_left.x + 170.0 * scale),
         int(card_top_left.y + 90.0 * scale),
@@ -434,7 +478,12 @@ def _draw_right_panel_local_score(
 
     match mode_id:
         case GameMode.QUESTS:
-            draw_small_text(font, f"{score_xp}", card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale), game_time_color)
+            draw_small_text(
+                font,
+                f"{score_xp}",
+                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+                game_time_color,
+            )
         case _:
             _draw_clock_gauge(
                 resources=resources,
@@ -442,9 +491,19 @@ def _draw_right_panel_local_score(
                 pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
                 scale=scale,
             )
-            draw_small_text(font, format_elapsed_mm_ss(elapsed_ms), card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale), game_time_color)
+            draw_small_text(
+                font,
+                format_elapsed_mm_ss(elapsed_ms),
+                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+                game_time_color,
+            )
 
-    draw_small_text(font, f"Rank: {ordinal(idx + 1)}", card_top_left + Vec2(HS_LOCAL_RANK_X * scale, HS_LOCAL_RANK_Y * scale), text_color)
+    draw_small_text(
+        font,
+        f"Rank: {ordinal(idx + 1)}",
+        card_top_left + Vec2(HS_LOCAL_RANK_X * scale, HS_LOCAL_RANK_Y * scale),
+        text_color,
+    )
 
     frags = int(entry.creature_kill_count)
 
@@ -474,9 +533,21 @@ def _draw_right_panel_local_score(
         0.0,
         32.0 * scale - measure_small_text_width(font, weapon_name) * 0.5,
     )
-    draw_small_text(font, weapon_name, card_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale), lower_section_color)
-    draw_small_text(font, f"Frags: {frags}", card_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale), lower_section_color)
-    draw_small_text(font, f"Hit %: {hit_pct}%", card_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale), lower_section_color)
+    draw_small_text(
+        font, weapon_name, card_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale), lower_section_color,
+    )
+    draw_small_text(
+        font,
+        f"Frags: {frags}",
+        card_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
+        lower_section_color,
+    )
+    draw_small_text(
+        font,
+        f"Hit %: {hit_pct}%",
+        card_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
+        lower_section_color,
+    )
     rl.draw_line(
         int(card_top_left.x + 74.0 * scale),
         int(card_top_left.y + 194.0 * scale),

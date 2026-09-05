@@ -134,7 +134,9 @@ def test_quest_failed_enter_retries_current_quest(monkeypatch, quest_failed_stat
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(
-        quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+        quest_failed_module.rl,
+        "is_key_pressed",
+        side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
     )
 
     view = QuestFailedView(state, _failed_outcome())
@@ -162,7 +164,9 @@ def test_quest_failed_q_opens_quest_list(monkeypatch, quest_failed_state, mocker
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(
-        quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_Q),
+        quest_failed_module.rl,
+        "is_key_pressed",
+        side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_Q),
     )
 
     view = QuestFailedView(state, _failed_outcome())
@@ -189,7 +193,9 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(
-        quest_failed_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
+        quest_failed_module.rl,
+        "is_key_pressed",
+        side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
     )
 
     view = QuestFailedView(state, _failed_outcome())
@@ -251,7 +257,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     mocker.patch.object(quest_failed_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_failed_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_failed_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)

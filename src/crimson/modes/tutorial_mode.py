@@ -28,12 +28,7 @@ from ..ui.overlays.tutorial_run import (
     draw_tutorial_overlay_panels,
     tutorial_prompt_panel_rect,
 )
-from ..ui.perk_menu import (
-    UiButtonState,
-    button_draw,
-    button_update,
-    button_width,
-)
+from ..ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode

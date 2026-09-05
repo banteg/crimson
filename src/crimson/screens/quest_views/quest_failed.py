@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.screens.actions import Route, ScreenAction, StartRun
+from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.ui.layout import menu_widescreen_y_shift
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -16,7 +18,6 @@ from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_FAILED_BANNER_H,
@@ -178,12 +179,7 @@ class QuestFailedView:
             return
 
     def draw(self) -> None:
-        rl.clear_background(rl.BLACK)
-        pause_background = self.state.pause_background
-        if pause_background is not None:
-            pause_background.draw_pause_background(entity_alpha=self._world_entity_alpha())
-        elif self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
+        draw_screen_background(self.state, self._ground, entity_alpha=self._world_entity_alpha())
         _draw_screen_fade(self.state)
 
         panel_top_left = self._panel_top_left()
@@ -260,7 +256,7 @@ class QuestFailedView:
             scale=scale,
         )
 
-        _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
+        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
 
     def take_action(self) -> ScreenAction | None:
         action = self._action
@@ -269,7 +265,7 @@ class QuestFailedView:
 
     def _panel_origin(self) -> Vec2:
         screen_w = float(rl.get_screen_width())
-        widescreen_shift_y = MenuView._menu_widescreen_y_shift(screen_w)
+        widescreen_shift_y = menu_widescreen_y_shift(screen_w)
         return Vec2(
             QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X,
             QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y,
