@@ -1,5 +1,7 @@
 # Systems review after the port and screen cleanups
 
+Implemented: see [FIXES.md](FIXES.md) for commits and validation. The findings and baseline results below describe the pre-fix code.
+
 Reviewed on 2026-09-05 at `defec436afc838affac470d84e9ab90707693ef8`.
 
 The next substantial improvement is to make live play and replay share both **run initialization and command execution**, in addition to the simulation step they already share. Two reproduced divergences sit on those boundaries. Presentation still has one mutable-state leak, and the camera simulation has a separate native timing error.

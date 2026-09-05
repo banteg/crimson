@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from crimson.camera import camera_shake_update
 from crimson.dbg.checkpoint_diff import compare_checkpoints
+from crimson.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.modes import base_gameplay_mode
@@ -159,6 +160,11 @@ def camera_latch_reachable():
 def checkpoint_blind_spot():
     runtime = WorldRuntime(assets_dir=Path("/private/tmp/assets"), audio_rng=Crand(1))
     world = runtime.sim_world.world_state
+    session = DeterministicSession(
+        world=world, world_size=1024, damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
+        game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,
+    )
+    digest_before = session_digest(session)
     before = build_checkpoint(tick_index=0, world=world, elapsed_ms=0)
     world.players[0].weapon.shot_cooldown = 10.0
     world.state.camera_shake_timer = 0.06
@@ -169,6 +175,7 @@ def checkpoint_blind_spot():
         "changed": ["shot_cooldown", "camera_shake_timer", "camera_shake_pulses", "inactive_creature_hp"],
         "checkpoints_equal": before == after,
         "verifier_ok": compare_checkpoints([before], [after]).ok,
+        "complete_state_equal": digest_before == session_digest(session),
     }
 
 
@@ -179,8 +186,7 @@ def interrupted_score_save():
         write_highscore_records(path, [record])
         before = len(read_highscore_records(path))
         size = path.stat().st_size
-        # A serializer failure demonstrates that the previous valid file has
-        # already been destroyed, even before the first write is attempted.
+        # A serializer failure must leave the previous valid file intact.
         with patch(
             "crimson.persistence.highscores.encode_record_payload",
             side_effect=ValueError("injected encoding failure"),

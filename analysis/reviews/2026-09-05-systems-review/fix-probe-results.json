@@ -1,0 +1,119 @@
+{
+  "tutorial_startup": {
+    "before": {
+      "live": {
+        "ammo": 12.0,
+        "clip_size": 12,
+        "cooldown": 0.0,
+        "shot_seq": 0
+      },
+      "replay": {
+        "ammo": 12.0,
+        "clip_size": 12,
+        "cooldown": 0.0,
+        "shot_seq": 0
+      }
+    },
+    "after": {
+      "live": {
+        "ammo": 11.0,
+        "clip_size": 12,
+        "cooldown": 0.7117000222206116,
+        "shot_seq": 1
+      },
+      "replay": {
+        "ammo": 11.0,
+        "clip_size": 12,
+        "cooldown": 0.7117000222206116,
+        "shot_seq": 1
+      }
+    },
+    "rng": {
+      "live": 436623559,
+      "replay": 436623559
+    },
+    "sfx": {
+      "live": [
+        "SfxId.PISTOL_FIRE",
+        "SfxId.PISTOL_RELOAD"
+      ],
+      "replay": [
+        "SfxId.PISTOL_FIRE",
+        "SfxId.PISTOL_RELOAD"
+      ]
+    }
+  },
+  "audio_serial": {
+    "timers": [
+      0.00833333283662796,
+      -0.00823611207306385
+    ],
+    "sound_timers": [
+      0.00833333283662796
+    ],
+    "rng": 303570046
+  },
+  "audio_batch": {
+    "timers": [
+      0.00833333283662796,
+      -0.00823611207306385
+    ],
+    "sound_timers": [
+      0.00833333283662796
+    ],
+    "rng": 303570046
+  },
+  "camera_latch": {
+    "time_scale_active": true,
+    "bonus_timer": 0,
+    "python_interval": 0.06,
+    "recovered_native_interval": 0.05999999865889549
+  },
+  "camera_latch_reachable": [
+    {
+      "tick": 0,
+      "before": {
+        "latch": true,
+        "bonus": 0.009999999776482582,
+        "shake_timer": 0.05999999865889549
+      },
+      "shake_timer_after": 0.010349996387958527,
+      "pulses_after": 5
+    },
+    {
+      "tick": 1,
+      "before": {
+        "latch": true,
+        "bonus": -0.0065500009804964066,
+        "shake_timer": 0.010349996387958527
+      },
+      "shake_timer_after": 0.06,
+      "pulses_after": 4
+    }
+  ],
+  "checkpoint_blind_spot": {
+    "changed": [
+      "shot_cooldown",
+      "camera_shake_timer",
+      "camera_shake_pulses",
+      "inactive_creature_hp"
+    ],
+    "checkpoints_equal": true,
+    "verifier_ok": true,
+    "complete_state_equal": false
+  },
+  "interrupted_score_save": {
+    "records_before": 1,
+    "bytes_before": 76,
+    "records_after": 1,
+    "bytes_after": 76
+  },
+  "perk_command_timing": {
+    "live_dt_sim": 0.015000000596046448,
+    "replay_dt_sim": 0.015000000596046448,
+    "live_x": 512.0032958984375,
+    "replay_x": 512.0032958984375,
+    "live_elapsed_ms": 15.0,
+    "replay_elapsed_ms": 15.0
+  }
+}
