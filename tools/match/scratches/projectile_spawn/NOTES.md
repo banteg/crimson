@@ -171,3 +171,15 @@ No source change is retained. This establishes the MOD SDK as a bounded
 source-style prior rather than authority over 1.9.93 semantics. The spec
 SHA-256 is
 `08d6958a585819a0840c1f4ac02863acacc8982ff047bcd86d2d48ec4686ed5e`.
+
+## Focused follow-up (2026-09-05)
+
+Nine shared local-damage tail forms cross chained conditions, independent
+conditions, and a switch with the existing override loop, a damage reset, or
+tail recursion. None improves 71.67%; the best reaches only 67.21%. These
+ordinary shared-sink forms do not recover the native default-damage stack
+lifetime.
+
+The complete bounded matrix is recorded in
+`shared-damage-consumer-followup-mutations.json`. No source change is
+retained; this result bounds these specific hypotheses only.

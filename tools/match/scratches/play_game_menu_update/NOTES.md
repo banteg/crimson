@@ -336,3 +336,13 @@ references, and no compensating native gain. The recorded
 `original-game-status-owner-mutations.json` result therefore rejects that
 source transplant for this 1.9.93 consumer; the current compiler-facing aliases
 remain the stronger native match.
+
+## Focused follow-up (2026-09-05)
+
+Seven opening position/base/anchor ownership, compound-add, label placement,
+and scope variants were tested against 99.74%. Label placement is neutral; the
+other forms regress. None recovers the native opening-sum stack slot.
+
+The complete bounded matrix is recorded in
+`opening-owner-and-label-followup-mutations.json`. No source change is
+retained; this result bounds these specific hypotheses only.

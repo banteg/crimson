@@ -128,3 +128,14 @@ and loses 12.27 weighted bytes; predeclared chained storage loses 8.18 and adds
 one reference. Forcing the native slot would therefore require an artificial
 dependency, volatile spill, or dummy lifetime. None is retained, and the
 classification remains `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Focused follow-up (2026-09-05)
+
+Seven opening position/anchor ownership, addition, label placement, and
+stored-coordinate consumer variants were tested against 98.90%. Label movement
+and stored-x reuse are neutral; the others regress. The addition form gains
+one aligned reference but loses instruction identity and is not retained.
+
+The complete bounded matrix is recorded in
+`panel-consumer-and-label-followup-mutations.json`. No source change is
+retained; this result bounds these specific hypotheses only.

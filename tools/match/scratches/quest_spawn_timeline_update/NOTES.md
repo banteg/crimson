@@ -116,3 +116,14 @@ prefix-51, `13/0/0` candidate. The authenticated class spelling therefore does
 not restore the folded template-field pointer/home store, and no cosmetic type
 rewrite is retained. The spec SHA-256 is
 `96fca03448be5ca6d9a3cf5fe98a825f584838dca866eea5da537409b218f0bd`.
+
+## Focused follow-up (2026-09-05)
+
+Six metadata-subobject and template-relative count forms were tested against
+91.23%. Template-first inner ownership is neutral, while heading-first and
+outer-owner forms regress. These forms do not recover the native retained
+template pointer and stack copy.
+
+The complete bounded matrix is recorded in
+`spawn-parameter-owner-followup-mutations.json`. No source change is retained;
+this result bounds these specific hypotheses only.

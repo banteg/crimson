@@ -130,3 +130,16 @@ Across 77 current-baseline evaluations, no tradeoff-free variant improves the
 88.61%, 79/79-instruction, prefix-seven, `29/0/0` source. `scratch.c` remains
 unchanged. The complete seven-line experiment log now has SHA-256
 `f88e42d37a8afeabc089acde7d106dd60ca2f403dd00931218ab5ff35f7b0855`.
+
+## Focused follow-up (2026-09-05)
+
+Seven C++ velocity-constructor and position/color class-copy forms were
+tested. The unchanged C source compiled as C++ is byte-neutral at 88.61%. Real
+vector constructors either remove the six native zero-storage instructions or
+retain the extent but regress to 86.08%; class-copy identities are neutral.
+The recorded /TP flag selects the C++ frontend only; canonical compiler
+settings and C source remain unchanged.
+
+The complete bounded matrix is recorded in
+`cpp-velocity-owner-followup-mutations.json`. No source change is retained;
+this result bounds these specific hypotheses only.

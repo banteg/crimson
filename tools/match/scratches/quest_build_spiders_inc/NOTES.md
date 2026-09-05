@@ -162,3 +162,14 @@ The remaining native difference is confined to the first loop record: native
 computes the count before constructing its pointer but publishes the count
 after the coordinates and other metadata. Historical claims that the register
 swap and extra instruction were unavoidable are superseded by this recovery.
+
+## Focused follow-up (2026-09-05)
+
+Eleven count declaration, integer-type, and stored-count reference variants
+were tested against the 95.24% baseline. None improves it; the reference forms
+add two instructions, and moving the computed local before its record pointer
+changes allocation and loses a reference.
+
+The complete bounded matrix is recorded in
+`paired-count-lifetime-followup-mutations.json`. No source change is retained;
+this result bounds these specific hypotheses only.
