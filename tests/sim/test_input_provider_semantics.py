@@ -231,7 +231,7 @@ def test_pending_edges_survive_until_a_tick_and_use_latest_held_state(zero_tick_
     first = provider.pull_tick(0, 1 / 60).tick
     second = provider.pull_tick(1, 1 / 60).tick
     assert first is not None and second is not None
-    assert first.inputs == (PlayerInput(fire_pressed=True, reload_pressed=True, aim=Vec2(123, 456)),)
+    assert first.inputs == (PlayerInput(fire_down=True, fire_pressed=True, reload_pressed=True, aim=Vec2(123, 456)),)
     assert first.commands == (PerkMenuOpenCommand(player_index=0),)
     assert second.inputs == (PlayerInput(aim=Vec2(123, 456)),)
     assert second.commands == ()

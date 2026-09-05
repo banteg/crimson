@@ -1,7 +1,18 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson import input_codes
+from crimson.game_modes import GameMode
 from crimson.input_codes import INPUT_CODE_UNBOUND, input_code_name
+from crimson.local_input import LocalInputInterpreter
+from crimson.sim.input import PlayerInput
+from crimson.sim.input_providers import FrameContext, LocalInputProvider
+from crimson.sim.run_init import initialize_run
+from crimson.sim.run_spec import RunSpec
+from grim.config import default_crimson_cfg
+from grim.geom import Vec2
+from tests.support.builders.input_providers import StaticLocalInputRuntime
 
 
 def test_input_code_name_extended_axes_match_original_labels() -> None:
@@ -95,3 +106,43 @@ def test_input_primary_just_pressed_latches_across_multiplayer_fire_keys(mocker)
     input_codes.input_begin_frame()
     down[(0, 0x100)] = True
     assert input_codes.input_primary_just_pressed(fire_codes=fire_codes, player_count=2)
+
+
+@pytest.mark.parametrize("wheel", [1.0, -1.0])
+@pytest.mark.parametrize("zero_tick_frames", [0, 3])
+def test_wheel_fire_binding_reaches_exactly_one_simulation_tick(mocker, wheel: float, zero_tick_frames: int) -> None:
+    mocker.patch.object(input_codes, "_PRESSED_STATE", input_codes._PressedState())
+    wheel_move = mocker.patch.object(input_codes.rl, "get_mouse_wheel_move", return_value=wheel)
+    mocker.patch.object(input_codes.rl, "get_key_pressed", return_value=0)
+    mocker.patch.object(input_codes.rl, "is_mouse_button_pressed", return_value=False)
+    mocker.patch.object(input_codes.rl, "is_key_down", return_value=False)
+    mocker.patch.object(input_codes.rl, "is_mouse_button_down", return_value=False)
+    input_codes.input_begin_frame()
+    code = input_codes.capture_first_pressed_input_code(player_index=0, include_gamepad=False, include_axes=False)
+    assert code == (0x109 if wheel > 0 else 0x10A)
+    config = default_crimson_cfg()
+    config.controls.player(0).fire_code = code
+    session = initialize_run(RunSpec(game_mode_id=GameMode.TUTORIAL, seed=1)).session
+    interpreter = LocalInputInterpreter()
+
+    def sample() -> PlayerInput:
+        return interpreter.build_player_input(
+            player_index=0, player=session.world.players[0], config=config,
+            mouse_screen=Vec2(600, 512), mouse_world=Vec2(600, 512), screen_center=Vec2(512, 512), dt=1 / 60,
+        )
+
+    runtime = StaticLocalInputRuntime(inputs=(sample(),))
+    provider = LocalInputProvider(player_count=1, runtime=runtime)
+    frame = FrameContext(dt_seconds=1 / 60, tick_dt_seconds=1 / 60, frame_index=0, candidate_ticks=0)
+    provider.begin_frame(frame)
+    wheel_move.return_value = 0.0
+    for _ in range(zero_tick_frames):
+        input_codes.input_begin_frame()
+        runtime.inputs = (sample(),)
+        provider.begin_frame(frame)
+    for index in range(30):
+        tick = provider.pull_tick(index, 1 / 60).tick
+        assert tick is not None
+        assert tick.inputs[0].fire_down is (index == 0)
+        session.step_tick(dt=1 / 60, inputs=tick.inputs)
+    assert session.world.state.shots_fired[0] == 1

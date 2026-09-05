@@ -128,7 +128,14 @@ class LocalInputProvider:
             )
 
     def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
-        inputs = () if self._player_count <= 0 else tuple(self._frame_inputs)
+        # A press is a one-tick firing action even when the source has no held
+        # state (mouse wheel), or was released before a simulation tick ran.
+        # Keep the sampled held state in the buffer so catch-up ticks do not
+        # repeat that pulse. Replays record the resolved action as usual.
+        inputs = () if self._player_count <= 0 else tuple(
+            msgspec.structs.replace(inp, fire_down=True) if inp.fire_pressed and not inp.fire_down else inp
+            for inp in self._frame_inputs
+        )
         commands = tuple(self._pending_commands)
         self._pending_commands.clear()
         self._frame_inputs = clear_input_edges(self._frame_inputs)
