@@ -158,6 +158,7 @@ def build_tutorial_session(
     game_tune_started: bool,
     demo_mode_active: bool,
 ) -> DeterministicSession:
+    weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
     reset_tutorial_state(
         world.state.tutorial,
         world.state.tutorial_overlay,

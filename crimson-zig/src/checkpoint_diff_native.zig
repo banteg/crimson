@@ -1154,7 +1154,7 @@ fn buildEventSummary(
 fn initialReloadSfxKey(row: *const replay_runner.ReplayTickTrace) ?[]const u8 {
     if (row.tick_index != 0) return null;
     return switch (row.gameplay_state.game_mode) {
-        .quests => "sfx_pistol_reload",
+        .quests, .tutorial => "sfx_pistol_reload",
         .rush => "sfx_autorifle_reload",
         .typo => "sfx_shotgun_reload",
         else => null,

@@ -29,8 +29,6 @@ from ..ui.overlays.tutorial_run import (
     tutorial_prompt_panel_rect,
 )
 from ..ui.perk_menu import UiButtonState, button_draw, button_update, button_width
-from ..weapon_runtime import weapon_assign_player
-from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.perk_menu_controller import PerkMenuController
 
@@ -113,7 +111,6 @@ class TutorialMode(BaseGameplayMode):
         self.sim_world.state.rng.srand(int(self.state.rng.state))
 
         self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
-        weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)
         self._sim_session = self._new_sim_session()
         self._replay_recorder = ReplayRecorder(
             ReplayHeader(

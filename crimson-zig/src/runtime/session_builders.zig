@@ -123,6 +123,7 @@ pub fn buildTutorialSession(
         return error.InvalidPlayerCount;
     }
     var session = try runtime_session.DeterministicSession.init(config, options);
+    player_runtime.weaponAssignPlayerWithState(&session.players()[0], .pistol, &session.state);
     tutorial_state.resetTutorialState(
         &session.state.tutorial,
         &session.state.tutorial_overlay,
@@ -224,6 +225,15 @@ fn testConfig(game_mode: game_ids.GameModeId) runtime_session.SessionConfig {
         .world_size = 1024.0,
         .tick_rate = 60,
     };
+}
+
+test "build tutorial session primes the same pistol for live play and replay" {
+    var session = try buildTutorialSession(testConfig(.tutorial), .{});
+    const player = session.players()[0];
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
+    try std.testing.expectEqual(@as(i32, 12), player.weapon.clip_size);
+    try std.testing.expectEqual(@as(f32, 12), player.weapon.ammo);
+    try std.testing.expectEqual(@as(f32, 0), player.weapon.shot_cooldown);
 }
 
 test "build rush session enforces assault rifle loadout" {

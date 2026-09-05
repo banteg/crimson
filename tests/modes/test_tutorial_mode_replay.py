@@ -9,7 +9,10 @@ from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
+from crimson.replay.driver.playback_driver import PlaybackDriver
+from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
+from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -42,6 +45,33 @@ def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config) ->
     assert mode._replay_recorder is not None
     assert mode._replay_recorder.header.game_mode_id == GameMode.TUTORIAL
     assert int(mode._replay_recorder.header.player_count) == 1
+
+
+def test_tutorial_recorded_first_shot_replays_the_live_startup(mocker, make_mode_config) -> None:
+    mode = TutorialMode(
+        ViewContext(assets_dir=_assets_dir()),
+        config=make_mode_config(game_mode=GameMode.TUTORIAL),
+        audio_rng=Crand(0xBEEF),
+    )
+    mocker.patch.object(mode, "apply_terrain_setup")
+    mocker.patch.object(mode.world_runtime, "open_runtime")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
+    mode.open()
+    session = mode._sim_session
+    recorder = mode._replay_recorder
+    assert session is not None and recorder is not None
+    inputs = (PlayerInput(aim=Vec2(600.0, 512.0), fire_down=True, fire_pressed=True),)
+    recorder.record_tick(inputs, dt=1 / 60)
+    driver = PlaybackDriver(recorder.finish())
+    assert session.world.players == driver.world.players
+
+    live_tick = session.step_tick(dt=1 / 60, inputs=inputs)
+    replay_tick = driver.step_tick(0).payload
+
+    assert session.world.players[0].shot_seq == 1
+    assert session.world.players == driver.world.players
+    assert session.world.state.rng.state == driver.world.state.rng.state
+    assert live_tick.presentation == replay_tick.presentation
 
 
 def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_mode_config) -> None:
