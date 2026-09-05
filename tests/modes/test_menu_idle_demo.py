@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+from crimson.screens.actions import Route
 from crimson.screens.menu import MENU_DEMO_IDLE_START_MS, MenuEntry, MenuView
 
 
@@ -25,7 +26,7 @@ def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
     assert view._closing is True
 
     view.update(0.1)
-    assert view.take_action() == "start_demo"
+    assert view.take_action() == Route.DEMO
 
 
 def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) -> None:

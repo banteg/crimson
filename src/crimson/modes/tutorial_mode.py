@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.actions import Route
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -174,7 +175,7 @@ class TutorialMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = Route.PAUSE
             return
 
     def _build_input(self) -> PlayerInput:
@@ -281,15 +282,18 @@ class TutorialMode(BaseGameplayMode):
         dt, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
 
         self._handle_input()
-        if self._action == "open_pause_menu":
+        if self._action == Route.PAUSE:
             return
         if self.close_requested:
             return
 
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and self.player.health > 0.0
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
-        if int(self.state.tutorial.stage_index) == 6 and perk_pending and (not self._perk_menu.active) and (
-            not self._perk_pick_pending
+        if (
+            int(self.state.tutorial.stage_index) == 6
+            and perk_pending
+            and (not self._perk_menu.active)
+            and (not self._perk_pick_pending)
         ):
             self._open_perk_menu()
         if self._perk_menu.open:

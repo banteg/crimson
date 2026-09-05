@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from crimson.screens.actions import Route, ScreenAction, StartRun
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -45,17 +46,17 @@ if TYPE_CHECKING:
 
 
 class QuestFailedView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: GameState, outcome: QuestRunOutcome) -> None:
         self.state = state
         self._ground: GroundRenderer | None = None
-        self._outcome: QuestRunOutcome | None = None
+        self._outcome = outcome
         self._record: HighScoreRecord | None = None
         self._quest_title: str = ""
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
         self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ScreenAction | None = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
@@ -67,8 +68,6 @@ class QuestFailedView:
         self._intro_ms = 0.0
         self._closing = False
         self._close_action = None
-        self._outcome = self.state.quest_outcome
-        self.state.quest_outcome = None
         self._quest_title = ""
         self._record = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
@@ -85,7 +84,6 @@ class QuestFailedView:
 
     def close(self) -> None:
         self._ground = None
-        self._outcome = None
         self._record = None
         self._quest_title = ""
 
@@ -264,7 +262,7 @@ class QuestFailedView:
 
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         action = self._action
         self._action = None
         return action
@@ -352,7 +350,6 @@ class QuestFailedView:
             return
         self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
         level = outcome.level
-        self.state.pending_quest_level = level
         self.state.config.gameplay.mode = GameMode.QUESTS
         self.state.config.gameplay.quest_level = level
         try:
@@ -361,21 +358,21 @@ class QuestFailedView:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._begin_close("start_quest")
+        self._begin_close(StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=level))
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._begin_close("open_quests")
+        self._begin_close(Route.QUESTS)
 
     def _activate_main_menu(self) -> None:
         self.state.quest_fail_retry_count = 0
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._begin_close("back_to_menu")
+        self._begin_close(Route.MENU)
 
-    def _begin_close(self, action: str) -> None:
+    def _begin_close(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True

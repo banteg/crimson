@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData
@@ -52,9 +53,9 @@ class _DatabaseBaseView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
+        self._action: ScreenAction | None = None
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -84,7 +85,7 @@ class _DatabaseBaseView:
         self._pending_action = None
         self._action = None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
@@ -106,7 +107,7 @@ class _DatabaseBaseView:
             pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -168,7 +169,7 @@ class _DatabaseBaseView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(Route.BACK)
             return
 
         if not enabled:
@@ -196,7 +197,7 @@ class _DatabaseBaseView:
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(Route.BACK)
 
     def draw(self) -> None:
         self._assert_open()

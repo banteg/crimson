@@ -6,6 +6,7 @@ from typing import Protocol
 
 import msgspec
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
@@ -66,6 +67,7 @@ MENU_SIGN_POS_X_PAD = 4.0
 # Measured in the shareware/demo attract loop trace:
 # {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
 MENU_DEMO_IDLE_START_MS = 23_000
+
 
 class _TimelineView(Protocol):
     _timeline_ms: int
@@ -152,8 +154,8 @@ class MenuView:
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -192,6 +194,14 @@ class MenuView:
                 stop_music(self.state.audio)
             play_music(self.state.audio, theme)
         self._is_open = True
+
+    def resume(self) -> None:
+        self._timeline_ms = 0
+        self._idle_ms = 0
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
+        self._panel_open_sfx_played = False
 
     def close(self) -> None:
         self._is_open = False
@@ -283,7 +293,7 @@ class MenuView:
             and self._timeline_ms >= self._timeline_max_ms
             and self._idle_ms >= MENU_DEMO_IDLE_START_MS
         ):
-            self._begin_close_transition("start_demo")
+            self._begin_close_transition(Route.DEMO)
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
 
@@ -298,7 +308,7 @@ class MenuView:
         self._draw_menu_sign(resources)
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         action = self._pending_action
         self._pending_action = None
@@ -318,17 +328,17 @@ class MenuView:
         if entry.row == MENU_LABEL_ROW_QUIT:
             self._begin_quit_transition()
         elif entry.row == MENU_LABEL_ROW_PLAY_GAME:
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(Route.PLAY_GAME)
         elif entry.row == MENU_LABEL_ROW_OPTIONS:
-            self._begin_close_transition("open_options")
+            self._begin_close_transition(Route.OPTIONS)
         elif entry.row == MENU_LABEL_ROW_STATISTICS:
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(Route.STATISTICS)
         elif entry.row == MENU_LABEL_ROW_MODS:
-            self._begin_close_transition("open_mods")
+            self._begin_close_transition(Route.MODS)
         elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
-            self._begin_close_transition("open_other_games")
+            self._begin_close_transition(Route.OTHER_GAMES)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -336,7 +346,7 @@ class MenuView:
 
     def _begin_quit_transition(self) -> None:
         self.state.menu_sign_locked = False
-        self._begin_close_transition("quit_after_demo" if self.state.demo_enabled else "quit_app")
+        self._begin_close_transition(Route.QUIT_AFTER_DEMO if self.state.demo_enabled else Route.QUIT)
 
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self.state)

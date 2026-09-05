@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -232,9 +233,9 @@ class CreditsView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
+        self._action: ScreenAction | None = None
 
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
@@ -280,7 +281,7 @@ class CreditsView:
         self._pending_action = None
         self._action = None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
@@ -296,7 +297,7 @@ class CreditsView:
     def _assert_open(self) -> None:
         assert self._is_open, "CreditsView must be opened before use"
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -466,7 +467,7 @@ class CreditsView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(Route.BACK)
             return
 
         if not interactive:
@@ -501,7 +502,7 @@ class CreditsView:
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(Route.BACK)
             return
 
         if self._secret_button_visible():
@@ -521,7 +522,7 @@ class CreditsView:
             ):
                 if self.state.audio is not None:
                     play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("open_alien_zookeeper")
+                self._begin_close_transition(Route.ALIEN_ZOOKEEPER)
                 return
 
     def draw(self) -> None:
@@ -547,10 +548,14 @@ class CreditsView:
             CREDITS_PANEL_HEIGHT * scale,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
+        draw_classic_menu_panel(
+            resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled,
+        )
 
         font = resources.small_font
-        draw_small_text(font, "credits", panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale), rl.Color(255, 255, 255, 255))
+        draw_small_text(
+            font, "credits", panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale), rl.Color(255, 255, 255, 255),
+        )
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
         if visible_count > 0:

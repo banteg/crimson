@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.actions import Route
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -131,7 +132,7 @@ class TypoShooterMode(BaseGameplayMode):
     def _handle_input(self) -> None:
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-                self._action = "back_to_menu"
+                self._action = Route.MENU
                 self.close_requested = True
             return
 
@@ -139,7 +140,7 @@ class TypoShooterMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = Route.PAUSE
             return
 
     def _enqueue_typing_commands(self) -> None:
@@ -204,7 +205,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         dt = self._tick_frame(dt)[0]
         self._handle_input()
-        if self._action == "open_pause_menu":
+        if self._action == Route.PAUSE:
             return
 
         if self._game_over_active:

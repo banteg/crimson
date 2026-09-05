@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
+from crimson.screens.actions import ScreenAction
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
@@ -14,12 +15,12 @@ class GameplayScreenStub:
         camera: Vec2 | None = None,
         telemetry: tuple[int, int, int, float, float, float] = (0, 0, 0, 0.0, 0.0, 0.0),
         console_elapsed_ms: float = 0.0,
-        action: str | None = None,
+        action: ScreenAction | None = None,
     ) -> None:
         self.close_requested = False
         self.default_game_mode_id = game_mode_id
         self._ground = ground
-        self._camera = camera
+        self._camera = camera if camera is not None else Vec2(-1.0, -1.0)
         self._telemetry = telemetry
         self._console_elapsed_ms = float(console_elapsed_ms)
         self._action = action
@@ -31,12 +32,18 @@ class GameplayScreenStub:
         self.last_audio_rng = None
         self.last_rtx_mode = None
         self.last_runtime_updates_per_frame = 0
+        self.open_calls = 0
+        self.close_calls = 0
+        self.resume_calls = 0
 
     def open(self) -> None:
-        return None
+        self.open_calls += 1
 
     def close(self) -> None:
-        return None
+        self.close_calls += 1
+
+    def resume(self) -> None:
+        self.resume_calls += 1
 
     def update(self, dt: float) -> None:
         _ = dt
@@ -44,7 +51,7 @@ class GameplayScreenStub:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         action = self._action
         self._action = None
         return action
@@ -59,9 +66,6 @@ class GameplayScreenStub:
         self.last_audio = audio
         self.last_audio_rng = audio_rng
 
-
-
-
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
         _ = entity_alpha
 
@@ -70,7 +74,7 @@ class GameplayScreenStub:
         self._ground = None
         return ground
 
-    def menu_ground_camera(self) -> Vec2 | None:
+    def menu_ground_camera(self) -> Vec2:
         return self._camera
 
     def console_elapsed_ms(self) -> float:

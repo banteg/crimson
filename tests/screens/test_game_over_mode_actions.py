@@ -7,6 +7,7 @@ from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
+from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ShowScores
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
 from crimson.sim.sessions import DeterministicSession
 from grim.audio import AudioState
@@ -29,13 +30,15 @@ def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> Non
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
 
     def _update(*_args, **_kwargs):
-        return "high_scores"
+        return ResultAction.HIGH_SCORES
 
     mocker.patch.object(GameOverUi, "update", side_effect=_update)
 
     mode._update_game_over_ui(0.1)
 
-    assert mode.take_action() == "open_high_scores"
+    assert mode.take_action() == ShowScores(
+        ScoreQuery(mode.default_game_mode_id), ScoreReturnContext.capture(mode.config),
+    )
     assert mode.close_requested is False
 
 
@@ -43,13 +46,13 @@ def test_update_game_over_ui_routes_main_menu(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
 
     def _update(*_args, **_kwargs):
-        return "main_menu"
+        return ResultAction.MAIN_MENU
 
     mocker.patch.object(GameOverUi, "update", side_effect=_update)
 
     mode._update_game_over_ui(0.1)
 
-    assert mode.take_action() == "back_to_menu"
+    assert mode.take_action() == Route.MENU
     assert mode.close_requested is True
 
 
@@ -58,7 +61,7 @@ def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config) 
     open_mode = mocker.patch.object(mode, "open")
 
     def _update(*_args, **_kwargs):
-        return "play_again"
+        return ResultAction.PLAY_AGAIN
 
     mocker.patch.object(GameOverUi, "update", side_effect=_update)
 

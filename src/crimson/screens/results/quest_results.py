@@ -6,6 +6,7 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.screens.actions import ResultAction
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -135,7 +136,7 @@ class QuestResultsUi(msgspec.Struct):
     _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
-    _close_action: str | None = None
+    _close_action: ResultAction | None = None
     _consume_enter: bool = False
     _defer_name_input_until_controls_released: bool = False
 
@@ -215,7 +216,7 @@ class QuestResultsUi(msgspec.Struct):
     def close(self) -> None:
         return None
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ResultAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -388,7 +389,7 @@ class QuestResultsUi(msgspec.Struct):
         play_sfx: Callable[[SfxId], None] | None = None,
         rng: CrandLike | None = None,
         mouse: rl.Vector2 | None = None,
-    ) -> str | None:
+    ) -> ResultAction | None:
         dt_s = float(min(dt, 0.1))
         dt_ms = dt_s * 1000.0
         self._cursor_pulse_time += dt_s * 1.1
@@ -420,7 +421,7 @@ class QuestResultsUi(msgspec.Struct):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             if play_sfx is not None:
                 play_sfx(SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("main_menu")
+            self._begin_close_transition(ResultAction.MAIN_MENU)
             return None
 
         qualifies = int(self.rank) < TABLE_MAX
@@ -512,17 +513,17 @@ class QuestResultsUi(msgspec.Struct):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("play_again")
+                self._begin_close_transition(ResultAction.PLAY_AGAIN)
                 return None
             if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("play_next")
+                self._begin_close_transition(ResultAction.PLAY_NEXT)
                 return None
             if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("high_scores")
+                self._begin_close_transition(ResultAction.HIGH_SCORES)
                 return None
 
             screen_w = float(rl.get_screen_width())
@@ -559,7 +560,7 @@ class QuestResultsUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("play_next")
+                self._begin_close_transition(ResultAction.PLAY_NEXT)
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
 
@@ -579,7 +580,7 @@ class QuestResultsUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("play_again")
+                self._begin_close_transition(ResultAction.PLAY_AGAIN)
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
 
@@ -599,7 +600,7 @@ class QuestResultsUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("high_scores")
+                self._begin_close_transition(ResultAction.HIGH_SCORES)
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
 
@@ -619,7 +620,7 @@ class QuestResultsUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("main_menu")
+                self._begin_close_transition(ResultAction.MAIN_MENU)
                 return None
             return None
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import TextureId
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
@@ -46,7 +47,7 @@ class OptionsMenuView(PanelMenuView):
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options", back_action="open_pause_menu")
+        super().__init__(state, title="Options", back_action=Route.BACK)
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
@@ -88,21 +89,36 @@ class OptionsMenuView(PanelMenuView):
             self._dirty = True
 
         if self._update_slider(
-            "music", self._slider_music, slider_pos.offset(dy=67.0 * scale), rect_on, rect_off, scale,
+            "music",
+            self._slider_music,
+            slider_pos.offset(dy=67.0 * scale),
+            rect_on,
+            rect_off,
+            scale,
         ):
             config.audio.music_volume = float(self._slider_music.value) * 0.1
             set_music_volume(self.state.audio, config.audio.music_volume)
             self._dirty = True
 
         if self._update_slider(
-            "detail", self._slider_detail, slider_pos.offset(dy=87.0 * scale), rect_on, rect_off, scale,
+            "detail",
+            self._slider_detail,
+            slider_pos.offset(dy=87.0 * scale),
+            rect_on,
+            rect_off,
+            scale,
         ):
             preset = apply_detail_preset(config, self._slider_detail.value)
             self._slider_detail.value = preset
             self._dirty = True
 
         if self._update_slider(
-            "mouse", self._slider_mouse, slider_pos.offset(dy=107.0 * scale), rect_on, rect_off, scale,
+            "mouse",
+            self._slider_mouse,
+            slider_pos.offset(dy=107.0 * scale),
+            rect_on,
+            rect_off,
+            scale,
         ):
             sensitivity = float(self._slider_mouse.value) * 0.1
             if sensitivity < 0.1:
@@ -136,7 +152,7 @@ class OptionsMenuView(PanelMenuView):
             mouse=mouse,
             click=click,
         ):
-            self._begin_close_transition("open_controls")
+            self._begin_close_transition(Route.CONTROLS)
 
     def draw(self) -> None:
         self._assert_open()
@@ -154,7 +170,7 @@ class OptionsMenuView(PanelMenuView):
             pulse_time=self._cursor_pulse_time,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
@@ -174,10 +190,12 @@ class OptionsMenuView(PanelMenuView):
         mouse_sensitivity = config.display.mouse_sensitivity
 
         self._slider_sfx.value = max(
-            self._slider_sfx.min_value, min(self._slider_sfx.max_value, int(sfx_volume * 10.0)),
+            self._slider_sfx.min_value,
+            min(self._slider_sfx.max_value, int(sfx_volume * 10.0)),
         )
         self._slider_music.value = max(
-            self._slider_music.min_value, min(self._slider_music.max_value, int(music_volume * 10.0)),
+            self._slider_music.min_value,
+            min(self._slider_music.max_value, int(music_volume * 10.0)),
         )
         if detail_preset < self._slider_detail.min_value:
             detail_preset = self._slider_detail.min_value
@@ -379,7 +397,10 @@ class OptionsMenuView(PanelMenuView):
 
         button_pos = base_pos.offset(dy=155.0 * scale)
         button_w = button_width(
-            resources, self._controls_button.label, scale=scale, force_wide=self._controls_button.force_wide,
+            resources,
+            self._controls_button.label,
+            scale=scale,
+            force_wide=self._controls_button.force_wide,
         )
         button_draw(
             resources,

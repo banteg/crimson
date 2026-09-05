@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.screens.actions import Route
 from crimson.screens.panels import controls
 from crimson.screens.panels.controls import ControlsMenuView, RebindCapture
 from crimson.screens.panels.controls_labels import RebindRowSpec, RebindTarget
@@ -26,7 +27,7 @@ def test_escape_cancels_capture_before_navigation(controls_view, mocker) -> None
 
     # A subsequent Escape can leave the screen after capture releases input.
     controls_view.update(0.016)
-    assert controls_view._close_action == "open_options"
+    assert controls_view._close_action is Route.BACK
 
 
 def test_enter_is_captured_instead_of_leaving(controls_view, mocker) -> None:

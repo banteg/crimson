@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.actions import Route
 from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -112,7 +113,12 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 row_alpha = 0.9
             else:
                 row_alpha = 0.7
-            draw_small_text(font, self._perk_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs), list_top_left.offset(dy=float(row) * row_step), rl.Color(255, 255, 255, int(255 * row_alpha)))
+            draw_small_text(
+                font,
+                self._perk_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs),
+                list_top_left.offset(dy=float(row) * row_step),
+                rl.Color(255, 255, 255, int(255 * row_alpha)),
+            )
 
         if count > self._VISIBLE_ROWS:
             # Native list draws a 1px scrollbar strip + draggable thumb.
@@ -151,7 +157,12 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         perk_name = self._perk_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
         perk_no_label = "perkno"
-        draw_small_text(font, f"{perk_no_label} #{perk_id}", detail_anchor + Vec2(190.0 * scale, -40.0 * scale), rl.Color(255, 255, 255, int(255 * 0.4)))
+        draw_small_text(
+            font,
+            f"{perk_no_label} #{perk_id}",
+            detail_anchor + Vec2(190.0 * scale, -40.0 * scale),
+            rl.Color(255, 255, 255, int(255 * 0.4)),
+        )
         name_w = measure_small_text_width(font, perk_name)
         perk_name_pos = Vec2(detail_anchor.x + 128.0 * scale - name_w * 0.5, detail_anchor.y - 22.0 * scale)
         draw_small_text(font, perk_name, perk_name_pos, text_color)
@@ -210,7 +221,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         list_hit_y = left_top_left.y + self._LIST_FRAME_Y * scale
         list_hit_w = self._LIST_WIDTH * scale
         list_hit_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
-        mouse_in_list = list_hit_x <= mouse.x < list_hit_x + list_hit_w and list_hit_y <= mouse.y < list_hit_y + list_hit_h
+        mouse_in_list = (
+            list_hit_x <= mouse.x < list_hit_x + list_hit_w and list_hit_y <= mouse.y < list_hit_y + list_hit_h
+        )
         if mouse_in_list:
             self._nav_focus_index = 1
 
@@ -231,7 +244,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
             in_track = track_x <= mouse.x < track_x + 10.0 * scale and track_y <= mouse.y < track_y + track_h
-            in_thumb = thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0 * scale
+            in_thumb = (
+                thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0 * scale
+            )
 
             if click and in_track:
                 self._nav_focus_index = 1
@@ -276,7 +291,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(Route.BACK)
 
     def _hovered_perk_id(self) -> PerkId | None:
         if 0 <= int(self._hovered_row_index) < len(self._perk_ids):

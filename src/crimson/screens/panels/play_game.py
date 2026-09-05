@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.screens.actions import Route, ScreenAction, StartRun
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -28,7 +29,7 @@ class _PlayGameModeEntry(msgspec.Struct):
     key: str
     label: str
     tooltip: str
-    action: str
+    action: ScreenAction
     game_mode: int | None = None
     show_count: bool = False
 
@@ -172,7 +173,7 @@ class PlayGameMenuView(PanelMenuView):
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
@@ -220,7 +221,6 @@ class PlayGameMenuView(PanelMenuView):
         # Our `quest_play_counts` array starts at blob+0xd8, so this is indices 11..50.
         return int(sum(int(v) for v in counts[11:51]))
 
-
     def _mode_entries(self) -> tuple[list[_PlayGameModeEntry], float, float, float]:
         config = self.state.config
         status = self.state.status
@@ -256,7 +256,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="tutorial",
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
-                    action="start_tutorial",
+                    action=StartRun.from_config(self.state.config, GameMode.TUTORIAL),
                     game_mode=GameMode.TUTORIAL,
                 ),
             )
@@ -267,14 +267,14 @@ class PlayGameMenuView(PanelMenuView):
                     key="quests",
                     label=" Quests ",
                     tooltip="Unlock new weapons and perks in Quest mode.",
-                    action="open_quests",
+                    action=Route.QUESTS,
                     show_count=True,
                 ),
                 _PlayGameModeEntry(
                     key="rush",
                     label="  Rush  ",
                     tooltip="Face a rush of aliens in Rush mode.",
-                    action="start_rush",
+                    action=StartRun.from_config(self.state.config, GameMode.RUSH),
                     game_mode=GameMode.RUSH,
                     show_count=True,
                 ),
@@ -282,7 +282,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="survival",
                     label="Survival",
                     tooltip="Gain perks and weapons and fight back.",
-                    action="start_survival",
+                    action=StartRun.from_config(self.state.config, GameMode.SURVIVAL),
                     game_mode=GameMode.SURVIVAL,
                     show_count=True,
                 ),
@@ -295,7 +295,7 @@ class PlayGameMenuView(PanelMenuView):
                     key="typo",
                     label="Typ'o'Shooter",
                     tooltip="Use your typing skills as the weapon to lay\nthem down.",
-                    action="start_typo",
+                    action=StartRun.from_config(self.state.config, GameMode.TYPO),
                     game_mode=GameMode.TYPO,
                     show_count=True,
                 ),
@@ -307,11 +307,10 @@ class PlayGameMenuView(PanelMenuView):
                     key="tutorial",
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
-                    action="start_tutorial",
+                    action=StartRun.from_config(self.state.config, GameMode.TUTORIAL),
                     game_mode=GameMode.TUTORIAL,
                 ),
             )
-
 
         # The y after the last row is used as a tooltip anchor in `play_game_menu_update`.
         y_end = y_start + y_step * float(len(entries))

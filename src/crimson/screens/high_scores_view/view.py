@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
+from crimson.screens.actions import Route, ScreenAction, StartRun
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
 from grim.config import HighScoreDateMode
@@ -10,12 +11,13 @@ from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
-from ...game.types import GameState, HighScoresRequest
+from ...game.types import GameState
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update, button_width
+from ..actions import ShowScores
 from ..assets import require_runtime_resources
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
@@ -65,12 +67,11 @@ from ..menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..panels.hit_test import mouse_inside_rect_with_padding
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
-from .records import load_records, resolve_request
-from .return_context import ScoreReturnContext
+from .records import load_records
 from .right_panel import draw_right_panel
 
 
@@ -79,23 +80,23 @@ class _ScoresDropdownLayout(DropdownLayoutBase, frozen=True):
 
 
 class HighScoresView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: GameState, request: ShowScores) -> None:
         self.state = state
         self._is_open = False
         self._ground: GroundRenderer | None = None
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ScreenAction | None = None
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        self._request: HighScoresRequest | None = None
-        self._return_context: ScoreReturnContext | None = None
+        self._request = request.query
+        self._return_context = request.return_context
         self._records: list[HighScoreRecord] = []
         self._scroll_index = 0
         self._dirty = False
@@ -107,7 +108,6 @@ class HighScoresView:
         self._score_list_open = False
 
     def open(self) -> None:
-        self._return_context = ScoreReturnContext.capture(self.state.config) if self.state.pause_background is not None else None
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._action = None
@@ -128,8 +128,7 @@ class HighScoresView:
         self._show_scores_open = False
         self._score_list_open = False
 
-        request = resolve_request(self.state)
-        self._request = request
+        request = self._request
         self._records = load_records(self.state, request)
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -138,7 +137,6 @@ class HighScoresView:
     def close(self) -> None:
         self._return_context = None
         self._is_open = False
-        self._request = None
         self._records = []
         self._scroll_index = 0
         self._dirty = False
@@ -177,7 +175,7 @@ class HighScoresView:
         enabled = self._timeline_ms >= self._timeline_max_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("back_to_previous")
+            self._begin_close_transition(Route.BACK)
             return
 
         screen_width = float(self.state.config.display.width)
@@ -229,7 +227,9 @@ class HighScoresView:
             button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            w = button_width(resources, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide)
+            w = button_width(
+                resources, self._update_button.label, scale=scale, force_wide=self._update_button.force_wide,
+            )
             if button_update(
                 self._update_button,
                 pos=button_base_pos,
@@ -254,7 +254,9 @@ class HighScoresView:
             ):
                 self._start_selected_game()
                 return
-            back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+            back_w = button_width(
+                resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide,
+            )
             if button_update(
                 self._back_button,
                 pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
@@ -263,7 +265,7 @@ class HighScoresView:
                 mouse=mouse,
                 click=click,
             ):
-                self._begin_close_transition("back_to_previous")
+                self._begin_close_transition(Route.BACK)
                 return
 
         rows = 10
@@ -287,10 +289,10 @@ class HighScoresView:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
                 self._scroll_index = max_scroll
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
-        if action == "back_to_previous" and self._return_context is not None:
+        if action == Route.BACK and self._return_context is not None:
             self._return_context.restore(self.state.config)
         if self._dirty:
             try:
@@ -299,7 +301,7 @@ class HighScoresView:
                 self.state.console.log.log(f"config: save failed: {exc}")
             else:
                 self._dirty = False
-        if action in FADE_TO_GAME_ACTIONS:
+        if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
@@ -313,20 +315,20 @@ class HighScoresView:
         if request.game_mode_id == GameMode.QUESTS:
             level = request.quest_level
             assert level is not None
-            unlock = self.state.status.quest_unlock_index_full if self.state.config.gameplay.hardcore else self.state.status.quest_unlock_index
+            unlock = (
+                self.state.status.quest_unlock_index_full
+                if self.state.config.gameplay.hardcore
+                else self.state.status.quest_unlock_index
+            )
             if level.global_index > unlock:
                 return
-            self.state.pending_quest_level = level
-            self.state.config.gameplay.quest_level = level
-            action = "start_quest"
-        else:
-            action = {
-                GameMode.SURVIVAL: "start_survival",
-                GameMode.RUSH: "start_rush",
-                GameMode.TYPO: "start_typo",
-            }[request.game_mode_id]
-        self.state.config.gameplay.mode = request.game_mode_id
-        self._begin_close_transition(action)
+        self._begin_close_transition(
+            StartRun.from_config(
+                self.state.config,
+                request.game_mode_id,
+                quest_level=request.quest_level,
+            ),
+        )
 
     def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
         header_h = 16.0 * scale
@@ -402,7 +404,9 @@ class HighScoresView:
 
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
-        dropdown_blocked = self._player_count_open or self._game_mode_open or self._show_scores_open or self._score_list_open
+        dropdown_blocked = (
+            self._player_count_open or self._game_mode_open or self._show_scores_open or self._score_list_open
+        )
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x * scale, 0.0)
 
@@ -430,7 +434,9 @@ class HighScoresView:
 
         # Dropdown: show scores date filter (config.highscore_date_mode).
         show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
-        show_scores_pos = shifted_right_top_left + Vec2(HS_RIGHT_SHOW_SCORES_WIDGET_X * scale, HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale)
+        show_scores_pos = shifted_right_top_left + Vec2(
+            HS_RIGHT_SHOW_SCORES_WIDGET_X * scale, HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale,
+        )
         show_scores_layout = self._dropdown_layout(
             pos=show_scores_pos,
             width=float(HS_RIGHT_SHOW_SCORES_WIDGET_W) * scale,
@@ -459,7 +465,9 @@ class HighScoresView:
 
         # Dropdown: player count (config.player_count).
         player_items = ("1 player", "2 players", "3 players", "4 players")
-        player_pos = shifted_right_top_left + Vec2(HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale, HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale)
+        player_pos = shifted_right_top_left + Vec2(
+            HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale, HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale,
+        )
         player_layout = self._dropdown_layout(
             pos=player_pos,
             width=float(HS_RIGHT_PLAYER_COUNT_WIDGET_W) * scale,
@@ -496,7 +504,9 @@ class HighScoresView:
         ]
         if int(self.state.status.quest_unlock_index) >= 0x28:
             mode_items.append(("Typ'o'Shooter", GameMode.TYPO))
-        game_mode_pos = shifted_right_top_left + Vec2(HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale)
+        game_mode_pos = shifted_right_top_left + Vec2(
+            HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale,
+        )
         game_mode_layout = self._dropdown_layout(
             pos=game_mode_pos,
             width=float(HS_RIGHT_GAME_MODE_WIDGET_W) * scale,
@@ -538,7 +548,9 @@ class HighScoresView:
         # but do not emulate the full native add/delete flow.
         score_list_enabled = not (self._player_count_open or self._game_mode_open or self._show_scores_open)
         names = list(self.state.config.profile.saved_name_labels())
-        score_list_pos = shifted_right_top_left + Vec2(HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale)
+        score_list_pos = shifted_right_top_left + Vec2(
+            HS_RIGHT_SCORE_LIST_WIDGET_X * scale, HS_RIGHT_SCORE_LIST_WIDGET_Y * scale,
+        )
         score_list_layout = self._dropdown_layout(
             pos=score_list_pos,
             width=float(HS_RIGHT_SCORE_LIST_WIDGET_W) * scale,
@@ -585,7 +597,11 @@ class HighScoresView:
         # Clamp to a sane range.
         global_index = int(level.global_index)
 
-        unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.gameplay.hardcore else int(self.state.status.quest_unlock_index)
+        unlock = (
+            int(self.state.status.quest_unlock_index_full)
+            if self.state.config.gameplay.hardcore
+            else int(self.state.status.quest_unlock_index)
+        )
         max_index = max(0, min(49, unlock))
         arrow = resources.texture(TextureId.UI_ARROW)
 
@@ -748,7 +764,7 @@ class HighScoresView:
             return 1.0
         return alpha
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         action = self._action
         self._action = None

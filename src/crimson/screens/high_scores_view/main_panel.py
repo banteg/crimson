@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.quests.level import QuestLevel
+from crimson.screens.actions import ScoreQuery
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.types import HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...ui.perk_menu import button_draw, button_width
@@ -42,7 +42,7 @@ def draw_main_panel(
     mode_id: GameMode,
     quest_major: int,
     quest_minor: int,
-    request: HighScoresRequest | None,
+    request: ScoreQuery | None,
 ) -> int | None:
     match mode_id:
         case GameMode.QUESTS:
@@ -130,7 +130,9 @@ def draw_main_panel(
     start = max(0, int(view._scroll_index))
     end = min(len(view._records), start + rows)
     y = left_panel_top_left.y + 103.0 * scale
-    selected_rank = int(request.highlight_rank) if (request is not None and request.highlight_rank is not None) else None
+    selected_rank = (
+        int(request.highlight_rank) if (request is not None and request.highlight_rank is not None) else None
+    )
     mouse = Vec2.from_xy(rl.get_mouse_position())
     frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
     frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y * scale
@@ -147,7 +149,12 @@ def draw_main_panel(
             selected_rank = hovered_idx
 
     if start >= end:
-        draw_small_text(font, "No scores yet.", Vec2(left_panel_top_left.x + 211.0 * scale, y + 8.0 * scale), rl.Color(190, 190, 200, 255))
+        draw_small_text(
+            font,
+            "No scores yet.",
+            Vec2(left_panel_top_left.x + 211.0 * scale, y + 8.0 * scale),
+            rl.Color(190, 190, 200, 255),
+        )
     else:
         for idx in range(start, end):
             entry = view._records[idx]

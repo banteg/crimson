@@ -8,6 +8,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
 from crimson.persistence import save_status
 from crimson.screens.menu import ensure_menu_ground
+from crimson.screens.stack import ScreenEntry
 from crimson.sim.bootstrap import advance_unlock_terrain
 from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
@@ -54,29 +55,6 @@ class _RngStub(Crand):
         return self._next()
 
 
-class _AdoptMenuGroundView:
-    def __init__(self) -> None:
-        self.adopted: GroundRenderer | None = None
-
-    def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
-        self.adopted = ground
-
-    def open(self) -> None:
-        return None
-
-    def close(self) -> None:
-        return None
-
-    def update(self, dt: float) -> None:
-        _ = dt
-
-    def draw(self) -> None:
-        return None
-
-    def take_action(self) -> str | None:
-        return None
-
-
 class _OverlayView:
     def open(self) -> None:
         return None
@@ -90,7 +68,7 @@ class _OverlayView:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> None:
         return None
 
 
@@ -130,10 +108,9 @@ def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
 
     state.menu_ground = menu_ground
     state.menu_ground_camera = Vec2(-1.0, -1.0)
-    loop._front_active = gameplay_view
-    loop._front_stack = []
+    state.screens.push(ScreenEntry(gameplay_view, resume=gameplay_view.resume, gameplay=gameplay_view))
 
-    loop._capture_gameplay_ground_for_menu()
+    loop.navigation.capture_ground()
 
     assert state.menu_ground is gameplay_ground
     assert state.menu_ground_camera == gameplay_camera
@@ -158,10 +135,10 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
 
     state.menu_ground = menu_ground
     state.menu_ground_camera = Vec2(-1.0, -1.0)
-    loop._front_active = overlay_view
-    loop._front_stack = [gameplay_view]
+    state.screens.push(ScreenEntry(gameplay_view, resume=gameplay_view.resume, gameplay=gameplay_view))
+    state.screens.push(ScreenEntry(overlay_view))
 
-    loop._capture_gameplay_ground_for_menu()
+    loop.navigation.capture_ground()
 
     assert state.menu_ground is gameplay_ground
     assert state.menu_ground_camera == gameplay_camera
@@ -235,16 +212,3 @@ def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Pa
     assert int(same_ground._scheduled_seed or -1) == before_seed
     assert int(state.rng.state) == before_rng_state
     assert state.menu_ground_camera == Vec2(-100.0, -200.0)
-
-
-def test_start_survival_does_not_adopt_existing_menu_ground(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
-    loop = GameLoopView(state)
-    texture = rl.Texture()
-    menu_ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
-    adopter = _AdoptMenuGroundView()
-    state.menu_ground = menu_ground
-
-    loop._maybe_adopt_menu_ground("start_survival", adopter)
-
-    assert adopter.adopted is None

@@ -1,21 +1,23 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol
 
 import msgspec
 
+from crimson.screens.actions import ScreenAction
 from grim.rand import Crand
 
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
-from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
+from ..screens.stack import ScreenStack
 
 
 def _default_rtx_render_mode() -> RtxRenderMode:
     return RtxRenderMode.CLASSIC
+
 
 if TYPE_CHECKING:
     from grim.assets import RuntimeResources
@@ -25,7 +27,6 @@ if TYPE_CHECKING:
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
 
-    from ..modes.quest_mode import QuestRunOutcome
     from ..persistence.save_status import GameStatus
 
 
@@ -43,13 +44,6 @@ class GameConfig(msgspec.Struct, frozen=True):
     preserve_bugs: bool = False
 
 
-class HighScoresRequest(msgspec.Struct):
-    game_mode_id: GameMode
-    quest_level: QuestLevel | None = None
-    highlight_rank: int | None = None
-
-
-@runtime_checkable
 class Screen(Protocol):
     def open(self) -> None: ...
 
@@ -59,10 +53,9 @@ class Screen(Protocol):
 
     def draw(self) -> None: ...
 
-    def take_action(self) -> str | None: ...
+    def take_action(self) -> ScreenAction | None: ...
 
 
-@runtime_checkable
 class GameplayScreen(Screen, PauseBackground, Protocol):
     close_requested: bool
     default_game_mode_id: GameMode
@@ -72,9 +65,6 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
     def bind_screen_fade(self, fade: GameState | None) -> None: ...
 
     def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None: ...
-
-
-
 
     def steal_ground_for_menu(self) -> GroundRenderer | None: ...
 
@@ -113,10 +103,7 @@ class GameState(msgspec.Struct):
     menu_ground_camera: Vec2 | None = None
     menu_sign_locked: bool = False
     stats_menu_easter_egg_roll: int = -1
-    pause_background: PauseBackground | None = None
-    pending_quest_level: QuestLevel | None = None
-    pending_high_scores: HighScoresRequest | None = None
-    quest_outcome: QuestRunOutcome | None = None
+    screens: ScreenStack = msgspec.field(default_factory=ScreenStack)
     quest_fail_retry_count: int = 0
     terrain_regenerate_requested: bool = False
     survival_elapsed_ms: float = 0.0
@@ -131,11 +118,15 @@ class GameState(msgspec.Struct):
     presentation_plan_ms: float = 0.0
     presentation_apply_ms: float = 0.0
 
+    @property
+    def pause_background(self) -> PauseBackground | None:
+        return self.screens.background
+
+
 __all__ = [
     "GameConfig",
     "GameState",
     "GameplayScreen",
-    "HighScoresRequest",
     "PauseBackground",
     "Screen",
 ]

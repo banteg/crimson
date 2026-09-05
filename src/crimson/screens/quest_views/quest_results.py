@@ -2,13 +2,23 @@ from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import tracked_quest_completed_counter_index
+from crimson.screens.actions import (
+    ResultAction,
+    Route,
+    ScoreQuery,
+    ScoreReturnContext,
+    ScreenAction,
+    ShowScores,
+    StartRun,
+)
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
-from ...game.types import GameState, HighScoresRequest
+from ...game.types import GameState
 from ...game_modes import GameMode
+from ...modes.quest_mode import QuestRunOutcome
 from ...quests import quest_by_level
 from ..menu import ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
@@ -16,15 +26,16 @@ from .shared import _next_quest_level, _player_name_default
 
 
 class QuestResultsView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: GameState, outcome: QuestRunOutcome) -> None:
         self.state = state
+        self._outcome = outcome
         self._ground: GroundRenderer | None = None
         self._quest_level: QuestLevel | None = None
         self._quest_title: str = ""
         self._unlock_weapon_name: str = ""
         self._unlock_perk_name: str = ""
         self._ui = None
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
 
     def open(self) -> None:
         from ...persistence.highscores import HighScoreRecord
@@ -34,15 +45,12 @@ class QuestResultsView:
         self._action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.quest_fail_retry_count = 0
-        outcome = self.state.quest_outcome
-        self.state.quest_outcome = None
+        outcome = self._outcome
         self._quest_level = None
         self._quest_title = ""
         self._unlock_weapon_name = ""
         self._unlock_perk_name = ""
         self._ui = None
-        if outcome is None:
-            return
         level = outcome.level
         self._quest_level = level
         major, minor = level.major, level.minor
@@ -145,6 +153,10 @@ class QuestResultsView:
             player_name_default=player_name_default,
         )
 
+    def resume(self) -> None:
+        # Result UI emits its action only after completing and clearing its close transition.
+        self._action = None
+
     def close(self) -> None:
         if self._ui is not None:
             self._ui.close()
@@ -171,28 +183,28 @@ class QuestResultsView:
             play_sfx(audio, name)
 
         action = ui.update(dt, play_sfx=_play if audio is not None else None)
-        if action == "play_again":
+        if action == ResultAction.PLAY_AGAIN:
             assert self._quest_level is not None
-            self._set_pending_quest_level(self._quest_level)
-            self._action = "start_quest"
+            self._save_quest_selection(self._quest_level)
+            self._action = StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=self._quest_level)
             return
-        if action == "play_next":
+        if action == ResultAction.PLAY_NEXT:
             if self._quest_level == QuestLevel(5, 10):
-                self._action = "end_note"
+                self._action = Route.END_NOTE
                 return
             assert self._quest_level is not None
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
-                self._set_pending_quest_level(next_level)
-                self._action = "start_quest"
+                self._save_quest_selection(next_level)
+                self._action = StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=next_level)
             else:
-                self._action = "back_to_menu"
+                self._action = Route.MENU
             return
-        if action == "high_scores":
+        if action == ResultAction.HIGH_SCORES:
             self._open_high_scores_list()
             return
-        if action == "main_menu":
-            self._action = "back_to_menu"
+        if action == ResultAction.MAIN_MENU:
+            self._action = Route.MENU
             return
 
     def draw(self) -> None:
@@ -214,7 +226,7 @@ class QuestResultsView:
         rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
         rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         action = self._action
         self._action = None
         return action
@@ -224,15 +236,14 @@ class QuestResultsView:
         if self._ui is not None:
             highlight_rank = self._ui.highlight_rank
         assert self._quest_level is not None
-        self.state.pending_high_scores = HighScoresRequest(
+        query = ScoreQuery(
             game_mode_id=GameMode.QUESTS,
             quest_level=self._quest_level,
             highlight_rank=highlight_rank,
         )
-        self._action = "open_high_scores"
+        self._action = ShowScores(query, ScoreReturnContext.capture(self.state.config))
 
-    def _set_pending_quest_level(self, level: QuestLevel) -> None:
-        self.state.pending_quest_level = level
+    def _save_quest_selection(self, level: QuestLevel) -> None:
         self.state.config.gameplay.mode = GameMode.QUESTS
         self.state.config.gameplay.quest_level = level
         try:

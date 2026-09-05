@@ -7,10 +7,11 @@ from typing import cast
 
 import crimson.screens.high_scores_view.view as high_scores_view_module
 import crimson.screens.results.game_over as game_over_module
-from crimson.game.types import GameState, HighScoresRequest, PauseBackground
+from crimson.game.types import GameState, PauseBackground
 from crimson.game_modes import GameMode
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
+from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
@@ -24,6 +25,7 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
+from tests.support.screens import install_background
 
 
 def _audio_state_stub() -> AudioState:
@@ -97,7 +99,6 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         audio=_audio_state_stub(),
         session_start=time.monotonic(),
     )
-    state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
     state.resources = _runtime_resources_stub()
 
     play_sfx = mocker.Mock()
@@ -106,7 +107,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
     mocker.patch.object(high_scores_view_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(high_scores_view_module, "ensure_menu_ground", return_value=None)
 
-    view = HighScoresView(state)
+    view = HighScoresView(state, ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))
     view.open()
 
     assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_PANELCLICK]
@@ -130,7 +131,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         action = view.take_action()
         if action is not None:
             break
-    assert action == "back_to_previous"
+    assert action == Route.BACK
 
 
 def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Path, mocker) -> None:
@@ -149,11 +150,12 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
         audio=None,
         session_start=time.monotonic(),
     )
-    state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
     dummy_tex = _texture_stub()
     state.resources = _runtime_resources_stub(tex=dummy_tex)
     draw_pause_background_mock = mocker.Mock()
-    state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
+    install_background(
+        state, cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock)),
+    )
 
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
@@ -164,7 +166,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     mocker.patch.object(high_scores_view_module, "_draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(HighScoresView, "_draw_sign", return_value=None)
 
-    view = HighScoresView(state)
+    view = HighScoresView(state, ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))
     view.open()
     view._closing = True
     view._timeline_ms = PANEL_TIMELINE_START_MS // 2

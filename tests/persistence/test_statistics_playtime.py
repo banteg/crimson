@@ -4,6 +4,9 @@ import pytest
 
 from crimson.game.loop_view import GameLoopView
 from crimson.screens.panels.stats import _format_playtime_text
+from crimson.screens.stack import ScreenEntry
+from tests.support.gameplay_screen import GameplayScreenStub
+from tests.support.screens import ScreenStub
 
 
 def test_format_playtime_text_uses_hour_and_minute_buckets() -> None:
@@ -27,11 +30,11 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
 
 
 @pytest.mark.parametrize(
-    ("demo_enabled", "front_view_key", "dt", "start_value", "expected_value"),
+    ("demo_enabled", "is_gameplay", "dt", "start_value", "expected_value"),
     [
-        (False, "start_survival", 0.0169, 10, 26),
-        (False, "open_statistics", 0.5, 123, 123),
-        (True, "start_survival", 0.5, 123, 123),
+        (False, True, 0.0169, 10, 26),
+        (False, False, 0.5, 123, 123),
+        (True, True, 0.5, 123, 123),
     ],
     ids=[
         "accumulates-for-non-demo-gameplay",
@@ -42,14 +45,15 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
 def test_tick_statistics_playtime_behavior(
     make_game_state,
     demo_enabled: bool,
-    front_view_key: str,
+    is_gameplay: bool,
     dt: float,
     start_value: int,
     expected_value: int,
 ) -> None:
     state = make_game_state(demo_enabled=demo_enabled)
     loop = GameLoopView(state)
-    loop._front_active = loop._front_views[front_view_key]
+    active = GameplayScreenStub() if is_gameplay else ScreenStub()
+    state.screens.push(ScreenEntry(active, gameplay=active if isinstance(active, GameplayScreenStub) else None))
     state.status.play_time_ms = start_value
 
     loop._tick_statistics_playtime(dt)

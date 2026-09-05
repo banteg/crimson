@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
@@ -56,8 +57,8 @@ class PauseMenuView:
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -85,6 +86,14 @@ class PauseMenuView:
         self._pending_action = None
         self._panel_open_sfx_played = False
         self._is_open = True
+
+    def resume(self) -> None:
+        self._timeline_ms = 0
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
+        self._hovered_index = None
+        self._panel_open_sfx_played = False
 
     def close(self) -> None:
         self._is_open = False
@@ -169,7 +178,7 @@ class PauseMenuView:
             pulse_time=self._cursor_pulse_time,
         )
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         action = self._pending_action
         self._pending_action = None
@@ -184,7 +193,7 @@ class PauseMenuView:
     def _pause_background_entity_alpha(self) -> float:
         # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
         # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
-        if (not self._closing) or (self._close_action != "back_to_menu"):
+        if (not self._closing) or (self._close_action != Route.MENU):
             return 1.0
         alpha = float(self._timeline_ms) / float(PAUSE_MENU_TO_MAIN_MENU_FADE_MS)
         if alpha < 0.0:
@@ -205,16 +214,16 @@ class PauseMenuView:
         self._begin_close_transition(action)
 
     @staticmethod
-    def _action_for_entry(entry: MenuEntry) -> str | None:
+    def _action_for_entry(entry: MenuEntry) -> ScreenAction | None:
         if entry.row == MENU_LABEL_ROW_OPTIONS:
-            return "open_options"
+            return Route.OPTIONS
         if entry.row == MENU_LABEL_ROW_QUIT:
-            return "back_to_menu"
+            return Route.MENU
         if entry.row == MENU_LABEL_ROW_BACK:
-            return "back_to_previous"
+            return Route.BACK
         return None
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True

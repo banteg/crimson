@@ -5,6 +5,8 @@ from unittest.mock import call
 from crimson.game import loop_view
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
+from crimson.screens.stack import ScreenEntry
+from tests.support.screens import ScreenStub
 
 
 def test_setgammaramp_updates_state_and_logs(make_game_state) -> None:
@@ -82,7 +84,8 @@ def test_game_loop_draw_scene_layers_draws_fps_counter_after_console(mocker, mak
     console = mocker.Mock()
     view.state.console = console
 
-    active_draw = mocker.patch.object(view._active, "draw")
+    state.screens.push(ScreenEntry(ScreenStub()))
+    active_draw = mocker.patch.object(state.screens.active, "draw")
     ordered = mocker.Mock()
     ordered.attach_mock(active_draw, "active")
     ordered.attach_mock(console.draw, "console")

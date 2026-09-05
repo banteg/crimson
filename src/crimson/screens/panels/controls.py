@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import RuntimeResources, TextureId
 from grim.config import (
     default_crimson_cfg,
@@ -178,7 +179,7 @@ class ControlsMenuView(PanelMenuView):
         super().__init__(
             state,
             title="Controls",
-            back_action="open_options",
+            back_action=Route.BACK,
             panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
@@ -235,7 +236,7 @@ class ControlsMenuView(PanelMenuView):
             click_consumed = True
         self._update_back_button(dt, enabled=not click_consumed and self._capture is None)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._dirty:
             try:
                 self.state.config.save()
@@ -741,11 +742,26 @@ class ControlsMenuView(PanelMenuView):
             tint=rl.WHITE,
         )
 
-        draw_small_text(font, "Configure for:", Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale), text_color_soft)
+        draw_small_text(
+            font,
+            "Configure for:",
+            Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale),
+            text_color_soft,
+        )
 
-        draw_small_text(font, "Aiming method:", Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 86.0 * panel_scale), text_color_full)
+        draw_small_text(
+            font,
+            "Aiming method:",
+            Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 86.0 * panel_scale),
+            text_color_full,
+        )
 
-        draw_small_text(font, "Moving method:", Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale), text_color_full)
+        draw_small_text(
+            font,
+            "Moving method:",
+            Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale),
+            text_color_full,
+        )
 
         check_tex = (
             resources.texture(TextureId.UI_CHECK_ON)
@@ -773,7 +789,12 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
         checkbox_alpha = 255 if checkbox_hovered else 178
-        draw_small_text(font, "Show direction arrow", Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale), rl.Color(255, 255, 255, checkbox_alpha))
+        draw_small_text(
+            font,
+            "Show direction arrow",
+            Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale),
+            rl.Color(255, 255, 255, checkbox_alpha),
+        )
 
         dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (
@@ -838,7 +859,12 @@ class ControlsMenuView(PanelMenuView):
             )
             rl.draw_rectangle_lines_ex(line, max(1.0, panel_scale), rl.Color(255, 255, 255, 178))
 
-        draw_small_text(font, "Configured controls", Vec2(right_top_left.x + 120.0 * panel_scale, right_top_left.y + 38.0 * panel_scale), text_color_full)
+        draw_small_text(
+            font,
+            "Configured controls",
+            Vec2(right_top_left.x + 120.0 * panel_scale, right_top_left.y + 38.0 * panel_scale),
+            text_color_full,
+        )
         header_w = measure_small_text_width(font, "Configured controls")
         header_line = rl.Rectangle(
             right_top_left.x + 120.0 * panel_scale,
@@ -906,7 +932,9 @@ class ControlsMenuView(PanelMenuView):
                 right_top_left.x + 48.0 * panel_scale,
                 right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0) * panel_scale,
             )
-            draw_small_text(font, "Esc/Right: cancel  Backspace: default  Delete: unbind", hint_pos, rl.Color(255, 226, 188, 220))
+            draw_small_text(
+                font, "Esc/Right: cancel  Backspace: default  Delete: unbind", hint_pos, rl.Color(255, 226, 188, 220),
+            )
 
     def _draw_dropdown(
         self,

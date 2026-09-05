@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.game.types import HighScoresRequest
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
+from crimson.screens.actions import Route, ScoreQuery, ScoreReturnContext, ShowScores, StartRun
 from crimson.screens.high_scores_layout import HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y
 from crimson.screens.high_scores_view import view as scores_module
 from crimson.screens.high_scores_view.view import HighScoresView
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from tests.support.gameplay_screen import GameplayScreenStub
 
 
 @pytest.fixture
@@ -21,9 +20,7 @@ def scores_view(make_game_state, screen_resources, screen_io, mocker) -> HighSco
     state = make_game_state(resources=screen_resources)
     state.config.gameplay.mode = GameMode.QUESTS
     state.config.gameplay.quest_level = QuestLevel(1, 1)
-    state.pending_quest_level = QuestLevel(1, 1)
-    state.pending_high_scores = HighScoresRequest(GameMode.QUESTS, QuestLevel(1, 1), highlight_rank=4)
-    return HighScoresView(state)
+    return HighScoresView(state, ShowScores(ScoreQuery(GameMode.QUESTS, QuestLevel(1, 1), highlight_rank=4)))
 
 
 def click_button(view: HighScoresView, label: str, mocker) -> None:
@@ -49,7 +46,7 @@ def test_refresh_keeps_query_and_saves_changed_preferences(scores_view, screen_r
     assert query.highlight_rank == 4
     assert view._dirty
     save = mocker.patch.object(type(view.state.config), "save")
-    view._begin_close_transition("back_to_previous")
+    view._begin_close_transition(Route.BACK)
     save.assert_called_once()
 
 
@@ -58,39 +55,35 @@ def test_back_restores_run_context_only_when_returning_to_run(scores_view, from_
     view = scores_view
     state = view.state
     if from_run:
-        state.pause_background = GameplayScreenStub()
+        view._return_context = ScoreReturnContext.capture(state.config)
     view.open()
     state.config.gameplay.mode = GameMode.RUSH
     state.config.gameplay.quest_level = QuestLevel(2, 3)
     state.config.gameplay.hardcore = True
     state.config.gameplay.player_count = 2
     view._dirty = True
-    view._begin_close_transition("back_to_previous")
+    view._begin_close_transition(Route.BACK)
     assert state.config.gameplay.mode == (GameMode.QUESTS if from_run else GameMode.RUSH)
     assert state.config.gameplay.quest_level == (QuestLevel(1, 1) if from_run else QuestLevel(2, 3))
     assert state.config.gameplay.hardcore is (not from_run)
     assert state.config.gameplay.player_count == 2
 
 
-@pytest.mark.parametrize(("mode", "expected"), [
-    (GameMode.SURVIVAL, "start_survival"), (GameMode.RUSH, "start_rush"),
-    (GameMode.TYPO, "start_typo"), (GameMode.QUESTS, "start_quest"),
-])
-def test_play_starts_selected_mode(scores_view, mode, expected, mocker) -> None:
+@pytest.mark.parametrize("mode", [GameMode.SURVIVAL, GameMode.RUSH, GameMode.TYPO, GameMode.QUESTS])
+def test_play_starts_selected_mode(scores_view, mode, mocker) -> None:
     view = scores_view
-    view.state.pending_high_scores.game_mode_id = mode
+    view._request.game_mode_id = mode
     view.open()
     click_button(view, "Play a game", mocker)
-    assert view._close_action == expected
+    assert view._close_action == StartRun.from_config(view.state.config, mode, quest_level=view._request.quest_level)
     assert view.state.screen_fade_ramp
-    assert view.state.config.gameplay.mode == mode
 
 
 @pytest.mark.parametrize("hardcore", [False, True])
 def test_play_locked_quest_does_not_transition(scores_view, hardcore, mocker) -> None:
     view = scores_view
     view.state.config.gameplay.hardcore = hardcore
-    view.state.pending_high_scores.quest_level = QuestLevel(5, 10)
+    view._request.quest_level = QuestLevel(5, 10)
     view.open()
     click_button(view, "Play a game", mocker)
     assert view._close_action is None

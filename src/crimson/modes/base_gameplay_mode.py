@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ScreenAction, ShowScores
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -125,7 +126,7 @@ class BaseGameplayMode:
         self._base_dir = self.config.path.parent
 
         self.close_requested = False
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
         self._paused = False
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
@@ -438,7 +439,7 @@ class BaseGameplayMode:
         frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
         self._reset_frame_telemetry()
         self._handle_input()
-        if self._action == "open_pause_menu":
+        if self._action == Route.PAUSE:
             return None
         return _ModeFrameState(
             dt=float(frame_dt),
@@ -669,6 +670,10 @@ class BaseGameplayMode:
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
 
+    def resume(self) -> None:
+        self._action = None
+        self._reset_gameplay_frame_clock()
+
     def close(self) -> None:
         self._game_over_ui.close()
         if self._small is not None:
@@ -677,7 +682,7 @@ class BaseGameplayMode:
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         action = self._action
         self._action = None
         return action
@@ -701,14 +706,14 @@ class BaseGameplayMode:
             rng=None,
             mouse=self._ui_mouse_pos(),
         )
-        if action == "play_again":
+        if action == ResultAction.PLAY_AGAIN:
             self.open()
             return
-        if action == "high_scores":
-            self._action = "open_high_scores"
+        if action == ResultAction.HIGH_SCORES:
+            self._action = ShowScores(ScoreQuery(self.default_game_mode_id), ScoreReturnContext.capture(self.config))
             return
-        if action == "main_menu":
-            self._action = "back_to_menu"
+        if action == ResultAction.MAIN_MENU:
+            self._action = Route.MENU
             self.close_requested = True
 
     def _world_entity_alpha(self) -> float:

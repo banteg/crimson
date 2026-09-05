@@ -51,6 +51,7 @@ def _require_runtime_assets(assets_dir: Path) -> None:
         joined = ", ".join(missing)
         raise FileNotFoundError(f"assets: missing required archives: {joined}")
 
+
 def _parse_float_arg(value: str) -> float:
     try:
         return float(value)
@@ -169,7 +170,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         quest_level = None
         match mode_id:
             case GameMode.QUESTS:
-                quest_level = state.pending_quest_level
+                quest_level = state.config.gameplay.quest_level
             case _:
                 pass
         info = demo_trial_overlay_info(

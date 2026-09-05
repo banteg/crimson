@@ -4,11 +4,13 @@ from types import SimpleNamespace
 from typing import cast
 
 import crimson.screens.quest_views.end_note as end_note_module
+from crimson.screens.actions import Route
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.quest_views import EndNoteView
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
+from tests.support.screens import install_background
 
 
 def _texture_stub() -> rl.Texture:
@@ -45,7 +47,9 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     view.update(0.1)
     view.update(0.1)
 
-    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE))
+    mocker.patch.object(
+        end_note_module.rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
+    )
     view.update(0.1)
 
     assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
@@ -58,14 +62,14 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
         action = view.take_action()
         if action is not None:
             break
-    assert action == "back_to_menu"
+    assert action == Route.MENU
 
 
 def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_path, mocker) -> None:
     state = make_game_state(assets_root=tmp_path, audio=None)
     state.resources = _resources_stub()
     pause_background = mocker.Mock()
-    state.pause_background = pause_background
+    install_background(state, pause_background)
 
     mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(end_note_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)

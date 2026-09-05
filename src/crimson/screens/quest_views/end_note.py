@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.actions import Route, ScreenAction, StartRun
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text
@@ -46,12 +47,12 @@ class EndNoteView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._ground: GroundRenderer | None = None
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ScreenAction | None = None
 
         self._survival_button = UiButtonState("Survival", force_wide=True)
         self._rush_button = UiButtonState("  Rush  ", force_wide=True)
@@ -92,7 +93,7 @@ class EndNoteView:
 
         enabled = self._timeline_ms >= self._timeline_max_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(Route.MENU)
             return
 
         if not enabled:
@@ -115,7 +116,10 @@ class EndNoteView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         survival_w = button_width(
-            resources, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
+            resources,
+            self._survival_button.label,
+            scale=scale,
+            force_wide=self._survival_button.force_wide,
         )
         if button_update(
             self._survival_button,
@@ -126,7 +130,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.gameplay.mode = GameMode.SURVIVAL
-            self._begin_close_transition("start_survival")
+            self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.SURVIVAL))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -140,7 +144,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.gameplay.mode = GameMode.RUSH
-            self._begin_close_transition("start_rush")
+            self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.RUSH))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -154,12 +158,15 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.gameplay.mode = GameMode.TYPO
-            self._begin_close_transition("start_typo", fade_to_black=True)
+            self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.TYPO), fade_to_black=True)
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
-            resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+            resources,
+            self._main_menu_button.label,
+            scale=scale,
+            force_wide=self._main_menu_button.force_wide,
         )
         if button_update(
             self._main_menu_button,
@@ -169,7 +176,7 @@ class EndNoteView:
             mouse=mouse,
             click=click,
         ):
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(Route.MENU)
             return
 
     def draw(self) -> None:
@@ -200,14 +207,14 @@ class EndNoteView:
         )
 
         shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=shadows_enabled)
+        draw_classic_menu_panel(
+            resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=shadows_enabled,
+        )
 
         font = resources.small_font
         hardcore = self.state.config.gameplay.hardcore
         header = "   Incredible!" if hardcore else "Congratulations!"
-        levels_line = (
-            "You've completed all the levels but the battle"
-        )
+        levels_line = "You've completed all the levels but the battle"
         body_lines = (
             [
                 "You've done the thing we all thought was",
@@ -245,7 +252,10 @@ class EndNoteView:
 
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
         survival_w = button_width(
-            resources, self._survival_button.label, scale=scale, force_wide=self._survival_button.force_wide,
+            resources,
+            self._survival_button.label,
+            scale=scale,
+            force_wide=self._survival_button.force_wide,
         )
         button_draw(resources, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
@@ -256,13 +266,16 @@ class EndNoteView:
         button_draw(resources, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
         main_w = button_width(
-            resources, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide,
+            resources,
+            self._main_menu_button.label,
+            scale=scale,
+            force_wide=self._main_menu_button.force_wide,
         )
         button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
 
         _draw_menu_cursor(self.state, resources=resources, pulse_time=self._cursor_pulse_time)
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         action = self._action
         self._action = None
         return action
@@ -280,7 +293,7 @@ class EndNoteView:
             return 1.0
         return alpha
 
-    def _begin_close_transition(self, action: str, *, fade_to_black: bool = False) -> None:
+    def _begin_close_transition(self, action: ScreenAction, *, fade_to_black: bool = False) -> None:
         if self._closing:
             return
         if fade_to_black:

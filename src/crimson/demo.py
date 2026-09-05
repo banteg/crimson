@@ -17,6 +17,7 @@ from .game_modes import GameMode
 from .quests import quest_by_level
 from .quests.level import QuestLevel
 from .rng_caller_static import RngCallerStatic
+from .screens.actions import Route
 from .screens.assets import require_runtime_resources
 from .sim.bootstrap import advance_explicit_terrain
 from .sim.input import PlayerInput
@@ -82,8 +83,9 @@ class DemoView:
       - demo_mode_start       @ 0x00403390
     """
 
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: GameState, *, quit_after: bool = False) -> None:
         self.state = state
+        self._quit_after = quit_after
         self._runtime = WorldRuntime(
             assets_dir=state.assets_dir,
             world_size=float(WORLD_SIZE),
@@ -185,6 +187,11 @@ class DemoView:
     def is_finished(self) -> bool:
         return self._finished
 
+    def take_action(self) -> Route | None:
+        if not self._finished:
+            return None
+        return Route.QUIT if self._quit_after else Route.MENU
+
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
@@ -195,11 +202,7 @@ class DemoView:
         if frame_dt_ms <= 0:
             return
 
-        if (
-            (not self._purchase_active)
-            and self.state.demo_enabled
-            and self._purchase_screen_triggered()
-        ):
+        if (not self._purchase_active) and self.state.demo_enabled and self._purchase_screen_triggered():
             self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
 
         if self._purchase_active:
@@ -287,7 +290,10 @@ class DemoView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         scale = 1.0
         button_w = button_width(
-            resources, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
+            resources,
+            self._purchase_button.label,
+            scale=scale,
+            force_wide=self._purchase_button.force_wide,
         )
         purchase_requested = button_update(
             self._purchase_button,
@@ -409,7 +415,10 @@ class DemoView:
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
         scale = 1.0
         button_w = button_width(
-            resources, self._purchase_button.label, scale=scale, force_wide=self._purchase_button.force_wide,
+            resources,
+            self._purchase_button.label,
+            scale=scale,
+            force_wide=self._purchase_button.force_wide,
         )
         button_draw(resources, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
         button_draw(
@@ -493,8 +502,12 @@ class DemoView:
         i = 0
         while y < 1696:
             col = i % 2
-            self._spawn(SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(float(col * 64 + 798), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(
+                SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL,
+            )
+            self._spawn(
+                SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(float(col * 64 + 798), float(y)), heading=RANDOM_HEADING_SENTINEL,
+            )
             y += 80
             i += 1
 
@@ -515,15 +528,13 @@ class DemoView:
         for idx in range(20):
             x = float(
                 int(
-                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_X)
-                    % 200,
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_X) % 200,
                 )
                 + 32,
             )
             y = float(
                 int(
-                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_Y)
-                    % 899,
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP1_Y) % 899,
                 )
                 + 64,
             )
@@ -532,15 +543,13 @@ class DemoView:
                 spawn_pos = Vec2(
                     float(
                         int(
-                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_X)
-                            % 30,
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_X) % 30,
                         )
                         + 32,
                     ),
                     float(
                         int(
-                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_Y)
-                            % 899,
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_1_SPIDER_SP2_Y) % 899,
                         )
                         + 64,
                     ),
@@ -557,9 +566,13 @@ class DemoView:
         while y < 848:
             col = i % 2
             self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float(col * 64 + 32), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(
+                SpawnId.ZOMBIE_RANDOM_41, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL,
+            )
             self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float(col * 64 - 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float((col + 12) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(
+                SpawnId.ZOMBIE_RANDOM_41, Vec2(float((col + 12) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL,
+            )
             y += 60
             i += 1
 
@@ -577,15 +590,13 @@ class DemoView:
         for idx in range(20):
             x = float(
                 int(
-                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_X)
-                    % 200,
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_X) % 200,
                 )
                 + 32,
             )
             y = float(
                 int(
-                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_Y)
-                    % 899,
+                    rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_BIG_Y) % 899,
                 )
                 + 64,
             )
@@ -594,15 +605,13 @@ class DemoView:
                 spawn_pos = Vec2(
                     float(
                         int(
-                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_X)
-                            % 30,
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_X) % 30,
                         )
                         + 32,
                     ),
                     float(
                         int(
-                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_Y)
-                            % 899,
+                            rng.rand_tagged(RngCallerStatic.DEMO_SETUP_VARIANT_3_ALIEN_SMALL_Y) % 899,
                         )
                         + 64,
                     ),

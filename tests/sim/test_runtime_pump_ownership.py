@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
+from crimson.screens.stack import ScreenEntry
 from tests.support.gameplay_screen import GameplayScreenStub
 
 
@@ -17,8 +18,7 @@ def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, m
     state = make_game_state()
     loop = GameLoopView(state)
     view = GameplayScreenStub(telemetry=(3, 2, 5, 1.25, 0.75, 0.5))
-    loop._front_active = view
-    loop._active = view
+    state.screens.push(ScreenEntry(view, gameplay=view))
 
     mocker.patch.object(loop_view_module, "input_begin_frame", side_effect=lambda: None)
     mocker.patch.object(type(state.console), "handle_hotkey", return_value=None)

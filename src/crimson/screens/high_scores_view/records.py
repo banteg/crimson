@@ -3,28 +3,12 @@ from __future__ import annotations
 import datetime as dt
 from typing import TYPE_CHECKING
 
-from ...game.types import GameState, HighScoresRequest
-from ...game_modes import GameMode
-from ...quests.level import QuestLevel
+from crimson.screens.actions import ScoreQuery
+
+from ...game.types import GameState
 
 if TYPE_CHECKING:
     from ...persistence.highscores import HighScoreRecord
-
-
-def resolve_request(state: GameState) -> HighScoresRequest:
-    request = state.pending_high_scores
-    state.pending_high_scores = None
-    if request is None:
-        request = HighScoresRequest(game_mode_id=GameMode(state.config.gameplay.mode))
-
-    if request.game_mode_id == GameMode.QUESTS and request.quest_level is None:
-        level = state.pending_quest_level
-        if level is None:
-            level = state.config.gameplay.quest_level
-        # Native screen always has a valid quest stage selected (defaults to 1.1).
-        request.quest_level = level if level is not None else QuestLevel(1, 1)
-
-    return request
 
 
 def _passes_date_filter(entry: HighScoreRecord, *, date_mode: int, now: dt.date) -> bool:
@@ -57,7 +41,7 @@ def _passes_date_filter(entry: HighScoreRecord, *, date_mode: int, now: dt.date)
     return True
 
 
-def load_records(state: GameState, request: HighScoresRequest) -> list[HighScoreRecord]:
+def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]:
     from ...persistence.highscores import read_highscore_table, scores_path_for_mode
 
     path = scores_path_for_mode(
@@ -79,4 +63,4 @@ def load_records(state: GameState, request: HighScoresRequest) -> list[HighScore
     return records
 
 
-__all__ = ["load_records", "resolve_request"]
+__all__ = ["load_records"]

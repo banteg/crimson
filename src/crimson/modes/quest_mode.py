@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.screens.actions import Route
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import (
@@ -390,7 +391,7 @@ class QuestMode(BaseGameplayMode):
                 self._debug_cycle_weapon(1)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = "open_pause_menu"
+            self._action = Route.PAUSE
             return
 
     def _debug_cycle_weapon(self, delta: int) -> None:

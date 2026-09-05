@@ -15,6 +15,7 @@ from crimson.demo_trial import (
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
+from crimson.screens.stack import ScreenEntry
 
 
 class _DummyGameplay:
@@ -36,7 +37,7 @@ class _DummyGameplay:
     def draw(self) -> None:
         return None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> None:
         return None
 
     def bind_status(self, status) -> None:
@@ -47,9 +48,6 @@ class _DummyGameplay:
 
     def bind_audio(self, audio, audio_rng) -> None:
         _ = audio, audio_rng
-
-
-
 
     def steal_ground_for_menu(self):
         return None
@@ -99,7 +97,17 @@ def test_format_demo_trial_time() -> None:
         "expected_show_remaining_line",
     ),
     [
-        (False, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, QuestLevel(4, 10), False, "none", None, False),
+        (
+            False,
+            GameMode.SURVIVAL,
+            DEMO_TOTAL_PLAY_TIME_MS,
+            DEMO_QUEST_GRACE_TIME_MS,
+            QuestLevel(4, 10),
+            False,
+            "none",
+            None,
+            False,
+        ),
         (True, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, 0, QuestLevel(1, 1), True, "time_up", 0, False),
         (True, GameMode.QUESTS, 0, 0, QuestLevel(2, 1), True, "quest_tier_limit", None, True),
         (
@@ -187,8 +195,7 @@ def test_demo_trial_overlay_prepares_gameplay_frame_when_visible(make_game_state
     state.status.play_time_ms = DEMO_TOTAL_PLAY_TIME_MS
     loop = GameLoopView(state)
     gameplay = _DummyGameplay()
-    loop._front_active = gameplay
-    loop._active = gameplay
+    state.screens.push(ScreenEntry(gameplay, gameplay=gameplay))
     overlay = SimpleNamespace(update=mocker.Mock(return_value=None))
 
     mocker.patch.object(loop, "_demo_trial_overlay_view", return_value=overlay)

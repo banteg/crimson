@@ -6,6 +6,7 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.screens.actions import ResultAction
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -126,7 +127,7 @@ class GameOverUi(msgspec.Struct):
     _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
-    _close_action: str | None = None
+    _close_action: ResultAction | None = None
 
     # Buttons (rendered via existing ui_button implementation)
     _ok_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("OK", force_wide=False))
@@ -207,7 +208,7 @@ class GameOverUi(msgspec.Struct):
         panel = Rect.from_top_left(top_left, GAME_OVER_PANEL_W * scale, GAME_OVER_PANEL_H * scale)
         return _GameOverPanelLayout(panel=panel, top_left=top_left)
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ResultAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -222,7 +223,7 @@ class GameOverUi(msgspec.Struct):
         play_sfx: Callable[[SfxId], None] | None = None,
         rng: CrandLike | None = None,
         mouse: rl.Vector2 | None = None,
-    ) -> str | None:
+    ) -> ResultAction | None:
         self._dt = float(min(dt, 0.1))
         dt_ms = self._dt * 1000.0
         self._cursor_pulse_time += self._dt * 1.1
@@ -349,7 +350,7 @@ class GameOverUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("play_again")
+                self._begin_close_transition(ResultAction.PLAY_AGAIN)
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
 
@@ -369,7 +370,7 @@ class GameOverUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("high_scores")
+                self._begin_close_transition(ResultAction.HIGH_SCORES)
                 return None
             button_pos = button_pos.offset(dy=32.0 * scale)
 
@@ -389,7 +390,7 @@ class GameOverUi(msgspec.Struct):
             ):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition("main_menu")
+                self._begin_close_transition(ResultAction.MAIN_MENU)
                 return None
         return None
 
@@ -607,9 +608,7 @@ class GameOverUi(msgspec.Struct):
         if self._hover_hit_ratio > 0.5:
             t = (self._hover_hit_ratio - 0.5) * 2.0
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
-            hit_ratio_tooltip = (
-                "The % of shot bullets hit the target"
-            )
+            hit_ratio_tooltip = "The % of shot bullets hit the target"
             self._draw_small(
                 font,
                 hit_ratio_tooltip,
@@ -665,7 +664,11 @@ class GameOverUi(msgspec.Struct):
         if self.phase == 0:
             form_pos = banner_pos + Vec2(8.0 * scale, 84.0 * scale)
             self._draw_small(
-                font, "State your name, trooper!", form_pos.offset(dx=42.0 * scale), 1.0 * scale, COLOR_TEXT,
+                font,
+                "State your name, trooper!",
+                form_pos.offset(dx=42.0 * scale),
+                1.0 * scale,
+                COLOR_TEXT,
             )
 
             input_pos = form_pos.offset(dy=40.0 * scale)

@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
+from crimson.screens.stack import ScreenEntry
 from tests.support.gameplay_screen import GameplayScreenStub
 
 
@@ -25,7 +26,7 @@ def test_game_loop_consumes_terrain_regenerate_request(make_game_state) -> None:
     state.resources = _DummyResources()
     view = GameLoopView(state)
     fake = GameplayScreenStub()
-    view._front_active = fake
+    state.screens.push(ScreenEntry(fake, gameplay=fake))
     state.terrain_regenerate_requested = True
 
     view._handle_console_requests()

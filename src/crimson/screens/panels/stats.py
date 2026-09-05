@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 
+from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import draw_small_text
@@ -103,10 +104,10 @@ class StatisticsMenuView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
 
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -147,7 +148,7 @@ class StatisticsMenuView:
         self._close_action = None
         self._pending_action = None
 
-    def reopen_from_child(self) -> None:
+    def resume(self) -> None:
         self._action = None
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -162,7 +163,7 @@ class StatisticsMenuView:
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
@@ -184,7 +185,7 @@ class StatisticsMenuView:
             STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -220,7 +221,7 @@ class StatisticsMenuView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(Route.MENU)
             return
 
         if not interactive:
@@ -251,28 +252,28 @@ class StatisticsMenuView:
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("open_high_scores")
+            self._begin_close_transition(ShowScores(ScoreQuery.from_config(self.state.config)))
             return
         if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0 * scale)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("open_weapon_database")
+            self._begin_close_transition(Route.WEAPONS)
             return
         if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0 * scale)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("open_perk_database")
+            self._begin_close_transition(Route.PERKS)
             return
         if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0 * scale)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("open_credits")
+            self._begin_close_transition(Route.CREDITS)
             return
 
         if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("back_to_menu")
+            self._begin_close_transition(Route.MENU)
             return
 
     def draw(self) -> None:
@@ -299,10 +300,15 @@ class StatisticsMenuView:
         )
         panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
         dst = rl.Rectangle(
-            panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale,
+            panel_top_left.x,
+            panel_top_left.y,
+            panel_w,
+            STATISTICS_PANEL_HEIGHT * scale,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
+        draw_classic_menu_panel(
+            resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled,
+        )
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
@@ -324,10 +330,15 @@ class StatisticsMenuView:
 
         # "played for # hours # minutes"
         font = resources.small_font
-        draw_small_text(font, _format_playtime_text(
-            int(self.state.status.play_time_ms),
-            preserve_bugs=bool(self.state.preserve_bugs),
-        ), panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale), rl.Color(255, 255, 255, int(255 * 0.8)))
+        draw_small_text(
+            font,
+            _format_playtime_text(
+                int(self.state.status.play_time_ms),
+                preserve_bugs=bool(self.state.preserve_bugs),
+            ),
+            panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale),
+            rl.Color(255, 255, 255, int(255 * 0.8)),
+        )
 
         if (
             _is_orbes_volantes_day(dt.datetime.now(tz=dt.UTC).astimezone().date())

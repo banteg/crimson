@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.screens.actions import Route, ScreenAction, StartRun
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
@@ -47,16 +48,6 @@ PANEL_BACK_POS_Y = 430.0
 PANEL_TIMELINE_START_MS = 300
 PANEL_TIMELINE_END_MS = 0
 
-FADE_TO_GAME_ACTIONS = frozenset(
-    {
-        "start_survival",
-        "start_rush",
-        "start_typo",
-        "start_tutorial",
-        "start_quest",
-    },
-)
-
 
 class PanelMenuView:
     def __init__(
@@ -69,7 +60,7 @@ class PanelMenuView:
         panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
         panel_height: float = MENU_PANEL_HEIGHT,
         back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
-        back_action: str = "back_to_menu",
+        back_action: ScreenAction = Route.MENU,
     ) -> None:
         self.state = state
         self._is_open = False
@@ -89,8 +80,8 @@ class PanelMenuView:
         self._timeline_max_ms = 0
         self._cursor_pulse_time = 0.0
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -108,6 +99,14 @@ class PanelMenuView:
         self._panel_open_sfx_played = False
         self._init_ground()
         self._is_open = True
+
+    def resume(self) -> None:
+        self._timeline_ms = 0
+        self._closing = False
+        self._close_action = None
+        self._pending_action = None
+        self._hovered = False
+        self._panel_open_sfx_played = False
 
     def close(self) -> None:
         self._is_open = False
@@ -186,7 +185,7 @@ class PanelMenuView:
             pulse_time=self._cursor_pulse_time,
         )
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         action = self._pending_action
         self._pending_action = None
@@ -207,10 +206,10 @@ class PanelMenuView:
             rl.draw_text(line, x, y, 18, rl.Color(190, 190, 200, 255))
             y += 22
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
-        if action in FADE_TO_GAME_ACTIONS:
+        if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:

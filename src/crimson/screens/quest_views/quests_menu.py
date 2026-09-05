@@ -4,6 +4,7 @@ import math
 
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
+from crimson.screens.actions import Route, ScreenAction, StartRun
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
@@ -35,7 +36,7 @@ from ..menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
@@ -87,13 +88,13 @@ class QuestsMenuView:
         self._widescreen_y_shift = 0.0
 
         self._stage = 1
-        self._action: str | None = None
+        self._action: ScreenAction | None = None
         self._dirty = False
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
+        self._close_action: ScreenAction | None = None
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -174,7 +175,7 @@ class QuestsMenuView:
         enabled = self._timeline_ms >= self._timeline_max_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(Route.BACK)
             return
 
         if not enabled:
@@ -213,7 +214,7 @@ class QuestsMenuView:
             mouse=mouse,
             click=bool(click),
         ):
-            self._begin_close_transition("open_play_game")
+            self._begin_close_transition(Route.BACK)
             return
 
         # Quick-select row numbers 1..0 (10).
@@ -247,7 +248,7 @@ class QuestsMenuView:
             pulse_time=self._cursor_pulse_time,
         )
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         action = self._action
         self._action = None
@@ -378,11 +379,10 @@ class QuestsMenuView:
         if not self._quest_unlocked(stage, row):
             return
         level = QuestLevel(int(stage), int(row) + 1)
-        self.state.pending_quest_level = level
         self.state.config.gameplay.mode = GameMode.QUESTS
         self.state.config.gameplay.quest_level = level
         self._dirty = True
-        self._begin_close_transition("start_quest")
+        self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=level))
 
     def _quest_title(self, stage: int, row: int) -> str:
         from ...quests import quest_by_level
@@ -522,9 +522,7 @@ class QuestsMenuView:
         # Hardcore checkbox (only drawn once tier5 is reachable in normal mode).
         if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
             check_tex = (
-                resources.texture(TextureId.UI_CHECK_ON)
-                if hardcore_flag
-                else resources.texture(TextureId.UI_CHECK_OFF)
+                resources.texture(TextureId.UI_CHECK_ON) if hardcore_flag else resources.texture(TextureId.UI_CHECK_OFF)
             )
             check_pos = list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
             rl.draw_texture_pro(
@@ -640,10 +638,10 @@ class QuestsMenuView:
             shadow=shadows_enabled,
         )
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
-        if action in FADE_TO_GAME_ACTIONS:
+        if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:

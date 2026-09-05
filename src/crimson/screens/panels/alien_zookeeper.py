@@ -4,6 +4,7 @@ import math
 
 import msgspec
 
+from crimson.screens.actions import Route, ScreenAction
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
@@ -137,9 +138,9 @@ class AlienZooKeeperView:
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_action: str | None = None
-        self._pending_action: str | None = None
-        self._action: str | None = None
+        self._close_action: ScreenAction | None = None
+        self._pending_action: ScreenAction | None = None
+        self._action: ScreenAction | None = None
 
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
@@ -178,7 +179,7 @@ class AlienZooKeeperView:
         self._close_action = None
         self._pending_action = None
 
-    def take_action(self) -> str | None:
+    def take_action(self) -> ScreenAction | None:
         self._assert_open()
         if self._pending_action is not None:
             action = self._pending_action
@@ -194,7 +195,7 @@ class AlienZooKeeperView:
     def _assert_open(self) -> None:
         assert self._is_open, "AlienZooKeeperView must be opened before use"
 
-    def _begin_close_transition(self, action: str) -> None:
+    def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._closing:
             return
         self._closing = True
@@ -352,7 +353,7 @@ class AlienZooKeeperView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(Route.STATISTICS)
             return
         if not interactive:
             return
@@ -367,7 +368,9 @@ class AlienZooKeeperView:
         resources = require_runtime_resources(self.state)
         dt_ms_f = dt_clamped * 1000.0
 
-        reset_w = button_width(resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
+        reset_w = button_width(
+            resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide,
+        )
         if button_update(
             self._reset_button,
             pos=layout.reset_pos,
@@ -392,7 +395,7 @@ class AlienZooKeeperView:
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition("open_statistics")
+            self._begin_close_transition(Route.STATISTICS)
             return
 
     def draw(self) -> None:
@@ -417,7 +420,9 @@ class AlienZooKeeperView:
             378.0 * scale,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
+        draw_classic_menu_panel(
+            resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled,
+        )
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), rl.WHITE)
         draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), rl.WHITE)
@@ -493,7 +498,9 @@ class AlienZooKeeperView:
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
-        reset_w = button_width(resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide)
+        reset_w = button_width(
+            resources, self._reset_button.label, scale=scale, force_wide=self._reset_button.force_wide,
+        )
         button_draw(
             resources,
             self._reset_button,

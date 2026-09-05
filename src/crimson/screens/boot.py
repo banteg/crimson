@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 
-from grim.assets import RuntimeResources, TextureId, load_runtime_resources, unload_runtime_resources
-from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music, update_audio
+from grim.assets import RuntimeResources, TextureId
+from grim.audio import play_music, stop_music, update_audio
 from grim.raylib_api import rl
 
 from ..game.types import GameState
+from .actions import Route
 
 SPLASH_ALPHA_SCALE = 2.0
 LOGO_TIME_SCALE = 1.1
@@ -49,14 +50,6 @@ class BootView:
         self._loading_hold_remaining = _debug_loading_hold_seconds()
 
     def open(self) -> None:
-        if self.state.resources is None:
-            self.state.resources = load_runtime_resources(self.state.assets_dir)
-            loaded = len(self.state.resources.textures)
-            self.state.console.log.log(f"runtime resources loaded: {loaded} textures")
-            self.state.console.log.flush()
-        if self.state.audio is None:
-            self.state.audio = init_audio_state(self.state.config, self.state.assets_dir, self.state.console)
-            self.state.console.exec_line("exec music/game_tunes.txt")
         self._boot_time = 0.5
         self._fade_out_ready = True
         self._fade_out_done = False
@@ -122,11 +115,12 @@ class BootView:
             self._draw_company_logo_sequence()
 
     def close(self) -> None:
-        if self.state.audio is not None:
-            shutdown_audio(self.state.audio)
-            self.state.audio = None
-        unload_runtime_resources(self.state.resources)
-        self.state.resources = None
+        pass
+
+    def take_action(self) -> Route | None:
+        if not self._theme_started:
+            return None
+        return Route.DEMO if self.state.demo_enabled else Route.MENU
 
     def _start_theme(self) -> None:
         if self._theme_started:
