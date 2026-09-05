@@ -282,3 +282,13 @@ operation sequence leave no native-backed row or banner rewrite to pursue;
 the canonical result remains 6,251.93857965451/7,081
 (`88.29174664107485%`), 1,823/1,824 instructions, and `390/0/0`
 references.
+
+## Batch 08 focused value boundaries (2026-09-05)
+
+`batch-08-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 88.291747% baseline. The source forms are
+`slot-render-counted-loop`, `popup-shared-row-conversion`, `popup-row-coordinate-owner`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

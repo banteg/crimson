@@ -152,3 +152,13 @@ Purchase in the upper slot. No tested ordinary lifetime form improves the
 current **98.113208%**, 636/636-instruction, `175/0/0`-reference result, so the
 remaining button slot reversal is bounded without unions, aliases, volatile
 state, dead expressions, or register constraints.
+
+## Batch 04 focused value boundaries (2026-09-05)
+
+`batch-04-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 98.113208% baseline. The source forms are
+`purchase-value-construction`, `later-own-value`, `button-base-y-owner`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

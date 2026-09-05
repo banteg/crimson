@@ -327,3 +327,15 @@ are unchanged. The authenticated spelling is therefore rejected as an
 instruction-count tradeoff rather than retained for its score-only gain. This
 also closes the invented scalar overload as a matching lead without changing
 canonical source.
+
+## Batch 08 focused value boundaries (2026-09-05)
+
+`batch-08-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 87.287025% baseline. The source forms are
+`shield-size-local-lifetime`, `shield-offset-local-lifetime`,
+`shield-size-and-offset-lifetimes`.
+
+The highest-score control, `shield-size-local-lifetime`, reaches 87.325175% but is
+rejected for instruction-count-further-from-target. Canonical source and configuration
+are unchanged. These results bound the recorded hypothesis, not the function's
+matchability.

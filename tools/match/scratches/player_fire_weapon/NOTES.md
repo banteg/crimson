@@ -163,3 +163,13 @@ is explicitly paired with a `mutation-error-audit`; the corrected spec casts
 only at the recovered flattened-header boundary. No source edit is retained.
 Spec SHA-256 is
 `e11e5c09656ca8befe7f1bd1be143d33ff4ae1ca40c31871e9fa8f1058398815`.
+
+## Batch 04 focused value boundaries (2026-09-05)
+
+`batch-04-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 99.206349% baseline. The source forms are `effect-motion-pair`,
+`effect-motion-position-first`, `pellet-coordinate-scalar-publication`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

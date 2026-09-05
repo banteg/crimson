@@ -297,3 +297,14 @@ Spec SHA-256 values are
 `e2da6eb6849bf9a4e2e838747414b30dbc204764b0ebef9eff85bb8565e75296`,
 `e9ae3e3127ff3048733404817b0b9960858af1ccf5a5dc8ba5360d8969254187`,
 and `c3a394c6afd49bb797b52e44db330f1840ff8abcdde8171f9b83a351537a2574`.
+
+## Batch 06 focused value boundaries (2026-09-05)
+
+`batch-06-focused-value-boundaries-mutations.json` records 4 complete, compiling
+controls against the 94.444444% baseline. The source forms are
+`finddata-function-lifetime`, `version-text-format-scope`,
+`separator-component-assignment`, `button-anchor-components`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

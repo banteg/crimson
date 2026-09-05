@@ -125,3 +125,14 @@ remaining boundary. Directly indexing all fields regresses to 72.82% and 208
 instructions; moving or rebinding the record pointer after the bonus or
 recent-death preludes also regresses. A C++ reference is byte-identical to the
 retained pointer. No register coercion or artificial lifetime is kept.
+
+## Batch 01 focused value boundaries (2026-09-05)
+
+`batch-01-focused-value-boundaries-mutations.json` records 6 complete, compiling
+controls against the 89.486553% baseline. The source forms are
+`pointer-then-indexed-flags`, `pointer-then-member-flags`, `index-cast-unsigned`,
+`pointer-plus-index`, `flags-assignment-in-condition`, `flag-expression-no-cache`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

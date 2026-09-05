@@ -183,3 +183,14 @@ lifetime.
 The complete bounded matrix is recorded in
 `shared-damage-consumer-followup-mutations.json`. No source change is
 retained; this result bounds these specific hypotheses only.
+
+## Batch 02 focused value boundaries (2026-09-05)
+
+`batch-02-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 71.666667% baseline. The source forms are
+`radius-damage-value-publication`, `damage-only-shared-publication`,
+`slot-index-direct-owner`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

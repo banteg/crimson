@@ -222,3 +222,14 @@ the SDK `operator+=` at the four submit sites; the operator declaration alone
 is neutral and every use regresses. `shared-panel-counter-position-mutations.json`
 tests one function-wide position owner; it grows to 525 instructions, loses a
 reference, and falls to 91.59%. Neither negative shape is retained.
+
+## Batch 05 focused value boundaries (2026-09-05)
+
+`batch-05-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 97.888676% baseline. The source forms are
+`counter-vector-short-value-arguments`, `counter-vector-assignment-lifetime`,
+`counter-vector-field-setter`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

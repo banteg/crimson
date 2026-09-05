@@ -183,3 +183,16 @@ The complete spec SHA-256 values are
 `278508252dea1ee5e78d13ccb7765ce4288e3485bdaf0f516c4755fd05fdc5a1`
 and
 `1012aca08a892cd83de144a52caf424709d3313864f2a546760db4db1903002c`.
+
+## Batch 03 focused value boundaries (2026-09-05)
+
+`batch-03-focused-value-boundaries-mutations.json` records 6 complete, compiling
+controls against the 78.378378% baseline. The source forms are
+`path-character-publication`, `host-character-publication`,
+`both-character-publications`, `path-function-lifetime`, `shared-pre-result-delay`,
+`path-and-shared-delay`.
+
+The highest-score control, `path-character-publication`, reaches 83.845127% but is
+rejected for instruction-count-further-from-target. Canonical source and configuration
+are unchanged. These results bound the recorded hypothesis, not the function's
+matchability.

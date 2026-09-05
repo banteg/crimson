@@ -7,8 +7,8 @@ function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 `grim.dll`.
 
 See [Matching Status](STATUS.md) for generated progress and
-[Remaining EXE batches](BATCHES.md) for the 630-exact checkpoint's complete
-function map, focused hypotheses, and suggested campaign order.
+[Remaining EXE batches](BATCHES.md) for the current function map, focused hypotheses,
+and campaign order. [Batches 01–08 results](BATCHES-01-08-RESULTS.md) records the latest focused pass.
 
 ## Matching Scope
 

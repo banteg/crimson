@@ -147,3 +147,14 @@ render-only `edi` save classified as backend block-layout, scheduling, and
 shrink-wrapping behavior. The canonical source remains reference-clean at
 1,249.714285714286/1,566 weighted bytes (`79.80295566502463%`),
 407/405 instructions, prefix 5, and `72/0/0` references.
+
+## Batch 08 focused value boundaries (2026-09-05)
+
+`batch-08-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 79.802956% baseline. The source forms are
+`shared-row-advance-tail`, `timer-active-shared-slide-update`,
+`render-row-reference-owner`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

@@ -166,3 +166,14 @@ to the 83.855799%, 638/638, `154/0/0` baseline. Operator declaration shape
 therefore does not explain this scratch's stack-coloring residual, and no source
 change is retained. The complete spec SHA-256 is
 `41686a78bc3b20637b638ac954f25d53e251c6592a8c82244693402e07726495`.
+
+## Batch 07 focused value boundaries (2026-09-05)
+
+`batch-07-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 83.855799% baseline. The source forms are
+`button-origin-component-copy`, `back-button-independent-owner`,
+`back-button-value-reassignment`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

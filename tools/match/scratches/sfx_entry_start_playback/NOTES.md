@@ -117,3 +117,14 @@ source is therefore the only tested natural form that simultaneously keeps
 the native block order, common callee-save set, instruction extent, and full
 reference set; the residual three COM temporary registers follow that same
 compiler scheduling choice.
+
+## Batch 01 focused value boundaries (2026-09-05)
+
+`batch-01-focused-value-boundaries-mutations.json` records 5 complete, compiling
+controls against the 87.096774% baseline. The source forms are
+`initialized-common-result-tail`, `resident-counted-for`, `stream-else-resident`,
+`restore-reload-explicit-stream-value`, `stream-resident-shared-initialized-return`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

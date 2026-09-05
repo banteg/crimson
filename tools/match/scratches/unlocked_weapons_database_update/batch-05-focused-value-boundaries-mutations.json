@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-05-focused-value-boundaries",
+      "find": "        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "separator-dimensions-value",
+          "text": "        database_vec2_t dimensions((float)title_width, 1.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, dimensions.x, dimensions.y);\n"
+        },
+        {
+          "name": "separator-width-value-reference",
+          "text": "        const float &separator_width = (float)title_width;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n"
+        },
+        {
+          "name": "separator-renderer-reference",
+          "text": "        IGrim2D_cpp &renderer = *grim_interface_ptr;\n        renderer.grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n"
+        }
+      ]
+    }
+  ]
+}

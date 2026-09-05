@@ -173,3 +173,14 @@ changes allocation and loses a reference.
 The complete bounded matrix is recorded in
 `paired-count-lifetime-followup-mutations.json`. No source change is retained;
 this result bounds these specific hypotheses only.
+
+## Batch 02 focused value boundaries (2026-09-05)
+
+`batch-02-focused-value-boundaries-mutations.json` records 5 complete, compiling
+controls against the 95.238095% baseline. The source forms are `indexed-count-late`,
+`indexed-count-early`, `range-count-late`, `range-count-early`,
+`wave-value-member-boundary`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

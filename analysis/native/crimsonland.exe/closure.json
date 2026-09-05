@@ -1,5 +1,5 @@
 {
-  "audit_digest": "94493d47d4114cb1bde452ce5029e6c169f9269fb2bbfe63d7184b35cf9f3b90",
+  "audit_digest": "76c05935f96db01fd89550d6b12da53b85ed3dba0c8614ab0e9041044bed919b",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -42905,24 +42905,6 @@
         }
       ],
       "name": "??_C@_0BC@OMEJ@bullet_hit_06?4ogg?$AA@"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "??_C@_0BC@ONIA@?1scoring_v2_7?4php?$AA@",
-          "comdat_selection": 2,
-          "function": "highscore_sync_worker",
-          "kind": "section",
-          "logical_section_size": 18,
-          "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
-          "section": ".data",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "??_C@_0BC@ONIA@?1scoring_v2_7?4php?$AA@"
     },
     {
       "definitions": [
@@ -89727,7 +89709,7 @@
           "comdat_selection": 1,
           "function": "highscore_sync_worker",
           "kind": "section",
-          "logical_section_size": 1904,
+          "logical_section_size": 1952,
           "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
           "section": ".text",
           "size": null,
@@ -133456,7 +133438,7 @@
           "comdat_selection": 1,
           "function": "highscore_sync_worker",
           "kind": "section",
-          "logical_section_size": 1904,
+          "logical_section_size": 1952,
           "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
           "section": ".text",
           "size": null,
@@ -159409,7 +159391,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3063,
+    "defined_symbols": 3062,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},

@@ -313,3 +313,14 @@ spec SHA-256 is
 `d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
 the experiment ledger SHA-256 is
 `a68703fff6aa2cebef322220f3a9c467b6aad93742d16b0cd3253e52dba20d52`.
+
+## Batch 06 focused value boundaries (2026-09-05)
+
+`batch-06-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 95.890411% baseline. The source forms are
+`checkbox-component-assignment`, `checkbox-position-reference-owner`,
+`back-position-copy-offset`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

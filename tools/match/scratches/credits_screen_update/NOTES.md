@@ -139,3 +139,14 @@ one aligned reference but loses instruction identity and is not retained.
 The complete bounded matrix is recorded in
 `panel-consumer-and-label-followup-mutations.json`. No source change is
 retained; this result bounds these specific hypotheses only.
+
+## Batch 04 focused value boundaries (2026-09-05)
+
+`batch-04-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 98.898678% baseline. The source forms are
+`secret-position-new-owner`, `secret-position-value-assignment`,
+`panel-text-component-copy`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-05-focused-value-boundaries",
+      "find": "        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            ui_render_vec2_t render_pos =\n                *(ui_render_vec2_t *)&element->pos\n                + *(ui_render_vec2_t *)&element->render_offset_x;\n",
+      "replacements": [
+        {
+          "name": "counter-vector-short-value-arguments",
+          "text": "        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            ui_render_vec2_t render_pos(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);\n"
+        },
+        {
+          "name": "counter-vector-assignment-lifetime",
+          "text": "        ui_render_vec2_t render_pos;\n        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            render_pos =\n                *(ui_render_vec2_t *)&element->pos\n                + *(ui_render_vec2_t *)&element->render_offset_x;\n"
+        },
+        {
+          "name": "counter-vector-field-setter",
+          "text": "        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            ui_render_vec2_t render_pos;\n            render_pos.set(element->pos_x + element->render_offset_x,\n                           element->pos_y + element->render_offset_y);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -93,3 +93,14 @@ expressions loses 40.96 to 48.85 weighted bytes, adds two to six instructions,
 and moves the exact prefix from 158 to zero; two forms also add a mismatched
 reference. No vector rewrite is retained. The spec SHA-256 is
 `8311eaf4967644267646dd80b065c878c436a1be727c723f34da060fe0dbc6ab`.
+
+## Batch 05 focused value boundaries (2026-09-05)
+
+`batch-05-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 98.870056% baseline. The source forms are
+`cursor-top-value-reference`, `cursor-reference-coordinate-owner`,
+`cursor-final-renderer-reference`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

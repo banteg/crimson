@@ -314,3 +314,14 @@ The retained source SHA-256 is
 `9795760dd93f87c8e9389371e5599033fe8a398fa952f05ae14b9cde1958ac54`.
 With all aligned references now resolved, the scratch remains
 `semantic-complete` with only a compiler residual.
+
+## Batch 08 focused value boundaries (2026-09-05)
+
+`batch-08-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 92.045977% baseline. The source forms are
+`beam-unscaled-dimensions-value`, `beam-scaled-dimensions-value`,
+`beam-native-width-expression`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

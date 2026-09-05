@@ -97,3 +97,13 @@ residual. Every form is byte-identical at 98.21%, 504/504 instructions, prefix
 therefore not controlled by those original type declarations. No source change
 is retained. The spec SHA-256 is
 `95f8382be19a7b54ec4338b0927e914e458bbc3926aff6bdcc3b7eac994e60d5`.
+
+## Batch 04 focused value boundaries (2026-09-05)
+
+`batch-04-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 98.214286% baseline. The source forms are
+`first-wave-pod-identity`, `first-wave-local-class`, `centroid-aggregate-copy`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

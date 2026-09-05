@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-01-focused-value-boundaries",
+      "find": "        cursor = &player_state_table[0].health;\n        for (i = 0; i < config_player_count;\n             ++i, cursor += sizeof(player_state_t) / sizeof(*cursor)) {\n            value = (float)(crt_rand() % 50) + 1.0f;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player->position,\n",
+      "replacements": [
+        {
+          "name": "body-index-health",
+          "text": "        for (i = 0; i < config_player_count; ++i) {\n            cursor = &player_state_table[i].health;\n            value = (float)(crt_rand() % 50) + 1.0f;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player->position,\n"
+        },
+        {
+          "name": "body-random-before-health",
+          "text": "        for (i = 0; i < config_player_count; ++i) {\n            value = (float)(crt_rand() % 50) + 1.0f;\n            cursor = &player_state_table[i].health;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player->position,\n"
+        },
+        {
+          "name": "index-zero-cursor",
+          "text": "        for (i = 0, cursor = &player_state_table[i].health; i < config_player_count;\n             ++i, cursor += sizeof(player_state_t) / sizeof(*cursor)) {\n            value = (float)(crt_rand() % 50) + 1.0f;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player->position,\n"
+        },
+        {
+          "name": "pointer-to-strided-health",
+          "text": "        typedef float health_stride[sizeof(player_state_t) / sizeof(float)];\n        health_stride *healths = (health_stride *)&player_state_table[0].health;\n        for (i = 0; i < config_player_count; ++i) {\n            cursor = healths[i];\n            value = (float)(crt_rand() % 50) + 1.0f;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player->position,\n"
+        },
+        {
+          "name": "cursor-next-at-end",
+          "text": "        for (i = 0; i < config_player_count; ++i) {\n            cursor = &player_state_table[i].health;\n            value = (float)(crt_rand() % 50) + 1.0f;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player_state_table[i].position,\n"
+        }
+      ]
+    }
+  ]
+}

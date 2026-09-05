@@ -115,3 +115,14 @@ only 18 rather than 20 mapped references because it merges two native Nuke
 comparisons. Across 16 current compile-valid variants, no tradeoff-free source
 improvement exists; retain the 162-instruction, `20/0/0` reconstruction and
 treat the displaced cold edge as a bounded compiler-layout residual.
+
+## Batch 01 focused value boundaries (2026-09-05)
+
+`batch-01-focused-value-boundaries-mutations.json` records 4 complete, compiling
+controls against the 75.925926% baseline. The source forms are
+`stage-five-positive-nested`, `stage-five-local-rejection`,
+`stage-five-direct-else-guard`, `quest-eligibility-inline-boundary`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-04-focused-value-boundaries",
+      "find": "        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        button_position.x += 326.0f;\n        button_position.y = button_y + 6.0f;\n        if (ui_button_update((float *)&button_position, (ui_button_t *)&maybe_later_button)) {\n",
+      "replacements": [
+        {
+          "name": "purchase-value-construction",
+          "text": "        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position(button_position.x + 6.0f, button_y + 6.0f);\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        button_position.x += 326.0f;\n        button_position.y = button_y + 6.0f;\n        if (ui_button_update((float *)&button_position, (ui_button_t *)&maybe_later_button)) {\n"
+        },
+        {
+          "name": "later-own-value",
+          "text": "        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        demo_trial_vec2_t later_position(button_position.x + 326.0f, button_y + 6.0f);\n        if (ui_button_update((float *)&later_position, (ui_button_t *)&maybe_later_button)) {\n"
+        },
+        {
+          "name": "button-base-y-owner",
+          "text": "        button_position.y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_position.y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        button_position.x += 326.0f;\n        button_position.y = button_position.y + 6.0f;\n        if (ui_button_update((float *)&button_position, (ui_button_t *)&maybe_later_button)) {\n"
+        }
+      ]
+    }
+  ]
+}

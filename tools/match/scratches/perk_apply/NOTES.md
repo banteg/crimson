@@ -213,3 +213,14 @@ Only Bandage's initial cursor materialization remains scheduled before the
 count guard instead of after it. Nesting that guard explicitly reproduces the
 old register rotation. The cleaned source is byte-identical to both winning
 increment spellings; no register constraints or synthetic uses are present.
+
+## Batch 01 focused value boundaries (2026-09-05)
+
+`batch-01-focused-value-boundaries-mutations.json` records 5 complete, compiling
+controls against the 99.585062% baseline. The source forms are `body-index-health`,
+`body-random-before-health`, `index-zero-cursor`, `pointer-to-strided-health`,
+`cursor-next-at-end`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

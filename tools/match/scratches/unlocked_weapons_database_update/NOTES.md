@@ -229,3 +229,16 @@ tempting whole-array clear falls to 80.53%, moves the first mismatch to
 instruction 15, and leaves `117/0/4` references. The complete replay is in
 `original-listbox-constructor-mutations.json` (SHA-256
 `3e870ed0db01b516070ab5695cf9e4192d064ec9d5d89759fb9ca6cd0a94de8f`).
+
+## Batch 05 focused value boundaries (2026-09-05)
+
+`batch-05-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 99.808795% baseline. The source forms are
+`separator-dimensions-value`, `separator-width-value-reference`,
+`separator-renderer-reference`.
+
+No control improves the retained baseline without a metric tradeoff. These are measured
+source shapes; any scope-generated static name changes must be verified against COFF
+before treating unresolved references as substantive debt. Canonical source and
+configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

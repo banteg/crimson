@@ -143,3 +143,13 @@ settings and C source remain unchanged.
 The complete bounded matrix is recorded in
 `cpp-velocity-owner-followup-mutations.json`. No source change is retained;
 this result bounds these specific hypotheses only.
+
+## Batch 02 focused value boundaries (2026-09-05)
+
+`batch-02-focused-value-boundaries-mutations.json` records 4 complete, compiling
+controls against the 88.607595% baseline. The source forms are `record-owner`,
+`health-value-before-publish`, `color-value-copy`, `size-before-color`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

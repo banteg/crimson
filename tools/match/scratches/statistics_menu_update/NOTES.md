@@ -264,3 +264,14 @@ spill, or register coercion; those are not honest decompilation evidence. The
 canonical result remains `2683.2124352331607/2877` (**93.264249%**), with a
 280-instruction exact prefix, 675/676 instructions, and clean `276/0/0`
 references.
+
+## Batch 07 focused value boundaries (2026-09-05)
+
+`batch-07-focused-value-boundaries-mutations.json` records 3 complete, compiling
+controls against the 93.264249% baseline. The source forms are
+`session-format-value-record`, `session-hours-outliving-format-scope`,
+`total-hours-conditional-format-scope`.
+
+No control improves the retained baseline without a metric tradeoff. Canonical source
+and configuration are unchanged. These results bound the recorded hypothesis, not the
+function's matchability.

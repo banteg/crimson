@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-08-focused-value-boundaries",
+      "find": "            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;\n",
+      "replacements": [
+        {
+          "name": "beam-unscaled-dimensions-value",
+          "text": "            vec2f_t unscaled;\n            unscaled.x = 15.0f - phase_size;\n            unscaled.y = phase_size + 15.0f;\n            float half_width = unscaled.x;\n            phase_size =\n                unscaled.y\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;\n"
+        },
+        {
+          "name": "beam-scaled-dimensions-value",
+          "text": "            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            vec2f_t half_extent;\n            half_extent.x = half_width;\n            half_extent.y = phase_size;\n            float half_height = half_extent.y;\n            float height = half_extent.y + half_extent.y;\n            float width = half_extent.x + half_extent.x;\n"
+        },
+        {
+          "name": "beam-native-width-expression",
+          "text": "            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width * 2.0f;\n"
+        }
+      ]
+    }
+  ]
+}
