@@ -44,11 +44,10 @@ def test_runtime_damage_paths_use_lethal_followup_helper() -> None:
     assert not offenders, "Direct creature_apply_damage callsites found in runtime code: " + "; ".join(offenders)
 
 
-def test_lethal_followup_helper_uses_runtime_object() -> None:
+def test_lethal_followup_helper_requires_synchronous_callback() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     damage_path = repo_root / "src" / "crimson" / "creatures" / "damage.py"
 
     args = _function_keyword_only_args(damage_path, "creature_apply_damage_with_lethal_followup")
 
-    assert "creature_damage_runtime" in args
-    assert "on_lethal" not in args
+    assert "on_lethal" in args

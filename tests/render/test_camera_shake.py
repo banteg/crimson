@@ -19,6 +19,7 @@ from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.factories import make_creature_state as _creature
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
@@ -111,7 +112,15 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     creatures = [_creature(pos=Vec2(100.0, 100.0), hp=100.0), _creature(pos=Vec2(500.0, 500.0), hp=100.0)]
 
-    bonus_apply(state, player, BonusId.NUKE, origin=player.pos, creatures=creatures, players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        origin=player.pos,
+        creatures=creatures,
+        players=[player],
+    )
 
     assert state.camera_shake_pulses == 0x14
     assert_float_close(state.camera_shake_timer, 0.2)

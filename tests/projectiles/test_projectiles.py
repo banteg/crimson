@@ -83,7 +83,7 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
         PrimaryStepCtx(
             dt=0.06000000238418579,
             creatures=(),
-            options=make_projectile_update_options(world_size=1024.0),
+            options=make_projectile_update_options(creatures=(), world_size=1024.0),
         ),
     )
 
@@ -104,7 +104,7 @@ def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
         PrimaryStepCtx(
             dt=0.08000000566244125,
             creatures=(),
-            options=make_projectile_update_options(world_size=1024.0),
+            options=make_projectile_update_options(creatures=(), world_size=1024.0),
         ),
     )
 
@@ -127,7 +127,7 @@ def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
         PrimaryStepCtx(
             dt=dt,
             creatures=[creature],
-            options=make_projectile_update_options(world_size=1024.0),
+            options=make_projectile_update_options(creatures=[creature], world_size=1024.0),
         ),
     )
 
@@ -360,6 +360,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                 dt=0.1,
                 creatures=creatures,
                 options=make_projectile_update_options(
+                    creatures=creatures,
                     world_size=1024.0,
                     damage_scale_by_type=damage_scale_by_type,
                     rng=case.get("rng"),
@@ -372,6 +373,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                     dt=0.1,
                     creatures=creatures,
                     options=make_projectile_update_options(
+                        creatures=creatures,
                         world_size=1024.0,
                         damage_scale_by_type=damage_scale_by_type,
                         rng=case.get("rng"),
@@ -440,7 +442,11 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
             creatures=creatures,
         ),
     )
-    pool.step(SecondaryStepCtx(dt=0.01, creatures=creatures))
+    pool.step(
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures), dt=0.01, creatures=creatures,
+        ),
+    )
     snapshot(name="seek_target").assert_match(_normalize_secondary_pool(pool, idx, creatures))
 
     # Type 3: detonation pass + runtime side effects
@@ -458,6 +464,7 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
     detonation_creatures: list[CreatureState] = [_creature(pos=Vec2(3.0, 4.0), hp=1000.0)]
     detonation_pool.step(
         SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=detonation_creatures),
             dt=0.1,
             creatures=detonation_creatures,
             runtime_state=runtime_state,
@@ -552,6 +559,7 @@ def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
 
     pool.step(
         SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
             dt=0.06200000271201134,
             creatures=creatures,
         ),
@@ -677,7 +685,13 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     hit_count = pool.step(
-        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue),
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=runtime_state,
+            fx_queue=fx_queue,
+        ),
     )
 
     entry = pool.entries[0]
@@ -731,7 +745,13 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     hit_count = pool.step(
-        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue),
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=runtime_state,
+            fx_queue=fx_queue,
+        ),
     )
 
     entry = pool.entries[0]
@@ -770,7 +790,15 @@ def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue))
+    pool.step(
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=runtime_state,
+            fx_queue=fx_queue,
+        ),
+    )
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
@@ -802,7 +830,14 @@ def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state))
+    pool.step(
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=runtime_state,
+        ),
+    )
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,

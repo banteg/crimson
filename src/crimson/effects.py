@@ -12,7 +12,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, Crand, CrandLike
 
-from .creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
+from .creatures.damage_runtime import CreatureDamageRuntime
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import (
@@ -203,7 +203,7 @@ class ParticlePool:
         dt: float,
         *,
         creatures: Sequence[CreatureState] | None = None,
-        creature_damage_runtime: CreatureDamageRuntime | None = None,
+        creature_damage_runtime: CreatureDamageRuntime,
         fx_queue: FxQueue | None = None,
         sprite_effects: SpriteEffectPool | None = None,
     ) -> list[int]:
@@ -219,8 +219,6 @@ class ParticlePool:
         if dt <= 0.0:
             return []
         dt = f32(float(dt))
-        if creature_damage_runtime is None and creatures is not None:
-            creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
             if creatures is None:
@@ -291,12 +289,8 @@ class ParticlePool:
                         sound_slot = int(
                             rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX) % 3,
                         )
-                        if creature_damage_runtime is not None:
-                            creature_damage_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
-                            creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
-                        else:
-                            creatures[target_id].hp = -1.0
-                            creatures[target_id].active = False
+                        creature_damage_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
+                        creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
                 continue
 
             if entry.render_flag:
@@ -385,16 +379,13 @@ class ParticlePool:
 
                         damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
                         if damage > 0.0:
-                            if creature_damage_runtime is not None:
-                                creature_damage_runtime.apply_creature_damage(
-                                    int(hit_idx),
-                                    float(damage),
-                                    4,
-                                    Vec2(),
-                                    entry.owner,
-                                )
-                            else:
-                                creature.hp -= float(damage)
+                            creature_damage_runtime.apply_creature_damage(
+                                int(hit_idx),
+                                float(damage),
+                                4,
+                                Vec2(),
+                                entry.owner,
+                            )
 
                         tint = creature.tint
                         tint_sum = x87_pc24_add(x87_pc24_add(tint.g, tint.b), tint.r)

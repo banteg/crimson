@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import msgspec
 
-from crimson.creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
+from crimson.creatures.damage_runtime import CreatureDamageRuntime
 from crimson.creatures.runtime import CreatureState, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
@@ -14,6 +14,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.rand import CrandLike
+from grim.sfx_map import SfxId
 
 
 def make_creature_state(
@@ -94,7 +95,11 @@ class RecordingProjectileHitRuntime(ProjectileHitRuntime):
             player.health -= damage_value
 
 
-class RecordingCreatureDamageRuntime(DirectCreatureDamageRuntime):
+class RecordingCreatureDamageRuntime(msgspec.Struct):
+    creatures: Sequence[CreatureState] = ()
+    bubble_sfx: list[tuple[int, int]] = msgspec.field(default_factory=list)
+    lethal_calls: list[int] = msgspec.field(default_factory=list)
+    lethal_sfx: list[SfxId] = msgspec.field(default_factory=list)
     calls: list[tuple[int, float, int, Vec2, OwnerRef]] = msgspec.field(default_factory=list)
     kills: list[tuple[int, OwnerRef]] = msgspec.field(default_factory=list)
     detonation_kills: list[int] = msgspec.field(default_factory=list)
@@ -114,24 +119,29 @@ class RecordingCreatureDamageRuntime(DirectCreatureDamageRuntime):
         self.calls.append((idx, damage_value, int(damage_type), impulse, owner))
         if not bool(self.apply_damage):
             return
-        super().apply_creature_damage(
-            idx,
-            damage_value,
-            int(damage_type),
-            impulse,
-            owner,
-        )
+        if damage_value > 0.0:
+            self.creatures[idx].hp -= damage_value
 
     def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
         self.kills.append((int(creature_index), owner))
-        super().kill_creature_no_corpse(creature_index, owner)
+        creature = self.creatures[creature_index]
+        creature.hp = -1.0
+        creature.active = False
+
+    def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
+        self.bubble_sfx.append((creature_index, sound_slot))
 
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
         self.detonation_kills.append(int(creature_index))
 
+    def on_creature_lethal(self, creature_index: int, resolve_damage_followup: Callable[[], tuple[SfxId, ...]]) -> None:
+        self.lethal_calls.append(creature_index)
+        self.lethal_sfx.extend(resolve_damage_followup())
+
 
 def make_projectile_update_options(
     *,
+    creatures: Sequence[CreatureState],
     world_size: float = 1024.0,
     damage_scale_by_type: dict[int, float] | None = None,
     ion_aoe_scale: float = 1.0,
@@ -151,7 +161,9 @@ def make_projectile_update_options(
         runtime_state=state,
         players=player_seq,
         hit_runtime=RecordingProjectileHitRuntime(players=player_seq) if hit_runtime is None else hit_runtime,
-        creature_damage_runtime=creature_damage_runtime,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures)
+        if creature_damage_runtime is None
+        else creature_damage_runtime,
         ion_aoe_scale=float(ion_aoe_scale),
         detail_preset=int(detail_preset),
     )

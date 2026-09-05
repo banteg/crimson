@@ -8,18 +8,37 @@ from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 
 
 def test_bonus_economist_extends_bonus_timers() -> None:
     base_state = GameplayState()
     base_player = PlayerState(index=0, pos=Vec2())
-    bonus_apply(base_state, base_player, BonusId.DOUBLE_EXPERIENCE, amount=10, origin=base_player.pos, creatures=[], players=[base_player])
+    bonus_apply(
+        base_state,
+        base_player,
+        BonusId.DOUBLE_EXPERIENCE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=10,
+        origin=base_player.pos,
+        creatures=[],
+        players=[base_player],
+    )
     assert base_state.bonuses.double_experience == 6.0
 
     perk_state = GameplayState()
     perk_player = PlayerState(index=0, pos=Vec2())
     perk_player.perk_counts[int(PerkId.BONUS_ECONOMIST)] = 1
-    bonus_apply(perk_state, perk_player, BonusId.DOUBLE_EXPERIENCE, amount=10, origin=perk_player.pos, creatures=[], players=[perk_player])
+    bonus_apply(
+        perk_state,
+        perk_player,
+        BonusId.DOUBLE_EXPERIENCE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=10,
+        origin=perk_player.pos,
+        creatures=[],
+        players=[perk_player],
+    )
     assert perk_state.bonuses.double_experience == 9.0
 
 
@@ -48,6 +67,7 @@ def test_bonus_economist_player_ownership(
         state,
         players[1],
         BonusId.DOUBLE_EXPERIENCE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
         amount=10,
         origin=players[1].pos,
         creatures=[],

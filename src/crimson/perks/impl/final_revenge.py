@@ -3,10 +3,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+import msgspec
+
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
-from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
 from ...math_parity import x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     from ...creatures.runtime import CreatureDeath, CreaturePool
 
 
-class _FinalRevengeCreatureDamageRuntime(CreatureDamageRuntime):
+class _FinalRevengeCreatureDamageRuntime(msgspec.Struct):
     state: GameplayState
     creatures: CreaturePool
     players: list[PlayerState]
@@ -118,7 +119,7 @@ def apply_final_revenge_on_player_death(
             preserve_bugs=bool(state.preserve_bugs),
             effects=state.effects,
             detail_preset=int(detail_preset),
-            creature_damage_runtime=creature_damage_runtime,
+            on_lethal=creature_damage_runtime.on_creature_lethal,
         )
 
     state.bonus_spawn_guard = False

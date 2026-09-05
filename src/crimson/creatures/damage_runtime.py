@@ -1,74 +1,28 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
-
-import msgspec
+from collections.abc import Callable
+from typing import Protocol
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
 from ..owner_ref import OwnerRef
 
-if TYPE_CHECKING:
-    from .runtime import CreatureState
+# The callback must handle death synchronously, then invoke the supplied
+# follow-up before returning: native impulse/SFX/shock RNG runs in that order.
+type CreatureLethalHandler = Callable[[int, Callable[[], tuple[SfxId, ...]]], None]
 
 
-class CreatureDamageRuntime(msgspec.Struct):
+class CreatureDamageRuntime(Protocol):
+    """Required gameplay damage semantics; implementations own death handling."""
+
     def apply_creature_damage(
-        self,
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        _ = creature_index, damage, damage_type, impulse, owner
-
-    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
-        _ = creature_index, owner
-
-    def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
-        _ = creature_index, sound_slot
-
-    def on_secondary_detonation_kill(self, creature_index: int) -> None:
-        _ = creature_index
+        self, creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef,
+    ) -> None: ...
+    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None: ...
+    def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None: ...
+    def on_secondary_detonation_kill(self, creature_index: int) -> None: ...
 
     def on_creature_lethal(
-        self,
-        creature_index: int,
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-    ) -> None:
-        # Native `creature_apply_damage` runs `creature_handle_death` first, then
-        # applies the doubled lethal impulse and draws the death-SFX / shock-burst
-        # rands. Implementations must invoke this callback after death handling.
-        _ = creature_index, resolve_damage_followup
-
-
-class DirectCreatureDamageRuntime(CreatureDamageRuntime):
-    creatures: Sequence[CreatureState] = ()
-
-    def apply_creature_damage(
-        self,
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        _ = damage_type, impulse, owner
-        if damage <= 0.0:
-            return
-        idx = int(creature_index)
-        if not (0 <= idx < len(self.creatures)):
-            return
-        self.creatures[idx].hp -= float(damage)
-
-    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
-        _ = owner
-        idx = int(creature_index)
-        if not (0 <= idx < len(self.creatures)):
-            return
-        creature = self.creatures[idx]
-        creature.hp = -1.0
-        creature.active = False
+        self, creature_index: int, resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
+    ) -> None: ...

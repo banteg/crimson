@@ -14,7 +14,6 @@ from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
-from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
 from ..creatures.spawn import SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
@@ -67,7 +66,7 @@ _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
-class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeathRuntime):
+class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
     world: WorldState
     dt: float
     world_size: float
@@ -117,7 +116,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             preserve_bugs=bool(self.world.state.preserve_bugs),
             effects=self.world.state.effects,
             detail_preset=int(self.detail_preset),
-            creature_damage_runtime=self,
+            on_lethal=self.on_creature_lethal,
         )
 
     def on_creature_lethal(

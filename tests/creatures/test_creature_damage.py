@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+import msgspec
+
 from crimson.creatures.damage import (
     creature_apply_damage,
     creature_apply_damage_with_lethal_followup,
     resolve_native_death_sfx,
 )
-from crimson.creatures.damage_runtime import CreatureDamageRuntime
 from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
@@ -250,7 +251,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
     before_calls = rng.calls
     order: list[str] = []
 
-    class _Runtime(CreatureDamageRuntime):
+    class _Runtime(msgspec.Struct):
         def on_creature_lethal(
             self,
             creature_index: int,
@@ -277,7 +278,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         rng=rng,
         effects=state.effects,
         detail_preset=5,
-        creature_damage_runtime=_Runtime(),
+        on_lethal=_Runtime().on_creature_lethal,
     )
 
     assert killed is True
@@ -307,7 +308,7 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
     creature.vel = Vec2(10.0, 20.0)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    class _Runtime(CreatureDamageRuntime):
+    class _Runtime(msgspec.Struct):
         def on_creature_lethal(
             self,
             creature_index: int,
@@ -344,7 +345,7 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
         players=[],
         rng=rng,
         effects=state.effects,
-        creature_damage_runtime=_Runtime(),
+        on_lethal=_Runtime().on_creature_lethal,
     )
 
     assert killed
@@ -365,7 +366,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
     before_calls = rng.calls
     order: list[str] = []
 
-    class _Runtime(CreatureDamageRuntime):
+    class _Runtime(msgspec.Struct):
         def on_creature_lethal(
             self,
             creature_index: int,
@@ -388,7 +389,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
         rng=rng,
         effects=state.effects,
         detail_preset=5,
-        creature_damage_runtime=_Runtime(),
+        on_lethal=_Runtime().on_creature_lethal,
     )
 
     assert killed is True

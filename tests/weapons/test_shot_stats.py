@@ -16,7 +16,7 @@ from crimson.weapon_runtime import (
 from crimson.weapon_runtime.spawn import projectile_spawn
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.factories import make_creature_state, make_projectile_update_options
+from tests.support.factories import RecordingCreatureDamageRuntime, make_creature_state, make_projectile_update_options
 
 _creature = partial(make_creature_state, size=200.0)
 
@@ -46,6 +46,7 @@ def test_shots_fired_and_hit_increment() -> None:
             dt=0.1,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=1024.0,
                 damage_scale_by_type={},
                 rng=state.rng,
@@ -79,6 +80,7 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
             dt=0.1,
             creatures=[corpse],
             options=make_projectile_update_options(
+                creatures=[corpse],
                 world_size=1024.0,
                 damage_scale_by_type={},
                 rng=state.rng,
@@ -104,7 +106,12 @@ def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets(
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0)]
 
     state.secondary_projectiles.step(
-        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=state),
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=state,
+        ),
     )
 
     assert state.shots_hit[0] == 1
@@ -123,7 +130,12 @@ def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit(
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0)]
 
     state.secondary_projectiles.step(
-        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=state),
+        SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=state,
+        ),
     )
 
     assert state.shots_hit[0] == 0

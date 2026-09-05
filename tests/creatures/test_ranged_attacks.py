@@ -148,6 +148,7 @@ def test_ranged_projectile_can_damage_player() -> None:
             dt=0.001,
             creatures=[],
             options=make_projectile_update_options(
+                creatures=[],
                 world_size=1024.0,
                 rng=state.rng,
                 runtime_state=state,
@@ -192,6 +193,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
             dt=0.1,
             creatures=pool.entries[:2],
             options=make_projectile_update_options(
+                creatures=pool.entries[:2],
                 world_size=1024.0,
                 rng=state.rng,
                 runtime_state=state,

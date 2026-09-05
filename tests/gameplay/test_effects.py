@@ -268,7 +268,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
     p0 = pool.entries[idx0]
     p0.render_flag = False
-    pool.update(1.0)
+    pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
     assert p0.active
     assert_float_close(p0.intensity, f32(0.1))
 
@@ -277,14 +277,14 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p1 = pool.entries[idx1]
     p1.render_flag = False
     p1.style_id = ParticleStyleId.BLOW_TORCH
-    pool.update(1.0)
+    pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
     assert not p1.active
 
     # Style 8 decays slowly and also uses the 0.8 cutoff.
     idx2 = pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
     p2 = pool.entries[idx2]
     p2.render_flag = False
-    pool.update(1.0)
+    pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
     assert p2.active
     assert_float_close(p2.intensity, f32(0.89))
 
@@ -318,7 +318,13 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     creature.tint = RGBA(0.9, 0.6, 0.2, 0.8)
 
     dt = 0.016
-    pool.update(dt, creatures=[creature], fx_queue=fx_queue, sprite_effects=sprite_effects)
+    pool.update(
+        dt,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[creature]),
+        creatures=[creature],
+        fx_queue=fx_queue,
+        sprite_effects=sprite_effects,
+    )
 
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
@@ -372,7 +378,7 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     alt.style_id = ParticleStyleId.BLOW_TORCH
 
     before = rng.calls
-    pool.update(0.016)
+    pool.update(0.016, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
 
     assert flame.render_flag
     assert alt.render_flag

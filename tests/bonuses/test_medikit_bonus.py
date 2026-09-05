@@ -5,6 +5,7 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 
 
 def test_medikit_narrows_updated_health_to_f32() -> None:
@@ -15,6 +16,7 @@ def test_medikit_narrows_updated_health_to_f32() -> None:
         state,
         player,
         BonusId.MEDIKIT,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()),
         origin=Vec2(),
         creatures=(),
         players=[player],

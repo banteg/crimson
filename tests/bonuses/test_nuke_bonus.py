@@ -8,6 +8,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -33,6 +34,7 @@ def test_nuke_damage_is_limited_to_radius() -> None:
         state,
         player,
         BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=pool.entries),
         origin=player.pos,
         creatures=pool.entries,
         players=[player],
@@ -54,18 +56,19 @@ def test_nuke_damage_rounds_each_native_radial_distance_operation() -> None:
         creature.pos = player.pos + Vec2(x_offset, 100.0)
         creature.hp = 1000.0
 
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=pool.entries, apply_damage=False)
     bonus_apply(
         state,
         player,
         BonusId.NUKE,
+        creature_damage_runtime=damage_runtime,
         origin=player.pos,
         creatures=pool.entries,
         players=[player],
         detail_preset=5,
     )
 
-    assert pool.entries[0].hp == 222.4937744140625
-    assert pool.entries[1].hp == 838.0339965820312
+    assert [call[1] for call in damage_runtime.calls] == [777.5062255859375, 161.9660186767578]
 
 
 def test_nuke_projectile_parameters_round_each_x87_operation() -> None:
@@ -80,6 +83,7 @@ def test_nuke_projectile_parameters_round_each_x87_operation() -> None:
         state,
         player,
         BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
         origin=player.pos,
         creatures=[],
         players=[player],
@@ -98,7 +102,16 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
     state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
-    bonus_apply(state, player, BonusId.NUKE, origin=player.pos, creatures=[], players=[player], detail_preset=5)
+    bonus_apply(
+        state,
+        player,
+        BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+        detail_preset=5,
+    )
 
     active = [entry for entry in state.projectiles.entries if entry.active]
 

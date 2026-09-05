@@ -58,6 +58,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
                 dt=0.016,
                 creatures=[creature],
                 options=make_projectile_update_options(
+                    creatures=[creature],
                     world_size=10000.0,
                     rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                     runtime_state=state,
@@ -103,6 +104,7 @@ def test_ion_gun_master_selects_native_player_zero_or_corrected_any_player(
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=10000.0,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=state,

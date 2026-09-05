@@ -164,7 +164,9 @@ def test_particle_hits_damage_creatures() -> None:
     creature.size = 50.0
     creature.lifecycle_stage = 16.0
 
-    state.particles.update(0.016, creatures=[creature])
+    state.particles.update(
+        0.016, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[creature]), creatures=[creature],
+    )
     assert creature.hp < 100.0
 
     particles = [entry for entry in state.particles.entries if entry.active]

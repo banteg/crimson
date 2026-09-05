@@ -47,8 +47,8 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
+from tests.support.factories import RecordingCreatureDamageRuntime, make_projectile_update_options
 from tests.support.factories import make_creature_state as _creature
-from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -1724,7 +1724,16 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
 
-    bonus_apply(state, player, BonusId.WEAPON_POWER_UP, amount=3, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON_POWER_UP,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=3,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
     for _ in range(40):
         bonus_hud_update(state, [player], dt=1.0 / 60.0)
 
@@ -1753,6 +1762,7 @@ def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) 
         state,
         player,
         bonus_id,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
         origin=player.pos,
         creatures=[],
         players=[player],
@@ -1776,7 +1786,15 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     ]
 
     state.bonus_spawn_guard = True
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.SHOCK_CHAIN,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        origin=player.pos,
+        creatures=creatures,
+        players=[player],
+    )
     assert state.shock_chain_links_left == 0x20
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0
@@ -1787,6 +1805,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
             dt=0.1,
             creatures=creatures,
             options=make_projectile_update_options(
+                creatures=creatures,
                 world_size=1024.0,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=state,
@@ -1804,6 +1823,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
             dt=0.1,
             creatures=creatures,
             options=make_projectile_update_options(
+                creatures=creatures,
                 world_size=1024.0,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=state,
@@ -1842,14 +1862,19 @@ def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
     assert player.weapon.reload_timer > 0.0
 
 
-@pytest.mark.parametrize(("jitter", "expected_bits"), [
-    (0, [0xBE800000, 0x3F090FDB, 0x3FA90FDB, 0x4006CBE4, 0x40390FDB, 0x406B53D2, 0x408ECBE4, 0x40A7EDE0]),
-    (1, [0xBE75C28F, 0x3F0B9F37, 0x3FAA5789, 0x40076FBB, 0x4039B3B2, 0x406BF7A9, 0x408F1DD0, 0x40A83FCC]),
-    (49, [0x3E75C28E, 0x3F83403F, 0x3FE7C82C, 0x4026280D, 0x40586C04, 0x408557FD, 0x409E79F8, 0x40B79BF4]),
-])
+@pytest.mark.parametrize(
+    ("jitter", "expected_bits"),
+    [
+        (0, [0xBE800000, 0x3F090FDB, 0x3FA90FDB, 0x4006CBE4, 0x40390FDB, 0x406B53D2, 0x408ECBE4, 0x40A7EDE0]),
+        (1, [0xBE75C28F, 0x3F0B9F37, 0x3FAA5789, 0x40076FBB, 0x4039B3B2, 0x406BF7A9, 0x408F1DD0, 0x40A83FCC]),
+        (49, [0x3E75C28E, 0x3F83403F, 0x3FE7C82C, 0x4026280D, 0x40586C04, 0x408557FD, 0x409E79F8, 0x40B79BF4]),
+    ],
+)
 def test_man_bomb_stores_native_pc24_angles(jitter: int, expected_bits: list[int]) -> None:
     state = GameplayState(rng=ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(100, 100), man_bomb_timer=3.9)
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player_update(player, PlayerInput(aim=Vec2(101, 100)), 0.2, state)
-    assert [struct.unpack("<I", struct.pack("<f", p.angle))[0] for p in state.projectiles.iter_active()] == expected_bits
+    assert [
+        struct.unpack("<I", struct.pack("<f", p.angle))[0] for p in state.projectiles.iter_active()
+    ] == expected_bits

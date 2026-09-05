@@ -424,7 +424,7 @@ class BonusPool:
         players: list[PlayerState],
         creatures: Sequence[CreatureState],
         detail_preset: int = 5,
-        creature_damage_runtime: CreatureDamageRuntime | None = None,
+        creature_damage_runtime: CreatureDamageRuntime,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []

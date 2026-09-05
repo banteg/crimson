@@ -25,7 +25,7 @@ def bonus_telekinetic_update(
     *,
     creatures: Sequence[CreatureState],
     detail_preset: int = 5,
-    creature_damage_runtime: CreatureDamageRuntime | None = None,
+    creature_damage_runtime: CreatureDamageRuntime,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
     from ..perks import PerkId
@@ -98,7 +98,7 @@ def bonus_update(
     creatures: Sequence[CreatureState],
     update_hud: bool = True,
     detail_preset: int = 5,
-    creature_damage_runtime: CreatureDamageRuntime | None = None,
+    creature_damage_runtime: CreatureDamageRuntime,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 

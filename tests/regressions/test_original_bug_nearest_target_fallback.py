@@ -19,7 +19,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
-from tests.support.factories import make_creature_state, make_projectile_update_options
+from tests.support.factories import RecordingCreatureDamageRuntime, make_creature_state, make_projectile_update_options
 from tests.support.helpers import ScriptedCrand
 
 
@@ -42,7 +42,15 @@ def test_shock_chain_initial_target_miss_handling(
     player = PlayerState(index=0, pos=Vec2())
     creatures = [make_creature_state(pos=Vec2(50.0, 0.0), active=False)]
 
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.SHOCK_CHAIN,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        origin=player.pos,
+        creatures=creatures,
+        players=[player],
+    )
 
     assert state.shock_chain_links_left == expected_links_left
     assert state.sfx_queue == expected_sfx
@@ -63,7 +71,15 @@ def test_shock_chain_uses_native_f32_nearest_ordering() -> None:
         make_creature_state(pos=Vec2(1722.1292724609375, -1357.8604736328125), hp=100.0),
     ]
 
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.SHOCK_CHAIN,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        origin=player.pos,
+        creatures=creatures,
+        players=[player],
+    )
 
     projectile = pool.entries[state.shock_chain_projectile_id]
     expected_angle = f32(math.atan2(first_pos.y, first_pos.x) - NATIVE_HALF_PI - NATIVE_PI)
@@ -87,7 +103,15 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
         make_creature_state(pos=Vec2(50.0, 0.0), hp=100.0),
     ]
 
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.SHOCK_CHAIN,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        origin=player.pos,
+        creatures=creatures,
+        players=[player],
+    )
     first_proj = int(state.shock_chain_projectile_id)
     assert first_proj >= 0
 
@@ -97,6 +121,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
                 dt=0.1,
                 creatures=creatures,
                 options=make_projectile_update_options(
+                    creatures=creatures,
                     world_size=1024.0,
                     rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                     runtime_state=state,
@@ -162,6 +187,7 @@ def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: 
 
     pool.step(
         SecondaryStepCtx(
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
             dt=0.01,
             creatures=creatures,
             runtime_state=state,

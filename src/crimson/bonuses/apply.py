@@ -59,7 +59,7 @@ def bonus_apply(
     creatures: Sequence[CreatureState],
     players: list[PlayerState],
     detail_preset: int = 5,
-    creature_damage_runtime: CreatureDamageRuntime | None = None,
+    creature_damage_runtime: CreatureDamageRuntime,
 ) -> None:
     """Apply a bonus to the player and shared gameplay state."""
 

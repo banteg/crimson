@@ -11,7 +11,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.sfx_map import SfxId
 
-from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
+from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool, FxQueue, SpriteEffectPool
@@ -77,12 +77,12 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
 
 
 class SecondaryStepCtx(msgspec.Struct, frozen=True):
+    creature_damage_runtime: CreatureDamageRuntime
     dt: float
     creatures: Sequence[CreatureState]
     runtime_state: GameplayState | None = None
     fx_queue: FxQueue | None = None
     detail_preset: int = 5
-    creature_damage_runtime: CreatureDamageRuntime | None = None
     # Native secondary-rocket hits run the same first-hit game-tune branch as
     # bullet hits (sfx_play_exclusive + one playlist rand) outside demo/rush;
     # when unset, the plain explosion sound is queued directly.
@@ -188,8 +188,6 @@ class SecondaryProjectilePool:
         fx_queue = ctx.fx_queue
         detail_preset = int(ctx.detail_preset)
         creature_damage_runtime = ctx.creature_damage_runtime
-        if creature_damage_runtime is None:
-            creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         if dt <= 0.0:
             return 0

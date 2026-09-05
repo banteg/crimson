@@ -11,6 +11,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.helpers import ScriptedCrand
 
 
@@ -32,6 +33,7 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
         state,
         player,
         BonusId.FREEZE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=pool.entries),
         amount=1,
         origin=player.pos,
         creatures=pool.entries,
@@ -69,7 +71,14 @@ def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
     corpse.hp = -1.0
     corpse.lifecycle_stage = -100.0
     bonus_apply(
-        state, player, BonusId.FREEZE, origin=player.pos, creatures=pool.entries, players=[player], detail_preset=5,
+        state,
+        player,
+        BonusId.FREEZE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=pool.entries),
+        origin=player.pos,
+        creatures=pool.entries,
+        players=[player],
+        detail_preset=5,
     )
     assert not corpse.active
     assert len(state.effects.iter_active()) == 16

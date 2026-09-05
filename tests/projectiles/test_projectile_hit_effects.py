@@ -35,6 +35,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=4096.0,
                 detail_preset=5,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
@@ -74,6 +75,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
@@ -126,6 +128,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=4096.0,
                 detail_preset=5,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
@@ -156,6 +159,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
@@ -256,6 +260,7 @@ def test_non_gauss_freeze_hit_pool_step_leaves_shard_to_presentation(mocker) -> 
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
@@ -328,15 +333,15 @@ def test_non_gauss_freeze_hit_presentation_draws_burn_then_single_shard(mocker) 
 def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
     from collections.abc import Callable
 
-    from crimson.creatures.damage_runtime import DirectCreatureDamageRuntime
     from crimson.creatures.spawn import CreatureFlags
+    from tests.support.factories import RecordingCreatureDamageRuntime
 
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=20.0, flags=CreatureFlags(0))
     runtime_state = GameplayState()
     lethal_calls: list[int] = []
 
-    class _Runtime(DirectCreatureDamageRuntime):
+    class _Runtime(RecordingCreatureDamageRuntime):
         def on_creature_lethal(
             self,
             creature_index: int,
@@ -361,6 +366,7 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
             dt=0.016,
             creatures=[creature],
             options=make_projectile_update_options(
+                creatures=[creature],
                 world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
@@ -375,9 +381,7 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
     # The generic chip damage still applies after the direct shrink-death;
     # native leaves hp positive when entering it.
     assert creature.hp < 100.0
-    assert RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX not in {
-        record.caller for record in rng.records_since()
-    }
+    assert RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX not in {record.caller for record in rng.records_since()}
 
 
 def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:

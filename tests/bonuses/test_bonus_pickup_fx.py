@@ -8,6 +8,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.helpers import ScriptedCrand
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -89,6 +90,7 @@ def test_bonus_lifetime_decrement_stores_native_f32_result() -> None:
 
     state.bonus_pool.update(
         0.04400000348687172,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
         state=state,
         players=[PlayerState(index=0, pos=Vec2(500.0, 500.0))],
         creatures=[],
@@ -114,6 +116,7 @@ def test_bonus_pickup_uses_native_pc24_radius_boundary() -> None:
     assert Vec2.distance_sq(entry.pos, player.pos) < 26.0 * 26.0
     pickups = state.bonus_pool.update(
         0.01,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
         state=state,
         players=[player],
         creatures=[],
@@ -140,6 +143,7 @@ def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
     ]
     pickups = state.bonus_pool.update(
         0.016,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
         state=state,
         players=players,
         creatures=[],

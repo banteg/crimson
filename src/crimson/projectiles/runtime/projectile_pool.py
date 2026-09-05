@@ -10,7 +10,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 
-from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
+from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
@@ -71,7 +71,7 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     runtime_state: GameplayState
     players: Sequence[PlayerState]
     hit_runtime: ProjectileHitRuntime
-    creature_damage_runtime: CreatureDamageRuntime | None = None
+    creature_damage_runtime: CreatureDamageRuntime
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
 
@@ -204,8 +204,6 @@ class ProjectilePool:
         players = options.players
         hit_runtime = options.hit_runtime
         creature_damage_runtime = options.creature_damage_runtime
-        if creature_damage_runtime is None:
-            creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         if dt <= 0.0:
             return []

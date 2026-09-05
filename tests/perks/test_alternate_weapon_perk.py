@@ -12,6 +12,7 @@ from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import init_default_alt_weapon, weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 from tests.support.helpers import assert_float_close
 
 
@@ -56,7 +57,16 @@ def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> N
     player = players[0]
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
-    bonus_apply(state, player, BonusId.WEAPON, amount=2, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=2,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
     alt = _alt(player)
 
     assert player.weapon.weapon_id == 2
@@ -71,7 +81,16 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    bonus_apply(state, player, BonusId.WEAPON, amount=2, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=2,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
     alt = _alt(player)
 
     assert player.weapon.weapon_id == 2
@@ -93,7 +112,16 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    bonus_apply(state, player, BonusId.WEAPON, amount=2, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=2,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
 
     player.weapon.shot_cooldown = 0.0
     state.sfx_queue.clear()
@@ -116,7 +144,16 @@ def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    bonus_apply(state, player, BonusId.WEAPON, amount=11, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=11,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
     alt = _alt(player)
 
     assert player.weapon.weapon_id == 11
@@ -174,7 +211,16 @@ def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    bonus_apply(state, player, BonusId.WEAPON, amount=2, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=2,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
 
     assert player.weapon.weapon_id == 2
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
@@ -197,7 +243,16 @@ def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    bonus_apply(state, player, BonusId.WEAPON, amount=2, origin=player.pos, creatures=[], players=[player])
+    bonus_apply(
+        state,
+        player,
+        BonusId.WEAPON,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        amount=2,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
 
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
     assert player.weapon.weapon_id == 1
@@ -220,7 +275,16 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         weapon_assign_player(player, WeaponId.PISTOL, state=state)
         init_default_alt_weapon(player)
         player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-        bonus_apply(state, player, BonusId.WEAPON, amount=2, origin=player.pos, creatures=[], players=players)
+        bonus_apply(
+            state,
+            player,
+            BonusId.WEAPON,
+            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+            amount=2,
+            origin=player.pos,
+            creatures=[],
+            players=players,
+        )
     player_update(
         player0,
         PlayerInput(reload_pressed=True, reload_down=True),

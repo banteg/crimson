@@ -55,7 +55,6 @@ from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
-from .damage_runtime import CreatureDamageRuntime
 from .damage_types import CreatureDamageType
 from .lifecycle import (
     CREATURE_LIFECYCLE_ALIVE,
@@ -364,7 +363,7 @@ class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
         )
 
 
-class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
+class _CreatureInteractionCreatureDamageRuntime(msgspec.Struct):
     ctx: _CreatureInteractionCtx
 
     def on_creature_lethal(
@@ -392,7 +391,7 @@ class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
 
 
-class _CreaturePoolCreatureDamageRuntime(CreatureDamageRuntime):
+class _CreaturePoolCreatureDamageRuntime(msgspec.Struct):
     pool: CreaturePool
     state: GameplayState
     players: list[PlayerState]
@@ -531,7 +530,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             preserve_bugs=bool(ctx.state.preserve_bugs),
             effects=ctx.state.effects,
             detail_preset=int(ctx.detail_preset),
-            creature_damage_runtime=_CreatureInteractionCreatureDamageRuntime(ctx=ctx),
+            on_lethal=_CreatureInteractionCreatureDamageRuntime(ctx=ctx).on_creature_lethal,
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
@@ -1076,7 +1075,7 @@ class CreaturePool:
                 preserve_bugs=bool(state.preserve_bugs),
                 effects=state.effects,
                 detail_preset=int(detail_preset),
-                creature_damage_runtime=creature_damage_runtime,
+                on_lethal=creature_damage_runtime.on_creature_lethal,
             )
 
         for idx, creature in enumerate(self._entries):
@@ -1275,7 +1274,7 @@ class CreaturePool:
                     preserve_bugs=bool(state.preserve_bugs),
                     effects=state.effects,
                     detail_preset=int(detail_preset),
-                    creature_damage_runtime=creature_damage_runtime,
+                    on_lethal=creature_damage_runtime.on_creature_lethal,
                 )
 
             if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:

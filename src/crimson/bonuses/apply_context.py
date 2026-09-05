@@ -30,7 +30,7 @@ class BonusApplyCtx(msgspec.Struct):
     economist_multiplier: float
     label: str
     icon_id: int
-    creature_damage_runtime: CreatureDamageRuntime | None = None
+    creature_damage_runtime: CreatureDamageRuntime
 
     def register_global(self, timer_key: str) -> None:
         self.state.bonus_hud.register(

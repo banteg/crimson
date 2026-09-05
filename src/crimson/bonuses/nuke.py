@@ -101,16 +101,13 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             damage_base = x87_pc24_sub(256.0, distance)
             if damage_base > 0.0:
                 damage = x87_pc24_mul(damage_base, 5.0)
-                if creature_damage_runtime is not None:
-                    creature_damage_runtime.apply_creature_damage(
-                        int(idx),
-                        float(damage),
-                        3,
-                        Vec2(),
-                        owner_ref_for_player(ctx.player.index),
-                    )
-                else:
-                    creature.hp = x87_pc24_sub(creature.hp, damage)
+                creature_damage_runtime.apply_creature_damage(
+                    int(idx),
+                    float(damage),
+                    3,
+                    Vec2(),
+                    owner_ref_for_player(ctx.player.index),
+                )
         ctx.state.bonus_spawn_guard = False
 
     ctx.state.sfx_queue.append(SfxId.EXPLOSION_LARGE)

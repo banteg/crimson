@@ -11,6 +11,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime.spawn import projectile_spawn
 from grim.geom import Vec2
+from tests.support.factories import RecordingCreatureDamageRuntime
 
 
 def _spawn_type(
@@ -118,7 +119,16 @@ def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner(
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    bonus_apply(state, player1, BonusId.NUKE, origin=player1.pos, creatures=[], players=players, detail_preset=5)
+    bonus_apply(
+        state,
+        player1,
+        BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        origin=player1.pos,
+        creatures=[],
+        players=players,
+        detail_preset=5,
+    )
     non_owner_types = _active_type_ids(state)
 
     assert int(ProjectileTemplateId.FIRE_BULLETS) not in non_owner_types
@@ -129,7 +139,16 @@ def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner(
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0)
     players = [player0, player1]
 
-    bonus_apply(state, player1, BonusId.NUKE, origin=player1.pos, creatures=[], players=players, detail_preset=5)
+    bonus_apply(
+        state,
+        player1,
+        BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        origin=player1.pos,
+        creatures=[],
+        players=players,
+        detail_preset=5,
+    )
     owner_types = _active_type_ids(state)
 
     assert owner_types
@@ -141,7 +160,9 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, hot_tempered_timer=1.95)
     player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
-    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1])
+    player_update(
+        state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1],
+    )
     hot_types_non_owner = _active_type_ids(state)
     assert int(ProjectileTemplateId.FIRE_BULLETS) not in hot_types_non_owner
 
@@ -149,7 +170,9 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0, hot_tempered_timer=1.95)
     player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
-    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1])
+    player_update(
+        state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1],
+    )
     hot_types_owner = _active_type_ids(state)
     assert hot_types_owner
     assert set(hot_types_owner) == {int(ProjectileTemplateId.FIRE_BULLETS)}
@@ -158,7 +181,9 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, man_bomb_timer=3.9)
     player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
-    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1])
+    player_update(
+        state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1],
+    )
     man_bomb_types_non_owner = _active_type_ids(state)
     assert int(ProjectileTemplateId.FIRE_BULLETS) not in man_bomb_types_non_owner
 
@@ -166,7 +191,9 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0, man_bomb_timer=3.9)
     player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
-    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1])
+    player_update(
+        state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1],
+    )
     man_bomb_types_owner = _active_type_ids(state)
     assert man_bomb_types_owner
     assert set(man_bomb_types_owner) == {int(ProjectileTemplateId.FIRE_BULLETS)}
@@ -178,7 +205,16 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    bonus_apply(state, player1, BonusId.NUKE, origin=player1.pos, creatures=[], players=players, detail_preset=5)
+    bonus_apply(
+        state,
+        player1,
+        BonusId.NUKE,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        origin=player1.pos,
+        creatures=[],
+        players=players,
+        detail_preset=5,
+    )
     nuke_types = _active_type_ids(state)
     assert nuke_types
     assert set(nuke_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}
@@ -187,7 +223,9 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, hot_tempered_timer=1.95)
     player0.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
-    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1])
+    player_update(
+        state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1],
+    )
     hot_types = _active_type_ids(state)
     assert hot_types
     assert set(hot_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}
@@ -196,7 +234,9 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, man_bomb_timer=3.9)
     player0.perk_counts[int(PerkId.MAN_BOMB)] = 1
-    player_update(state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1])
+    player_update(
+        state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1],
+    )
     man_bomb_types = _active_type_ids(state)
     assert man_bomb_types
     assert set(man_bomb_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}
