@@ -1,5 +1,7 @@
 # Matching Status
 
+Relocation-aware encoded-body identity: **769/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
@@ -30,7 +32,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **38** non-exact scratch-backed functions hold **30031 fuzzy-gap bytes**. The top 5 hold **68.2%** of that gap; the top 10 hold **86.2%**.
 
-Current-baseline experiments cover **27 functions / 6534 gap bytes**; **11 / 23497** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **38 / 30031** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -42,38 +44,38 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 4 | crimsonland.exe | projectile_update | 3140 | semantic-complete | compiler,references | historical-only | 0/70 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 6 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 7 | crimsonland.exe | creature_spawn_template | 1584 | semantic-complete | compiler,references | current-stalled | 5/41 | 4 | repeated-variants,stalled,metric-tradeoffs,variant-errors |
-| 8 | crimsonland.exe | ui_render_hud | 829 | semantic-complete | compiler | current-active | 1/20 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
-| 9 | crimsonland.exe | tutorial_timeline_update | 676 | semantic-complete | compiler,references | current-active | 1/24 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 10 | crimsonland.exe | player_render_overlays | 583 | semantic-complete | compiler | current-active | 1/31 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
-| 11 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | current-active | 3/26 | 2 | repeated-variants,repeated-specs,variant-errors |
+| 7 | crimsonland.exe | creature_spawn_template | 1584 | semantic-complete | compiler,references | historical-only | 0/41 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 8 | crimsonland.exe | ui_render_hud | 829 | semantic-complete | compiler | historical-only | 0/20 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 9 | crimsonland.exe | tutorial_timeline_update | 676 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 10 | crimsonland.exe | player_render_overlays | 583 | semantic-complete | compiler | historical-only | 0/31 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 11 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 12 | crimsonland.exe | highscore_sync_worker | 453 | semantic-complete | compiler | historical-only | 0/13 | 0 | metric-tradeoffs,variant-errors,historical-only |
-| 13 | crimsonland.exe | credits_secret_alien_zookeeper_update | 422 | semantic-complete | compiler | current-stalled | 6/12 | 6 | repeated-variants,stalled,metric-tradeoffs |
-| 14 | crimsonland.exe | bonus_render | 325 | semantic-complete | compiler | current-active | 1/22 | 1 | repeated-variants,repeated-specs,variant-errors |
-| 15 | crimsonland.exe | bonus_hud_slot_update_and_render | 316 | semantic-complete | compiler | current-active | 1/11 | 1 | repeated-variants,metric-tradeoffs,variant-errors |
+| 13 | crimsonland.exe | credits_secret_alien_zookeeper_update | 422 | semantic-complete | compiler | historical-only | 0/12 | 0 | repeated-variants,metric-tradeoffs,historical-only |
+| 14 | crimsonland.exe | bonus_render | 325 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 15 | crimsonland.exe | bonus_hud_slot_update_and_render | 316 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 16 | crimsonland.exe | ui_menu_layout_init | 312 | semantic-complete | compiler,references | historical-only | 0/30 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 17 | crimsonland.exe | ui_scrollbar_update | 311 | semantic-complete | compiler | historical-only | 0/39 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 18 | crimsonland.exe | statistics_update_check_worker | 297 | semantic-complete | compiler | current-stalled | 3/14 | 3 | repeated-variants,stalled,metric-tradeoffs,variant-errors |
-| 19 | crimsonland.exe | statistics_menu_update | 194 | semantic-complete | compiler | current-active | 1/16 | 1 | repeated-variants,metric-tradeoffs |
+| 18 | crimsonland.exe | statistics_update_check_worker | 297 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 19 | crimsonland.exe | statistics_menu_update | 194 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,metric-tradeoffs,historical-only |
 | 20 | crimsonland.exe | quest_build_survival_of_the_fastest | 177 | semantic-complete | compiler | historical-only | 0/13 | 0 | repeated-variants,repeated-specs,historical-only |
-| 21 | crimsonland.exe | quest_select_menu_update | 141 | semantic-complete | compiler | current-active | 2/54 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 22 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 3/8 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
-| 23 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | current-stalled | 6/10 | 6 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
-| 24 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 8/16 | 1 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 25 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | current-active | 2/21 | 2 | repeated-variants,metric-tradeoffs,variant-errors |
-| 26 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 5/14 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 27 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-stalled | 3/19 | 3 | repeated-variants,repeated-specs,stalled,variant-errors |
-| 28 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 2/7 | 2 | repeated-variants,variant-errors |
-| 29 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 2/7 | 2 | variant-errors |
+| 21 | crimsonland.exe | quest_select_menu_update | 141 | semantic-complete | compiler | historical-only | 0/54 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 22 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
+| 23 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 24 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 25 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | historical-only | 0/21 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 26 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 27 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | historical-only | 0/19 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 28 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | historical-only | 0/7 | 0 | repeated-variants,variant-errors,historical-only |
+| 29 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/7 | 0 | variant-errors,historical-only |
 | 30 | crimsonland.exe | mods_menu_update | 28 | semantic-complete | compiler | historical-only | 0/25 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 31 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 2/14 | 1 | metric-tradeoffs |
-| 32 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | current-stalled | 3/20 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
-| 33 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-active | 2/17 | 2 | repeated-variants,variant-errors |
-| 34 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-stalled | 3/33 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
-| 35 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-stalled | 3/11 | 3 | stalled,variant-errors |
-| 36 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 7/32 | 6 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
-| 37 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-active | 1/24 | 1 | metric-tradeoffs |
-| 38 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | current-stalled | 3/11 | 3 | repeated-specs,stalled,metric-tradeoffs |
+| 31 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | historical-only | 0/14 | 0 | metric-tradeoffs,historical-only |
+| 32 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | historical-only | 0/20 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 33 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,variant-errors,historical-only |
+| 34 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 35 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | historical-only | 0/11 | 0 | variant-errors,historical-only |
+| 36 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | historical-only | 0/32 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
+| 37 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/24 | 0 | metric-tradeoffs,historical-only |
+| 38 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-specs,metric-tradeoffs,historical-only |
 
 ## Function dispositions
 

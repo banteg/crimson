@@ -11,11 +11,11 @@ from collections import Counter, defaultdict
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, cast
 
-from . import match_experiments
+from . import match_experiments, match_process, match_toolchain
+from .match_process import run_compiler
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VERSION = "1.9.93-gog"
@@ -102,7 +102,7 @@ MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
     },
 )
 DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 SHARD_SCHEMA = 1
 SHARD_PLAN_KIND = "crimson-match-shard-plan"
 WORKER_CLAIM_KIND = "crimson-match-worker-claim"
@@ -895,6 +895,9 @@ class MatchResult:
     target_disassembly: tuple[DisassemblyLine, ...] = ()
     candidate_disassembly: tuple[DisassemblyLine, ...] = ()
     masked_operand_audit: MaskedOperandAudit = field(default_factory=MaskedOperandAudit)
+    body_byte_exact: bool | None = None
+    target_padding_bytes: int = 0
+    candidate_padding_bytes: int = 0
 
     @property
     def exact(self) -> bool:
@@ -3254,6 +3257,37 @@ def audit_masked_operands(
     return MaskedOperandAudit(tuple(entries))
 
 
+def _encoded_body_comparison(
+    target_data: bytes,
+    candidate: ObjectFunction,
+    result: MatchResult,
+) -> tuple[bool, int, int]:
+    """Ignore only audited COFF relocation fields, preserving every encoding bit."""
+    target_end = max((line.offset + line.size for line in result.target_disassembly), default=0)
+    candidate_end = max((line.offset + line.size for line in result.candidate_disassembly), default=0)
+    padding = (len(target_data) - target_end, len(candidate.data) - candidate_end)
+    if not result.exact or target_end != candidate_end:
+        return False, *padding
+    target = bytearray(target_data[:target_end])
+    encoded = bytearray(candidate.data[:candidate_end])
+    audited = {entry.candidate_index for entry in result.masked_operand_audit.entries if entry.status == "ok"}
+    for reference in candidate.relocation_references:
+        if reference.offset not in candidate.relocation_offsets:
+            continue
+        if reference.relocation_type not in (IMAGE_REL_I386_DIR32, IMAGE_REL_I386_REL32):
+            continue
+        for index in audited:
+            line = result.candidate_disassembly[index]
+            target_line = result.target_disassembly[index]
+            if line.offset <= reference.offset and reference.offset + 4 <= line.offset + line.size:
+                if line.offset != target_line.offset or line.size != target_line.size:
+                    return False, *padding
+                target[reference.offset : reference.offset + 4] = b"\0" * 4
+                encoded[reference.offset : reference.offset + 4] = b"\0" * 4
+                break
+    return target == encoded, *padding
+
+
 def match_function(
     target_data: bytes,
     candidate: ObjectFunction,
@@ -3299,7 +3333,7 @@ def match_function(
     target_lines = tuple(line.text for line in target_disassembly)
     candidate_lines = tuple(line.text for line in candidate_disassembly)
     ratio = difflib.SequenceMatcher(a=target_lines, b=candidate_lines, autojunk=False).ratio()
-    return MatchResult(
+    result = MatchResult(
         ratio=ratio,
         prefix_instructions=common_prefix_length(target_lines, candidate_lines),
         target_lines=target_lines,
@@ -3307,6 +3341,13 @@ def match_function(
         target_disassembly=target_disassembly,
         candidate_disassembly=candidate_disassembly,
         masked_operand_audit=audit_masked_operands(target_disassembly, candidate_disassembly),
+    )
+    body_exact, target_padding, candidate_padding = _encoded_body_comparison(target_data, candidate, result)
+    return replace(
+        result,
+        body_byte_exact=body_exact,
+        target_padding_bytes=target_padding,
+        candidate_padding_bytes=candidate_padding,
     )
 
 
@@ -3560,6 +3601,8 @@ def match_result_payload(
     cfg = align_basic_blocks(result) if result.target_disassembly or result.candidate_disassembly else None
     return {
         "exact": result.exact,
+        "body_byte_exact": result.body_byte_exact,
+        "padding_bytes": {"target": result.target_padding_bytes, "candidate": result.candidate_padding_bytes},
         "match_ratio": result.ratio,
         "prefix_instructions": result.prefix_instructions,
         "target_instructions": len(result.target_lines),
@@ -3763,6 +3806,10 @@ class ScratchStatus:
     audit: MaskedOperandAudit = field(default_factory=MaskedOperandAudit)
     first_target_mismatch_offset: int | None = None
     first_candidate_mismatch_offset: int | None = None
+
+    body_byte_exact: bool | None = None
+    target_padding_bytes: int = 0
+    candidate_padding_bytes: int = 0
 
     @property
     def state(self) -> str:
@@ -4109,7 +4156,7 @@ class CompilerScanRow:
     def classification(self) -> str:
         if self.best.state == "match" and self.baseline.state != "match":
             return "exact"
-        if _status_rank(self.best) > _status_rank(self.baseline):
+        if status_rank(self.best) > status_rank(self.baseline):
             return "improved"
         return "tied"
 
@@ -4458,10 +4505,17 @@ class _ScratchIncludeResolver:
             match_root / "include",
             repo_root / "third_party" / "headers",
         )
-        self._direct_dependencies: dict[tuple[Path, bool], tuple[Path, ...]] = {}
+        self._direct_dependencies: dict[tuple[Path, bool, tuple[Path, ...], str | None], tuple[Path, ...]] = {}
 
-    def direct_dependencies(self, including_path: Path, *, source: bool) -> tuple[Path, ...]:
-        cache_key = (including_path, source)
+    def direct_dependencies(
+        self,
+        including_path: Path,
+        *,
+        source: bool,
+        include_dirs: tuple[Path, ...] | None = None,
+    ) -> tuple[Path, ...]:
+        search_dirs = include_dirs if include_dirs is not None else self.include_dirs
+        cache_key = (including_path, source, search_dirs, match_toolchain.file_sha256(including_path))
         if cache_key in self._direct_dependencies:
             return self._direct_dependencies[cache_key]
         try:
@@ -4473,7 +4527,7 @@ class _ScratchIncludeResolver:
         seen: set[Path] = set()
         for match in LOCAL_INCLUDE_RE.finditer(text):
             include_name = Path(match.group(1).replace("\\", "/"))
-            candidates = [include_dir / include_name for include_dir in self.include_dirs]
+            candidates = [include_dir / include_name for include_dir in search_dirs]
             if not source:
                 candidates.insert(0, including_path.parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
@@ -4497,13 +4551,18 @@ def _scratch_include_headers(
     if config.archive is not None or config.import_thunk is not None:
         return ()
     resolver = resolver or _ScratchIncludeResolver(match_root)
+    search_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
+    if config.include_overlay is not None:
+        search_dirs = (config.include_overlay, *search_dirs)
     source = config.directory / config.source
     pending = [source]
     visited = {source}
     headers: set[Path] = set()
     while pending:
         including_path = pending.pop()
-        for dependency in resolver.direct_dependencies(including_path, source=including_path == source):
+        for dependency in resolver.direct_dependencies(
+            including_path, source=including_path == source, include_dirs=search_dirs,
+        ):
             if dependency in visited:
                 continue
             visited.add(dependency)
@@ -4561,16 +4620,6 @@ def _scratch_build_dependencies(
     )
 
 
-@lru_cache(maxsize=4096)
-def _experiment_epoch_file_sha256(
-    path_text: str,
-    mtime_ns: int,
-    size: int,
-) -> str:
-    del mtime_ns, size
-    return hashlib.sha256(Path(path_text).read_bytes()).hexdigest()
-
-
 def _experiment_epoch_path_label(path: Path, match_root: Path) -> str:
     resolved = path.resolve()
     if resolved.is_relative_to(match_root):
@@ -4595,6 +4644,7 @@ def source_probe_tree_fingerprint(
 
     match_root = match_root.resolve()
     resolver = _ScratchIncludeResolver(match_root)
+    include_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
 
     def direct_dependencies(
         text: str,
@@ -4606,7 +4656,7 @@ def source_probe_tree_fingerprint(
         seen: set[Path] = set()
         for match in LOCAL_INCLUDE_RE.finditer(text):
             include_name = Path(match.group(1).replace("\\", "/"))
-            candidates = [include_dir / include_name for include_dir in resolver.include_dirs]
+            candidates = [include_dir / include_name for include_dir in include_dirs]
             if not source and including_parent is not None:
                 candidates.insert(0, including_parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
@@ -4671,7 +4721,7 @@ def scratch_experiment_epoch(
     """Hash the canonical inputs that determine an experiment baseline."""
 
     match_root = match_root.resolve()
-    digest = hashlib.sha256(b"crimson-scratch-experiment-epoch-v1\0")
+    digest = hashlib.sha256(b"crimson-scratch-experiment-epoch-v2\0")
     profile = {
         "archive": config.archive,
         "archive_end_symbol": config.archive_end_symbol,
@@ -4691,6 +4741,11 @@ def scratch_experiment_epoch(
         "symbol": config.symbol,
         "version": DEFAULT_VERSION,
     }
+    if config.archive is None and config.import_thunk is None:
+        profile["toolchain"] = match_toolchain.scratch_toolchain_fingerprint(
+            _compiler_executable_path(config, match_root),
+            match_root,
+        )
     digest.update(json.dumps(profile, separators=(",", ":"), sort_keys=True).encode())
 
     compiler_path = _compiler_executable_path(config, match_root).resolve()
@@ -4709,26 +4764,36 @@ def scratch_experiment_epoch(
             functions_path.with_name("imports.json").resolve(),
             DEFAULT_DATA_MAP_PATH.resolve(),
             DEFAULT_NAME_MAP_PATH.resolve(),
+            Path(__file__).resolve(),
+            Path(match_toolchain.__file__).resolve(),
+            Path(match_process.__file__).resolve(),
         },
     )
     for path in sorted(dependencies, key=lambda value: _experiment_epoch_path_label(value, match_root)):
         label = _experiment_epoch_path_label(path, match_root)
         digest.update(b"\0path\0")
         digest.update(label.encode())
-        try:
-            stat = path.stat()
-        except OSError:
-            digest.update(b"\0missing")
-            continue
-        digest.update(b"\0sha256\0")
-        digest.update(
-            _experiment_epoch_file_sha256(
-                str(path),
-                stat.st_mtime_ns,
-                stat.st_size,
-            ).encode(),
+        sha256 = (
+            native_json_program_sha256(path, config.image)
+            if path in {DEFAULT_NAME_MAP_PATH.resolve(), DEFAULT_DATA_MAP_PATH.resolve()} and path.exists()
+            else match_toolchain.file_sha256(path)
         )
+        digest.update(b"\0sha256\0")
+        digest.update(sha256.encode() if sha256 is not None else b"missing")
     return digest.hexdigest()
+
+
+def _verified_native_experiment_epochs(image: str) -> dict[Path, str]:
+    statuses = collect_native_link_statuses(images=(image,), allow_absent_toolchain=True)
+    if len(statuses) != 1 or statuses[0].artifact_state != "current":
+        return {}
+    payload = json.loads((DEFAULT_NATIVE_ANALYSIS_ROOT / image / "objects.json").read_text())
+    return {
+        (REPO_ROOT / row["canonical_scratch"]).resolve(): epoch
+        for obj in payload["objects"]
+        for row in obj["functions"]
+        if isinstance(epoch := row.get("experiment_epoch"), str) and re.fullmatch(r"[0-9a-f]{64}", epoch)
+    }
 
 
 def scratch_experiment_epochs(
@@ -4739,17 +4804,30 @@ def scratch_experiment_epochs(
     """Return canonical experiment epochs keyed by resolved scratch directory."""
 
     match_root = match_root.resolve()
-    selected = (
-        {directory.resolve() for directory in directories}
-        if directories is not None
-        else None
-    )
+    selected = {directory.resolve() for directory in directories} if directories is not None else None
     epochs: dict[Path, str] = {}
+    recorded_by_image: dict[str, dict[Path, str]] = {}
     for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
         directory = conf_path.parent.resolve()
         if selected is not None and directory not in selected:
             continue
         config = load_scratch_config(directory)
+        compiler_root = _compiler_executable_path(config, match_root).parent.parent
+        if (
+            match_root == DEFAULT_MATCH_ROOT.resolve()
+            and config.archive is None
+            and config.import_thunk is None
+            and (
+                not _compiler_executable_path(config, match_root).is_file()
+                or not (compiler_root / "Include").is_dir()
+                or match_toolchain.resolve_wibo_path(match_root, required=False) is None
+            )
+        ):
+            if config.image not in recorded_by_image:
+                recorded_by_image[config.image] = _verified_native_experiment_epochs(config.image)
+            if recorded := recorded_by_image[config.image].get(directory):
+                epochs[directory] = recorded
+                continue
         epochs[directory] = scratch_experiment_epoch(config, match_root)
     return epochs
 
@@ -4761,19 +4839,29 @@ def _scratch_build_key(
     include_resolver: _ScratchIncludeResolver | None = None,
 ) -> dict[str, Any]:
     dependencies = _scratch_build_dependencies(config, match_root, include_resolver=include_resolver)
+    pipeline = [
+        match_toolchain.file_sha256(path)
+        for path in (
+            Path(__file__),
+            Path(match_toolchain.__file__),
+            Path(match_process.__file__),
+        )
+    ]
     if config.import_thunk is not None:
         return {
+            "pipeline_sha256": pipeline,
             "import_thunk": config.import_thunk,
             "dependencies": [
                 [
                     str(path.relative_to(match_root) if path.is_relative_to(match_root) else path),
-                    _mtime_ns(path),
+                    match_toolchain.file_sha256(path),
                 ]
                 for path in dependencies
             ],
         }
     if config.archive is not None:
         return {
+            "pipeline_sha256": pipeline,
             "archive": config.archive,
             "archive_end_symbol": config.archive_end_symbol,
             "archive_extent": config.archive_extent,
@@ -4784,17 +4872,25 @@ def _scratch_build_key(
             "dependencies": [
                 [
                     str(path.relative_to(match_root) if path.is_relative_to(match_root) else path),
-                    _mtime_ns(path),
+                    match_toolchain.file_sha256(path),
                 ]
                 for path in dependencies
             ],
         }
     key: dict[str, Any] = {
+        "toolchain": match_toolchain.scratch_toolchain_fingerprint(
+            _compiler_executable_path(config, match_root),
+            match_root,
+        ),
+        "pipeline_sha256": pipeline,
         "compiler": config.compiler,
         "argv": list(_scratch_compile_argv(config, match_root)),
         "auto_inline_off": list(config.auto_inline_off),
         "dependencies": [
-            [str(path.relative_to(match_root) if path.is_relative_to(match_root) else path), _mtime_ns(path)]
+            [
+                str(path.relative_to(match_root) if path.is_relative_to(match_root) else path),
+                match_toolchain.file_sha256(path),
+            ]
             for path in dependencies
         ],
     }
@@ -5063,8 +5159,8 @@ def compile_scratch(
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
     force: bool = False,
+    deadline: float | None = None,
 ) -> Path:
-    import subprocess
     import tempfile
 
     match_root = match_root.resolve()
@@ -5135,13 +5231,11 @@ def compile_scratch(
             environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(
                 config.include_overlay.resolve(),
             )
-        completed = subprocess.run(
+        completed = run_compiler(
             command,
             cwd=temp_dir,
             env=environment,
-            capture_output=True,
-            text=True,
-            check=False,
+            deadline=deadline,
         )
         if completed.returncode != 0 or not temp_obj.exists():
             raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
@@ -5247,7 +5341,6 @@ def generate_compiler_listing(
 ) -> CompilerListingResult:
     """Generate a VC source/assembly listing and prove its function object is unchanged."""
 
-    import subprocess
     import tempfile
 
     if config.archive is not None or config.import_thunk is not None:
@@ -5303,13 +5396,11 @@ def generate_compiler_listing(
         environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
         if config.include_overlay is not None:
             environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(config.include_overlay.resolve())
-        completed = subprocess.run(
+        completed = run_compiler(
             command,
             cwd=temp,
             env=environment,
-            capture_output=True,
-            text=True,
-            check=False,
+
         )
         if completed.returncode != 0 or not temp_object.is_file() or not temp_listing.is_file():
             raise RuntimeError(f"listing compile failed:\n{completed.stdout}{completed.stderr}")
@@ -5461,6 +5552,8 @@ def _exception_summary(exc: Exception) -> str:
 def evaluate_scratch(
     config: ScratchConfig,
     match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    deadline: float | None = None,
 ) -> ScratchStatus:
     """Compile and evaluate one explicit scratch configuration."""
 
@@ -5478,7 +5571,7 @@ def evaluate_scratch(
         address = function.address
         image = load_image(image_path, manifest.image_base)
         target_size = len(image.function_bytes(start, end))
-        obj_path = compile_scratch(config, match_root)
+        obj_path = compile_scratch(config, match_root, deadline=deadline)
         result = run_match(
             obj_path=obj_path,
             function=config.function,
@@ -5496,6 +5589,9 @@ def evaluate_scratch(
             config=config,
             address=address,
             target_size=target_size,
+            body_byte_exact=result.body_byte_exact,
+            target_padding_bytes=result.target_padding_bytes,
+            candidate_padding_bytes=result.candidate_padding_bytes,
             ratio=result.ratio,
             prefix_instructions=result.prefix_instructions,
             target_instructions=len(result.target_lines),
@@ -5575,6 +5671,7 @@ def evaluate_source_overlay(
     *,
     match_root: Path = DEFAULT_MATCH_ROOT,
     source_path: Path | None = None,
+    deadline: float | None = None,
 ) -> ScratchStatus:
     """Evaluate one temporary source or included-header overlay."""
 
@@ -5627,7 +5724,7 @@ def evaluate_source_overlay(
                 else None
             ),
         )
-        return evaluate_scratch(shadow_config, match_root)
+        return evaluate_scratch(shadow_config, match_root, deadline=deadline)
 
 
 def available_scratch_compilers(match_root: Path = DEFAULT_MATCH_ROOT) -> tuple[str, ...]:
@@ -5959,7 +6056,7 @@ def inspect_match_function(
         for status in statuses or []
         if status.config.image == image and status.address == address
     ]
-    matching_statuses = sorted(matching_statuses, key=_status_rank, reverse=True)
+    matching_statuses = sorted(matching_statuses, key=status_rank, reverse=True)
     annotations = _analysis_function_metadata(
         REPO_ROOT / "analysis" / "annotations" / "functions.json",
         image,
@@ -6036,11 +6133,12 @@ def _scratch_cache_key(
             "import_thunk": config.import_thunk,
             "reference_aliases": [list(alias) for alias in config.reference_aliases],
         },
-        "image_mtime": _mtime_ns(image_path),
-        "matcher_mtime": _mtime_ns(Path(__file__)),
+        "imports_sha256": match_toolchain.file_sha256(default_functions_path(config.image).with_name("imports.json")),
+        "image_sha256": match_toolchain.file_sha256(image_path),
+        "matcher_sha256": match_toolchain.file_sha256(Path(__file__)),
         "manifest": _manifest_digest(manifest),
-        "data_map_mtime": _mtime_ns(DEFAULT_DATA_MAP_PATH),
-        "name_map_mtime": _mtime_ns(DEFAULT_NAME_MAP_PATH),
+        "data_map_sha256": match_toolchain.file_sha256(DEFAULT_DATA_MAP_PATH),
+        "name_map_sha256": match_toolchain.file_sha256(DEFAULT_NAME_MAP_PATH),
     }
 
 
@@ -6150,6 +6248,9 @@ def _store_cached_status(
     cache_path = _scratch_cache_path(status.config)
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     fields = {
+        "body_byte_exact": status.body_byte_exact,
+        "target_padding_bytes": status.target_padding_bytes,
+        "candidate_padding_bytes": status.candidate_padding_bytes,
         "target_size": status.target_size,
         "ratio": status.ratio,
         "prefix_instructions": status.prefix_instructions,
@@ -6290,6 +6391,9 @@ def collect_scratch_statuses(
                 config=config,
                 address=function.address,
                 target_size=len(target_data),
+                body_byte_exact=result.body_byte_exact,
+                target_padding_bytes=result.target_padding_bytes,
+                candidate_padding_bytes=result.candidate_padding_bytes,
                 ratio=result.ratio,
                 prefix_instructions=result.prefix_instructions,
                 target_instructions=len(result.target_lines),
@@ -8247,7 +8351,7 @@ def collect_image_totals(
     return totals
 
 
-def _status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int]:
+def status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int]:
     state_rank = {"error": 0, "wip": 1, "audit": 2, "match": 3}[status.state]
     return (
         state_rank,
@@ -8264,26 +8368,37 @@ def status_improves_claim_baseline(
 ) -> bool:
     if not isinstance(baseline, dict):
         return False
-    state = baseline.get("state")
-    state_rank = {"error": 0, "wip": 1, "audit": 2, "match": 3}.get(str(state), -1)
-    ratio = baseline.get("match_ratio")
-    references = baseline.get("references")
-    reference_debt = (
-        int(references.get("unresolved", 0)) + int(references.get("mismatch", 0))
-        if isinstance(references, dict)
-        else 0
+    try:
+        references = baseline["references"]
+        mismatch = baseline["first_mismatch"]
+        previous = ScratchStatus(
+            config=status.config,
+            address=int(baseline["address"]),
+            target_size=int(baseline["target_bytes"]),
+            ratio=baseline["match_ratio"],
+            prefix_instructions=int(baseline["prefix_instructions"]),
+            target_instructions=int(baseline["target_instructions"]),
+            candidate_instructions=int(baseline["candidate_instructions"]),
+            error=baseline["error"],
+            masked_ok=int(references["ok"]),
+            masked_unresolved=int(references["unresolved"]),
+            masked_mismatches=int(references["mismatch"]),
+            first_target_mismatch_offset=mismatch["target_offset"],
+            first_candidate_mismatch_offset=mismatch["candidate_offset"],
+        )
+    except (KeyError, TypeError, ValueError):
+        return False
+    return status_improves(previous, status)
+
+
+def status_improves(baseline: ScratchStatus, candidate: ScratchStatus) -> bool:
+    return (
+        candidate.state != "error"
+        and candidate.address == baseline.address
+        and candidate.target_size == baseline.target_size
+        and not fuzzy_score_tradeoffs(baseline, candidate)
+        and status_rank(candidate) > status_rank(baseline)
     )
-    baseline_rank = (
-        state_rank,
-        float(ratio) if isinstance(ratio, int | float) else -1.0,
-        -reference_debt,
-        int(baseline.get("prefix_instructions", 0)),
-        -abs(
-            int(baseline.get("candidate_instructions", 0))
-            - int(baseline.get("target_instructions", 0)),
-        ),
-    )
-    return _status_rank(status) > baseline_rank
 
 
 def collect_triage_rows(
@@ -8314,7 +8429,7 @@ def collect_triage_rows(
             target_size = len(image.function_bytes(function.address, function.end))
             function_statuses = statuses_by_address.get((image_name, function.address), [])
             usable = [status for status in function_statuses if status.ratio is not None]
-            best_status = max(function_statuses, key=_status_rank) if function_statuses else None
+            best_status = max(function_statuses, key=status_rank) if function_statuses else None
             exact_bytes = max(
                 (
                     min(status.target_size, target_size)
@@ -8820,6 +8935,8 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         "image": status.config.image,
         "function": status.config.function,
         "address": status.address,
+        "body_byte_exact": status.body_byte_exact,
+        "padding_bytes": {"target": status.target_padding_bytes, "candidate": status.candidate_padding_bytes},
         "target_bytes": status.target_size,
         "fuzzy_weighted_bytes": status.fuzzy_weighted_bytes,
         "fuzzy_gap_bytes": status.fuzzy_gap_bytes,
@@ -9075,7 +9192,7 @@ def render_probe_result(result: ProbeResult) -> str:
 
 
 def sort_profile_statuses(statuses: list[ScratchStatus]) -> list[ScratchStatus]:
-    return sorted(statuses, key=_status_rank, reverse=True)
+    return sorted(statuses, key=status_rank, reverse=True)
 
 
 def build_compiler_scan_rows(
@@ -9100,7 +9217,7 @@ def build_compiler_scan_rows(
         best = max(
             candidates,
             key=lambda status: (
-                _status_rank(status),
+                status_rank(status),
                 status.config.compiler == baseline.config.compiler
                 and status.config.cflags == baseline.config.cflags,
             ),
@@ -9275,7 +9392,7 @@ def collect_residual_frontier_rows(
             status.address if status.address else status.config.function,
         )
         best = best_by_target.get(target)
-        if best is None or _status_rank(status) > _status_rank(best):
+        if best is None or status_rank(status) > status_rank(best):
             best_by_target[target] = status
 
     rows = [
@@ -10408,8 +10525,15 @@ def render_status_markdown(
 ) -> str:
     overall = _overall_totals(totals)
     dispositions = matching_scope_function_disposition_payloads(scope)
+    body_exact = sum(status.body_byte_exact is True for status in statuses)
+    body_evaluated = sum(status.body_byte_exact is not None for status in statuses)
     lines = [
         "# Matching Status",
+        "",
+        (
+            f"Relocation-aware encoded-body identity: **{body_exact}/{body_evaluated}** evaluated functions. "
+            "Normalized exactness is reported separately below; recognized terminal padding is excluded."
+        ),
         "",
         f"Scope: `{scope}` from `analysis/matching_scope.json`.",
         "",

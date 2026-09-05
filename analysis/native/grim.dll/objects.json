@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "7f96848900808a8d7e0f73b7e9dffacd2d1a6cbac2563ce18323603b9c4b9e4b",
+  "audit_digest": "66e9b18a26cc6b238b1eceae486224508ae1be4225918d10a9bdb8ab2f1420a2",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4319,12 +4319,18 @@
           "canonical_source_sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37",
           "effective_end": 268439557,
           "end": 268439557,
+          "experiment_epoch": "2738715f09e872105fb95561f75411dee1e95c2436c90fe2fdc5ce3bf5f086cd",
           "function": "grim_crt_empty_initializer_slot_01_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4335,10 +4341,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4411,12 +4422,18 @@
           "canonical_source_sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295",
           "effective_end": 268439569,
           "end": 268439569,
+          "experiment_epoch": "3d53c9acc7ddc021635cdd9ee385a56ac5d34bdb440287e22af8784712abfe99",
           "function": "grim_crt_empty_initializer_slot_01",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4427,10 +4444,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4503,12 +4525,18 @@
           "canonical_source_sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa",
           "effective_end": 268439589,
           "end": 268439589,
+          "experiment_epoch": "d37581a3d48563161d65bbd1458271c18de92188ab8e9146bc02d9cceb9f1f4e",
           "function": "grim_crt_empty_initializer_slot_02_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4519,10 +4547,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4595,12 +4628,18 @@
           "canonical_source_sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95",
           "effective_end": 268439601,
           "end": 268439601,
+          "experiment_epoch": "cd51b8a318674201ab3234da0b7b2afe8da70194f38cadb676a9df68e4cc66fd",
           "function": "grim_crt_empty_initializer_slot_02",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4611,10 +4650,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4687,12 +4731,18 @@
           "canonical_source_sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838",
           "effective_end": 268439621,
           "end": 268439621,
+          "experiment_epoch": "0199de0f4bbc07fb2f525759b5701382ac61c8ff5dcc2434889cd627327aff07",
           "function": "grim_crt_empty_initializer_slot_03_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4703,10 +4753,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4779,12 +4834,18 @@
           "canonical_source_sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd",
           "effective_end": 268439633,
           "end": 268439633,
+          "experiment_epoch": "58695add3002e840106b934f893dad85243ca16ef3fd6ad71af090fe7409d408",
           "function": "grim_crt_empty_initializer_slot_03",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4795,10 +4856,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4871,12 +4937,18 @@
           "canonical_source_sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166",
           "effective_end": 268439653,
           "end": 268439653,
+          "experiment_epoch": "506077249dea3e9e75c5d4903c8a1bad4b54e20fbba47a0c50666dcf8a9c0263",
           "function": "grim_crt_empty_initializer_slot_04_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4887,10 +4959,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -4963,12 +5040,18 @@
           "canonical_source_sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42",
           "effective_end": 268439665,
           "end": 268439665,
+          "experiment_epoch": "1069d72e6d6a5e1c0182244e338933b599590ae57211eb74ae5ac19cc0b32b55",
           "function": "grim_crt_empty_initializer_slot_04",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -4979,10 +5062,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5055,12 +5143,18 @@
           "canonical_source_sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a",
           "effective_end": 268439685,
           "end": 268439685,
+          "experiment_epoch": "a26a2d0d4466092ce26c20ced38bb5c2274e07d6baa4af76a313948c86be066e",
           "function": "grim_crt_empty_initializer_slot_05_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5071,10 +5165,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5147,12 +5246,18 @@
           "canonical_source_sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4",
           "effective_end": 268439697,
           "end": 268439697,
+          "experiment_epoch": "e9340d9595a89b9dd2b77c5a2cbae3c45284291e7a0465fe3c3a34d2f083ecbd",
           "function": "grim_crt_empty_initializer_slot_05",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5163,10 +5268,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5239,12 +5349,18 @@
           "canonical_source_sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8",
           "effective_end": 268439717,
           "end": 268439717,
+          "experiment_epoch": "3aee168350dd62667a9fa62a0459181b45e275d49c7e6fd65d0a89aebb60d5de",
           "function": "grim_crt_empty_initializer_slot_06_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5255,10 +5371,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5331,12 +5452,18 @@
           "canonical_source_sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf",
           "effective_end": 268439729,
           "end": 268439729,
+          "experiment_epoch": "b489cf72fb85866db977a82e5d3f40365aa39be79c21d0e4509eb87cb2210e74",
           "function": "grim_crt_empty_initializer_slot_06",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5347,10 +5474,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5423,12 +5555,18 @@
           "canonical_source_sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229",
           "effective_end": 268439749,
           "end": 268439749,
+          "experiment_epoch": "dc23dc73b3d4057564f968fffe796f91836715ce5b7ad6a9db688ab5674e7996",
           "function": "grim_crt_empty_initializer_slot_07_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5439,10 +5577,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5515,12 +5658,18 @@
           "canonical_source_sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326",
           "effective_end": 268439761,
           "end": 268439761,
+          "experiment_epoch": "a7f37526002de02fa7edacb0f482eeabb4df726896cf5f111f5078ec8f74a368",
           "function": "grim_crt_empty_initializer_slot_07",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5531,10 +5680,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5607,12 +5761,18 @@
           "canonical_source_sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32",
           "effective_end": 268439781,
           "end": 268439781,
+          "experiment_epoch": "bbd6c3de5b4488e65c79f3f4ddcaaa5284d0f23656ae58e5bf7874f654c4f70e",
           "function": "grim_crt_empty_initializer_slot_08_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5623,10 +5783,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5699,12 +5864,18 @@
           "canonical_source_sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e",
           "effective_end": 268439793,
           "end": 268439793,
+          "experiment_epoch": "84a15019e3fca77d27d12ac973143a58f1dd0676f98961249090db1a9156a1d0",
           "function": "grim_crt_empty_initializer_slot_08",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5715,10 +5886,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5791,12 +5967,18 @@
           "canonical_source_sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47",
           "effective_end": 268439813,
           "end": 268439813,
+          "experiment_epoch": "35990843726f7e559e41e9f37b867e3d9553d947c6837181e678070168a62e55",
           "function": "grim_crt_empty_initializer_slot_09_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5807,10 +5989,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5883,12 +6070,18 @@
           "canonical_source_sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1",
           "effective_end": 268439825,
           "end": 268439825,
+          "experiment_epoch": "f1da77f6a61ba5457d8fdf599791adb0514e73caf361be116c33fb14f416f645",
           "function": "grim_crt_empty_initializer_slot_09",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5899,10 +6092,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -5975,12 +6173,18 @@
           "canonical_source_sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1",
           "effective_end": 268439845,
           "end": 268439845,
+          "experiment_epoch": "5d3200a09d966728e30adccf18ea572a81646b26c7309a2f31848710ad64071a",
           "function": "grim_crt_empty_initializer_slot_10_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -5991,10 +6195,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -6067,12 +6276,18 @@
           "canonical_source_sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145",
           "effective_end": 268439857,
           "end": 268439857,
+          "experiment_epoch": "7599fd69a72d0fe6fb331b7ece3a79b14201d3a0e59020f43356fc06e72d76c8",
           "function": "grim_crt_empty_initializer_slot_10",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -6083,10 +6298,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -6159,12 +6379,18 @@
           "canonical_source_sha256": "dcd455c70baa4c4ff1cb87e0e917ed85463771ecca5d7391401efbbb314899bf",
           "effective_end": 268439885,
           "end": 268439885,
+          "experiment_epoch": "ff9ecf9d9c1f1e9a9e27b80dd308dbe7a54a23a8cfb1f4bf01413f8b6f7184e4",
           "function": "grim_missing_frame_callback",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -6175,10 +6401,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -6251,12 +6482,18 @@
           "canonical_source_sha256": "a76195e462cd201b2bd828c26f597fff24464e77128f34ee49179601056e08e1",
           "effective_end": 268439891,
           "end": 268439891,
+          "experiment_epoch": "89af2c08320f19e69b4c2ea1492057d5be4f922ebce8011bdaf2ae1dd101b643",
           "function": "grim_default_device_callback",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -6267,10 +6504,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -6343,12 +6585,18 @@
           "canonical_source_sha256": "b9ca078e15f084cb81c2fc18a6c522777957db1a635df14efd5c625580865e2b",
           "effective_end": 268439905,
           "end": 268439905,
+          "experiment_epoch": "67221e7866e5859233e1be9c371678a5d61cbb7edd4d31a2f1d48fe709a65483",
           "function": "grim_noop",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -6359,10 +6607,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -6435,12 +6688,18 @@
           "canonical_source_sha256": "0e68a98e072448fc28f96a70a71c0c55536b75695f99b8fd26725ff1c2d109d2",
           "effective_end": 268441349,
           "end": 268441349,
+          "experiment_epoch": "614558854f4c100f24a6d1cf2ac339cd21c3157151dccbe8bad86343443bdbcd",
           "function": "grim_config_defaults_init_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -6451,10 +6710,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -6547,12 +6811,18 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
+          "experiment_epoch": "89f44aac0571c8e16662938ceb07a99357cc7daba33f27a7b60099af6ea324bb",
           "function": "grim_config_defaults_init",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 140,
             "masked_mismatches": 0,
             "masked_ok": 83,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 140,
             "ratio": 1.0,
             "state": "match",
@@ -6563,10 +6833,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 140,
         "masked_mismatches": 0,
         "masked_ok": 83,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 140,
         "ratio": 1.0,
         "state": "match",
@@ -6654,12 +6929,18 @@
           "canonical_source_sha256": "b69f81f0afe689353fd8df59394e3c861a750886b0e601c037eb80e446525fbe",
           "effective_end": 268453872,
           "end": 268453872,
+          "experiment_epoch": "267b2c04b81b453dfb8a03f1a921221f8dd910ebda80195626fa66e656a6cc76",
           "function": "grim_apply_render_state",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 232,
             "masked_mismatches": 0,
             "masked_ok": 41,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 232,
             "ratio": 1.0,
             "state": "match",
@@ -6670,10 +6951,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 232,
         "masked_mismatches": 0,
         "masked_ok": 41,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 232,
         "ratio": 1.0,
         "state": "match",
@@ -6751,12 +7037,18 @@
           "canonical_source_sha256": "72f7f6191100514be03cfc4fd37584baa315797f3c7d39069b062cdb8d6294d5",
           "effective_end": 268453923,
           "end": 268453923,
+          "experiment_epoch": "46bea7ee073231dffb87e2c8f688825d529e2df05edee38aeae4fc3ec4547b68",
           "function": "grim_is_texture_format_supported",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 19,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 19,
             "ratio": 1.0,
             "state": "match",
@@ -6767,10 +7059,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 19,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 19,
         "ratio": 1.0,
         "state": "match",
@@ -6853,12 +7150,18 @@
           "canonical_source_sha256": "6b6c6ee6868b0e923b5c7b7845e10f4e0e1b4ea083b8b5deb9177dd3d9e2ed59",
           "effective_end": 268454168,
           "end": 268454168,
+          "experiment_epoch": "e72df4cdf99052d64edd33055f6fd633fa66ff8e83c9d6a68e6e1e9152c2e7d6",
           "function": "grim_select_texture_format",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 67,
             "masked_mismatches": 0,
             "masked_ok": 17,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 67,
             "ratio": 1.0,
             "state": "match",
@@ -6869,10 +7172,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 67,
         "masked_mismatches": 0,
         "masked_ok": 17,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 67,
         "ratio": 1.0,
         "state": "match",
@@ -6950,12 +7258,18 @@
           "canonical_source_sha256": "ac717cd61cd91bd5e296cc3873451d29ae5ca36101ffc2c0a25261cf748259b1",
           "effective_end": 268454250,
           "end": 268454250,
+          "experiment_epoch": "34d90d3200d4b898e88aa4969113671a9198d07fcf6352057eff6916f1a437a8",
           "function": "grim_timing_init",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 13,
             "masked_mismatches": 0,
             "masked_ok": 10,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 13,
             "ratio": 1.0,
             "state": "match",
@@ -6966,10 +7280,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 13,
         "masked_mismatches": 0,
         "masked_ok": 10,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 13,
         "ratio": 1.0,
         "state": "match",
@@ -7047,12 +7366,18 @@
           "canonical_source_sha256": "2ffc340c1a6dd210f202e57fda48dc790e0578596d0431905876c554bd71d6a3",
           "effective_end": 268454472,
           "end": 268454472,
+          "experiment_epoch": "d6eb31a9373fa12065c5130ef8591d31b66b5e0abe62d535bf7e6364890b0f57",
           "function": "grim_timing_update",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 53,
             "masked_mismatches": 0,
             "masked_ok": 23,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 53,
             "ratio": 1.0,
             "state": "match",
@@ -7063,10 +7388,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 53,
         "masked_mismatches": 0,
         "masked_ok": 23,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 53,
         "ratio": 1.0,
         "state": "match",
@@ -7149,12 +7479,18 @@
           "canonical_source_sha256": "71c9ffbafc42ae0673708f5a022e2d5aaf28c8f9f3a2e49fd73f196f3708e142",
           "effective_end": 268454563,
           "end": 268454563,
+          "experiment_epoch": "bf3c7cbb3bf92880ea8b7aa4d3157947613a6565a5e40dd0244c0fd13efc4193",
           "function": "grim_texture_init",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 38,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 38,
             "ratio": 1.0,
             "state": "match",
@@ -7165,10 +7501,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 38,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 38,
         "ratio": 1.0,
         "state": "match",
@@ -7251,12 +7592,18 @@
           "canonical_source_sha256": "0e4b25e1c7de43398c4a447edd855a831dd607cc220d3f9528dbcd16267c9e97",
           "effective_end": 268454642,
           "end": 268454642,
+          "experiment_epoch": "dd3abfa89c9a516b86373c5952fd7b24d9e80b4afce0870f3988204b8dd60708",
           "function": "grim_texture_release",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 25,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 25,
             "ratio": 1.0,
             "state": "match",
@@ -7267,10 +7614,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 25,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 25,
         "ratio": 1.0,
         "state": "match",
@@ -7343,12 +7695,18 @@
           "canonical_source_sha256": "553aa627fc4768f567a3633c4a8bcce7afb0bfea2ca9d273630e1dad2f1db7a1",
           "effective_end": 268454755,
           "end": 268454755,
+          "experiment_epoch": "54c0698230377ae468eff78a6a278eb44963c129ae9b589327fb9bbfb045db68",
           "function": "grim_path_has_extension",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 50,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 50,
             "ratio": 1.0,
             "state": "match",
@@ -7359,10 +7717,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 50,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 50,
         "ratio": 1.0,
         "state": "match",
@@ -7439,12 +7802,18 @@
           "canonical_source_sha256": "21bec78205a884baba9032d460b34b904188436fd182dbc0b21f66fe46fe5609",
           "effective_end": 268455553,
           "end": 268455553,
+          "experiment_epoch": "b83a7e6e501662ade5cf0e39d2c6f43ad7f9f6e3d01ce4a7ba189bac0b9ae6a9",
           "function": "grim_decode_jaz_texture",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 252,
             "masked_mismatches": 0,
             "masked_ok": 22,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 252,
             "ratio": 1.0,
             "state": "match",
@@ -7455,10 +7824,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 252,
         "masked_mismatches": 0,
         "masked_ok": 22,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 252,
         "ratio": 1.0,
         "state": "match",
@@ -7558,12 +7932,18 @@
           "canonical_source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
           "effective_end": 268455609,
           "end": 268455609,
+          "experiment_epoch": "b607ae3a4509294b264c212095ef7703f8c56a624201b1469d3232c598687c4c",
           "function": "grim_jaz_jpeg_error_exit",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 14,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 14,
             "ratio": 1.0,
             "state": "match",
@@ -7574,10 +7954,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 14,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 14,
         "ratio": 1.0,
         "state": "match",
@@ -7669,12 +8054,18 @@
           "canonical_source_sha256": "4668360ac21bc92b5f8a3eb65c2f123cf40a90989f5b728f9c34c19bd1128212",
           "effective_end": 268456207,
           "end": 268456207,
+          "experiment_epoch": "6e83af30b889157db2176abc1fb4f0e6b850fdf0f5fe3f29adcf7dbd00e249df",
           "function": "grim_texture_load_file",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 235,
             "masked_mismatches": 0,
             "masked_ok": 25,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 235,
             "ratio": 1.0,
             "state": "match",
@@ -7685,10 +8076,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 235,
         "masked_mismatches": 0,
         "masked_ok": 25,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 235,
         "ratio": 1.0,
         "state": "match",
@@ -7771,12 +8167,18 @@
           "canonical_source_sha256": "e30a93cea369bd4655b928ebf956a9b00ad72d8625818ac27d953f6e95aa8adf",
           "effective_end": 268456301,
           "end": 268456301,
+          "experiment_epoch": "865070993cf8ddb28e7e3dfa97706ec97174d73c2199a9c053900490e26249eb",
           "function": "grim_texture_name_equals",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 44,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 44,
             "ratio": 1.0,
             "state": "match",
@@ -7787,10 +8189,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 44,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 44,
         "ratio": 1.0,
         "state": "match",
@@ -7873,12 +8280,18 @@
           "canonical_source_sha256": "0ce6338a65cd202fa31e301b746665d9d109f1c21a4c571250a2c0b51afc6917",
           "effective_end": 268456372,
           "end": 268456372,
+          "experiment_epoch": "fdef07865b199bfb8fc4568039f65d15b437cd2b0716e4119e68c47aec6f133a",
           "function": "grim_find_texture_by_name",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 33,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 33,
             "ratio": 1.0,
             "state": "match",
@@ -7889,10 +8302,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 33,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 33,
         "ratio": 1.0,
         "state": "match",
@@ -7965,12 +8383,18 @@
           "canonical_source_sha256": "370a003800daf0322732e98e99a7e16fffbf238216a5a8cac6dd6587fe73aac3",
           "effective_end": 268456412,
           "end": 268456412,
+          "experiment_epoch": "40e036e9d088aeafdf41263111833abbdd002fe089c70502e2113acc245ed8c6",
           "function": "grim_find_free_texture_slot",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 10,
             "masked_mismatches": 0,
             "masked_ok": 2,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 10,
             "ratio": 1.0,
             "state": "match",
@@ -7981,10 +8405,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 10,
         "masked_mismatches": 0,
         "masked_ok": 2,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 10,
         "ratio": 1.0,
         "state": "match",
@@ -8069,12 +8498,18 @@
           "canonical_source_sha256": "aca05d88ab2656f6ee004aaef6c19a058feca50f5bbcffe16d761fcd8d9b6edd",
           "effective_end": 268456681,
           "end": 268456681,
+          "experiment_epoch": "e9b851c35c120b5acf368b19eb83cb8c85c3b06f0caec7404c8b50dd697922e8",
           "function": "grim_load_texture_internal",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 80,
             "masked_mismatches": 0,
             "masked_ok": 14,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 80,
             "ratio": 1.0,
             "state": "match",
@@ -8085,10 +8520,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 80,
         "masked_mismatches": 0,
         "masked_ok": 14,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 80,
         "ratio": 1.0,
         "state": "match",
@@ -8168,12 +8608,18 @@
           "canonical_source_sha256": "c86c7690413ae55cc7211e152c04c423f5a1b5a48c678237db2f8a20ce1ddee1",
           "effective_end": 268458560,
           "end": 268458560,
+          "experiment_epoch": "174b388000dbe63faa11de8de5e29e2d474c492a54edec078cb7db5ffc5a3e83",
           "function": "grim_state_init",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 425,
             "masked_mismatches": 0,
             "masked_ok": 166,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 425,
             "ratio": 1.0,
             "state": "match",
@@ -8184,10 +8630,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 425,
         "masked_mismatches": 0,
         "masked_ok": 166,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 425,
         "ratio": 1.0,
         "state": "match",
@@ -8260,12 +8711,18 @@
           "canonical_source_sha256": "44f42f149fdded1e2c03a1ca44928b1ef335e67d068a644ab68f8fdd9d63fb9b",
           "effective_end": 268458706,
           "end": 268458706,
+          "experiment_epoch": "e0801c9d1d10e17a0866c602658b375a10b285378a50e51e509c746f8ca11b7f",
           "function": "grim_lookup_blob_load",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 51,
             "masked_mismatches": 0,
             "masked_ok": 15,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 51,
             "ratio": 1.0,
             "state": "match",
@@ -8276,10 +8733,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 51,
         "masked_mismatches": 0,
         "masked_ok": 15,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 51,
         "ratio": 1.0,
         "state": "match",
@@ -8352,12 +8814,18 @@
           "canonical_source_sha256": "3e7b88768af62d3be6e63aac897629af3a94a9150af43f931ae5e073515f5a9d",
           "effective_end": 268458866,
           "end": 268458866,
+          "experiment_epoch": "35217ce95fbdcba5f17050c133a5e8afdd5a8df285a7f590a5ab09b868568926",
           "function": "grim_lookup_blob_find",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 66,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 66,
             "ratio": 1.0,
             "state": "match",
@@ -8368,10 +8836,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 66,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 66,
         "ratio": 1.0,
         "state": "match",
@@ -8444,12 +8917,18 @@
           "canonical_source_sha256": "e4bb86934322827e1867ad9c559282b81ef618b45213f690f885530ef1b14fa3",
           "effective_end": 268459026,
           "end": 268459026,
+          "experiment_epoch": "8f2ca06f5fb325f0cd39cd79f6cf54ef74382148db6283eeeddbdded23093dbf",
           "function": "grim_lookup_blob_size_for_path",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 66,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 66,
             "ratio": 1.0,
             "state": "match",
@@ -8460,10 +8939,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 66,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 66,
         "ratio": 1.0,
         "state": "match",
@@ -8541,12 +9025,18 @@
           "canonical_source_sha256": "4db4dd64419086e9017eca019a8fc8ba1afbd678e15d1a4500e5cd86ed17e070",
           "effective_end": 268459072,
           "end": 268459072,
+          "experiment_epoch": "0175181395e6c65667db3b01e00e2969bb21282cf625dd86e0efc2619bbe5d81",
           "function": "grim_set_key_char_buffer",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 7,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 7,
             "ratio": 1.0,
             "state": "match",
@@ -8557,10 +9047,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 7,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 7,
         "ratio": 1.0,
         "state": "match",
@@ -8638,12 +9133,18 @@
           "canonical_source_sha256": "e0df90be7c689f80a3ec2eddff40e62497eb8033034826315cc890e6dc382024",
           "effective_end": 268459124,
           "end": 268459124,
+          "experiment_epoch": "41a4fc7080b042377e25e9b37d38834a1e29ba9cb48ed1e08f400a4ede1fbf7d",
           "function": "grim_get_key_char",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 22,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 22,
             "ratio": 1.0,
             "state": "match",
@@ -8654,10 +9155,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 22,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 22,
         "ratio": 1.0,
         "state": "match",
@@ -8735,12 +9241,18 @@
           "canonical_source_sha256": "e37cda0f8901f5bbced1225ddcfb73a1f9748d55d0ea850ff5f2e10945cfa5d3",
           "effective_end": 268459144,
           "end": 268459144,
+          "experiment_epoch": "c4e4e952c5e760d88afa10d23513533fa5bd1c0268862b439f1d98b5d90cb0a3",
           "function": "grim_release",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 4,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 4,
             "ratio": 1.0,
             "state": "match",
@@ -8751,10 +9263,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 4,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 4,
         "ratio": 1.0,
         "state": "match",
@@ -8832,12 +9349,18 @@
           "canonical_source_sha256": "5848ae2a26f2dd7dffc8df189ad5ff309fe0a6eebb49d8b2bc63dab58c636c85",
           "effective_end": 268459164,
           "end": 268459164,
+          "experiment_epoch": "b493c673285cf16cc9ce524c961ee88322b8db2b5f47cd3430cd60e03d517848",
           "function": "grim_set_paused",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -8848,10 +9371,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -8929,12 +9457,18 @@
           "canonical_source_sha256": "60cea3ff2f63d267045eeca109095df0388a4ac82b7ea5b4ee1cffd9c3632cf2",
           "effective_end": 268459175,
           "end": 268459175,
+          "experiment_epoch": "9b43e30c0939736bdab13da1b0cb83a0f0d45e45aa4d3e15f19fed28113dc0c1",
           "function": "grim_get_version",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -8945,10 +9479,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -9036,12 +9575,18 @@
           "canonical_source_sha256": "150afee9fa00587bfb4c704dd456af726e11a9d684ba52d52135e1157fc7a8fb",
           "effective_end": 268460014,
           "end": 268460014,
+          "experiment_epoch": "e2b91f812b23188b3648b818d415752a921295065e5515f4c8563dbae352ca79",
           "function": "grim_init_system",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 93,
             "masked_mismatches": 0,
             "masked_ok": 32,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 93,
             "ratio": 1.0,
             "state": "match",
@@ -9052,10 +9597,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 93,
         "masked_mismatches": 0,
         "masked_ok": 32,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 93,
         "ratio": 1.0,
         "state": "match",
@@ -9133,12 +9683,18 @@
           "canonical_source_sha256": "238c1f1d2e0075264a6c559e14715eec0e188e8a3e5dd0ae5683ed088fd389c6",
           "effective_end": 268460054,
           "end": 268460054,
+          "experiment_epoch": "4fac265694f78d5da729013b4fb11d8292ea95d9010241442a9ca567f6598d39",
           "function": "grim_shutdown",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 8,
             "masked_mismatches": 0,
             "masked_ok": 7,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 8,
             "ratio": 1.0,
             "state": "match",
@@ -9149,10 +9705,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 8,
         "masked_mismatches": 0,
         "masked_ok": 7,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 8,
         "ratio": 1.0,
         "state": "match",
@@ -9230,12 +9791,18 @@
           "canonical_source_sha256": "a2c494263132a3595b0a0bc6cc3047f31c3b5031326518acbee6ea8d94f4909d",
           "effective_end": 268460072,
           "end": 268460072,
+          "experiment_epoch": "5b2ae55d4a0e89c1db95cca0393f7bf2b196fbe89d9131f22fef0e614dd3a81c",
           "function": "grim_apply_settings",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -9246,10 +9813,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -9327,12 +9899,18 @@
           "canonical_source_sha256": "25bfd80dfb58ce62123ea564a2783fa4f9562a823d14b4f80a85b61b01535dae",
           "effective_end": 268461404,
           "end": 268461404,
+          "experiment_epoch": "71493013da8caaf6cece56adcb8aa313715315e806c3fe5708584c3172dee6a6",
           "function": "grim_set_texture_stage_ops",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 468,
             "masked_mismatches": 0,
             "masked_ok": 65,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 468,
             "ratio": 1.0,
             "state": "match",
@@ -9343,10 +9921,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 468,
         "masked_mismatches": 0,
         "masked_ok": 65,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 468,
         "ratio": 1.0,
         "state": "match",
@@ -9431,12 +10014,18 @@
           "canonical_source_sha256": "ea26e08afcd16f14c69b2f596aea49412520223c045494a362dfb13614d9ddc4",
           "effective_end": 268462974,
           "end": 268462974,
+          "experiment_epoch": "1f6298facb4c925cd9f4f1bbfb4d9b93fef42041b269a1d5872cd9e3fed4b58b",
           "function": "grim_set_config_var",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 443,
             "masked_mismatches": 0,
             "masked_ok": 74,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 2,
+              "target": 0
+            },
             "prefix_instructions": 443,
             "ratio": 1.0,
             "state": "match",
@@ -9447,10 +10036,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 443,
         "masked_mismatches": 0,
         "masked_ok": 74,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 2,
+          "target": 0
+        },
         "prefix_instructions": 443,
         "ratio": 1.0,
         "state": "match",
@@ -9528,12 +10122,18 @@
           "canonical_source_sha256": "6c65cddbe3a072092e1ef1f877b7d347bd8b9c649396c4f54b27deb51ef87dc4",
           "effective_end": 268463254,
           "end": 268463254,
+          "experiment_epoch": "2b53a4c4e323506c255621b7032ef2d9b86ab842d8cdc8baa6294b06de2f1b5f",
           "function": "grim_get_config_var",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 32,
             "masked_mismatches": 0,
             "masked_ok": 5,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 32,
             "ratio": 1.0,
             "state": "match",
@@ -9544,10 +10144,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 32,
         "masked_mismatches": 0,
         "masked_ok": 5,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 32,
         "ratio": 1.0,
         "state": "match",
@@ -9620,12 +10225,18 @@
           "canonical_source_sha256": "1d26b76ce667c86181f13f410817c5ceffde5471c07a15c61c35c3c13f9636ec",
           "effective_end": 268463270,
           "end": 268463270,
+          "experiment_epoch": "cfadd05d62e704a48466b831c9dbc3ac995acf622664dc1f11f7a7bac0331da3",
           "function": "grim_get_error_text",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -9636,10 +10247,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -9727,12 +10343,18 @@
           "canonical_source_sha256": "9d6f9c955f06b4f555233954d29c7465d982009d373f342b6941e9cf9bc585d1",
           "effective_end": 268463430,
           "end": 268463430,
+          "experiment_epoch": "86044ec153309fac1c9fe2f485350af90e93f57341d592a701990c50101ac5eb",
           "function": "grim_clear_color",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 45,
             "masked_mismatches": 0,
             "masked_ok": 11,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 45,
             "ratio": 1.0,
             "state": "match",
@@ -9743,10 +10365,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 45,
         "masked_mismatches": 0,
         "masked_ok": 11,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 45,
         "ratio": 1.0,
         "state": "match",
@@ -9834,12 +10461,18 @@
           "canonical_source_sha256": "f48bdea96d9bcbb594df59e855fe399647165abae09427c1c2f0ecef6c3af657",
           "effective_end": 268463680,
           "end": 268463680,
+          "experiment_epoch": "581345a471430999a906b07614e8c0c69b578585e9f15f056a4d36d3d826074b",
           "function": "grim_set_render_target",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 89,
             "masked_mismatches": 0,
             "masked_ok": 19,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 89,
             "ratio": 1.0,
             "state": "match",
@@ -9850,10 +10483,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 89,
         "masked_mismatches": 0,
         "masked_ok": 19,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 89,
         "ratio": 1.0,
         "state": "match",
@@ -9926,12 +10564,18 @@
           "canonical_source_sha256": "461340a6b5d5368f63ec3e80f0423354f5520053afbbd0aef70a36356adba93c",
           "effective_end": 268463686,
           "end": 268463686,
+          "experiment_epoch": "311ee9ce4f80e0868ab31ee03db43beb97a2f648550593b0796e48e4df506614",
           "function": "grim_get_time_ms",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -9942,10 +10586,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -10023,12 +10672,18 @@
           "canonical_source_sha256": "1ae3cfb029d2d38192c9dc18cf48f488b49d337ef602c1793d1695eba35a6921",
           "effective_end": 268463708,
           "end": 268463708,
+          "experiment_epoch": "0a3d913bd814b9070e9b82e52ef5df2a09dc5f31c3c5ebb7dc611b3fef3f8a53",
           "function": "grim_set_time_ms",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -10039,10 +10694,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -10115,12 +10775,18 @@
           "canonical_source_sha256": "b49884bf729a96b3dffa41263b291ccfa841c88751726676dbb2420c0b232f53",
           "effective_end": 268463745,
           "end": 268463745,
+          "experiment_epoch": "90f8de7138c764a525cb9f5b61511a299d15fcaa4549fe16dadefd916521b59d",
           "function": "grim_get_frame_dt",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 9,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 9,
             "ratio": 1.0,
             "state": "match",
@@ -10131,10 +10797,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 9,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 9,
         "ratio": 1.0,
         "state": "match",
@@ -10212,12 +10883,18 @@
           "canonical_source_sha256": "07100535c5929bcae0f0fa1606fd6dabfe2e65a5e41effbd3fdc69a6cccc0f60",
           "effective_end": 268463767,
           "end": 268463767,
+          "experiment_epoch": "22a8c9619440092f446298109de36b76d928fcab00561fe14e78caa58f61a916",
           "function": "grim_get_fps",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -10228,10 +10905,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -10309,12 +10991,18 @@
           "canonical_source_sha256": "178c7d8f4a6470a21ba9f7c0238c3711122622b564555b81b5097e6ec068f95a",
           "effective_end": 268463854,
           "end": 268463854,
+          "experiment_epoch": "61b3969f1d56300bd85e0e9efd7d84cf6beaabb86120ffc31687aa8f7b75f358",
           "function": "grim_joystick_up_active",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 23,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 23,
             "ratio": 1.0,
             "state": "match",
@@ -10325,10 +11013,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 23,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 23,
         "ratio": 1.0,
         "state": "match",
@@ -10406,12 +11099,18 @@
           "canonical_source_sha256": "731fb0c5df3b77463ebfed7abbf6a2d4e2972935c52d06b1022071438f24e2dd",
           "effective_end": 268463930,
           "end": 268463930,
+          "experiment_epoch": "2c1a67ba408391ccdd0beeb4c18cf2eeb98f679465ccf3c1ddb046093e031aba",
           "function": "grim_joystick_down_active",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 21,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 21,
             "ratio": 1.0,
             "state": "match",
@@ -10422,10 +11121,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 21,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 21,
         "ratio": 1.0,
         "state": "match",
@@ -10503,12 +11207,18 @@
           "canonical_source_sha256": "cbe85d78a92e0116928f690487dc74c11b9a832386a0d6762081be6d696dcbfa",
           "effective_end": 268464014,
           "end": 268464014,
+          "experiment_epoch": "65b14ac1dad0d478bc93fb0265ed4a3e4c84c82458a22793c7cbadde1ee413ef",
           "function": "grim_joystick_left_active",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 23,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 23,
             "ratio": 1.0,
             "state": "match",
@@ -10519,10 +11229,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 23,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 23,
         "ratio": 1.0,
         "state": "match",
@@ -10600,12 +11315,18 @@
           "canonical_source_sha256": "f9d8fb36aea0f232a158ebfd646901f66d08ecac8d5a7d111c4781bca23b9e05",
           "effective_end": 268464090,
           "end": 268464090,
+          "experiment_epoch": "4c2134eb26918a461a93879c8e175b995f2c674345b84def3085d74fc52a9ae8",
           "function": "grim_joystick_right_active",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 21,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 21,
             "ratio": 1.0,
             "state": "match",
@@ -10616,10 +11337,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 21,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 21,
         "ratio": 1.0,
         "state": "match",
@@ -10702,12 +11428,18 @@
           "canonical_source_sha256": "c120c4879e3c190bcb66654bd8c7cc16118e377fc5ed0dcee39d0f69e476368b",
           "effective_end": 268464552,
           "end": 268464552,
+          "experiment_epoch": "df3f183cfcdd996690fad289cdc09c62307b2a44ca785f05df5739b61b0398c4",
           "function": "grim_is_key_active",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 175,
             "masked_mismatches": 0,
             "masked_ok": 13,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 175,
             "ratio": 1.0,
             "state": "match",
@@ -10718,10 +11450,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 175,
         "masked_mismatches": 0,
         "masked_ok": 13,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 175,
         "ratio": 1.0,
         "state": "match",
@@ -10804,12 +11541,18 @@
           "canonical_source_sha256": "d51b8ebd19391ee83de3b901d4ef49b037d39b3a571de5326b3bb4b9400c270b",
           "effective_end": 268464824,
           "end": 268464824,
+          "experiment_epoch": "dbb04b805125a8372d7d35ade5d880638bd13819e7abd6f7e3c851cf4a83f0b4",
           "function": "grim_get_config_float",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 88,
             "masked_mismatches": 0,
             "masked_ok": 13,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 88,
             "ratio": 1.0,
             "state": "match",
@@ -10820,10 +11563,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 88,
         "masked_mismatches": 0,
         "masked_ok": 13,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 88,
         "ratio": 1.0,
         "state": "match",
@@ -10906,12 +11654,18 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464846,
           "end": 268464846,
+          "experiment_epoch": "be8a41150290fb3926eaa7cc9b7f855170fcdbfd8474da580a7a1272774f1419",
           "function": "grim_get_slot_float",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -10929,12 +11683,18 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464862,
           "end": 268464862,
+          "experiment_epoch": "caf867124def98c442fc8971b0296e048ce25edaca98ef76c48afb86b2e74136",
           "function": "grim_get_slot_int",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -10952,12 +11712,18 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464882,
           "end": 268464882,
+          "experiment_epoch": "e5517a7f19c20f337f652943068ea633442885b059ae27b45ccd8d1fea248439",
           "function": "grim_set_slot_float",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 4,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 4,
             "ratio": 1.0,
             "state": "match",
@@ -10975,12 +11741,18 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464914,
           "end": 268464914,
+          "experiment_epoch": "e49ee85d476aced83e04aa1eed067941808f1750c038d19a01fc1717e44923d0",
           "function": "grim_set_slot_int",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 4,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 4,
             "ratio": 1.0,
             "state": "match",
@@ -10991,10 +11763,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -11074,12 +11851,18 @@
           "canonical_source_sha256": "007b3b049f385d9d059fcc3720621d3320ff51688162b6a0be7b47d58c9bb608",
           "effective_end": 268464944,
           "end": 268464944,
+          "experiment_epoch": "a6650095438c184538f31f6ef5ffad1f032b15aa033a38c033a31aeee9e138b4",
           "function": "grim_is_key_down",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 5,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 5,
             "ratio": 1.0,
             "state": "match",
@@ -11090,10 +11873,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 5,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 5,
         "ratio": 1.0,
         "state": "match",
@@ -11171,12 +11959,18 @@
           "canonical_source_sha256": "cb2752e865827d2ac5c95109d6e1e6d58de3b3cc5bf07879e33ea14c28ab1c4a",
           "effective_end": 268465035,
           "end": 268465035,
+          "experiment_epoch": "5a458fcd5d7d140ad9269e2780a3d1fec493ae450c3947f70b663a866578d657",
           "function": "grim_flush_input",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 34,
             "masked_mismatches": 0,
             "masked_ok": 5,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 34,
             "ratio": 1.0,
             "state": "match",
@@ -11187,10 +11981,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 34,
         "masked_mismatches": 0,
         "masked_ok": 5,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 34,
         "ratio": 1.0,
         "state": "match",
@@ -11268,12 +12067,18 @@
           "canonical_source_sha256": "16e2fbb3748f8f494108a28f0f988f4105c68019c1aa25177a99ba3c703f6509",
           "effective_end": 268465159,
           "end": 268465159,
+          "experiment_epoch": "61b378b201322f136017c7207ce1392c18bc1b87e11bc6d301fccb711467a40c",
           "function": "grim_was_key_pressed",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 31,
             "masked_mismatches": 0,
             "masked_ok": 10,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 31,
             "ratio": 1.0,
             "state": "match",
@@ -11284,10 +12089,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 31,
         "masked_mismatches": 0,
         "masked_ok": 10,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 31,
         "ratio": 1.0,
         "state": "match",
@@ -11365,12 +12175,18 @@
           "canonical_source_sha256": "e28a5ff8b17b7e6959ad3b6c23309de449aa3ffdc623b4ff289cbba9a46f42ac",
           "effective_end": 268465206,
           "end": 268465206,
+          "experiment_epoch": "cf801a63d3640542d927139c4b60083623559e02b6cd9572a25603da79b52a94",
           "function": "grim_is_mouse_button_down",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 11,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 11,
             "ratio": 1.0,
             "state": "match",
@@ -11381,10 +12197,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 11,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 11,
         "ratio": 1.0,
         "state": "match",
@@ -11462,12 +12283,18 @@
           "canonical_source_sha256": "0951bbe1ac33410298bf494cae489c45777a886a899c0d93dff5580cffc49315",
           "effective_end": 268465347,
           "end": 268465347,
+          "experiment_epoch": "a8343de2150ae0b6f239fa1e14f6fdc9a581e7709c0ed8c8b545b893606b6203",
           "function": "grim_was_mouse_button_pressed",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 51,
             "masked_mismatches": 0,
             "masked_ok": 7,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 51,
             "ratio": 1.0,
             "state": "match",
@@ -11478,10 +12305,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 51,
         "masked_mismatches": 0,
         "masked_ok": 7,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 51,
         "ratio": 1.0,
         "state": "match",
@@ -11559,12 +12391,18 @@
           "canonical_source_sha256": "6d6c6b83bc6bedf7c908aa8a35a90b4b8daade22fdc15b97e172ee3d9cf25a0a",
           "effective_end": 268465367,
           "end": 268465367,
+          "experiment_epoch": "e2b4ae776b4e242b2e15c21db6d8b08f610afa01c9762cd594cd5cf231e90043",
           "function": "grim_get_mouse_dx",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -11575,10 +12413,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -11656,12 +12499,18 @@
           "canonical_source_sha256": "86cb83cdd7ff846d264f635b4bbcc6b0d40c5ef5084f07e29cf4accb9b593f97",
           "effective_end": 268465383,
           "end": 268465383,
+          "experiment_epoch": "0100e7e2c4bea333b85d805c17a7ae722f24f19e9e2bd5304214eab68aad75db",
           "function": "grim_get_mouse_dy",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -11672,10 +12521,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -11753,12 +12607,18 @@
           "canonical_source_sha256": "7308d05d772275153073f7f22c85ac05ac1dde7de96e7ef1625d4c1a6bf03240",
           "effective_end": 268465400,
           "end": 268465400,
+          "experiment_epoch": "98df9c84c15669334d48c61a3c99a081cc4adcb83c73cf1790086a0b3ebf00c3",
           "function": "grim_get_mouse_dx_indexed",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -11769,10 +12629,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -11850,12 +12715,18 @@
           "canonical_source_sha256": "1facd1136362c3f4d953b169248bec9559da0e024cd3b8bc53bb0bce30de1d70",
           "effective_end": 268465416,
           "end": 268465416,
+          "experiment_epoch": "80f7ffb87bdd07c8214f1c7c6d201bd7568d7438465c918e4264c78aa5c49610",
           "function": "grim_get_mouse_dy_indexed",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -11866,10 +12737,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -11942,12 +12818,18 @@
           "canonical_source_sha256": "62b031c374cd3d12c366711776f5858384a83f12802011c5ac8f1cb0beb083bd",
           "effective_end": 268465431,
           "end": 268465431,
+          "experiment_epoch": "4bca710b4f9b3e5e891d7da6d18c55c39f3848205aba342c9e8618a08b3a5456",
           "function": "grim_get_mouse_x",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -11958,10 +12840,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -12039,12 +12926,18 @@
           "canonical_source_sha256": "908f1d65d7c8e521de3f954c0794fdab8c62e4bc48a01508e0213fd459375978",
           "effective_end": 268465447,
           "end": 268465447,
+          "experiment_epoch": "c757c76efad2e08ecc3d64074bb6f293f702eaca749e725644873cf0e5a890b0",
           "function": "grim_get_mouse_y",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -12055,10 +12948,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -12136,12 +13034,18 @@
           "canonical_source_sha256": "389c0b7204d8f793bfc0526bc17aae68905645c5eaca1a62729db9953daddecf",
           "effective_end": 268465493,
           "end": 268465493,
+          "experiment_epoch": "9f23b7cd0df278de7bef1c8c104cadd419d8ae8d9b31041e2aa9b4a60b9c2b78",
           "function": "grim_set_mouse_pos",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 9,
             "masked_mismatches": 0,
             "masked_ok": 4,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 9,
             "ratio": 1.0,
             "state": "match",
@@ -12152,10 +13056,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 9,
         "masked_mismatches": 0,
         "masked_ok": 4,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 9,
         "ratio": 1.0,
         "state": "match",
@@ -12228,12 +13137,18 @@
           "canonical_source_sha256": "144fbc0cdd12058580b5a8e345b560d86a48a9c64108cb2b6705b082054370f9",
           "effective_end": 268465527,
           "end": 268465527,
+          "experiment_epoch": "fe884cf490b9f177fb1475c13a2b5cfdd5060636df4033cc633e72aa70d76462",
           "function": "grim_get_mouse_wheel_delta",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 7,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 7,
             "ratio": 1.0,
             "state": "match",
@@ -12244,10 +13159,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 7,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 7,
         "ratio": 1.0,
         "state": "match",
@@ -12330,12 +13250,18 @@
           "canonical_source_sha256": "91f9939b328a5627aa405dd3e057dcdd139a3d30da919e535494d82ae4647ffd",
           "effective_end": 268465542,
           "end": 268465542,
+          "experiment_epoch": "ba4864451f727d36fd2e2ba098eb24c24436e3ee759f592876205ef9230eb188",
           "function": "grim_get_joystick_x",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -12346,10 +13272,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -12432,12 +13363,18 @@
           "canonical_source_sha256": "4aafd795e1ad867f4e3288217747a958bc181f12df576540cf752aa9b3b2b8a5",
           "effective_end": 268465558,
           "end": 268465558,
+          "experiment_epoch": "8b52ccd0cd2d5a7c93c3a6395dc8ee176dae00867c5f37f4df1cdfa7820c1b72",
           "function": "grim_get_joystick_y",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -12448,10 +13385,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -12534,12 +13476,18 @@
           "canonical_source_sha256": "10ab13000942205dc530ae9fc59ec950b2576bfb7b06be40be31c7a224684161",
           "effective_end": 268465574,
           "end": 268465574,
+          "experiment_epoch": "87ea85ec1a89a31a240978d42b3d44fd319f205bc1602078df002afb7363c756",
           "function": "grim_get_joystick_z",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -12550,10 +13498,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -12636,12 +13589,18 @@
           "canonical_source_sha256": "54fe97609cbc2e48b54301c40758c7a3ce2a5cb2f6544292626aa69a1c0ca320",
           "effective_end": 268465598,
           "end": 268465598,
+          "experiment_epoch": "b45df90b16bf1a5b1673236bc3d374a39e5666c4748e780d3e67da9a0c8e2845",
           "function": "grim_get_joystick_pov",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 3,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 3,
             "ratio": 1.0,
             "state": "match",
@@ -12652,10 +13611,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
@@ -12733,12 +13697,18 @@
           "canonical_source_sha256": "f5a6395c3a0d13368a3ead0654072e6be83c44079d56326021b0622949f53fcc",
           "effective_end": 268465616,
           "end": 268465616,
+          "experiment_epoch": "df05b299bbdfef25f6a1bd80d177b51421d7ab6a3a88fd174adbf88e3cccd81a",
           "function": "grim_is_joystick_button_down",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 5,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 5,
             "ratio": 1.0,
             "state": "match",
@@ -12749,10 +13719,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 5,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 5,
         "ratio": 1.0,
         "state": "match",
@@ -12842,12 +13817,18 @@
           "canonical_source_sha256": "3f9061d1a20154cd62aaab28183442fccee64d9df492148e166908006da40bc6",
           "effective_end": 268465873,
           "end": 268465873,
+          "experiment_epoch": "25f3900547442b8aea614a4bef1174ccdf969d40011f14d3446bff1be2e22ae2",
           "function": "grim_create_texture",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 81,
             "masked_mismatches": 0,
             "masked_ok": 13,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 81,
             "ratio": 1.0,
             "state": "match",
@@ -12858,10 +13839,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 81,
         "masked_mismatches": 0,
         "masked_ok": 13,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 81,
         "ratio": 1.0,
         "state": "match",
@@ -12949,12 +13935,18 @@
           "canonical_source_sha256": "d30b21fc8d5f1ff5b82b4db1b9b6b1fff9548cf7167eea50962add6074a016bf",
           "effective_end": 268465909,
           "end": 268465909,
+          "experiment_epoch": "7726d22ffb940497124e90b1a68fb1584d9355a47c60636bf9ef04f59531dbb8",
           "function": "grim_load_texture",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 7,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 7,
             "ratio": 1.0,
             "state": "match",
@@ -12965,10 +13957,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 7,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 7,
         "ratio": 1.0,
         "state": "match",
@@ -13056,12 +14053,18 @@
           "canonical_source_sha256": "c846875d3c606bf97c30c185f7aa329fc34b8d2995f9cc41ab6e9d0dc44a217a",
           "effective_end": 268465984,
           "end": 268465984,
+          "experiment_epoch": "904cc865a839841c994f290a2d0512c9a1716c8dadcf0247d8f24af96ac97a37",
           "function": "grim_destroy_texture",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 20,
             "masked_mismatches": 0,
             "masked_ok": 6,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 20,
             "ratio": 1.0,
             "state": "match",
@@ -13072,10 +14075,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 20,
         "masked_mismatches": 0,
         "masked_ok": 6,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 20,
         "ratio": 1.0,
         "state": "match",
@@ -13163,12 +14171,18 @@
           "canonical_source_sha256": "6991a73f98c49c52a037471f5c402ce577821902dc3d338eb6d9d70dd905f31d",
           "effective_end": 268466000,
           "end": 268466000,
+          "experiment_epoch": "7e88d35210a19552aa30c562d452cb28bebbed0850716e61d2bee7f14bcb295d",
           "function": "grim_get_texture_handle",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 5,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 5,
             "ratio": 1.0,
             "state": "match",
@@ -13179,10 +14193,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 5,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 5,
         "ratio": 1.0,
         "state": "match",
@@ -13270,12 +14289,18 @@
           "canonical_source_sha256": "b7932c7169c22892ac2ce396f152a4ead3eaa92c4ea81945ddff97f84729ec78",
           "effective_end": 268466221,
           "end": 268466221,
+          "experiment_epoch": "ddeb168a0961a97232fc8f6abfa9780696bd6e29a8a8e957deb8ad508609eeab",
           "function": "grim_recreate_texture",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 57,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 57,
             "ratio": 1.0,
             "state": "match",
@@ -13286,10 +14311,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 57,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 57,
         "ratio": 1.0,
         "state": "match",
@@ -13377,12 +14407,18 @@
           "canonical_source_sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf",
           "effective_end": 268466282,
           "end": 268466282,
+          "experiment_epoch": "097213a8e9a5c740de7345516afd14e14c8ffa2c2f5d0f3ea91d12a93b4e5b0f",
           "function": "grim_bind_texture",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 20,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 20,
             "ratio": 1.0,
             "state": "match",
@@ -13393,10 +14429,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 20,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 20,
         "ratio": 1.0,
         "state": "match",
@@ -13474,12 +14515,18 @@
           "canonical_source_sha256": "000956b9cbec0bca5a19934e8bb46e54acd844be0e09b1dd2d4af2e82f9b64aa",
           "effective_end": 268466397,
           "end": 268466397,
+          "experiment_epoch": "6f6f4670b94ea036eee999a012a0b019f5c9411ad8d90cd9135f9250605ded4e",
           "function": "grim_draw_fullscreen_quad",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 32,
             "masked_mismatches": 0,
             "masked_ok": 2,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 32,
             "ratio": 1.0,
             "state": "match",
@@ -13490,10 +14537,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 32,
         "masked_mismatches": 0,
         "masked_ok": 2,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 32,
         "ratio": 1.0,
         "state": "match",
@@ -13576,12 +14628,18 @@
           "canonical_source_sha256": "81e808619ef735fbb39d0b4a160228411d9c8e90116c3ca380a94fef5d066d92",
           "effective_end": 268466605,
           "end": 268466605,
+          "experiment_epoch": "a1222f9a8553dc66363790a72c55d81648f2f67ef75bbf0ab4c607e185eaa764",
           "function": "grim_draw_rect_filled",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 72,
             "masked_mismatches": 0,
             "masked_ok": 6,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 72,
             "ratio": 1.0,
             "state": "match",
@@ -13592,10 +14650,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 72,
         "masked_mismatches": 0,
         "masked_ok": 6,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 72,
         "ratio": 1.0,
         "state": "match",
@@ -13678,12 +14741,18 @@
           "canonical_source_sha256": "f00db954556a79d28505da2789f39657f931d38b54eacb5adcbd5c7de5eeac6c",
           "effective_end": 268466867,
           "end": 268466867,
+          "experiment_epoch": "3a80021ee34cef17bf78d7c1563570d4ce5bc61db374478a593e9bcb25bebee8",
           "function": "grim_draw_fullscreen_color",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 83,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 83,
             "ratio": 1.0,
             "state": "match",
@@ -13694,10 +14763,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 83,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 83,
         "ratio": 1.0,
         "state": "match",
@@ -13780,12 +14854,18 @@
           "canonical_source_sha256": "6fb93ddbb3e6e76347552009d90e3db9193131214fbf846d65e6c691b7ee1a77",
           "effective_end": 268466974,
           "end": 268466974,
+          "experiment_epoch": "15f4f1fa6112d280278e37f83f8dadf3cdff0a9ef7e304805102ccb048014739",
           "function": "grim_begin_batch",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 27,
             "masked_mismatches": 0,
             "masked_ok": 9,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 27,
             "ratio": 1.0,
             "state": "match",
@@ -13796,10 +14876,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 27,
         "masked_mismatches": 0,
         "masked_ok": 9,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 27,
         "ratio": 1.0,
         "state": "match",
@@ -13882,12 +14967,18 @@
           "canonical_source_sha256": "184fefc23c0978ed1186d6fd5bcb522600057dfea270e491e0a6cb3848e36ed5",
           "effective_end": 268467080,
           "end": 268467080,
+          "experiment_epoch": "e9b4d1785f85a2ac655c1306eef2ac9ba6780f779ea28ee57368f745a57d3cfa",
           "function": "grim_end_batch",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 36,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 36,
             "ratio": 1.0,
             "state": "match",
@@ -13898,10 +14989,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 36,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 36,
         "ratio": 1.0,
         "state": "match",
@@ -13984,12 +15080,18 @@
           "canonical_source_sha256": "cce6ea1f995eff7ee8d7cd0b8943e1db318e48570f811b56c0d09cccf5c22ba3",
           "effective_end": 268467520,
           "end": 268467520,
+          "experiment_epoch": "3db6002be92fe3377963901387a7437083130d366571da23e85ab1f5a4da0bda",
           "function": "grim_draw_circle_filled",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 115,
             "masked_mismatches": 0,
             "masked_ok": 32,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 115,
             "ratio": 1.0,
             "state": "match",
@@ -14000,10 +15102,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 115,
         "masked_mismatches": 0,
         "masked_ok": 32,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 115,
         "ratio": 1.0,
         "state": "match",
@@ -14086,12 +15193,18 @@
           "canonical_source_sha256": "78e8ab1e3e366b20aedf5a1e88d38870cbab90035be055b0292ddd0607e6f9a8",
           "effective_end": 268467982,
           "end": 268467982,
+          "experiment_epoch": "5709dc709fc89ee59a325a47b365073281111a8389268d517df9c8bf737f2760",
           "function": "grim_draw_circle_outline",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 120,
             "masked_mismatches": 0,
             "masked_ok": 31,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 120,
             "ratio": 1.0,
             "state": "match",
@@ -14102,10 +15215,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 120,
         "masked_mismatches": 0,
         "masked_ok": 31,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 120,
         "ratio": 1.0,
         "state": "match",
@@ -14178,12 +15296,18 @@
           "canonical_source_sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131",
           "effective_end": 268467989,
           "end": 268467989,
+          "experiment_epoch": "603976e1d53d9d7542817461a147d37d914e204b73ec4994a83ac01623b04a78",
           "function": "grim_crt_empty_initializer_slot_12_thunk",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -14194,10 +15318,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -14270,12 +15399,18 @@
           "canonical_source_sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c",
           "effective_end": 268468001,
           "end": 268468001,
+          "experiment_epoch": "376e0f6351e553a0010527a1e79451d5676e2e02be076c87c4151e8195335577",
           "function": "grim_crt_empty_initializer_slot_12",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -14286,10 +15421,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 1,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 1,
         "ratio": 1.0,
         "state": "match",
@@ -14367,12 +15507,18 @@
           "canonical_source_sha256": "0bb1a78e95706c7d290d2d123e4ae206e6883595f48baca1d4c599584866c2cd",
           "effective_end": 268468101,
           "end": 268468101,
+          "experiment_epoch": "9b1a2a5a41b3213835e3cd08a6a2988c5320c23ef103671394689775280f728b",
           "function": "grim_set_rotation",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 19,
             "masked_mismatches": 0,
             "masked_ok": 11,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 19,
             "ratio": 1.0,
             "state": "match",
@@ -14383,10 +15529,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 19,
         "masked_mismatches": 0,
         "masked_ok": 11,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 19,
         "ratio": 1.0,
         "state": "match",
@@ -14464,12 +15615,18 @@
           "canonical_source_sha256": "0fb01e6cb3a3f2282957c33d0174debc35b4f51c2134901debca8078ea465dce",
           "effective_end": 268468278,
           "end": 268468278,
+          "experiment_epoch": "79ab773181b08242118b23752398667e48488a9a79f63e637d8e6ffaa72091a3",
           "function": "grim_set_color",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 42,
             "masked_mismatches": 0,
             "masked_ok": 16,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 42,
             "ratio": 1.0,
             "state": "match",
@@ -14480,10 +15637,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 42,
         "masked_mismatches": 0,
         "masked_ok": 16,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 42,
         "ratio": 1.0,
         "state": "match",
@@ -14561,12 +15723,18 @@
           "canonical_source_sha256": "68cb6535d34b227ed4734b7915004145df93d241c0d7b871d6f8aa18e82258d3",
           "effective_end": 268468392,
           "end": 268468392,
+          "experiment_epoch": "0569f979e6a358964db2006883bddd2863b951d0ddb7b4982c81c04197decaf9",
           "function": "grim_set_color_ptr",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 25,
             "masked_mismatches": 0,
             "masked_ok": 12,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 25,
             "ratio": 1.0,
             "state": "match",
@@ -14577,10 +15745,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 25,
         "masked_mismatches": 0,
         "masked_ok": 12,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 25,
         "ratio": 1.0,
         "state": "match",
@@ -14658,12 +15831,18 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468534,
           "end": 268468534,
+          "experiment_epoch": "2d7fa6cd5d6bd2934f157a347364a1acf78428e067b107e94aa10208d342d7a4",
           "function": "grim_draw_line",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 40,
             "masked_mismatches": 0,
             "masked_ok": 13,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 40,
             "ratio": 1.0,
             "state": "match",
@@ -14681,12 +15860,18 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468545,
           "end": 268468545,
+          "experiment_epoch": "3a3ffd89baf2e98f1a3761f928861e8f3a95d571ef5d0e2609d09ea7c4e657fc",
           "function": "grim_line_vector_dtor",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 1,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 1,
             "ratio": 1.0,
             "state": "match",
@@ -14704,12 +15889,18 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468659,
           "end": 268468659,
+          "experiment_epoch": "96f58ed7bde0ed67542c77cf8608ca23313580124122eec9100e1dd67bbff460",
           "function": "grim_draw_line_quad",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 42,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 42,
             "ratio": 1.0,
             "state": "match",
@@ -14720,10 +15911,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 40,
         "masked_mismatches": 0,
         "masked_ok": 13,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 40,
         "ratio": 1.0,
         "state": "match",
@@ -14803,12 +15999,18 @@
           "canonical_source_sha256": "a87550532ec5d94dfad44f12c19e5d1c6882c565a72ee27524ae8797d2957db5",
           "effective_end": 268468781,
           "end": 268468781,
+          "experiment_epoch": "ff5194f6e2fa6dcdd18d33808b504fb09fd60f1b5012737216415e52038382b3",
           "function": "grim_set_color_slot",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 27,
             "masked_mismatches": 0,
             "masked_ok": 9,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 27,
             "ratio": 1.0,
             "state": "match",
@@ -14819,10 +16021,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 27,
         "masked_mismatches": 0,
         "masked_ok": 9,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 27,
         "ratio": 1.0,
         "state": "match",
@@ -14900,12 +16107,18 @@
           "canonical_source_sha256": "c47a7208cfcd734a632f28a0c5d4398767b57b56ca6b5fa4d373790d659e56df",
           "effective_end": 268468923,
           "end": 268468923,
+          "experiment_epoch": "cddac74f3c4ab2da10db98c7eaf48ea230bf934320cbca7f70341aae6414a27e",
           "function": "grim_set_atlas_frame",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 31,
             "masked_mismatches": 0,
             "masked_ok": 15,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 31,
             "ratio": 1.0,
             "state": "match",
@@ -14916,10 +16129,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 31,
         "masked_mismatches": 0,
         "masked_ok": 15,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 31,
         "ratio": 1.0,
         "state": "match",
@@ -14997,12 +16215,18 @@
           "canonical_source_sha256": "6b3ca09170d02d625ac14dd90a9080236a122e21b0b05621952f734b5120df5e",
           "effective_end": 268469071,
           "end": 268469071,
+          "experiment_epoch": "b2173f32fb7d9d114e421b306328e1e27878a1c04130d7c83254525e908a0764",
           "function": "grim_set_sub_rect",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 31,
             "masked_mismatches": 0,
             "masked_ok": 15,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 31,
             "ratio": 1.0,
             "state": "match",
@@ -15013,10 +16237,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 31,
         "masked_mismatches": 0,
         "masked_ok": 15,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 31,
         "ratio": 1.0,
         "state": "match",
@@ -15094,12 +16323,18 @@
           "canonical_source_sha256": "b6a83fc01e55de3aae97b406d85edbcdefc1077d6d19258c4239769de9573e60",
           "effective_end": 268469146,
           "end": 268469146,
+          "experiment_epoch": "95eef02f3bcd79921663bc3dd321ac98070df209b48b952261812eec1ee0c3f2",
           "function": "grim_set_uv",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 17,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 17,
             "ratio": 1.0,
             "state": "match",
@@ -15110,10 +16345,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 17,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 17,
         "ratio": 1.0,
         "state": "match",
@@ -15191,12 +16431,18 @@
           "canonical_source_sha256": "a2949ab76656c2624aafd31ec6b944ce372759c1609463b37534857a7cab1830",
           "effective_end": 268469181,
           "end": 268469181,
+          "experiment_epoch": "a90811e5b990df1953e8135c64645c581bb16ccfad2ef69c84a5ef9cdf9b0819",
           "function": "grim_set_uv_point",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 6,
             "masked_mismatches": 0,
             "masked_ok": 2,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 6,
             "ratio": 1.0,
             "state": "match",
@@ -15207,10 +16453,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 6,
         "masked_mismatches": 0,
         "masked_ok": 2,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 6,
         "ratio": 1.0,
         "state": "match",
@@ -15293,12 +16544,18 @@
           "canonical_source_sha256": "de576f5600324bdbf81058ba41620d223cf991cdc447a3524cd3dad7e488b252",
           "effective_end": 268469291,
           "end": 268469291,
+          "experiment_epoch": "747f951e97465e885afb24a5e307fba9f434d1e591f6db480cb9c3fffc81b532",
           "function": "grim_flush_batch",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 37,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 37,
             "ratio": 1.0,
             "state": "match",
@@ -15309,10 +16566,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 37,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 37,
         "ratio": 1.0,
         "state": "match",
@@ -15390,12 +16652,18 @@
           "canonical_source_sha256": "04b6d8272620702bba3097939f0849a780e54ac47e7eb9b9fd8a090ebcf5328a",
           "effective_end": 268469464,
           "end": 268469464,
+          "experiment_epoch": "824bbccdfb796062bdd404b8ec7a154773d07b449427a01e63f07651e37fad51",
           "function": "grim_submit_vertices_offset_color",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 54,
             "masked_mismatches": 0,
             "masked_ok": 9,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 54,
             "ratio": 1.0,
             "state": "match",
@@ -15406,10 +16674,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 54,
         "masked_mismatches": 0,
         "masked_ok": 9,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 54,
         "ratio": 1.0,
         "state": "match",
@@ -15487,12 +16760,18 @@
           "canonical_source_sha256": "ecb4f65e600e8a208efa8350d696da2817952dd9537e1b94265275211954330c",
           "effective_end": 268469690,
           "end": 268469690,
+          "experiment_epoch": "fe80c5d3cc3a9b37e0aa855773565f882fe4276865790a1289f4c37b113a6b2f",
           "function": "grim_submit_vertices_transform_color",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 72,
             "masked_mismatches": 0,
             "masked_ok": 10,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 72,
             "ratio": 1.0,
             "state": "match",
@@ -15503,10 +16782,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 72,
         "masked_mismatches": 0,
         "masked_ok": 10,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 72,
         "ratio": 1.0,
         "state": "match",
@@ -15584,12 +16868,18 @@
           "canonical_source_sha256": "ec37ec07ebe7832ef8e80526ba5f7f29f4454e6f0c9923569f1fb384183f70dc",
           "effective_end": 268469888,
           "end": 268469888,
+          "experiment_epoch": "e0a315b8965666cc5021d9fad8ce4255293f5e560ae2ebab2d6f9842e242e242",
           "function": "grim_submit_vertices_transform",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 64,
             "masked_mismatches": 0,
             "masked_ok": 9,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 64,
             "ratio": 1.0,
             "state": "match",
@@ -15600,10 +16890,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 64,
         "masked_mismatches": 0,
         "masked_ok": 9,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 64,
         "ratio": 1.0,
         "state": "match",
@@ -15681,12 +16976,18 @@
           "canonical_source_sha256": "bd4502961b785fafb4d51468c9868ae6a3f366426bf369a096d6ace68c890c0c",
           "effective_end": 268470041,
           "end": 268470041,
+          "experiment_epoch": "f4d5db20551babba0e4744061108b008574e0fbe8a2e22c6f19155e9c2e56434",
           "function": "grim_submit_vertices_offset",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 50,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 50,
             "ratio": 1.0,
             "state": "match",
@@ -15697,10 +16998,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 50,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 50,
         "ratio": 1.0,
         "state": "match",
@@ -15778,12 +17084,18 @@
           "canonical_source_sha256": "d2e187ce9ee1a139f66a54c9b61c21c58ba4092960c3bc29d8ff94b46c8ed35b",
           "effective_end": 268470082,
           "end": 268470082,
+          "experiment_epoch": "059c4fd37e8312b3bd606dea46fccdf516b8c84838fb49d90e1cdc2095d09431",
           "function": "grim_draw_quad_xy",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 14,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 14,
             "ratio": 1.0,
             "state": "match",
@@ -15794,10 +17106,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 14,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 14,
         "ratio": 1.0,
         "state": "match",
@@ -15875,12 +17192,18 @@
           "canonical_source_sha256": "90cefd64bafded510c90d3da68f6454f9dc1b340e1c277458c8270850aa6d27c",
           "effective_end": 268471049,
           "end": 268471049,
+          "experiment_epoch": "250c2306b113d05dd25f7dd25d662ab22632e00156c04443759e68bd08a83a54",
           "function": "grim_draw_quad_rotated_matrix",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 236,
             "masked_mismatches": 0,
             "masked_ok": 81,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 236,
             "ratio": 1.0,
             "state": "match",
@@ -15891,10 +17214,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 236,
         "masked_mismatches": 0,
         "masked_ok": 81,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 236,
         "ratio": 1.0,
         "state": "match",
@@ -15972,12 +17300,18 @@
           "canonical_source_sha256": "d4dd884bbe7ed74287461d0b262f0d7468212e1d1497bb057fa1d030ccc062d7",
           "effective_end": 268471856,
           "end": 268471856,
+          "experiment_epoch": "a3306f7fd28980f573e0023b27b29c470a1464863641d31d0ead22ec3da2357c",
           "function": "grim_draw_quad",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 195,
             "masked_mismatches": 0,
             "masked_ok": 68,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 195,
             "ratio": 1.0,
             "state": "match",
@@ -15988,10 +17322,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 195,
         "masked_mismatches": 0,
         "masked_ok": 68,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 195,
         "ratio": 1.0,
         "state": "match",
@@ -16069,12 +17408,18 @@
           "canonical_source_sha256": "8ca2ffdd830911c3676a5cd349a3ed4974498be18a6cda4d5a9c5a40545f7b40",
           "effective_end": 268471972,
           "end": 268471972,
+          "experiment_epoch": "057f80911fede37481c2e2f1a2ad8040d869e35948ddfe4ce125090be5aab3e1",
           "function": "grim_submit_vertex_raw",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 35,
             "masked_mismatches": 0,
             "masked_ok": 9,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 35,
             "ratio": 1.0,
             "state": "match",
@@ -16085,10 +17430,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 35,
         "masked_mismatches": 0,
         "masked_ok": 9,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 35,
         "ratio": 1.0,
         "state": "match",
@@ -16166,12 +17516,18 @@
           "canonical_source_sha256": "8dd998c04044a904e0cf34b4cc5a9b20dbb80d9327a3288a48ac544c0b8ffc87",
           "effective_end": 268472075,
           "end": 268472075,
+          "experiment_epoch": "4e07d7d2cdd749b0feae79ba48d54632fb0fa3ec585d34643d7fdffa24f30f2f",
           "function": "grim_submit_quad_raw",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 25,
             "masked_mismatches": 0,
             "masked_ok": 7,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 25,
             "ratio": 1.0,
             "state": "match",
@@ -16182,10 +17538,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 25,
         "masked_mismatches": 0,
         "masked_ok": 7,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 25,
         "ratio": 1.0,
         "state": "match",
@@ -16268,12 +17629,18 @@
           "canonical_source_sha256": "6df340efc986b6dbd479b0af541cab2f42e0eb120b91c22f80e22851e970b1a2",
           "effective_end": 268472436,
           "end": 268472436,
+          "experiment_epoch": "5e1d72ef304eb260559a8d0d49c8957a7b0796061a26bad1274c15a2bcaf4f21",
           "function": "grim_draw_rect_outline",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 125,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 125,
             "ratio": 1.0,
             "state": "match",
@@ -16284,10 +17651,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 125,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 125,
         "ratio": 1.0,
         "state": "match",
@@ -16370,12 +17742,18 @@
           "canonical_source_sha256": "91324f25ce6020ae4117be370a359044df10879d9de2e48f2a973a3d7dda6655",
           "effective_end": 268473002,
           "end": 268473002,
+          "experiment_epoch": "b2af038e0d4ee53afef6606311d7184156bcd1103e1cd30a1619dffdf7328a0c",
           "function": "grim_draw_quad_points",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 130,
             "masked_mismatches": 0,
             "masked_ok": 59,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 130,
             "ratio": 1.0,
             "state": "match",
@@ -16393,12 +17771,18 @@
           "canonical_source_sha256": "91324f25ce6020ae4117be370a359044df10879d9de2e48f2a973a3d7dda6655",
           "effective_end": 268474042,
           "end": 268474042,
+          "experiment_epoch": "0e7054e98b1ecee3aad915a4ea2f7166bd779ac6864c298f3081f00946868641",
           "function": "grim_draw_text_mono",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 308,
             "masked_mismatches": 0,
             "masked_ok": 41,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 308,
             "ratio": 1.0,
             "state": "match",
@@ -16409,10 +17793,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 130,
         "masked_mismatches": 0,
         "masked_ok": 59,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 130,
         "ratio": 1.0,
         "state": "match",
@@ -16492,12 +17881,18 @@
           "canonical_source_sha256": "928c9213f2b1685d33a138320069adc912cc048fab79196480db0cecdfe9078d",
           "effective_end": 268474146,
           "end": 268474146,
+          "experiment_epoch": "b7965645281ae0e6d227dc666c3ab86547b886f452459c65415c0d5c5b25adf5",
           "function": "grim_measure_text_width",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 45,
             "masked_mismatches": 0,
             "masked_ok": 2,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 45,
             "ratio": 1.0,
             "state": "match",
@@ -16508,10 +17903,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 45,
         "masked_mismatches": 0,
         "masked_ok": 2,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 45,
         "ratio": 1.0,
         "state": "match",
@@ -16589,12 +17989,18 @@
           "canonical_source_sha256": "fb7fbea4a802c42de99beafd8da3906be283ceefb726bb1e904257a6d0ec7fee",
           "effective_end": 268474675,
           "end": 268474675,
+          "experiment_epoch": "159c274c7e8d9071e781113974cdfd62017f6042dfcc1085870343ea0d71fb8a",
           "function": "grim_draw_text_small",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 153,
             "masked_mismatches": 0,
             "masked_ok": 18,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 153,
             "ratio": 1.0,
             "state": "match",
@@ -16605,10 +18011,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 153,
         "masked_mismatches": 0,
         "masked_ok": 18,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 153,
         "ratio": 1.0,
         "state": "match",
@@ -16686,12 +18097,18 @@
           "canonical_source_sha256": "8c78e0a0693ee083d9d731980cdc468ce7a2a926ee9afa628870b6372e74a47c",
           "effective_end": 268474740,
           "end": 268474740,
+          "experiment_epoch": "c0e554cda59c5cf36a7a3f1119e1ad554051e40447bc1a59fc71dc9bc6a5762c",
           "function": "grim_draw_text_mono_fmt",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 16,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 16,
             "ratio": 1.0,
             "state": "match",
@@ -16702,10 +18119,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 16,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 16,
         "ratio": 1.0,
         "state": "match",
@@ -16783,12 +18205,18 @@
           "canonical_source_sha256": "91b7d0f885f6da4b614f8198be0694b83c7cfed9070b63b9874aaf67edd25f84",
           "effective_end": 268474804,
           "end": 268474804,
+          "experiment_epoch": "480f3c06eb9438fe46ec5ff11afea7aa723589d21abc53defb2ee15dc6c50c4d",
           "function": "grim_draw_text_small_fmt",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 16,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 16,
             "ratio": 1.0,
             "state": "match",
@@ -16799,10 +18227,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 16,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 16,
         "ratio": 1.0,
         "state": "match",
@@ -16880,12 +18313,18 @@
           "canonical_source_sha256": "e26f421e03450fb918a9394b1cd2660837e87bd5e8492ae3107821ce10715cfd",
           "effective_end": 268474911,
           "end": 268474911,
+          "experiment_epoch": "e356669d76aeaf21c3adca90797bfb0dcba9a244e3c249d4b8d7c321550e6409",
           "function": "GRIM__GetInterface",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 28,
             "masked_mismatches": 0,
             "masked_ok": 11,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 28,
             "ratio": 1.0,
             "state": "match",
@@ -16896,10 +18335,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 28,
         "masked_mismatches": 0,
         "masked_ok": 11,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 28,
         "ratio": 1.0,
         "state": "match",
@@ -16972,12 +18416,18 @@
           "canonical_source_sha256": "f1e859b11c27637429145771eeaa3de93eb65e0d852235d6137544073f6d91dc",
           "effective_end": 268474950,
           "end": 268474950,
+          "experiment_epoch": "81d1612ef7eab1e47ef87bc3dbc7e3e92af0bbd254d9037797c998de8ac136bd",
           "function": "DllMain",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 10,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 10,
             "ratio": 1.0,
             "state": "match",
@@ -16988,10 +18438,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 10,
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 10,
         "ratio": 1.0,
         "state": "match",
@@ -17068,12 +18523,18 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478483,
           "end": 268478483,
+          "experiment_epoch": "062ca4e93e2716a966bee641c686934cf0f000e8acdc838d5ca50c9e99900dec",
           "function": "grim_jaz_decode_scope_init",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 2,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 2,
             "ratio": 1.0,
             "state": "match",
@@ -17091,12 +18552,18 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478517,
           "end": 268478517,
+          "experiment_epoch": "faac5b8ca5d30cc20d59f5e20e8f34f369b8f00ee28fdcefb296cd50b2788634",
           "function": "grim_zlib_status_is_error",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 11,
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 11,
             "ratio": 1.0,
             "state": "match",
@@ -17114,12 +18581,18 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478588,
           "end": 268478588,
+          "experiment_epoch": "a4e463fea081881fb96442cfe01497c18c0af12da7ad00b35ac3e59363cd4e56",
           "function": "grim_zlib_decompress_alloc",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 22,
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 22,
             "ratio": 1.0,
             "state": "match",
@@ -17137,12 +18610,18 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478658,
           "end": 268478658,
+          "experiment_epoch": "54a646958b2bc29e1c9ee1e6ae10c5adef88629e6df7df7e9d55ba17fad2dca0",
           "function": "grim_jaz_decompress_payload",
           "match": {
+            "body_byte_exact": true,
             "candidate_instructions": 26,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
+            "padding_bytes": {
+              "candidate": 0,
+              "target": 0
+            },
             "prefix_instructions": 26,
             "ratio": 1.0,
             "state": "match",
@@ -17153,10 +18632,15 @@
         }
       ],
       "match": {
+        "body_byte_exact": true,
         "candidate_instructions": 2,
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
         "prefix_instructions": 2,
         "ratio": 1.0,
         "state": "match",
@@ -17180,6 +18664,26 @@
   "provenance": {
     "build_policy": "forced-explicit-translation-unit-recompile-with-generated-data-definitions-and-linker-aliases",
     "selection_inputs": [
+      {
+        "path": "src/crimson/match.py",
+        "repository_relative": true,
+        "sha256": "ff9bcfc9e0da6a44569de1ab694f9112a4953a271b428d1d90f59f8a50ff95ad"
+      },
+      {
+        "path": "src/crimson/match_process.py",
+        "repository_relative": true,
+        "sha256": "1b21faa053d880c42673aaaf868528487e4befee0d231bec3f9ef640ed0eadbe"
+      },
+      {
+        "path": "src/crimson/match_toolchain.py",
+        "repository_relative": true,
+        "sha256": "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c"
+      },
+      {
+        "path": "src/crimson/native_link.py",
+        "repository_relative": true,
+        "sha256": "5ff0b9b159edc58229d6f4a73dfa5d78053aabae7dd74a28af8fe4a25c21f9e0"
+      },
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",
         "repository_relative": true,

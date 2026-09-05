@@ -227,7 +227,7 @@ def test_mutation_sweep_evaluates_baseline_once_and_ranks_variants(
     )
     baseline_calls = 0
 
-    def fake_baseline(profile: ScratchConfig, match_root: Path) -> ScratchStatus:
+    def fake_baseline(profile: ScratchConfig, match_root: Path, *, deadline: float | None) -> ScratchStatus:
         nonlocal baseline_calls
         del match_root
         baseline_calls += 1
@@ -239,6 +239,7 @@ def test_mutation_sweep_evaluates_baseline_once_and_ranks_variants(
         *,
         match_root: Path,
         source_path: Path | None,
+        deadline: float | None,
     ) -> ScratchStatus:
         del match_root
         assert source_path == tmp_path / "shared.h"
@@ -488,3 +489,27 @@ def test_mutate_cli_writes_only_a_tradeoff_free_improving_winner(
     assert recorded["spec_sha256"] == sweep.spec.sha256
     assert recorded["winner"]["label"] == second_variant.label
     assert len(recorded["results"]) == 2
+
+
+def test_sweep_passes_one_deadline_to_baseline_and_variants_and_records_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    deadlines: list[float | None] = []
+    config = _config(tmp_path)
+    spec = MutationSpec((MutationSite("value", "1", (MutationReplacement("two", "2"),)),), "spec")
+
+    def baseline(profile: ScratchConfig, match_root: Path, *, deadline: float | None) -> ScratchStatus:
+        deadlines.append(deadline)
+        return _status(profile, 0.5)
+
+    def overlay(profile: ScratchConfig, text: str, **kwargs: object) -> ScratchStatus:
+        assert kwargs["deadline"] == deadlines[0]
+        return replace(_status(profile, None), error="compiler timed out")
+
+    monkeypatch.setattr("crimson.match_mutation.matchlib.evaluate_scratch", baseline)
+    monkeypatch.setattr("crimson.match_mutation.matchlib.evaluate_source_overlay", overlay)
+    sweep = evaluate_mutation_sweep(config, spec, source_text="return 1;", match_root=tmp_path, time_budget=1)
+    assert deadlines[0] is not None
+    assert not sweep.best_improves
+    assert sweep.evaluations[0].status.state == "error"
+    assert mutation_sweep_payload(sweep)["results"][0]["status"]["error"] == "compiler timed out"

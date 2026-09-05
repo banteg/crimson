@@ -69,6 +69,12 @@ jobs:
             use_zig: false
             command: uv run --no-sync crimson native verify --require-game-closure --allow-absent-toolchain
             sync_args: ""
+          - task: match-regressions
+            use_uv: true
+            do_sync: true
+            use_zig: false
+            command: uv run --no-sync crimson match regressions --base "$MATCH_BASE"
+            sync_args: ""
           - task: build
             use_uv: true
             do_sync: false
@@ -79,6 +85,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: ${{ matrix.task == 'match-regressions' && '0' || '1' }}
 
       - name: Install uv
         if: matrix.use_uv
@@ -152,4 +160,6 @@ jobs:
           EOF
 
       - name: Run check
+        env:
+          MATCH_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: ${{ matrix.command }}

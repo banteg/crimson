@@ -5,7 +5,6 @@ import json
 import os
 import re
 import shlex
-import shutil
 import struct
 import subprocess
 from collections import Counter, defaultdict
@@ -14,6 +13,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from . import match as matchlib
+from . import match_toolchain
 
 NATIVE_OBJECT_MANIFEST_SCHEMA = 2
 NATIVE_SYMBOL_CLOSURE_SCHEMA = 2
@@ -1341,44 +1341,6 @@ def _snapshotted_file_payload(
     }
 
 
-def _tree_set_sha256(root: Path, trees: tuple[str, ...]) -> str:
-    digest = hashlib.sha256()
-    files: list[Path] = []
-    for tree_name in trees:
-        tree = root / tree_name
-        if not tree.is_dir():
-            raise ValueError(f"compiler bundle is missing {tree}")
-        files.extend(candidate for candidate in tree.rglob("*") if candidate.is_file())
-    for path in sorted(files):
-        relative = path.relative_to(root).as_posix().encode()
-        digest.update(len(relative).to_bytes(4, "little"))
-        digest.update(relative)
-        contents = path.read_bytes()
-        digest.update(len(contents).to_bytes(8, "little"))
-        digest.update(contents)
-    return digest.hexdigest()
-
-
-def _resolve_wibo_path(match_root: Path) -> Path:
-    configured = os.environ.get("WIBO")
-    if configured:
-        candidate = Path(configured)
-        if candidate.is_absolute() or candidate.parent != Path("."):
-            resolved = candidate.resolve()
-            if resolved.is_file() and os.access(resolved, os.X_OK):
-                return resolved
-            raise ValueError(f"WIBO={configured!r} is not executable")
-        if resolved := shutil.which(configured):
-            return Path(resolved).resolve()
-        raise ValueError(f"WIBO={configured!r} cannot be resolved")
-    repository_wibo = match_root / "bin" / "wibo"
-    if repository_wibo.is_file() and os.access(repository_wibo, os.X_OK):
-        return repository_wibo.resolve()
-    if resolved := shutil.which("wibo"):
-        return Path(resolved).resolve()
-    raise ValueError("wibo cannot be resolved")
-
-
 def _compile_input_snapshot(
     config: matchlib.ScratchConfig,
     match_root: Path,
@@ -1427,11 +1389,12 @@ def _capture_toolchain_snapshot(
                 compiler=compiler,
                 root=compiler_root,
                 included_trees=included_trees,
-                sha256=_tree_set_sha256(compiler_root, included_trees),
+                sha256=match_toolchain.tree_set_sha256(compiler_root, included_trees),
             ),
         )
     cl_wrapper = (match_root / "cl.sh").resolve()
-    wibo = _resolve_wibo_path(match_root)
+    wibo = match_toolchain.resolve_wibo_path(match_root)
+    assert wibo is not None
     return NativeToolchainSnapshot(
         cl_wrapper=cl_wrapper,
         cl_wrapper_mode=cl_wrapper.stat().st_mode & 0o7777,
@@ -1504,6 +1467,10 @@ def _analysis_input_snapshot(
 ) -> tuple[tuple[Path, str], ...]:
     image_path, functions_path, metadata_path = _image_paths(image)
     paths = [
+        Path(matchlib.__file__),
+        Path(matchlib.match_process.__file__),
+        Path(match_toolchain.__file__),
+        Path(__file__),
         image_path,
         functions_path,
         metadata_path,
@@ -1662,6 +1629,9 @@ def _refresh_status(
 ) -> matchlib.ScratchStatus:
     return replace(
         status,
+        body_byte_exact=result.body_byte_exact,
+        target_padding_bytes=result.target_padding_bytes,
+        candidate_padding_bytes=result.candidate_padding_bytes,
         ratio=result.ratio,
         prefix_instructions=result.prefix_instructions,
         target_instructions=len(result.target_lines),
@@ -2089,6 +2059,8 @@ def _match_status_payload(status: matchlib.ScratchStatus) -> dict[str, Any]:
         "masked_ok": status.masked_ok,
         "masked_unresolved": status.masked_unresolved,
         "prefix_instructions": status.prefix_instructions,
+        "body_byte_exact": status.body_byte_exact,
+        "padding_bytes": {"target": status.target_padding_bytes, "candidate": status.candidate_padding_bytes},
         "ratio": status.ratio,
         "state": status.state,
         "target_instructions": status.target_instructions,
@@ -2099,12 +2071,14 @@ def _function_binding_payload(
     binding: NativeFunctionBinding,
     *,
     repo_root: Path,
+    match_root: Path,
 ) -> dict[str, Any]:
     config = binding.status.config
     config_path = config.directory / "scratch.conf"
     source_path = config.directory / config.source
     return {
         "address": binding.function.address,
+        "experiment_epoch": matchlib.scratch_experiment_epoch(config, match_root),
         "canonical_config": _repo_relative(config_path, repo_root=repo_root),
         "canonical_config_sha256": binding.config_sha256 or _sha256(config_path),
         "canonical_scratch": _repo_relative(config.directory, repo_root=repo_root),
@@ -2165,7 +2139,7 @@ def object_manifest_payload(
             ),
             "function": first_binding.function.name,
             "functions": [
-                _function_binding_payload(binding, repo_root=repo_root)
+                _function_binding_payload(binding, repo_root=repo_root, match_root=objects.match_root)
                 for binding in record_bindings
             ],
             "match": _match_status_payload(first_binding.status),
@@ -2330,6 +2304,10 @@ def object_manifest_payload(
 
     _, functions_path, metadata_path = _image_paths(objects.image)
     selection_input_paths = [
+        Path(matchlib.__file__),
+        Path(matchlib.match_process.__file__),
+        Path(match_toolchain.__file__),
+        Path(__file__),
         functions_path,
         metadata_path,
         matchlib.DEFAULT_NAME_MAP_PATH,

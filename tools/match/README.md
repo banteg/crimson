@@ -618,7 +618,14 @@ uv run crimson match probe tools/match/scratches/player_update \
 Pass `--record` to append the complete result, source SHA-256, canonical
 baseline epoch, profile, label, and timestamp to `experiments.jsonl` in the
 scratch directory. The epoch hashes the source/build inputs, target evidence,
-curated reference maps, and a versioned baseline scheme. Recording is explicit;
+curated reference maps, matcher implementation, compiler `Bin`/`Include` trees,
+runner identity, and a versioned baseline scheme. The v2 epoch intentionally
+leaves earlier records historical; a toolchain change cannot reuse a current
+stall claim. When the ignored compiler or runner is absent, the experiment
+summary can use the epoch recorded in a native function manifest only after
+that image passes the native freshness check. Those manifests also hash the
+matching implementation, so CI cannot trust an epoch produced by stale code.
+Recording is explicit;
 ordinary probes leave both the scratch and repository untouched.
 
 For repeated source-shape experiments, use the bounded mutation harness. A
@@ -686,8 +693,12 @@ experiments remain distinguishable from ordinary top-level-source sweeps.
 
 Every variant builds in an isolated temporary scratch and is ranked by the
 canonical match score, exact/reference-clean state, prefix, and instruction
-shape. Time budgets are soft: the current batch finishes, then no more variants
-are scheduled. Reports show evaluated/planned/possible coverage at each
+shape. `--time-budget` starts before the baseline build and passes one absolute
+deadline to every compiler invocation. Expiry kills the compiler/Wibo process
+group, including descendants, and records an evaluation error rather than
+negative matching evidence. Interrupted sweeps remain inconclusive. Individual
+compiler and listing invocations also have a 120-second ceiling without a
+sweep budget. Reports show evaluated/planned/possible coverage at each
 mutation depth and call out interaction combinations that were never
 evaluated. Ranked candidates also show movement of the first native mismatch
 byte offset. This ordering selects a safe canonical winner; it is not a search
@@ -748,7 +759,9 @@ The tracked scratch is never edited.
 baseline without increasing reference debt, regressing the exact prefix or
 first mismatch, or moving the instruction count farther from native. Higher or
 byte-neutral fuzzy-scoring tradeoffs remain ranked and recorded with warnings
-but are never selected as the retained winner. Combine `--write-best` with
+but are never selected as the retained winner. Worker `improved` outcomes use
+the same acceptance predicate and cannot bypass these checks with a higher
+headline score. Combine `--write-best` with
 `--require-improvement` in scripted searches.
 
 ### Escaping Local Match Minima
@@ -906,9 +919,12 @@ they do not recover original local names or prove native variable lifetimes.
 Use them alongside the CFG anchors and live native stack/data-flow evidence.
 
 The status pipeline caches unchanged results and evaluates stale scratches in
-parallel. A cache entry is invalidated by the scratch source/config, compiler
-arguments and binary, `cl.sh`, the transitive local-header graph, the target
-image and symbol maps, or the matcher itself. This keeps repeat status runs
+parallel. Cache keys use content fingerprints for scratch source/config,
+compiler arguments, the complete compiler `Bin` and `Include` trees, Wibo,
+`cl.sh`, the transitive header graph, the target image and symbol maps, and
+the matching pipeline. Header resolution follows the compiler SDK and overlay
+precedence. Hash memoization includes ctime as well as mtime and size, so
+restoring a file timestamp cannot preserve a stale content identity. This keeps repeat status runs
 cheap without allowing stale objects or scores to survive an input change.
 Compiler/CFLAGS profiles use separate digest-named build directories, and
 objects plus cache metadata are published atomically, so concurrent profile
@@ -1027,7 +1043,62 @@ normalization exists only for real native functions and globals.
 Record residual mismatches in the scratch directory instead of forcing
 byte-shaped source.
 
+## Regression checks
+
+`match checkpoint` compares the checked-in native manifests against `HEAD` by
+`(image, address)`, in addition to checking freshness and metadata. Regenerate
+both images' native audits after changing matching inputs, then run:
+
+```sh
+uv run crimson match checkpoint --base HEAD -j 8
+uv run crimson match regressions --base master --json
+```
+
+The comparison rejects lost normalized exactness, lost previously proven
+encoded-body identity, increases in unresolved or mismatched references,
+removed targets, changed function extents, and changed scope. Function renames
+preserve identity. WIP score, prefix, instruction-count, and reference deltas
+are reported without turning every exploratory score decline into a gate.
+Different reference-image hashes are incomparable and fail the check.
+
+CI runs this comparison against the pull request base SHA or the previous
+push SHA. It uses the native manifests, so a compiler installation is not
+needed; the separate native-closure job checks artifact freshness.
+
+An intentional exception needs an exact base commit, address, check name,
+and reason in `tools/match/regression-waivers.json`, for example:
+
+```json
+{
+  "schema": 1,
+  "base_commit": "0000000000000000000000000000000000000000",
+  "waivers": [
+    {
+      "image": "grim.dll",
+      "address": 268439552,
+      "check": "target-removed",
+      "reason": "Provider ownership established by the pinned archive member."
+    }
+  ]
+}
+```
+
+Replace the example SHA and address with the reviewed baseline and target.
+Use `address: null` only for an image-wide `scope-changed` exception. The saved
+file applies automatically only to its named base; it cannot waive a later
+regression. `--waivers path.json` requires that file to match the selected
+base. Duplicate, unused, and empty-reason exceptions fail validation.
+
 ## Exact Matches and Masked References
+
+The existing `exact`/`match` result means normalized instruction identity with
+clean reference evidence. `body_byte_exact` separately proves encoded-body
+identity after ignoring only reference-proven 32-bit COFF relocation fields.
+Different SIB encodings or other equivalent instruction encodings remain
+non-identical in this metric. Recognized terminal padding is excluded and
+reported as `padding_bytes.target` and `padding_bytes.candidate` for the
+compared buffers. The field is available in scratch/probe JSON, native
+manifests, and the status dashboard; it does not change normalized acceptance.
 
 Instruction normalization replaces relocated and in-image addresses with
 `ADDR`, but an `ADDR` token is not proof that the operands refer to the same

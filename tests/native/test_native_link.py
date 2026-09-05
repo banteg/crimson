@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from crimson import match as matchlib
+from crimson.match_toolchain import resolve_wibo_path
 from crimson.native_link import (
     DEFAULT_LINKER_ALIAS_CONFIGS,
     DEFAULT_PROVIDER_CONFIGS,
@@ -26,7 +27,6 @@ from crimson.native_link import (
     NativeToolchainSnapshot,
     _native_link_image_options,
     _normalized_coff_sha256,
-    _resolve_wibo_path,
     _select_unique_statuses,
     _validate_loaded_configs,
     _vc6_linker_internal_name,
@@ -1314,7 +1314,7 @@ def test_wibo_resolution_skips_non_executable_repository_copy(
     monkeypatch.delenv("WIBO", raising=False)
     monkeypatch.setenv("PATH", str(path_wibo.parent))
 
-    assert _resolve_wibo_path(match_root) == path_wibo.resolve()
+    assert resolve_wibo_path(match_root) == path_wibo.resolve()
 
 
 def test_normalized_coff_hash_ignores_only_header_timestamp() -> None:

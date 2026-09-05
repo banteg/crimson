@@ -128,7 +128,7 @@ class MutationSweep:
 
     @property
     def metric_best_improves(self) -> bool:
-        return self.best is not None and _status_rank(self.best.status) > _status_rank(self.baseline)
+        return self.best is not None and matchlib.status_rank(self.best.status) > matchlib.status_rank(self.baseline)
 
     @property
     def winner(self) -> MutationEvaluation | None:
@@ -136,7 +136,7 @@ class MutationSweep:
 
     @property
     def best_improves(self) -> bool:
-        return self.winner is not None and _status_rank(self.winner.status) > _status_rank(self.baseline)
+        return self.winner is not None and matchlib.status_improves(self.baseline, self.winner.status)
 
 
 @dataclass(frozen=True, slots=True)
@@ -409,19 +409,8 @@ def generate_mutation_variants(
     )
 
 
-def _status_rank(status: matchlib.ScratchStatus) -> tuple[int, float, int, int, int]:
-    state_rank = {"error": 0, "wip": 1, "audit": 2, "match": 3}[status.state]
-    return (
-        state_rank,
-        status.ratio if status.ratio is not None else -1.0,
-        -(status.masked_unresolved + status.masked_mismatches),
-        status.prefix_instructions,
-        -abs(status.candidate_instructions - status.target_instructions),
-    )
-
-
 def _evaluation_rank(evaluation: MutationEvaluation) -> tuple[tuple[int, float, int, int, int], int, str]:
-    return (_status_rank(evaluation.status), -len(evaluation.variant.choices), evaluation.variant.label)
+    return (matchlib.status_rank(evaluation.status), -len(evaluation.variant.choices), evaluation.variant.label)
 
 
 def evaluate_mutation_sweep(
@@ -448,7 +437,9 @@ def evaluate_mutation_sweep(
         compiler=compiler or config.compiler,
         cflags=cflags or config.cflags,
     )
-    baseline = matchlib.evaluate_scratch(profile, match_root)
+    started_at = time.monotonic()
+    deadline = started_at + time_budget if time_budget is not None else None
+    baseline = matchlib.evaluate_scratch(profile, match_root, deadline=deadline)
     batch = generate_mutation_variants(
         source_text,
         spec,
@@ -462,12 +453,14 @@ def evaluate_mutation_sweep(
             variant.source_text,
             match_root=match_root,
             source_path=source_path,
+            deadline=deadline,
         )
         return MutationEvaluation(variant=variant, status=status, baseline=baseline)
 
     evaluations: list[MutationEvaluation] = []
     stop_reason: str | None = None
-    started_at = time.monotonic()
+    if baseline.state == "error":
+        return MutationSweep(spec, baseline, (), batch.possible_by_changes, batch.planned_by_changes, "baseline-error")
     for offset in range(0, len(batch.variants), jobs):
         if time_budget is not None and time.monotonic() - started_at >= time_budget:
             stop_reason = "time-budget"
@@ -479,10 +472,10 @@ def evaluate_mutation_sweep(
             with ThreadPoolExecutor(max_workers=len(variants)) as executor:
                 completed = list(executor.map(evaluate, variants))
         evaluations.extend(completed)
-        if stop_on_improvement and any(
-            not result.tradeoffs and _status_rank(result.status) > _status_rank(baseline)
-            for result in completed
-        ):
+        if deadline is not None and time.monotonic() >= deadline:
+            stop_reason = "time-budget"
+            break
+        if stop_on_improvement and any(matchlib.status_improves(baseline, result.status) for result in completed):
             stop_reason = "improvement"
             break
     if stop_reason is None and batch.truncated:

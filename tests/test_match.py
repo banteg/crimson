@@ -5627,7 +5627,7 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr("crimson.match.run_compiler", fake_run)
     monkeypatch.chdir(tmp_path)
 
     overlay = tmp_path / "overlay"
@@ -5923,7 +5923,7 @@ def test_compile_scratch_stages_auto_inline_boundaries(
         (cwd / "scratch.obj").write_bytes(b"object")
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr("crimson.match.run_compiler", fake_run)
 
     obj = compile_scratch(config, match_root)
 
@@ -6114,7 +6114,7 @@ def test_source_probe_uses_temporary_shadow_without_touching_scratch(
     )
     observed_directories: list[Path] = []
 
-    def fake_evaluate(probe_config: ScratchConfig, match_root: Path) -> ScratchStatus:
+    def fake_evaluate(probe_config: ScratchConfig, match_root: Path, *, deadline: float | None = None) -> ScratchStatus:
         del match_root
         observed_directories.append(probe_config.directory)
         text = (probe_config.directory / probe_config.source).read_text(encoding="utf-8")
@@ -6169,7 +6169,7 @@ def test_source_probe_fingerprints_resolved_include_tree(
         note="",
     )
 
-    def fake_evaluate(probe_config: ScratchConfig, root: Path) -> ScratchStatus:
+    def fake_evaluate(probe_config: ScratchConfig, root: Path, *, deadline: float | None = None) -> ScratchStatus:
         del root
         return ScratchStatus(
             config=probe_config,
@@ -6221,7 +6221,7 @@ def test_source_overlay_can_shadow_an_included_match_header(
     )
     observed: list[tuple[str, str]] = []
 
-    def fake_evaluate(probe_config: ScratchConfig, root: Path) -> ScratchStatus:
+    def fake_evaluate(probe_config: ScratchConfig, root: Path, *, deadline: float | None = None) -> ScratchStatus:
         assert root == match_root.resolve()
         observed.append(
             (
@@ -7373,3 +7373,51 @@ def test_worker_check_can_require_batch_scoped_outcomes(
     assert report["summary"]["outcomes"] == 1
     assert report["summary"]["missing_outcomes"] == 0
     assert report["targets"][0]["latest_outcome"]["disposition"] == "blocked"
+
+
+@pytest.mark.parametrize(
+    ("target", "candidate", "body_exact", "padding"),
+    [
+        ("8b44080cc3", "8b44010cc3", False, (0, 0)),
+        ("c3", "c38bff", True, (0, 2)),
+        ("c30f", "c3f2", False, (0, 0)),
+    ],
+)
+def test_encoded_body_identity_preserves_encoding_and_reports_padding(
+    target: str, candidate: str, body_exact: bool, padding: tuple[int, int],
+) -> None:
+    result = match_function(
+        bytes.fromhex(target),
+        ObjectFunction("_foo", bytes.fromhex(candidate), frozenset()),
+        image=LoadedImage(b"", 0x400000, 0), target_va=0x401000,
+    )
+    assert result.body_byte_exact is body_exact
+    assert (result.target_padding_bytes, result.candidate_padding_bytes) == padding
+    assert match_result_payload(result)["body_byte_exact"] is body_exact
+
+
+@pytest.mark.parametrize("key", ["name:expected", "name:wrong"])
+def test_body_identity_masks_only_reference_proven_relocations(key: str) -> None:
+    result = match_function(
+        bytes.fromhex("a100204000c3"),
+        ObjectFunction(
+            "_foo", bytes.fromhex("a100000000c3"), frozenset({1}),
+            (ObjectRelocationReference(1, key.removeprefix("name:"), key, True, relocation_type=6),),
+        ),
+        image=LoadedImage(b"", 0x400000, 0x10000), target_va=0x401000,
+        reference_catalog=ReferenceCatalog({0x402000: ("expected",)}),
+    )
+    assert result.body_byte_exact is (key == "name:expected")
+
+
+def test_worker_and_mutation_acceptance_reject_the_same_score_tradeoffs(tmp_path: Path) -> None:
+    from crimson.match import scratch_status_payload, status_improves, status_improves_claim_baseline
+
+    config = ScratchConfig(tmp_path, "foo", "crimsonland.exe", "msvc6.5", "/O2", "scratch.cpp", None, None, "")
+    before = ScratchStatus(config, 0x401000, 1000, 0.90, 50, 100, 100, None, masked_ok=10)
+    worse = replace(before, ratio=0.91, prefix_instructions=40, candidate_instructions=99, masked_ok=9, masked_mismatches=1)
+    assert not status_improves(before, worse)
+    assert not status_improves_claim_baseline(worse, scratch_status_payload(before))
+    better = replace(before, ratio=0.91)
+    assert status_improves(before, better)
+    assert status_improves_claim_baseline(better, scratch_status_payload(before))

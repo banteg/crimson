@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 import typer
 
-from .. import library_match, match_experiments, match_mutation, mod_sdk
+from .. import library_match, match_experiments, match_mutation, match_regressions, mod_sdk
 from .. import library_provenance as provenance
 from .. import match as matchlib
 
@@ -114,7 +114,9 @@ def _echo_result(result: matchlib.MatchResult) -> None:
         f"candidate_insns={len(result.candidate_lines)} "
         f"refs={result.masked_operand_audit.ok_count}/"
         f"{result.masked_operand_audit.unresolved_count}/"
-        f"{result.masked_operand_audit.mismatch_count}",
+        f"{result.masked_operand_audit.mismatch_count} "
+        f"body_byte_exact={result.body_byte_exact} "
+        f"padding={result.target_padding_bytes}/{result.candidate_padding_bytes}",
     )
     if result.ratio != 1.0:
         typer.echo(f"first_target={result.first_target_mismatch}")
@@ -789,7 +791,7 @@ def cmd_match_mutate(
         None,
         "--time-budget",
         min=0.1,
-        help="soft variant wall-clock budget in seconds; running batches finish",
+        help="wall-clock deadline for baseline and variants; expired compiler groups are killed",
     ),
     top: int = typer.Option(20, "--top", min=1, help="maximum ranked variants to print"),
     write_best: Path | None = typer.Option(
@@ -2308,6 +2310,53 @@ def cmd_match_worker_check(
         raise typer.Exit(code=1)
 
 
+def _regression_report(base: str, waivers: Path | None) -> dict[str, Any]:
+    return match_regressions.check_revision(
+        base,
+        repo_root=matchlib.REPO_ROOT,
+        git=_git_executable(),
+        images=matchlib.TRACKED_IMAGE_NAMES,
+        waivers=waivers,
+    )
+
+
+def _render_regressions(report: dict[str, Any]) -> None:
+    typer.echo(
+        f"base={report['base_commit']} regression_errors={report['errors']} changed_functions={len(report['deltas'])}",
+    )
+    for row in report["regressions"]:
+        address = f"0x{row['address']:08x}" if row["address"] is not None else "image"
+        disposition = f"waived: {row['waiver']}" if row["waiver"] else "FAIL"
+        typer.echo(f"  {row['image']}:{address} {row['check']}: {row['detail']} ({disposition})")
+    for row in [row for row in report["deltas"] if row["before"]["state"] != "match"][:20]:
+        before, after = row["before"], row["after"]
+        typer.echo(
+            f"  {row['image']}:{row['function']} "
+            f"score={before['ratio']:.4%}->{after['ratio']:.4%} "
+            f"prefix={before['prefix']}->{after['prefix']}",
+        )
+
+
+@match_app.command("regressions")
+def cmd_match_regressions(
+    base: str = typer.Option("HEAD", "--base", help="Git revision containing the previous native manifests"),
+    waivers: Path | None = typer.Option(None, "--waivers", help="JSON exceptions bound to the exact base commit"),
+    as_json: bool = typer.Option(False, "--json", help="include all per-function metric deltas"),
+) -> None:
+    """Reject lost exactness, increased reference debt, and unexplained scope changes."""
+    try:
+        report = _regression_report(base, waivers)
+    except (ValueError, KeyError, TypeError, OSError, subprocess.CalledProcessError) as exc:
+        typer.echo(f"regression comparison failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    if as_json:
+        typer.echo(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        _render_regressions(report)
+    if report["errors"]:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("checkpoint")
 def cmd_match_checkpoint(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
@@ -2316,6 +2365,8 @@ def cmd_match_checkpoint(
         "--scope",
         help="matching ownership scope",
     ),
+    base: str = typer.Option("HEAD", "--base", help="previous native manifest revision"),
+    waivers: Path | None = typer.Option(None, "--waivers", help="base-bound regression exceptions"),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
     write: Path = typer.Option(
         matchlib.DEFAULT_MATCH_ROOT / "STATUS.md",
@@ -2383,6 +2434,16 @@ def cmd_match_checkpoint(
         for status in native_statuses
         if status.artifact_state != "current"
     ]
+    regression_errors: list[str] = []
+    try:
+        regression_report = _regression_report(base, waivers)
+        _render_regressions(regression_report)
+        if regression_report["errors"]:
+            regression_errors.append(f"{regression_report['errors']} matching regressions")
+    except (ValueError, KeyError, TypeError, OSError, subprocess.CalledProcessError) as exc:
+        regression_errors.append(str(exc))
+    for error in regression_errors:
+        typer.echo(error, err=True)
     write.parent.mkdir(parents=True, exist_ok=True)
     write.write_text(
         matchlib.render_status_markdown(
@@ -2449,6 +2510,7 @@ def cmd_match_checkpoint(
         or experiment_payload["errors"]
         or experiment_payload["strict_errors"]
         or native_errors
+        or regression_errors
         or any(diff_check.returncode for diff_check in diff_checks)
     ):
         raise typer.Exit(code=1)
