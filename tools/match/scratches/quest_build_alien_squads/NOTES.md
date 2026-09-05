@@ -125,3 +125,31 @@ leaves only the compiler's legal hoist of `trigger_time_ms - 400` across the
 two independent coordinate stores. No artificial dependency, volatile
 qualifier, or alias is retained. The canonical result remains **99.074074%**,
 108/108 instructions, an 83-instruction prefix, and `0/0/0` references.
+
+## Focused follow-up (2026-09-05)
+
+All 24 orders of the first wave position pair, template, trigger, and count
+were tested. The existing order remains strongest at 99.07%, 108/108
+instructions. Other orders regress and do not delay the trigger calculation to
+its native location.
+
+The complete bounded matrix is recorded in
+`first-wave-store-order-followup-mutations.json`. No source change is
+retained; this result bounds these specific hypotheses only.
+
+## Exact indexed wave range (2026-09-05)
+
+The paired waves now have an explicit range beginning after the eight fixed
+entries. Each field indexes that range using the current total minus its starting
+entry, and each final count-field assignment advances the total. This preserves
+all 26 pairs, their positions, the 400 ms separation, and the 60-entry final count.
+The range start is derived from the constructed entries, not a hardcoded offset.
+
+`indexed-wave-range-mutations.json` records 15 complete source controls. Fully
+indexing the original array fixes the within-loop scheduling but moves the first
+mismatch earlier, so that intermediate form is not retained. Giving the paired
+wave range its own base fixes the opening as well: all 108 instructions and all
+507 bytes match, with no external references. Named and updated-base range forms
+independently reproduce the result; the named range keeps the original array
+available and makes the indexing relationship explicit. This supersedes the
+previous compiler-residual classification.
