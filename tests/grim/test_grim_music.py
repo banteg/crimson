@@ -109,10 +109,26 @@ def test_load_music_track_loads_paq_entry_on_demand(mocker, tmp_path: Path) -> N
 @pytest.fixture
 def music_backend(mocker):
     playing: set[object] = set()
+    paused: set[object] = set()
+
+    def pause(stream):
+        if stream in playing:
+            playing.remove(stream)
+            paused.add(stream)
+
+    def resume(stream):
+        if stream in paused:
+            paused.remove(stream)
+            playing.add(stream)
+
+    def stop(stream):
+        playing.discard(stream)
+        paused.discard(stream)
+
     mocker.patch.object(rl, "play_music_stream", side_effect=playing.add)
-    mocker.patch.object(rl, "resume_music_stream", side_effect=playing.add)
-    mocker.patch.object(rl, "pause_music_stream", side_effect=playing.discard)
-    mocker.patch.object(rl, "stop_music_stream", side_effect=playing.discard)
+    mocker.patch.object(rl, "resume_music_stream", side_effect=resume)
+    mocker.patch.object(rl, "pause_music_stream", side_effect=pause)
+    mocker.patch.object(rl, "stop_music_stream", side_effect=stop)
     mocker.patch.object(rl, "is_music_stream_playing", side_effect=lambda stream: stream in playing)
     mocker.patch.object(rl, "update_music_stream")
     mocker.patch.object(rl, "set_music_volume")
@@ -154,6 +170,17 @@ def test_muted_track_does_not_resume_after_volume_restore(music_backend) -> None
     music.update_music(state, 0.1)
     assert track.muted
     assert track.stream not in music_backend
+
+
+def test_unmuted_stopped_track_restarts(music_backend) -> None:
+    state = music.init_music_state(ready=True, enabled=True, volume=0.8)
+    track = music.MusicTrack(stream=_music_stub(), track_id=0, volume=0.8, muted=False)
+    state.tracks["theme"] = track
+
+    music.update_music(state, 0.1)
+
+    assert track.stream in music_backend
+    assert not track.paused
 
 
 def test_repeated_result_request_waits_for_old_fade_then_starts(music_backend) -> None:

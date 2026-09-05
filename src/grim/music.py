@@ -31,6 +31,7 @@ class MusicTrack(msgspec.Struct):
     source_data: bytes | None = None
     volume: float = 0.0
     muted: bool = True
+    paused: bool = False
 
     def close(self) -> None:
         # Memory-backed Vorbis streams borrow source_data until decoder teardown.
@@ -199,6 +200,7 @@ def play_music(state: MusicState, track_name: str, *, fade_in: bool = False) -> 
         rl.stop_music_stream(track.stream)
         rl.set_music_volume(track.stream, 0.0 if fade_in else state.volume)
         rl.play_music_stream(track.stream)
+        track.paused = False
         track.muted = False
         track.volume = state.volume
     if fade_in:
@@ -241,14 +243,20 @@ def update_music(state: MusicState, dt: float) -> None:
             # state. Raylib Pause/Resume preserves the stream cursor likewise.
             if playing:
                 rl.pause_music_stream(stream)
+                track.paused = True
         elif not track.muted and not playing:
-            rl.resume_music_stream(stream)
+            if track.paused:
+                rl.resume_music_stream(stream)
+            else:
+                rl.play_music_stream(stream)
+            track.paused = False
 
         if track.muted:
             if track.volume > 0.0:
                 track.volume = max(0.0, track.volume - frame_dt * _MUSIC_FADE_OUT_PER_SEC)
                 if track.volume == 0.0:
                     rl.stop_music_stream(stream)
+                    track.paused = False
                 rl.set_music_volume(stream, track.volume)
         else:
             if track.volume > target_volume:
