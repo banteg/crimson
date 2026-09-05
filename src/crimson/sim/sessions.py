@@ -534,7 +534,6 @@ class DeterministicSession(msgspec.Struct):
             # mode hooks and the world share the same native frame delta.
             apply_world_dt_steps=False,
             defer_camera_shake_update=self.defer_camera_shake_update,
-            defer_freeze_corpse_fx=False,
             mid_step_runtime=mid_step_runtime,
             inputs=normalized_inputs,
             world_size=self.world_size,

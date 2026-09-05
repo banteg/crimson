@@ -304,7 +304,6 @@ class WorldState(msgspec.Struct):
         *,
         apply_world_dt_steps: bool = True,
         defer_camera_shake_update: bool = False,
-        defer_freeze_corpse_fx: bool = False,
         mid_step_runtime: WorldMidStepRuntime | None = None,
         inputs: list[PlayerInput] | None,
         world_size: float,
@@ -323,13 +322,6 @@ class WorldState(msgspec.Struct):
             dt = self.world_dt_after_perk_steps(dt)
         frame_dt_ms = ftol_ms_i32(dt)
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
-        # Native Freeze pickup shatters corpses that existed at tick start;
-        # same-tick kills are not included in that pass.
-        freeze_corpse_indices_at_tick_start = {
-            int(idx)
-            for idx, creature in enumerate(self.creatures.entries)
-            if creature.active and float(creature.hp) <= 0.0
-        }
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
@@ -448,8 +440,6 @@ class WorldState(msgspec.Struct):
             creatures=self.creatures.entries,
             update_hud=True,
             detail_preset=int(detail_preset),
-            defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
-            freeze_corpse_indices=freeze_corpse_indices_at_tick_start,
             creature_damage_runtime=step_runtime,
         )
         if pickups:

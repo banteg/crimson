@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.bonuses.freeze import flush_deferred_freeze_corpse_fx
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
@@ -63,87 +62,49 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
     ]
 
 
-def test_freeze_pickup_can_limit_shatter_to_tick_start_corpses() -> None:
+def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-
-    pool = CreaturePool()
-    old_corpse = pool.entries[0]
-    old_corpse.active = True
-    old_corpse.hp = -1.0
-    old_corpse.pos = Vec2(100.0, 200.0)
-
-    new_corpse = pool.entries[1]
-    new_corpse.active = True
-    new_corpse.hp = -1.0
-    new_corpse.pos = Vec2(150.0, 240.0)
-
-    bonus_apply(
-        state,
-        player,
-        BonusId.FREEZE,
-        amount=1,
-        origin=player.pos,
-        creatures=pool.entries,
-        players=[player],
-        detail_preset=5,
-        freeze_corpse_indices={0},
-    )
-
-    assert not old_corpse.active
-    assert not new_corpse.active
-    freeze_effects = [
-        entry
-        for entry in state.effects.iter_active()
-        if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
-    ]
-    assert len(freeze_effects) == 16
-
-
-def test_deferred_freeze_corpse_fx_preserves_bonus_apply_callers() -> None:
-    state = GameplayState()
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-
+    player = PlayerState(index=0, pos=Vec2())
     pool = CreaturePool()
     corpse = pool.entries[0]
     corpse.active = True
-    corpse.hp = 0.0
-    corpse.pos = Vec2(100.0, 200.0)
+    corpse.hp = -1.0
+    corpse.lifecycle_stage = -100.0
+    bonus_apply(state, player, BonusId.FREEZE, origin=player.pos, creatures=pool.entries, players=[player], detail_preset=5)
+    assert not corpse.active
+    assert len(state.effects.iter_active()) == 16
 
-    bonus_apply(
-        state,
-        player,
-        BonusId.FREEZE,
-        amount=1,
-        origin=player.pos,
-        creatures=pool.entries,
-        players=[player],
-        detail_preset=5,
-        defer_freeze_corpse_fx=True,
-        freeze_corpse_indices={0},
+
+def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
+    from crimson.owner_ref import OwnerRef
+    from crimson.projectiles.types import ProjectileTemplateId
+    from crimson.sim.input import PlayerInput
+    from crimson.sim.sessions import DeterministicSession
+    from crimson.world.sim_world_state import SimWorldState
+
+    sim = SimWorldState(preserve_bugs=True)
+    world = sim.world_state
+    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.hp = 1.0
+    creature.pos = Vec2(200, 200)
+    world.state.projectiles.spawn(
+        pos=creature.pos, angle=0.0, type_id=ProjectileTemplateId.PISTOL, owner=OwnerRef.from_local_player(0),
     )
-
-    assert state.effects.iter_active() == []
-    assert len(state.deferred_freeze_corpse_fx) == 1
-
-    before_calls = state.rng.calls
-    flush_deferred_freeze_corpse_fx(state)
-
-    tagged_callers = [
-        record.caller
-        for record in state.rng.records_since(before_calls)
-        if record.caller
-        in {
-            RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE,
-            RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE,
-        }
-    ]
-    assert tagged_callers == [
-        RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE,
-    ] * 8 + [
-        RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE,
-    ]
+    world.state.bonus_pool.spawn_at(world.players[0].pos, BonusId.FREEZE, state=world.state, emit_burst=False)
+    session = DeterministicSession(
+        world=world, world_size=1024.0, damage_scale_by_type=sim.damage_scale_by_type,
+        game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,
+    )
+    result = session.step_tick(dt=1 / 60, inputs=[PlayerInput(aim=Vec2(600, 512))])
+    assert len(result.step.events.deaths) == 1
+    assert [p.bonus_id for p in result.step.events.pickups] == [BonusId.FREEZE]
+    callers = [r.caller for r in world.state.rng.records_since()]
+    assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) == 8
+    assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) == 1
+    assert world.state.rng.calls == 212
+    assert not creature.active
 
 
 def test_freeze_stops_creature_movement_and_animation() -> None:

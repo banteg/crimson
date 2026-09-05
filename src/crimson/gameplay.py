@@ -13,7 +13,6 @@ from grim.sfx_map import SfxId
 
 from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
-from .bonuses.freeze import DeferredFreezeCorpseFx
 from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
 from .effects import EffectPool, ParticlePool, SpriteEffectPool
@@ -144,7 +143,6 @@ class GameplayState(msgspec.Struct):
     player_alt_weapon_swap_cooldown_ms: int = 0
     bonus_hud: BonusHudState = msgspec.field(default_factory=BonusHudState)
     bonus_pool: BonusPool = msgspec.field(default_factory=BonusPool)
-    deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = msgspec.field(default_factory=list)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
     survival_reward_weapon_guard_id: WeaponId = WeaponId.PISTOL

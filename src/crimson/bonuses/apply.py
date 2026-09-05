@@ -57,8 +57,6 @@ def bonus_apply(
     creatures: Sequence[CreatureState],
     players: list[PlayerState],
     detail_preset: int = 5,
-    defer_freeze_corpse_fx: bool = False,
-    freeze_corpse_indices: set[int] | None = None,
     creature_damage_runtime: CreatureDamageRuntime | None = None,
 ) -> None:
     """Apply a bonus to the player and shared gameplay state."""
@@ -87,8 +85,6 @@ def bonus_apply(
         economist_multiplier=float(economist_multiplier),
         label=str(label),
         icon_id=int(icon_id),
-        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
-        freeze_corpse_indices=freeze_corpse_indices,
         creature_damage_runtime=creature_damage_runtime,
     )
     handler = _BONUS_APPLY_HANDLERS.get(bonus_id)

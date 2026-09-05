@@ -477,26 +477,15 @@ pub fn applyFreezePickupCorpseEffects(
     creatures: *creatures_mod.CreaturePool,
     effects: *effects_mod.EffectPool,
     detail_preset: i32,
-    freeze_corpse_at_tick_start: []const bool,
 ) void {
-    for (&creatures.entries, 0..) |*creature, idx| {
-        if (!creature.active) continue;
-        if (creature.hp > 0.0) continue;
-
-        if (creature_lifecycle.isDespawned(creature.lifecycle_stage)) {
-            creature.active = false;
-            continue;
+    for (&creatures.entries) |*creature| {
+        if (!creature.active or creature.hp > 0.0) continue;
+        for (0..8) |_| {
+            const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shard_angle) % 612)) * 0.01;
+            effects.spawnFreezeShard(state, creature.pos, angle, detail_preset);
         }
-
-        if (idx < freeze_corpse_at_tick_start.len and freeze_corpse_at_tick_start[idx]) {
-            for (0..8) |_| {
-                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shard_angle) % 612)) * 0.01;
-                effects.spawnFreezeShard(state, creature.pos, angle, detail_preset);
-            }
-            const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shatter_angle) % 612)) * 0.01;
-            effects.spawnFreezeShatter(state, creature.pos, shatter_angle, detail_preset);
-        }
-
+        const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shatter_angle) % 612)) * 0.01;
+        effects.spawnFreezeShatter(state, creature.pos, shatter_angle, detail_preset);
         creature.active = false;
     }
 }
@@ -2352,4 +2341,22 @@ test "pending creature projectile queue materializes hostile shots before projec
     try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner.toLegacy());
     try std.testing.expectApproxEqAbs(@as(f32, 100.0), projectiles.entries[0].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 200.0), projectiles.entries[0].pos.y, 1e-6);
+}
+
+test "Freeze shatters every current active corpse regardless of lifecycle" {
+    var state = state_mod.GameplayState.init(1);
+    var creatures: creatures_mod.CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    creatures.entries[0].active = true;
+    creatures.entries[0].hp = 0.0;
+    creatures.entries[1].active = true;
+    creatures.entries[1].hp = -1.0;
+    creatures.entries[1].lifecycle_stage = -100.0;
+    creatures.entries[2].active = true;
+    creatures.entries[2].hp = 10.0;
+    applyFreezePickupCorpseEffects(&state, &creatures, &effects, 5);
+    try std.testing.expect(!creatures.entries[0].active);
+    try std.testing.expect(!creatures.entries[1].active);
+    try std.testing.expect(creatures.entries[2].active);
+    try std.testing.expectEqual(@as(usize, 32), effects.entries.len - effects.free_len);
 }

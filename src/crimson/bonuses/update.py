@@ -23,8 +23,6 @@ def bonus_telekinetic_update(
     *,
     creatures: Sequence[CreatureState],
     detail_preset: int = 5,
-    defer_freeze_corpse_fx: bool = False,
-    freeze_corpse_indices: set[int] | None = None,
     creature_damage_runtime: CreatureDamageRuntime | None = None,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
@@ -69,8 +67,6 @@ def bonus_telekinetic_update(
             creatures=creatures,
             players=players,
             detail_preset=int(detail_preset),
-            defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
-            freeze_corpse_indices=freeze_corpse_indices,
             creature_damage_runtime=creature_damage_runtime,
         )
         entry.picked = True
@@ -100,8 +96,6 @@ def bonus_update(
     creatures: Sequence[CreatureState],
     update_hud: bool = True,
     detail_preset: int = 5,
-    defer_freeze_corpse_fx: bool = False,
-    freeze_corpse_indices: set[int] | None = None,
     creature_damage_runtime: CreatureDamageRuntime | None = None,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
@@ -112,8 +106,6 @@ def bonus_update(
         dt,
         creatures=creatures,
         detail_preset=int(detail_preset),
-        defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
-        freeze_corpse_indices=freeze_corpse_indices,
         creature_damage_runtime=creature_damage_runtime,
     )
     pickups.extend(
@@ -123,8 +115,6 @@ def bonus_update(
             players=players,
             creatures=creatures,
             detail_preset=int(detail_preset),
-            defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
-            freeze_corpse_indices=freeze_corpse_indices,
             creature_damage_runtime=creature_damage_runtime,
         ),
     )

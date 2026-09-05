@@ -2,112 +2,45 @@ from __future__ import annotations
 
 """Freeze bonus behavior shared by sim, apply, and presentation steps."""
 
-import msgspec
 
 from grim.color import RGBA
-from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
-from ..creatures.lifecycle import CREATURE_CORPSE_DESPAWN_LIFECYCLE
 from ..math_parity import f32
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState
 from .apply_context import BonusApplyCtx
 
 
-class DeferredFreezeCorpseFx(msgspec.Struct, frozen=True):
-    pos: Vec2
-    detail_preset: int
-
-
 def apply_freeze(ctx: BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.freeze)
     if old <= 0.0:
         ctx.register_global("freeze")
-    ctx.state.bonuses.freeze = float(
-        f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
-    )
+    ctx.state.bonuses.freeze = f32(old + float(ctx.amount) * float(ctx.economist_multiplier))
 
-    creatures = ctx.creatures
-    if creatures:
-        defer_corpse_fx = bool(ctx.defer_freeze_corpse_fx)
-        allowed_indices = ctx.freeze_corpse_indices
-        for idx, creature in enumerate(creatures):
-            if not creature.active:
-                continue
-            if creature.hp > 0.0:
-                continue
-            # Native excludes corpses already below the lifecycle despawn threshold
-            # from Freeze FX random work in `bonus_apply`.
-            if float(creature.lifecycle_stage) < CREATURE_CORPSE_DESPAWN_LIFECYCLE:
-                creature.active = False
-                continue
-            allow_shatter_fx = allowed_indices is None or int(idx) in allowed_indices
-            pos = creature.pos
-            if allow_shatter_fx and defer_corpse_fx:
-                ctx.state.deferred_freeze_corpse_fx.append(
-                    DeferredFreezeCorpseFx(
-                        pos=Vec2(float(pos.x), float(pos.y)),
-                        detail_preset=int(ctx.detail_preset),
-                    ),
-                )
-            elif allow_shatter_fx:
-                for _ in range(8):
-                    angle = (
-                        float(ctx.state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
-                    )
-                    ctx.state.effects.spawn_freeze_shard(
-                        pos=pos,
-                        angle=angle,
-                        rng=ctx.state.rng,
-                        detail_preset=int(ctx.detail_preset),
-                    )
-                angle = float(ctx.state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
-                ctx.state.effects.spawn_freeze_shatter(
-                    pos=pos,
-                    angle=angle,
-                    rng=ctx.state.rng,
-                    detail_preset=int(ctx.detail_preset),
-                )
-            creature.active = False
+    # Native bonus_apply visits every currently active corpse, including kills
+    # earlier in this tick and entries below the normal despawn threshold.
+    for creature in ctx.creatures or ():
+        if not creature.active or creature.hp > 0.0:
+            continue
+        for _ in range(8):
+            angle = float(ctx.state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
+            ctx.state.effects.spawn_freeze_shard(
+                pos=creature.pos,
+                angle=angle,
+                rng=ctx.state.rng,
+                detail_preset=ctx.detail_preset,
+            )
+        angle = float(ctx.state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
+        ctx.state.effects.spawn_freeze_shatter(
+            pos=creature.pos,
+            angle=angle,
+            rng=ctx.state.rng,
+            detail_preset=ctx.detail_preset,
+        )
+        creature.active = False
 
     ctx.state.sfx_queue.append(SfxId.SHOCKWAVE)
-
-
-def flush_deferred_freeze_corpse_fx(state: GameplayState) -> None:
-    pending = state.deferred_freeze_corpse_fx
-    if not pending:
-        return
-
-    for queued in pending:
-        pos = queued.pos
-        detail = int(queued.detail_preset)
-        for _ in range(8):
-            angle = (
-                float(
-                    state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612,
-                )
-                * 0.01
-            )
-            state.effects.spawn_freeze_shard(
-                pos=pos,
-                angle=angle,
-                rng=state.rng,
-                detail_preset=detail,
-            )
-        angle = (
-            float(
-                state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612,
-            )
-            * 0.01
-        )
-        state.effects.spawn_freeze_shatter(
-            pos=pos,
-            angle=angle,
-            rng=state.rng,
-            detail_preset=detail,
-        )
-    pending.clear()
 
 
 def freeze_bonus_active(*, state: GameplayState) -> bool:

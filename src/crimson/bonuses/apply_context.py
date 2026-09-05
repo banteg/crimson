@@ -28,8 +28,6 @@ class BonusApplyCtx(msgspec.Struct):
     economist_multiplier: float
     label: str
     icon_id: int
-    defer_freeze_corpse_fx: bool = False
-    freeze_corpse_indices: set[int] | None = None
     creature_damage_runtime: CreatureDamageRuntime | None = None
 
     def register_global(self, timer_key: str) -> None:

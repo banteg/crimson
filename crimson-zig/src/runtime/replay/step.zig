@@ -303,10 +303,6 @@ pub fn stepTick(
     else
         elapsed_before_ms + @as(f32, @floatFromInt(frame.dt_sim_ms_i32));
 
-    var freeze_corpse_at_tick_start = [_]bool{false} ** context.creatures.entries.len;
-    for (context.creatures.entries, 0..) |creature, idx| {
-        freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
-    }
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
     context.effects.update(frame.dt, &context.terrain_fx.decals);
     perks.updateEvilEyesTargets(context.state.preserve_bugs, players, context.creatures.entries[0..]);
@@ -633,7 +629,6 @@ pub fn stepTick(
             &context.creatures,
             &context.effects,
             context.detail_preset,
-            freeze_corpse_at_tick_start[0..],
         );
     }
     bonus_runtime.applyPendingBonusEffectsWithEffects(
