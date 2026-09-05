@@ -3,8 +3,9 @@
 The classic `crimsonland.exe` has a few behaviors that look like genuine bugs
 once you read the decompile and trace their gameplay impact.
 
-In the rewrite, we fix these **by default**. For parity work and future
-differential testing, you can re-enable them with `--preserve-bugs`.
+The gameplay fixes below apply **by default** where specified. For parity work
+and future differential testing, you can re-enable those original behaviors with
+`--preserve-bugs`. Original text quirks are documented only and always preserved.
 
 ## 1) Bonus drop suppression: `amount == current weapon id`
 
@@ -85,50 +86,39 @@ Rewrite behavior:
   clamp to `100`.
 - With `--preserve-bugs`: keep the original multiplier behavior.
 
-## 4) Player-facing text typos are preserved in native data
+## 4) Player-facing text quirks (documented, not fixed)
 
-Native behavior:
+The original spelling, grammar, capitalization, punctuation, and abbreviated
+labels are part of the game's character. Both ports display the original text
+in all modes, regardless of `--preserve-bugs`; there is no corrected-text mode.
+This policy affects text only, not any of the gameplay fixes documented here.
 
-- User-facing strings include spelling/grammar mistakes in both:
-  - gameplay data tables (perk/weapon/bonus labels/descriptions), and
-  - screen/UI copy.
-- Source evidence: `analysis/ghidra/raw/crimsonland.exe_strings.txt`.
+Source evidence: `analysis/ghidra/raw/crimsonland.exe_strings.txt`.
+The following inventory records the original wording for reference.
 
-Why it’s likely a bug:
+| Area | Original text (all modes) |
+| --- | --- |
+| Perk name | `Fire Caugh` |
+| Weapon name | `Plague Sphreader Gun` |
+| Weapon name | `Lighting Rifle` |
+| Weapon name | `Fire bullets` |
+| Perk description (`Anxious Loader`) | `waiting your gun to be reloaded` |
+| Perk description (`Dodger`) | `attacks you you have a chance` |
+| Perk description (`Ninja`) | `have really hard time` |
+| Perk description (`Living Fortress`) | `It comes a time ... Being living fortress ... You do the more damage ...` |
+| Bonus description (`Weapon Power Up`) | `Your firerate and load time increase for a short period.` |
+| Bonus description (`Fire Bullets`) | `For few seconds -- make them count.` |
+| End note line | `You've completed all the levels but the battle` |
+| Quest failed line | `Persistence will be rewared.` |
+| Tutorial hint | `Picking it you gets a new weapon.` |
+| Tutorial hint | `exposion` |
+| Weapon database panel label | `wepno #<id>` |
+| Weapon database panel label | `Firerate` |
+| Perk database panel label | `perkno #<id>` |
+| Quest results prompt | `State your name trooper!` |
+| Game over hit-ratio tooltip | `The % of shot bullets hit the target` |
+| Statistics panel line | `played for 1 hours 1 minutes` |
 
-- These are straightforward spelling/wording mistakes in user-facing text, not
-  gameplay semantics.
-
-Rewrite behavior:
-
-- Default: display corrected text in the rewrite.
-- With `--preserve-bugs`: keep the original misspelled strings for parity
-  captures/testing.
-
-Full gated text-fix list:
-
-| Area | Native text (`--preserve-bugs`) | Default rewrite text |
-| --- | --- | --- |
-| Perk name | `Fire Caugh` | `Fire Cough` |
-| Weapon name | `Plague Sphreader Gun` | `Plague Spreader Gun` |
-| Weapon name | `Lighting Rifle` | `Lightning Rifle` |
-| Weapon name | `Fire bullets` | `Fire Bullets` |
-| Perk description (`Anxious Loader`) | `waiting your gun to be reloaded` | `waiting for your gun to be reloaded` |
-| Perk description (`Dodger`) | `attacks you you have a chance` | `attacks you, you have a chance` |
-| Perk description (`Ninja`) | `have really hard time` | `have a really hard time` |
-| Perk description (`Living Fortress`) | `It comes a time ... Being living fortress ... You do the more damage ...` | `There comes a time ... Being a living fortress ... You do more damage ...` |
-| Bonus description (`Weapon Power Up`) | `Your firerate and load time increase for a short period.` | `Your fire rate and load time increase for a short period.` |
-| Bonus description (`Fire Bullets`) | `For few seconds -- make them count.` | `For a few seconds -- make them count.` |
-| End note line | `You've completed all the levels but the battle` | `You've completed all the levels, but the battle` |
-| Quest failed line | `Persistence will be rewared.` | `Persistence will be rewarded.` |
-| Tutorial hint | `Picking it you gets a new weapon.` | `Picking it up gives you a new weapon.` |
-| Tutorial hint | `exposion` | `explosion` |
-| Weapon database panel label | `wepno #<id>` | `weapon #<id>` |
-| Weapon database panel label | `Firerate` | `Fire rate` |
-| Perk database panel label | `perkno #<id>` | `perk #<id>` |
-| Quest results prompt | `State your name trooper!` | `State your name, trooper!` |
-| Game over hit-ratio tooltip | `The % of shot bullets hit the target` | `The % of bullets that hit the target` |
-| Statistics panel line | `played for 1 hours 1 minutes` | `played for 1 hour 1 minute` |
 
 ## 5) Stationary Reloader can finish a reload without refilling ammo
 

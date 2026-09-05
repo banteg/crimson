@@ -101,8 +101,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon_id = int(self._selected_weapon_id)
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
-        preserve_bugs = self.state.preserve_bugs
-        weapon_no_label = "wepno" if preserve_bugs else "weapon"
+        weapon_no_label = "wepno"
         draw_small_text(font, f"{weapon_no_label} #{weapon_id}", detail_top_left + Vec2(240.0 * scale, 32.0 * scale), rl.Color(255, 255, 255, int(255 * 0.4)))
         draw_small_text(font, name, detail_top_left + Vec2(50.0 * scale, 50.0 * scale), text_color)
         if icon_index is not None:
@@ -111,7 +110,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         reload_time = weapon.reload_time
         clip_size = weapon.clip_size
         ammo_class = int(weapon.ammo_class or 0)
-        firerate_label = "Firerate" if preserve_bugs else "Fire rate"
+        firerate_label = "Firerate"
         if ammo_class == 1:
             firerate_text = f"{firerate_label}: n/a"
         else:

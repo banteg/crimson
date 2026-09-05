@@ -29,16 +29,6 @@ _TUTORIAL_STAGE_TEXT: tuple[str, ...] = (
 
 _TUTORIAL_HINT_TEXT: tuple[str, ...] = (
     "This is the speed powerup, it makes you move faster!",
-    "This is a weapon powerup. Picking it up gives you a new weapon.",
-    "This powerup doubles all experience points you gain while it's active.",
-    "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
-    "Reflex Boost powerup slows down time giving you a chance to react better",
-    "",
-    "",
-)
-
-_TUTORIAL_HINT_TEXT_BUGS: tuple[str, ...] = (
-    "This is the speed powerup, it makes you move faster!",
     "This is a weapon powerup. Picking it you gets a new weapon.",
     "This powerup doubles all experience points you gain while it's active.",
     "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
@@ -172,7 +162,7 @@ def _tick_hint(
     elif state.hint_alpha > 1000:
         state.hint_alpha = 1000
 
-    hint_text_table = _TUTORIAL_HINT_TEXT_BUGS if bool(state.preserve_bugs) else _TUTORIAL_HINT_TEXT
+    hint_text_table = _TUTORIAL_HINT_TEXT
     idx = int(state.hint_index)
     text = hint_text_table[idx] if 0 <= idx < len(hint_text_table) else ""
     alpha = float(state.hint_alpha) * 0.001 if text else 0.0

@@ -2245,27 +2245,26 @@ fn formatHighScoreValue(buf: []u8, record: persistence.highscores.HighScoreRecor
 }
 
 fn weaponNoLabel(preserve_bugs: bool) []const u8 {
-    return if (preserve_bugs) "wepno" else "weapon";
+    _ = preserve_bugs;
+    return "wepno";
 }
 
 fn weaponFireRateLabel(preserve_bugs: bool) []const u8 {
-    return if (preserve_bugs) "Firerate" else "Fire rate";
+    _ = preserve_bugs;
+    return "Firerate";
 }
 
 fn perkNoLabel(preserve_bugs: bool) []const u8 {
-    return if (preserve_bugs) "perkno" else "perk";
+    _ = preserve_bugs;
+    return "perkno";
 }
 
 fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32, preserve_bugs: bool) []const u8 {
+    _ = preserve_bugs;
     const total_minutes = @divTrunc(@divTrunc(game_sequence_ms, 1000), 60);
     const hours = @divTrunc(total_minutes, 60);
     const minutes = @mod(total_minutes, 60);
-    if (preserve_bugs) {
-        return std.fmt.bufPrint(buf, "played for {d} hours {d} minutes", .{ hours, minutes }) catch "played for 0 hours 0 minutes";
-    }
-    const hour_label = if (hours == 1) "hour" else "hours";
-    const minute_label = if (minutes == 1) "minute" else "minutes";
-    return std.fmt.bufPrint(buf, "played for {d} {s} {d} {s}", .{ hours, hour_label, minutes, minute_label }) catch "played for 0 hours 0 minutes";
+    return std.fmt.bufPrint(buf, "played for {d} hours {d} minutes", .{ hours, minutes }) catch "played for 0 hours 0 minutes";
 }
 
 fn formatElapsedMmSsBuf(buf: []u8, elapsed_ms: u32) []const u8 {
@@ -2441,10 +2440,10 @@ test "statistics easter roll is sticky until consumed" {
     try std.testing.expect(!isOrbesVolantesDay(.{ .year = 2026, .month = 5, .day = 1 }));
 }
 
-test "statistics playtime text follows default and preserve-bugs pluralization" {
+test "statistics playtime text preserves original pluralization in all modes" {
     var buf: [64]u8 = undefined;
     try std.testing.expectEqualStrings(
-        "played for 1 hour 1 minute",
+        "played for 1 hours 1 minutes",
         formatPlaytimeText(&buf, (1 * 60 * 60 + 1 * 60) * 1000, false),
     );
     try std.testing.expectEqualStrings(
@@ -2545,20 +2544,20 @@ test "high score local details hit percent uses wide math" {
     try std.testing.expectEqual(@as(u64, 429496729500), highScoreHitPercent(record));
 }
 
-test "statistics database detail labels follow preserve-bugs wording" {
-    try std.testing.expectEqualStrings("weapon", weaponNoLabel(false));
+test "statistics database detail labels preserve original wording in all modes" {
+    try std.testing.expectEqualStrings("wepno", weaponNoLabel(false));
     try std.testing.expectEqualStrings("wepno", weaponNoLabel(true));
-    try std.testing.expectEqualStrings("Fire rate", weaponFireRateLabel(false));
+    try std.testing.expectEqualStrings("Firerate", weaponFireRateLabel(false));
     try std.testing.expectEqualStrings("Firerate", weaponFireRateLabel(true));
-    try std.testing.expectEqualStrings("perk", perkNoLabel(false));
+    try std.testing.expectEqualStrings("perkno", perkNoLabel(false));
     try std.testing.expectEqualStrings("perkno", perkNoLabel(true));
 }
 
-test "statistics perk descriptions use preserve-bugs text" {
+test "statistics perk descriptions preserve original text in all modes" {
     try std.testing.expect(std.mem.indexOf(
         u8,
         game_ids.perkDisplayDescription(.anxious_loader, 0, false),
-        "waiting for your gun",
+        "waiting your gun",
     ) != null);
     try std.testing.expect(std.mem.indexOf(
         u8,

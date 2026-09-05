@@ -790,25 +790,13 @@ WEAPON_TABLE = [
 
 WEAPON_BY_ID: dict[WeaponId, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
 
-_WEAPON_FIXED_NAMES: dict[WeaponId, str] = {
-    WeaponId.PLAGUE_SPREADER_GUN: "Plague Spreader Gun",
-    WeaponId.LIGHTNING_RIFLE: "Lightning Rifle",
-    WeaponId.FIRE_BULLETS: "Fire Bullets",
-}
-
 
 def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
     try:
         entry = WEAPON_BY_ID[weapon_id]
     except KeyError:
         return f"weapon_{weapon_id}"
-    name = entry.name
-    if bool(preserve_bugs):
-        return str(name)
-    fixed = _WEAPON_FIXED_NAMES.get(weapon_id)
-    if fixed is not None:
-        return fixed
-    return str(name)
+    return str(entry.name)
 
 
 PROJECTILE_TEMPLATE_OVERRIDES: dict[WeaponId, tuple[ProjectileTemplateId, ...]] = {

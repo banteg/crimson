@@ -720,7 +720,7 @@ class QuestResultsUi(msgspec.Struct):
 
         elif self.phase == 1:
             text_y = panel_layout.top_left.y + 118.0 * scale
-            name_prompt = "State your name trooper!" if bool(self.preserve_bugs) else "State your name, trooper!"
+            name_prompt = "State your name trooper!"
             self._draw_small(
                 font,
                 name_prompt,

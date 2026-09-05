@@ -71,21 +71,19 @@ def test_stage5_bonus_carrier_config() -> None:
 
 
 @pytest.mark.parametrize(
-    ("hint_index", "fixed_text", "bugged_text"),
+    ("hint_index", "original_text"),
     [
         (
             1,
-            "This is a weapon powerup. Picking it up gives you a new weapon.",
             "This is a weapon powerup. Picking it you gets a new weapon.",
         ),
         (
             3,
-            "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
             "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
         ),
     ],
 )
-def test_hint_text_respects_preserve_bugs(hint_index: int, fixed_text: str, bugged_text: str) -> None:
+def test_hint_text_preserves_original_in_all_modes(hint_index: int, original_text: str) -> None:
     base = TutorialState(
         stage_index=0,
         stage_timer_ms=0,
@@ -121,8 +119,8 @@ def test_hint_text_respects_preserve_bugs(hint_index: int, fixed_text: str, bugg
         bonus_pool_empty=True,
         perk_pending_count=0,
     )
-    assert fixed_actions.hint_text == fixed_text
-    assert bug_actions.hint_text == bugged_text
+    assert fixed_actions.hint_text == original_text
+    assert bug_actions.hint_text == original_text
 
 
 @pytest.mark.parametrize("repeat", [1, 2, 5])

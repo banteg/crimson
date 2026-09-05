@@ -609,8 +609,6 @@ class GameOverUi(msgspec.Struct):
             col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
             hit_ratio_tooltip = (
                 "The % of shot bullets hit the target"
-                if bool(self.preserve_bugs)
-                else "The % of bullets that hit the target"
             )
             self._draw_small(
                 font,

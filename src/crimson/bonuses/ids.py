@@ -165,20 +165,11 @@ BONUS_TABLE = [
 
 BONUS_BY_ID = {entry.bonus_id: entry for entry in BONUS_TABLE}
 
-_BONUS_FIXED_NAMES: dict[BonusId, str] = {}
-_BONUS_FIXED_DESCRIPTIONS = {
-    BonusId.WEAPON_POWER_UP: "Your fire rate and load time increase for a short period.",
-    BonusId.FIRE_BULLETS: "For a few seconds -- make them count.",
-}
 
 def bonus_display_name(bonus_id: BonusId, *, preserve_bugs: bool = False) -> str:
     entry = BONUS_BY_ID.get(bonus_id)
     if entry is None:
         return "unknown"
-    if not preserve_bugs:
-        fixed = _BONUS_FIXED_NAMES.get(bonus_id)
-        if fixed is not None:
-            return fixed
     return entry.name
 
 
@@ -186,10 +177,6 @@ def bonus_display_description(bonus_id: BonusId, *, preserve_bugs: bool = False)
     entry = BONUS_BY_ID.get(bonus_id)
     if entry is None:
         return None
-    if not preserve_bugs:
-        fixed = _BONUS_FIXED_DESCRIPTIONS.get(bonus_id)
-        if fixed is not None:
-            return fixed
     return entry.description
 
 

@@ -207,8 +207,6 @@ class EndNoteView:
         header = "   Incredible!" if hardcore else "Congratulations!"
         levels_line = (
             "You've completed all the levels but the battle"
-            if bool(self.state.preserve_bugs)
-            else "You've completed all the levels, but the battle"
         )
         body_lines = (
             [

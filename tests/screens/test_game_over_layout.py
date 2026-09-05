@@ -266,11 +266,11 @@ def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> N
 @pytest.mark.parametrize(
     ("preserve_bugs", "expected_tooltip"),
     [
-        (False, "The % of bullets that hit the target"),
+        (False, "The % of shot bullets hit the target"),
         (True, "The % of shot bullets hit the target"),
     ],
 )
-def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
+def test_game_over_hit_ratio_tooltip_preserves_original_text(
     tmp_path: Path, preserve_bugs: bool, expected_tooltip: str, mocker,
 ) -> None:
     ui = GameOverUi(

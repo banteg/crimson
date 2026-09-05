@@ -132,7 +132,7 @@ def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> No
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
     captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
-    assert "State your name, trooper!" in captured_text
+    assert "State your name trooper!" in captured_text
     assert "Score" in captured_text
     assert "Experience" in captured_text
     assert "Rank: 1st" in captured_text
@@ -165,7 +165,7 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
         for call in draw_small.call_args_list
     }
 
-    state_x, state_y, state_color = draw_map["State your name, trooper!"]
+    state_x, state_y, state_color = draw_map["State your name trooper!"]
     assert (state_x, state_y) == (154.0, 147.0)
     assert (state_color.r, state_color.g, state_color.b, state_color.a) == (149, 175, 198, 255)
 

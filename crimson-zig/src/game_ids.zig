@@ -173,6 +173,7 @@ pub const PerkId = enum(i32) {
 };
 
 pub fn weaponDisplayName(weapon_id: WeaponId, preserve_bugs: bool) []const u8 {
+    _ = preserve_bugs;
     return switch (weapon_id) {
         .none => "weapon_0",
         .pistol => "Pistol",
@@ -215,18 +216,18 @@ pub fn weaponDisplayName(weapon_id: WeaponId, preserve_bugs: bool) []const u8 {
         .unused_38 => "unused_38",
         .unused_39 => "unused_39",
         .unused_40 => "unused_40",
-        .plague_spreader_gun => if (preserve_bugs) "Plague Sphreader Gun" else "Plague Spreader Gun",
+        .plague_spreader_gun => "Plague Sphreader Gun",
         .bubblegun => "Bubblegun",
         .rainbow_gun => "Rainbow Gun",
         .grim_weapon => "Grim Weapon",
-        .fire_bullets => if (preserve_bugs) "Fire bullets" else "Fire Bullets",
+        .fire_bullets => "Fire bullets",
         .unused_46 => "unused_46",
         .unused_47 => "unused_47",
         .unused_48 => "unused_48",
         .unused_49 => "unused_49",
         .transmutator => "Transmutator",
         .blaster_r_300 => "Blaster R-300",
-        .lightning_rifle => if (preserve_bugs) "Lighting Rifle" else "Lightning Rifle",
+        .lightning_rifle => "Lighting Rifle",
         .nuke_launcher => "Nuke Launcher",
     };
 }
@@ -253,6 +254,7 @@ pub fn bonusDisplayName(bonus_id: BonusId, preserve_bugs: bool) []const u8 {
 }
 
 pub fn perkDisplayName(perk_id: PerkId, violence_disabled: i32, preserve_bugs: bool) []const u8 {
+    _ = preserve_bugs;
     if (perk_id == .bloody_mess_quick_learner and violence_disabled != 0) {
         return "Quick Learner";
     }
@@ -311,7 +313,7 @@ pub fn perkDisplayName(perk_id: PerkId, violence_disabled: i32, preserve_bugs: b
         .ion_gun_master => "Ion Gun Master",
         .stationary_reloader => "Stationary Reloader",
         .man_bomb => "Man Bomb",
-        .fire_caugh => if (preserve_bugs) "Fire Caugh" else "Fire Cough",
+        .fire_caugh => "Fire Caugh",
         .living_fortress => "Living Fortress",
         .tough_reloader => "Tough Reloader",
         .lifeline_50_50 => "Lifeline 50-50",
@@ -319,18 +321,9 @@ pub fn perkDisplayName(perk_id: PerkId, violence_disabled: i32, preserve_bugs: b
 }
 
 pub fn perkDisplayDescription(perk_id: PerkId, violence_disabled: i32, preserve_bugs: bool) []const u8 {
+    _ = preserve_bugs;
     if (perk_id == .bloody_mess_quick_learner and violence_disabled != 0) {
         return "You learn things faster than a regular Joe from now on gaining 30% more experience points from everything you do.";
-    }
-    if (preserve_bugs) {
-        return switch (perk_id) {
-            .anxious_loader => "When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
-            .perk_expert => "You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
-            .dodger => "It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack.",
-            .ninja => "You've taken your dodging abilities to the next level; monsters have really hard time hitting you.",
-            .living_fortress => "It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still.",
-            else => perkDisplayDescription(perk_id, violence_disabled, false),
-        };
     }
     return switch (perk_id) {
         .antiperk => "You shouldn't be seeing this..",
@@ -351,7 +344,7 @@ pub fn perkDisplayDescription(perk_id: PerkId, violence_disabled: i32, preserve_
         .fatal_lottery => "Fifty-fifty chance of dying OR gaining 10k experience points. Place your bets. Interested, anyone?",
         .random_weapon => "Here, have this weapon. No questions asked.",
         .mr_melee => "You master the art of melee fighting. You don't just stand still when monsters come near -- you hit back. Hard.",
-        .anxious_loader => "When you can't stand waiting for your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
+        .anxious_loader => "When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
         .final_revenge => "Pick this and you'll get your revenge. It's a promise.",
         .telekinetic => "Picking up bonuses has never been so easy and FUN. You can pick up bonuses simply by aiming at them for a while. Ingenious.",
         .perk_expert => "You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
@@ -359,7 +352,7 @@ pub fn perkDisplayDescription(perk_id: PerkId, violence_disabled: i32, preserve_
         .regression_bullets => "Attempt to shoot with an empty clip leads to a severe loss of experience. But hey, whatever makes them go down, right?",
         .infernal_contract => "In exchange for your soul, a dark stranger is offering you three (3) new perks. To collect his part of the bargain soon enough, your health is reduced to a near-death status. Just sign down here below this pentagram..",
         .poison_bullets => "You tend to explicitly treat each of your bullets with rat poison. You do it for good luck, but it seems to have other side effects too.",
-        .dodger => "It seems so stupid just to take the hits. Each time a monster attacks you, you have a chance to dodge the attack.",
+        .dodger => "It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack.",
         .bonus_magnet => "You somehow seem to lure all kinds of bonuses to appear around you more often.",
         .uranium_filled_bullets => "Your bullets have a nice creamy uranium filling. Yummy. Now that's gotta hurt the monsters more, right?",
         .doctor => "With a single glance you can tell the medical condition of, well, anything. Also, being a doctor, you know exactly what hurts the most enabling you to do slightly more damage with your attacks.",
@@ -373,7 +366,7 @@ pub fn perkDisplayDescription(perk_id: PerkId, violence_disabled: i32, preserve_
         .toxic_avenger => "You started out just by being poisonous. The next logical step for you is to become highly toxic -- the ULTIMATE TOXIC AVENGER. Most monsters touching you will just drop dead within seconds!",
         .regeneration => "Your health replenishes but very slowly. What more there is to say?",
         .pyromaniac => "You just enjoy using fire as your Tool of Destruction and you're good at it too; your fire based weapons do a lot more damage.",
-        .ninja => "You've taken your dodging abilities to the next level; monsters have a really hard time hitting you.",
+        .ninja => "You've taken your dodging abilities to the next level; monsters have really hard time hitting you.",
         .highlander => "You are immortal. Well, almost immortal. Instead of actually losing health on attacks you've got a 10% chance of just dropping dead whenever a monster attacks you. There really can be only one, you know.",
         .jinxed => "Things happen near you. Strangest things. Creatures just drop dead and accidents happen. Beware.",
         .perk_master => "Being the Perk Expert taught you a few things and now you are ready to take your training to the next level doubling the ability effect.",
@@ -388,7 +381,7 @@ pub fn perkDisplayDescription(perk_id: PerkId, violence_disabled: i32, preserve_
         .stationary_reloader => "It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER!",
         .man_bomb => "You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds.",
         .fire_caugh => "You have a fireball stuck in your throat. Repeatedly. Mind your manners.",
-        .living_fortress => "There comes a time in each man's life when you'd just rather not move anymore. Being a living fortress comes with extra benefits as well. You do more damage the longer you stand still.",
+        .living_fortress => "It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still.",
         .tough_reloader => "Damage received during reloading a weapon is halved.",
         .lifeline_50_50 => "The computer removes half of the wrong monsters for you. You don't gain any experience.",
     };

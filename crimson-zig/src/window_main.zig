@@ -3175,11 +3175,12 @@ fn questFailedShortcutSelection(results: *const ResultsScreen) ?usize {
 }
 
 fn questFailedMessage(retry_count: i32, preserve_bugs: bool) [:0]const u8 {
+    _ = preserve_bugs;
     return switch (retry_count) {
         1 => "You didn't make it, do try again.",
         2 => "Third time no good.",
         3 => "No luck this time, have another go?",
-        4 => if (preserve_bugs) "Persistence will be rewared." else "Persistence will be rewarded.",
+        4 => "Persistence will be rewared.",
         5 => "Try one more time?",
         else => "Quest failed, try again.",
     };
@@ -3307,7 +3308,7 @@ fn resultsHighscoreHighlightRank(results: *const ResultsScreen) ?usize {
 }
 
 fn resultsNamePrompt(results: *const ResultsScreen) [:0]const u8 {
-    if (results.run_config.game_mode == .quests and results.run_config.preserve_bugs) {
+    if (results.run_config.game_mode == .quests) {
         return "State your name trooper!";
     }
     return "State your name, trooper!";
@@ -3465,6 +3466,7 @@ fn frameDeltaMs(frame_dt: f32) i32 {
 }
 
 fn endNoteBodyLines(hardcore: bool, preserve_bugs: bool) []const [:0]const u8 {
+    _ = preserve_bugs;
     if (hardcore) return &.{
         "You've done the thing we all thought was",
         "virtually impossible. To reward your",
@@ -3473,16 +3475,8 @@ fn endNoteBodyLines(hardcore: bool, preserve_bugs: bool) []const [:0]const u8 {
         "",
         "",
     };
-    return if (preserve_bugs) &.{
+    return &.{
         "You've completed all the levels but the battle",
-        "isn't over yet! With all of the unlocked perks",
-        "and weapons your Survival is just a bit easier.",
-        "You can also replay the quests in Hardcore.",
-        "As an additional reward for your victorious",
-        "playing, a completely new and different game",
-        "mode is unlocked for you: Typ'o'Shooter.",
-    } else &.{
-        "You've completed all the levels, but the battle",
         "isn't over yet! With all of the unlocked perks",
         "and weapons your Survival is just a bit easier.",
         "You can also replay the quests in Hardcore.",
@@ -4279,7 +4273,7 @@ test "quest failed messages match retry count" {
     try std.testing.expectEqualStrings("You didn't make it, do try again.", questFailedMessage(1, false));
     try std.testing.expectEqualStrings("Third time no good.", questFailedMessage(2, false));
     try std.testing.expectEqualStrings("No luck this time, have another go?", questFailedMessage(3, false));
-    try std.testing.expectEqualStrings("Persistence will be rewarded.", questFailedMessage(4, false));
+    try std.testing.expectEqualStrings("Persistence will be rewared.", questFailedMessage(4, false));
     try std.testing.expectEqualStrings("Persistence will be rewared.", questFailedMessage(4, true));
     try std.testing.expectEqualStrings("Try one more time?", questFailedMessage(5, false));
     try std.testing.expectEqualStrings("Quest failed, try again.", questFailedMessage(6, false));
@@ -4699,7 +4693,7 @@ test "results high score highlight rank is carried only after save" {
     try std.testing.expectEqual(@as(?usize, 3), resultsHighscoreHighlightRank(&saved_results));
 }
 
-test "results high score name prompt follows quest preserve-bugs wording" {
+test "results high score name prompt preserves original quest wording" {
     const survival_results: ResultsScreen = .{
         .reason = .dead,
         .run_config = .{ .game_mode = .survival, .preserve_bugs = true },
@@ -4712,7 +4706,7 @@ test "results high score name prompt follows quest preserve-bugs wording" {
         .run_config = .{ .game_mode = .quests, .preserve_bugs = false },
         .summary = undefined,
     };
-    try std.testing.expectEqualStrings("State your name, trooper!", resultsNamePrompt(&quest_results_fixed));
+    try std.testing.expectEqualStrings("State your name trooper!", resultsNamePrompt(&quest_results_fixed));
 
     const quest_results_bug_compatible: ResultsScreen = .{
         .reason = .completed,
@@ -4831,9 +4825,9 @@ test "end note close waits for reverse transition before dispatch" {
     try std.testing.expectEqual(@as(f32, 0.0), endNoteFadeAlpha(&state));
 }
 
-test "end note body preserves native missing comma when requested" {
+test "end note body preserves native missing comma in all modes" {
     try std.testing.expectEqualStrings(
-        "You've completed all the levels, but the battle",
+        "You've completed all the levels but the battle",
         endNoteBodyLines(false, false)[0],
     );
     try std.testing.expectEqualStrings(
@@ -4948,13 +4942,13 @@ test "results score card hover step clamps and decays" {
     try std.testing.expectEqual(@as(f32, 0.0), resultsHoverStep(0.1, false, 0.25));
 }
 
-test "results score card hit ratio tooltip follows preserve-bugs wording" {
+test "results score card hit ratio tooltip preserves original wording in all modes" {
     const fixed: ResultsScreen = .{
         .reason = .dead,
         .run_config = .{ .game_mode = .survival, .preserve_bugs = false },
         .summary = undefined,
     };
-    try std.testing.expectEqualStrings("The % of bullets that hit the target", resultsHitRatioTooltip(&fixed));
+    try std.testing.expectEqualStrings("The % of shot bullets hit the target", resultsHitRatioTooltip(&fixed));
 
     const bug_compatible: ResultsScreen = .{
         .reason = .dead,
@@ -6046,10 +6040,8 @@ fn resultsScoreCardTooltipPos(pos: rl.Vector2, show_weapon_row: bool) rl.Vector2
 }
 
 fn resultsHitRatioTooltip(results: *const ResultsScreen) []const u8 {
-    return if (results.run_config.preserve_bugs)
-        "The % of shot bullets hit the target"
-    else
-        "The % of bullets that hit the target";
+    _ = results;
+    return "The % of shot bullets hit the target";
 }
 
 const HudTextColor = struct {

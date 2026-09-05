@@ -61,16 +61,6 @@ const tutorial_stage_text = [_][]const u8{
 
 const tutorial_hint_text = [_][]const u8{
     "This is the speed powerup, it makes you move faster for\na limited amount of time.",
-    "This is a weapon powerup. Picking it up gets\nyou another weapon. This one is a submachine gun.",
-    "This powerup doubles all experience points gained when\nx2 powerup is active.",
-    "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
-    "Reflex Boost powerup slows down time giving you a chance to react better",
-    "",
-    "",
-};
-
-const tutorial_hint_text_bugs = [_][]const u8{
-    "This is the speed powerup, it makes you move faster for\na limited amount of time.",
     "This is a weapon powerup. Picking it you gets\nyou another weapon. This one is a submachine gun.",
     "This powerup doubles all experience points gained when\nx2 powerup is active.",
     "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
@@ -85,11 +75,9 @@ pub fn promptText(stage_index: i32) []const u8 {
 }
 
 pub fn hintText(hint_index: i32, preserve_bugs: bool) []const u8 {
+    _ = preserve_bugs;
     if (hint_index < 0 or hint_index >= tutorial_hint_text.len) return "";
-    return if (preserve_bugs)
-        tutorial_hint_text_bugs[@intCast(hint_index)]
-    else
-        tutorial_hint_text[@intCast(hint_index)];
+    return tutorial_hint_text[@intCast(hint_index)];
 }
 
 fn clamp01(value: f32) f32 {
@@ -360,11 +348,11 @@ test "tutorial copy preserves the native script" {
         hintText(3, true),
     );
     try std.testing.expectEqualStrings(
-        "This is a weapon powerup. Picking it up gets\nyou another weapon. This one is a submachine gun.",
+        "This is a weapon powerup. Picking it you gets\nyou another weapon. This one is a submachine gun.",
         hintText(1, false),
     );
     try std.testing.expectEqualStrings(
-        "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
+        "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
         hintText(3, false),
     );
 }

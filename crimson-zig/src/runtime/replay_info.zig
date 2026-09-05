@@ -940,7 +940,7 @@ test "replay info snapshot diff emits core player timeline events" {
     try std.testing.expectEqual(@as(i32, 120), timeline.items[1].data.level_up.xp);
 
     try std.testing.expectEqual(EventKind.perk_pick, timeline.items[2].kind);
-    try std.testing.expectEqualStrings("p0 perk Fire Cough (54) x1", timeline.items[2].detail);
+    try std.testing.expectEqualStrings("p0 perk Fire Caugh (54) x1", timeline.items[2].detail);
     try std.testing.expectEqual(@as(i32, @intFromEnum(PerkId.fire_caugh)), timeline.items[2].data.perk_pick.perk_id);
     try std.testing.expectEqual(@as(i32, 0), timeline.items[2].data.perk_pick.count_before);
     try std.testing.expectEqual(@as(i32, 1), timeline.items[2].data.perk_pick.count_after);

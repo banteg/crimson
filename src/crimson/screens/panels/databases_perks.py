@@ -150,7 +150,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         perk_id = hovered_perk_id
         perk_name = self._perk_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
-        perk_no_label = "perkno" if preserve_bugs else "perk"
+        perk_no_label = "perkno"
         draw_small_text(font, f"{perk_no_label} #{perk_id}", detail_anchor + Vec2(190.0 * scale, -40.0 * scale), rl.Color(255, 255, 255, int(255 * 0.4)))
         name_w = measure_small_text_width(font, perk_name)
         perk_name_pos = Vec2(detail_anchor.x + 128.0 * scale - name_w * 0.5, detail_anchor.y - 22.0 * scale)

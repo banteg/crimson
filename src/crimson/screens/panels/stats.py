@@ -80,11 +80,7 @@ def _format_playtime_text(game_sequence_ms: int, *, preserve_bugs: bool = False)
     total_minutes = (max(0, int(game_sequence_ms)) // 1000) // 60
     hours = total_minutes // 60
     minutes = total_minutes % 60
-    if bool(preserve_bugs):
-        return f"played for {hours} hours {minutes} minutes"
-    hour_label = "hour" if hours == 1 else "hours"
-    minute_label = "minute" if minutes == 1 else "minutes"
-    return f"played for {hours} {hour_label} {minutes} {minute_label}"
+    return f"played for {hours} hours {minutes} minutes"
 
 
 class StatisticsMenuView:

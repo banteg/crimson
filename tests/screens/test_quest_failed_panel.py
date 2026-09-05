@@ -118,7 +118,7 @@ def test_quest_failed_retry_message_respects_preserve_bugs(quest_failed_state) -
     view = QuestFailedView(state)
 
     state.preserve_bugs = False
-    assert view._failure_message() == "Persistence will be rewarded."
+    assert view._failure_message() == "Persistence will be rewared."
 
     state.preserve_bugs = True
     assert view._failure_message() == "Persistence will be rewared."
