@@ -8,7 +8,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 from grim.sfx_map import SfxId
 
 from ...creatures.damage_runtime import CreatureDamageRuntime
@@ -87,6 +87,207 @@ class SecondaryStepCtx(msgspec.Struct, frozen=True):
     # bullet hits (sfx_play_exclusive + one playlist rand) outside demo/rush;
     # when unset, the plain explosion sound is queued directly.
     play_rocket_hit_audio: Callable[[], None] | None = None
+
+
+def _creature_is_collidable(creature: CreatureState) -> bool:
+    if not creature.active:
+        return False
+    return creature_lifecycle_is_collidable(creature.lifecycle_stage)
+
+def _step_detonation(
+    entry: SecondaryProjectile, ctx: SecondaryStepCtx, *, dt: float,
+    creature_spatial: CreatureSpatialHash, rng: CrandLike,
+) -> None:
+    runtime_state, creatures = ctx.runtime_state, ctx.creatures
+    fx_queue, creature_damage_runtime = ctx.fx_queue, ctx.creature_damage_runtime
+    if runtime_state is not None:
+        runtime_state.camera_shake_pulses = 4
+
+    entry.detonation_t = x87_pc24_add(entry.detonation_t, x87_pc24_mul(dt, 3.0))
+    entry.vel = Vec2(entry.detonation_t, entry.detonation_scale)
+    t = float(entry.detonation_t)
+    scale = float(entry.detonation_scale)
+    if t > 1.0:
+        if fx_queue is not None:
+            fx_queue.add(
+                effect_id=int(EffectId.AURA),
+                pos=entry.pos,
+                width=float(scale) * 256.0,
+                height=float(scale) * 256.0,
+                rotation=0.0,
+                rgba=RGBA(0.0, 0.0, 0.0, 0.25),
+            )
+        entry.active = False
+
+    radius = scale * t * 80.0
+    radius_sq = radius * radius
+    damage = x87_pc24_mul(dt, scale)
+    damage = x87_pc24_mul(damage, 700.0)
+    for creature_idx in creature_spatial.candidate_indices(pos=entry.pos, radius=float(radius)):
+        creature = creatures[int(creature_idx)]
+        if not _creature_is_collidable(creature):
+            continue
+        if creature.hp <= 0.0:
+            continue
+        d_sq = Vec2.distance_sq(entry.pos, creature.pos)
+        if d_sq < radius_sq:
+            hp_before = float(creature.hp)
+            impulse_dir = (creature.pos - entry.pos).normalized()
+            impulse = Vec2(
+                f32(float(impulse_dir.x) * 0.1),
+                f32(float(impulse_dir.y) * 0.1),
+            )
+            _apply_damage_to_creature(
+                creatures,
+                creature_idx,
+                damage,
+                damage_type=CreatureDamageType.EXPLOSION,
+                creature_damage_runtime=creature_damage_runtime,
+                owner=entry.owner,
+                impulse=impulse,
+            )
+            creature_spatial.sync_index(int(creature_idx))
+            if hp_before > 0.0 and float(creature.hp) <= 0.0:
+                # Native detonation AoE does an extra two random decals and a
+                # second `creature_handle_death` call after the killing hit.
+                if fx_queue is not None:
+                    fx_queue.add_random(pos=creature.pos, rng=rng)
+                    fx_queue.add_random(pos=creature.pos, rng=rng)
+                creature_damage_runtime.on_secondary_detonation_kill(int(creature_idx))
+
+
+def _move_rocket(
+    entry: SecondaryProjectile, rule: RocketRule | HomingRocketRule | RocketMinigunRule,
+    *, dt: float, creatures: Sequence[CreatureState], runtime_state: GameplayState | None,
+) -> None:
+    # Move. Native keeps pos/vel as f32 fields: `pos += f32(dt * vel)`.
+    entry.pos = Vec2(
+        float(f32(float(entry.pos.x) + float(f32(float(dt) * float(entry.vel.x))))),
+        float(f32(float(entry.pos.y) + float(f32(float(dt) * float(entry.vel.y))))),
+    )
+
+    # Update velocity + countdown.
+    speed_mag = math.sqrt(float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y))
+    match rule:
+        case (
+            RocketRule(
+                accel_factor_scale=accel_factor_scale,
+                speed_cap=speed_cap,
+                ttl_decay_scale=ttl_decay_scale,
+            )
+            | RocketMinigunRule(
+                accel_factor_scale=accel_factor_scale,
+                speed_cap=speed_cap,
+                ttl_decay_scale=ttl_decay_scale,
+            )
+        ):
+            if speed_mag < float(speed_cap):
+                factor = float(f32(float(dt) * float(accel_factor_scale) + 1.0))
+                entry.vel = Vec2(
+                    float(f32(factor * float(entry.vel.x))),
+                    float(f32(factor * float(entry.vel.y))),
+                )
+            entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
+        case HomingRocketRule(
+            target_accel=target_accel,
+            max_velocity=max_velocity,
+            ttl_decay_scale=ttl_decay_scale,
+        ):
+            # Type 2: homing projectile.
+            target_id = entry.target_id
+            if not (0 <= target_id < len(creatures)) or not creatures[target_id].active:
+                entry.target_id = creature_find_nearest_alive(
+                    creatures=creatures,
+                    origin=entry.pos,
+                    preserve_bugs=bool(runtime_state.preserve_bugs) if runtime_state is not None else False,
+                )
+                target_id = entry.target_id
+
+            if 0 <= target_id < len(creatures):
+                target = creatures[target_id]
+                # Native steering: angle = atan2(pos - target) kept in
+                # extended precision; the stored f32 angle is atan - pi/2.
+                # vel_x adds cos((atan - pi/2) - pi/2) from the extended
+                # angle; vel_y (and the over-cap subtraction for both
+                # components) recompute from the stored f32 angle, so the
+                # add-then-subtract is not an exact identity.
+                atan_ext = x87_fpatan(
+                    x87_pc24_sub(entry.pos.y, target.pos.y),
+                    x87_pc24_sub(entry.pos.x, target.pos.x),
+                )
+                entry.angle = x87_pc24_sub(atan_ext, NATIVE_HALF_PI)
+                heading_ext = x87_pc24_sub(
+                    x87_pc24_sub(atan_ext, NATIVE_HALF_PI),
+                    NATIVE_HALF_PI,
+                )
+                heading_stored = x87_pc24_sub(entry.angle, NATIVE_HALF_PI)
+                entry.vel = Vec2(
+                    x87_pc24_add(
+                        entry.vel.x,
+                        x87_pc24_cos_mul(
+                            heading_ext,
+                            dt,
+                            target_accel,
+                        ),
+                    ),
+                    x87_pc24_add(
+                        entry.vel.y,
+                        x87_pc24_sin_mul(
+                            heading_stored,
+                            dt,
+                            target_accel,
+                        ),
+                    ),
+                )
+                speed_after = math.sqrt(
+                    float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y),
+                )
+                if speed_after > float(max_velocity):
+                    entry.vel = Vec2(
+                        x87_pc24_sub(
+                            entry.vel.x,
+                            x87_pc24_cos_mul(
+                                heading_stored,
+                                dt,
+                                target_accel,
+                            ),
+                        ),
+                        x87_pc24_sub(
+                            entry.vel.y,
+                            x87_pc24_sin_mul(
+                                heading_stored,
+                                dt,
+                                target_accel,
+                            ),
+                        ),
+                    )
+
+            entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
+
+
+
+def _tick_rocket_trail(entry: SecondaryProjectile, *, dt: float, sprite_effects: SpriteEffectPool | None) -> None:
+    # Rocket smoke trail (`trail_timer` in crimsonland.exe).
+    trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
+    trail_decay = x87_pc24_mul(trail_speed, dt)
+    trail_decay = x87_pc24_mul(trail_decay, 0.01)
+    entry.trail_timer = x87_pc24_sub(entry.trail_timer, trail_decay)
+    if float(entry.trail_timer) < 0.0:
+        direction = Vec2.from_heading(entry.angle)
+        spawn_pos = entry.pos - direction * 9.0
+        # Native bug: both trail velocity components come from cosine
+        # (fcos with no fsin), so the smoke drifts diagonally.
+        trail_cos = math.cos(float(f32(entry.angle)) + NATIVE_HALF_PI)
+        trail_velocity = Vec2(float(f32(trail_cos)) * 90.0, float(f32(trail_cos * 90.0)))
+        if sprite_effects is not None:
+            sprite_effects.spawn(
+                pos=spawn_pos,
+                vel=trail_velocity,
+                scale=14.0,
+                color=RGBA(1.0, 1.0, 1.0, 0.25),
+            )
+        entry.trail_timer = float(f32(0.06))
+
 
 
 class SecondaryProjectilePool:
@@ -221,11 +422,6 @@ class SecondaryProjectilePool:
             sprite_effects = runtime_state.sprite_effects
             sfx_queue = runtime_state.sfx_queue
 
-        def _creature_is_collidable(creature: CreatureState) -> bool:
-            if not creature.active:
-                return False
-            return creature_lifecycle_is_collidable(creature.lifecycle_stage)
-
         creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
         hit_count = 0
 
@@ -236,186 +432,15 @@ class SecondaryProjectilePool:
             rule = secondary_rule_for_type_id(SecondaryProjectileTypeId(entry.type_id))
 
             if isinstance(rule, DetonationRule):
-                if runtime_state is not None:
-                    runtime_state.camera_shake_pulses = 4
-
-                entry.detonation_t = x87_pc24_add(entry.detonation_t, x87_pc24_mul(dt, 3.0))
-                entry.vel = Vec2(entry.detonation_t, entry.detonation_scale)
-                t = float(entry.detonation_t)
-                scale = float(entry.detonation_scale)
-                if t > 1.0:
-                    if fx_queue is not None:
-                        fx_queue.add(
-                            effect_id=int(EffectId.AURA),
-                            pos=entry.pos,
-                            width=float(scale) * 256.0,
-                            height=float(scale) * 256.0,
-                            rotation=0.0,
-                            rgba=RGBA(0.0, 0.0, 0.0, 0.25),
-                        )
-                    entry.active = False
-
-                radius = scale * t * 80.0
-                radius_sq = radius * radius
-                damage = x87_pc24_mul(dt, scale)
-                damage = x87_pc24_mul(damage, 700.0)
-                for creature_idx in creature_spatial.candidate_indices(pos=entry.pos, radius=float(radius)):
-                    creature = creatures[int(creature_idx)]
-                    if not _creature_is_collidable(creature):
-                        continue
-                    if creature.hp <= 0.0:
-                        continue
-                    d_sq = Vec2.distance_sq(entry.pos, creature.pos)
-                    if d_sq < radius_sq:
-                        hp_before = float(creature.hp)
-                        impulse_dir = (creature.pos - entry.pos).normalized()
-                        impulse = Vec2(
-                            f32(float(impulse_dir.x) * 0.1),
-                            f32(float(impulse_dir.y) * 0.1),
-                        )
-                        _apply_secondary_damage(
-                            creature_idx,
-                            damage,
-                            owner=entry.owner,
-                            impulse=impulse,
-                        )
-                        creature_spatial.sync_index(int(creature_idx))
-                        if hp_before > 0.0 and float(creature.hp) <= 0.0:
-                            # Native detonation AoE does an extra two random decals and a
-                            # second `creature_handle_death` call after the killing hit.
-                            if fx_queue is not None:
-                                fx_queue.add_random(pos=creature.pos, rng=rng)
-                                fx_queue.add_random(pos=creature.pos, rng=rng)
-                            creature_damage_runtime.on_secondary_detonation_kill(int(creature_idx))
+                _step_detonation(entry, ctx, dt=dt, creature_spatial=creature_spatial, rng=rng)
                 continue
 
             if not isinstance(rule, (RocketRule, HomingRocketRule, RocketMinigunRule)):
                 continue
 
-            # Move. Native keeps pos/vel as f32 fields: `pos += f32(dt * vel)`.
-            entry.pos = Vec2(
-                float(f32(float(entry.pos.x) + float(f32(float(dt) * float(entry.vel.x))))),
-                float(f32(float(entry.pos.y) + float(f32(float(dt) * float(entry.vel.y))))),
-            )
+            _move_rocket(entry, rule, dt=dt, creatures=creatures, runtime_state=runtime_state)
 
-            # Update velocity + countdown.
-            speed_mag = math.sqrt(float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y))
-            match rule:
-                case (
-                    RocketRule(
-                        accel_factor_scale=accel_factor_scale,
-                        speed_cap=speed_cap,
-                        ttl_decay_scale=ttl_decay_scale,
-                    )
-                    | RocketMinigunRule(
-                        accel_factor_scale=accel_factor_scale,
-                        speed_cap=speed_cap,
-                        ttl_decay_scale=ttl_decay_scale,
-                    )
-                ):
-                    if speed_mag < float(speed_cap):
-                        factor = float(f32(float(dt) * float(accel_factor_scale) + 1.0))
-                        entry.vel = Vec2(
-                            float(f32(factor * float(entry.vel.x))),
-                            float(f32(factor * float(entry.vel.y))),
-                        )
-                    entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
-                case HomingRocketRule(
-                    target_accel=target_accel,
-                    max_velocity=max_velocity,
-                    ttl_decay_scale=ttl_decay_scale,
-                ):
-                    # Type 2: homing projectile.
-                    target_id = entry.target_id
-                    if not (0 <= target_id < len(creatures)) or not creatures[target_id].active:
-                        entry.target_id = creature_find_nearest_alive(
-                            creatures=creatures,
-                            origin=entry.pos,
-                            preserve_bugs=bool(runtime_state.preserve_bugs) if runtime_state is not None else False,
-                        )
-                        target_id = entry.target_id
-
-                    if 0 <= target_id < len(creatures):
-                        target = creatures[target_id]
-                        # Native steering: angle = atan2(pos - target) kept in
-                        # extended precision; the stored f32 angle is atan - pi/2.
-                        # vel_x adds cos((atan - pi/2) - pi/2) from the extended
-                        # angle; vel_y (and the over-cap subtraction for both
-                        # components) recompute from the stored f32 angle, so the
-                        # add-then-subtract is not an exact identity.
-                        atan_ext = x87_fpatan(
-                            x87_pc24_sub(entry.pos.y, target.pos.y),
-                            x87_pc24_sub(entry.pos.x, target.pos.x),
-                        )
-                        entry.angle = x87_pc24_sub(atan_ext, NATIVE_HALF_PI)
-                        heading_ext = x87_pc24_sub(
-                            x87_pc24_sub(atan_ext, NATIVE_HALF_PI),
-                            NATIVE_HALF_PI,
-                        )
-                        heading_stored = x87_pc24_sub(entry.angle, NATIVE_HALF_PI)
-                        entry.vel = Vec2(
-                            x87_pc24_add(
-                                entry.vel.x,
-                                x87_pc24_cos_mul(
-                                    heading_ext,
-                                    dt,
-                                    target_accel,
-                                ),
-                            ),
-                            x87_pc24_add(
-                                entry.vel.y,
-                                x87_pc24_sin_mul(
-                                    heading_stored,
-                                    dt,
-                                    target_accel,
-                                ),
-                            ),
-                        )
-                        speed_after = math.sqrt(
-                            float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y),
-                        )
-                        if speed_after > float(max_velocity):
-                            entry.vel = Vec2(
-                                x87_pc24_sub(
-                                    entry.vel.x,
-                                    x87_pc24_cos_mul(
-                                        heading_stored,
-                                        dt,
-                                        target_accel,
-                                    ),
-                                ),
-                                x87_pc24_sub(
-                                    entry.vel.y,
-                                    x87_pc24_sin_mul(
-                                        heading_stored,
-                                        dt,
-                                        target_accel,
-                                    ),
-                                ),
-                            )
-
-                    entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
-
-            # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
-            trail_decay = x87_pc24_mul(trail_speed, dt)
-            trail_decay = x87_pc24_mul(trail_decay, 0.01)
-            entry.trail_timer = x87_pc24_sub(entry.trail_timer, trail_decay)
-            if float(entry.trail_timer) < 0.0:
-                direction = Vec2.from_heading(entry.angle)
-                spawn_pos = entry.pos - direction * 9.0
-                # Native bug: both trail velocity components come from cosine
-                # (fcos with no fsin), so the smoke drifts diagonally.
-                trail_cos = math.cos(float(f32(entry.angle)) + NATIVE_HALF_PI)
-                trail_velocity = Vec2(float(f32(trail_cos)) * 90.0, float(f32(trail_cos * 90.0)))
-                if sprite_effects is not None:
-                    sprite_effects.spawn(
-                        pos=spawn_pos,
-                        vel=trail_velocity,
-                        scale=14.0,
-                        color=RGBA(1.0, 1.0, 1.0, 0.25),
-                    )
-                entry.trail_timer = float(f32(0.06))
+            _tick_rocket_trail(entry, dt=dt, sprite_effects=sprite_effects)
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
             hit_idx: int | None = None
