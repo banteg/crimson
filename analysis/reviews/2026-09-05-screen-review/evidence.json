@@ -1,0 +1,27 @@
+{
+  "reviewed_commit": "e4967aed501b6d83c777d2d89d258488274d3b9b",
+  "evidence_kind": "Headless production-path probes and recovered source inspection; no fresh native execution or instruction audit",
+  "focused_tests": {
+    "passed": 100,
+    "log_tail": "100 passed in 0.40s"
+  },
+  "files": {
+    "analysis/reviews/2026-09-05-screen-review/REPORT.md": "cdfd3f31ebc473de07606a79b4ff6ec97ae5284b867afdb4a6353117dd8bf247",
+    "analysis/reviews/2026-09-05-screen-review/probe-results.json": "73c60855e1c75c43622c77edbee88c474159e264754478a6aba8bd2734b3c79e",
+    "analysis/reviews/2026-09-05-screen-review/probes.py": "f212094b38424106fc246ec59934f2d01ec5519fa039c8ed8d8e9fee513cd942",
+    "src/crimson/game/loop_view.py": "b2fbc166612ace8917408a4dcecdbd46f70ed21c16080c84016f376e8391ab17",
+    "src/crimson/game/types.py": "b197832fc23b2243f3d2ebb7f07284630b64e49302533968187db96dfe59d270",
+    "src/crimson/screens/boot.py": "711a3c90ad733ba138bccfbe9f3704ca3e77c8bf3908be21484de686463c1c76",
+    "src/crimson/screens/high_scores_view/records.py": "01dc11a46557d1154948146a232a801bb4200abc563457b6a6423de6ee4d7a25",
+    "src/crimson/screens/high_scores_view/view.py": "9093a3abbc2dcc66519555cc27c3e038425c576fd886d6750670dd33d2d5fa77",
+    "src/crimson/screens/panels/base.py": "b01098e65da596e1e23d0c1db489258aedfde73d5f2c7534442a670c3533226f",
+    "src/crimson/screens/panels/controls.py": "0c894a46c335b5fdf37a94899737a21b156a98b513398489d4c80aa02951fcd6",
+    "src/grim/app.py": "95e04a798f21ed36d2330726899518e741411db01c28a7353d425a28f9d279cf",
+    "src/grim/view.py": "e27ce22fcd5c006c6ec9f0a9f9b48824ac3c4da3669f1e7b5703a4c7764777f3",
+    "tools/match/scratches/controls_menu_update/NOTES.md": "73f952a4e663a90107a0113901c2f1deb34ae2cec0e120517759abb79b5051b5",
+    "tools/match/scratches/controls_menu_update/scratch.cpp": "86c10a5d49356e52c062ba14d52e6c0db01690ab2e3b9a47ae7b24d017af2b7e",
+    "tools/match/scratches/game_over_screen_update/scratch.cpp": "b84fe74a41e641aba485b9549f7e05cd2003693b06f84b2b6d801d0d05bc98c9",
+    "tools/match/scratches/highscore_screen_update/scratch.cpp": "8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be",
+    "tools/match/scratches/quest_results_screen_update/scratch.cpp": "0edf12f64b4602aef06905341d4ceb2934f43a26648b82ce2a48f3f9293a106d"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "controls_capture": {
+    "KEY_ESCAPE": {
+      "closing": true,
+      "action": "open_options",
+      "capture_still_active": true
+    },
+    "KEY_ENTER": {
+      "closing": true,
+      "action": "open_options",
+      "capture_still_active": true
+    }
+  },
+  "controls_prompt": {
+    "1": {
+      "prompt_visible": false,
+      "hint_visible": false
+    },
+    "2": {
+      "prompt_visible": true,
+      "hint_visible": true
+    }
+  },
+  "scores_refresh": {
+    "before_update": {
+      "quest": "1.2",
+      "highlight": 4,
+      "dirty": true
+    },
+    "after_update": {
+      "quest": "1.1",
+      "highlight": null,
+      "dirty": false
+    },
+    "save_on_back_calls": 0
+  },
+  "scores_return_context": {
+    "returned_to_original_gameplay": true,
+    "originating_mode": "SURVIVAL",
+    "config_mode_after_back": "RUSH"
+  },
+  "scores_play_selected": {
+    "SURVIVAL": "open_play_game",
+    "RUSH": "open_play_game",
+    "TYPO": "open_play_game",
+    "QUESTS": "open_play_game"
+  }
+}
