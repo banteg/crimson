@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from ...math_parity import f32
-from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
-from ..runtime.hook_types import PerkHooks
 
 
 def apply_infernal_contract(ctx: PerkApplyCtx) -> None:
@@ -15,9 +13,3 @@ def apply_infernal_contract(ctx: PerkApplyCtx) -> None:
     for player in contract_players:
         if player.health > 0.0:
             player.health = f32(0.1)
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.INFERNAL_CONTRACT,
-    apply_handler=apply_infernal_contract,
-)

@@ -48,7 +48,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=creatures)
+    perks_update_effects(state, [player], dt, creatures=creatures, fx_queue=FxQueue())
 
     assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert creatures[2].hp == -1.0
@@ -86,7 +86,7 @@ def test_perks_update_effects_jinxed_award_uses_float32_sum_before_truncation() 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=139_451, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=creatures)
+    perks_update_effects(state, [player], dt, creatures=creatures, fx_queue=FxQueue())
 
     assert player.experience == 139_549
     assert [record.caller for record in state.rng.records_since()] == [
@@ -250,7 +250,7 @@ def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=creatures)
+    perks_update_effects(state, [player], dt, creatures=creatures, fx_queue=FxQueue())
 
     assert creatures[0x17F].hp == -1.0
     assert player.experience == 112
@@ -283,7 +283,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> Non
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=creatures)
+    perks_update_effects(state, [player], dt, creatures=creatures, fx_queue=FxQueue())
 
     assert creatures[0x17F].hp == 100.0
     assert player.experience == 100
@@ -318,7 +318,7 @@ def test_perks_update_effects_jinxed_retries_inactive_creature_pick() -> None:
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=creatures)
+    perks_update_effects(state, [player], dt, creatures=creatures, fx_queue=FxQueue())
 
     assert creatures[2].hp == -1.0
     assert player.experience == 112
@@ -345,7 +345,7 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=[])
+    perks_update_effects(state, [player], dt, creatures=[], fx_queue=FxQueue())
 
     assert_float_close(state.jinxed_timer, 8.344650268554688e-07)
     assert_float_close(player.health, 50.0)
@@ -368,12 +368,12 @@ def test_perks_update_effects_jinxed_keeps_native_36hz_proc_frame() -> None:
     player.perk_counts[int(PerkId.JINXED)] = 1
 
     for _ in range(9):
-        perks_update_effects(state, [player], 1.0 / 36.0, creatures=[])
+        perks_update_effects(state, [player], 1.0 / 36.0, creatures=[], fx_queue=FxQueue())
 
     assert state.jinxed_timer == 1.1175870895385742e-08
     assert state.rng.calls == 0
 
-    perks_update_effects(state, [player], 1.0 / 36.0, creatures=[])
+    perks_update_effects(state, [player], 1.0 / 36.0, creatures=[], fx_queue=FxQueue())
 
     assert state.jinxed_timer == 1.9722222089767456
     assert state.rng.calls == 2
@@ -394,7 +394,7 @@ def test_perks_update_effects_jinxed_award_ignores_double_experience_bonus() -> 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), experience=100, health=50.0)
     player.perk_counts[int(PerkId.JINXED)] = 1
 
-    perks_update_effects(state, [player], dt, creatures=creatures)
+    perks_update_effects(state, [player], dt, creatures=creatures, fx_queue=FxQueue())
 
     # Native's Jinxed kill branch has a single XP store with no
     # bonus_double_xp_timer handling.

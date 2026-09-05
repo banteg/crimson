@@ -5,7 +5,6 @@ from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
-from ..runtime.hook_types import PerkHooks
 
 
 def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
@@ -50,9 +49,3 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
         )
         if player.health > 100.0:
             player.health = 100.0
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.REGENERATION,
-    effects_steps=(update_regeneration,),
-)

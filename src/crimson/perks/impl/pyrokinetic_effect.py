@@ -5,12 +5,10 @@ from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
-from ..runtime.hook_types import PerkHooks
 
 
 def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
-    if ctx.creatures is None:
-        return
+
 
     players = ctx.players[:1] if ctx.state.preserve_bugs else ctx.players
     for player in players:
@@ -41,14 +39,7 @@ def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
                     f32(0.01),
                 )
                 ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
-            if ctx.fx_queue is not None:
-                ctx.fx_queue.add_random(
-                    pos=creature.pos,
-                    rng=ctx.state.rng,
-                )
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.PYROKINETIC,
-    effects_steps=(update_pyrokinetic,),
-)
+            ctx.fx_queue.add_random(
+                pos=creature.pos,
+                rng=ctx.state.rng,
+            )

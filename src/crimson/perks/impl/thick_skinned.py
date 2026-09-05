@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from ...math_parity import f32, x87_pc24_mul, x87_pc24_sub
-from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
-from ..runtime.hook_types import PerkHooks
 
 # Native f32 literal 0.33333334 (one ulp above 1/3).
 _THICK_SKINNED_FRACTION = float(f32(0.33333334))
@@ -20,9 +18,3 @@ def apply_thick_skinned(ctx: PerkApplyCtx) -> None:
                 health,
                 x87_pc24_mul(health, _THICK_SKINNED_FRACTION),
             )
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.THICK_SKINNED,
-    apply_handler=apply_thick_skinned,
-)

@@ -7,165 +7,54 @@ tags:
 
 # Perks architecture (rewrite)
 
-This document is the canonical architecture contract for perk runtime behavior in
-the Python rewrite.
+Perk behavior stays in `perks/impl/`, with its native execution phase visible at
+the caller. Metadata, availability and selection stay in `perks/*.py`.
 
-Goals:
+## Execution phases
 
-- **Original fidelity**: keep hook order and side effects aligned with native flow.
-- **Navigability**: “open a perk file, see that perk’s runtime logic.”
-- **Deterministic auditability**: stable RNG consumption and dispatch order for
-  differential testing.
+- **Immediate effects:** `perks/runtime/apply.py` increments the owner's perk
+  count, looks up the optional immediate effect in `apply_handlers.py`, then
+  mirrors shared perk counts to the other local players. Perk IDs are the keys;
+  this map does not impose an execution order.
+- **World timing:** `WorldState.world_dt_after_perk_steps` calls
+  `apply_reflex_boosted_dt` directly. Session timing applies it once before the
+  world step; direct world-step callers use the same method.
+- **Per-player updates:** `perks/runtime/player_ticks.py` calls Man Bomb,
+  Living Fortress, Fire Cough and Hot Tempered in that order inside `player_update`.
+- **Global effects:** `perks/runtime/effects.py` explicitly calls the native
+  sequence: player bonus timers, Regeneration, Lean Mean Exp Machine, Death
+  Clock, Evil Eyes, Pyrokinetic, then the Jinxed timer and effect.
+- **Death effects:** the synchronous `on_player_lethal` callback in
+  `sim/world_state.py` calls Final Revenge directly. Creature contact and
+  Ammunition Within provide this callback to `player_take_damage`; direct perk
+  and projectile health writes bypass it, as in the executable.
 
-## Package layout
+There is no global hook bundle or derived dispatch registry. A perk with behavior
+in several phases exports an ordinary function for each phase. The call sites
+make each phase's order explicit.
 
-Perk runtime code is intentionally split into **three** concerns:
+## Context and ownership
 
-1. **Perk metadata + selection state** (`src/crimson/perks/*.py`)
-   - `ids.py`, `helpers.py`, `availability.py`, `selection.py`, `state.py`
-   - No per-perk hook ownership in this layer.
-2. **Perk implementation ownership** (`src/crimson/perks/impl/*.py`)
-   - One module per perk behavior owner.
-   - Each module exports exactly one `HOOKS = PerkHooks(...)`.
-   - The same file holds the perk’s runtime hook functions.
-3. **Runtime dispatch orchestration** (`src/crimson/perks/runtime/*.py`)
-   - Hook contracts and contexts (`hook_types.py`, `*_context.py`)
-   - Dispatch entry points (`apply.py`, `effects.py`, `player_ticks.py`)
-   - Canonical registry (`manifest.py`) that imports all `impl` owners and
-     defines parity-critical dispatch ordering.
+`PlayerPerkTickCtx`, `PerkApplyCtx` and `PerksUpdateEffectsCtx` carry the state each
+phase uses. The global effect phase requires both creature and terrain FX context:
+passing no queue used to skip effects and their RNG draws. Focused tests use real
+empty pools and queues when the world is empty. Evil Eyes and Pyrokinetic share a
+per-tick aim-target cache through `PerksUpdateEffectsCtx`.
 
-There are no compatibility re-export wrappers for runtime dispatch. Runtime
-ownership/order is authoritative in `src/crimson/perks/runtime/manifest.py`.
+Some perks belong directly to other native paths, such as player damage,
+creature damage, projectiles or rendering. Keep those phase boundaries; moving
+an effect merely to place it in a registry can change behavior.
 
-## Runtime surfaces
+## Ordering and validation
 
-Hook shape is defined in `src/crimson/perks/runtime/hook_types.py`:
+Shared timers, health writes and RNG draws make call order observable. Preserve
+native guards, float constants and rounding order when editing a perk. Validate
+changes with behavioral tests, RNG traces and complete session-state comparisons;
+checking that one generated registry mirrors another does not prove behavior.
 
-- `apply_handler`: immediate on-pick logic (`perk_apply` path)
-- `world_dt_step`: frame-dt transforms (e.g. Reflex Boosted)
-- `player_tick_steps`: per-player tick hooks inside `player_update`
-- `effects_steps`: global per-frame perk effects (`perks_update_effects`)
-- `player_death_hook`: death-triggered behavior (e.g. Final Revenge)
+The import-linter contracts keep implementations and runtime code out of
+selection and availability, and prevent selection from importing implementations
+directly. Run `just check` after changes.
 
-`PerkHooks` fields are optional; each perk declares only what it owns.
-
-Example:
-
-```python
-HOOKS = PerkHooks(
-    perk_id=PerkId.INSTANT_WINNER,
-    apply_handler=apply_instant_winner,
-)
-```
-
-## Dispatch integration points
-
-### 1) Apply-time perks
-
-- Entry: `src/crimson/perks/runtime/apply.py:perk_apply`
-- Source: `PERK_APPLY_HANDLERS` derived from `PERK_HOOKS_IN_ORDER`
-- Flow:
-  1. Increment owner perk count (`adjust_perk_count`).
-  2. Run apply handler if registered.
-  3. Mirror `perk_counts` from player 0 to other players.
-
-This keeps multiplayer perk-count state deterministic and aligned with native
-shared-count behavior.
-
-### 2) World dt hooks
-
-- Entry: `src/crimson/sim/world_state.py:WorldState.step`
-- Source: `WORLD_DT_STEPS`
-- Runs first, before core simulation work.
-
-### 3) Perk effects hooks
-
-- Entry: `src/crimson/perks/runtime/effects.py:perks_update_effects`
-- Source: `PERKS_UPDATE_EFFECT_STEPS`
-- Called early in `WorldState.step`, after aim staging and before
-  `state.effects.update(...)`.
-- `update_player_bonus_timers` is always first in this sequence.
-
-### 4) Player tick hooks
-
-- Entry: `src/crimson/gameplay.py:player_update` via
-  `src/crimson/perks/runtime/player_ticks.py:apply_player_perk_ticks`
-- Source: `PLAYER_PERK_TICK_STEPS`
-- Runs once per player each tick.
-
-### 5) Player death hooks
-
-- Entry: `src/crimson/player_damage.py:player_take_damage`, through the
-  synchronous `PlayerDeathRuntime.on_player_lethal` adapter supplied by the two
-  native callers (creature contact and Ammunition Within).
-- Source: `PLAYER_DEATH_HOOKS`
-- Runs inside the damage call before its caller continues. There is no generic
-  end-of-phase death sweep: direct projectile and perk health writes bypass
-  Final Revenge in the executable.
-
-## Ordering and RNG invariants
-
-These rules are parity-critical:
-
-1. `PERK_HOOKS_IN_ORDER` is authoritative for hook dispatch order.
-2. Derived registries preserve this order and must not sort/reorder.
-3. Adding/removing/reordering hooks can change RNG draw order and differential
-   trace behavior, even when gameplay looks similar.
-4. Keep perk-side RNG draws inside the perk’s own hook file unless ordering
-   evidence requires otherwise.
-5. Avoid moving logic between phases (`apply_handler` vs `effects_steps` vs
-   `player_tick_steps`) without native evidence.
-
-## Import boundary contracts
-
-`import-linter` contracts enforce anti-drift boundaries in code:
-
-- `crimson.perks.impl` must not import `selection` / `availability`.
-- `crimson.perks.runtime` must not import `selection` / `availability`.
-- `selection` / `availability` must not import `impl` directly.
-
-This keeps runtime ownership centralized in `runtime/manifest.py` and avoids
-split-brain registration paths.
-
-## Anti-drift guardrails
-
-Guard tests live in `tests/test_feature_hook_registries.py`:
-
-- Explicit expected world-dt and death-hook wiring.
-- Single runtime owner per perk (`PERK_HOOKS_IN_ORDER` has unique `perk_id`).
-- Derived registries are exact projections of manifest entries.
-- Effects step prefix invariant (`update_player_bonus_timers` first).
-
-Validation command:
-
-- `just check`
-
-## Contributor workflow for perk changes
-
-When adding or refactoring a perk runtime hook:
-
-1. Implement/update the hook function in `src/crimson/perks/impl/<perk>.py`.
-2. Update that module’s `HOOKS = PerkHooks(...)`.
-3. Add/update the import + placement in `PERK_HOOKS_IN_ORDER` in
-   `src/crimson/perks/runtime/manifest.py`.
-4. Keep deterministic behavior explicit:
-   - do not normalize parity-sensitive float constants.
-   - preserve native guard/branch structure when it affects RNG or timing.
-5. Add/update tests:
-   - scenario tests for the perk behavior.
-   - registry invariant tests if hook shape/order changed.
-6. Run `just check`.
-
-## What this architecture intentionally does not do
-
-- It does not try to force all perk behavior through one hook type. Some perks
-  are owned by other hot paths by design (`player_take_damage`,
-  `creature_apply_damage`, projectile systems, rendering paths).
-- It does not hide phase boundaries. The phase where a perk runs is part of the
-  parity contract.
-
-Use [Perk runtime reference](../re/static/perks-runtime-reference.md) with this
-page:
-
-- `re/static/perks-runtime-reference.md` answers “where does this perk run?”
-- this page answers “how does perk runtime registration and dispatch work?”
+Use [Perk runtime reference](../re/static/perks-runtime-reference.md) for the
+native call-site and implementation map.

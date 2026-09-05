@@ -8,7 +8,6 @@ from ...sim.state_types import PlayerState
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
-from ..runtime.hook_types import PerkHooks
 
 
 def _award_experience_once_from_reward(*, player: PlayerState, reward_value: float) -> int:
@@ -62,15 +61,14 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
     ):
         player = _select_jinxed_accident_target(ctx)
         player.health = x87_pc24_sub(f32(float(player.health)), f32(5.0))
-        if ctx.fx_queue is not None:
-            ctx.fx_queue.add_random(
-                pos=player.pos,
-                rng=ctx.state.rng,
-            )
-            ctx.fx_queue.add_random(
-                pos=player.pos,
-                rng=ctx.state.rng,
-            )
+        ctx.fx_queue.add_random(
+            pos=player.pos,
+            rng=ctx.state.rng,
+        )
+        ctx.fx_queue.add_random(
+            pos=player.pos,
+            rng=ctx.state.rng,
+        )
 
     timer_roll = float(
         ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET)
@@ -84,7 +82,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         f32(2.0),
     )
 
-    if float(ctx.state.bonuses.freeze) <= 0.0 and ctx.creatures is not None:
+    if float(ctx.state.bonuses.freeze) <= 0.0:
         pool_limit = 0x17F if ctx.state.preserve_bugs else 0x180
         pool_mod = min(pool_limit, len(ctx.creatures))
         if pool_mod <= 0:
@@ -117,9 +115,3 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             reward_value=float(creature.reward_value),
         )
         ctx.state.sfx_queue.append(SfxId.TROOPER_INPAIN_01)
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.JINXED,
-    effects_steps=(update_jinxed_timer, update_jinxed),
-)

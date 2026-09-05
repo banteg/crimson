@@ -72,19 +72,13 @@ separate `SimWorldState.presentation_elapsed_ms` cache.
 Custom network play has been removed; see [Netplay](netplay.md) for the deferred
 scope and requirements for any future implementation.
 
-## Studyability Hook Topology
+## Phase ownership
 
-The deterministic step still routes selected behavior through explicit hook registries:
-
-- perk world-step hooks:
-  - manifest: `src/crimson/perks/runtime/manifest.py`
-  - contracts: `src/crimson/perks/runtime/hook_types.py`
-- bonus pickup presentation hooks:
-  - registry: `src/crimson/bonuses/pickup_fx.py`
-- projectile decal presentation hooks:
-  - registry: `src/crimson/features/presentation/projectile_decals.py`
-
-This keeps `WorldState.step` and `apply_world_presentation_step` focused on orchestration.
+Perk timing and death effects are direct calls in `WorldState`; per-player and
+global perk effects have explicit ordered calls in `perks/runtime/player_ticks.py`
+and `perks/runtime/effects.py`. See [Perks architecture](perks-architecture.md).
+Bonus pickup effects live in `bonuses/pickup_fx.py`, and projectile decals live in
+`features/presentation/projectile_decals.py`.
 
 ## RNG Policy
 

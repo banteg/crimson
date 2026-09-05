@@ -1,0 +1,8 @@
+{
+  "baseline_commit": "53b606fd2",
+  "scenario_count": 232,
+  "tick_digest_count": 928,
+  "before_sha256": "cd156b0cebd73ff412db4def114df0b531aff3cbfe98f6a99d4b52e24fe1fb69",
+  "after_sha256": "cd156b0cebd73ff412db4def114df0b531aff3cbfe98f6a99d4b52e24fe1fb69",
+  "identical": true
+}

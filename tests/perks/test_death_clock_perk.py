@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from crimson.creatures.runtime import CreaturePool
+from crimson.effects import FxQueue
 from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -59,7 +61,7 @@ def test_death_clock_drains_health_over_time() -> None:
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
-    perks_update_effects(state, [player], 1.0)
+    perks_update_effects(state, [player], 1.0, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert_float_close(
         player.health,
@@ -76,11 +78,11 @@ def test_death_clock_reaches_native_zero_crossing_at_30hz() -> None:
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
     for _ in range(900):
-        perks_update_effects(state, [player], 1.0 / 30.0)
+        perks_update_effects(state, [player], 1.0 / 30.0, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert player.health == -0.0008849054574966431
 
-    perks_update_effects(state, [player], 1.0 / 30.0)
+    perks_update_effects(state, [player], 1.0 / 30.0, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert player.health == 0.0
 
@@ -90,7 +92,7 @@ def test_death_clock_clamps_dead_health_to_zero() -> None:
     player = PlayerState(index=0, pos=Vec2(), health=-1.0)
     player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
-    perks_update_effects(state, [player], 0.1)
+    perks_update_effects(state, [player], 0.1, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert player.health == 0.0
 
@@ -101,7 +103,7 @@ def test_death_clock_tick_is_gated_by_player0_perk_state() -> None:
     player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
     player1.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
-    perks_update_effects(state, [player0, player1], 1.0)
+    perks_update_effects(state, [player0, player1], 1.0, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert player0.health == 100.0
     assert player1.health == 100.0
@@ -113,7 +115,7 @@ def test_death_clock_tick_applies_to_all_players_when_player0_has_perk() -> None
     player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
     player0.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
 
-    perks_update_effects(state, [player0, player1], 1.0)
+    perks_update_effects(state, [player0, player1], 1.0, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     expected = x87_pc24_sub(
         f32(100.0),

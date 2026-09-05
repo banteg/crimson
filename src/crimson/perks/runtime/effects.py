@@ -3,20 +3,22 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from crimson.perks.impl.death_clock import update_death_clock
+from crimson.perks.impl.evil_eyes_effect import update_evil_eyes_target
+from crimson.perks.impl.jinxed_effect import update_jinxed, update_jinxed_timer
+from crimson.perks.impl.lean_mean_exp_machine_effect import update_lean_mean_exp_machine
+from crimson.perks.impl.pyrokinetic_effect import update_pyrokinetic
+from crimson.perks.impl.regeneration_effect import update_regeneration
+from crimson.perks.runtime.player_bonus_timers import update_player_bonus_timers
+
 from ...effects import FxQueue
 from ...sim.state_types import PlayerState
-from .effects_context import PerksUpdateEffectsCtx, creature_find_in_radius
-from .manifest import PERKS_UPDATE_EFFECT_STEPS
+from .effects_context import PerksUpdateEffectsCtx
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ...creatures.runtime import CreatureState
-
-# Backward-compatible re-export used by HUD target hover wiring.
-_creature_find_in_radius = creature_find_in_radius
-
-_PERKS_UPDATE_EFFECT_STEPS = PERKS_UPDATE_EFFECT_STEPS
 
 
 def perks_update_effects(
@@ -24,8 +26,8 @@ def perks_update_effects(
     players: list[PlayerState],
     dt: float,
     *,
-    creatures: Sequence[CreatureState] | None = None,
-    fx_queue: FxQueue | None = None,
+    creatures: Sequence[CreatureState],
+    fx_queue: FxQueue,
 ) -> None:
     """Apply frame-based perk effect updates.
 
@@ -42,5 +44,12 @@ def perks_update_effects(
         creatures=creatures,
         fx_queue=fx_queue,
     )
-    for step in _PERKS_UPDATE_EFFECT_STEPS:
-        step(ctx)
+    # Native phase order is observable through shared timers and RNG.
+    update_player_bonus_timers(ctx)
+    update_regeneration(ctx)
+    update_lean_mean_exp_machine(ctx)
+    update_death_clock(ctx)
+    update_evil_eyes_target(ctx)
+    update_pyrokinetic(ctx)
+    update_jinxed_timer(ctx)
+    update_jinxed(ctx)

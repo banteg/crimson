@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from crimson.perks.impl.fire_cough import tick_fire_cough
+from crimson.perks.impl.hot_tempered import tick_hot_tempered
+from crimson.perks.impl.living_fortress import tick_living_fortress
+from crimson.perks.impl.man_bomb import tick_man_bomb
 from grim.geom import Vec2
 
 from ...sim.state_types import PlayerState
-from .manifest import PLAYER_PERK_TICK_STEPS
 from .player_tick_context import (
     OwnerRefForPlayerFn,
     OwnerRefForPlayerProjectilesFn,
@@ -15,9 +18,6 @@ from .player_tick_context import (
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
-
-
-_PLAYER_PERK_TICK_STEPS = PLAYER_PERK_TICK_STEPS
 
 
 def apply_player_perk_ticks(
@@ -43,5 +43,8 @@ def apply_player_perk_ticks(
         owner_ref_for_player_projectiles=owner_ref_for_player_projectiles,
         projectile_spawn=projectile_spawn,
     )
-    for step in _PLAYER_PERK_TICK_STEPS:
-        step(ctx)
+    # Native phase order is observable through shared timers and RNG.
+    tick_man_bomb(ctx)
+    tick_living_fortress(ctx)
+    tick_fire_cough(ctx)
+    tick_hot_tempered(ctx)

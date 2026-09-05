@@ -14,7 +14,6 @@ from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
-from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
@@ -64,9 +63,3 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     )
     interval_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET)
     ctx.state.perk_intervals.fire_cough = float(interval_roll % 4) + 2.0
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.FIRE_CAUGH,
-    player_tick_steps=(tick_fire_cough,),
-)

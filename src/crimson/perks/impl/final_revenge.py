@@ -15,7 +15,6 @@ from ...owner_ref import OwnerRef
 from ...sim.state_types import PlayerState
 from ..helpers import perk_active
 from ..ids import PerkId
-from ..runtime.hook_types import PerkHooks
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -125,9 +124,3 @@ def apply_final_revenge_on_player_death(
     state.bonus_spawn_guard = False
     state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
     state.sfx_queue.append(SfxId.SHOCKWAVE)
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.FINAL_REVENGE,
-    player_death_hook=apply_final_revenge_on_player_death,
-)

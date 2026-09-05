@@ -70,7 +70,7 @@ def test_perks_update_effects_evil_eyes_defaults_to_alive_player_target_slot() -
     creature.lifecycle_stage = 16.0
     creature.size = 50.0
 
-    perks_update_effects(state, [player0, player1], 0.1, creatures=[creature])
+    perks_update_effects(state, [player0, player1], 0.1, creatures=[creature], fx_queue=FxQueue())
 
     assert player0.evil_eyes_target_creature == -1
     assert player1.evil_eyes_target_creature == 0
@@ -90,7 +90,7 @@ def test_perks_update_effects_evil_eyes_preserve_bugs_keeps_player0_only_targeti
     creature.lifecycle_stage = 16.0
     creature.size = 50.0
 
-    perks_update_effects(state, [player0, player1], 0.1, creatures=[creature])
+    perks_update_effects(state, [player0, player1], 0.1, creatures=[creature], fx_queue=FxQueue())
 
     assert player0.evil_eyes_target_creature == -1
 
@@ -117,7 +117,7 @@ def test_perks_update_effects_evil_eyes_default_targets_each_alive_player() -> N
     creature1.lifecycle_stage = 16.0
     creature1.size = 50.0
 
-    perks_update_effects(state, [player0, player1], 0.1, creatures=[creature0, creature1])
+    perks_update_effects(state, [player0, player1], 0.1, creatures=[creature0, creature1], fx_queue=FxQueue())
 
     assert player0.evil_eyes_target_creature == 0
     assert player1.evil_eyes_target_creature == 1
@@ -135,6 +135,6 @@ def test_perks_update_effects_evil_eyes_rejects_native_radius_equality() -> None
     creature.lifecycle_stage = 16.0
     creature.size = 42.0
 
-    perks_update_effects(state, [player], 0.1, creatures=[creature])
+    perks_update_effects(state, [player], 0.1, creatures=[creature], fx_queue=FxQueue())
 
     assert player.evil_eyes_target_creature == -1

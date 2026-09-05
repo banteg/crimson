@@ -8,7 +8,6 @@ from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
-from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
@@ -44,9 +43,3 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     )
     interval_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET)
     ctx.state.perk_intervals.hot_tempered = float(interval_roll % 8) + 2.0
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.HOT_TEMPERED,
-    player_tick_steps=(tick_hot_tempered,),
-)

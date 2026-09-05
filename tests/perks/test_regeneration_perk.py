@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.creatures.runtime import CreaturePool
+from crimson.effects import FxQueue
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
@@ -49,7 +51,7 @@ def test_perks_update_effects_regeneration_single_player_variants(
     if has_greater_regeneration:
         player.perk_counts[int(PerkId.GREATER_REGENERATION)] = 1
 
-    perks_update_effects(state, [player], 0.2)
+    perks_update_effects(state, [player], 0.2, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert_float_close(player.health, expected_health)
     assert [record.caller for record in state.rng.records_since()] == [
@@ -85,7 +87,7 @@ def test_perks_update_effects_regeneration_multiplayer_targeting(
     player1 = PlayerState(index=1, pos=Vec2(30.0, 40.0), health=80.0)
     player0.perk_counts[int(PerkId.REGENERATION)] = 1
 
-    perks_update_effects(state, [player0, player1], 0.2)
+    perks_update_effects(state, [player0, player1], 0.2, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
     assert_float_close(player0.health, expected_player0_health)
     assert_float_close(player1.health, expected_player1_health)

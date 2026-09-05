@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from ...math_parity import f32, x87_pc24_add, x87_pc24_mul
 from ...rng_caller_static import RngCallerStatic
-from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
-from ..runtime.hook_types import PerkHooks
 
 
 def apply_bandage(ctx: PerkApplyCtx) -> None:
@@ -33,9 +31,3 @@ def apply_bandage(ctx: PerkApplyCtx) -> None:
             rng=ctx.state.rng,
             detail_preset=5,
         )
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.BANDAGE,
-    apply_handler=apply_bandage,
-)

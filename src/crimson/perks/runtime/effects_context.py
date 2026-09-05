@@ -53,8 +53,8 @@ class PerksUpdateEffectsCtx(msgspec.Struct):
     state: GameplayState
     players: list[PlayerState]
     dt: float
-    creatures: Sequence[CreatureState] | None
-    fx_queue: FxQueue | None
+    creatures: Sequence[CreatureState]
+    fx_queue: FxQueue
     _aim_target_by_player_index: dict[int, int] = msgspec.field(default_factory=dict)
 
     def aim_target_for_player(self, player_index: int) -> int:
@@ -63,10 +63,6 @@ class PerksUpdateEffectsCtx(msgspec.Struct):
             return int(self._aim_target_by_player_index[player_index])
 
         target = -1
-        if self.creatures is None:
-            self._aim_target_by_player_index[player_index] = int(target)
-            return int(target)
-
         if self.state.preserve_bugs and player_index != 0:
             self._aim_target_by_player_index[player_index] = int(target)
             return int(target)

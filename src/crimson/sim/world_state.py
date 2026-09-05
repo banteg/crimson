@@ -28,8 +28,9 @@ from ..gameplay import (
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
+from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from ..perks.runtime.effects import perks_update_effects
-from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
@@ -62,8 +63,6 @@ class WorldMidStepRuntime(msgspec.Struct):
         return None
 
 
-_WORLD_DT_STEPS = WORLD_DT_STEPS
-_PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
 class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
@@ -228,7 +227,10 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             self.sfx.append(sfx_id)
 
     def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
-        self.world._run_player_death_hooks(
+        apply_final_revenge_on_player_death(
+            state=self.world.state,
+            creatures=self.world.creatures,
+            players=self.world.players,
             player=player,
             dt=float(dt),
             world_size=float(self.world_size),
@@ -292,10 +294,7 @@ class WorldState(msgspec.Struct):
         )
 
     def world_dt_after_perk_steps(self, dt: float) -> float:
-        world_dt = float(dt)
-        for step in _WORLD_DT_STEPS:
-            world_dt = float(step(dt=world_dt, players=self.players))
-        return float(world_dt)
+        return float(apply_reflex_boosted_dt(dt=float(dt), players=self.players))
 
     def step(
         self,
@@ -455,29 +454,6 @@ class WorldState(msgspec.Struct):
             secondary_hit_count=int(secondary_hit_count),
             pickups=pickups,
         )
-
-    def _run_player_death_hooks(
-        self,
-        *,
-        player: PlayerState,
-        dt: float,
-        world_size: float,
-        detail_preset: int,
-        fx_queue: FxQueue,
-        deaths: list[CreatureDeath],
-    ) -> None:
-        for hook in _PLAYER_DEATH_HOOKS:
-            hook(
-                state=self.state,
-                creatures=self.creatures,
-                players=self.players,
-                player=player,
-                dt=float(dt),
-                world_size=float(world_size),
-                detail_preset=int(detail_preset),
-                fx_queue=fx_queue,
-                deaths=deaths,
-            )
 
     def _record_creature_death(
         self,

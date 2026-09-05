@@ -9,6 +9,8 @@ from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
+from crimson.creatures.runtime import CreaturePool
+from crimson.effects import FxQueue
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     _direction_from_heading_native,
@@ -583,7 +585,7 @@ def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
     with_bonus.heading = 0.0
 
     input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0))
-    perks_update_effects(state, [no_bonus, with_bonus], 0.018)
+    perks_update_effects(state, [no_bonus, with_bonus], 0.018, creatures=CreaturePool().entries, fx_queue=FxQueue())
     player_update(no_bonus, input_state, 0.018, state)
     player_update(with_bonus, input_state, 0.018, state)
 

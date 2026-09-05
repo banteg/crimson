@@ -6,7 +6,6 @@ from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.counts import adjust_perk_count
 from ..runtime.effects_context import PerksUpdateEffectsCtx
-from ..runtime.hook_types import PerkHooks
 
 
 def apply_death_clock(ctx: PerkApplyCtx) -> None:
@@ -39,10 +38,3 @@ def update_death_clock(ctx: PerksUpdateEffectsCtx) -> None:
             player.health = 0.0
         else:
             player.health = x87_pc24_sub(f32(float(player.health)), drain)
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.DEATH_CLOCK,
-    apply_handler=apply_death_clock,
-    effects_steps=(update_death_clock,),
-)

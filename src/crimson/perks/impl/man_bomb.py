@@ -7,7 +7,6 @@ from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
 from ..ids import PerkId
-from ..runtime.hook_types import PerkHooks
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
@@ -53,9 +52,3 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
             float(ctx.state.perk_intervals.man_bomb),
         )
         ctx.state.perk_intervals.man_bomb = f32(4.0)
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.MAN_BOMB,
-    player_tick_steps=(tick_man_bomb,),
-)

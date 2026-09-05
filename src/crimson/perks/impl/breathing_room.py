@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from ...math_parity import f32, x87_pc24_mul, x87_pc24_sub
-from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
-from ..runtime.hook_types import PerkHooks
 
 _BREATHING_ROOM_FRACTION = f32(0.6666667)
 
@@ -25,9 +23,3 @@ def apply_breathing_room(ctx: PerkApplyCtx) -> None:
                 )
 
     ctx.state.bonus_spawn_guard = False
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.BREATHING_ROOM,
-    apply_handler=apply_breathing_room,
-)

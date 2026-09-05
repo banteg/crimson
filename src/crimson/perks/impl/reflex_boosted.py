@@ -4,7 +4,6 @@ from ...math_parity import f32, x87_pc24_mul
 from ...sim.state_types import PlayerState
 from ..helpers import perk_active
 from ..ids import PerkId
-from ..runtime.hook_types import PerkHooks
 
 
 def apply_reflex_boosted_dt(*, dt: float, players: list[PlayerState]) -> float:
@@ -16,9 +15,3 @@ def apply_reflex_boosted_dt(*, dt: float, players: list[PlayerState]) -> float:
     if not perk_active(players[0], PerkId.REFLEX_BOOSTED):
         return float(dt)
     return float(x87_pc24_mul(f32(float(dt)), f32(0.9)))
-
-
-HOOKS = PerkHooks(
-    perk_id=PerkId.REFLEX_BOOSTED,
-    world_dt_step=apply_reflex_boosted_dt,
-)
