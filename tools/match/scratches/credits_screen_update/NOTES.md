@@ -150,3 +150,25 @@ controls against the 98.898678% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact panel, row, and Secret coordinate lifetimes (2026-09-05)
+
+The newly exact perk selection screen suggested testing the interaction between
+panel value construction and disjoint UI coordinates. The eight complete
+controls in `panel-row-secret-lifetime-interaction-mutations.json` preserve the
+row hit test and Secret-button call while giving each a coordinate object at
+its own call boundary. The row vector is local to the row loop, and the Secret
+vector ends before the phase joins the action checks.
+
+Changing only the panel sum or only the coordinate owner did not establish the
+native layout in earlier probes. Together, an explicit panel value sum and the
+two short coordinate lifetimes recover **100%**: 454/454 normalized instructions,
+prefix 454, and 176/0/0 aligned references, up from 98.898678%, prefix 48, and
+175/0/0. The native top-slot opening temporary is now reproduced without adding
+storage or changing the frame size. The whole function matches, including the
+last UI action dispatch. A separate horizontal-offset scalar is a regression
+here, so the successful sibling's expression is not copied mechanically.
+
+No compiler, header, reference alias, scope catalog, or gameplay behavior was
+changed. The earlier claim that this temporary required an artificial spill was
+too broad: it missed the panel-construction and later-consumer interaction.

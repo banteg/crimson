@@ -83,7 +83,7 @@ extern "C" void credits_screen_update(void) {
     credits_vec2_t panel_position =
         *(credits_vec2_t *)&ui_element_slot_09.pos_x +
         *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;
-    panel_position += credits_vec2_t(300.0f, 40.0f);
+    panel_position = panel_position + credits_vec2_t(300.0f, 40.0f);
     credits_vec2_t position = panel_position;
 
     secret_button.label = "Secret";
@@ -98,7 +98,6 @@ extern "C" void credits_screen_update(void) {
         credits_scroll_time_s = 0.0f;
         credits_scroll_line_start_index = 0;
     } else if (ui_screen_phase == 1) {
-        credits_vec2_t hit_position;
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (credits_scroll_line_start_index > credits_line_max_index + 2) {
@@ -161,6 +160,7 @@ extern "C" void credits_screen_update(void) {
                     alpha = 0.0f;
                 }
 
+                credits_vec2_t hit_position;
                 hit_position.x = position.x + 140.0f - (float)(width / 2);
                 hit_position.y = line_y;
                 if (ui_mouse_inside_rect((float *)&hit_position, 16, width) &&
@@ -257,8 +257,11 @@ extern "C" void credits_screen_update(void) {
                 strdup_malloc("(4 bits for index)");
         }
 
-        hit_position.set(position.x + 94.0f, position.y);
-        ui_button_update((float *)&hit_position, (ui_button_t *)&secret_button);
+        {
+            credits_vec2_t secret_position(position.x + 94.0f, position.y);
+            ui_button_update(
+                (float *)&secret_position, (ui_button_t *)&secret_button);
+        }
     }
 
 check_actions:
