@@ -55,6 +55,7 @@ from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
+from .damage_runtime import CreatureLethalHandler
 from .damage_types import CreatureDamageType
 from .lifecycle import (
     CREATURE_LIFECYCLE_ALIVE,
@@ -966,6 +967,99 @@ class CreaturePool:
             effects=effects,
         )
 
+    def _apply_self_damage_tick(
+        self, creature_index: int, creature: CreatureState, *, dt: float,
+        options: CreatureUpdateOptions, on_lethal: CreatureLethalHandler,
+    ) -> bool:
+        state, players, rng = options.state, options.players, options.rng
+        detail_preset = int(options.detail_preset)
+        if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
+            return False
+        damage_amount = 0.0
+        creature_flags = int(creature.flags)
+        if (creature_flags & _FLAG_SELF_DAMAGE_TICK_STRONG) != 0:
+            damage_amount = x87_pc24_mul(dt, 180.0)
+        elif (creature_flags & _FLAG_SELF_DAMAGE_TICK) != 0:
+            damage_amount = x87_pc24_mul(dt, 60.0)
+        if damage_amount <= 0.0:
+            return False
+
+        from .damage import creature_apply_damage_with_lethal_followup
+
+        return creature_apply_damage_with_lethal_followup(
+            creature,
+            creature_index=int(creature_index),
+            damage_amount=float(damage_amount),
+            damage_type=CreatureDamageType.SELF_TICK,
+            impulse=Vec2(),
+            owner=creature.last_hit_owner,
+            dt=dt,
+            players=players,
+            rng=rng,
+            preserve_bugs=bool(state.preserve_bugs),
+            effects=state.effects,
+            detail_preset=int(detail_preset),
+            on_lethal=on_lethal,
+        )
+
+
+    def _tick_corpse(
+        self, idx: int, creature: CreatureState, *, dt: float, dt_ms: int,
+        options: CreatureUpdateOptions, on_lethal: CreatureLethalHandler,
+        single_player_dormant_target: PlayerState | None,
+    ) -> None:
+        state, players, rng = options.state, options.players, options.rng
+        world_width, world_height = float(options.world_width), float(options.world_height)
+        detail_preset, violence_disabled = int(options.detail_preset), int(options.violence_disabled)
+        fx_queue_rotated = options.fx_queue_rotated
+        # Native performs this first death-stage tick before calling
+        # creature_apply_damage for periodic poison flags.  Keeping it
+        # ahead of that call matters when a corpse enters the sweep at
+        # exactly 16.0: creature_apply_damage then applies its separate
+        # dead-entry dt * 15 decrement before the usual dt * 28 decay.
+        if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
+            creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
+        self._apply_self_damage_tick(idx, creature, dt=dt, options=options, on_lethal=on_lethal)
+        # Native still ticks AI7 link-timer state (and its RNG draws) for
+        # dead creatures inside `creature_update_all`.
+        if (
+            dt > 0.0
+            and float(state.bonuses.freeze) <= 0.0
+            and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
+        ):
+            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
+        # Native's targeting block runs before the alive/dead split:
+        # fading corpses still switch their target player and feed the
+        # auto-target comparison.
+        if players:
+            target_resolution = self._resolve_target_player(creature, players)
+            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                self._update_player_auto_target(
+                    players=players,
+                    preserve_bugs=bool(state.preserve_bugs),
+                    player_index=int(
+                        target_resolution.auto_target_player
+                        if state.preserve_bugs
+                        else target_resolution.target_player,
+                    ),
+                    creature_index=int(idx),
+                    creature=creature,
+                    native_candidate_distance=target_resolution.native_auto_target_distance,
+                )
+            if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
+                creature.target_player = 1
+        if dt > 0.0:
+            self._tick_dead(
+                creature,
+                dt=dt,
+                world_width=world_width,
+                world_height=world_height,
+                fx_queue_rotated=fx_queue_rotated,
+                rng=rng,
+                detail_preset=int(detail_preset),
+                violence_disabled=int(violence_disabled),
+            )
+
     def update(
         self,
         dt: float,
@@ -1048,36 +1142,6 @@ class CreaturePool:
             sfx=sfx,
         )
 
-        def _apply_self_damage_tick(creature_index: int, creature: CreatureState) -> bool:
-            if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
-                return False
-            damage_amount = 0.0
-            creature_flags = int(creature.flags)
-            if (creature_flags & _FLAG_SELF_DAMAGE_TICK_STRONG) != 0:
-                damage_amount = x87_pc24_mul(dt, 180.0)
-            elif (creature_flags & _FLAG_SELF_DAMAGE_TICK) != 0:
-                damage_amount = x87_pc24_mul(dt, 60.0)
-            if damage_amount <= 0.0:
-                return False
-
-            from .damage import creature_apply_damage_with_lethal_followup
-
-            return creature_apply_damage_with_lethal_followup(
-                creature,
-                creature_index=int(creature_index),
-                damage_amount=float(damage_amount),
-                damage_type=CreatureDamageType.SELF_TICK,
-                impulse=Vec2(),
-                owner=creature.last_hit_owner,
-                dt=dt,
-                players=players,
-                rng=rng,
-                preserve_bugs=bool(state.preserve_bugs),
-                effects=state.effects,
-                detail_preset=int(detail_preset),
-                on_lethal=creature_damage_runtime.on_creature_lethal,
-            )
-
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue
@@ -1091,59 +1155,19 @@ class CreaturePool:
                 continue
 
             if not creature_lifecycle_is_alive(creature.lifecycle_stage) or creature.hp <= 0.0:
-                # Native performs this first death-stage tick before calling
-                # creature_apply_damage for periodic poison flags.  Keeping it
-                # ahead of that call matters when a corpse enters the sweep at
-                # exactly 16.0: creature_apply_damage then applies its separate
-                # dead-entry dt * 15 decrement before the usual dt * 28 decay.
-                if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
-                    creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
-                _apply_self_damage_tick(idx, creature)
-                # Native still ticks AI7 link-timer state (and its RNG draws) for
-                # dead creatures inside `creature_update_all`.
-                if (
-                    dt > 0.0
-                    and float(state.bonuses.freeze) <= 0.0
-                    and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
-                ):
-                    creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
-                # Native's targeting block runs before the alive/dead split:
-                # fading corpses still switch their target player and feed the
-                # auto-target comparison.
-                if players:
-                    target_resolution = self._resolve_target_player(creature, players)
-                    if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
-                        self._update_player_auto_target(
-                            players=players,
-                            preserve_bugs=bool(state.preserve_bugs),
-                            player_index=int(
-                                target_resolution.auto_target_player
-                                if state.preserve_bugs
-                                else target_resolution.target_player,
-                            ),
-                            creature_index=int(idx),
-                            creature=creature,
-                            native_candidate_distance=target_resolution.native_auto_target_distance,
-                        )
-                    if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
-                        creature.target_player = 1
-                if dt > 0.0:
-                    self._tick_dead(
-                        creature,
-                        dt=dt,
-                        world_width=world_width,
-                        world_height=world_height,
-                        fx_queue_rotated=fx_queue_rotated,
-                        rng=rng,
-                        detail_preset=int(detail_preset),
-                        violence_disabled=int(violence_disabled),
-                    )
+                self._tick_corpse(
+                    idx, creature, dt=dt, dt_ms=dt_ms, options=options,
+                    on_lethal=creature_damage_runtime.on_creature_lethal,
+                    single_player_dormant_target=single_player_dormant_target,
+                )
                 continue
 
             if dt <= 0.0 or not players:
                 continue
 
-            poison_killed = _apply_self_damage_tick(idx, creature)
+            poison_killed = self._apply_self_damage_tick(
+                idx, creature, dt=dt, options=options, on_lethal=creature_damage_runtime.on_creature_lethal,
+            )
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
             creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
