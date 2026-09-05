@@ -201,7 +201,7 @@ The architecture should continue to preserve these invariants:
 
 - `src/crimson/sim/bootstrap.py`
 - `src/crimson/replay/driver/playback_driver.py`
-- `src/crimson/screens/menu.py`
+- `src/crimson/screens/chrome.py`
 - `src/crimson/demo.py`
 - `src/grim/terrain_render.py`
 - `docs/rewrite/replay-run-start.md`

@@ -67,15 +67,29 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
 
 ### Front-end (menus + screens)
 
+Python navigation uses typed requests in `src/crimson/screens/actions.py` and a
+single retained-screen stack in `src/crimson/screens/stack.py`, coordinated by
+`src/crimson/game/navigation.py`. Back resumes the retained screen without
+reopening its run or rebuilding its result record. Modes and persistent panels
+are constructed on first use; shared assets/audio belong to
+`src/crimson/game/resources.py` and outlive the Boot screen.
+
+Menu/panel transitions compose `ScreenTransition`; shared animation, layout,
+sign drawing, backgrounds, and cursor functions live in `src/crimson/ui/` and
+`src/crimson/screens/chrome.py`. Controls capture and open dropdowns consume
+input before ordinary widgets and Back. High Scores refresh preserves its
+query, restores the originating run's selection on Back, and emits a complete
+launch request for Play a game.
+
 - **Main menu (state `0`)**: implemented, including timeline/layout behavior and terrain/sign-shadow rules.
   - Code: `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/main-menu.md`](../crimsonland-exe/main-menu.md)
   - Zig now routes root menu selections and demo-idle attract launch through the native close timeline before dispatch.
 - **Play Game panel (state `1`)**: implemented (mode buttons, player-count dropdown, tooltips, debug-gated F1 times-played overlay).
-  - Code: `src/crimson/game/__init__.py` (`PlayGameMenuView`)
+  - Code: `src/crimson/screens/panels/play_game.py`
   - Ref: [`docs/crimsonland-exe/play-game-menu.md`](../crimsonland-exe/play-game-menu.md)
 - **Quest select menu (state `0x0b`)**: implemented (quest list, stage icons, hardcore gating, debug-gated counts overlay and F5 unlock shortcut).
-  - Code: `src/crimson/game/__init__.py` (`QuestsMenuView`)
+  - Code: `src/crimson/screens/quest_views/quests_menu.py`
   - Ref: [`docs/crimsonland-exe/quest-select-menu.md`](../crimsonland-exe/quest-select-menu.md)
 - **Options panel (state `2`)**: implemented for core sliders + controls workflow.
   - Code: `src/crimson/screens/panels/options.py`, `src/crimson/screens/panels/controls.py`, `crimson-zig/src/window_options.zig`
@@ -89,10 +103,10 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
   - Code: `src/crimson/demo.py`, `src/crimson/ui/demo_trial_overlay.py`
   - Ref: [`docs/crimsonland-exe/demo-mode.md`](../crimsonland-exe/demo-mode.md), [`docs/crimsonland-exe/screens.md`](../crimsonland-exe/screens.md)
 - **Game over / high score entry (state `7`)**: implemented for Survival/Rush/Typ-o.
-  - Code: `src/crimson/ui/game_over.py`, `src/crimson/persistence/highscores.py`, `src/crimson/game/__init__.py`
+  - Code: `src/crimson/screens/results/game_over.py`, `src/crimson/screens/high_scores_view/`, `src/crimson/persistence/highscores.py`
   - Zig now animates game-over/results panels through the native open/close slide timeline, keeps high-score/button hitboxes aligned with the moving panel, routes Play Again, High scores, and Main Menu actions through the native close timeline before dispatch, returns Back from result-launched high scores to the results screen, and clears that stacked results screen before Play a game opens Play Game.
 - **Quest results (state `8`) / quest failed (state `0x0c`)**: implemented.
-  - Code: `src/crimson/ui/quest_results.py`, `src/crimson/game/__init__.py`, `crimson-zig/src/window_main.zig`
+  - Code: `src/crimson/screens/results/quest_results.py`, `src/crimson/screens/quest_views/`, `crimson-zig/src/window_main.zig`
   - Zig quest-completion results show the resolved weapon/perk unlock names after the final-time breakdown completes, honor the completed-results keyboard shortcuts, and route the final quest end-note screen through the native 300 ms open/close timeline before dispatching its follow-up action.
 - **Pause menu**: implemented.
   - Code: `src/crimson/screens/pause_menu.py`, `crimson-zig/src/window_pause_menu.zig`
