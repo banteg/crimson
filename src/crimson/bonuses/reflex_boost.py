@@ -17,8 +17,7 @@ if TYPE_CHECKING:
 
 def apply_reflex_boost(ctx: BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.reflex_boost)
-    if old <= 0.0:
-        ctx.register_global("reflex_boost")
+    ctx.register_if_inactive()
     ctx.state.bonuses.reflex_boost = float(
         f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )

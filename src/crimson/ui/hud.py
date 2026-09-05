@@ -757,9 +757,7 @@ def draw_hud_overlay(
                 continue
             slot_pos = Vec2(slot.slide_x, bonus_y)
 
-            has_alt = slot.timer_ref_alt is not None and player_count > 1
-            timer = float(slot.timer_value)
-            timer_alt = float(slot.timer_value_alt) if has_alt else 0.0
+            timers = slot.timer_values
 
             # Slot panel.
             if not small_indicators:
@@ -767,7 +765,7 @@ def draw_hud_overlay(
                 panel_size = Vec2(182.0, 53.0)
             else:
                 panel_pos = slot_pos + Vec2(-96.0, 5.0)
-                panel_size = Vec2(182.0, 26.5)
+                panel_size = Vec2(182.0, 26.5 + max(0, len(timers) - 3) * 6.0)
 
             src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
             dst = rl.Rectangle(ui(panel_pos.x), ui(panel_pos.y), ui(panel_size.x), ui(panel_size.y))
@@ -801,77 +799,20 @@ def draw_hud_overlay(
                 )
                 max_y = max(max_y, dst.y + dst.height)
 
-            # Slot timer bars.
+            # Preserve native 1P/2P positions and continue the stack for 3P/4P.
+            first_timer_y = 17.0 if len(timers) > 1 else 21.0
+            if small_indicators:
+                first_timer_y -= 4.0
+            for index, timer in enumerate(timers):
+                timer_pos = slot_pos + Vec2(36.0, first_timer_y + index * 6.0)
+                _draw_progress_bar(
+                    Vec2(ui(timer_pos.x), ui(timer_pos.y)),
+                    ui(32.0 if small_indicators else 100.0),
+                    timer * 0.05, bar_rgba, scale,
+                )
             if not small_indicators:
-                if not has_alt:
-                    timer_pos = slot_pos + Vec2(36.0, 21.0)
-                    _draw_progress_bar(
-                        Vec2(ui(timer_pos.x), ui(timer_pos.y)),
-                        ui(100.0),
-                        timer * 0.05,
-                        bar_rgba,
-                        scale,
-                    )
-                    label_pos = slot_pos + Vec2(36.0, 6.0)
-                    _draw_text(
-                        font,
-                        slot.label,
-                        Vec2(ui(label_pos.x), ui(label_pos.y)),
-                        text_scale,
-                        bonus_text_color,
-                    )
-                else:
-                    timer0_pos = slot_pos + Vec2(36.0, 17.0)
-                    _draw_progress_bar(
-                        Vec2(ui(timer0_pos.x), ui(timer0_pos.y)),
-                        ui(100.0),
-                        timer * 0.05,
-                        bar_rgba,
-                        scale,
-                    )
-                    timer1_pos = slot_pos + Vec2(36.0, 23.0)
-                    _draw_progress_bar(
-                        Vec2(ui(timer1_pos.x), ui(timer1_pos.y)),
-                        ui(100.0),
-                        timer_alt * 0.05,
-                        bar_rgba,
-                        scale,
-                    )
-                    label_pos = slot_pos + Vec2(36.0, 2.0)
-                    _draw_text(
-                        font,
-                        slot.label,
-                        Vec2(ui(label_pos.x), ui(label_pos.y)),
-                        text_scale,
-                        bonus_text_color,
-                    )
-            else:
-                if not has_alt:
-                    timer_pos = slot_pos + Vec2(36.0, 17.0)
-                    _draw_progress_bar(
-                        Vec2(ui(timer_pos.x), ui(timer_pos.y)),
-                        ui(32.0),
-                        timer * 0.05,
-                        bar_rgba,
-                        scale,
-                    )
-                else:
-                    timer0_pos = slot_pos + Vec2(36.0, 13.0)
-                    _draw_progress_bar(
-                        Vec2(ui(timer0_pos.x), ui(timer0_pos.y)),
-                        ui(32.0),
-                        timer * 0.05,
-                        bar_rgba,
-                        scale,
-                    )
-                    timer1_pos = slot_pos + Vec2(36.0, 19.0)
-                    _draw_progress_bar(
-                        Vec2(ui(timer1_pos.x), ui(timer1_pos.y)),
-                        ui(32.0),
-                        timer_alt * 0.05,
-                        bar_rgba,
-                        scale,
-                    )
+                label_pos = slot_pos + Vec2(36.0, 2.0 if len(timers) > 1 else 6.0)
+                _draw_text(font, slot.label, Vec2(ui(label_pos.x), ui(label_pos.y)), text_scale, bonus_text_color)
 
             bonus_y += HUD_BONUS_SPACING
             max_y = max(max_y, ui(bonus_y))

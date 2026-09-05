@@ -20,13 +20,7 @@ class LargeHitDecalRuntime(msgspec.Struct):
 
 
 def apply_fire_bullets(ctx: BonusApplyCtx) -> None:
-    should_register = float(ctx.player.fire_bullets_timer) <= 0.0
-    if len(ctx.players) > 1:
-        should_register = (
-            float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
-        )
-    if should_register:
-        ctx.register_player("fire_bullets_timer")
+    ctx.register_if_inactive()
     ctx.player.fire_bullets_timer = float(
         f32(float(ctx.player.fire_bullets_timer) + bonus_apply_seconds(ctx) * float(ctx.economist_multiplier)),
     )

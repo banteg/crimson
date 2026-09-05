@@ -20,8 +20,7 @@ if TYPE_CHECKING:
 
 def apply_freeze(ctx: BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.freeze)
-    if old <= 0.0:
-        ctx.register_global("freeze")
+    ctx.register_if_inactive()
     ctx.state.bonuses.freeze = f32(old + float(ctx.amount) * float(ctx.economist_multiplier))
 
     # Native bonus_apply visits every currently active corpse, including kills

@@ -6,8 +6,7 @@ from .apply_context import BonusApplyCtx
 
 def apply_weapon_power_up(ctx: BonusApplyCtx) -> None:
     old = float(ctx.state.bonuses.weapon_power_up)
-    if old <= 0.0:
-        ctx.register_global("weapon_power_up")
+    ctx.register_if_inactive()
     ctx.state.bonuses.weapon_power_up = float(
         f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )

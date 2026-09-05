@@ -9,7 +9,7 @@ from grim.geom import Vec2
 
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..sim.state_types import PlayerState
-from .hud import _TimerRef
+from .hud import bonus_timer_values
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
@@ -32,30 +32,10 @@ class BonusApplyCtx(msgspec.Struct):
     icon_id: int
     creature_damage_runtime: CreatureDamageRuntime
 
-    def register_global(self, timer_key: str) -> None:
-        self.state.bonus_hud.register(
-            self.bonus_id,
-            label=self.label,
-            icon_id=self.icon_id,
-            timer_ref=_TimerRef("global", str(timer_key)),
-        )
-
-    def register_player(self, timer_key: str) -> None:
-        if len(self.players) > 1:
-            self.state.bonus_hud.register(
-                self.bonus_id,
-                label=self.label,
-                icon_id=self.icon_id,
-                timer_ref=_TimerRef("player", str(timer_key), player_index=0),
-                timer_ref_alt=_TimerRef("player", str(timer_key), player_index=1),
-            )
-        else:
-            self.state.bonus_hud.register(
-                self.bonus_id,
-                label=self.label,
-                icon_id=self.icon_id,
-                timer_ref=_TimerRef("player", str(timer_key), player_index=int(self.player.index)),
-            )
+    def register_if_inactive(self) -> None:
+        if any(timer > 0.0 for timer in bonus_timer_values(self.state, self.players, self.bonus_id)):
+            return
+        self.state.bonus_hud.register(self.bonus_id, label=self.label, icon_id=self.icon_id)
 
 BonusApplyHandler = Callable[[BonusApplyCtx], None]
 

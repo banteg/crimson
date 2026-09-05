@@ -302,3 +302,29 @@ def test_draw_hud_overlay_compacts_active_aux_rows(mocker) -> None:
         if call.args[0] is panel and float(call.args[2].x) == -12.0
     ]
     assert popup_panels == [(-12.0, 104.0)]
+
+
+def test_bonus_hud_draws_four_timer_bars(mocker) -> None:
+    from crimson.bonuses.hud import BonusHudState
+    from crimson.bonuses.ids import BonusId
+
+    mocker.patch.object(hud_module.rl, "get_screen_width", return_value=1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", return_value=768)
+    mocker.patch.object(hud_module.rl, "draw_texture_pro")
+    mocker.patch.object(hud_module.rl, "draw_rectangle")
+    mocker.patch.object(hud_module.rl, "draw_text")
+    bars = mocker.patch.object(hud_module, "_draw_progress_bar")
+    resources = _resources({texture_id: _texture(256, 256) for texture_id in TextureId})
+    players = [PlayerState(index=index, pos=Vec2()) for index in range(4)]
+    hud = BonusHudState()
+    hud.register(BonusId.SHIELD, label="Shield", icon_id=6)
+    hud.slots[0].slide_x = -2.0
+    hud.slots[0].timer_values = (0.0, 0.0, 5.0, 10.0)
+    draw_hud_overlay(
+        HudRenderContext(resources=resources, state=HudState(), show_health=False, show_weapon=False,
+                         show_xp=False, show_time=False),
+        player=players[0], players=players, bonus_hud=hud, frame_dt_ms=0.0,
+    )
+    assert [call.args[2] for call in bars.call_args_list] == [0.0, 0.0, 0.25, 0.5]
+    ys = [call.args[0].y for call in bars.call_args_list]
+    assert ys == [ys[0] + index * 6 for index in range(4)]
