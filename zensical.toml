@@ -158,6 +158,7 @@ nav = [
       { "PAQ" = "formats/paq.md" },
       { "JAZ" = "formats/jaz.md" },
       { "Fonts" = "formats/fonts.md" },
+      { "Local high scores" = "formats/highscores.md" },
       { "Sprite atlas cutting" = "formats/atlas.md" },
       { "Extraction pipeline" = "formats/pipeline.md" },
       { "Save/status file (game.cfg)" = "formats/save-status-format.md" },

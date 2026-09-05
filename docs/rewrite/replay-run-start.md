@@ -85,6 +85,14 @@ flowchart LR
 This preserves native state directly while keeping replay startup small and
 deterministic.
 
+## Settings during a run
+
+Simulation detail and violence settings stay fixed at the values in the
+starting `RunSpec`/`ReplayHeader`. Changing effect density in Options applies
+to the next game: changing these values mid-run would change RNG consumption
+without a corresponding replay operation. Visual-only flags, audio volume,
+and input preferences can still apply live.
+
 ## Current replay contract
 
 Only the current [replay/trace formats](trace-format-alignment.md#current-only-contract) are supported. A `ReplayHeader` includes

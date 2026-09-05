@@ -12,6 +12,7 @@ These pages document original Crimsonland (Windows binary) file and asset format
 
 - [PAQ](paq.md) — Archive container (flat stream, no directory)
 - [JAZ](jaz.md) — JPEG + RLE alpha texture format
+- [Local high scores](highscores.md) — Score history, ranking, and date selection
 - [Fonts](fonts.md) — Bitmap font data (glyph widths)
 
 ## Related

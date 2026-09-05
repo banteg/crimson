@@ -7,6 +7,14 @@ import msgspec
 
 from .raylib_api import rl
 
+# Grim2D enables alpha test globally with:
+#   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
+# Static anchor: `grim_apply_render_state` @ 0x10004520.
+#
+# raylib does not expose fixed-function alpha test, so we emulate it with a tiny
+# discard shader for world drawing and terrain stamps. This shim is
+# required for parity; if it fails to compile, rendering should stop rather than
+# silently drift away from the native cutoff behavior.
 _ALPHA_TEST_VS_330 = r"""
 #version 330
 

@@ -6,7 +6,7 @@ tags:
 # Save/status file (game.cfg)
 
 Crimsonland stores quest progress and several counters in `game.cfg` (the “status” file). The
-format is small but obfuscated and checksummed. This page documents what we know so far and
+format is small but obfuscated and checksummed. This page documents the recovered layout and
 links the editor script in `scripts/save_status.py`.
 
 ## File layout
@@ -99,3 +99,10 @@ Supported edits:
 
 The script validates the checksum, applies updates to the decoded blob, and rewrites the
 obfuscated file with a fresh checksum.
+
+## Port counter updates
+
+Mode, weapon, quest, and playtime increments wrap at 32 bits, matching the
+native fields. Playtime converts each gameplay frame delta to milliseconds
+with f32 multiplication followed by truncation. These rules keep long-running
+statistics serializable without changing the save format.

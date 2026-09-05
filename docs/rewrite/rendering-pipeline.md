@@ -35,6 +35,22 @@ flowchart LR
 Terrain FX are baked before drawing. `RenderFrame` carries concrete resources
 and references to the current world; it does not copy simulation state.
 
+## Application compositing and resource lifetime
+
+Alpha-test shaders are loaded lazily and owned by `GroundRenderer` and
+`RuntimeResources`. Their owners release them before graphics teardown;
+there is no process-wide cached shader handle. Terrain target/shader scopes
+unwind on failure, and interrupted generation retains its pending seed.
+
+The application loop applies non-default gamma to the completed frame, after
+world and UI shaders finish. Its intermediate framebuffer uses physical pixel
+dimensions while the captured scene retains logical drawing coordinates. The
+loop resizes and releases the framebuffer and gamma shader together.
+
+Timed-bonus HUD slots carry one value for a global timer or a sequence in local
+player order. Speed, Shield, and Fire Bullets include all players. The 1P/2P
+bar positions remain native; 3P/4P extend the same vertical stack.
+
 ## Runtime object graph
 
 - `WorldRuntime` owns the camera and world size. Coordinate conversion derives

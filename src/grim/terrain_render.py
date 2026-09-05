@@ -62,14 +62,6 @@ _EXPLICIT_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
     ),
 )
 
-# Grim2D enables alpha test globally with:
-#   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
-# Static anchor: `grim_apply_render_state` @ 0x10004520.
-#
-# raylib does not expose fixed-function alpha test, so we emulate it with a tiny
-# discard shader for stamping into the terrain render target. This shim is
-# required for parity; if it fails to compile, rendering should stop rather than
-# silently drift away from the native cutoff behavior.
 @contextmanager
 def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
     # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
