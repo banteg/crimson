@@ -167,6 +167,12 @@ class _RebindRowLayout(msgspec.Struct, frozen=True):
     value_rect: Rect
 
 
+class RebindCapture(msgspec.Struct):
+    row: RebindRowSpec
+    player_index: int
+    skip_frames: int = 1
+
+
 class ControlsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -181,9 +187,7 @@ class ControlsMenuView(PanelMenuView):
         self._aim_method_open = False
         self._player_profile_open = False
         self._dirty = False
-        self._rebind_row: RebindRowSpec | None = None
-        self._rebind_player_index: int | None = None
-        self._rebind_skip_frames = 0
+        self._capture: RebindCapture | None = None
 
     def open(self) -> None:
         super().open()
@@ -195,8 +199,7 @@ class ControlsMenuView(PanelMenuView):
         self._clear_rebind_capture()
 
     def update(self, dt: float) -> None:
-        super().update(dt)
-        if self._closing:
+        if not self._update_panel(dt):
             return
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):
@@ -206,6 +209,10 @@ class ControlsMenuView(PanelMenuView):
         right_top_left = self._right_panel_top_left(panel_scale)
         resources = require_runtime_resources(self.state)
         font = resources.small_font
+        if self._capture is not None:
+            self._update_back_button(dt, enabled=False)
+            self._update_rebind_capture(right_top_left=right_top_left, panel_scale=panel_scale, font=font)
+            return
         click_consumed = self._update_method_dropdowns(
             left_top_left=left_top_left,
             panel_scale=panel_scale,
@@ -225,6 +232,8 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         ):
             self._dirty = True
+            click_consumed = True
+        self._update_back_button(dt, enabled=not click_consumed and self._capture is None)
 
     def _begin_close_transition(self, action: str) -> None:
         if self._dirty:
@@ -240,21 +249,16 @@ class ControlsMenuView(PanelMenuView):
         return max(0, min(3, int(self._config_player) - 1))
 
     def _rebind_active(self) -> bool:
-        return self._rebind_row is not None and self._rebind_player_index is not None
+        return self._capture is not None
 
     def _clear_rebind_capture(self) -> None:
-        self._rebind_row = None
-        self._rebind_player_index = None
-        self._rebind_skip_frames = 0
+        self._capture = None
 
     def _start_rebind_capture(self, *, row: RebindRowSpec, player_index: int) -> None:
-        self._rebind_row = row
-        self._rebind_player_index = max(0, min(3, int(player_index)))
+        self._capture = RebindCapture(row, player_index)
         self._move_method_open = False
         self._aim_method_open = False
         self._player_profile_open = False
-        # Ignore the click that opened capture so Mouse1 is not rebound accidentally.
-        self._rebind_skip_frames = 1
 
     @staticmethod
     def _capture_prompt_for_binding(row: RebindRowSpec) -> str:
@@ -425,9 +429,10 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
 
-        if self._rebind_active():
-            active_row = self._rebind_row or RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE)
-            active_player = int(self._rebind_player_index or 0)
+        capture = self._capture
+        if capture is not None:
+            active_row = capture.row
+            active_player = capture.player_index
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
                 rl.MouseButton.MOUSE_BUTTON_RIGHT,
             ):
@@ -450,8 +455,8 @@ class ControlsMenuView(PanelMenuView):
                 self._clear_rebind_capture()
                 return True
 
-            if self._rebind_skip_frames > 0:
-                self._rebind_skip_frames = max(0, int(self._rebind_skip_frames) - 1)
+            if capture.skip_frames > 0:
+                capture.skip_frames -= 1
                 return True
 
             axis_only = active_row.axis
@@ -862,9 +867,8 @@ class ControlsMenuView(PanelMenuView):
             row_y = y + 18.0 * panel_scale
             for _ in section_rows:
                 row = next(row_iter)
-                active_row = rebind_active and self._rebind_row == row.row and int(
-                    self._rebind_player_index or -1,
-                ) == player_idx
+                capture = self._capture
+                active_row = capture is not None and capture.row == row.row and capture.player_index == player_idx
                 hovered_row = (not rebind_active) and (not dropdown_blocked) and row.value_rect.contains(mouse)
                 value_text = (
                     self._capture_prompt_for_binding(row.row)
@@ -897,7 +901,7 @@ class ControlsMenuView(PanelMenuView):
                 row_y += 16.0 * panel_scale
             y = row_y + 8.0 * panel_scale
 
-        if rebind_active and int(self._rebind_player_index or -1) == player_idx:
+        if self._capture is not None and self._capture.player_index == player_idx:
             hint_pos = Vec2(
                 right_top_left.x + 48.0 * panel_scale,
                 right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0) * panel_scale,

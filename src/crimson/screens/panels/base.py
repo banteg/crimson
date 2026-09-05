@@ -114,6 +114,11 @@ class PanelMenuView:
         self._ground = None
 
     def update(self, dt: float) -> None:
+        if self._update_panel(dt):
+            self._update_back_button(dt)
+
+    def _update_panel(self, dt: float) -> bool:
+        """Advance presentation without consuming widget or navigation input."""
         self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
@@ -127,7 +132,7 @@ class PanelMenuView:
                 if self._timeline_ms < 0 and self._close_action is not None:
                     self._pending_action = self._close_action
                     self._close_action = None
-            return
+            return False
 
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
@@ -137,17 +142,21 @@ class PanelMenuView:
                     play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                     self._panel_open_sfx_played = True
 
+        return True
+
+    def _update_back_button(self, dt: float, *, enabled: bool = True, enter: bool = True) -> None:
+        dt_ms = int(min(dt, 0.1) * 1000.0)
         entry = self._entry
         if entry is None:
             return
 
-        enabled = self._entry_enabled(entry)
+        enabled = enabled and self._entry_enabled(entry)
         hovered = enabled and self._hovered_entry(entry)
         self._hovered = hovered
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(self._back_action)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
+        if enter and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
             self._begin_close_transition(self._back_action)
         if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._begin_close_transition(self._back_action)
