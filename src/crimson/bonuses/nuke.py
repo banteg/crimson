@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sqrt, x87_pc24_sub
 from ..owner_ref import OwnerRef
@@ -110,5 +111,5 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                 )
         ctx.state.bonus_spawn_guard = False
 
-    ctx.state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
-    ctx.state.sfx_queue.append(SfxId.SHOCKWAVE)
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, ctx.origin_pos))
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, ctx.origin_pos))

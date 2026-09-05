@@ -94,10 +94,24 @@ def apply_presentation_outputs(
     runtime.sync_audio_bridge_state()
     for output in outputs:
         if output.presentation is not None:
-            runtime.audio_bridge.apply_plan(plan=output.presentation, apply_audio=bool(apply_audio))
+            # Capture the viewport before this tick's post-step camera update.
+            # Camera updates carry tick-local focus/shake, so batched application
+            # never reads positions from a later simulation world.
+            view = runtime.view_transform()
+            runtime.audio_bridge.apply_plan(
+                plan=output.presentation,
+                apply_audio=bool(apply_audio),
+                camera=view.camera,
+                screen_width=view.screen_size.x,
+            )
             if update_camera and output.presentation.camera is not None:
                 runtime.update_camera(output.presentation.camera)
             terrain_fx = output.presentation.terrain_fx
             if not terrain_fx.is_empty():
                 runtime.render_resources.consume_terrain_fx_batch(terrain_fx)
-            runtime.audio_bridge.apply_post_plan(plan=output.presentation, apply_audio=apply_audio)
+            runtime.audio_bridge.apply_post_plan(
+                plan=output.presentation,
+                apply_audio=apply_audio,
+                camera=view.camera,
+                screen_width=view.screen_size.x,
+            )

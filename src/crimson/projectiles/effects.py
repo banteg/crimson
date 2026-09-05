@@ -7,6 +7,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
@@ -75,7 +76,7 @@ def _spawn_shrinkifier_hit_effects(
 
 def _spawn_ion_hit_effects(
     effects: EffectPool | None,
-    sfx_queue: MutableSequence[SfxId] | None,
+    sfx_queue: MutableSequence[SfxRequest] | None,
     *,
     type_id: ProjectileTemplateId,
     pos: Vec2,
@@ -102,7 +103,7 @@ def _spawn_ion_hit_effects(
             ring_strength = 1.0
             burst_scale = 2.2
             if sfx_queue is not None:
-                sfx_queue.append(SfxId.SHOCKWAVE)
+                sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
         case _:
             return
 
@@ -162,7 +163,7 @@ def _spawn_ion_hit_effects(
 
 def _spawn_plasma_cannon_hit_effects(
     effects: EffectPool | None,
-    sfx_queue: MutableSequence[SfxId] | None,
+    sfx_queue: MutableSequence[SfxRequest] | None,
     *,
     pos: Vec2,
     detail_preset: int,
@@ -180,8 +181,8 @@ def _spawn_plasma_cannon_hit_effects(
         return
 
     if sfx_queue is not None:
-        sfx_queue.append(SfxId.EXPLOSION_MEDIUM)
-        sfx_queue.append(SfxId.SHOCKWAVE)
+        sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, pos))
+        sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
 
     detail = int(detail_preset)
 

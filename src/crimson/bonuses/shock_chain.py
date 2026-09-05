@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
 from ..owner_ref import OwnerRef
@@ -33,9 +34,7 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
     # the projectile's stored f32 angle and velocity.
     delta = target.pos - origin
     angle = float(f32(math.atan2(float(delta.y), float(delta.x)) - NATIVE_HALF_PI - NATIVE_PI))
-    owner = (
-        owner_ref_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else OwnerRef.from_local_player(0)
-    )
+    owner = owner_ref_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else OwnerRef.from_local_player(0)
 
     ctx.state.bonus_spawn_guard = True
     ctx.state.shock_chain_links_left = 0x20
@@ -49,4 +48,4 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         owner_player_index=ctx.player.index,
     )
     ctx.state.bonus_spawn_guard = False
-    ctx.state.sfx_queue.append(SfxId.SHOCK_HIT_01)
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.SHOCK_HIT_01, ctx.origin_pos))

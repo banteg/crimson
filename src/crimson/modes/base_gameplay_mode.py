@@ -352,7 +352,7 @@ class BaseGameplayMode:
 
     def _update_audio(self, dt: float) -> None:
         if self.audio is not None:
-            update_audio(self.audio, dt)
+            update_audio(self.audio, dt, advance_sfx=self._game_over_active)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:

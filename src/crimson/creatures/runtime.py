@@ -20,6 +20,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..bonuses import BonusId
 from ..bonuses.pool import BONUS_SPAWN_MARGIN
@@ -302,7 +303,7 @@ class CreatureDeath(msgspec.Struct, frozen=True):
 class CreatureUpdateResult(msgspec.Struct, frozen=True):
     deaths: tuple[CreatureDeath, ...] = ()
     spawned: tuple[int, ...] = ()
-    sfx: tuple[SfxId, ...] = ()
+    sfx: tuple[SfxRequest, ...] = ()
 
 
 class _TargetPlayerResolution(msgspec.Struct, frozen=True):
@@ -338,7 +339,7 @@ class _CreatureInteractionCtx(msgspec.Struct):
     world_height: float
     fx_queue: FxQueue | None
     deaths: list[CreatureDeath]
-    sfx: list[SfxId]
+    sfx: list[SfxRequest]
     skip_creature: bool = False
     contact_distance: float = 0.0
 
@@ -386,7 +387,7 @@ class _CreatureInteractionCreatureDamageRuntime(msgspec.Struct):
                 fx_queue=ctx.fx_queue,
             ),
         )
-        ctx.sfx.extend(resolve_damage_followup())
+        ctx.sfx.extend(SfxRequest(sound, ctx.pool.entries[creature_index].pos) for sound in resolve_damage_followup())
 
 
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
@@ -403,7 +404,7 @@ class _CreaturePoolCreatureDamageRuntime(msgspec.Struct):
     world_height: float
     fx_queue: FxQueue | None
     deaths: list[CreatureDeath]
-    sfx: list[SfxId]
+    sfx: list[SfxRequest]
 
     def on_creature_lethal(
         self,
@@ -423,7 +424,7 @@ class _CreaturePoolCreatureDamageRuntime(msgspec.Struct):
                 fx_queue=self.fx_queue,
             ),
         )
-        self.sfx.extend(resolve_damage_followup())
+        self.sfx.extend(SfxRequest(sound, self.pool.entries[creature_index].pos) for sound in resolve_damage_followup())
 
 
 def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> None:
@@ -468,7 +469,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
         rng=ctx.rng,
         detail_preset=int(ctx.detail_preset),
     )
-    ctx.sfx.append(SfxId.UI_BONUS)
+    ctx.sfx.append(SfxRequest(SfxId.UI_BONUS, ctx.creature.pos, gain=0.8))
 
     ctx.state.bonus_spawn_guard = True
     ctx.deaths.append(
@@ -509,7 +510,11 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
     options = _CREATURE_CONTACT_SFX.get(creature.type_id)
     if options is not None:
-        ctx.sfx.append(options[ctx.rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1])
+        ctx.sfx.append(
+            SfxRequest(
+                options[ctx.rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1], ctx.creature.pos,
+            ),
+        )
 
     # Native's perk_count_get helper always reads player slot zero, even though
     # the surrounding contact path targets and damages the selected player.
@@ -968,8 +973,13 @@ class CreaturePool:
         )
 
     def _apply_self_damage_tick(
-        self, creature_index: int, creature: CreatureState, *, dt: float,
-        options: CreatureUpdateOptions, on_lethal: CreatureLethalHandler,
+        self,
+        creature_index: int,
+        creature: CreatureState,
+        *,
+        dt: float,
+        options: CreatureUpdateOptions,
+        on_lethal: CreatureLethalHandler,
     ) -> bool:
         state, players, rng = options.state, options.players, options.rng
         detail_preset = int(options.detail_preset)
@@ -1002,10 +1012,15 @@ class CreaturePool:
             on_lethal=on_lethal,
         )
 
-
     def _tick_corpse(
-        self, idx: int, creature: CreatureState, *, dt: float, dt_ms: int,
-        options: CreatureUpdateOptions, on_lethal: CreatureLethalHandler,
+        self,
+        idx: int,
+        creature: CreatureState,
+        *,
+        dt: float,
+        dt_ms: int,
+        options: CreatureUpdateOptions,
+        on_lethal: CreatureLethalHandler,
         single_player_dormant_target: PlayerState | None,
     ) -> None:
         state, players, rng = options.state, options.players, options.rng
@@ -1022,11 +1037,7 @@ class CreaturePool:
         self._apply_self_damage_tick(idx, creature, dt=dt, options=options, on_lethal=on_lethal)
         # Native still ticks AI7 link-timer state (and its RNG draws) for
         # dead creatures inside `creature_update_all`.
-        if (
-            dt > 0.0
-            and float(state.bonuses.freeze) <= 0.0
-            and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0
-        ):
+        if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0:
             creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
         # Native's targeting block runs before the alive/dead split:
         # fading corpses still switch their target player and feed the
@@ -1088,7 +1099,7 @@ class CreaturePool:
 
         deaths: list[CreatureDeath] = []
         spawned: list[int] = []
-        sfx: list[SfxId] = []
+        sfx: list[SfxRequest] = []
         self._update_tick = int(self._update_tick) + 1
         single_player_dormant_target: PlayerState | None = None
         if len(players) == 1:
@@ -1156,7 +1167,11 @@ class CreaturePool:
 
             if not creature_lifecycle_is_alive(creature.lifecycle_stage) or creature.hp <= 0.0:
                 self._tick_corpse(
-                    idx, creature, dt=dt, dt_ms=dt_ms, options=options,
+                    idx,
+                    creature,
+                    dt=dt,
+                    dt_ms=dt_ms,
+                    options=options,
                     on_lethal=creature_damage_runtime.on_creature_lethal,
                     single_player_dormant_target=single_player_dormant_target,
                 )
@@ -1166,7 +1181,11 @@ class CreaturePool:
                 continue
 
             poison_killed = self._apply_self_damage_tick(
-                idx, creature, dt=dt, options=options, on_lethal=creature_damage_runtime.on_creature_lethal,
+                idx,
+                creature,
+                dt=dt,
+                options=options,
+                on_lethal=creature_damage_runtime.on_creature_lethal,
             )
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
@@ -1252,7 +1271,7 @@ class CreaturePool:
                         contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature.type_id)
                         if contact_sfx_options is not None:
                             sfx_index = int(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX)) & 1
-                            sfx.append(contact_sfx_options[sfx_index])
+                            sfx.append(SfxRequest(contact_sfx_options[sfx_index], creature.pos))
                         plague_killed = True
 
                     if fx_queue is not None:
@@ -1441,7 +1460,7 @@ class CreaturePool:
                             travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
-                        sfx.append(SfxId.SHOCK_FIRE)
+                        sfx.append(SfxRequest(SfxId.SHOCK_FIRE, creature.pos))
                         creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
@@ -1454,7 +1473,7 @@ class CreaturePool:
                             travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
-                        sfx.append(SfxId.PLASMAMINIGUN_FIRE)
+                        sfx.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8))
                         randomized_cooldown = x87_pc24_mul(
                             float(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3),
                             f32(0.1),

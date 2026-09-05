@@ -10,6 +10,7 @@ import pytest
 
 from crimson.modes import replay_playback_mode
 from crimson.quests.level import QuestLevel
+from crimson.render.world.viewport import ViewTransform
 from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
@@ -68,6 +69,9 @@ class _RenderResourcesStub:
 
 @dataclass
 class _RuntimeStub:
+    def view_transform(self) -> ViewTransform:
+        return ViewTransform(Vec2(), Vec2(1, 1), Vec2(1024, 768), Vec2(1024, 768))
+
     audio_bridge: _AudioBridgeStub
     render_resources: _RenderResourcesStub
     sim_world: SimWorldState = field(default_factory=SimWorldState)

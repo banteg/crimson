@@ -2947,7 +2947,7 @@ class LightingDebugView:
         self._collect_shadow_state()
 
         if self._audio is not None:
-            update_audio(self._audio, sim_dt)
+            update_audio(self._audio, sim_dt, advance_sfx=False)
 
     def _world_scale(self) -> float:
         return self._runtime.view_transform().scale

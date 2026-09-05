@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from grim.color import RGBA
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..math_parity import f32
 from ..rng_caller_static import RngCallerStatic
@@ -15,7 +16,6 @@ from .apply_context import BonusApplyCtx
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
-
 
 
 def apply_freeze(ctx: BonusApplyCtx) -> None:
@@ -46,7 +46,7 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
         )
         creature.active = False
 
-    ctx.state.sfx_queue.append(SfxId.SHOCKWAVE)
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, ctx.origin_pos))
 
 
 def freeze_bonus_active(*, state: GameplayState) -> bool:

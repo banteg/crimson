@@ -7,6 +7,7 @@ import msgspec
 
 from grim.rand import CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..camera import camera_update_for_players
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
@@ -572,7 +573,8 @@ class DeterministicSession(msgspec.Struct):
         presentation = msgspec.structs.replace(
             presentation,
             terrain_fx=self.terrain_fx.take_batch(),
-            post_apply_sfx=tuple(post_apply_sfx),
+            post_apply_sfx=tuple(SfxRequest(sfx) for sfx in post_apply_sfx),
+            sfx_dt=timing.dt_audio,
             play_quest_completion_music=quest_spawn is not None and quest_spawn.play_completion_music,
         )
         step = DeterministicSessionTick(

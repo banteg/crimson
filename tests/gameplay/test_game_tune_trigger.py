@@ -39,14 +39,18 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     tune, sounds = plan_hit_sfx(
-        _hits(2), game_mode=GameMode.TYPO, rng=rng, demo_mode_active=False, game_tune_started=False,
+        _hits(2),
+        game_mode=GameMode.TYPO,
+        rng=rng,
+        demo_mode_active=False,
+        game_tune_started=False,
     )
     bridge.apply_plan(plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)))
 
     assert trigger_game_tune.call_count == 1
     assert trigger_game_tune.call_args.kwargs["rng"] is bridge.audio_rng
     assert play_sfx.call_args_list == [
-        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
+        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=1.0, pan=-850),
     ]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
@@ -71,8 +75,8 @@ def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
-        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
-        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
+        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=1.0, pan=-850),
+        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=1.0, pan=-850),
     ]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
@@ -93,12 +97,14 @@ def test_game_tune_not_triggered_in_demo(mocker) -> None:
         demo_mode_active=True,
         game_tune_started=False,
     )
-    bridge.apply_plan(plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)))
+    bridge.apply_plan(
+        plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds), demo_mode_active=True),
+    )
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
-        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
-        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0),
+        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=0.7, pan=-850),
+        call(bridge.audio, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=0.7, pan=-850),
     ]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,

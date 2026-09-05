@@ -19,6 +19,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from tests.support.audio import sfx_ids
 from tests.support.factories import RecordingCreatureDamageRuntime, make_creature_state, make_projectile_update_options
 from tests.support.helpers import ScriptedCrand
 
@@ -53,7 +54,7 @@ def test_shock_chain_initial_target_miss_handling(
     )
 
     assert state.shock_chain_links_left == expected_links_left
-    assert state.sfx_queue == expected_sfx
+    assert sfx_ids(state.sfx_queue) == expected_sfx
     assert sum(1 for entry in pool.entries if entry.active) == expected_projectile_count
     if preserve_bugs:
         assert state.shock_chain_projectile_id >= 0

@@ -36,6 +36,7 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.sfx_map import SfxId
+from tests.support.audio import sfx_ids
 from tests.support.factories import make_creature_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
@@ -670,7 +671,7 @@ def test_creature_contact_gate_uses_stored_native_distance() -> None:
 
     assert player.health == 100.0
     assert creature.attack_cooldown == 0.0
-    assert result.sfx == ()
+    assert sfx_ids(result.sfx) == []
 
 
 def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
@@ -702,7 +703,9 @@ def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
         ),
     )
 
-    assert result.sfx == (SfxId.ZOMBIE_ATTACK_01,)
+    assert sfx_ids(result.sfx) == [
+        SfxId.ZOMBIE_ATTACK_01,
+    ]
     assert [record.caller for record in rng.records_since() if record.caller is not None] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,

@@ -190,7 +190,7 @@ class DemoView:
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
+            update_audio(self.state.audio, dt, advance_sfx=self._purchase_active or self._finished)
         if self._finished:
             return
         frame_dt = min(dt, 0.1)

@@ -16,6 +16,8 @@ from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
+from tests.support.audio import sfx_ids
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -44,7 +46,7 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
     )
 
     assert trigger_game_tune is True
-    assert keys == [SfxId.BULLET_HIT_01]
+    assert sfx_ids(keys) == [SfxId.BULLET_HIT_01]
     assert rng.calls == 2
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
@@ -63,7 +65,7 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     )
 
     assert trigger_game_tune is False
-    assert keys == [SfxId.BULLET_HIT_01, SfxId.BULLET_HIT_01]
+    assert sfx_ids(keys) == [SfxId.BULLET_HIT_01, SfxId.BULLET_HIT_01]
     assert rng.calls == 2
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
@@ -71,7 +73,13 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     ]
 
 
-def test_plan_world_presentation_step_orders_sfx() -> None:
+def test_plan_world_presentation_step_orders_sfx(mocker) -> None:
+    from crimson.world.audio_bridge import AudioBridge
+    from grim.audio import AudioState
+    from grim.music import init_music_state
+    from grim.rand import Crand
+    from tests.support.audio import make_sfx_state, stub_sfx_backend
+
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -93,11 +101,11 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
             ),
         ],
         event_sfx=[
-            SfxId.UI_PANELCLICK,
-            SfxId.UI_BUTTONCLICK,
-            SfxId.UI_CLINK_01,
-            SfxId.SHOCK_HIT_01,
-            SfxId.EXPLOSION_SMALL,
+            SfxRequest(SfxId.UI_PANELCLICK),
+            SfxRequest(SfxId.UI_BUTTONCLICK),
+            SfxRequest(SfxId.UI_CLINK_01),
+            SfxRequest(SfxId.SHOCK_HIT_01),
+            SfxRequest(SfxId.EXPLOSION_SMALL),
         ],
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
@@ -111,7 +119,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
     )
 
     assert commands.trigger_game_tune is False
-    assert commands.sfx == (
+    assert sfx_ids(commands.sfx) == [
         SfxId.UI_LEVELUP,
         SfxId.PISTOL_FIRE,
         SfxId.UI_BONUS,
@@ -119,7 +127,16 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         SfxId.UI_BUTTONCLICK,
         SfxId.UI_CLINK_01,
         SfxId.SHOCK_HIT_01,
+        SfxId.EXPLOSION_SMALL,
+    ]
+    backend = stub_sfx_backend(mocker)
+    audio = AudioState(
+        ready=True,
+        music=init_music_state(ready=False, enabled=False, volume=1.0),
+        sfx=make_sfx_state(*sfx_ids(commands.sfx)),
     )
+    AudioBridge(audio=audio, audio_rng=Crand(1)).apply_plan(plan=commands)
+    assert backend.play_sound.call_count == 8
 
 
 def test_queue_projectile_decals_consumes_rand() -> None:
@@ -480,7 +497,7 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         violence_disabled=0,
         game_tune_started=False,
         trigger_game_tune=True,
-        hit_sfx=[SfxId.BULLET_HIT_01],
+        hit_sfx=[SfxRequest(SfxId.BULLET_HIT_01)],
     )
 
     assert_rng_progression(
@@ -492,4 +509,6 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     )
     assert rng.values_since(before_calls) == []
     assert commands.trigger_game_tune is True
-    assert commands.sfx == (SfxId.BULLET_HIT_01,)
+    assert sfx_ids(commands.sfx) == [
+        SfxId.BULLET_HIT_01,
+    ]

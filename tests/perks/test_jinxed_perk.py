@@ -10,6 +10,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from tests.support.audio import sfx_ids
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 _FX_QUEUE_CALLERS = [
@@ -57,7 +58,7 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
         x87_pc24_sub(f32(16.0), x87_pc24_mul(f32(dt), f32(20.0))),
     )
     assert player.experience == 112
-    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
+    assert sfx_ids(state.sfx_queue) == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in state.rng.records_since()] == [
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
@@ -119,7 +120,7 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert_float_close(player.health, 45.0)
     assert fx_queue.count == 2
-    assert state.sfx_queue == []
+    assert sfx_ids(state.sfx_queue) == []
     assert [record.caller for record in state.rng.records_since()] == [
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
         *_FX_QUEUE_CALLERS,
@@ -254,7 +255,7 @@ def test_perks_update_effects_jinxed_default_uses_full_384_slot_pool() -> None:
 
     assert creatures[0x17F].hp == -1.0
     assert player.experience == 112
-    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
+    assert sfx_ids(state.sfx_queue) == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in state.rng.records_since()] == [
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
@@ -287,7 +288,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_383_slot_rolls() -> Non
 
     assert creatures[0x17F].hp == 100.0
     assert player.experience == 100
-    assert state.sfx_queue == []
+    assert sfx_ids(state.sfx_queue) == []
     assert [record.caller for record in state.rng.records_since()] == [
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE,
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,

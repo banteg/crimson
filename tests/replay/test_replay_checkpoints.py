@@ -28,6 +28,7 @@ from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldEvents, WorldState
 from crimson.typo.state import reset_typo_state
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 
 def _wire(value: object) -> bytes:
@@ -113,11 +114,11 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
                 ),
             ],
             sfx=[
-                SfxId.UI_BONUS,
-                SfxId.UI_BUTTONCLICK,
-                SfxId.UI_PANELCLICK,
-                SfxId.UI_TYPEENTER,
-                SfxId.UI_CLINK_01,
+                SfxRequest(SfxId.UI_BONUS),
+                SfxRequest(SfxId.UI_BUTTONCLICK),
+                SfxRequest(SfxId.UI_PANELCLICK),
+                SfxRequest(SfxId.UI_TYPEENTER),
+                SfxRequest(SfxId.UI_CLINK_01),
             ],
         ),
     )

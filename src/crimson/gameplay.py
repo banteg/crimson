@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
@@ -571,7 +572,7 @@ def _player_tick_low_health(player: PlayerState, state: GameplayState, dt: float
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
                 state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
             ]
-            state.sfx_queue.append(bloodspill_sfx)
+            state.sfx_queue.append(SfxRequest(bloodspill_sfx, player.pos))
             player.low_health_timer = 1.0
 
 
@@ -853,7 +854,7 @@ def _player_tick_reload(
                     players=players,
                 )
                 state.bonus_spawn_guard = False
-                state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
+                state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
         else:
             player.weapon.reload_timer = x87_pc24_sub(
                 float(player.weapon.reload_timer),
@@ -1026,7 +1027,7 @@ def player_update(
             if _player_swap_alt_weapon(player):
                 swapped_alt_weapon = True
                 weapon = _weapon_entry(player.weapon.weapon_id)
-                state.sfx_queue.append(weapon.reload_sound)
+                state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
                 player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
                 state.player_alt_weapon_swap_cooldown_ms = 200
             else:

@@ -84,10 +84,12 @@ def play_sfx(
     sfx_id: SfxId,
     *,
     reflex_boost_timer: float = 0.0,
+    gain: float = 1.0,
+    pan: int = 0,
 ) -> None:
     if state is None:
         return
-    sfx.play_sfx(state.sfx, sfx_id, reflex_boost_timer=float(reflex_boost_timer))
+    sfx.play_sfx(state.sfx, sfx_id, reflex_boost_timer=float(reflex_boost_timer), gain=gain, pan=pan)
 
 
 def set_sfx_volume(state: AudioState | None, volume: float) -> None:
@@ -102,7 +104,9 @@ def set_music_volume(state: AudioState | None, volume: float) -> None:
     music.set_music_volume(state.music, volume)
 
 
-def update_audio(state: AudioState, dt: float) -> None:
+def update_audio(state: AudioState, dt: float, *, advance_sfx: bool = True) -> None:
+    if advance_sfx:
+        sfx.update_sfx(state.sfx, dt)
     music.update_music(state.music, dt)
 
 

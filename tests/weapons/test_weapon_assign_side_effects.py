@@ -9,6 +9,7 @@ from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from tests.support.audio import sfx_ids
 
 
 def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
@@ -19,7 +20,7 @@ def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
 
     assert player.weapon_reset_latch == 0
     assert player.aux_timer == 2.0
-    assert state.sfx_queue == [SfxId.SHOTGUN_RELOAD]
+    assert sfx_ids(state.sfx_queue) == [SfxId.SHOTGUN_RELOAD]
 
 
 def test_weapon_assign_player_skips_untracked_weapon_usage_ids() -> None:

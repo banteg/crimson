@@ -15,6 +15,8 @@ from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
+from tests.support.audio import sfx_ids
 from tests.support.builders.input_providers import ReadyTickInputProvider
 from tests.support.builders.session import make_session
 
@@ -29,7 +31,9 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
-    assert tick.presentation.post_apply_sfx == (SfxId.UI_BONUS,)
+    assert sfx_ids(tick.presentation.post_apply_sfx) == [
+        SfxId.UI_BONUS,
+    ]
 
 
 def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> None:
@@ -41,7 +45,7 @@ def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> N
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
-    assert tick.presentation.post_apply_sfx == ()
+    assert sfx_ids(tick.presentation.post_apply_sfx) == []
 
 
 @pytest.mark.parametrize(
@@ -83,7 +87,7 @@ def test_quest_audio_requests_survive_render_partitions(
         outputs.extend(row.payload.presentation for row in batch.completed_results)
         tick_index = batch.next_tick_index
     # Read after all frames: these outputs must not consult the mutated quest state.
-    assert [SfxId.QUESTHIT in output.post_apply_sfx for output in outputs] == expected_hit
+    assert [SfxId.QUESTHIT in sfx_ids(output.post_apply_sfx) for output in outputs] == expected_hit
     assert [output.play_quest_completion_music for output in outputs] == expected_music
 
 
@@ -97,7 +101,7 @@ def test_shared_audio_sink_applies_post_tick_sfx_and_quest_music(mocker) -> None
     play_sfx = mocker.patch.object(type(bridge), "play_sfx")
     play_music = mocker.patch.object(audio_bridge, "play_music")
     plan = DeterministicPresentationPlan(
-        post_apply_sfx=(SfxId.UI_BONUS, SfxId.QUESTHIT),
+        post_apply_sfx=(SfxRequest(SfxId.UI_BONUS), SfxRequest(SfxId.QUESTHIT)),
         play_quest_completion_music=True,
     )
     bridge.apply_post_plan(plan=plan, apply_audio=False)
@@ -121,8 +125,8 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
     bridge = AudioBridge(audio_rng=rng, audio=audio, reflex_boost_timer=lambda: -1.0)
     plan = DeterministicPresentationPlan(
         trigger_game_tune=True,
-        sfx=(SfxId.UI_BONUS,),
-        post_apply_sfx=(SfxId.UI_LEVELUP,),
+        sfx=(SfxRequest(SfxId.UI_BONUS),),
+        post_apply_sfx=(SfxRequest(SfxId.UI_LEVELUP),),
         reflex_boost_timer=0.5,
     )
     bridge.apply_plan(plan=plan, apply_audio=False)
@@ -132,8 +136,8 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
     bridge.apply_post_plan(plan=plan)
     assert calls.mock_calls == [
         call.tune(audio, rng=rng),
-        call.sfx(audio, SfxId.UI_BONUS, reflex_boost_timer=0.5),
-        call.sfx(audio, SfxId.UI_LEVELUP, reflex_boost_timer=0.5),
+        call.sfx(audio, SfxId.UI_BONUS, reflex_boost_timer=0.5, gain=1.0, pan=0),
+        call.sfx(audio, SfxId.UI_LEVELUP, reflex_boost_timer=0.5, gain=1.0, pan=0),
     ]
 
 
@@ -147,15 +151,20 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
     from crimson.world.runtime import WorldRuntime
     from grim.geom import Vec2
     from grim.raylib_api import rl
-    from tests.gameplay.test_game_tune_trigger import _audio_state_stub
+    from tests.support.audio import make_sfx_state, stub_sfx_backend
 
     mocker.patch.object(rl, "get_screen_width", return_value=640)
     mocker.patch.object(rl, "get_screen_height", return_value=480)
-    play = mocker.patch.object(audio_bridge, "play_sfx")
+    backend = stub_sfx_backend(mocker)
 
     def run(counts):
-        play.reset_mock()
-        runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1), audio=_audio_state_stub())
+        backend.reset_mock()
+        audio = AudioState(
+            ready=True,
+            music=init_music_state(ready=False, enabled=False, volume=1.0),
+            sfx=make_sfx_state(*SfxId),
+        )
+        runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1), audio=audio)
         world = runtime.sim_world.world_state
         world.state.bonuses.reflex_boost = f32(0.025)
         world.players[0].weapon.shot_cooldown = 0
@@ -176,17 +185,20 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
                 if tick == 1:
                     world.players[0].health = 0.0
                 world.state.camera_shake_offset = Vec2(3, 4) if tick == 0 else Vec2(-5, 2)
+                world.state.sfx_queue.append(SfxRequest(SfxId.UI_BONUS, Vec2(128, 512)))
                 step = session.step_tick(dt=1 / 60, inputs=(PlayerInput(aim=Vec2(600, 512), fire_down=tick == 0),))
                 outputs.append(
                     PresentationTickOutput(tick_index=tick, dt_sim=step.dt_sim, presentation=step.presentation),
                 )
                 tick += 1
             apply_presentation_outputs(outputs=outputs, runtime=runtime, apply_audio=True)
-        sounds = [(call.args[1], call.kwargs["reflex_boost_timer"]) for call in play.call_args_list]
-        return runtime.camera, sounds, session_digest(session)
+        voice_names = {id(sample.source.sound): sample.entry_name for sample in audio.sfx.owned_samples}
+        sounds = [(name, voice_names[id(args[0])], args[1:]) for name, args, _ in backend.mock_calls]
+        return runtime.camera, sounds, audio.sfx.cooldowns, session_digest(session)
 
     expected = run((1, 1))
-    assert expected[1] and expected[1][0][1] > 0.0
+    assert any(name == "play_sound" for name, _, _ in expected[1])
+    assert any(name == "set_sound_pan" and args != (0.5,) for name, _, args in expected[1])
     assert run(partition) == expected
 
 
@@ -198,6 +210,75 @@ def test_audio_plan_captures_typo_post_step_bonus_reset() -> None:
     session = initialize_run(RunSpec(game_mode_id=GameMode.TYPO, seed=1)).session
     session.world.state.bonuses.reflex_boost = 1.0
     tick = session.step_tick(dt=1 / 60, inputs=(PlayerInput(),))
-    assert tick.presentation.sfx  # Initial loadout enforcement requests reload audio.
+    assert sfx_ids(tick.presentation.sfx)  # Initial loadout enforcement requests reload audio.
     assert session.world.state.bonuses.reflex_boost == 0.0
     assert tick.presentation.reflex_boost_timer == 0.0
+
+
+def test_hit_cooldown_suppresses_playback_without_skipping_random_draws(mocker) -> None:
+    from crimson.game_modes import GameMode
+    from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
+    from crimson.sim.presentation_step import plan_hit_sfx
+    from grim.geom import Vec2
+    from tests.support.audio import make_sfx_state, stub_sfx_backend
+    from tests.support.helpers import ScriptedCrand
+
+    backend = stub_sfx_backend(mocker)
+    audio = AudioState(
+        ready=True,
+        music=init_music_state(ready=False, enabled=False, volume=1.0),
+        sfx=make_sfx_state(SfxId.BULLET_HIT_01),
+    )
+    rng = ScriptedCrand([0] * 6)
+    hits = [ProjectileHit(ProjectileTemplateId.PISTOL, Vec2(), Vec2(x, 512), Vec2()) for x in range(6)]
+    _, requests = plan_hit_sfx(
+        hits,
+        game_mode=GameMode.SURVIVAL,
+        demo_mode_active=False,
+        game_tune_started=True,
+        rng=rng,
+    )
+    bridge = AudioBridge(audio=audio, audio_rng=Crand(1))
+    plan = DeterministicPresentationPlan(sfx=tuple(requests), sfx_dt=1 / 60)
+    bridge.apply_plan(plan=plan)
+    bridge.apply_post_plan(plan=plan)
+    assert rng.calls == 6
+    assert [request.position for request in requests] == [hit.hit for hit in hits]
+    assert backend.play_sound.call_count == 1
+    assert 0.03 < audio.sfx.cooldowns[SfxId.BULLET_HIT_01] < 0.04
+
+
+@pytest.mark.parametrize("demo, expected_gain", [(False, 0.8), (True, 0.56)])
+def test_sound_requests_apply_position_and_demo_gain(mocker, demo, expected_gain) -> None:
+    from grim.audio_math import native_sound_gain, raylib_pan
+    from grim.geom import Vec2
+    from tests.support.audio import make_sfx_state, stub_sfx_backend
+
+    backend = stub_sfx_backend(mocker)
+    audio = AudioState(
+        ready=True,
+        music=init_music_state(ready=False, enabled=False, volume=1.0),
+        sfx=make_sfx_state(SfxId.PISTOL_FIRE),
+    )
+    plan = DeterministicPresentationPlan(
+        sfx=(SfxRequest(SfxId.PISTOL_FIRE, Vec2(640, 512), gain=0.8),),
+        demo_mode_active=demo,
+    )
+    bridge = AudioBridge(audio=audio, audio_rng=Crand(1))
+    bridge.apply_plan(plan=plan, camera=Vec2(-256, 0), screen_width=512)
+    expected_pan, compensation = raylib_pan(425)
+    assert backend.set_sound_pan.call_args.args[1] == expected_pan
+    assert backend.set_sound_volume.call_args.args[1] == pytest.approx(native_sound_gain(expected_gain) * compensation)
+
+
+def test_sound_cooldowns_use_frame_time_before_reflex_slow_motion() -> None:
+    from crimson.math_parity import f32
+    from crimson.perks import PerkId
+
+    session, sim_world = make_session()
+    sim_world.players[0].perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+    sim_world.state.bonuses.reflex_boost = 2.0
+    sim_world.state.time_scale_active = True
+    step = session.step_tick(dt=0.1, inputs=(PlayerInput(),))
+    assert step.presentation.sfx_dt == f32(f32(0.1) * f32(0.9))
+    assert step.dt_sim == f32(step.presentation.sfx_dt * f32(0.3))

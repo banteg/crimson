@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...math_parity import NATIVE_QUARTER_PI, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
@@ -35,7 +36,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
             owner=owner,
             owner_player_index=ctx.player.index,
         )
-    ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, ctx.player_pos_before_move))
 
     ctx.player.hot_tempered_timer = x87_pc24_sub(
         ctx.player.hot_tempered_timer,

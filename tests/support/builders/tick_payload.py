@@ -6,7 +6,7 @@ from crimson.sim.step_pipeline import PresentationRngTrace
 from crimson.sim.terrain_fx import TerrainFxBatch
 from crimson.sim.timing import FrameTiming
 from crimson.sim.world_state import WorldEvents
-from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 
 def make_tick_payload(
@@ -15,7 +15,7 @@ def make_tick_payload(
     elapsed_ms: float = 16.67,
     creature_count: int = 0,
     terrain_fx: TerrainFxBatch = TerrainFxBatch(),
-    post_apply_sfx: tuple[SfxId, ...] = (),
+    post_apply_sfx: tuple[SfxRequest, ...] = (),
 ) -> DeterministicSessionTick:
     timing = FrameTiming(
         dt=dt_sim,
@@ -23,6 +23,7 @@ def make_tick_payload(
         time_scale_factor=1.0,
         zero_gate_active=False,
         dt_sim=dt_sim,
+        dt_audio=dt_sim,
     )
     return DeterministicSessionTick(
         elapsed_ms=elapsed_ms,

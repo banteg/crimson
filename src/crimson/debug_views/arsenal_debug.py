@@ -404,7 +404,7 @@ class ArsenalDebugView:
         self._tick_harness.advance_frame(self._runtime, float(dt))
 
         if self._audio is not None:
-            update_audio(self._audio, dt)
+            update_audio(self._audio, dt, advance_sfx=False)
 
     def draw(self) -> None:
         rl.clear_background(BG)

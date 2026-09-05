@@ -10,6 +10,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from tests.support.audio import sfx_ids
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -134,7 +135,7 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
     assert applied == 100.0
     assert player.health == 0.0
     assert player.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
-    assert state.sfx_queue == [SfxId.TROOPER_DIE_01]
+    assert sfx_ids(state.sfx_queue) == [SfxId.TROOPER_DIE_01]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX,
@@ -154,7 +155,7 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
     assert applied == 100.0
     assert player.health == 0.0
     assert player.death_timer == 16.0
-    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
+    assert sfx_ids(state.sfx_queue) == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
@@ -195,7 +196,7 @@ def test_player_take_damage_zero_contact_damage_preserves_native_side_effects() 
     assert player.health == 100.0
     assert player.heading == 1.0
     assert state.survival_reward_damage_seen is True
-    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_02]
+    assert sfx_ids(state.sfx_queue) == [SfxId.TROOPER_INPAIN_02]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING,
@@ -212,7 +213,7 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
     assert applied == 10.0
     assert player2.health == -5.0
     assert player2.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
-    assert state.sfx_queue == [SfxId.TROOPER_DIE_01]
+    assert sfx_ids(state.sfx_queue) == [SfxId.TROOPER_DIE_01]
 
 
 def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
@@ -225,7 +226,7 @@ def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
     assert applied == 10.0
     assert player2.health == -5.0
     assert player2.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
-    assert state.sfx_queue == []
+    assert sfx_ids(state.sfx_queue) == []
 
 
 @pytest.mark.parametrize(

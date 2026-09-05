@@ -8,6 +8,7 @@ import msgspec
 from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..bonuses.pickup_fx import emit_bonus_pickup_effects
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
@@ -52,17 +53,15 @@ class WorldEvents(msgspec.Struct):
     hits: list[ProjectileHit]
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
-    sfx: list[SfxId]
+    sfx: list[SfxRequest]
     secondary_hit_count: int = 0
     trigger_game_tune: bool = False
-    hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
+    hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
 
 
 class WorldMidStepRuntime(msgspec.Struct):
     def run_mid_step(self) -> None:
         return None
-
-
 
 
 class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
@@ -75,9 +74,9 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
     game_mode: GameMode
     hit_audio_game_tune_started: bool
     deaths: list[CreatureDeath]
-    sfx: list[SfxId]
+    sfx: list[SfxRequest]
     trigger_game_tune: bool = False
-    hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
+    hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
 
     def apply_player_projectile_damage(self, player_index: int, damage: float) -> None:
         idx = int(player_index)
@@ -178,7 +177,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
         if keys:
             self.hit_sfx.extend(keys)
 
-    def play_secondary_rocket_hit_audio(self) -> None:
+    def play_secondary_rocket_hit_audio(self, position: Vec2) -> None:
         # Native secondary-rocket hits run the same first-hit game-tune branch
         # as bullet hits: sfx_play_exclusive(music_track_extra_0) plus one
         # playlist rand outside demo/rush, else the panned explosion sound.
@@ -191,7 +190,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             self.hit_audio_game_tune_started = True
             _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             return
-        self.hit_sfx.append(SfxId.EXPLOSION_MEDIUM)
+        self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
 
     def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
         return self.prepare_projectile_hit_presentation(hit)
@@ -224,7 +223,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             return
         sfx_id = creature_death_sfx_for_slot(self.world.creatures.entries[idx].type_id, int(sound_slot))
         if sfx_id is not None:
-            self.sfx.append(sfx_id)
+            self.sfx.append(SfxRequest(sfx_id, self.world.creatures.entries[idx].pos))
 
     def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
         apply_final_revenge_on_player_death(
@@ -465,7 +464,7 @@ class WorldState(msgspec.Struct):
         fx_queue: FxQueue,
         deaths: list[CreatureDeath],
         keep_corpse: bool = True,
-        sfx: list[SfxId],
+        sfx: list[SfxRequest],
         resolve_damage_followup: Callable[[], tuple[SfxId, ...]] | None = None,
     ) -> None:
         death = self.creatures.handle_death(
@@ -482,7 +481,9 @@ class WorldState(msgspec.Struct):
         )
         deaths.append(death)
         if resolve_damage_followup is not None:
-            sfx.extend(resolve_damage_followup())
+            sfx.extend(
+                SfxRequest(sound, self.creatures.entries[creature_index].pos) for sound in resolve_damage_followup()
+            )
 
     def _prepare_projectile_hit_presentation(
         self,

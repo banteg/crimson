@@ -9,6 +9,7 @@ from crimson.weapons import WEAPON_BY_ID
 from grim.config import ensure_crimson_cfg
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.audio import sfx_ids
 
 
 def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, mocker) -> None:
@@ -49,7 +50,7 @@ def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> Non
     assert quest is not None
     weapon = WEAPON_BY_ID[quest.start_weapon_id]
     reload_sfx = weapon.reload_sound
-    assert mode.state.sfx_queue == [reload_sfx] * len(mode.sim_world.players)
+    assert sfx_ids(mode.state.sfx_queue) == [reload_sfx] * len(mode.sim_world.players)
 
 
 def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, mocker) -> None:

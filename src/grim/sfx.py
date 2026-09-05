@@ -11,6 +11,7 @@ import msgspec
 from grim.raylib_api import rl
 
 from . import paq
+from .audio_math import native_sound_gain, raylib_pan
 from .console import ConsoleState
 from .sfx_map import SFX_NATIVE_ORDER, SFX_SPECS, SfxId
 
@@ -36,8 +37,8 @@ def _next_rate_scale_hz(*, current_rate_scale_hz: int, reflex_boost_timer: float
     if reflex_f32 <= 1.0:
         if reflex_f32 < 1.0:
             rate_expr = _f32((_f32(1.0) - reflex_f32 + _f32(1.0)) * _f32(float(_SFX_RATE_MIN_HZ)))
-            # `__ftol` follows host FP rounding mode (nearest on native defaults).
-            return int(round(float(rate_expr)))
+            # Native __ftol sets RC=truncate before fistp (0x00461054).
+            return int(rate_expr)
         # Native keeps prior `sfx_rate_scale` when timer is exactly 1.0.
         return int(current_rate_scale_hz)
     return int(_SFX_RATE_MIN_HZ)
@@ -47,25 +48,36 @@ def _pitch_scale_from_rate_hz(rate_scale_hz: int) -> float:
     return float(_f32(float(rate_scale_hz) / float(_SFX_RATE_BASE_HZ)))
 
 
+class SfxVoice(msgspec.Struct):
+    sound: rl.Sound
+    gain: float = 1.0
+    pan_compensation: float = 1.0
+
+    def set_volume(self, master_volume: float) -> None:
+        rl.set_sound_volume(
+            self.sound, native_sound_gain(_f32(master_volume) * _f32(self.gain)) * self.pan_compensation,
+        )
+
+
 class SfxSample(msgspec.Struct):
     entry_name: str
-    source: rl.Sound
-    aliases: list[rl.Sound]
+    source: SfxVoice
+    aliases: list[SfxVoice]
     next_voice: int = 0
 
-    def voices(self) -> Iterable[rl.Sound]:
+    def voices(self) -> Iterable[SfxVoice]:
         yield self.source
         yield from self.aliases
 
     def close(self) -> None:
         with ExitStack() as cleanup:
-            cleanup.callback(rl.unload_sound, self.source)
+            cleanup.callback(rl.unload_sound, self.source.sound)
             for alias in self.aliases:
-                cleanup.callback(rl.unload_sound_alias, alias)
+                cleanup.callback(rl.unload_sound_alias, alias.sound)
 
-    def acquire_voice(self) -> rl.Sound:
+    def acquire_voice(self) -> SfxVoice:
         for voice in self.voices():
-            if not rl.is_sound_playing(voice):
+            if not rl.is_sound_playing(voice.sound):
                 return voice
         voices = [self.source, *self.aliases]
         idx = self.next_voice % len(voices)
@@ -81,6 +93,7 @@ class SfxState(msgspec.Struct):
     samples: dict[SfxId, SfxSample]
     rate_scale_hz: int
     owned_samples: list[SfxSample] = msgspec.field(default_factory=list)
+    cooldowns: dict[SfxId, float] = msgspec.field(default_factory=dict)
 
     def sample(self, sfx_id: SfxId) -> SfxSample:
         sample = self.samples.get(sfx_id)
@@ -120,16 +133,16 @@ def _load_sample_from_data(state: SfxState, *, entry_name: str, data: bytes) -> 
             rl.unload_wave(wave)
         if not rl.is_sound_valid(source):
             raise ValueError(f"audio: failed to load sfx '{entry_name}'")
-        aliases: list[rl.Sound] = []
+        aliases: list[SfxVoice] = []
         for _ in range(state.voice_count - 1):
             alias = rl.load_sound_alias(source)
             cleanup.callback(rl.unload_sound_alias, alias)
             if not rl.is_sound_valid(alias):
                 raise ValueError(f"audio: failed to allocate sfx voice '{entry_name}'")
-            aliases.append(alias)
-        sample = SfxSample(entry_name=entry_name, source=source, aliases=aliases)
+            aliases.append(SfxVoice(alias))
+        sample = SfxSample(entry_name=entry_name, source=SfxVoice(source), aliases=aliases)
         for voice in sample.voices():
-            rl.set_sound_volume(voice, state.volume)
+            voice.set_volume(state.volume)
         cleanup.pop_all()
     return sample
 
@@ -181,18 +194,38 @@ def play_sfx(
     sfx: SfxId,
     *,
     reflex_boost_timer: float = 0.0,
+    gain: float = 1.0,
+    pan: int = 0,
 ) -> None:
     if state is None or not state.ready or not state.enabled:
         return
 
     sample = state.sample(sfx)
+    if state.cooldowns.get(sfx, 0.0) > 0.0:
+        return
     state.rate_scale_hz = _next_rate_scale_hz(
         current_rate_scale_hz=int(state.rate_scale_hz),
         reflex_boost_timer=float(reflex_boost_timer),
     )
+    state.cooldowns[sfx] = _f32(0.44 if sfx in (SfxId.FLAMER_FIRE_01, SfxId.FLAMER_FIRE_02) else 0.05)
     voice = sample.acquire_voice()
-    rl.set_sound_pitch(voice, _pitch_scale_from_rate_hz(int(state.rate_scale_hz)))
-    rl.play_sound(voice)
+    voice.gain = gain
+    pan_value, voice.pan_compensation = raylib_pan(pan)
+    rl.set_sound_pitch(voice.sound, _pitch_scale_from_rate_hz(int(state.rate_scale_hz)))
+    rl.set_sound_pan(voice.sound, pan_value)
+    voice.set_volume(state.volume)
+    rl.play_sound(voice.sound)
+
+
+def update_sfx(state: SfxState, dt: float) -> None:
+    """Native audio_update decays cooldowns after the frame's sound requests."""
+    if not state.ready or not state.enabled or dt <= 0.0:
+        return
+    dt_f32 = _f32(dt)
+    for sfx_id, cooldown in state.cooldowns.items():
+        if cooldown > 0.0:
+            # Native keeps negative zero-crossing residue until the next start.
+            state.cooldowns[sfx_id] = _f32(cooldown - dt_f32)
 
 
 def sfx_id_for_native_id(sfx_id: int) -> SfxId | None:
@@ -221,7 +254,7 @@ def set_sfx_volume(state: SfxState | None, volume: float) -> None:
     state.volume = volume
     for sample in state.owned_samples:
         for voice in sample.voices():
-            rl.set_sound_volume(voice, state.volume)
+            voice.set_volume(state.volume)
 
 
 def _unload_samples(samples: Iterable[SfxSample]) -> None:
@@ -234,5 +267,6 @@ def shutdown_sfx(state: SfxState) -> None:
     samples = state.owned_samples
     state.owned_samples = []
     state.samples.clear()
+    state.cooldowns.clear()
     state.ready = False
     _unload_samples(samples)

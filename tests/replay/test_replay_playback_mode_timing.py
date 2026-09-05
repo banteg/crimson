@@ -6,9 +6,11 @@ from types import SimpleNamespace
 
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
+from crimson.render.world.viewport import ViewTransform
 from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.world.render_resources import RenderResources
 from crimson.world.sim_world_state import SimWorldState
+from grim.geom import Vec2
 from tests.support.builders import FakePlaybackDriver
 
 
@@ -34,6 +36,9 @@ class _StubReplayRuntime:
 
     def sync_audio_bridge_state(self) -> None:
         return None
+
+    def view_transform(self) -> ViewTransform:
+        return ViewTransform(Vec2(), Vec2(1, 1), Vec2(1024, 768), Vec2(1024, 768))
 
     def update_camera(self, _dt: float) -> None:
         return None

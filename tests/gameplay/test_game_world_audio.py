@@ -20,6 +20,7 @@ from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 from tests.support.builders.tick_payload import make_tick_payload
@@ -200,7 +201,7 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
                     inputs=(),
                     commands=(),
                 ),
-                payload=make_tick_payload(post_apply_sfx=(SfxId.UI_BONUS,)),
+                payload=make_tick_payload(post_apply_sfx=(SfxRequest(SfxId.UI_BONUS),)),
             ),
         ],
     )

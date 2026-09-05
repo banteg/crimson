@@ -13,6 +13,7 @@ from collections.abc import Sequence
 import msgspec
 
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from .math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from .perks import PerkId
@@ -108,7 +109,12 @@ def player_take_damage(
     # Native emits pain/death VO before heading jitter + low-health timer RNG work.
     if not lethal_hit:
         state.sfx_queue.append(
-            _PLAYER_PAIN_SFX[state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX) % len(_PLAYER_PAIN_SFX)],
+            SfxRequest(
+                _PLAYER_PAIN_SFX[
+                    state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX) % len(_PLAYER_PAIN_SFX)
+                ],
+                player.pos,
+            ),
         )
         if not was_alive:
             return max(0.0, health_before - float(player.health))
@@ -116,7 +122,12 @@ def player_take_damage(
         if not was_alive:
             return max(0.0, health_before - float(player.health))
         if not perk_active(perk_player, PerkId.FINAL_REVENGE):
-            state.sfx_queue.append(_PLAYER_DEATH_SFX[state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX) & 1])
+            state.sfx_queue.append(
+                SfxRequest(
+                    _PLAYER_DEATH_SFX[state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX) & 1],
+                    player.pos,
+                ),
+            )
         elif death_runtime is not None:
             death_runtime.on_player_lethal(player, dt=0.0 if dt is None else float(dt))
 

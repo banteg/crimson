@@ -8,6 +8,7 @@ from crimson.sim.hooks import TickResult
 from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainFxBatch
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 from tests.support.builders.tick_payload import make_tick_payload
 from tests.support.builders.tick_result import make_tick_result
 
@@ -40,6 +41,6 @@ class FakePlaybackDriver:
             payload=make_tick_payload(
                 dt_sim=1.0 / 60.0,
                 terrain_fx=self.terrain_fx,
-                post_apply_sfx=tuple(self.post_apply_sfx),
+                post_apply_sfx=tuple(SfxRequest(sfx) for sfx in self.post_apply_sfx),
             ),
         )

@@ -8,7 +8,7 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.rand import CrandLike
-from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
@@ -232,7 +232,7 @@ class ProjectilePool:
             ion_scale = 1.2
 
         effects: EffectPool | None = runtime_state.effects
-        sfx_queue: MutableSequence[SfxId] | None = runtime_state.sfx_queue
+        sfx_queue: MutableSequence[SfxRequest] | None = runtime_state.sfx_queue
 
         hits: list[ProjectileHit] = []
         margin = 64.0
@@ -416,9 +416,10 @@ class ProjectilePool:
 
                     # Native gates on player slot zero, including hits by
                     # creature-owned splitter children and shock-chain segments.
-                    if poison_bullets_active and (
-                        rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7
-                    ) == 1:
+                    if (
+                        poison_bullets_active
+                        and (rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7) == 1
+                    ):
                         creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
                     rule.pre_hit(update_ctx, proj, int(hit_idx))

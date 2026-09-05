@@ -38,6 +38,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
+from tests.support.audio import sfx_ids
 from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 
@@ -288,7 +289,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     # SFX only materialize when the presentation plan is explicitly applied
     audio_bridge.apply_plan(plan=plan, apply_audio=True)
     sfx_played = [call.args[1] for call in play_sfx.call_args_list]
-    assert sfx_played == list(plan.sfx)
+    assert sfx_played == sfx_ids(plan.sfx)
 
 
 def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases() -> None:

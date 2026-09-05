@@ -13,6 +13,8 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
+from tests.support.audio import sfx_ids
 from tests.support.factories import (
     RecordingProjectileHitRuntime,
     make_creature_update_options,
@@ -50,7 +52,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
 
     direct_aim = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
-    assert result.sfx == (SfxId.SHOCK_FIRE,)
+    assert result.sfx == (SfxRequest(SfxId.SHOCK_FIRE, creature.pos),)
 
 
 def test_ranged_creature_does_not_fire_when_too_close() -> None:
@@ -71,7 +73,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert not spawned
-    assert result.sfx == ()
+    assert sfx_ids(result.sfx) == []
 
 
 def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
@@ -106,7 +108,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     assert proj.hits_players is True
     assert int(proj.type_id) == 26
     assert creature.attack_cooldown == f32(0.4)
-    assert result.sfx == (SfxId.PLASMAMINIGUN_FIRE,)
+    assert result.sfx == (SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8),)
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN,
     ]

@@ -49,6 +49,7 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
+from tests.support.audio import sfx_ids
 from tests.support.factories import RecordingCreatureDamageRuntime, make_projectile_update_options
 from tests.support.factories import make_creature_state as _creature
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -190,7 +191,7 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
 
     assert player.low_health_timer == 1.0
     assert len(state.sfx_queue) == 1
-    assert state.sfx_queue[0] in {SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02}
+    assert sfx_ids(state.sfx_queue)[0] in {SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02}
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL,
     ]
@@ -211,7 +212,7 @@ def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> N
 
     spawn_blood_splatter.assert_not_called()
     assert player.low_health_timer == 100.0
-    assert state.sfx_queue == []
+    assert sfx_ids(state.sfx_queue) == []
 
 
 def test_player_update_spread_damping_scalar_recovers_toward_one_when_gate_non_positive() -> None:

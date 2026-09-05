@@ -125,6 +125,7 @@ class ReplayCheckpoints(msgspec.Struct, frozen=True, forbid_unknown_fields=True)
     sample_rate: int
     checkpoints: list[ReplayCheckpoint]
 
+
 _CHECKPOINTS_ENCODER = msgspec.msgpack.Encoder()
 _CHECKPOINTS_DECODER = msgspec.msgpack.Decoder(type=ReplayCheckpoints)
 
@@ -320,7 +321,7 @@ def build_checkpoint(
         hit_count=len(hits) + (int(events.secondary_hit_count) if events is not None else 0),
         pickup_count=len(pickups),
         sfx_count=len(sfx),
-        sfx_head=[key.value for key in sfx[:4]],
+        sfx_head=[request.sfx_id.value for request in sfx[:4]],
         hit_head=[
             ReplayHitSummaryEntry(
                 type_id=int(hit.type_id),
@@ -567,8 +568,7 @@ def _validate_and_canonicalize(
     if not checkpoints.checkpoints:
         raise ReplayCheckpointsError("checkpoints must contain at least one row")
     canonical = [
-        _canonical_checkpoint(checkpoint, require_canonical=require_canonical)
-        for checkpoint in checkpoints.checkpoints
+        _canonical_checkpoint(checkpoint, require_canonical=require_canonical) for checkpoint in checkpoints.checkpoints
     ]
     previous_tick: int | None = None
     for index, checkpoint in enumerate(canonical):

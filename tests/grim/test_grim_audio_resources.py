@@ -112,7 +112,10 @@ def test_missing_music_entry_is_preflighted_and_loaded_sfx_are_released(audio_as
 
 @pytest.mark.parametrize("borrowed_device", [False, True])
 def test_shutdown_releases_aliases_before_sources_and_only_owns_its_device(
-    audio_assets, audio_backend, mocker, borrowed_device,
+    audio_assets,
+    audio_backend,
+    mocker,
+    borrowed_device,
 ) -> None:
     root, console = audio_assets
     created, released, close = audio_backend
@@ -126,7 +129,7 @@ def test_shutdown_releases_aliases_before_sources_and_only_owns_its_device(
     assert Counter(created) == Counter(release_order)
     for sample in owned:
         for alias in sample.aliases:
-            assert release_order.index(("alias", alias)) < release_order.index(("source", sample.source))
+            assert release_order.index(("alias", alias.sound)) < release_order.index(("source", sample.source.sound))
     assert close.call_count == (0 if borrowed_device else 1)
     assert not state.ready and not state.sfx.ready and not state.music.ready
 

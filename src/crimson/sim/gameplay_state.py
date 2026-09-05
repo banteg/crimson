@@ -6,7 +6,7 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
-from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..bonuses.hud import BonusHudState
 from ..bonuses.pool import BonusPool
@@ -27,12 +27,14 @@ WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 WEAPON_USAGE_TIME_SLOT_COUNT = 64
 
+
 class BonusTimers(msgspec.Struct):
     weapon_power_up: float = 0.0
     reflex_boost: float = 0.0
     energizer: float = 0.0
     double_experience: float = 0.0
     freeze: float = 0.0
+
 
 class GameplayState(msgspec.Struct):
     rng: CrandLike = msgspec.field(default_factory=lambda: Crand(0xBEEF))
@@ -48,7 +50,7 @@ class GameplayState(msgspec.Struct):
     jinxed_timer: float = 0.0
     plaguebearer_infection_count: int = 0
     perk_selection: PerkSelectionState = msgspec.field(default_factory=PerkSelectionState)
-    sfx_queue: list[SfxId] = msgspec.field(default_factory=list)
+    sfx_queue: list[SfxRequest] = msgspec.field(default_factory=list)
     game_mode: GameMode = GameMode.SURVIVAL
     demo_mode_active: bool = False
     hardcore: bool = False

@@ -10,6 +10,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
@@ -86,7 +87,7 @@ class SecondaryStepCtx(msgspec.Struct, frozen=True):
     # Native secondary-rocket hits run the same first-hit game-tune branch as
     # bullet hits (sfx_play_exclusive + one playlist rand) outside demo/rush;
     # when unset, the plain explosion sound is queued directly.
-    play_rocket_hit_audio: Callable[[], None] | None = None
+    play_rocket_hit_audio: Callable[[Vec2], None] | None = None
 
 
 def _creature_is_collidable(creature: CreatureState) -> bool:
@@ -94,9 +95,14 @@ def _creature_is_collidable(creature: CreatureState) -> bool:
         return False
     return creature_lifecycle_is_collidable(creature.lifecycle_stage)
 
+
 def _step_detonation(
-    entry: SecondaryProjectile, ctx: SecondaryStepCtx, *, dt: float,
-    creature_spatial: CreatureSpatialHash, rng: CrandLike,
+    entry: SecondaryProjectile,
+    ctx: SecondaryStepCtx,
+    *,
+    dt: float,
+    creature_spatial: CreatureSpatialHash,
+    rng: CrandLike,
 ) -> None:
     runtime_state, creatures = ctx.runtime_state, ctx.creatures
     fx_queue, creature_damage_runtime = ctx.fx_queue, ctx.creature_damage_runtime
@@ -157,8 +163,12 @@ def _step_detonation(
 
 
 def _move_rocket(
-    entry: SecondaryProjectile, rule: RocketRule | HomingRocketRule | RocketMinigunRule,
-    *, dt: float, creatures: Sequence[CreatureState], runtime_state: GameplayState | None,
+    entry: SecondaryProjectile,
+    rule: RocketRule | HomingRocketRule | RocketMinigunRule,
+    *,
+    dt: float,
+    creatures: Sequence[CreatureState],
+    runtime_state: GameplayState | None,
 ) -> None:
     # Move. Native keeps pos/vel as f32 fields: `pos += f32(dt * vel)`.
     entry.pos = Vec2(
@@ -265,7 +275,6 @@ def _move_rocket(
             entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
 
 
-
 def _tick_rocket_trail(entry: SecondaryProjectile, *, dt: float, sprite_effects: SpriteEffectPool | None) -> None:
     # Rocket smoke trail (`trail_timer` in crimsonland.exe).
     trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
@@ -287,7 +296,6 @@ def _tick_rocket_trail(entry: SecondaryProjectile, *, dt: float, sprite_effects:
                 color=RGBA(1.0, 1.0, 1.0, 0.25),
             )
         entry.trail_timer = float(f32(0.06))
-
 
 
 class SecondaryProjectilePool:
@@ -414,7 +422,7 @@ class SecondaryProjectilePool:
         freeze_active = False
         effects: EffectPool | None = None
         sprite_effects: SpriteEffectPool | None = None
-        sfx_queue: MutableSequence[SfxId] | None = None
+        sfx_queue: MutableSequence[SfxRequest] | None = None
         if runtime_state is not None:
             rng = runtime_state.rng
             freeze_active = float(runtime_state.bonuses.freeze) > 0.0
@@ -467,9 +475,9 @@ class SecondaryProjectilePool:
                         shots_hit[owner_player_index] += 1
 
                 if ctx.play_rocket_hit_audio is not None:
-                    ctx.play_rocket_hit_audio()
+                    ctx.play_rocket_hit_audio(entry.pos)
                 elif sfx_queue is not None:
-                    sfx_queue.append(SfxId.EXPLOSION_MEDIUM)
+                    sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, entry.pos))
 
                 det_scale = 0.5
                 damage_speed_mul = 0.0
@@ -533,7 +541,7 @@ class SecondaryProjectilePool:
                             shard_angle = (
                                 float(
                                     rng.rand_tagged(
-                                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
+                                        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
                                     )
                                     % 612,
                                 )

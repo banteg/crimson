@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...rng_caller_static import RngCallerStatic
@@ -33,10 +34,7 @@ def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
     if len(alive_players) == 1:
         return alive_players[0]
 
-    pick = (
-        ctx.state.rng.rand_tagged(RngCallerStatic.REWRITE_JINXED_ACCIDENT_TARGET_PICK)
-        % len(alive_players)
-    )
+    pick = ctx.state.rng.rand_tagged(RngCallerStatic.REWRITE_JINXED_ACCIDENT_TARGET_PICK) % len(alive_players)
     return alive_players[pick]
 
 
@@ -54,11 +52,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
     if not perk_active(ctx.players[0], PerkId.JINXED):
         return
 
-    if (
-        ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE)
-        % 10
-        == 3
-    ):
+    if ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE) % 10 == 3:
         player = _select_jinxed_accident_target(ctx)
         player.health = x87_pc24_sub(f32(float(player.health)), f32(5.0))
         ctx.fx_queue.add_random(
@@ -71,8 +65,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         )
 
     timer_roll = float(
-        ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET)
-        % 20,
+        ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET) % 20,
     )
     ctx.state.jinxed_timer = x87_pc24_add(
         x87_pc24_add(
@@ -88,16 +81,10 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         if pool_mod <= 0:
             return
 
-        idx = (
-            ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK)
-            % pool_mod
-        )
+        idx = ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK) % pool_mod
         attempts = 0
         while attempts < 10 and not ctx.creatures[idx].active:
-            idx = (
-                ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY)
-                % pool_mod
-            )
+            idx = ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY) % pool_mod
             attempts += 1
         if not ctx.creatures[idx].active:
             return
@@ -114,4 +101,4 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             player=ctx.players[0],
             reward_value=float(creature.reward_value),
         )
-        ctx.state.sfx_queue.append(SfxId.TROOPER_INPAIN_01)
+        ctx.state.sfx_queue.append(SfxRequest(SfxId.TROOPER_INPAIN_01, creature.pos))

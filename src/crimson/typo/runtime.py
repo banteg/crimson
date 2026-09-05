@@ -7,6 +7,7 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..rng_caller_static import RngCallerStatic
@@ -41,17 +42,17 @@ def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspa
             if ch:
                 typing.push_char(str(ch))
                 world.state.sfx_queue.append(
-                    _typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR),
+                    SfxRequest(_typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR), None),
                 )
         case TypoBackspaceCommand():
             typing.backspace()
             world.state.sfx_queue.append(
-                _typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE),
+                SfxRequest(_typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE), None),
             )
         case TypoSubmitCommand():
             if not typing.text:
                 return
-            world.state.sfx_queue.append(SfxId.UI_TYPEENTER)
+            world.state.sfx_queue.append(SfxRequest(SfxId.UI_TYPEENTER, None))
             active_mask = [bool(entry.active) for entry in world.creatures.entries]
             target_idx = typo.names.find_by_name(typing.text, active_mask=active_mask)
             entered = typing.submit(matched=target_idx is not None)

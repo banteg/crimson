@@ -47,6 +47,7 @@ class FrameTiming(msgspec.Struct, frozen=True):
     time_scale_factor: float
     zero_gate_active: bool
     dt_sim: float
+    dt_audio: float
 
     @property
     def dt_ms_i32(self) -> int:
@@ -89,4 +90,5 @@ class FrameTiming(msgspec.Struct, frozen=True):
             time_scale_factor=float(factor),
             zero_gate_active=bool(zero_gate_active),
             dt_sim=float(dt_sim),
+            dt_audio=world_dt_f32,
         )

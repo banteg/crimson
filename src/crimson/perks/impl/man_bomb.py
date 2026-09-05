@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...math_parity import NATIVE_QUARTER_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...projectiles.types import ProjectileTemplateId
@@ -45,7 +46,7 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
                 owner=owner,
                 owner_player_index=ctx.player.index,
             )
-        ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
+        ctx.state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, ctx.player.pos))
 
         ctx.player.man_bomb_timer = x87_pc24_sub(
             float(ctx.player.man_bomb_timer),

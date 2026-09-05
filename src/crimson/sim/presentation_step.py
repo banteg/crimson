@@ -9,6 +9,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..bonuses.fire_bullets import LargeHitDecalRuntime
 from ..bonuses.freeze import freeze_bonus_active
@@ -43,11 +44,13 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     """Deterministic native-parity presentation effects emitted by one sim tick."""
 
     trigger_game_tune: bool = False
-    sfx: tuple[SfxId, ...] = ()
+    sfx: tuple[SfxRequest, ...] = ()
     terrain_fx: TerrainFxBatch = TerrainFxBatch()
-    post_apply_sfx: tuple[SfxId, ...] = ()
+    post_apply_sfx: tuple[SfxRequest, ...] = ()
     play_quest_completion_music: bool = False
     reflex_boost_timer: float = 0.0
+    demo_mode_active: bool = False
+    sfx_dt: float = 0.0
     camera: CameraUpdate | None = None
 
 
@@ -57,8 +60,8 @@ def plan_player_audio_sfx(
     prev_shot_seq: int,
     prev_reload_active: bool,
     prev_reload_timer: float,
-) -> list[SfxId]:
-    sfx: list[SfxId] = []
+) -> list[SfxRequest]:
+    sfx: list[SfxRequest] = []
 
     weapon = WEAPON_BY_ID[player.weapon.weapon_id]
 
@@ -66,16 +69,16 @@ def plan_player_audio_sfx(
         if float(player.fire_bullets_timer) > 0.0:
             fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
             plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
-            sfx.append(fire_bullets.fire_sound)
-            sfx.append(plasma_minigun.fire_sound)
+            sfx.append(SfxRequest(fire_bullets.fire_sound, player.pos))
+            sfx.append(SfxRequest(plasma_minigun.fire_sound, player.pos))
         else:
-            sfx.append(weapon.fire_sound)
+            sfx.append(SfxRequest(weapon.fire_sound, player.pos))
 
     reload_active = player.weapon.reload_active
     reload_timer = float(player.weapon.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
-        sfx.append(weapon.reload_sound)
+        sfx.append(SfxRequest(weapon.reload_sound, player.pos))
 
     return sfx
 
@@ -101,7 +104,7 @@ def plan_hit_sfx(
     game_tune_started: bool,
     rng: CrandLike,
     beam_types: frozenset[int] = BEAM_TYPES,
-) -> tuple[bool, list[SfxId]]:
+) -> tuple[bool, list[SfxRequest]]:
     if not hits:
         return False, []
 
@@ -109,7 +112,7 @@ def plan_hit_sfx(
     local_game_tune_started = bool(game_tune_started)
     # Native draws a hit-sound rand and plays the panned sample for every hit,
     # uncapped; the per-hit world-step path already matches this.
-    sfx: list[SfxId] = []
+    sfx: list[SfxRequest] = []
     for idx in range(len(hits)):
         if (not demo_mode_active) and game_mode != GameMode.RUSH and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
@@ -122,7 +125,7 @@ def plan_hit_sfx(
             _ = rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             continue
         type_id = int(hits[idx].type_id)
-        sfx.append(_hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng))
+        sfx.append(SfxRequest(_hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng), hits[idx].hit))
     return trigger_game_tune, sfx
 
 
@@ -355,7 +358,7 @@ def plan_world_presentation_step(
     fx_queue: FxQueue,
     hits: list[ProjectileHit],
     pickups: list[BonusPickupEvent],
-    event_sfx: list[SfxId],
+    event_sfx: list[SfxRequest],
     prev_audio: Sequence[tuple[int, bool, float]],
     prev_perk_pending: int,
     game_mode: GameMode,
@@ -366,12 +369,12 @@ def plan_world_presentation_step(
     violence_disabled: int,
     game_tune_started: bool,
     trigger_game_tune: bool | None = None,
-    hit_sfx: Sequence[SfxId] | None = None,
+    hit_sfx: Sequence[SfxRequest] | None = None,
 ) -> DeterministicPresentationPlan:
-    sfx: list[SfxId] = []
+    sfx: list[SfxRequest] = []
     play_game_tune = False
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
-        sfx.append(SfxId.UI_LEVELUP)
+        sfx.append(SfxRequest(SfxId.UI_LEVELUP))
     if trigger_game_tune is None and hit_sfx is None:
         if hits:
             queue_projectile_decals(
@@ -413,10 +416,11 @@ def plan_world_presentation_step(
             ),
         )
     if pickups:
-        sfx.extend(SfxId.UI_BONUS for _ in pickups)
-    sfx.extend(event_sfx[:4])
+        sfx.extend(SfxRequest(SfxId.UI_BONUS) for _ in pickups)
+    sfx.extend(event_sfx)
     return DeterministicPresentationPlan(
         trigger_game_tune=play_game_tune,
         sfx=tuple(sfx),
         reflex_boost_timer=float(state.bonuses.reflex_boost),
+        demo_mode_active=demo_mode_active,
     )

@@ -7,6 +7,7 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
@@ -50,7 +51,9 @@ class _FinalRevengeCreatureDamageRuntime(msgspec.Struct):
                 fx_queue=self.fx_queue,
             ),
         )
-        self.state.sfx_queue.extend(resolve_damage_followup())
+        self.state.sfx_queue.extend(
+            SfxRequest(sound, self.creatures.entries[creature_index].pos) for sound in resolve_damage_followup()
+        )
 
 
 def apply_final_revenge_on_player_death(
@@ -122,5 +125,5 @@ def apply_final_revenge_on_player_death(
         )
 
     state.bonus_spawn_guard = False
-    state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
-    state.sfx_queue.append(SfxId.SHOCKWAVE)
+    state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, player.pos))
+    state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, player.pos))

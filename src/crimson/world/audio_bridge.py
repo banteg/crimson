@@ -3,8 +3,12 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from grim.audio import AudioState, play_music, play_sfx, trigger_game_tune
+from grim.audio_math import native_sound_pan
+from grim.geom import Vec2
 from grim.rand import CrandLike
+from grim.sfx import update_sfx
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..sim.presentation_step import DeterministicPresentationPlan
 
@@ -26,25 +30,63 @@ class AudioBridge:
         self.audio = audio
         self.audio_rng = audio_rng
 
-    def play_sfx(self, sfx: SfxId, *, reflex_boost_timer: float | None = None) -> None:
+    def play_sfx(
+        self,
+        sfx: SfxId,
+        *,
+        reflex_boost_timer: float | None = None,
+        gain: float = 1.0,
+        pan: int = 0,
+    ) -> None:
         if self.audio is None or not self.sfx_enabled:
             return
         if reflex_boost_timer is None:
             reflex_boost_timer = self._reflex_boost_timer()
-        play_sfx(self.audio, sfx, reflex_boost_timer=reflex_boost_timer)
+        play_sfx(self.audio, sfx, reflex_boost_timer=reflex_boost_timer, gain=gain, pan=pan)
 
-    def apply_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
+    def _play_request(
+        self,
+        request: SfxRequest,
+        plan: DeterministicPresentationPlan,
+        *,
+        camera: Vec2,
+        screen_width: float,
+    ) -> None:
+        self.play_sfx(
+            request.sfx_id,
+            reflex_boost_timer=plan.reflex_boost_timer,
+            gain=request.gain * (0.7 if plan.demo_mode_active else 1.0),
+            pan=native_sound_pan(request.position, camera=camera, screen_width=screen_width),
+        )
+
+    def apply_plan(
+        self,
+        *,
+        plan: DeterministicPresentationPlan,
+        apply_audio: bool = True,
+        camera: Vec2 = Vec2(),
+        screen_width: float = 1024.0,
+    ) -> None:
         if not apply_audio:
             return
         if plan.trigger_game_tune and self.audio is not None:
             trigger_game_tune(self.audio, rng=self.audio_rng)
-        for sfx in plan.sfx:
-            self.play_sfx(sfx, reflex_boost_timer=plan.reflex_boost_timer)
+        for request in plan.sfx:
+            self._play_request(request, plan, camera=camera, screen_width=screen_width)
 
-    def apply_post_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
+    def apply_post_plan(
+        self,
+        *,
+        plan: DeterministicPresentationPlan,
+        apply_audio: bool = True,
+        camera: Vec2 = Vec2(),
+        screen_width: float = 1024.0,
+    ) -> None:
         if not apply_audio:
             return
-        for sfx in plan.post_apply_sfx:
-            self.play_sfx(sfx, reflex_boost_timer=plan.reflex_boost_timer)
+        for request in plan.post_apply_sfx:
+            self._play_request(request, plan, camera=camera, screen_width=screen_width)
         if plan.play_quest_completion_music and self.audio is not None:
             play_music(self.audio, "crimsonquest", fade_in=True)
+        if self.audio is not None:
+            update_sfx(self.audio.sfx, plan.sfx_dt)

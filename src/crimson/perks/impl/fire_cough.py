@@ -3,6 +3,7 @@ from __future__ import annotations
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...math_parity import (
     native_fire_muzzle_pos,
@@ -27,8 +28,8 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
         return
 
     owner = ctx.owner_ref_for_player_projectiles(ctx.state, ctx.player.index)
-    ctx.state.sfx_queue.append(SfxId.AUTORIFLE_FIRE)
-    ctx.state.sfx_queue.append(SfxId.PLASMAMINIGUN_FIRE)
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.AUTORIFLE_FIRE, ctx.player_pos_before_move))
+    ctx.state.sfx_queue.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, ctx.player_pos_before_move))
 
     aim_heading = float(ctx.player.aim_heading)
     origin_pos = ctx.player_pos_before_move

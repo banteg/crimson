@@ -9,6 +9,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
@@ -49,7 +50,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     rng: CrandLike
     runtime_state: GameplayState | None
     effects: EffectPool | None
-    sfx_queue: MutableSequence[SfxId] | None
+    sfx_queue: MutableSequence[SfxRequest] | None
     creature_damage_runtime: CreatureDamageRuntime
     sync_creature_index: Callable[[int], None] | None = None
 

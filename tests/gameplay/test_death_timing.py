@@ -22,6 +22,8 @@ from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
+from tests.support.audio import sfx_ids
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
@@ -286,7 +288,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
         perk_progression_enabled=False,
     )
 
-    assert events.sfx == [expected_sfx]
+    assert sfx_ids(events.sfx) == [expected_sfx]
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -380,7 +382,7 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
     assert (
         sum(
             key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
-            for key in events.sfx
+            for key in sfx_ids(events.sfx)
         )
         == 1
     )
@@ -433,7 +435,7 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
 
     assert not creature.active
     assert len(events.deaths) == 1
-    assert events.sfx == [SfxId.ZOMBIE_DIE_03]
+    assert sfx_ids(events.sfx) == [SfxId.ZOMBIE_DIE_03]
     assert rng.records_since(before_calls)[0].caller == RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX
 
 
@@ -497,7 +499,8 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
     assert record_death.call_count == 1
     assert any(
-        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04} for key in events.sfx
+        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
+        for key in sfx_ids(events.sfx)
     )
 
 
@@ -522,7 +525,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
-        return CreatureUpdateResult(deaths=(death,), sfx=(SfxId.UI_PANELCLICK,))
+        return CreatureUpdateResult(deaths=(death,), sfx=(SfxRequest(SfxId.UI_PANELCLICK),))
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -550,7 +553,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
         expected_after_state=0,
     )
     assert rng.values_since(before_calls) == []
-    assert events.sfx == [SfxId.UI_PANELCLICK]
+    assert sfx_ids(events.sfx) == [SfxId.UI_PANELCLICK]
 
 
 def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
@@ -607,7 +610,7 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     assert len(events.deaths) == 1
     assert all(
         key not in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
-        for key in events.sfx
+        for key in sfx_ids(events.sfx)
     )
     assert_rng_progression(
         rng,
@@ -652,7 +655,7 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
 
     def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
         _ = args, kwargs
-        return CreatureUpdateResult(deaths=deaths, sfx=death_sfx)
+        return CreatureUpdateResult(deaths=deaths, sfx=tuple(SfxRequest(sfx) for sfx in death_sfx))
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -672,7 +675,7 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
     )
 
     assert len(events.deaths) == 7
-    assert events.sfx[:7] == list(death_sfx)
+    assert sfx_ids(events.sfx)[:7] == list(death_sfx)
     assert_rng_progression(
         rng,
         before_calls=before_calls,
@@ -742,7 +745,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         expected_after_state=0,
     )
     assert rng.values_since(before_calls) == [0] * 9
-    assert events.hit_sfx == []
+    assert sfx_ids(events.hit_sfx) == []
     assert events.trigger_game_tune is True
 
 
@@ -836,5 +839,5 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
     # Native secondary-rocket hits run the same first-hit game-tune branch as
     # bullet hits instead of the panned explosion sound.
     assert events.trigger_game_tune is True
-    assert SfxId.EXPLOSION_MEDIUM not in world.state.sfx_queue
-    assert SfxId.EXPLOSION_MEDIUM not in events.hit_sfx
+    assert SfxId.EXPLOSION_MEDIUM not in sfx_ids(world.state.sfx_queue)
+    assert SfxId.EXPLOSION_MEDIUM not in sfx_ids(events.hit_sfx)

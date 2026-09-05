@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from grim.sfx_types import SfxRequest
+
 from ..math_parity import f32, x87_pc24_mul
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -12,7 +14,6 @@ from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
-
 
 
 def weapon_entry(weapon_id: WeaponId) -> Weapon:
@@ -65,7 +66,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     player.aux_timer = 2.0
 
     if state is not None:
-        state.sfx_queue.append(weapon.reload_sound)
+        state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
 
 
 def most_used_weapon_id_for_player(

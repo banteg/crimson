@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..creatures.runtime import CreatureFlags
 from ..creatures.spawn import SpawnId
@@ -79,7 +80,7 @@ def tutorial_post_step(ctx) -> None:
             survival_check_level_up(players[0], state.perk_selection)
 
     if actions.play_levelup_sfx:
-        state.sfx_queue.append(SfxId.UI_LEVELUP)
+        state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))
 
     for index, call in enumerate(actions.spawn_bonuses):
         # Native tutorial code overwrites slots 0..2 directly with 100-second
