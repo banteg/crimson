@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.game_modes import GameMode
+from crimson.modes import base_gameplay_mode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
@@ -16,6 +17,11 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker, ma
     config = make_mode_config(game_mode=GameMode.SURVIVAL, updates={"player_count": 2})
 
     mode = SurvivalMode(ctx, config=config, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup")
+    mocker.patch.object(mode.world_runtime, "open_runtime")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
+    mocker.patch.object(mode, "_save_replay")
+    mode.open()
     mocker.patch.object(GameOverUi, "open", return_value=None)
 
     player0, player1 = mode.sim_world.players[:2]
@@ -45,6 +51,11 @@ def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker, make_m
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
     mode = SurvivalMode(ctx, config=make_mode_config(game_mode=GameMode.SURVIVAL), audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup")
+    mocker.patch.object(mode.world_runtime, "open_runtime")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
+    mocker.patch.object(mode, "_save_replay")
+    mode.open()
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 4321.0

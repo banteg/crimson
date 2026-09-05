@@ -112,6 +112,11 @@ def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
     config = make_mode_config(game_mode=GameMode.RUSH)
     mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup")
+    mocker.patch.object(mode.world_runtime, "open_runtime")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
+    mocker.patch.object(mode, "_save_replay")
+    mode.open()
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 9876.0
