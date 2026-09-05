@@ -472,9 +472,9 @@ class ReplayPlaybackMode:
         target = min(int(self._tick_limit()), int(self._tick_index) + int(ticks))
         audio_bridge = self._runtime.audio_bridge if self._runtime is not None else None
         prev_sfx_enabled: bool | None = None
-        if audio_bridge is not None and audio_bridge.router is not None:
-            prev_sfx_enabled = bool(audio_bridge.router.sfx_enabled)
-            audio_bridge.router.sfx_enabled = False
+        if audio_bridge is not None:
+            prev_sfx_enabled = bool(audio_bridge.sfx_enabled)
+            audio_bridge.sfx_enabled = False
         try:
             ticks_to_advance = max(0, int(target) - int(self._tick_index))
             if ticks_to_advance > 0:
@@ -483,8 +483,8 @@ class ReplayPlaybackMode:
                     max_ticks=int(ticks_to_advance),
                 )
         finally:
-            if prev_sfx_enabled is not None and audio_bridge is not None and audio_bridge.router is not None:
-                audio_bridge.router.sfx_enabled = bool(prev_sfx_enabled)
+            if prev_sfx_enabled is not None and audio_bridge is not None:
+                audio_bridge.sfx_enabled = bool(prev_sfx_enabled)
         self._clock.reset()
         self._dt_accum = 0.0
 

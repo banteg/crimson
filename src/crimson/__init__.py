@@ -6,7 +6,6 @@ __version__ = version("crimsonland")
 
 __all__ = [
     "atlas",
-    "audio_router",
     "bonuses",
     "creatures",
     "debug_views",

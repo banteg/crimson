@@ -157,7 +157,7 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
     mocker.patch.object(world_renderer.WorldRenderer, "_camera_screen_size", side_effect=AssertionError("unused"))
     mocker.patch.object(world_renderer.WorldRenderer, "_clamp_camera", side_effect=AssertionError("unused"))
 
-    world.update_camera(0.0)
+    world.update_camera()
 
     assert_float_close(world.camera.x, 0.0)
     assert_float_close(world.camera.y, -224.0)

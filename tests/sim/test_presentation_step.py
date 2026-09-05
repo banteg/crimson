@@ -8,9 +8,6 @@ from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import (
-    DeterministicPresentationPlan,
-    PresentationPlanRuntime,
-    apply_presentation_plan,
     plan_hit_sfx,
     plan_world_presentation_step,
     queue_projectile_decals,
@@ -496,46 +493,3 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     assert rng.values_since(before_calls) == []
     assert commands.trigger_game_tune is True
     assert commands.sfx == (SfxId.BULLET_HIT_01,)
-
-
-def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
-    class _Runtime(PresentationPlanRuntime):
-        events: list[str]
-
-        def trigger_game_tune(self) -> str | None:
-            self.events.append("tune")
-            return None
-
-        def play_sfx(self, sfx: SfxId) -> None:
-            self.events.append(sfx.value)
-
-    runtime = _Runtime(events=[])
-    apply_presentation_plan(
-        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=(SfxId.UI_BONUS, SfxId.UI_LEVELUP)),
-        runtime=runtime,
-        apply_audio=True,
-    )
-
-    assert runtime.events == ["tune", SfxId.UI_BONUS.value, SfxId.UI_LEVELUP.value]
-
-
-def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
-    class _Runtime(PresentationPlanRuntime):
-        called: bool = False
-
-        def trigger_game_tune(self) -> str | None:
-            self.called = True
-            return None
-
-        def play_sfx(self, sfx: SfxId) -> None:
-            _ = sfx
-            self.called = True
-
-    runtime = _Runtime()
-    apply_presentation_plan(
-        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=(SfxId.UI_BONUS,)),
-        runtime=runtime,
-        apply_audio=False,
-    )
-
-    assert runtime.called is False

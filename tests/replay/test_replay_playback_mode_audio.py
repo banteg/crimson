@@ -38,16 +38,8 @@ class _AudioStub:
 
 
 @dataclass
-class _RouterStub:
-    sfx_enabled: bool = True
-
-    def play_sfx(self, _key: str) -> None:
-        return None
-
-
-@dataclass
 class _AudioBridgeStub:
-    router: _RouterStub = field(default_factory=_RouterStub)
+    sfx_enabled: bool = True
 
     def apply_plan(self, **_kwargs) -> None:
         return None
@@ -202,7 +194,7 @@ def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> 
     view._dt = 1.0 / 60.0
 
     def check_muted(**_kwargs) -> None:
-        assert not audio_bridge.router.sfx_enabled
+        assert not audio_bridge.sfx_enabled
 
     apply_post_plan = mocker.patch.object(
         audio_bridge,
@@ -215,7 +207,7 @@ def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> 
     view._skip_forward_seconds(2.0 / 60.0)
 
     assert apply_post_plan.call_count == 2
-    assert bool(audio_bridge.router.sfx_enabled)
+    assert bool(audio_bridge.sfx_enabled)
     assert view._dt_accum == 0.0
 
 
@@ -244,7 +236,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback
     observed_sfx_enabled: list[bool] = []
 
     def _apply_post_plan(**_kwargs) -> None:
-        observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled))
+        observed_sfx_enabled.append(bool(audio_bridge.sfx_enabled))
         raise RuntimeError("skip test boom")
 
     mocker.patch.object(audio_bridge, "apply_post_plan", side_effect=_apply_post_plan)
@@ -255,7 +247,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback
         view._skip_forward_seconds(1.0 / 60.0)
 
     assert observed_sfx_enabled == [False]
-    assert bool(audio_bridge.router.sfx_enabled)
+    assert bool(audio_bridge.sfx_enabled)
 
 
 def test_skip_forward_consumes_terrain_fx_each_tick_when_render_ready(replay_playback_view) -> None:

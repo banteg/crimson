@@ -1852,7 +1852,7 @@ class LightingDebugView:
         if self._static_scene_enabled:
             self._clear_scene_contents()
             self._seed_static_scene()
-            self._runtime.update_camera(0.0)
+            self._runtime.update_camera()
             return
 
         self._reset_scene()
@@ -2094,7 +2094,7 @@ class LightingDebugView:
         self._spawn_preset_ring()
         self._auto_emit_timer = 0.0
         self._shadow_frame_index = 0
-        self._runtime.update_camera(0.0)
+        self._runtime.update_camera()
 
     def _build_input(self) -> PlayerInput:
         move = Vec2(
@@ -2937,7 +2937,7 @@ class LightingDebugView:
             sim_dt = 0.0
 
         if self._static_scene_enabled:
-            self._runtime.update_camera(0.0)
+            self._runtime.update_camera()
         elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)

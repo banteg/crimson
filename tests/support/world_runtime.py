@@ -152,7 +152,7 @@ class WorldRuntimeHost(WorldRuntime):
             plan=tick.presentation,
             apply_audio=bool(apply_audio),
         )
-        self.update_camera(float(tick.dt_sim))
+        self.update_camera(tick.presentation.camera)
         self.render_resources.consume_terrain_fx_batch(tick.presentation.terrain_fx)
         self.audio_bridge.apply_post_plan(plan=tick.presentation, apply_audio=apply_audio)
         return tick

@@ -6,7 +6,6 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from crimson import audio_router
 from crimson.camera import camera_shake_update
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.game_modes import GameMode
@@ -23,6 +22,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.sessions import DeterministicSession
+from crimson.world import audio_bridge
 from crimson.world.runtime import WorldRuntime
 from grim.audio import AudioState
 from grim.config import default_crimson_cfg
@@ -54,7 +54,10 @@ def tutorial_startup():
     def weapon(world):
         p = world.players[0]
         return {
-            "ammo": p.weapon.ammo, "clip_size": p.weapon.clip_size, "cooldown": p.weapon.shot_cooldown, "shot_seq": p.shot_seq,
+            "ammo": p.weapon.ammo,
+            "clip_size": p.weapon.clip_size,
+            "cooldown": p.weapon.shot_cooldown,
+            "shot_seq": p.shot_seq,
         }
 
     before = {"live": weapon(live.world), "replay": weapon(replay.world)}
@@ -87,7 +90,7 @@ def audio_partition(batch: bool):
     )
     outputs = []
     timers = []
-    with patch.object(audio_router, "play_sfx") as play:
+    with patch.object(audio_bridge, "play_sfx") as play:
         for tick in range(2):
             step = session.step_tick(dt=1 / 60, inputs=(PlayerInput(aim=Vec2(600, 512), fire_down=tick == 0),))
             timers.append(world.state.bonuses.reflex_boost)
@@ -179,7 +182,8 @@ def interrupted_score_save():
         # A serializer failure demonstrates that the previous valid file has
         # already been destroyed, even before the first write is attempted.
         with patch(
-            "crimson.persistence.highscores.encode_record_payload", side_effect=ValueError("injected encoding failure"),
+            "crimson.persistence.highscores.encode_record_payload",
+            side_effect=ValueError("injected encoding failure"),
         ):
             try:
                 write_highscore_records(path, [record])

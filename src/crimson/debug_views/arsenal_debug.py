@@ -172,7 +172,7 @@ class ArsenalDebugView:
         self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._apply_weapon()
         self._reset_creatures()
-        self._runtime.update_camera(0.0)
+        self._runtime.update_camera()
 
     def _reset_creatures(self) -> None:
         self._runtime.sim_world.creatures.reset()

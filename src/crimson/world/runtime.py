@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
 
-from ..audio_router import AudioRouterRuntime
+from ..camera import CameraUpdate, camera_update_for_players
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
@@ -19,16 +19,8 @@ from .sim_world_state import SimWorldState
 from .terrain_runtime import TerrainRuntime
 
 
-class _WorldAudioRouterRuntime(AudioRouterRuntime):
-    sim_world: SimWorldState
-
-    def reflex_boost_timer(self) -> float:
-        return float(self.sim_world.state.bonuses.reflex_boost)
-
-
 class WorldRuntime:
-    """Composition container owning the 4 world components and shared lifecycle methods.
-    """
+    """Composition container owning the 4 world components and shared lifecycle methods."""
 
     def __init__(
         self,
@@ -69,8 +61,7 @@ class WorldRuntime:
         )
         self.render_resources = render_resources
         self.audio_bridge = AudioBridge(
-            demo_mode_active=bool(self.demo_mode_active),
-            runtime=_WorldAudioRouterRuntime(sim_world=self.sim_world),
+            reflex_boost_timer=lambda: float(self.sim_world.state.bonuses.reflex_boost),
             audio=self.audio,
             audio_rng=self.audio_rng,
         )
@@ -152,12 +143,12 @@ class WorldRuntime:
         self.audio_bridge.sync(
             audio=self.audio,
             audio_rng=self.audio_rng,
-            demo_mode_active=bool(self.demo_mode_active),
         )
 
-    def update_camera(self, dt: float) -> None:
-        _ = dt
-        if not self.sim_world.players:
+    def update_camera(self, update: CameraUpdate | None = None) -> None:
+        if update is None:
+            update = camera_update_for_players(self.sim_world.players, self.sim_world.state.camera_shake_offset)
+        if update is None:
             return
 
         screen_size = viewport.camera_screen_size(
@@ -166,18 +157,8 @@ class WorldRuntime:
             runtime_w=float(rl.get_screen_width()),
             runtime_h=float(rl.get_screen_height()),
         )
-        alive = [player for player in self.sim_world.players if player.health > 0.0]
-        if alive:
-            inv_alive = 1.0 / float(len(alive))
-            focus = Vec2(
-                sum(player.pos.x for player in alive) * inv_alive,
-                sum(player.pos.y for player in alive) * inv_alive,
-            )
-            camera = screen_size * 0.5 - focus
-        else:
-            camera = self.camera
-
-        camera = camera + self.sim_world.state.camera_shake_offset
+        camera = self.camera if update.focus is None else screen_size * 0.5 - update.focus
+        camera = camera + update.shake
         self.camera = viewport.clamp_camera(
             world_size=self.world_size,
             camera=camera,

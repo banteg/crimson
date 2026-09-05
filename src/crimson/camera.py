@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import msgspec
+
 """Camera helpers recovered from the original crimsonland.exe.
 
 This module currently models the `camera_update` screen shake logic, which is
@@ -13,8 +15,30 @@ from grim.geom import Vec2
 from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from crimson.sim.gameplay_state import GameplayState
 
+    from .sim.state_types import PlayerState
+
+
+class CameraUpdate(msgspec.Struct, frozen=True):
+    focus: Vec2 | None
+    shake: Vec2
+
+
+def camera_update_for_players(players: Sequence[PlayerState], shake: Vec2) -> CameraUpdate | None:
+    if not players:
+        return None
+    alive = [player for player in players if player.health > 0.0]
+    focus = None
+    if alive:
+        inv_alive = 1.0 / float(len(alive))
+        focus = Vec2(
+            sum(player.pos.x for player in alive) * inv_alive,
+            sum(player.pos.y for player in alive) * inv_alive,
+        )
+    return CameraUpdate(focus=focus, shake=shake)
 
 
 def camera_shake_start(state: GameplayState, *, pulses: int, timer: float) -> None:

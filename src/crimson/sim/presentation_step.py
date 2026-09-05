@@ -12,6 +12,7 @@ from grim.sfx_map import SfxId
 
 from ..bonuses.fire_bullets import LargeHitDecalRuntime
 from ..bonuses.freeze import freeze_bonus_active
+from ..camera import CameraUpdate
 from ..effects import FxQueue
 from ..features.presentation import queue_projectile_large_streak_decal
 from ..game_modes import GameMode
@@ -46,14 +47,8 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     terrain_fx: TerrainFxBatch = TerrainFxBatch()
     post_apply_sfx: tuple[SfxId, ...] = ()
     play_quest_completion_music: bool = False
-
-
-class PresentationPlanRuntime(msgspec.Struct):
-    def trigger_game_tune(self) -> str | None:
-        return None
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        _ = sfx
+    reflex_boost_timer: float = 0.0
+    camera: CameraUpdate | None = None
 
 
 def plan_player_audio_sfx(
@@ -420,18 +415,8 @@ def plan_world_presentation_step(
     if pickups:
         sfx.extend(SfxId.UI_BONUS for _ in pickups)
     sfx.extend(event_sfx[:4])
-    return DeterministicPresentationPlan(trigger_game_tune=play_game_tune, sfx=tuple(sfx))
-
-
-def apply_presentation_plan(
-    *,
-    plan: DeterministicPresentationPlan,
-    runtime: PresentationPlanRuntime | None,
-    apply_audio: bool = True,
-) -> None:
-    if not bool(apply_audio) or runtime is None:
-        return
-    if bool(plan.trigger_game_tune):
-        runtime.trigger_game_tune()
-    for sfx in plan.sfx:
-        runtime.play_sfx(sfx)
+    return DeterministicPresentationPlan(
+        trigger_game_tune=play_game_tune,
+        sfx=tuple(sfx),
+        reflex_boost_timer=float(state.bonuses.reflex_boost),
+    )

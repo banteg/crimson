@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from grim.audio import AudioState, play_music
+from collections.abc import Callable
+
+from grim.audio import AudioState, play_music, play_sfx, trigger_game_tune
 from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
-from ..audio_router import AudioRouter, AudioRouterRuntime
-from ..sim.presentation_step import DeterministicPresentationPlan, PresentationPlanRuntime, apply_presentation_plan
+from ..sim.presentation_step import DeterministicPresentationPlan
 
 
 class AudioBridge:
@@ -14,47 +15,38 @@ class AudioBridge:
         self,
         *,
         audio_rng: CrandLike,
-        demo_mode_active: bool = False,
-        runtime: AudioRouterRuntime | None = None,
         audio: AudioState | None = None,
+        reflex_boost_timer: Callable[[], float] = lambda: 0.0,
     ) -> None:
         self.audio_rng = audio_rng
-        self.demo_mode_active = bool(demo_mode_active)
         self.audio = audio
-        self.runtime = runtime if runtime is not None else AudioRouterRuntime()
-        self.router = AudioRouter(
-            audio_rng=self.audio_rng,
-            audio=self.audio,
-            demo_mode_active=bool(self.demo_mode_active),
-            runtime=self.runtime,
-        )
+        self.sfx_enabled = True
+        self._reflex_boost_timer = reflex_boost_timer
 
-    def sync(
-        self,
-        *,
-        audio: AudioState | None,
-        audio_rng: CrandLike,
-        demo_mode_active: bool,
-    ) -> None:
+    def sync(self, *, audio: AudioState | None, audio_rng: CrandLike) -> None:
         self.audio = audio
         self.audio_rng = audio_rng
-        self.demo_mode_active = bool(demo_mode_active)
-        self.router.audio = audio
-        self.router.audio_rng = audio_rng
-        self.router.demo_mode_active = bool(demo_mode_active)
+
+    def play_sfx(self, sfx: SfxId, *, reflex_boost_timer: float | None = None) -> None:
+        if self.audio is None or not self.sfx_enabled:
+            return
+        if reflex_boost_timer is None:
+            reflex_boost_timer = self._reflex_boost_timer()
+        play_sfx(self.audio, sfx, reflex_boost_timer=reflex_boost_timer)
 
     def apply_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
-        apply_presentation_plan(
-            plan=plan,
-            runtime=_AudioBridgePresentationPlanRuntime(bridge=self),
-            apply_audio=bool(apply_audio),
-        )
+        if not apply_audio:
+            return
+        if plan.trigger_game_tune and self.audio is not None:
+            trigger_game_tune(self.audio, rng=self.audio_rng)
+        for sfx in plan.sfx:
+            self.play_sfx(sfx, reflex_boost_timer=plan.reflex_boost_timer)
 
     def apply_post_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
         if not apply_audio:
             return
         for sfx in plan.post_apply_sfx:
-            self.router.play_sfx(sfx)
+            self.play_sfx(sfx, reflex_boost_timer=plan.reflex_boost_timer)
         if plan.play_quest_completion_music and self.audio is not None:
             play_music(self.audio, "crimsonquest")
             playback = self.audio.music.playbacks.get("crimsonquest")
@@ -64,13 +56,3 @@ class AudioBridge:
                     rl.set_music_volume(playback.music, 0.0)
                 except RuntimeError:
                     playback.volume = 0.0
-
-
-class _AudioBridgePresentationPlanRuntime(PresentationPlanRuntime):
-    bridge: AudioBridge
-
-    def trigger_game_tune(self) -> str | None:
-        return self.bridge.router.trigger_game_tune()
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        self.bridge.router.play_sfx(sfx)

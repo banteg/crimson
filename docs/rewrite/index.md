@@ -72,7 +72,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Music pack loader (`music.paq`) with raylib music streams.
 - Intro + theme playback with volume from `crimson.cfg`.
 - SFX system (`sfx.paq` or unpacked `assets_dir/sfx/*`) with key mapping + variant selection.
-- Audio routing system (`AudioRouter`) with per-creature-type death SFX (zombie, lizard, alien, spider, trooper).
+- Deterministic audio planning with `AudioBridge` playback with per-creature-type death SFX (zombie, lizard, alien, spider, trooper).
 - Gameplay SFX hooks: weapon fire/reload, projectile hit (bullet/beam/explosion variants), creature death.
 - Survival music trigger integration (game tune activation on first hits).
 

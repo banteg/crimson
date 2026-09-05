@@ -4,7 +4,6 @@ import inspect
 from pathlib import Path
 from typing import Any, cast
 
-import crimson.audio_router as audio_router_module
 import crimson.debug_views.arsenal_debug as arsenal_debug_module
 import crimson.demo as demo_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
@@ -15,6 +14,7 @@ import crimson.replay.driver.replay_info as replay_info_module
 import crimson.replay.driver.replay_render as replay_render_module
 import crimson.sim.batch_apply as batch_apply_module
 import crimson.sim.frame_pump as frame_pump_module
+import crimson.world.audio_bridge as audio_bridge_module
 import crimson.world.standalone_tick_harness as standalone_tick_harness_module
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
@@ -84,9 +84,9 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
         config=TickRunnerConfig(),
     )
     play_sfx = mocker.patch.object(
-        audio_router_module,
+        audio_bridge_module,
         "play_sfx",
-        wraps=audio_router_module.play_sfx,
+        wraps=audio_bridge_module.play_sfx,
     )
 
     completed: list[object] = []
@@ -259,11 +259,10 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     )
 
     audio_bridge = AudioBridge(
-        demo_mode_active=False,
         audio=cast(Any, object()),  # sentinel; play_sfx is patched
         audio_rng=Crand(0xBEEF),
     )
-    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
+    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
     draw_text = mocker.patch.object(rl, "draw_text")
 
     clock = FixedStepClock(tick_rate=60)

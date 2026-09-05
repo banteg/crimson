@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from crimson.camera import CameraUpdate
 from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.terrain_fx import TerrainCorpseFx, TerrainDecalFx, TerrainFxBatch, TerrainFxScratch
+from crimson.world.runtime import WorldRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
 
@@ -31,41 +33,6 @@ def _terrain_batch() -> TerrainFxBatch:
     )
 
 
-class _PresentationAudioBridge:
-    def __init__(self, calls: list[tuple[str, int | None]]) -> None:
-        self._calls = calls
-
-    def apply_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
-        _ = plan, apply_audio
-        self._calls.append(("audio", 1))
-
-    def apply_post_plan(self, **_kwargs) -> None:
-        self._calls.append(("done", 1))
-
-
-class _PresentationRenderResources:
-    def __init__(self, calls: list[tuple[str, int | None]]) -> None:
-        self._calls = calls
-
-    def consume_terrain_fx_batch(self, batch: TerrainFxBatch) -> None:
-        _ = batch
-        self._calls.append(("terrain", 1))
-
-
-class _PresentationRuntime:
-    def __init__(self, calls: list[tuple[str, int | None]]) -> None:
-        self._calls = calls
-        self.audio_bridge = _PresentationAudioBridge(calls)
-        self.render_resources = _PresentationRenderResources(calls)
-
-    def sync_audio_bridge_state(self) -> None:
-        self._calls.append(("sync", None))
-
-    def update_camera(self, dt: float) -> None:
-        _ = dt
-        self._calls.append(("camera", 1))
-
-
 def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> None:
     scratch = TerrainFxScratch()
     scratch.decals.add(
@@ -91,24 +58,32 @@ def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> Non
     assert scratch.corpses.count == 0
 
 
-def test_apply_presentation_outputs_applies_terrain_fx_in_output_order() -> None:
+def test_apply_presentation_outputs_applies_terrain_fx_in_output_order(mocker) -> None:
     calls: list[tuple[str, int | None]] = []
     outputs = (
         PresentationTickOutput(
             tick_index=1,
             dt_sim=1.0 / 60.0,
-            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch()),
+            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch(), camera=CameraUpdate(focus=Vec2(), shake=Vec2())),
         ),
         PresentationTickOutput(
             tick_index=2,
             dt_sim=1.0 / 60.0,
-            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch()),
+            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch(), camera=CameraUpdate(focus=Vec2(), shake=Vec2())),
         ),
     )
 
+    runtime = mocker.Mock(spec=WorldRuntime)
+    runtime.sync_audio_bridge_state.side_effect = lambda: calls.append(("sync", None))
+    runtime.audio_bridge = mocker.Mock()
+    runtime.render_resources = mocker.Mock()
+    runtime.audio_bridge.apply_plan.side_effect = lambda **kw: calls.append(("audio", 1))
+    runtime.audio_bridge.apply_post_plan.side_effect = lambda **kw: calls.append(("done", 1))
+    runtime.update_camera.side_effect = lambda update: calls.append(("camera", 1))
+    runtime.render_resources.consume_terrain_fx_batch.side_effect = lambda batch: calls.append(("terrain", 1))
     apply_presentation_outputs(
         outputs=outputs,
-        runtime=_PresentationRuntime(calls),
+        runtime=runtime,
         apply_audio=True,
     )
 

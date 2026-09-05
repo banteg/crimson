@@ -8,6 +8,7 @@ import msgspec
 from grim.rand import CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
 
+from ..camera import camera_update_for_players
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
@@ -598,4 +599,8 @@ class DeterministicSession(msgspec.Struct):
         step.elapsed_ms = self.elapsed_ms
         step.creature_count_world_step = creature_count_world_step
         step.quest_completed = quest_spawn is not None and quest_spawn.completed
+        step.presentation = msgspec.structs.replace(
+            step.presentation,
+            camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
+        )
         return step

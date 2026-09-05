@@ -39,7 +39,7 @@ Typ-o-Shooter | `src/crimson/typo/*` | `src/crimson/typo/*` | Typing mechanics +
 Simulation | `src/crimson/sim/*` | `src/crimson/sim/*` | World state, definitions, gameplay systems.
 Creatures | `src/crimson/creatures/*.py` | `src/crimson/creatures/*` | AI, animations, runtime pool, spawning.
 Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks/ids.py`, `src/crimson/bonuses/ids.py`, `src/crimson/creatures/spawn.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).
-Audio routing | `src/crimson/audio_router.py`, `src/crimson/weapon_sfx.py` | `src/crimson/*` | Gameplay audio event routing.
+Audio routing | `src/crimson/sim/presentation_step.py`, `src/crimson/world/audio_bridge.py` | `src/crimson/*` | Tick-local sound planning and playback.
 Debug views | `src/crimson/views/*` | `src/crimson/views/*` | Tooling/debug; view registry pattern.
 
 ## Prefix map (decomp → rewrite)

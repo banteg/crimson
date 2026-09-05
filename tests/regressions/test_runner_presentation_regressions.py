@@ -66,7 +66,7 @@ def _apply_batch(
             plan=step.presentation,
             apply_audio=True,
         )
-        world.update_camera(float(step.dt_sim))
+        world.update_camera(step.presentation.camera)
         world.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
         applied_ticks.append(int(result.source_tick.tick_index))
     return applied_ticks

@@ -93,7 +93,7 @@ class _ModePerkMenuRuntime(PerkMenuRuntime):
         self.mode._perk_menu_closed()
 
     def play_sfx(self, sfx_id: SfxId) -> None:
-        self.mode.audio_bridge.router.play_sfx(sfx_id)
+        self.mode.audio_bridge.play_sfx(sfx_id)
 
 
 class _ModeFrameState(msgspec.Struct, frozen=True):
@@ -702,7 +702,7 @@ class BaseGameplayMode:
             dt,
             record=record,
             player_name_default=self._player_name_default(),
-            play_sfx=self.audio_bridge.router.play_sfx,
+            play_sfx=self.audio_bridge.play_sfx,
             rng=None,
             mouse=self._ui_mouse_pos(),
         )
@@ -750,7 +750,7 @@ class BaseGameplayMode:
         return float(self.sim_world.presentation_elapsed_ms)
 
     def prepare_demo_trial_overlay_frame(self) -> None:
-        self._world_runtime.update_camera(0.0)
+        self._world_runtime.update_camera()
         self._sync_audio_and_ground()
 
     def regenerate_terrain_for_console(self) -> None:

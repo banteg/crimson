@@ -137,8 +137,8 @@ launch request for Play a game.
 
 ### Audio
 
-- **Audio routing** (`AudioRouter`) is implemented and wired for gameplay events.
-  - Code: `src/crimson/audio_router.py`
+- **Audio planning and playback** (`AudioBridge`) is implemented and wired for gameplay events.
+  - Code: `src/crimson/world/audio_bridge.py`
   - Includes per-creature death SFX routing, hit/explosion variants, weapon fire/reload mapping, and gameplay music triggers.
 
 ## Verification and parity evidence

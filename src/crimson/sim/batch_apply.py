@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import msgspec
 
@@ -9,6 +9,9 @@ from .hooks import TickResult
 from .presentation_step import DeterministicPresentationPlan
 from .step_pipeline import DeterministicStepResult
 from .world_state import WorldEvents
+
+if TYPE_CHECKING:
+    from ..world.runtime import WorldRuntime
 
 
 class SimMetadataSink(Protocol):
@@ -81,7 +84,7 @@ def apply_sim_metadata_batch(
 def apply_presentation_outputs(
     *,
     outputs: Sequence[PresentationTickOutput],
-    runtime: Any,
+    runtime: WorldRuntime,
     apply_audio: bool,
     update_camera: bool = True,
 ) -> None:
@@ -92,8 +95,8 @@ def apply_presentation_outputs(
     for output in outputs:
         if output.presentation is not None:
             runtime.audio_bridge.apply_plan(plan=output.presentation, apply_audio=bool(apply_audio))
-            if bool(update_camera):
-                runtime.update_camera(float(output.dt_sim))
+            if update_camera and output.presentation.camera is not None:
+                runtime.update_camera(output.presentation.camera)
             terrain_fx = output.presentation.terrain_fx
             if not terrain_fx.is_empty():
                 runtime.render_resources.consume_terrain_fx_batch(terrain_fx)
