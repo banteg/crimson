@@ -13,6 +13,7 @@ from grim.sfx_map import SfxId
 from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
+from ...creatures.spawn_ids import CreatureFlags
 from ...effects import EffectPool
 from ...math_parity import (
     NATIVE_HALF_PI,
@@ -35,9 +36,7 @@ from ..types import (
     ProjectileTemplateId,
 )
 from .behaviors import (
-    _PROJECTILE_HIT_PERK_HOOKS,
     _ProjectileHitInfo,
-    _ProjectileHitPerkCtx,
     _ProjectileUpdateCtx,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
@@ -416,14 +415,12 @@ class ProjectilePool:
                     type_id = proj.type_id
                     creature = creatures[hit_idx]
 
-                    perk_ctx = _ProjectileHitPerkCtx(
-                        proj=proj,
-                        creature=creature,
-                        rng=rng,
-                        poison_bullets_active=poison_bullets_active,
-                    )
-                    for hook in _PROJECTILE_HIT_PERK_HOOKS:
-                        hook(perk_ctx)
+                    # Native gates on player slot zero, including hits by
+                    # creature-owned splitter children and shock-chain segments.
+                    if poison_bullets_active and (
+                        rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7
+                    ) == 1:
+                        creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
                     rule.pre_hit(update_ctx, proj, int(hit_idx))
 

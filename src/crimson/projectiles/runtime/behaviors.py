@@ -13,11 +13,9 @@ from grim.sfx_map import SfxId
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
-from ...creatures.spawn import CreatureFlags
 from ...effects import EffectPool
 from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
-from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
@@ -61,30 +59,6 @@ class _ProjectileHitInfo(msgspec.Struct):
     hit_idx: int
     move: Vec2
     target: Vec2
-
-
-class _ProjectileHitPerkCtx(msgspec.Struct):
-    proj: Projectile
-    creature: CreatureState
-    rng: CrandLike
-    poison_bullets_active: bool
-
-
-_ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
-
-
-def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
-    # Native gates on player slot zero, so the rand is drawn for every projectile
-    # hit while that player owns the perk - including creature-owned projectiles
-    # such as splitter children and shock-chain segments.
-    if (
-        ctx.poison_bullets_active
-        and (ctx.rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7) == 1
-    ):
-        ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
-
-
-_PROJECTILE_HIT_PERK_HOOKS: tuple[_ProjectileHitPerkHook, ...] = (_projectile_hit_perk_poison_bullets,)
 
 
 def _life_timer_sub_f32(life_timer: float, amount: float) -> float:
