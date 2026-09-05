@@ -7,7 +7,7 @@ import pytest
 
 pytestmark = pytest.mark.terrain
 
-FIXTURE_DIR = Path(__file__).parent / "fixtures" / "ground"
+FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "ground"
 CASES_PATH = FIXTURE_DIR / "ground_stamp_cases.json"
 
 CRT_RAND_MULT = 214013
@@ -29,12 +29,8 @@ def _generate_triplets(seed_state: int, stamps: int) -> list[list[int]]:
 
 
 def test_ground_stamp_cases_match_captured_triplets() -> None:
-    if not CASES_PATH.exists():
-        pytest.skip(f"missing stamp fixtures: {CASES_PATH}")
-
     cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))
-    if not cases:
-        pytest.skip("no stamp cases")
+    assert cases, "stamp fixtures must contain captured cases"
 
     failures: list[str] = []
     for case in cases:

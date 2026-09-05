@@ -55,14 +55,38 @@ roundtrip/display tests; and 670 Zig tests.
 Final validation passed:
 
 - `just check`: lint/import/type/docs checks, native artifact and matching
-  regression checks, structural rules; 2,747 Python tests passed with 10 skipped
+  regression checks, structural rules; 2,750 Python tests passed with 10 skipped
   and all 135 snapshots passed; 670 Zig tests passed; ReleaseFast and WASM built.
 - `uv build`: source distribution and wheel built.
 - `uv run --no-sync scripts/check_docs.py`: 136 pages and 136 navigation entries.
 - `uv run --no-sync zensical build`: documentation site built.
 
-This session has no active graphics display. GPU-dependent fixture skips do
-not establish pixel parity. The rendering tests verify compositing order,
-DPI dimensions, ownership, and exception cleanup. This pass does not claim a
-live 2–4-player controller session, a live native capture, or native screenshot
-comparison for the new gamma/terrain shader behavior.
+The initial display probe ran inside the sandbox, which hid the active macOS
+display. Repeating it outside the sandbox succeeded. GPU validation then
+revealed two additional problems:
+
+- Terrain tests looked for tracked captures relative to their old location and
+  silently skipped them. Paths now point to `tests/fixtures/ground`; missing
+  tracked captures fail the tests. Render size is fixed to the capture's pixel
+  dimensions on Retina displays, and artifacts go to the repository's
+  `artifacts/tests/ground_dumps` directory by default.
+- Both ports used `0.0156862745` for the alpha cutoff. That decimal rounds one
+  f32 step below `4 / 255`, allowing alpha 4 through the shader. Both shaders
+  now use `4.0 / 255.0`. GPU readback verifies that alpha 4 is discarded, alpha 5
+  passes, the default shader is restored, and release/reload works.
+
+`uv run --no-sync pytest -q tests/render --run-terrain -rs`, run with display
+access, passed all 92 tests with no skips on the Apple M1 Pro. All three native
+terrain captures passed the existing image tolerances. Gamma pixel tests
+passed at default gain and gain 1.5, including drawing inside an inner shader
+and after it, with logical coordinates mapped to the Retina framebuffer.
+
+A hidden-window smoke run also loaded the real game assets and rendered the
+main menu, Options, 2P Survival, 4P Survival, and return to the menu, with gamma
+enabled. Each scene advanced 90 frames at 800 × 600 logical / 1600 × 1200 physical
+resolution. Menu and 4P screenshots were visually inspected. This used temporary
+saves, muted audio, and no controller input.
+
+This pass does not claim a live 2–4-player controller session, a new live native
+capture, or native screenshot comparison for gamma. Terrain comparisons use
+the existing captured fixtures and their established tolerances.

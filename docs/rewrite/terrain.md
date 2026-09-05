@@ -43,13 +43,20 @@ terrain texture indices.
 Run the test:
 
 ```bash
-uv run pytest tests/render/test_ground_dump_fixtures.py
+uv run pytest tests/render/test_ground_dump_fixtures.py --run-terrain
 ```
 
 Notes:
 
-- Requires a display (raylib); the test skips if `DISPLAY` / `WAYLAND_DISPLAY` is missing.
+- Requires a display accessible to raylib. On macOS, a sandbox can hide the
+  active display; run these tests with display access. Linux checks `DISPLAY`
+  / `WAYLAND_DISPLAY`.
 - Requires game assets at `game_bins/crimsonland/1.9.93-gog/crimson.paq`.
+- The test renders at the capture's pixel dimensions, including on Retina
+  displays. Missing tracked captures fail the test instead of skipping it.
+- `tests/render/test_shader_pixels.py` checks the alpha cutoff, shader cleanup,
+  and full-frame gamma with GPU pixel readback. It needs a display but no game
+  assets or `--run-terrain` flag.
 
 ## Decal baking
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +17,7 @@ from grim.terrain_render import GroundRenderer
 
 pytestmark = pytest.mark.terrain
 
-FIXTURE_DIR = Path(__file__).parent / "fixtures" / "ground"
+FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "ground"
 CASES_PATH = FIXTURE_DIR / "ground_dump_cases.json"
 PAQ_DIR = Path("game_bins") / "crimsonland" / "1.9.93-gog"
 PAQ_PATH = PAQ_DIR / "crimson.paq"
@@ -35,7 +34,7 @@ TEXTURE_PATHS = {
 }
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "tests" / "ground_dumps"
 
 DOWNSAMPLE_FACTOR = int(os.environ.get("CRIMSON_GROUND_DUMP_DOWNSAMPLE", "4"))
@@ -65,8 +64,6 @@ class GroundDumpCase:
 
 
 def _load_cases() -> list[GroundDumpCase]:
-    if not CASES_PATH.exists():
-        return []
     data = json.loads(CASES_PATH.read_text(encoding="utf-8"))
     cases: list[GroundDumpCase] = []
     for row in data:
@@ -82,52 +79,6 @@ def _load_cases() -> list[GroundDumpCase]:
             ),
         )
     return cases[-3:]
-
-
-def _can_init_raylib() -> bool:
-    if sys.platform == "darwin":
-        import ctypes
-        import ctypes.util
-
-        lib_path = ctypes.util.find_library("CoreGraphics")
-        if not lib_path:
-            return False
-        try:
-            cg = ctypes.CDLL(lib_path)
-        except OSError:
-            return False
-
-        # CGGetActiveDisplayList(uint32_t maxDisplays, uint32_t *activeDisplays, uint32_t *displayCount)
-        get_active_display_list = cg.CGGetActiveDisplayList
-        get_active_display_list.argtypes = [
-            ctypes.c_uint32,
-            ctypes.POINTER(ctypes.c_uint32),
-            ctypes.POINTER(ctypes.c_uint32),
-        ]
-        get_active_display_list.restype = ctypes.c_int32
-
-        max_displays = 16
-        active = (ctypes.c_uint32 * max_displays)()
-        count = ctypes.c_uint32()
-        err = get_active_display_list(max_displays, active, ctypes.byref(count))
-        return err == 0 and count.value > 0
-
-    if sys.platform.startswith("linux"):
-        if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
-            return False
-    return True
-
-
-@pytest.fixture(scope="module")
-def raylib_context() -> Iterator[None]:
-    if not _can_init_raylib():
-        pytest.skip("raylib requires an active display")
-    rl.set_config_flags(int(rl.ConfigFlags.FLAG_WINDOW_HIDDEN))
-    rl.init_window(16, 16, "ground-fixtures")
-    try:
-        yield
-    finally:
-        rl.close_window()
 
 
 @pytest.fixture(scope="module")
@@ -175,16 +126,13 @@ def _diff_summary(expected: Image.Image, actual: Image.Image) -> tuple[int, floa
 
 def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) -> None:
     cases = _load_cases()
-    if not cases:
-        pytest.skip("missing ground dump fixtures")
+    assert cases, "ground dump fixtures must contain captured cases"
     out_root = _artifacts_dir()
     out_root.mkdir(parents=True, exist_ok=True)
 
     failures: list[str] = []
     for case in cases:
         fixture_path = FIXTURE_DIR / case.fixture
-        if not fixture_path.exists():
-            pytest.skip(f"missing fixture: {fixture_path}")
         base = terrain_textures[case.tex0_index]
         overlay = terrain_textures[case.tex1_index]
         detail = terrain_textures[case.tex2_index]
@@ -196,6 +144,8 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
             height=case.height,
             texture_scale=1.0,
         )
+        # Compare at the capture's pixel dimensions even on a Retina display.
+        renderer.texture_scale = renderer._render_pixel_ratio()
         renderer.schedule_generate(seed=case.seed)
         for _ in range(6):
             renderer.process_pending()

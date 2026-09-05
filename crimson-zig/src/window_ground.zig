@@ -55,7 +55,7 @@ const alpha_test_fs: [:0]const u8 =
     \\
     \\void main() {
     \\    vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
-    \\    if (texel.a <= 0.0156862745) discard;
+    \\    if (texel.a <= 4.0 / 255.0) discard;
     \\    finalColor = texel;
     \\}
 ;
