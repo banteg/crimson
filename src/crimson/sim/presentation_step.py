@@ -33,13 +33,14 @@ _BULLET_HIT_SFX = (
 )
 
 
-class DeterministicPresentationPlan(msgspec.Struct):
+class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     """Deterministic native-parity presentation effects emitted by one sim tick."""
 
     trigger_game_tune: bool = False
-    sfx: list[SfxId] = msgspec.field(default_factory=list)
+    sfx: tuple[SfxId, ...] = ()
     terrain_fx: TerrainFxBatch = TerrainFxBatch()
     post_apply_sfx: tuple[SfxId, ...] = ()
+    play_quest_completion_music: bool = False
 
 
 class PresentationPlanRuntime(msgspec.Struct):
@@ -318,9 +319,13 @@ def queue_projectile_decals_post_hit(
         # after the burn draw, instead of the streak decal loop.
         runtime = post_ctx.large_hit_decal_runtime
         if runtime is not None:
-            shard_angle = base_angle + float(
-                rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
-            ) * 0.01
+            shard_angle = (
+                base_angle
+                + float(
+                    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
+                )
+                * 0.01
+            )
             runtime.spawn_freeze_shard(hit.hit, float(shard_angle))
         return
 
@@ -363,9 +368,10 @@ def plan_world_presentation_step(
     trigger_game_tune: bool | None = None,
     hit_sfx: Sequence[SfxId] | None = None,
 ) -> DeterministicPresentationPlan:
-    commands = DeterministicPresentationPlan()
+    sfx: list[SfxId] = []
+    play_game_tune = False
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
-        commands.sfx.append(SfxId.UI_LEVELUP)
+        sfx.append(SfxId.UI_LEVELUP)
     if trigger_game_tune is None and hit_sfx is None:
         if hits:
             queue_projectile_decals(
@@ -379,26 +385,26 @@ def plan_world_presentation_step(
             )
             if freeze_bonus_active(state=state):
                 if (not bool(demo_mode_active)) and game_mode != GameMode.RUSH and (not bool(game_tune_started)):
-                    commands.trigger_game_tune = True
+                    play_game_tune = True
             else:
-                commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx(
+                play_game_tune, planned_hit_sfx = plan_hit_sfx(
                     hits,
                     game_mode=game_mode,
                     demo_mode_active=bool(demo_mode_active),
                     game_tune_started=bool(game_tune_started),
                     rng=rng,
                 )
-                commands.sfx.extend(planned_hit_sfx)
+                sfx.extend(planned_hit_sfx)
     else:
         if trigger_game_tune is not None:
-            commands.trigger_game_tune = bool(trigger_game_tune)
+            play_game_tune = bool(trigger_game_tune)
         if hit_sfx is not None:
-            commands.sfx.extend(hit_sfx)
+            sfx.extend(hit_sfx)
     for idx, player in enumerate(players):
         if idx >= len(prev_audio):
             continue
         prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
-        commands.sfx.extend(
+        sfx.extend(
             plan_player_audio_sfx(
                 player,
                 prev_shot_seq=int(prev_shot_seq),
@@ -407,9 +413,9 @@ def plan_world_presentation_step(
             ),
         )
     if pickups:
-        commands.sfx.extend(SfxId.UI_BONUS for _ in pickups)
-    commands.sfx.extend(event_sfx[:4])
-    return commands
+        sfx.extend(SfxId.UI_BONUS for _ in pickups)
+    sfx.extend(event_sfx[:4])
+    return DeterministicPresentationPlan(trigger_game_tune=play_game_tune, sfx=tuple(sfx))
 
 
 def apply_presentation_plan(

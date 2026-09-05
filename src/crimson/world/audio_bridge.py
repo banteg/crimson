@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from grim.audio import AudioState
+from grim.audio import AudioState, play_music
 from grim.rand import CrandLike
+from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
 from ..audio_router import AudioRouter, AudioRouterRuntime
@@ -48,6 +49,21 @@ class AudioBridge:
             runtime=_AudioBridgePresentationPlanRuntime(bridge=self),
             apply_audio=bool(apply_audio),
         )
+
+    def apply_post_plan(self, *, plan: DeterministicPresentationPlan, apply_audio: bool = True) -> None:
+        if not apply_audio:
+            return
+        for sfx in plan.post_apply_sfx:
+            self.router.play_sfx(sfx)
+        if plan.play_quest_completion_music and self.audio is not None:
+            play_music(self.audio, "crimsonquest")
+            playback = self.audio.music.playbacks.get("crimsonquest")
+            if playback is not None:
+                playback.volume = 0.0
+                try:
+                    rl.set_music_volume(playback.music, 0.0)
+                except RuntimeError:
+                    playback.volume = 0.0
 
 
 class _AudioBridgePresentationPlanRuntime(PresentationPlanRuntime):

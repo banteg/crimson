@@ -27,6 +27,7 @@ class _StubReplayRuntime:
     audio_bridge: object = field(
         default_factory=lambda: SimpleNamespace(
             apply_plan=lambda **_kwargs: None,
+            apply_post_plan=lambda **_kwargs: None,
             router=SimpleNamespace(play_sfx=lambda _key: None),
         ),
     )
@@ -46,10 +47,9 @@ def _replay_with_ticks(tick_count: int) -> Replay:
 
 
 def _capture_output_ticks(mocker, captured_ticks: list[int]) -> None:
-    def _apply_presentation_outputs(*, outputs, apply_runtime, **_kwargs) -> None:
+    def _apply_presentation_outputs(*, outputs, **_kwargs) -> None:
         for output in outputs:
             captured_ticks.append(int(output.tick_index))
-            apply_runtime.output_applied(output)
 
     mocker.patch.object(
         replay_playback_mode,
@@ -131,6 +131,7 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(m
         sim_world=SimpleNamespace(apply_step_metadata=lambda **_kwargs: None),
         audio_bridge=SimpleNamespace(
             apply_plan=lambda **_kwargs: None,
+            apply_post_plan=lambda **_kwargs: None,
             router=SimpleNamespace(play_sfx=lambda _key: None),
         ),
         sync_audio_bridge_state=lambda: None,

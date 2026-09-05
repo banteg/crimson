@@ -18,7 +18,6 @@ from grim.color import RGBA
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 from tests.support.builders import FakePlaybackDriver
 
 
@@ -51,6 +50,9 @@ class _AudioBridgeStub:
     router: _RouterStub = field(default_factory=_RouterStub)
 
     def apply_plan(self, **_kwargs) -> None:
+        return None
+
+    def apply_post_plan(self, **_kwargs) -> None:
         return None
 
 
@@ -176,7 +178,7 @@ def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, repl
     assert width == 42.0
 
 
-def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
+def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(5))
     audio_bridge = _AudioBridgeStub()
@@ -199,23 +201,25 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view._dt_accum = 1.0
     view._dt = 1.0 / 60.0
 
-    observed_sfx_enabled: list[bool] = []
-    _set_private(
-        view,
-        "_apply_post_apply_reaction",
-        lambda _reaction: observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled)),
+    def check_muted(**_kwargs) -> None:
+        assert not audio_bridge.router.sfx_enabled
+
+    apply_post_plan = mocker.patch.object(
+        audio_bridge,
+        "apply_post_plan",
+        side_effect=check_muted,
     )
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=5))
     view._max_ticks = None
 
     view._skip_forward_seconds(2.0 / 60.0)
 
-    assert observed_sfx_enabled == [False, False]
+    assert apply_post_plan.call_count == 2
     assert bool(audio_bridge.router.sfx_enabled)
     assert view._dt_accum == 0.0
 
 
-def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -> None:
+def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(3))
     audio_bridge = _AudioBridgeStub()
@@ -239,11 +243,11 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
 
     observed_sfx_enabled: list[bool] = []
 
-    def _apply_post_apply_reaction(_reaction: object) -> None:
+    def _apply_post_plan(**_kwargs) -> None:
         observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    _set_private(view, "_apply_post_apply_reaction", _apply_post_apply_reaction)
+    mocker.patch.object(audio_bridge, "apply_post_plan", side_effect=_apply_post_plan)
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=3))
     view._max_ticks = None
 
@@ -439,74 +443,3 @@ def test_draw_tutorial_overlays_uses_shared_overlay_helper(mocker, replay_playba
 
     draw_overlay.assert_called_once()
     assert draw_overlay.call_args.args == (overlay,)
-
-
-def test_post_apply_reaction_reads_quest_runtime_from_driver(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    audio_bridge = _AudioBridgeStub()
-    runtime = _RuntimeStub(
-        audio_bridge=audio_bridge,
-        render_resources=_RenderResourcesStub(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
-        ),
-    )
-    _set_private(view, "_runtime", runtime)
-    _set_private(
-        view,
-        "_driver",
-        FakePlaybackDriver(
-            tick_limit=1,
-            quest_spawn_state=QuestSpawnState(
-                spawn_timeline_ms=444.0,
-                completion_transition_ms=222.0,
-                play_hit_sfx=True,
-                play_completion_music=True,
-            ),
-        ),
-    )
-    _set_private(view, "_audio", type("AudioStateStub", (), {"music": type("MusicStub", (), {"playbacks": {}})()})())
-    play_sfx = mocker.patch.object(audio_bridge.router, "play_sfx")
-    play_music = mocker.patch.object(replay_playback_mode, "play_music")
-
-    reaction = view._build_post_apply_reaction(
-        tick_result=FakePlaybackDriver(tick_limit=1).step_tick(0),
-    )
-    view._apply_post_apply_reaction(reaction)
-
-    assert reaction.quest is not None
-    assert reaction.quest.play_hit_sfx is True
-    assert reaction.quest.play_completion_music is True
-    play_sfx.assert_called_once_with(SfxId.QUESTHIT)
-    play_music.assert_called_once()
-
-
-def test_post_apply_reaction_plays_recorded_bonus_sfx(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    audio_bridge = _AudioBridgeStub()
-    _set_private(
-        view,
-        "_runtime",
-        _RuntimeStub(
-            audio_bridge=audio_bridge,
-            render_resources=_RenderResourcesStub(
-                ground=None,
-                fx_textures=None,
-                fx_queue=[],
-                fx_queue_rotated=[],
-            ),
-        ),
-    )
-    play_sfx = mocker.patch.object(audio_bridge.router, "play_sfx")
-
-    reaction = view._build_post_apply_reaction(
-        tick_result=FakePlaybackDriver(
-            tick_limit=1,
-            post_apply_sfx=(SfxId.UI_BONUS,),
-        ).step_tick(0),
-    )
-    view._apply_post_apply_reaction(reaction)
-
-    play_sfx.assert_called_once_with(SfxId.UI_BONUS)

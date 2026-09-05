@@ -18,7 +18,7 @@ class _RecordingRunner:
     start_tick: int | None = None
     ticks_requested: int | None = None
     tick_dt: float | None = None
-    after_tick: Callable[[TickResult], None] | None = None
+    after_tick: Callable[[TickResult], bool | None] | None = None
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         self.frame_ctx = frame_ctx
@@ -29,7 +29,7 @@ class _RecordingRunner:
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
-        after_tick: Callable[[TickResult], None] | None = None,
+        after_tick: Callable[[TickResult], bool | None] | None = None,
     ) -> TickBatchResult:
         self.start_tick = int(start_tick)
         self.ticks_requested = int(ticks_requested)

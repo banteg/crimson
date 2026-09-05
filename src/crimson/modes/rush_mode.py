@@ -21,7 +21,6 @@ from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    TickStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -162,18 +161,16 @@ class RushMode(BaseGameplayMode):
         kills = int(self.creatures.kill_count)
         return f"rush_{stamp}_kills{kills}"
 
-
     def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         dt_tick: float,
-    ) -> TickStepAction:
+    ) -> bool:
         _ = tick, dt_tick
         if not self._any_player_alive():
             self._enter_game_over()
-            return "stop_after_finalize"
-        return "continue"
-
+            return False
+        return True
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -183,7 +180,6 @@ class RushMode(BaseGameplayMode):
         if self._game_over_active:
             self._update_game_over_ui(float(frame.dt))
             return
-
 
         any_alive = self._any_player_alive()
         sim_dt = float(frame.dt) if ((not self._paused) and any_alive) else 0.0
@@ -201,7 +197,6 @@ class RushMode(BaseGameplayMode):
             dt_frame=float(sim_dt),
             session=session,
             recorder=self._replay_recorder,
-            stop_on_mode_tick=True,
         )
 
     def _draw_game_cursor(self) -> None:

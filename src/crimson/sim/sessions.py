@@ -54,11 +54,10 @@ RUSH_FORCED_AMMO = 30.0
 # ---------------------------------------------------------------------------
 
 
-class DeterministicSessionTick(msgspec.Struct):
-    step: DeterministicStepResult
-    elapsed_ms: float
-    creature_count_world_step: int
-    presentation_plan_ms: float = 0.0
+class DeterministicSessionTick(DeterministicStepResult):
+    elapsed_ms: float = 0.0
+    creature_count_world_step: int = 0
+    quest_completed: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -357,6 +356,7 @@ class DeterministicSession(msgspec.Struct):
 
     # Mutable timing
     elapsed_ms: float = 0.0
+    last_presentation_plan_ms: float = 0.0
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
     mode_runtime: SessionModeRuntime = msgspec.field(default_factory=SessionModeRuntime)
@@ -568,16 +568,20 @@ class DeterministicSession(msgspec.Struct):
             trigger_game_tune=events.trigger_game_tune,
             hit_sfx=events.hit_sfx,
         )
-        presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
+        self.last_presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
         if recording_rng is not None:
             presentation_trace.draws_total = int(recording_rng.calls)
 
+        quest_spawn = mode_runtime.spawn if isinstance(mode_runtime, QuestSessionRuntime) else None
+        if quest_spawn is not None and quest_spawn.play_hit_sfx:
+            post_apply_sfx.append(SfxId.QUESTHIT)
         presentation = msgspec.structs.replace(
             presentation,
             terrain_fx=self.terrain_fx.take_batch(),
             post_apply_sfx=tuple(post_apply_sfx),
+            play_quest_completion_music=quest_spawn is not None and quest_spawn.play_completion_music,
         )
-        step = DeterministicStepResult(
+        step = DeterministicSessionTick(
             dt_sim=timing.dt_sim,
             timing=timing,
             events=events,
@@ -605,9 +609,7 @@ class DeterministicSession(msgspec.Struct):
         dt_elapsed = dt_raw_ms if self.elapsed_uses_raw_dt else dt_sim_ms
         self.elapsed_ms = elapsed_before_ms + dt_elapsed
 
-        return DeterministicSessionTick(
-            step=step,
-            elapsed_ms=self.elapsed_ms,
-            creature_count_world_step=creature_count_world_step,
-            presentation_plan_ms=float(presentation_plan_ms),
-        )
+        step.elapsed_ms = self.elapsed_ms
+        step.creature_count_world_step = creature_count_world_step
+        step.quest_completed = quest_spawn is not None and quest_spawn.completed
+        return step

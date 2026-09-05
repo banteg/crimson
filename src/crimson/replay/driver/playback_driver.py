@@ -153,7 +153,6 @@ class PlaybackDriver:
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
 
-
         mode_raw = int(self.replay.header.game_mode_id)
         try:
             self.mode_id = GameMode(mode_raw)
@@ -393,8 +392,8 @@ class PlaybackDriver:
             creature_count_override=(
                 int(tick_result.payload.creature_count_world_step) if bool(use_world_step_creature_count) else None
             ),
-            deaths=tick_result.payload.step.events.deaths,
-            events=tick_result.payload.step.events,
+            deaths=tick_result.payload.events.deaths,
+            events=tick_result.payload.events,
         )
 
     def step_tick(self, tick_index: int) -> TickResult:

@@ -95,7 +95,7 @@ def _live_runtime_checkpoints(
     checkpoints: list[ReplayCheckpoint] = []
     for tick_index in range(len(replay.ticks)):
         tick = driver.step_tick(tick_index)
-        step = tick.payload.step
+        step = tick.payload
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
@@ -181,7 +181,7 @@ def test_runtime_playback_driver_matches_verify_terrain_fx_output() -> None:
     runtime_tick = runtime_driver.step_tick(0)
     verify_tick = verify_driver.step_tick(0)
 
-    assert runtime_tick.payload.step.presentation.terrain_fx == verify_tick.payload.step.presentation.terrain_fx
+    assert runtime_tick.payload.presentation.terrain_fx == verify_tick.payload.presentation.terrain_fx
 
 
 def test_quest_live_vs_headless_tick_pipeline() -> None:

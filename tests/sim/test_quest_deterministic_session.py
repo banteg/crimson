@@ -40,6 +40,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
     )
     return session, spawn_state
 
+
 def test_quest_session_tick_exposes_required_fields() -> None:
     session, spawn_state = _build_session(seed=101)
     tick = session.step_tick(
@@ -47,7 +48,7 @@ def test_quest_session_tick_exposes_required_fields() -> None:
         inputs=[PlayerInput(aim=Vec2(512.0, 512.0))],
     )
 
-    assert tick.step is not None
+    assert tick is not None
     assert isinstance(tick.elapsed_ms, float)
     assert isinstance(tick.creature_count_world_step, int)
     assert not hasattr(tick, "spawn_timeline_ms")
@@ -63,6 +64,7 @@ def test_quest_session_tick_exposes_required_fields() -> None:
     assert isinstance(spawn_state.play_hit_sfx, bool)
     assert isinstance(spawn_state.play_completion_music, bool)
 
+
 def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
     session0, spawn0 = _build_session(seed=101)
     session1, spawn1 = _build_session(seed=101)
@@ -75,7 +77,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         tick0 = session0.step_tick(dt=1.0 / 60.0, inputs=inputs)
         trace0.append(
             (
-                float(tick0.step.dt_sim),
+                float(tick0.dt_sim),
                 int(session0.world.state.rng.state),
                 float(spawn0.spawn_timeline_ms),
                 float(spawn0.no_creatures_timer_ms),
@@ -86,7 +88,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         tick1 = session1.step_tick(dt=1.0 / 60.0, inputs=inputs)
         trace1.append(
             (
-                float(tick1.step.dt_sim),
+                float(tick1.dt_sim),
                 int(session1.world.state.rng.state),
                 float(spawn1.spawn_timeline_ms),
                 float(spawn1.no_creatures_timer_ms),
@@ -95,6 +97,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         )
 
     assert trace0 == trace1
+
 
 def test_quest_session_clears_reflex_boost_when_quest_is_idle_complete() -> None:
     session, spawn_state = _build_session(seed=101)
@@ -110,6 +113,7 @@ def test_quest_session_clears_reflex_boost_when_quest_is_idle_complete() -> None
     assert spawn_state.spawn_timeline_ms == 0.0
     assert session.world.state.bonuses.reflex_boost == 0.0
     assert session.world.state.time_scale_active is False
+
 
 def test_quest_timing_does_not_zero_dt_for_pending_perk_prompt() -> None:
     session, _spawn_state = _build_session(seed=101)

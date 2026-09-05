@@ -41,9 +41,7 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
 
     assert not corpse.active
     freeze_effects = [
-        entry
-        for entry in state.effects.iter_active()
-        if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
+        entry for entry in state.effects.iter_active() if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
     ]
     assert len(freeze_effects) == 16
     tagged_callers = [
@@ -70,7 +68,9 @@ def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
     corpse.active = True
     corpse.hp = -1.0
     corpse.lifecycle_stage = -100.0
-    bonus_apply(state, player, BonusId.FREEZE, origin=player.pos, creatures=pool.entries, players=[player], detail_preset=5)
+    bonus_apply(
+        state, player, BonusId.FREEZE, origin=player.pos, creatures=pool.entries, players=[player], detail_preset=5,
+    )
     assert not corpse.active
     assert len(state.effects.iter_active()) == 16
 
@@ -90,16 +90,22 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     creature.hp = 1.0
     creature.pos = Vec2(200, 200)
     world.state.projectiles.spawn(
-        pos=creature.pos, angle=0.0, type_id=ProjectileTemplateId.PISTOL, owner=OwnerRef.from_local_player(0),
+        pos=creature.pos,
+        angle=0.0,
+        type_id=ProjectileTemplateId.PISTOL,
+        owner=OwnerRef.from_local_player(0),
     )
     world.state.bonus_pool.spawn_at(world.players[0].pos, BonusId.FREEZE, state=world.state, emit_burst=False)
     session = DeterministicSession(
-        world=world, world_size=1024.0, damage_scale_by_type=sim.damage_scale_by_type,
-        game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,
+        world=world,
+        world_size=1024.0,
+        damage_scale_by_type=sim.damage_scale_by_type,
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
     )
     result = session.step_tick(dt=1 / 60, inputs=[PlayerInput(aim=Vec2(600, 512))])
-    assert len(result.step.events.deaths) == 1
-    assert [p.bonus_id for p in result.step.events.pickups] == [BonusId.FREEZE]
+    assert len(result.events.deaths) == 1
+    assert [p.bonus_id for p in result.events.pickups] == [BonusId.FREEZE]
     callers = [r.caller for r in world.state.rng.records_since()]
     assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) == 8
     assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) == 1

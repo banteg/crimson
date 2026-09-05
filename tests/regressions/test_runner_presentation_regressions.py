@@ -54,7 +54,7 @@ def _apply_batch(
 ) -> list[int]:
     applied_ticks: list[int] = []
     for result in batch.completed_results:
-        step = result.payload.step
+        step = result.payload
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
@@ -132,11 +132,11 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
             frame_index=frame_index,
             dt_seconds=1.0 / 60.0,
         )
-        if any(not result.payload.step.presentation.terrain_fx.is_empty() for result in batch.completed_results):
+        if any(not result.payload.presentation.terrain_fx.is_empty() for result in batch.completed_results):
             break
         _apply_batch(world, session=session, batch=batch)
 
-    assert any(not result.payload.step.presentation.terrain_fx.is_empty() for result in batch.completed_results)
+    assert any(not result.payload.presentation.terrain_fx.is_empty() for result in batch.completed_results)
 
 
 def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:

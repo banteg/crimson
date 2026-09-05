@@ -5,188 +5,72 @@ tags:
 
 # Deterministic Step Pipeline
 
-This page describes the current per-tick contract shared by:
+Live gameplay, replay verification/playback, and headless harnesses step the same
+`DeterministicSession` in `src/crimson/sim/sessions.py`.
 
-- live gameplay via `TickRunner`
-- replay verification and replay info via `PlaybackDriver`
-- replay playback mode
-- world/runtime harnesses that step deterministic ticks directly
+## Tick contract
 
-The core deterministic step lives in `src/crimson/sim/step_pipeline.py`.
-Session orchestration lives in `src/crimson/sim/sessions.py`.
-Canonical tick input lives in `src/crimson/sim/input_providers.py`.
-Shared frame/apply helpers live in `src/crimson/sim/frame_pump.py`,
-`src/crimson/sim/driver/playback_pump.py`, `src/crimson/sim/batch_apply.py`,
-and `src/crimson/sim/presentation_reactions.py`.
+`ResolvedTick` carries a tick index, delta, a tuple of `PlayerInput` values in slot
+order, and commands. Live input comes from `LocalInputProvider`; replay input
+comes from `PlaybackDriver`. Replay preludes and postludes retain their own
+between-tick timing contract.
 
-## Architecture Overview
+The session returns one `DeterministicSessionTick` containing:
 
-```mermaid
-flowchart TD
-    subgraph Sources["Tick Sources"]
-        Local["LocalInputProvider"]
-        Lan["LAN TickFrame"]
-        Replay["ReplayTick"]
-    end
+- effective delta and native frame timing;
+- simulation events and optional presentation RNG trace;
+- an immutable `DeterministicPresentationPlan`, including quest sound and music requests;
+- elapsed time, creature count, and quest completion state for that tick.
 
-    subgraph Contract["Shared Tick Contract"]
-        Pull["InputProvider.pull_tick()"]
-        Tick["ResolvedTick"]
-        Runner["TickRunner"]
-        Driver["PlaybackDriver.step_tick()"]
-        Session["DeterministicSession.step_tick()"]
-        Result["TickResult"]
-    end
-
-    subgraph Apply["Shared Apply Layers"]
-        Metadata["apply_sim_metadata_*"]
-        Present["apply_presentation_outputs()"]
-        Reactions["build/apply post-apply reactions"]
-    end
-
-    subgraph Consumers["Outer Loops"]
-        Gameplay["BaseGameplayMode / LAN"]
-        World["WorldRuntime"]
-        ReplayMode["ReplayPlaybackMode"]
-        ReplayTools["verify / info / benchmark / render"]
-    end
-
-    Local --> Pull --> Tick --> Runner --> Session --> Result
-    Lan --> Pull
-    Replay --> Driver --> Session
-    Driver --> Result
-
-    Result --> Metadata --> Present --> Reactions
-
-    Gameplay --> Runner
-    World --> Runner
-    ReplayMode --> Driver
-    ReplayTools --> Driver
-```
-
-The important architectural point is that live, LAN, replay verification, and
-replay playback no longer invent separate in-memory tick/result shapes. They
-all converge on `ResolvedTick -> DeterministicSession -> TickResult`, then fan
-out into shared apply layers plus mode- or tool-specific outer loops.
-
-## Tick Contract
-
-At the runtime boundary, one deterministic tick is one `ResolvedTick`:
-
-- `tick_index`
-- `dt_seconds`
-- `inputs`: canonical tuple of per-player `PlayerInput` values in slot order
-- `commands`: canonical tuple of per-tick game commands
-
-Live/LAN paths receive it through `InputProvider.pull_tick(...) -> TickSupply`.
-Replay paths synthesize the same shape inside `PlaybackDriver.step_tick(...)`.
-
-The deterministic result shape is shared too:
-
-- `TickResult.source_tick` carries the canonical `ResolvedTick`
-- `TickResult.payload` carries `DeterministicSessionTick`
-- replay stepping additionally sets `TickResult.replay_tick_index`
-
-`DeterministicSession.step_tick(...)` produces a `DeterministicSessionTick`
-whose `step` is a `DeterministicStepResult` with:
-
-- `dt_sim`: effective dt after deterministic scaling
-- `events`: deterministic sim events
-- `presentation`: a `DeterministicPresentationPlan` envelope for deterministic native-parity outputs
-- optional RNG trace data when replay trace mode is enabled
-
-`DeterministicPresentationPlan` intentionally remains part of deterministic
-stepping. Native hit audio and terrain decals consume the authoritative RNG
-stream, so headless verification still builds the plan even when no renderer or
-audio backend is present. Sinks are optional consumers of that plan; the plan is
-not optional for parity.
+`TickResult` adds the source input and optional replay index. There is no nested
+step payload. Presentation profiling time lives on the session and is collected
+by the outer loop, outside the deterministic result.
 
 ```mermaid
 flowchart LR
-    ResolvedTick["ResolvedTick<br/>tick_index + dt + inputs + commands"]
-    Session["DeterministicSession.step_tick()"]
-    TickResult["TickResult"]
-    SessionTick["DeterministicSessionTick"]
-    Step["DeterministicStepResult"]
-
-    ResolvedTick --> Session --> TickResult
-    TickResult --> SessionTick
-    SessionTick --> Step
+    Local[LocalInputProvider] --> Runner[TickRunner]
+    Replay[PlaybackDriver] --> Session[DeterministicSession]
+    Runner --> Session
+    Session --> Result[TickResult]
+    Result --> Bookkeeping[Record and checkpoint current tick]
+    Bookkeeping --> Stop[Evaluate mode stop]
+    Result --> Present[Apply immutable presentation outputs]
 ```
 
-## Shared Step / Apply Path
+## Step and application order
 
-The runtime is now split into a consistent sequence:
+For each live tick, the runner steps the session, records the replay input,
+applies metadata, records the checkpoint, and evaluates the mode callback before
+advancing another tick. A terminal callback stops the batch immediately. The
+final tick is recorded before a callback can save the finished replay.
 
-1. get a canonical `ResolvedTick`
-2. step `DeterministicSession`
-3. apply sim metadata to the runtime world
-4. apply presentation outputs
-5. apply post-apply reactions
-6. optionally record checkpoints, replay stats, or replay info
+Audio, camera, and terrain application can be batched after simulation because
+all presentation requests belong to their producing tick. The shared consumer in
+`src/crimson/sim/batch_apply.py` calls `AudioBridge.apply_plan`, applies camera and
+terrain output, then calls `AudioBridge.apply_post_plan` for bonus/quest sounds
+and completion music. Consumers do not reconstruct reactions from current quest
+state. Replay fast-forward can suppress audio without changing simulation RNG.
 
-Shared helpers own the bookkeeping around that sequence:
+Native hit audio and terrain effects consume authoritative RNG, so headless
+verification still builds the presentation plan even without rendering or audio.
 
-- live `TickRunner` frame advancement:
-  `src/crimson/sim/frame_pump.py`
-- replay playback frame advancement:
-  `src/crimson/sim/driver/playback_pump.py`
-- sim metadata apply and presentation output apply:
-  `src/crimson/sim/batch_apply.py`
-- post-apply presentation reactions:
-  `src/crimson/sim/presentation_reactions.py`
+Frame orchestration is in `src/crimson/sim/frame_pump.py` and
+`src/crimson/replay/driver/playback_pump.py`. These preserve distinct live and
+replay source timing while sharing result application.
 
-This keeps live gameplay, replay playback, headless verification, and runtime
-harnesses close to the same deterministic contract even when their outer loops differ.
-`apply_presentation_outputs()` consumes the outer runtime's presentation
-capabilities for audio, terrain, and camera effects; deterministic stepping
-only emits the plan.
+## Input and timer ownership
 
-```mermaid
-sequenceDiagram
-    participant Outer as Outer Loop
-    participant Source as Tick Source
-    participant Session as DeterministicSession
-    participant Apply as Shared Apply Layers
-    participant Hooks as Recording / Sync / Info
+Local input keeps unconsumed button edges across zero-tick render frames, uses
+the latest held controls and aim, and clears true edges after the first tick.
+Pausing clears pending edges and clock debt while retaining explicit commands.
+Movement fields named `*_pressed` represent held controls in the existing format.
 
-    Outer->>Source: request next tick
-    Source-->>Outer: ResolvedTick
-    Outer->>Session: step_tick(timing, inputs, commands)
-    Session-->>Outer: TickResult
-    Outer->>Apply: apply_sim_metadata_*
-    Outer->>Apply: apply_presentation_outputs()
-    Outer->>Apply: build/apply post-apply reactions
-    Outer->>Hooks: optional checkpoints / replay info
-```
+Survival and rush time belongs to `DeterministicSession.elapsed_ms`; quest time
+belongs to `QuestSpawnState.spawn_timeline_ms`. Render/HUD animation time is a
+separate `SimWorldState.presentation_elapsed_ms` cache.
 
-### Timer Ownership
-
-Timer semantics are now explicit instead of implicit:
-
-- survival and rush runtime timing comes from `DeterministicSession.elapsed_ms`
-- quest progression/replay timing comes from `QuestSpawnState.spawn_timeline_ms`
-- render/HUD animation caches use `SimWorldState.presentation_elapsed_ms`
-
-That separation is deliberate. The session or spawn state owns authoritative
-runtime time; `presentation_elapsed_ms` is only a presentational cache for
-world rendering and HUD animation.
-
-## Why This Matters
-
-The old split between live gameplay, replay verification, and replay playback
-made parity drift easier: different tick shapes, duplicated loop bookkeeping,
-and mode-specific side effects wired in different places.
-
-The current model is simpler:
-
-- live/LAN/replay all step through the same `DeterministicSession`
-- replay uses the same in-memory tick/result shapes as live
-- mode-specific runtime state is authoritative in spawn/session state, not echoed through generic tick types
-- presentation reactions are applied through one shared post-apply layer
-
-That makes replay verification, checkpoint comparison, LAN parity, and diff
-investigation much easier to reason about.
+Custom network play has been removed; see [Netplay](netplay.md) for the deferred
+scope and requirements for any future implementation.
 
 ## Studyability Hook Topology
 

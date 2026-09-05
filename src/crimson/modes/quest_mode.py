@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import TextureId
-from grim.audio import AudioState, play_music
+from grim.audio import AudioState
 from grim.config import (
     CrimsonConfig,
 )
@@ -29,13 +29,6 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..rng_caller_static import RngCallerStatic
 from ..sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
-from ..sim.hooks import TickResult
-from ..sim.presentation_reactions import (
-    PostApplyReaction,
-    PostApplyReactionRuntime,
-    apply_post_apply_reaction,
-    build_post_apply_reaction,
-)
 from ..sim.session_builders import build_quest_session
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState
 from ..ui.cursor import draw_menu_cursor
@@ -48,7 +41,6 @@ from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_playe
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    TickStepAction,
 )
 from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuController
@@ -79,16 +71,6 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
     most_used_weapon_id: WeaponId
     highscore_random_tag: int
     player_health_values: tuple[float, ...] = ()
-
-
-class _QuestPostApplyReactionRuntime(PostApplyReactionRuntime):
-    mode: QuestMode
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        self.mode.audio_bridge.router.play_sfx(sfx)
-
-    def play_completion_music(self) -> None:
-        self.mode._play_quest_completion_music()
 
 
 class QuestMode(BaseGameplayMode):
@@ -234,17 +216,16 @@ class QuestMode(BaseGameplayMode):
         # test harness calling failure/complete helpers without ticking).
         return int(recorder.tick_index) <= 0
 
-
     def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         dt_tick: float,
-    ) -> TickStepAction:
+    ) -> bool:
         _ = tick
         spawn_state = self._quest_spawn_state
         _ = dt_tick
 
-        if spawn_state.completed:
+        if tick.quest_completed:
             if self._outcome is None:
                 assert self._quest_level is not None, "quest outcome requires active quest level"
                 fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
@@ -275,39 +256,12 @@ class QuestMode(BaseGameplayMode):
                 )
             self._save_replay()
             self.close_requested = True
-            return "stop_after_finalize"
+            return False
 
         if self._death_transition_ready():
             self._close_failed_run()
-            return "stop_after_finalize"
-        return "continue"
-
-    def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
-        return build_post_apply_reaction(
-            tick_result=tick_result,
-            quest_state=self._quest_spawn_state,
-        )
-
-    def _apply_tick_post_apply_reaction(self, reaction: PostApplyReaction, *, dt_seconds: float) -> None:
-        _ = dt_seconds
-        apply_post_apply_reaction(
-            reaction=reaction,
-            runtime=_QuestPostApplyReactionRuntime(mode=self),
-        )
-
-    def _play_quest_completion_music(self) -> None:
-        if self.audio is None:
-            return
-        play_music(self.audio, "crimsonquest")
-        playback = self.audio.music.playbacks.get("crimsonquest")
-        if playback is None:
-            return
-        playback.volume = 0.0
-        try:
-            rl.set_music_volume(playback.music, 0.0)
-        except RuntimeError:
-            playback.volume = 0.0
-
+            return False
+        return True
 
     def consume_outcome(self) -> QuestRunOutcome | None:
         outcome = self._outcome
@@ -540,7 +494,6 @@ class QuestMode(BaseGameplayMode):
             dt_frame=float(sim_dt),
             session=session,
             recorder=self._replay_recorder,
-            stop_on_mode_tick=True,
         )
 
     def draw(self) -> None:

@@ -6,7 +6,7 @@ from grim import music as grim_music
 from grim.assets import (
     TextureId,
 )
-from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
+from grim.audio import AudioState, init_audio_state, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
@@ -14,7 +14,6 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -32,18 +31,9 @@ from ..replay.driver.playback_driver import (
 from ..replay.driver.playback_pump import advance_playback_frame
 from ..replay.driver.setup import ReplayRunnerError
 from ..sim.batch_apply import (
-    PresentationApplyRuntime,
-    PresentationTickOutput,
     apply_presentation_outputs,
 )
 from ..sim.clock import FixedStepClock
-from ..sim.hooks import TickResult
-from ..sim.presentation_reactions import (
-    PostApplyReaction,
-    PostApplyReactionRuntime,
-    apply_post_apply_reaction,
-    build_post_apply_reaction,
-)
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -79,27 +69,6 @@ _REPLAY_WIDGET_TEXT_OFFSET_X = 0.0
 _REPLAY_WIDGET_TEXT_OFFSET_Y = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
-
-
-class _ReplayPresentationApplyRuntime(PresentationApplyRuntime):
-    mode: ReplayPlaybackMode
-    reactions_by_tick: dict[int, PostApplyReaction]
-
-    def output_applied(self, output: PresentationTickOutput) -> None:
-        self.mode._apply_post_apply_reaction(self.reactions_by_tick[int(output.tick_index)])
-
-
-class _ReplayPostApplyReactionRuntime(PostApplyReactionRuntime):
-    mode: ReplayPlaybackMode
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        runtime = self.mode._runtime
-        if runtime is None:
-            return
-        runtime.audio_bridge.router.play_sfx(sfx)
-
-    def play_completion_music(self) -> None:
-        self.mode._play_quest_completion_music()
 
 
 class ReplayPlaybackMode:
@@ -433,39 +402,6 @@ class ReplayPlaybackMode:
         assert font is not None, "small font must be loaded before replay ui measurement"
         return float(measure_small_text_width(font, text))
 
-    def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
-        driver = self._driver
-        return build_post_apply_reaction(
-            tick_result=tick_result,
-            quest_state=(
-                None
-                if driver is None
-                else driver.quest_spawn_state
-            ),
-        )
-
-    def _apply_post_apply_reaction(self, reaction: PostApplyReaction) -> None:
-        runtime = self._runtime
-        if runtime is None:
-            return
-        apply_post_apply_reaction(
-            reaction=reaction,
-            runtime=_ReplayPostApplyReactionRuntime(mode=self),
-        )
-
-    def _play_quest_completion_music(self) -> None:
-        if self._audio is None:
-            return
-        play_music(self._audio, "crimsonquest")
-        playback = self._audio.music.playbacks.get("crimsonquest")
-        if playback is None:
-            return
-        playback.volume = 0.0
-        try:
-            rl.set_music_volume(playback.music, 0.0)
-        except RuntimeError:
-            playback.volume = 0.0
-
     def _tick_limit(self) -> int:
         replay = self._replay
         if replay is None:
@@ -513,23 +449,7 @@ class ReplayPlaybackMode:
         self._frame_index = int(advance.frame_index)
         self._tick_index = int(advance.next_tick_index)
 
-        reaction_by_tick = {
-            int(tick_result.source_tick.tick_index): self._build_post_apply_reaction(tick_result=tick_result)
-            for tick_result in advance.tick_results
-        }
-        if advance.outputs:
-            apply_presentation_outputs(
-                outputs=advance.outputs,
-                runtime=runtime,
-                apply_runtime=_ReplayPresentationApplyRuntime(
-                    mode=self,
-                    reactions_by_tick=reaction_by_tick,
-                ),
-                apply_audio=True,
-            )
-        else:
-            for output in advance.outputs:
-                self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
+        apply_presentation_outputs(outputs=advance.outputs, runtime=runtime, apply_audio=True)
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)

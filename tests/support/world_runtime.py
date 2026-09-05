@@ -4,14 +4,7 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import ResolvedTick
-from crimson.sim.presentation_reactions import (
-    PostApplyReactionRuntime,
-    apply_post_apply_reaction,
-    build_post_apply_reaction,
-)
 from crimson.sim.sessions import (
     DeterministicSession,
     DeterministicSessionTick,
@@ -25,14 +18,6 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.sfx_map import SfxId
-
-
-class _WorldRuntimeHostPostApplyReactionRuntime(PostApplyReactionRuntime):
-    host: WorldRuntimeHost
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        self.host.audio_bridge.router.play_sfx(sfx)
 
 
 class WorldRuntimeHost(WorldRuntime):
@@ -157,30 +142,17 @@ class WorldRuntimeHost(WorldRuntime):
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
 
         self.sim_world.apply_step_metadata(
-            events=tick.step.events,
-            presentation=tick.step.presentation,
-            dt_sim=float(tick.step.dt_sim),
+            events=tick.events,
+            presentation=tick.presentation,
+            dt_sim=float(tick.dt_sim),
             game_tune_started=session.game_tune_started,
         )
         self.sync_audio_bridge_state()
         self.audio_bridge.apply_plan(
-            plan=tick.step.presentation,
+            plan=tick.presentation,
             apply_audio=bool(apply_audio),
         )
-        self.update_camera(float(tick.step.dt_sim))
-        self.render_resources.consume_terrain_fx_batch(tick.step.presentation.terrain_fx)
-        apply_post_apply_reaction(
-            reaction=build_post_apply_reaction(
-                tick_result=TickResult(
-                    source_tick=ResolvedTick(
-                        tick_index=0,
-                        dt_seconds=float(dt),
-                        inputs=() if tick_inputs is None else tuple(tick_inputs),
-                        commands=(),
-                    ),
-                    payload=tick,
-                ),
-            ),
-            runtime=_WorldRuntimeHostPostApplyReactionRuntime(host=self),
-        )
+        self.update_camera(float(tick.dt_sim))
+        self.render_resources.consume_terrain_fx_batch(tick.presentation.terrain_fx)
+        self.audio_bridge.apply_post_plan(plan=tick.presentation, apply_audio=apply_audio)
         return tick

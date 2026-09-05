@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import time
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -39,7 +39,6 @@ from ..replay.checkpoints import (
 )
 from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
-    PresentationApplyRuntime,
     PresentationTickOutput,
     apply_presentation_outputs,
     apply_sim_metadata_tick_result,
@@ -59,14 +58,8 @@ from ..sim.input_providers import (
     PerkMenuOpenCommand,
     PerkPickCommand,
 )
-from ..sim.presentation_reactions import (
-    PostApplyReaction,
-    PostApplyReactionRuntime,
-    apply_post_apply_reaction,
-    build_post_apply_reaction,
-)
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
-from ..sim.tick_runner import TickBatchResult, TickRunner
+from ..sim.tick_runner import TickRunner
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.hud import HudState, draw_target_health_bar
 from ..weapon_runtime import most_used_weapon_id_for_player
@@ -82,37 +75,6 @@ if TYPE_CHECKING:
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents
-
-
-class _AppliedBatchTick(msgspec.Struct):
-    tick: DeterministicSessionTick
-    replay_tick_index: int | None
-
-
-class _BatchApplyOutcome(msgspec.Struct, frozen=True):
-    ticks_applied: int = 0
-    stopped: bool = False
-    stop_after_finalize: bool = False
-    presentation_outputs: tuple[PresentationTickOutput, ...] = ()
-    post_apply_reactions: tuple[PostApplyReaction, ...] = ()
-
-
-class _ModePresentationApplyRuntime(PresentationApplyRuntime):
-    mode: BaseGameplayMode
-    reactions_by_tick: dict[int, PostApplyReaction]
-
-    def output_applied(self, output: PresentationTickOutput) -> None:
-        self.mode._apply_tick_post_apply_reaction(
-            self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
-            dt_seconds=float(output.dt_sim),
-        )
-
-
-class _ModePostApplyReactionRuntime(PostApplyReactionRuntime):
-    mode: BaseGameplayMode
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        self.mode.audio_bridge.router.play_sfx(sfx)
 
 
 class _ModeLocalInputRuntime(LocalInputRuntime):
@@ -135,48 +97,6 @@ class _ModePerkMenuRuntime(PerkMenuRuntime):
 class _ModeFrameState(msgspec.Struct, frozen=True):
     dt: float
     dt_ui_ms: float
-
-
-TickStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize"]
-
-
-class _BatchApplyRuntime(msgspec.Struct, frozen=True):
-    mode: BaseGameplayMode
-    session: DeterministicSession
-    recorder: ReplayRecorder | None = None
-    mode_tick_dt: float | None = None
-
-    def ensure_replay_tick_index(self, tick_result: TickResult) -> int | None:
-        replay_tick_index = tick_result.replay_tick_index
-        if replay_tick_index is None and self.recorder is not None:
-            replay_tick_index = int(
-                self.recorder.record_tick(
-                    list(tick_result.source_tick.inputs),
-                    commands=list(tick_result.source_tick.commands),
-                ),
-            )
-            tick_result.replay_tick_index = replay_tick_index
-        return replay_tick_index
-
-    def tick_applied_action(self, applied: _AppliedBatchTick) -> TickStepAction:
-        if self.mode_tick_dt is None:
-            return "continue"
-        return self.mode._on_tick_applied(
-            applied.tick,
-            float(self.mode_tick_dt),
-        )
-
-    def record_checkpoint(self, replay_tick_index: int | None, tick: DeterministicSessionTick) -> None:
-        if replay_tick_index is None:
-            return
-        self.mode._record_replay_checkpoint_from_tick(
-            tick_index=int(replay_tick_index),
-            tick=tick,
-        )
-
-    def record_replay_tick_checkpoint_immediate(self, tick_result: TickResult) -> None:
-        replay_tick_index = self.ensure_replay_tick_index(tick_result)
-        self.record_checkpoint(replay_tick_index, tick_result.payload)
 
 
 class BaseGameplayMode:
@@ -289,7 +209,6 @@ class BaseGameplayMode:
     def camera(self, value: Vec2) -> None:
         self._world_runtime.camera = value
 
-
     def _sync_world_runtime_config(self) -> None:
         runtime = self._world_runtime
         runtime.world_size = float(self.world_size)
@@ -322,7 +241,6 @@ class BaseGameplayMode:
     def screen_to_world(self, pos: Vec2) -> Vec2:
         return self.renderer.screen_to_world(pos)
 
-
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console
         if console is None:
@@ -334,7 +252,6 @@ class BaseGameplayMode:
 
     def _hud_small_indicators(self) -> bool:
         return self._cvar_float("cv_uiSmallIndicators", 0.0) != 0.0
-
 
     def _config_game_mode_id(self) -> GameMode:
         try:
@@ -702,7 +619,6 @@ class BaseGameplayMode:
         self._presentation_plan_ms = 0.0
         self._presentation_apply_ms = 0.0
 
-
     def _player_name_default(self) -> str:
         return str(self.config.profile.player_name or "")
 
@@ -740,7 +656,6 @@ class BaseGameplayMode:
         player_count = self._runtime_player_count()
         seed = int(self.state.rng.state)
         self._run_reset_seed = int(seed) & 0xFFFFFFFF
-
 
         self._sync_world_runtime_config()
         self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
@@ -879,6 +794,8 @@ class BaseGameplayMode:
         return 1.0 / float(self._gameplay_tick_rate())
 
     def _reset_gameplay_frame_clock(self) -> None:
+        if self._tick_input_provider is not None:
+            self._tick_input_provider.clear_pending_edges()
         clock = self._tick_runner_local_clock
         if clock is not None:
             clock.reset()
@@ -898,13 +815,13 @@ class BaseGameplayMode:
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
-
     def _ensure_tick_runner(self, *, session: DeterministicSession) -> tuple[TickRunner, LocalInputProvider]:
         if self._tick_runner is not None and self._tick_runner_session is session:
             assert self._tick_input_provider is not None
             return self._tick_runner, self._tick_input_provider
         provider = LocalInputProvider(
-            player_count=len(self.sim_world.players), runtime=_ModeLocalInputRuntime(mode=self),
+            player_count=len(self.sim_world.players),
+            runtime=_ModeLocalInputRuntime(mode=self),
         )
         self._flush_queued_input_commands(provider=provider)
         runner = TickRunner(session=session, input_provider=provider)
@@ -924,126 +841,25 @@ class BaseGameplayMode:
     ) -> None:
         if tick_index is None:
             return
-        world_events = tick.step.events
+        world_events = tick.events
         self._record_replay_checkpoint(
             int(tick_index),
             deaths=world_events.deaths,
             events=world_events,
         )
 
-
     def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         dt_tick: float,
-    ) -> TickStepAction:
+    ) -> bool:
         _ = tick, dt_tick
-        return "continue"
-
+        return True
 
     def _sync_audio_and_ground(self) -> None:
         self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:
             self.render_resources.ground.process_pending()
-
-    def _apply_batch_presentation_outputs(
-        self,
-        *,
-        outputs: tuple[PresentationTickOutput, ...],
-        post_apply_reactions: tuple[PostApplyReaction, ...] = (),
-        apply_audio: bool,
-        update_camera: bool,
-    ) -> None:
-        if post_apply_reactions and len(post_apply_reactions) != len(outputs):
-            raise RuntimeError("post-apply reactions must align with presentation outputs")
-        reaction_by_tick = {
-            int(output.tick_index): reaction for output, reaction in zip(outputs, post_apply_reactions, strict=False)
-        }
-        apply_presentation_outputs(
-            outputs=outputs,
-            runtime=self._world_runtime,
-            apply_runtime=_ModePresentationApplyRuntime(
-                mode=self,
-                reactions_by_tick=reaction_by_tick,
-            ),
-            apply_audio=bool(apply_audio),
-            update_camera=bool(update_camera),
-        )
-
-    def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
-        return build_post_apply_reaction(tick_result=tick_result)
-
-    def _apply_tick_post_apply_reaction(self, reaction: PostApplyReaction, *, dt_seconds: float) -> None:
-        _ = dt_seconds
-        apply_post_apply_reaction(
-            reaction=reaction,
-            runtime=_ModePostApplyReactionRuntime(mode=self),
-        )
-
-    def _process_tick_batch_results(
-        self,
-        *,
-        batch: TickBatchResult,
-        runtime: _BatchApplyRuntime,
-    ) -> _BatchApplyOutcome:
-        ticks_applied = 0
-        stop_after_finalize = False
-        presentation_outputs: list[PresentationTickOutput] = []
-        post_apply_reactions: list[PostApplyReaction] = []
-
-        for tick_result in batch.completed_results:
-            tick = tick_result.payload
-            replay_tick_index = runtime.ensure_replay_tick_index(tick_result)
-            applied = _AppliedBatchTick(
-                tick=tick,
-                replay_tick_index=replay_tick_index,
-            )
-
-            presentation_outputs.append(
-                apply_sim_metadata_tick_result(
-                    sim_world=self.sim_world,
-                    tick_result=tick_result,
-                    game_tune_started=bool(runtime.session.game_tune_started),
-                ),
-            )
-            post_apply_reactions.append(
-                self._build_tick_post_apply_reaction(
-                    tick_result=tick_result,
-                ),
-            )
-            self._ticks_advanced_per_frame += 1
-            ticks_applied += 1
-
-            action = runtime.tick_applied_action(applied)
-            if action == "stop_before_finalize":
-                return _BatchApplyOutcome(
-                    ticks_applied=int(ticks_applied),
-                    stopped=True,
-                    stop_after_finalize=False,
-                    presentation_outputs=tuple(presentation_outputs),
-                    post_apply_reactions=tuple(post_apply_reactions),
-                )
-
-            runtime.record_checkpoint(replay_tick_index, tick)
-
-
-            if action == "stop_after_finalize":
-                stop_after_finalize = True
-                return _BatchApplyOutcome(
-                    ticks_applied=int(ticks_applied),
-                    stopped=True,
-                    stop_after_finalize=bool(stop_after_finalize),
-                    presentation_outputs=tuple(presentation_outputs),
-                    post_apply_reactions=tuple(post_apply_reactions),
-                )
-
-        return _BatchApplyOutcome(
-            ticks_applied=int(ticks_applied),
-            stopped=False,
-            stop_after_finalize=bool(stop_after_finalize),
-            presentation_outputs=tuple(presentation_outputs),
-            post_apply_reactions=tuple(post_apply_reactions),
-        )
 
     def _run_deterministic_session_ticks(
         self,
@@ -1051,7 +867,6 @@ class BaseGameplayMode:
         dt_frame: float,
         session: DeterministicSession,
         recorder: ReplayRecorder | None,
-        stop_on_mode_tick: bool = False,
     ) -> None:
         if float(dt_frame) <= 0.0:
             return
@@ -1068,12 +883,28 @@ class BaseGameplayMode:
 
         candidate_ticks = int(local_clock.advance(float(dt_frame)))
         tick_dt = float(local_clock.dt_tick)
-        runtime = _BatchApplyRuntime(
-            mode=self,
-            session=session,
-            recorder=recorder,
-            mode_tick_dt=float(tick_dt) if bool(stop_on_mode_tick) else None,
-        )
+        outputs: list[PresentationTickOutput] = []
+        self._presentation_plan_ms = 0.0
+
+        def after_tick(result: TickResult) -> bool:
+            self._presentation_plan_ms += session.last_presentation_plan_ms
+            if recorder is not None:
+                result.replay_tick_index = recorder.record_tick(
+                    list(result.source_tick.inputs),
+                    commands=list(result.source_tick.commands),
+                )
+            outputs.append(
+                apply_sim_metadata_tick_result(
+                    sim_world=self.sim_world,
+                    tick_result=result,
+                    game_tune_started=session.game_tune_started,
+                ),
+            )
+            self._ticks_advanced_per_frame += 1
+            self._record_replay_checkpoint_from_tick(tick_index=result.replay_tick_index, tick=result.payload)
+            # Mode callbacks can save the finished replay; record this tick first.
+            return self._on_tick_applied(result.payload, tick_dt)
+
         sim_ns_start = time.perf_counter_ns()
         advance = advance_tick_runner_frame(
             runner=runner,
@@ -1084,27 +915,15 @@ class BaseGameplayMode:
             tick_dt_seconds=float(tick_dt),
             is_replay=False,
             refund_clock=local_clock,
-            after_tick=runtime.record_replay_tick_checkpoint_immediate if recorder is not None else None,
+            after_tick=after_tick,
         )
         self._tick_runner_frame_index = int(advance.frame_index)
         self._tick_runner_next_tick_index = int(advance.next_tick_index)
         batch = advance.batch
         self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
-        self._presentation_plan_ms = float(
-            sum(max(0.0, float(row.payload.presentation_plan_ms)) for row in batch.completed_results),
-        )
 
         apply_ns_start = time.perf_counter_ns()
-        outcome = self._process_tick_batch_results(
-            batch=batch,
-            runtime=runtime,
-        )
-        self._apply_batch_presentation_outputs(
-            outputs=outcome.presentation_outputs,
-            post_apply_reactions=outcome.post_apply_reactions,
-            apply_audio=True,
-            update_camera=True,
-        )
+        apply_presentation_outputs(outputs=outputs, runtime=self._world_runtime, apply_audio=True)
         self._presentation_apply_ms = float((time.perf_counter_ns() - apply_ns_start) / 1_000_000.0)
         if batch.batch_status is InputStatus.STALLED and int(batch.ticks_completed) <= 0:
             self._input_stall_count += 1

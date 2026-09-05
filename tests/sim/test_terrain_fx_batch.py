@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.sim.batch_apply import PresentationApplyRuntime, PresentationTickOutput, apply_presentation_outputs
+from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.terrain_fx import TerrainCorpseFx, TerrainDecalFx, TerrainFxBatch, TerrainFxScratch
 from grim.color import RGBA
@@ -39,6 +39,9 @@ class _PresentationAudioBridge:
         _ = plan, apply_audio
         self._calls.append(("audio", 1))
 
+    def apply_post_plan(self, **_kwargs) -> None:
+        self._calls.append(("done", 1))
+
 
 class _PresentationRenderResources:
     def __init__(self, calls: list[tuple[str, int | None]]) -> None:
@@ -61,13 +64,6 @@ class _PresentationRuntime:
     def update_camera(self, dt: float) -> None:
         _ = dt
         self._calls.append(("camera", 1))
-
-
-class _PresentationApplyRuntime(PresentationApplyRuntime):
-    calls: list[tuple[str, int | None]]
-
-    def output_applied(self, output: PresentationTickOutput) -> None:
-        self.calls.append(("done", int(output.tick_index)))
 
 
 def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> None:
@@ -113,7 +109,6 @@ def test_apply_presentation_outputs_applies_terrain_fx_in_output_order() -> None
     apply_presentation_outputs(
         outputs=outputs,
         runtime=_PresentationRuntime(calls),
-        apply_runtime=_PresentationApplyRuntime(calls=calls),
         apply_audio=True,
     )
 
@@ -126,5 +121,5 @@ def test_apply_presentation_outputs_applies_terrain_fx_in_output_order() -> None
         ("audio", 1),
         ("camera", 1),
         ("terrain", 1),
-        ("done", 2),
+        ("done", 1),
     ]

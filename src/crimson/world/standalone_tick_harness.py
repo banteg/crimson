@@ -3,47 +3,19 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from grim.sfx_map import SfxId
-
 from ..game_modes import GameMode
 from ..sim.batch_apply import (
-    PresentationApplyRuntime,
-    PresentationTickOutput,
     apply_presentation_outputs,
     apply_sim_metadata_batch,
 )
 from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input_providers import LocalInputProvider, LocalInputRuntime
-from ..sim.presentation_reactions import (
-    PostApplyReaction,
-    PostApplyReactionRuntime,
-    apply_post_apply_reaction,
-    build_post_apply_reaction,
-)
 from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 
 if TYPE_CHECKING:
     from .runtime import WorldRuntime
-
-
-class _StandalonePresentationApplyRuntime(PresentationApplyRuntime):
-    runtime: WorldRuntime
-    reactions_by_tick: dict[int, PostApplyReaction]
-
-    def output_applied(self, output: PresentationTickOutput) -> None:
-        apply_post_apply_reaction(
-            reaction=self.reactions_by_tick.get(int(output.tick_index), PostApplyReaction()),
-            runtime=_StandalonePostApplyReactionRuntime(runtime=self.runtime),
-        )
-
-
-class _StandalonePostApplyReactionRuntime(PostApplyReactionRuntime):
-    runtime: WorldRuntime
-
-    def play_sfx(self, sfx: SfxId) -> None:
-        self.runtime.audio_bridge.router.play_sfx(sfx)
 
 
 @dataclass(slots=True)
@@ -136,19 +108,7 @@ class StandaloneTickHarness:
             completed_results=batch.completed_results,
             game_tune_started=bool(session.game_tune_started),
         )
-        reactions = {
-            int(result.source_tick.tick_index): build_post_apply_reaction(tick_result=result)
-            for result in batch.completed_results
-        }
-        apply_presentation_outputs(
-            outputs=outputs,
-            runtime=runtime,
-            apply_runtime=_StandalonePresentationApplyRuntime(
-                runtime=runtime,
-                reactions_by_tick=reactions,
-            ),
-            apply_audio=True,
-        )
+        apply_presentation_outputs(outputs=outputs, runtime=runtime, apply_audio=True)
         return len(outputs)
 
     def advance_frame(self, runtime: WorldRuntime, dt: float) -> int:

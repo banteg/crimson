@@ -114,7 +114,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
     )
 
     assert commands.trigger_game_tune is False
-    assert commands.sfx == [
+    assert commands.sfx == (
         SfxId.UI_LEVELUP,
         SfxId.PISTOL_FIRE,
         SfxId.UI_BONUS,
@@ -122,7 +122,7 @@ def test_plan_world_presentation_step_orders_sfx() -> None:
         SfxId.UI_BUTTONCLICK,
         SfxId.UI_CLINK_01,
         SfxId.SHOCK_HIT_01,
-    ]
+    )
 
 
 def test_queue_projectile_decals_consumes_rand() -> None:
@@ -380,13 +380,18 @@ def test_queue_projectile_decals_fire_bullets_freeze_tags_exact_streak_callers(m
             RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE,
         }
     ]
-    assert streak_callers == [RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN] + [
-        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST,
-        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT4,
-        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT7,
-        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_BURN,
-        RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE,
-    ] * 6
+    assert (
+        streak_callers
+        == [RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN]
+        + [
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT4,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_DIST_GT7,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_BURN,
+            RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE,
+        ]
+        * 6
+    )
 
 
 def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_violence_disabled_set(mocker) -> None:
@@ -490,7 +495,7 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     )
     assert rng.values_since(before_calls) == []
     assert commands.trigger_game_tune is True
-    assert commands.sfx == [SfxId.BULLET_HIT_01]
+    assert commands.sfx == (SfxId.BULLET_HIT_01,)
 
 
 def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
@@ -506,7 +511,7 @@ def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
 
     runtime = _Runtime(events=[])
     apply_presentation_plan(
-        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=[SfxId.UI_BONUS, SfxId.UI_LEVELUP]),
+        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=(SfxId.UI_BONUS, SfxId.UI_LEVELUP)),
         runtime=runtime,
         apply_audio=True,
     )
@@ -528,7 +533,7 @@ def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
 
     runtime = _Runtime()
     apply_presentation_plan(
-        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=[SfxId.UI_BONUS]),
+        plan=DeterministicPresentationPlan(trigger_game_tune=True, sfx=(SfxId.UI_BONUS,)),
         runtime=runtime,
         apply_audio=False,
     )

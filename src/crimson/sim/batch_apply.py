@@ -28,18 +28,13 @@ class PresentationTickOutput(msgspec.Struct, frozen=True):
     presentation: DeterministicPresentationPlan | None
 
 
-class PresentationApplyRuntime(msgspec.Struct):
-    def output_applied(self, output: PresentationTickOutput) -> None:
-        _ = output
-
-
 def apply_sim_metadata_tick_result(
     *,
     sim_world: SimMetadataSink,
     tick_result: TickResult,
     game_tune_started: bool,
 ) -> PresentationTickOutput:
-    step = tick_result.payload.step
+    step = tick_result.payload
 
     apply_tick_to_sim(
         sim_world=sim_world,
@@ -87,7 +82,6 @@ def apply_presentation_outputs(
     *,
     outputs: Sequence[PresentationTickOutput],
     runtime: Any,
-    apply_runtime: PresentationApplyRuntime | None = None,
     apply_audio: bool,
     update_camera: bool = True,
 ) -> None:
@@ -103,5 +97,4 @@ def apply_presentation_outputs(
             terrain_fx = output.presentation.terrain_fx
             if not terrain_fx.is_empty():
                 runtime.render_resources.consume_terrain_fx_batch(terrain_fx)
-        if apply_runtime is not None:
-            apply_runtime.output_applied(output)
+            runtime.audio_bridge.apply_post_plan(plan=output.presentation, apply_audio=apply_audio)

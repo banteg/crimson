@@ -66,10 +66,10 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
 
     tick = session.step_tick(dt=0.1, inputs=[PlayerInput()])
 
-    assert tick.step.timing.dt_ms_i32 == 100
+    assert tick.timing.dt_ms_i32 == 100
     # 0.1f * 0.9f stores 0.089999996f, whose native x87 * 1000 +
     # truncation path produces 89 ms.
-    assert tick.step.timing.dt_sim_ms_i32 == 89
+    assert tick.timing.dt_sim_ms_i32 == 89
     assert tick.elapsed_ms == 89.0
     assert spawn.spawn_cooldown_ms == 911.0
 
@@ -114,11 +114,14 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
 def test_player_time_scale_roundtrip_restores_scaled_dt() -> None:
     dt_sim = f32(f32(0.09) * f32(0.3))
 
-    assert player_frame_dt_after_roundtrip(
-        dt=dt_sim,
-        time_scale_active=True,
-        reflex_boost_timer=f32(3.0),
-    ) == dt_sim
+    assert (
+        player_frame_dt_after_roundtrip(
+            dt=dt_sim,
+            time_scale_active=True,
+            reflex_boost_timer=f32(3.0),
+        )
+        == dt_sim
+    )
 
 
 def test_session_does_not_apply_player_time_scale_twice() -> None:

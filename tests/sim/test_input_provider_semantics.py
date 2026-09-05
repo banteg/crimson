@@ -133,7 +133,7 @@ def test_runner_uses_resolved_tick_dt_instead_of_default_tick_dt() -> None:
     batch = runner.advance_ticks(start_tick=0, ticks_requested=1, tick_dt=1.0 / 60.0)
 
     assert batch.ticks_completed == 1
-    assert batch.completed_results[0].payload.step.dt_sim == pytest.approx(1.0 / 30.0)
+    assert batch.completed_results[0].payload.dt_sim == pytest.approx(1.0 / 30.0)
 
 
 def test_runner_rejects_ready_supply_without_resolved_tick() -> None:
@@ -187,7 +187,8 @@ def test_runner_rejects_mismatched_resolved_tick_index() -> None:
 @pytest.mark.parametrize("move_mode", list(MovementControlType))
 @pytest.mark.parametrize("aim_scheme", list(AimScheme))
 def test_additional_ticks_preserve_control_modes_and_held_buttons(
-    move_mode: MovementControlType, aim_scheme: AimScheme,
+    move_mode: MovementControlType,
+    aim_scheme: AimScheme,
 ) -> None:
     original = PlayerInput(
         move_mode=move_mode,
@@ -208,9 +209,14 @@ def test_additional_ticks_preserve_control_modes_and_held_buttons(
     second = provider.pull_tick(1, 1 / 60).tick
     assert first is not None and second is not None
     assert first.inputs == (original,)
-    assert second.inputs == (msgspec.structs.replace(
-        original, fire_pressed=False, reload_pressed=False, move_to_cursor_pressed=False,
-    ),)
+    assert second.inputs == (
+        msgspec.structs.replace(
+            original,
+            fire_pressed=False,
+            reload_pressed=False,
+            move_to_cursor_pressed=False,
+        ),
+    )
 
 
 @pytest.mark.parametrize("zero_tick_frames", [1, 3, 10])
@@ -229,3 +235,20 @@ def test_pending_edges_survive_until_a_tick_and_use_latest_held_state(zero_tick_
     assert first.commands == (PerkMenuOpenCommand(player_index=0),)
     assert second.inputs == (PlayerInput(aim=Vec2(123, 456)),)
     assert second.commands == ()
+
+
+def test_pause_discards_pending_edges_but_keeps_commands_and_held_controls() -> None:
+    provider = LocalInputProvider(
+        player_count=1,
+        runtime=StaticLocalInputRuntime(
+            inputs=(PlayerInput(fire_pressed=True, fire_down=True, reload_pressed=True, reload_down=True),),
+        ),
+    )
+    command = PerkMenuOpenCommand(player_index=0)
+    provider.submit_command(command)
+    provider.begin_frame(_FRAME_CTX)
+    provider.clear_pending_edges()
+    tick = provider.pull_tick(0, 1 / 60).tick
+    assert tick is not None
+    assert tick.inputs == (PlayerInput(fire_down=True, reload_down=True),)
+    assert tick.commands == (command,)

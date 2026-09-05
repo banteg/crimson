@@ -46,7 +46,7 @@ class TickRunner:
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
-        after_tick: Callable[[TickResult], None] | None = None,
+        after_tick: Callable[[TickResult], bool | None] | None = None,
     ) -> TickBatchResult:
         start_tick = int(start_tick)
         ticks_requested = max(0, int(ticks_requested))
@@ -97,9 +97,9 @@ class TickRunner:
                 payload=tick,
             )
             completed_results.append(result)
-            if after_tick is not None:
-                after_tick(result)
             ticks_completed += 1
+            if after_tick is not None and after_tick(result) is False:
+                break
 
         return TickBatchResult(
             ticks_completed=ticks_completed,
@@ -122,9 +122,4 @@ class TickRunner:
             raise RuntimeError("resolved tick dt_seconds must be positive")
         if source_tick.prelude or source_tick.postlude:
             raise RuntimeError("TickRunner input providers cannot supply replay boundary operations")
-        return ResolvedTick(
-            tick_index=int(source_tick.tick_index),
-            dt_seconds=dt_seconds,
-            inputs=tuple(source_tick.inputs),
-            commands=tuple(source_tick.commands),
-        )
+        return source_tick

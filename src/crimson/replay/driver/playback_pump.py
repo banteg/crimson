@@ -40,7 +40,7 @@ class _PlaybackStepRunner:
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
-        after_tick: Callable[[TickResult], None] | None = None,
+        after_tick: Callable[[TickResult], bool | None] | None = None,
     ) -> TickBatchResult:
         _ = tick_dt
         completed_results: list[TickResult] = []
@@ -52,9 +52,9 @@ class _PlaybackStepRunner:
                 break
             tick_result = self._driver.step_tick(next_tick_index)
             completed_results.append(tick_result)
-            if after_tick is not None:
-                after_tick(tick_result)
             next_tick_index += 1
+            if after_tick is not None and after_tick(tick_result) is False:
+                break
 
         return TickBatchResult(
             ticks_completed=len(completed_results),
@@ -95,14 +95,16 @@ def advance_playback_frame(
     for tick_result in tick_results:
         apply_tick_to_sim(
             sim_world=sim_world,
-            step=tick_result.payload.step,
+            step=tick_result.payload,
             game_tune_started=bool(game_tune_started),
         )
-        outputs.append(PresentationTickOutput(
-            tick_index=int(tick_result.source_tick.tick_index),
-            dt_sim=float(tick_result.payload.step.dt_sim),
-            presentation=tick_result.payload.step.presentation,
-        ))
+        outputs.append(
+            PresentationTickOutput(
+                tick_index=int(tick_result.source_tick.tick_index),
+                dt_sim=float(tick_result.payload.dt_sim),
+                presentation=tick_result.payload.presentation,
+            ),
+        )
 
     return PlaybackFrameAdvance(
         outputs=tuple(outputs),

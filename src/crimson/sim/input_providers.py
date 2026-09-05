@@ -45,9 +45,7 @@ class TypoSubmitCommand(msgspec.Struct, tag="typo_submit", frozen=True, forbid_u
     player_index: int
 
 
-type GameCommand = (
-    PerkMenuOpenCommand | PerkPickCommand | TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
-)
+type GameCommand = PerkMenuOpenCommand | PerkPickCommand | TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 
 type ReplayPreludeOperation = GameFrameRngAdvanceOperation | PerkMenuOpenCommand | PerkPickCommand
 type ReplayPostludeOperation = PerkMenuOpenCommand
@@ -143,6 +141,9 @@ class LocalInputProvider:
                 commands=commands,
             ),
         )
+
+    def clear_pending_edges(self) -> None:
+        self._frame_inputs = clear_input_edges(self._frame_inputs)
 
     def supports_command_submission(self) -> bool:
         return True

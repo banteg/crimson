@@ -30,7 +30,6 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    TickStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuController
@@ -297,23 +296,20 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu.close()
         self._save_replay()
 
-
     def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         dt_tick: float,
-    ) -> TickStepAction:
+    ) -> bool:
         _ = tick, dt_tick
 
-
         if self._perk_menu.active:
-            return "stop_before_finalize"
+            return False
 
         if self._death_transition_ready():
             self._enter_game_over()
-            return "stop_after_finalize"
-        return "continue"
-
+            return False
+        return True
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -324,7 +320,6 @@ class SurvivalMode(BaseGameplayMode):
         if self._game_over_active:
             self._update_game_over_ui(float(frame.dt))
             return
-
 
         self._update_perk_ui(
             dt_ui_ms=float(frame.dt_ui_ms),
@@ -350,7 +345,6 @@ class SurvivalMode(BaseGameplayMode):
             dt_frame=float(sim_dt),
             session=session,
             recorder=self._replay_recorder,
-            stop_on_mode_tick=True,
         )
 
     def _draw_game_cursor(self) -> None:
