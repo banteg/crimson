@@ -188,3 +188,27 @@ the corrected extent improves the focused score from
 `1319.6718146718147/1970` (`66.98841698841699%`, 517/519 instructions) to
 `1342.2130518234167/1981` (`67.75431861804223%`, 517/525 instructions), keeps
 the exact prefix at 26, and preserves the clean `107/0/0` reference audit.
+
+## Request-path character publication (2026-09-05)
+
+Native request setup zeroes the complete 64-byte path buffer and then writes
+`/scoring_v2_7.php` one character at a time. The former string-literal array
+initializer lowered to a string copy and a partial zero tail. Expressing the
+observed initialization directly as `memset` followed by the character stores
+recovers eight candidate instructions and improves reference alignment.
+The path bytes, terminating zero, and all unused buffer bytes are unchanged.
+
+The retained source moves from 67.754319% (1,342.213052/1,981 weighted bytes)
+to 77.142857% (1,528.2/1,981), a gain of 185.986948 weighted bytes. The
+candidate now has 525/525 instructions, retains prefix 26, and improves the
+clean reference audit from 107/0/0 to 119/0/0. This reproduces a native source
+initialization boundary; it is not a change to the request protocol.
+
+`request-path-publication-mutations.json` records ten complete controls.
+Applying character publication to the hostname as well gains more fuzzy
+weight but overshoots the native instruction count; relocating the path to
+function scope regresses. A typed submit-flags cursor is neutral. Sharing
+three or four request-error reports introduces reference mismatches, both
+with the path-only and combined string candidates. Only the tradeoff-free
+path initialization is retained. The preliminary shared-error probes needed
+`char *`, matching the existing console API; the recorded variants all compile.

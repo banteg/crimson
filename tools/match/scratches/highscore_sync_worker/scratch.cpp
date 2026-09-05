@@ -153,7 +153,25 @@ extern "C" void highscore_sync_worker(void *)
     }
 
     {
-        char request_path[64] = "/scoring_v2_7.php";
+        char request_path[64];
+        memset(request_path, 0, sizeof(request_path));
+        request_path[0] = '/';
+        request_path[1] = 's';
+        request_path[2] = 'c';
+        request_path[3] = 'o';
+        request_path[4] = 'r';
+        request_path[5] = 'i';
+        request_path[6] = 'n';
+        request_path[7] = 'g';
+        request_path[8] = '_';
+        request_path[9] = 'v';
+        request_path[10] = '2';
+        request_path[11] = '_';
+        request_path[12] = '7';
+        request_path[13] = '.';
+        request_path[14] = 'p';
+        request_path[15] = 'h';
+        request_path[16] = 'p';
         if (!connection) {
             console_printf(
                 &console_log_queue,
