@@ -123,7 +123,7 @@ The runtime is now split into a consistent sequence:
 3. apply sim metadata to the runtime world
 4. apply presentation outputs
 5. apply post-apply reactions
-6. optionally record checkpoints, replay stats, or sync network state
+6. optionally record checkpoints, replay stats, or replay info
 
 Shared helpers own the bookkeeping around that sequence:
 
@@ -157,15 +157,8 @@ sequenceDiagram
     Outer->>Apply: apply_sim_metadata_*
     Outer->>Apply: apply_presentation_outputs()
     Outer->>Apply: build/apply post-apply reactions
-    Outer->>Hooks: optional checkpoints / replay info / LAN sync
+    Outer->>Hooks: optional checkpoints / replay info
 ```
-
-## Deferred TODOs
-
-- Rollback restore is intentionally deferred here. The current runtime can
-  signal rollback/resync, but true rollback should restore a deterministic
-  snapshot at the requested tick and replay corrected inputs through the shared
-  tick pipeline before it is treated as a verification path.
 
 ### Timer Ownership
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Literal
-
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import (
@@ -18,12 +16,6 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
-from ..net.debug_log import lan_debug_log
-from ..net.rollback_resync_v5 import (
-    ModeStateSnapshotV2,
-    SurvivalRuntimeSnapshotV2,
-    SurvivalStateSnapshotV2,
-)
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.save_status import GameStatusData
 from ..replay import Replay, ReplayHeader, ReplayRecorder
@@ -38,8 +30,7 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    LanSession,
-    LanStepAction,
+    TickStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuController
@@ -85,7 +76,6 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
         self._sim_session: DeterministicSession | None = self._new_sim_session()
-        self._lan_last_tick_index: int = -1
 
     def _new_sim_session(self) -> DeterministicSession:
         session, spawn_state = build_survival_session(
@@ -194,36 +184,14 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
         self._reset_gameplay_frame_clock()
-        self._reset_lan_capture_clock()
-        self._lan_last_tick_index = -1
 
         status = self.state.status
-        base_status = self.save_status
-        sim_unlock_index = int(status.quest_unlock_index) if status is not None else 0
-        sim_unlock_index_full = int(status.quest_unlock_index_full) if status is not None else 0
-        status_unlock_index = int(base_status.quest_unlock_index) if base_status is not None else int(sim_unlock_index)
-        status_unlock_index_full = (
-            int(base_status.quest_unlock_index_full) if base_status is not None else int(sim_unlock_index_full)
-        )
-        quest_unlock_index = int(sim_unlock_index)
+        quest_unlock_index = int(status.quest_unlock_index) if status is not None else 0
         terrain = advance_unlock_terrain(
             self.state.rng,
             unlock_index=int(quest_unlock_index),
             width=int(self.world_size),
             height=int(self.world_size),
-        )
-        lan_debug_log(
-            "terrain_prelude",
-            mode="SurvivalMode",
-            lan_enabled=bool(self._lan_enabled),
-            lan_role=str(self._lan_role),
-            status_quest_unlock_index=int(status_unlock_index),
-            status_quest_unlock_index_full=int(status_unlock_index_full),
-            sim_quest_unlock_index=int(sim_unlock_index),
-            sim_quest_unlock_index_full=int(sim_unlock_index_full),
-            quest_unlock_index=int(quest_unlock_index),
-            terrain_slots=terrain.terrain_slots,
-            terrain_seed=terrain.terrain_seed,
         )
         self.apply_terrain_setup(terrain_slots=terrain.terrain_slots, seed=terrain.terrain_seed)
         self.sim_world.state.rng.srand(int(self.state.rng.state))
@@ -232,32 +200,27 @@ class SurvivalMode(BaseGameplayMode):
 
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         replay_status = GameStatusData() if status is None else status.as_data()
-        record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
-        if record_replay:
-            self._replay_recorder = ReplayRecorder(
-                ReplayHeader(
-                    game_mode_id=GameMode.SURVIVAL,
-                    seed=int(self._run_reset_seed),
-                    tick_rate=int(self._gameplay_tick_rate()),
-                    quest_fail_retry_count=int(self.quest_fail_retry_count),
-                    hardcore=bool(self.hardcore),
-                    preserve_bugs=bool(self.state.preserve_bugs),
-                    detail_preset=int(self._deterministic_detail_preset()),
-                    violence_disabled=int(self._deterministic_violence_disabled()),
-                    world_size=float(self.world_size),
-                    player_count=len(self.sim_world.players),
-                    status=replay_status,
-                ),
-            )
-            self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        else:
-            self._replay_recorder = None
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=GameMode.SURVIVAL,
+                seed=int(self._run_reset_seed),
+                tick_rate=int(self._gameplay_tick_rate()),
+                quest_fail_retry_count=int(self.quest_fail_retry_count),
+                hardcore=bool(self.hardcore),
+                preserve_bugs=bool(self.state.preserve_bugs),
+                detail_preset=int(self._deterministic_detail_preset()),
+                violence_disabled=int(self._deterministic_violence_disabled()),
+                world_size=float(self.world_size),
+                player_count=len(self.sim_world.players),
+                status=replay_status,
+            ),
+        )
+        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
         self._sim_session = None
-        self._lan_last_tick_index = -1
         super().close()
 
     def _handle_input(self) -> None:
@@ -267,13 +230,11 @@ class SurvivalMode(BaseGameplayMode):
                 self.close_requested = True
             return
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            if bool(self._lan_enabled) and str(self._lan_role) == "join":
-                return
             self.audio_bridge.router.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
             return
 
-        if (not bool(self._lan_enabled)) and rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
         if debug_enabled() and (not self._perk_menu.open):
@@ -336,71 +297,14 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu.close()
         self._save_replay()
 
-    def _lan_mode_name(self) -> Literal["survival"]:
-        return "survival"
 
-    def _lan_match_session(self) -> DeterministicSession | None:
-        return self._sim_session
-
-    def _lan_on_paused(self, dt: float) -> None:
-        _ = dt
-        if self._death_transition_ready():
-            self._enter_game_over()
-
-    def _lan_prepare_frame(
-        self,
-        role: str,
-        dt_ui_ms: float,
-        session: LanSession,
-        dt_tick: float,
-    ) -> bool:
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.violence_disabled = int(self._deterministic_violence_disabled())
-        self._update_perk_ui(
-            dt_ui_ms=float(dt_ui_ms),
-            allow_input=(role == "host"),
-            allow_pulse=(not self._paused) and (not self._game_over_active),
-        )
-        if self._perk_menu.active:
-            self._hud_fade_ms = 0.0
-        else:
-            self._hud_fade_ms = clamp(self._hud_fade_ms + float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
-
-        if self._perk_menu.active:
-            self._reset_lan_capture_clock()
-            if self._death_transition_ready():
-                self._enter_game_over()
-            return False
-        return True
-
-    def _lan_allow_frame_pop(self) -> bool:
-        return not self._perk_menu.active
-
-    def _lan_on_tick_applied(
+    def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
-        frame_tick_index: int | None,
         dt_tick: float,
-    ) -> LanStepAction:
+    ) -> TickStepAction:
         _ = tick, dt_tick
-        session_elapsed_ms = self._session_elapsed_ms()
-        session_stage = int(self._spawn_state.stage)
-        session_spawn_cooldown_ms = float(self._spawn_state.spawn_cooldown_ms)
 
-        if frame_tick_index is not None:
-            self._lan_last_tick_index = int(frame_tick_index)
-            self._store_net_runtime_snapshot(
-                snapshot=SurvivalStateSnapshotV2(
-                    tick_index=int(frame_tick_index),
-                    replay_state=self._net_replay_snapshot_state(),
-                    runtime_state=SurvivalRuntimeSnapshotV2(
-                        elapsed_ms=float(session_elapsed_ms),
-                        stage=int(session_stage),
-                        spawn_cooldown_ms=float(session_spawn_cooldown_ms),
-                        perk_pending_count=int(self.state.perk_selection.pending_count),
-                    ),
-                ),
-            )
 
         if self._perk_menu.active:
             return "stop_before_finalize"
@@ -410,14 +314,6 @@ class SurvivalMode(BaseGameplayMode):
             return "stop_after_finalize"
         return "continue"
 
-    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
-        if not isinstance(snapshot, SurvivalStateSnapshotV2):
-            return
-        rs = snapshot.runtime_state
-        if self._sim_session is not None:
-            self._sim_session.elapsed_ms = float(rs.elapsed_ms)
-        self._spawn_state.stage = int(rs.stage)
-        self._spawn_state.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -429,9 +325,6 @@ class SurvivalMode(BaseGameplayMode):
             self._update_game_over_ui(float(frame.dt))
             return
 
-        if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
-            return
 
         self._update_perk_ui(
             dt_ui_ms=float(frame.dt_ui_ms),
@@ -445,9 +338,6 @@ class SurvivalMode(BaseGameplayMode):
         perk_menu_active = self._perk_menu.active
         sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
         session = self._sim_session
-        if self._lan_wait_gate_active():
-            self._reset_gameplay_frame_clock()
-            return
         if sim_dt <= 0.0:
             self._reset_gameplay_frame_clock()
             if self._death_transition_ready():
@@ -537,7 +427,6 @@ class SurvivalMode(BaseGameplayMode):
             if self.player.health <= 0.0:
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
-            self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
         if not self._game_over_active:
             self._perk_prompt.draw(
                 ctx=self._perk_menu_ui_context(),
@@ -563,4 +452,3 @@ class SurvivalMode(BaseGameplayMode):
                 resources=self.render_resources.resources,
                 mouse=self._ui_mouse_pos(),
             )
-        self._draw_lan_wait_overlay()

@@ -130,7 +130,6 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "terrain: terrain generation/rendering tests (slow, opt-in)")
     config.addinivalue_line("markers", "slow: long-running test")
     config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
-    config.addinivalue_line("markers", "network: network/lan/relay integration tests")
     config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
 
 
@@ -149,9 +148,6 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
         if top_level_dir == "original_capture" or file_name.startswith("test_original_capture_"):
             item.add_marker(pytest.mark.original_capture)
-            item.add_marker(pytest.mark.slow)
-        if top_level_dir == "net":
-            item.add_marker(pytest.mark.network)
             item.add_marker(pytest.mark.slow)
         if "terrain" in item.keywords:
             item.add_marker(pytest.mark.slow)

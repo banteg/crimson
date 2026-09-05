@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Literal
-
 import msgspec
 
 from grim.assets import TextureId
@@ -19,11 +17,6 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..net.rollback_resync_v5 import (
-    ModeStateSnapshotV2,
-    QuestsRuntimeSnapshotV2,
-    QuestsStateSnapshotV2,
-)
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import UNI_NUM_MASK
 from ..persistence.save_status import GameStatus, GameStatusData
@@ -55,8 +48,7 @@ from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_playe
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    LanSession,
-    LanStepAction,
+    TickStepAction,
 )
 from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuController
@@ -146,7 +138,6 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt.reset()
         self._perk_menu.reset()
         self._reset_gameplay_frame_clock()
-        self._reset_lan_capture_clock()
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
@@ -243,54 +234,15 @@ class QuestMode(BaseGameplayMode):
         # test harness calling failure/complete helpers without ticking).
         return int(recorder.tick_index) <= 0
 
-    def _lan_mode_name(self) -> Literal["quests"]:
-        return "quests"
 
-    def _lan_match_session(self) -> DeterministicSession | None:
-        return self._sim_session
-
-    def _lan_on_paused(self, dt: float) -> None:
-        self._tick_death_timers(dt, rate=1.0)
-        if self._death_transition_ready():
-            self._close_failed_run()
-
-    def _lan_prepare_frame(
-        self,
-        role: str,
-        dt_ui_ms: float,
-        session: LanSession,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, dt_ui_ms, dt_tick
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.violence_disabled = int(self._deterministic_violence_disabled())
-        return True
-
-    def _lan_on_tick_applied(
+    def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
-        frame_tick_index: int | None,
         dt_tick: float,
-    ) -> LanStepAction:
-        session = self._sim_session
+    ) -> TickStepAction:
         _ = tick
         spawn_state = self._quest_spawn_state
         _ = dt_tick
-        if frame_tick_index is not None:
-            self._store_net_runtime_snapshot(
-                snapshot=QuestsStateSnapshotV2(
-                    tick_index=int(frame_tick_index),
-                    replay_state=self._net_replay_snapshot_state(),
-                    runtime_state=QuestsRuntimeSnapshotV2(
-                        elapsed_ms=float(session.elapsed_ms if session is not None else 0.0),
-                        spawn_entries=tuple(spawn_state.spawn_entries),
-                        spawn_timeline_ms=float(spawn_state.spawn_timeline_ms),
-                        no_creatures_timer_ms=float(spawn_state.no_creatures_timer_ms),
-                        completion_transition_ms=float(spawn_state.completion_transition_ms),
-                        perk_pending_count=int(self.state.perk_selection.pending_count),
-                    ),
-                ),
-            )
 
         if spawn_state.completed:
             if self._outcome is None:
@@ -356,20 +308,6 @@ class QuestMode(BaseGameplayMode):
         except RuntimeError:
             playback.volume = 0.0
 
-    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
-        if not isinstance(snapshot, QuestsStateSnapshotV2):
-            return
-        rs = snapshot.runtime_state
-        self._quest_spawn_state.spawn_entries = tuple(rs.spawn_entries)
-        self._quest_spawn_state.spawn_timeline_ms = float(rs.spawn_timeline_ms)
-        self._quest_spawn_state.no_creatures_timer_ms = float(rs.no_creatures_timer_ms)
-        self._quest_spawn_state.completion_transition_ms = float(rs.completion_transition_ms)
-        self._quest_spawn_state.completed = False
-        self._quest_spawn_state.play_hit_sfx = False
-        self._quest_spawn_state.play_completion_music = False
-        session = self._sim_session
-        if session is not None:
-            session.elapsed_ms = float(rs.elapsed_ms)
 
     def consume_outcome(self) -> QuestRunOutcome | None:
         outcome = self._outcome
@@ -450,27 +388,23 @@ class QuestMode(BaseGameplayMode):
         self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
 
         replay_status = GameStatusData() if status is None else status.as_data()
-        record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
-        if record_replay:
-            self._replay_recorder = ReplayRecorder(
-                ReplayHeader(
-                    game_mode_id=GameMode.QUESTS,
-                    seed=int(self._run_reset_seed),
-                    quest_level=quest.level,
-                    tick_rate=int(self._gameplay_tick_rate()),
-                    quest_fail_retry_count=int(self.quest_fail_retry_count),
-                    hardcore=bool(self.hardcore),
-                    preserve_bugs=bool(self.state.preserve_bugs),
-                    detail_preset=self.config.display.detail_preset,
-                    violence_disabled=self.config.display.violence_disabled,
-                    world_size=float(self.world_size),
-                    player_count=len(self.sim_world.players),
-                    status=replay_status,
-                ),
-            )
-            self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        else:
-            self._replay_recorder = None
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=GameMode.QUESTS,
+                seed=int(self._run_reset_seed),
+                quest_level=quest.level,
+                tick_rate=int(self._gameplay_tick_rate()),
+                quest_fail_retry_count=int(self.quest_fail_retry_count),
+                hardcore=bool(self.hardcore),
+                preserve_bugs=bool(self.state.preserve_bugs),
+                detail_preset=self.config.display.detail_preset,
+                violence_disabled=self.config.display.violence_disabled,
+                world_size=float(self.world_size),
+                player_count=len(self.sim_world.players),
+                status=replay_status,
+            ),
+        )
+        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
@@ -485,7 +419,7 @@ class QuestMode(BaseGameplayMode):
             self._perk_menu.close()
             return
 
-        if (not bool(self._lan_enabled)) and rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
         if debug_enabled() and (not self._perk_menu.open):
@@ -576,17 +510,11 @@ class QuestMode(BaseGameplayMode):
             return
         if bool(self.close_requested):
             return
-        if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
-            return
 
         self._update_perk_ui(dt_ui_ms=float(frame.dt_ui_ms))
 
         sim_dt = 0.0 if (self._paused or self._perk_menu.active) else float(frame.dt)
         session = self._sim_session
-        if self._lan_wait_gate_active():
-            self._reset_gameplay_frame_clock()
-            return
         if sim_dt <= 0.0:
             self._reset_gameplay_frame_clock()
             # Match legacy transition behavior: keep countdown moving, but at
@@ -657,7 +585,7 @@ class QuestMode(BaseGameplayMode):
             god = "on" if self.state.debug_god_mode else "off"
             line = float(self._ui_line_height(scale=0.9))
             self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR, scale=0.9)
-            overlay_end_y = self._draw_lan_debug_info(x=x, y=y + line, line_h=line)
+            overlay_end_y = y + line
             debug_overlay_height = max(0.0, float(overlay_end_y) - float(y))
 
         self._draw_quest_title()
@@ -686,7 +614,6 @@ class QuestMode(BaseGameplayMode):
             y = max(18.0, hud_bottom + 10.0)
             y += float(debug_overlay_height)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
-        self._draw_lan_wait_overlay()
 
     def _draw_game_cursor(self) -> None:
         resources = self.render_resources.resources

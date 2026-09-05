@@ -25,10 +25,7 @@ What exists today:
 - native debug contract verification and CDT trace export tooling,
 - native `crimson.cfg` and `game.cfg` inspection tooling,
 - native quest spawn-table dump tooling,
-- native UDP relay serve CLI,
 - native `net host/join --format json` session construction,
-- native rollback live-session launch and an in-process rollback smoke command,
-- native Play Game network entry shell,
 - a real raylib desktop app target,
 - archive/config/status codecs,
 - archive-backed rendering/audio,
@@ -112,27 +109,6 @@ Current supported replay-tooling behavior:
   and human allocation summaries via `quests <level> --show-plan`
 - spawn-template runtime summaries via `spawn-plan <template_id> --json`,
   including optional non-demo burst-effect counts
-- native UDP relay serving via `relay serve`
-- native rollback session construction via `net host/join --format json` with
-  `runtime_supported=true`
-- in-process rollback smoke validation via `net smoke-rollback --format json`
-  and `net smoke-rollback --impair delay-first-guest-input --format json`
-  and `net smoke-rollback --impair reorder-first-guest-input --format json`
-  and `net smoke-rollback --impair drop-first-guest-input --format json`
-  and `net smoke-rollback --impair force-guest-resync --format json`
-  and `net smoke-rollback --impair guest-reconnect --format json`
-  and `net smoke-rollback --impair guest-reconnect-resync --format json`
-  and `net smoke-rollback --impair guest-double-reconnect --format json`
-  and `net smoke-rollback --impair guest-double-reconnect-resync --format json`
-  and `net smoke-rollback --impair guest-triple-reconnect-resync --format json`
-  and `net smoke-rollback --impair jitter-burst --format json`
-  and `net smoke-rollback --impair bidirectional-jitter-burst --format json`
-  and
-  `net smoke-rollback --impair guest-reconnect-bidirectional-jitter-burst --format json`
-  and
-  `net smoke-rollback --impair guest-double-reconnect-bidirectional-jitter-burst --format json`
-  and
-  `net smoke-rollback --impair guest-triple-reconnect-bidirectional-jitter-burst --format json`
 - invalid spawn-template / quest-table inputs reported as invalid replay/session
   data rather than stale “unsupported path” wording
 
@@ -161,17 +137,6 @@ The important remaining gaps are now:
 - WASM still exposes a narrow replay/runtime surface, but now has replay
   verify/info JSON byte-input exports, replay info filter/verbose options, plus
   checkpoint diff/verify text and JSON exports,
-- network/LAN parity still needs broader stress and lobby coverage; Zig can now
-  construct rollback sessions, launch live rollback runners, smoke-test a
-  host/guest relay exchange, force delayed/reordered/dropped-input rollback
-  correction, absorb a repeated jitter burst without resync, complete a
-  guest-requested resync snapshot, and self-reconnect a guest through its relay
-  token before advancing more input, absorb bidirectional jitter after a
-  reconnect, drive a longer reconnect-then-resync smoke path that accepts
-  fresh guest input after the applied snapshot, recover from double- and
-  triple-reconnect-then-resync sequences, and absorb bidirectional
-  jitter after two or three reconnect cycles, but broader reconnect/resync stress and
-  product-lobby polish remain.
 
 The biggest remaining technical risk is not basic gameplay ownership. It is
 closing the remaining replay/tooling and product-shell breadth gaps cleanly.

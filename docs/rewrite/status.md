@@ -14,31 +14,7 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
 - `uv run crimson --preserve-bugs` to re-enable known native quirks for parity/diff work.
 - `uv run crimson view <name>` for debug views and sandboxes.
 - `uv run crimson spawn-plan <template_id>` and `uv run crimson quests <level>` for spawn/script inspection.
-- Net bring-up tooling:
-  - `uv run crimson relay serve --bind 0.0.0.0 --port 31993`
-  - `uv run crimson net host --mode survival --players 2 --relay-host <ip> --relay-port 31993`
-  - `uv run crimson net join --code <invite> --relay-host <ip> --relay-port 31993`
-  - `uv run crimson net host --mode survival --players 2 --netcode lockstep --host <ip> --port 31993`
-  - `uv run crimson net join --netcode lockstep --host <ip> --port 31993`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net host --mode survival --players 2 --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net join --code <invite> --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair delay-first-guest-input --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair reorder-first-guest-input --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair drop-first-guest-input --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair force-guest-resync --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-reconnect --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-reconnect-resync --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-double-reconnect --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-triple-reconnect --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-double-reconnect-resync --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-triple-reconnect-resync --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair jitter-burst --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair bidirectional-jitter-burst --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-reconnect-bidirectional-jitter-burst --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-double-reconnect-bidirectional-jitter-burst --format json`
-  - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig net smoke-rollback --impair guest-triple-reconnect-bidirectional-jitter-burst --format json`
-    - The native Zig `net host/join` surface now reports `runtime_supported=true` for rollback sessions, and the native smoke command exercises an in-process relay plus host/guest live rollback exchange, including delayed-input, reordered-input, dropped-input, repeated and bidirectional jitter recovery without resync, guest-requested resync snapshot, relay-token guest self-reconnect with post-reconnect input continuity, double and triple guest reconnect, a longer reconnect-then-resync path that accepts fresh guest input after the applied snapshot, double- and triple-reconnect-then-resync recovery, and bidirectional jitter after one, two, or three reconnect cycles. The desktop network lobby now opens and backs out through the same native panel timeline as the Python shell. Remaining network work is broader stress and lobby parity, not first launch support.
+- Local co-op and replays are supported; [network play is deferred](netplay.md).
 - Asset tooling:
   - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig-asset-smoke <assets-dir>`
     - The installed native smoke tool validates `crimson.paq`, JAZ/TGA/JPEG image decoding, runtime texture specs, and small-font width data.
@@ -124,7 +100,7 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
 - **Mods menu (state `0x14` path from main menu)**: implemented as a panel and filesystem DLL discovery UI; plugin loading/runtime is still not implemented.
   - Code: `src/crimson/screens/panels/mods.py`, `src/crimson/screens/menu.py`
   - Ref: [`docs/crimsonland-exe/mods.md`](../crimsonland-exe/mods.md)
-  - Zig now routes Mods, Other Games, Network Session, and live Network Lobby panel Back/Launch actions through the native panel timeline before dispatch.
+  - Zig now routes Mods and Other Games panel Back actions through the native panel timeline before dispatch.
 - **Scope policy for Mods and Other Games/shareware ads**: out of scope for the rewrite target.
   - Rationale: native DLL plugin runtime is not practical to support in the Python rewrite architecture.
   - Rewrite stance: keep menu-shell UX compatibility where useful, but do not implement native DLL mod loading/execution or Other Games ad/runtime flows.
@@ -141,10 +117,6 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
   - Code: `src/crimson/quests/tier*.py`, `src/crimson/quests/runtime.py`
 - **Multiplayer**: local 2-4 player input-frame flow is implemented for Survival/Rush/Quest.
   - Code: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/local_input.py`
-- **Rollback-primary netplay**: relay protocol v5 + relay service + rollback runtime are in-tree and selected by default for network sessions.
-  - Code: `src/crimson/net/relay_protocol.py`, `src/crimson/net/relay_service.py`, `src/crimson/net/rollback_runtime.py`, `src/crimson/net/rollback.py`, `src/crimson/game/loop_view.py`
-  - v5 adds end-to-end `rb_resync_request/begin/chunk/commit` fields (`request_id`, checksum, codec, snapshot tick), 5s link timeout + dedicated 250ms ping cadence, and reconnect/resync completion hooks.
-  - Docs: [`docs/rewrite/netplay-rollback.md`](netplay-rollback.md), [`docs/rewrite/lan-lockstep.md`](lan-lockstep.md)
 - **Progression/unlocks/persistence**: quest unlock indices, mode play counters, and status persistence are wired.
   - Code: `src/crimson/persistence/save_status.py`, `src/crimson/gameplay.py`
 - **Content breadth**: rewrite tables and runtime paths cover full weapon/perk/quest content, with ongoing parity validation focused on edge-case behavior/timing through differential captures.
@@ -163,8 +135,6 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
 - Deterministic step pipeline parity (live update vs replay/headless execution) is covered with canonical tick and checkpoint/state parity tests.
   - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners_survival.py`, `tests/test_replay_runners_rush.py`, `tests/test_replay_runners_quest.py`
   - Code: `src/crimson/sim/sessions.py`, `src/crimson/sim/tick_runner.py`, `src/crimson/sim/driver/playback_driver.py`
-- Network protocol/runtime behavior is covered by unit and wiring tests.
-  - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_rollback_resync_v5.py`, `tests/test_net_runtime_heartbeat.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_resync.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus lockstep suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
 - Replay-side checkpoint differential comparison is reusable via CLI and library helpers.
   - Code: `src/crimson/dbg/checkpoint_diff.py`
   - Command: `uv run crimson replay diff-checkpoints <expected> <actual>`
@@ -192,9 +162,6 @@ largest remaining parity gaps vs the classic Windows build (v1.9.93) documented 
    - Deterministic parity infrastructure is in place; remaining gaps are mostly capture-backed edge-case timing and branch-order issues.
    - This status page intentionally avoids tick/session-specific examples that go stale quickly.
    - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
-3. **Rollback stress hardening + lockstep fallback maintenance**
-   - Rollback is now the default path, and Zig has native delayed-input, reordered-input, dropped-input, repeated jitter, guest-requested resync, relay-token guest self-reconnect, reconnect-then-resync with fresh guest input after the applied snapshot, multi-reconnect, and multi-reconnect jitter smoke cases. Longer reconnect/resync stress still needs broader multi-cycle scenario coverage across long sessions.
-   - Legacy lockstep fallback remains available and must continue to receive compatibility maintenance while rollback remains primary.
 
 ## Out of scope for this rewrite
 

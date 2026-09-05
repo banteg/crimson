@@ -48,19 +48,6 @@ Today `crimson-zig/` already has:
   [`crimson-zig/src/formats/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/formats),
 - native audio modules under
   [`crimson-zig/src/audio/`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/audio),
-- native rollback session construction and live smoke validation in
-  [`crimson-zig/src/net_session_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_session_native.zig)
-  and
-  [`crimson-zig/src/net_rollback_smoke_native.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/net_rollback_smoke_native.zig),
-  including delayed, reordered, and dropped guest-input smoke cases that force
-  prediction correction without resync, plus a guest-requested resync smoke
-  case that applies a host snapshot stream, repeated and bidirectional
-  jitter-burst smoke cases, a relay-token guest self-reconnect smoke case with
-  post-reconnect input continuity, double and triple guest reconnect smoke cases, a
-  post-reconnect bidirectional jitter smoke case, a longer reconnect-then-resync
-  smoke case that accepts fresh guest input after the applied snapshot, double- and
-  triple-reconnect-then-resync stress cases, and
-  double- and triple-reconnect-then-bidirectional-jitter stress cases,
 - a freestanding WASM replay verify/info/benchmark plus checkpoint diff/verify
   text and JSON ABI in
   [`crimson-zig/src/wasm_exports.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/wasm_exports.zig).
@@ -93,7 +80,7 @@ The Zig port is done when all of these are true at the same time:
 - boot -> menu -> gameplay -> pause -> results -> stats/options/control flows
   have no known placeholder-only or scaffold UI branches in the shipped desktop
   path,
-- demo/trial and network lobby flows are either parity-complete or explicitly
+- demo/trial flows are either parity-complete or explicitly
   documented as intentional scope decisions,
 - native developer tooling is broad enough to debug replay/runtime mismatches
   without dropping back to Python for every investigation,
@@ -155,8 +142,7 @@ Current evidence:
 Scope:
 
 - audit and close boot, root menu, Play Game, Quests, Options, Controls,
-  Statistics, Pause, Results, High Scores, demo/trial, Mods, Other Games, and
-  Network Session flows as one shell batch,
+  Statistics, Pause, Results, High Scores, demo/trial, Mods, and Other Games flows as one shell batch,
 - remove remaining fallback/scaffold branches from shipped paths when runtime
   data exists,
 - update docs with any intentional differences.
@@ -189,25 +175,10 @@ Evidence gate:
 - `just zig-build`, `just zig-test`, and relevant `uv run pytest tests/replay`
   or `tests/debug` targets.
 
-### D. Network and demo hardening closure
+### D. Demo hardening closure
 
-Goal: finish the non-local product paths that can still hide launch-time gaps.
-
-Scope:
-
-- expand rollback smoke coverage into the remaining reconnect/resync stress
-  cases that are worth keeping,
-- verify host/join JSON surfaces and desktop lobby status against Python relay
-  defaults,
-- finish demo/trial purchase-shell behavior alongside the network shell if the
-  same product-state plumbing is touched.
-
-Evidence gate:
-
-- native `net smoke-rollback` cases,
-- `uv run pytest tests/net` coverage that compares Python contracts where
-  applicable,
-- `zig build test --summary all`.
+Finish demo/trial purchase-shell behavior and verify it through shell walkthroughs
+and `zig build test --summary all`. Network play is deferred.
 
 ### E. Final completion audit
 
@@ -289,8 +260,8 @@ Remaining work:
   Back, Options, or Quit actions,
 - keep tightening remaining miscellaneous panels in
   [`crimson-zig/src/window_misc_panels.zig`](/Users/banteg/dev/banteg/crimson/crimson-zig/src/window_misc_panels.zig);
-  Mods, Other Games, Network Session, and the live Network Lobby now use the
-  shared native panel timeline before dispatching Back or Launch actions,
+  Mods and Other Games now use the
+  shared native panel timeline before dispatching Back actions,
 - keep the demo/trial overlay and purchase-shell behavior aligned with Python
   as surrounding shell flows change,
 - keep removing any remaining fallback/scaffold UI logic from the desktop path.
@@ -342,28 +313,10 @@ Definition of done:
 - remaining visual/audio mismatches are minor polish, not missing systems or
   duplicate architectures.
 
-### 5. Network/LAN parity and hardening
+### 5. Netplay is deferred
 
-This is no longer missing first-launch support, but it still needs hardening
-and product parity.
-
-Remaining work:
-
-- keep the native `net host/join --format json` surface aligned with relay
-  protocol defaults and runtime support flags,
-- expand `net smoke-rollback` beyond the current in-process happy path and
-  delayed, reordered, dropped-input, repeated-jitter, post-reconnect jitter,
-  guest-resync, guest self-reconnect, and reconnect-then-resync cases into
-  broader reconnect/resync stress scenarios,
-- keep tightening desktop network lobby/status UX around live rollback sessions;
-  the live lobby now opens and backs out through the native panel timeline,
-- keep legacy lockstep as an explicit fallback while rollback remains primary.
-
-Reference Python surfaces:
-
-- [`src/crimson/screens/panels/network_session.py`](/Users/banteg/dev/banteg/crimson/src/crimson/screens/panels/network_session.py)
-- [`src/crimson/screens/panels/network_lobby.py`](/Users/banteg/dev/banteg/crimson/src/crimson/screens/panels/network_lobby.py)
-- [`src/crimson/net/`](/Users/banteg/dev/banteg/crimson/src/crimson/net)
+The previous custom network stack was removed. See [netplay design constraints](netplay.md)
+before starting a replacement. Local co-op and deterministic replay remain supported.
 
 ## Current priority order
 
@@ -372,7 +325,7 @@ If the goal is to finish the Zig port cleanly, the current order should be:
 1. replay corpus closure
 2. product-shell walkthrough closure
 3. native tooling parity closure
-4. network and demo hardening closure
+4. demo hardening closure
 5. final completion audit
 
 ## What is no longer a roadmap item
@@ -383,7 +336,6 @@ These were earlier concerns but are no longer the right headline risks:
 - “Zig has no real desktop game shell”
 - “spawn template coverage is broadly missing”
 - “quest spawn tables are mostly unported”
-- “Zig network support can only emit pending session JSON”
 
 Those areas now have real coverage in the current tree. The remaining work is
 closure and parity, not first-time implementation of those foundations.

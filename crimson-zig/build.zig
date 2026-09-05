@@ -66,19 +66,6 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(quest_dump_exe);
 
-    const relay_serve_exe = b.addExecutable(.{
-        .name = "crimson-zig-relay",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/relay_serve_main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "crimson_zig", .module = mod },
-            },
-        }),
-    });
-    b.installArtifact(relay_serve_exe);
-
     const run_step = b.step("run", "Run crimson-zig CLI");
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
@@ -209,14 +196,6 @@ pub fn build(b: *std.Build) void {
     run_quest_dump_step.dependOn(&run_quest_dump_cmd.step);
     if (b.args) |args| {
         run_quest_dump_cmd.addArgs(args);
-    }
-
-    const run_relay_step = b.step("relay-serve", "Run the native UDP relay server");
-    const run_relay_cmd = b.addRunArtifact(relay_serve_exe);
-    run_relay_cmd.step.dependOn(b.getInstallStep());
-    run_relay_step.dependOn(&run_relay_cmd.step);
-    if (b.args) |args| {
-        run_relay_cmd.addArgs(args);
     }
 
     const test_root_module = b.createModule(.{

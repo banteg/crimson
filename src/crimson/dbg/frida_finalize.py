@@ -13,7 +13,6 @@ import msgspec
 import zstandard as zstd
 
 from ..game_modes import GameMode
-from ..net.session_settings import session_settings_for_lockstep
 from ..persistence.save_status import (
     QUEST_PLAY_COUNT,
     RESERVED_SEED_WORDS_BYTE_SIZE,
@@ -23,8 +22,7 @@ from ..persistence.save_status import (
 from ..quests.level import QuestLevel
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
-from ..replay.header_settings import replay_header_from_session_settings
-from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayTick, ReplayVec2, quantize_f32
+from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayHeader, ReplayTick, ReplayVec2, quantize_f32
 from ..sim.input_providers import (
     GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
@@ -1536,15 +1534,12 @@ def _write_run_trace(
     is_quest_run = (
         int(run.mode_id) == int(_GAME_MODE_QUESTS) and int(run.quest_stage_major) > 0 and int(run.quest_stage_minor) > 0
     )
-    settings = session_settings_for_lockstep(
-        mode_id=GameMode(int(run.mode_id)),
+    replay_header = ReplayHeader(
+        game_mode_id=GameMode(int(run.mode_id)),
         player_count=int(run.replay_player_count),
         quest_level=(QuestLevel(int(run.quest_stage_major), int(run.quest_stage_minor)) if is_quest_run else None),
         preserve_bugs=True,
         tick_rate=int(run.tick_rate),
-    )
-    replay_header = replay_header_from_session_settings(
-        settings,
         seed=int(run.replay_seed),
         quest_fail_retry_count=int(run.quest_fail_retry_count),
         hardcore=bool(run.hardcore),

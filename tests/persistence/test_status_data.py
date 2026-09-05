@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from crimson.net.deterministic_status import build_lan_deterministic_status, status_data_from_status
 from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
     RESERVED_SEED_WORDS_BYTE_SIZE,
@@ -11,12 +10,11 @@ from crimson.persistence.save_status import (
     GameStatus,
     GameStatusData,
     build_status_blob,
-    default_status_data,
     hash_status_data,
 )
 
 
-def test_status_data_from_status_uses_full_typed_payload() -> None:
+def test_status_roundtrip_uses_full_typed_payload() -> None:
     weapon_counts = [0] * int(WEAPON_USAGE_COUNT)
     weapon_counts[4] = 99
     quest_counts = [0] * int(QUEST_PLAY_COUNT)
@@ -35,22 +33,9 @@ def test_status_data_from_status_uses_full_typed_payload() -> None:
     )
     status = GameStatus.from_data(path=Path("game.cfg"), data=data, dirty=False)
 
-    assert status_data_from_status(status) == data
-    assert status_data_from_status(None) == default_status_data()
-
-
-def test_build_lan_deterministic_status_uses_full_payload() -> None:
-    data = GameStatusData(
-        quest_unlock_index=7,
-        quest_unlock_index_full=9,
-        reserved_seed_words=b"\xCD" * int(RESERVED_SEED_WORDS_BYTE_SIZE),
-    )
-
-    status = build_lan_deterministic_status(status=data)
-
     assert status.as_data() == data
-    assert status.dirty is False
-    assert status.path.name == "crimson-lan-sim-game.cfg"
+
+
 
 
 def test_hash_status_data_hashes_full_blob() -> None:

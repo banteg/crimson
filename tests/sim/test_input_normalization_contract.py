@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from tests.support.builders.input_providers import ReadyTickInputProvider, StalledInputProvider
 
 
-def test_network_provider_stalls_when_runtime_frame_missing() -> None:
+def test_provider_stalls_when_runtime_frame_missing() -> None:
     provider = StalledInputProvider()
 
     tick_input = provider.pull_tick(10, 1.0 / 60.0)
@@ -16,7 +16,7 @@ def test_network_provider_stalls_when_runtime_frame_missing() -> None:
     assert tick_input.tick is None
 
 
-def test_network_provider_uses_runtime_resolved_order_without_remerge() -> None:
+def test_provider_uses_runtime_resolved_order_without_remerge() -> None:
     runtime_resolved = (
         PlayerInput(move=Vec2(3.0, 0.0)),
         PlayerInput(move=Vec2(4.0, 0.0)),

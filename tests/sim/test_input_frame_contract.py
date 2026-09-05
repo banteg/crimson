@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.net.lockstep_state import HostLockstepState
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_frame import normalize_input_frame
@@ -110,32 +109,3 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
     assert [len(ck.players) for ck in checkpoints0] == [2, 2, 2, 2, 2]
     diff = compare_checkpoints(checkpoints0, checkpoints1)
     assert diff.ok
-
-
-def test_host_lockstep_canonical_frame_is_one_input_per_peer_in_slot_order() -> None:
-    host = HostLockstepState(player_count=3)
-    host.submit_input_sample(slot_index=2, tick_index=0, packed_input=[2.0, 0.0, 2.0, 2.0, 2])
-    host.submit_input_sample(slot_index=0, tick_index=0, packed_input=[0.0, 0.0, 0.0, 0.0, 0])
-    host.submit_input_sample(slot_index=1, tick_index=0, packed_input=[1.0, 0.0, 1.0, 1.0, 1])
-
-    frames = host.pop_ready_frames(now_ms=10)
-
-    assert len(frames) == 1
-    frame = frames[0]
-    assert frame.tick_index == 0
-    assert len(frame.frame_inputs) == 3
-    assert frame.frame_inputs[0] == [0.0, 0.0, 0.0, 0.0, 0]
-    assert frame.frame_inputs[1] == [1.0, 0.0, 1.0, 1.0, 1]
-    assert frame.frame_inputs[2] == [2.0, 0.0, 2.0, 2.0, 2]
-
-
-def test_host_lockstep_emits_tick_frames_in_order_under_reordered_arrival() -> None:
-    host = HostLockstepState(player_count=2)
-    host.submit_input_sample(slot_index=0, tick_index=1, packed_input=[0.0, 1.0, 0.0, 1.0, 0])
-    host.submit_input_sample(slot_index=1, tick_index=1, packed_input=[1.0, 1.0, 1.0, 1.0, 0])
-    host.submit_input_sample(slot_index=0, tick_index=0, packed_input=[0.0, 0.0, 0.0, 0.0, 0])
-    host.submit_input_sample(slot_index=1, tick_index=0, packed_input=[1.0, 0.0, 1.0, 0.0, 0])
-
-    frames = host.pop_ready_frames(now_ms=11)
-
-    assert [frame.tick_index for frame in frames] == [0, 1]

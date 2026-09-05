@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Literal
-
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -13,12 +11,6 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..net.debug_log import lan_debug_log
-from ..net.rollback_resync_v5 import (
-    ModeStateSnapshotV2,
-    RushRuntimeSnapshotV2,
-    RushStateSnapshotV2,
-)
 from ..persistence.save_status import GameStatusData
 from ..replay import Replay, ReplayHeader, ReplayRecorder
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
@@ -29,8 +21,7 @@ from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    LanSession,
-    LanStepAction,
+    TickStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -84,35 +75,14 @@ class RushMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
         self._reset_gameplay_frame_clock()
-        self._reset_lan_capture_clock()
 
         status = self.state.status
-        base_status = self.save_status
-        sim_unlock_index = int(status.quest_unlock_index) if status is not None else 0
-        sim_unlock_index_full = int(status.quest_unlock_index_full) if status is not None else 0
-        status_unlock_index = int(base_status.quest_unlock_index) if base_status is not None else int(sim_unlock_index)
-        status_unlock_index_full = (
-            int(base_status.quest_unlock_index_full) if base_status is not None else int(sim_unlock_index_full)
-        )
-        quest_unlock_index = int(sim_unlock_index)
+        quest_unlock_index = int(status.quest_unlock_index) if status is not None else 0
         terrain = advance_unlock_terrain(
             self.state.rng,
             unlock_index=int(quest_unlock_index),
             width=int(self.world_size),
             height=int(self.world_size),
-        )
-        lan_debug_log(
-            "terrain_prelude",
-            mode="RushMode",
-            lan_enabled=bool(self._lan_enabled),
-            lan_role=str(self._lan_role),
-            status_quest_unlock_index=int(status_unlock_index),
-            status_quest_unlock_index_full=int(status_unlock_index_full),
-            sim_quest_unlock_index=int(sim_unlock_index),
-            sim_quest_unlock_index_full=int(sim_unlock_index_full),
-            quest_unlock_index=int(quest_unlock_index),
-            terrain_slots=terrain.terrain_slots,
-            terrain_seed=terrain.terrain_seed,
         )
         self.apply_terrain_setup(
             terrain_slots=terrain.terrain_slots,
@@ -122,26 +92,22 @@ class RushMode(BaseGameplayMode):
         self._sim_session = self._new_sim_session()
         enforce_rush_loadout(self.sim_world.world_state)
         replay_status = GameStatusData() if status is None else status.as_data()
-        record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
-        if record_replay:
-            self._replay_recorder = ReplayRecorder(
-                ReplayHeader(
-                    game_mode_id=GameMode.RUSH,
-                    seed=int(self._run_reset_seed),
-                    tick_rate=int(self._gameplay_tick_rate()),
-                    quest_fail_retry_count=int(self.quest_fail_retry_count),
-                    hardcore=bool(self.hardcore),
-                    preserve_bugs=bool(self.state.preserve_bugs),
-                    detail_preset=int(self._deterministic_detail_preset()),
-                    violence_disabled=int(self._deterministic_violence_disabled()),
-                    world_size=float(self.world_size),
-                    player_count=len(self.sim_world.players),
-                    status=replay_status,
-                ),
-            )
-            self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        else:
-            self._replay_recorder = None
+        self._replay_recorder = ReplayRecorder(
+            ReplayHeader(
+                game_mode_id=GameMode.RUSH,
+                seed=int(self._run_reset_seed),
+                tick_rate=int(self._gameplay_tick_rate()),
+                quest_fail_retry_count=int(self.quest_fail_retry_count),
+                hardcore=bool(self.hardcore),
+                preserve_bugs=bool(self.state.preserve_bugs),
+                detail_preset=int(self._deterministic_detail_preset()),
+                violence_disabled=int(self._deterministic_violence_disabled()),
+                world_size=float(self.world_size),
+                player_count=len(self.sim_world.players),
+                status=replay_status,
+            ),
+        )
+        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
 
@@ -156,7 +122,7 @@ class RushMode(BaseGameplayMode):
                 self.close_requested = True
             return
 
-        if (not bool(self._lan_enabled)) and rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -196,58 +162,18 @@ class RushMode(BaseGameplayMode):
         kills = int(self.creatures.kill_count)
         return f"rush_{stamp}_kills{kills}"
 
-    def _lan_mode_name(self) -> Literal["rush"]:
-        return "rush"
 
-    def _lan_match_session(self) -> DeterministicSession | None:
-        return self._sim_session
-
-    def _lan_prepare_frame(
-        self,
-        role: str,
-        dt_ui_ms: float,
-        session: LanSession,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, dt_ui_ms, dt_tick
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.violence_disabled = int(self._deterministic_violence_disabled())
-        return True
-
-    def _lan_on_tick_applied(
+    def _on_tick_applied(
         self,
         tick: DeterministicSessionTick,
-        frame_tick_index: int | None,
         dt_tick: float,
-    ) -> LanStepAction:
+    ) -> TickStepAction:
         _ = tick, dt_tick
-        elapsed_ms = self._session_elapsed_ms()
-        spawn_cooldown_ms = float(self._spawn_state.spawn_cooldown_ms)
-        if frame_tick_index is not None:
-            self._store_net_runtime_snapshot(
-                snapshot=RushStateSnapshotV2(
-                    tick_index=int(frame_tick_index),
-                    replay_state=self._net_replay_snapshot_state(),
-                    runtime_state=RushRuntimeSnapshotV2(
-                        elapsed_ms=elapsed_ms,
-                        spawn_cooldown_ms=spawn_cooldown_ms,
-                        kill_count=int(self.creatures.kill_count),
-                    ),
-                ),
-            )
         if not self._any_player_alive():
             self._enter_game_over()
             return "stop_after_finalize"
         return "continue"
 
-    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
-        if not isinstance(snapshot, RushStateSnapshotV2):
-            return
-        rs = snapshot.runtime_state
-        if self._sim_session is not None:
-            self._sim_session.elapsed_ms = float(rs.elapsed_ms)
-        self._spawn_state.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
-        self.creatures.kill_count = int(rs.kill_count)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -258,17 +184,11 @@ class RushMode(BaseGameplayMode):
             self._update_game_over_ui(float(frame.dt))
             return
 
-        if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt=float(frame.dt), dt_ui_ms=0.0)
-            return
 
         any_alive = self._any_player_alive()
         sim_dt = float(frame.dt) if ((not self._paused) and any_alive) else 0.0
         session = self._sim_session
 
-        if self._lan_wait_gate_active():
-            self._reset_gameplay_frame_clock()
-            return
         if sim_dt <= 0.0:
             self._reset_gameplay_frame_clock()
             if not any_alive:
@@ -341,7 +261,6 @@ class RushMode(BaseGameplayMode):
             if self.player.health <= 0.0:
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
-            self._draw_lan_debug_info(x=x, y=y_extra, line_h=line)
 
         if self._game_over_active:
             self._draw_game_cursor()
@@ -352,4 +271,3 @@ class RushMode(BaseGameplayMode):
                     resources=self.render_resources.resources,
                     mouse=self._ui_mouse_pos(),
                 )
-        self._draw_lan_wait_overlay()

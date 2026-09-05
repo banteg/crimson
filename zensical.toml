@@ -53,8 +53,7 @@ nav = [
       { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
       { "Float expression precision map" = "rewrite/float-expression-precision-map.md" },
-      { "Netplay (rollback primary)" = "rewrite/netplay-rollback.md" },
-      { "LAN lockstep" = "rewrite/lan-lockstep.md" },
+      { "Netplay (deferred)" = "rewrite/netplay.md" },
       { "Local multiplayer" = "rewrite/local-multiplayer.md" },
     ]},
     { "Modules" = [

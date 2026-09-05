@@ -220,11 +220,6 @@ class PlayGameMenuView(PanelMenuView):
         # Our `quest_play_counts` array starts at blob+0xd8, so this is indices 11..50.
         return int(sum(int(v) for v in counts[11:51]))
 
-    def _lan_lockstep_enabled(self) -> bool:
-        cvar = self.state.console.cvars.get("cv_lanLockstepEnabled")
-        if cvar is None:
-            return True
-        return bool(cvar.value_f)
 
     def _mode_entries(self) -> tuple[list[_PlayGameModeEntry], float, float, float]:
         config = self.state.config
@@ -317,15 +312,6 @@ class PlayGameMenuView(PanelMenuView):
                 ),
             )
 
-        if self._lan_lockstep_enabled():
-            entries.append(
-                _PlayGameModeEntry(
-                    key="lan",
-                    label=" Network ",
-                    tooltip="Host or join a rollback-first network session.",
-                    action="open_lan_session",
-                ),
-            )
 
         # The y after the last row is used as a tooltip anchor in `play_game_menu_update`.
         y_end = y_start + y_step * float(len(entries))

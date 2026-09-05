@@ -17,7 +17,6 @@ from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ...replay import Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
-from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
 from ...rng_caller_static import RngCallerStatic
 from ...sim.bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
@@ -154,15 +153,14 @@ class PlaybackDriver:
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
 
-        self.session_settings = session_settings_from_replay_header(replay.header)
 
-        mode_raw = int(self.session_settings.mode_id)
+        mode_raw = int(self.replay.header.game_mode_id)
         try:
             self.mode_id = GameMode(mode_raw)
         except ValueError as exc:
             raise ReplayRunnerError(f"unsupported replay game_mode_id={mode_raw}") from exc
 
-        tick_rate = int(self.session_settings.tick_rate)
+        tick_rate = int(self.replay.header.tick_rate)
         if tick_rate <= 0:
             raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
         self.tick_rate = int(tick_rate)
@@ -192,10 +190,10 @@ class PlaybackDriver:
             demo_mode_active=False,
             hardcore=bool(self.replay.header.hardcore),
             quest_fail_retry_count=int(self.replay.header.quest_fail_retry_count),
-            preserve_bugs=bool(self.session_settings.preserve_bugs),
+            preserve_bugs=bool(self.replay.header.preserve_bugs),
         )
         world.state.rng.srand(int(self.replay.header.seed))
-        world.creatures.apply_gameplay_reset_target_players(int(self.session_settings.player_count))
+        world.creatures.apply_gameplay_reset_target_players(int(self.replay.header.player_count))
         if self.replay.header.initial_creature_pool is not None:
             apply_creature_pool_residue(
                 world.creatures.entries,
@@ -205,7 +203,7 @@ class PlaybackDriver:
             world.players,
             state=world.state,
             world_size=float(self.world_size),
-            player_count=int(self.session_settings.player_count),
+            player_count=int(self.replay.header.player_count),
         )
         world.state.status = GameStatus.from_data(
             path=Path("replay://status"),
@@ -254,7 +252,7 @@ class PlaybackDriver:
                 ctx = QuestContext(
                     width=int(self.world_size),
                     height=int(self.world_size),
-                    player_count=int(self.session_settings.player_count),
+                    player_count=int(self.replay.header.player_count),
                 )
                 advance_unlock_terrain(
                     world.state.rng,

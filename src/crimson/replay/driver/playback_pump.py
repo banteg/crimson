@@ -87,7 +87,6 @@ def advance_playback_frame(
         ticks_requested=int(ticks_requested),
         dt_seconds=float(dt_seconds),
         tick_dt_seconds=float(clock.dt_tick),
-        is_networked=False,
         is_replay=True,
         refund_clock=clock,
     )

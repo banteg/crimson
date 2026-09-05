@@ -41,7 +41,6 @@ def advance_tick_runner_frame(
     ticks_requested: int,
     dt_seconds: float,
     tick_dt_seconds: float,
-    is_networked: bool,
     is_replay: bool,
     refund_clock: FixedStepClock | None = None,
     after_tick: Callable[[TickResult], None] | None = None,
@@ -55,7 +54,6 @@ def advance_tick_runner_frame(
             tick_dt_seconds=float(tick_dt_seconds),
             frame_index=int(next_frame_index),
             candidate_ticks=int(ticks_requested),
-            is_networked=bool(is_networked),
             is_replay=bool(is_replay),
         ),
     )

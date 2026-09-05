@@ -471,12 +471,7 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
 
 
 def iter_visible_aim_players(render_ctx: WorldRenderCtx) -> tuple[PlayerState, ...]:
-    frame = render_ctx.frame
-    players = frame.players
-    if not bool(frame.lan_local_aim_indicators_only):
-        return tuple(players)
-    local_slot = int(frame.lan_local_player_slot_index)
-    return tuple(player for player in players if int(player.index) == local_slot)
+    return tuple(render_ctx.frame.players)
 
 
 def draw_aim_indicators(

@@ -25,14 +25,7 @@ from crimson.sim.frame_pump import advance_tick_runner_frame
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
-    FrameContext,
-    GameCommand,
-    InputProvider,
-    InputStatus,
     LocalInputProvider,
-    PerkPickCommand,
-    ResolvedTick,
-    TickSupply,
 )
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -54,62 +47,8 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
-class _MockLockstepRuntime:
-    def __init__(self) -> None:
-        self._pending_commands: list[GameCommand] = []
-        self._commands_by_peer_and_tick: dict[str, dict[int, list[GameCommand]]] = {
-            "host": {},
-            "client": {},
-        }
-
-    def submit_local_command(self, command: GameCommand) -> None:
-        self._pending_commands.append(command)
-
-    def pull_commands(self, *, peer: str, tick_index: int) -> list[GameCommand]:
-        tick = int(tick_index)
-        if tick not in self._commands_by_peer_and_tick["host"] and self._pending_commands:
-            commands = list(self._pending_commands)
-            self._pending_commands.clear()
-            for target in self._commands_by_peer_and_tick:
-                self._commands_by_peer_and_tick[target][tick] = list(commands)
-        return list(self._commands_by_peer_and_tick[str(peer)].pop(int(tick_index), []))
 
 
-class _LockstepInputProvider(InputProvider):
-    def __init__(
-        self,
-        *,
-        runtime: _MockLockstepRuntime,
-        peer: str,
-        inputs: tuple[PlayerInput, ...],
-        accepts_local_commands: bool = False,
-    ) -> None:
-        self._runtime = runtime
-        self._peer = peer
-        self._inputs = inputs
-        self._accepts_local_commands = accepts_local_commands
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
-
-    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
-        tick = int(tick_index)
-        return TickSupply(
-            status=InputStatus.READY,
-            tick=ResolvedTick(
-                tick_index=tick,
-                dt_seconds=float(default_dt_seconds),
-                inputs=tuple(self._inputs),
-                commands=tuple(self._runtime.pull_commands(peer=self._peer, tick_index=tick)),
-            ),
-        )
-
-    def supports_command_submission(self) -> bool:
-        return bool(self._accepts_local_commands)
-
-    def submit_command(self, command: GameCommand) -> None:
-        if self._accepts_local_commands:
-            self._runtime.submit_local_command(command)
 
 
 def _advance_with_clock(
@@ -120,7 +59,6 @@ def _advance_with_clock(
     frame_index: int,
     dt_seconds: float,
     max_ticks: int | None = None,
-    is_networked: bool = False,
     is_replay: bool = False,
 ) -> tuple[TickBatchResult, int, int]:
     ticks_requested = int(clock.advance(float(dt_seconds)))
@@ -133,7 +71,6 @@ def _advance_with_clock(
         ticks_requested=int(ticks_requested),
         dt_seconds=float(dt_seconds),
         tick_dt_seconds=float(clock.dt_tick),
-        is_networked=bool(is_networked),
         is_replay=bool(is_replay),
         refund_clock=clock,
     )
@@ -185,66 +122,6 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
         assert payload.step is not None
 
 
-def test_contract_3_lockstep_command_propagation_over_network_provider() -> None:
-    runtime = _MockLockstepRuntime()
-    tick_input = (PlayerInput(),)
-    host_provider = _LockstepInputProvider(
-        runtime=runtime,
-        peer="host",
-        inputs=tick_input,
-        accepts_local_commands=True,
-    )
-    client_provider = _LockstepInputProvider(
-        runtime=runtime,
-        peer="client",
-        inputs=tick_input,
-    )
-    host_session, _ = make_session(seed=42)
-    client_session, _ = make_session(seed=42)
-
-    host_runner = TickRunner(
-        session=host_session,
-        input_provider=host_provider,
-        config=TickRunnerConfig(),
-    )
-    client_runner = TickRunner(
-        session=client_session,
-        input_provider=client_provider,
-        config=TickRunnerConfig(),
-    )
-
-    command = PerkPickCommand(player_index=0, choice_index=1)
-    host_provider.submit_command(command)
-
-    host_clock = FixedStepClock(tick_rate=60)
-    host_frame_index = 0
-    host_next_tick_index = 0
-    host_batch, host_next_tick_index, host_frame_index = _advance_with_clock(
-        runner=host_runner,
-        clock=host_clock,
-        start_tick=host_next_tick_index,
-        frame_index=host_frame_index,
-        dt_seconds=1.0 / 60.0,
-        max_ticks=1,
-        is_networked=True,
-    )
-
-    client_clock = FixedStepClock(tick_rate=60)
-    client_frame_index = 0
-    client_next_tick_index = 0
-    client_batch, client_next_tick_index, client_frame_index = _advance_with_clock(
-        runner=client_runner,
-        clock=client_clock,
-        start_tick=client_next_tick_index,
-        frame_index=client_frame_index,
-        dt_seconds=1.0 / 60.0,
-        max_ticks=1,
-        is_networked=True,
-    )
-
-    # Commands propagated through runner to both host and client
-    assert host_batch.completed_results[0].source_tick.commands == (command,)
-    assert client_batch.completed_results[0].source_tick.commands == (command,)
 
 
 def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
@@ -441,7 +318,6 @@ def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases
 def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
     helper_source = inspect.getsource(frame_pump_module.advance_tick_runner_frame)
     gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._run_deterministic_session_ticks)
-    lan_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._consume_lan_tick_frames)
     harness_source = inspect.getsource(standalone_tick_harness_module.StandaloneTickHarness.advance_frame)
     demo_source = inspect.getsource(demo_module.DemoView._update_world)
     debug_source = inspect.getsource(arsenal_debug_module.ArsenalDebugView.update)
@@ -450,11 +326,8 @@ def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
     assert "runner.advance_ticks(" in helper_source
     assert "refund_clock.accum +=" in helper_source
     assert "advance_tick_runner_frame(" in gameplay_source
-    assert "advance_tick_runner_frame(" in lan_source
     assert "runner.begin_frame(" not in gameplay_source
     assert "runner.advance_ticks(" not in gameplay_source
-    assert "runner.begin_frame(" not in lan_source
-    assert "runner.advance_ticks(" not in lan_source
     assert "advance_tick_runner_frame(" in harness_source
     assert "runner.begin_frame(" not in harness_source
     assert "runner.advance_ticks(" not in harness_source

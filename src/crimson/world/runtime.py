@@ -80,9 +80,6 @@ class WorldRuntime:
         )
 
         self.camera = Vec2(-1.0, -1.0)
-        self.lan_player_rings_enabled = False
-        self.lan_local_aim_indicators_only = False
-        self.lan_local_player_slot_index = 0
         self.renderer = WorldRenderer(
             world_size=float(self.world_size),
             config=self.config,
@@ -213,8 +210,5 @@ class WorldRuntime:
             demo_mode_active=bool(self.demo_mode_active),
             elapsed_ms=float(self.sim_world.presentation_elapsed_ms),
             bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
-            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
-            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
-            lan_local_player_slot_index=int(self.lan_local_player_slot_index),
             rtx_mode=self.rtx_mode,
         )

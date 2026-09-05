@@ -40,9 +40,6 @@ class _WorldStub:
             resources=cast(Any, self.resources),
             elapsed_ms=0.0,
             bonus_anim_phase=0.0,
-            lan_player_rings_enabled=False,
-            lan_local_aim_indicators_only=False,
-            lan_local_player_slot_index=0,
             rtx_mode=RtxRenderMode.CLASSIC,
         )
 

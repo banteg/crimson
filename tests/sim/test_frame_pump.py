@@ -54,14 +54,12 @@ def test_advance_tick_runner_frame_builds_context_and_tracks_indices() -> None:
         ticks_requested=3,
         dt_seconds=0.25,
         tick_dt_seconds=1.0 / 60.0,
-        is_networked=True,
         is_replay=False,
     )
 
     assert runner.frame_ctx is not None
     assert runner.frame_ctx.frame_index == 5
     assert runner.frame_ctx.candidate_ticks == 3
-    assert runner.frame_ctx.is_networked is True
     assert runner.frame_ctx.is_replay is False
     assert isclose(float(runner.frame_ctx.dt_seconds), 0.25)
     assert isclose(float(runner.frame_ctx.tick_dt_seconds), 1.0 / 60.0)
@@ -92,7 +90,6 @@ def test_advance_tick_runner_frame_refunds_stalled_ticks_to_clock() -> None:
         ticks_requested=3,
         dt_seconds=3.0 / 60.0,
         tick_dt_seconds=float(clock.dt_tick),
-        is_networked=False,
         is_replay=False,
         refund_clock=clock,
     )
@@ -117,7 +114,6 @@ def test_advance_tick_runner_frame_refunds_eos_ticks_to_clock() -> None:
         ticks_requested=2,
         dt_seconds=2.0 / 60.0,
         tick_dt_seconds=float(clock.dt_tick),
-        is_networked=False,
         is_replay=False,
         refund_clock=clock,
     )
@@ -142,7 +138,6 @@ def test_advance_tick_runner_frame_does_not_refund_when_all_ticks_consumed() -> 
         ticks_requested=2,
         dt_seconds=2.0 / 60.0,
         tick_dt_seconds=float(clock.dt_tick),
-        is_networked=False,
         is_replay=False,
         refund_clock=clock,
     )
@@ -166,7 +161,6 @@ def test_advance_tick_runner_frame_does_not_refund_without_clock() -> None:
         ticks_requested=2,
         dt_seconds=2.0 / 60.0,
         tick_dt_seconds=1.0 / 60.0,
-        is_networked=False,
         is_replay=False,
         refund_clock=None,
     )

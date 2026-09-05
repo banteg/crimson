@@ -166,7 +166,6 @@ class StandaloneTickHarness:
             ticks_requested=int(ticks_requested),
             dt_seconds=float(dt),
             tick_dt_seconds=float(self.clock.dt_tick),
-            is_networked=False,
             is_replay=False,
             refund_clock=self.clock,
         )

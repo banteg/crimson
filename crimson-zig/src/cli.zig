@@ -14,10 +14,6 @@ const quest_spawn_native = @import("quest_spawn_native.zig");
 const replay_benchmark_native = @import("replay_benchmark_native.zig");
 const replay_info_native = @import("replay_info_native.zig");
 const replay_list_native = @import("replay_list_native.zig");
-const net_lockstep_smoke_native = @import("net_lockstep_smoke_native.zig");
-const net_rollback_smoke_native = @import("net_rollback_smoke_native.zig");
-const net_session_native = @import("net_session_native.zig");
-const relay_udp_server = @import("net/relay_udp_server.zig");
 const spawn_plan_native = @import("spawn_plan_native.zig");
 const status_native = @import("status_native.zig");
 const verify_native = @import("verify_native.zig");
@@ -43,11 +39,6 @@ const usage =
     \\  crimson-zig status [status options]
     \\  crimson-zig quests <level> [quest options]
     \\  crimson-zig spawn-plan <template_id> [spawn-plan options]
-    \\  crimson-zig net host --mode <mode> --players <count> [net options]
-    \\  crimson-zig net join --code <room> [net options]
-    \\  crimson-zig net smoke-lockstep [smoke options]
-    \\  crimson-zig net smoke-rollback [smoke options]
-    \\  crimson-zig relay serve [relay options]
     \\  crimson-zig --help
     \\
     \\Examples:
@@ -73,11 +64,6 @@ const usage =
     \\  crimson-zig status --path game.cfg --format json
     \\  crimson-zig quests 1.1 --format json --seed 101
     \\  crimson-zig spawn-plan 0x12 --json
-    \\  crimson-zig net host --mode survival --players 2 --format json
-    \\  crimson-zig net join --code ab12 --format json
-    \\  crimson-zig net smoke-lockstep --json
-    \\  crimson-zig net smoke-rollback --json
-    \\  crimson-zig relay serve --bind 127.0.0.1 --port 31993
     \\
 ;
 
@@ -244,40 +230,6 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
         try writeStderr(output.stderr);
         return output.exit_code;
     }
-    if (args.len >= 2 and std.mem.eql(u8, args[1], "net")) {
-        if (args.len >= 3 and std.mem.eql(u8, args[2], "smoke-lockstep")) {
-            const output = try net_lockstep_smoke_native.runLockstepSmoke(allocator, std.Io.Threaded.global_single_threaded.io(), args[3..]);
-            defer output.deinit(allocator);
-
-            try writeStdout(output.stdout);
-            try writeStderr(output.stderr);
-            return output.exit_code;
-        }
-        if (args.len >= 3 and std.mem.eql(u8, args[2], "smoke-rollback")) {
-            const output = try net_rollback_smoke_native.runRollbackSmoke(allocator, std.Io.Threaded.global_single_threaded.io(), args[3..]);
-            defer output.deinit(allocator);
-
-            try writeStdout(output.stdout);
-            try writeStderr(output.stderr);
-            return output.exit_code;
-        }
-
-        const output = try net_session_native.runNet(allocator, args[2..]);
-        defer output.deinit(allocator);
-
-        try writeStdout(output.stdout);
-        try writeStderr(output.stderr);
-        return output.exit_code;
-    }
-    if (args.len >= 3 and std.mem.eql(u8, args[1], "relay") and std.mem.eql(u8, args[2], "serve")) {
-        const output = try relay_udp_server.runRelayServe(allocator, std.Io.Threaded.global_single_threaded.io(), args[3..]);
-        defer output.deinit(allocator);
-
-        try writeStdout(output.stdout);
-        try writeStderr(output.stderr);
-        return output.exit_code;
-    }
-
     try writeStderr("error: unsupported command\n");
     try printUsage();
     return 1;

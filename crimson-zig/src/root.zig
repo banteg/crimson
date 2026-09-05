@@ -54,10 +54,6 @@ pub const formats = @import("formats/mod.zig");
 pub const persistence = @import("persistence/mod.zig");
 pub const local_input = @import("local_input.zig");
 pub const demo_trial = @import("demo_trial.zig");
-pub const net_lockstep_smoke_native = @import("net_lockstep_smoke_native.zig");
-pub const net_rollback_smoke_native = @import("net_rollback_smoke_native.zig");
-pub const net_session_native = @import("net_session_native.zig");
-pub const net = @import("net/mod.zig");
 pub const runtime_paths = @import("runtime_paths.zig");
 pub const window_atlas = @import("window_atlas.zig");
 
@@ -69,7 +65,6 @@ test {
     _ = @import("cdt_wire.zig");
     _ = @import("runtime/replay/diagnostic_trace.zig");
     _ = effects;
-    _ = net;
     _ = projectiles;
     _ = quest_level;
     _ = quest_spawn_logic_full;

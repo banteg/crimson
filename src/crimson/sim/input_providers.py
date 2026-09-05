@@ -59,7 +59,6 @@ class FrameContext(msgspec.Struct, frozen=True):
     tick_dt_seconds: float
     frame_index: int
     candidate_ticks: int
-    is_networked: bool = False
     is_replay: bool = False
 
 

@@ -29,11 +29,10 @@ from ..demo_trial import (
     format_demo_trial_time,
 )
 from ..game_modes import GameMode
-from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from .loop_view import GameLoopView
-from .types import GameConfig, GameState, LockstepEndpoint
+from .types import GameConfig, GameState
 
 CRIMSON_PAQ_NAME = "crimson.paq"
 MUSIC_PAQ_NAME = "music.paq"
@@ -271,39 +270,7 @@ def run_game(config: GameConfig) -> None:
             audio=None,
             session_start=time.monotonic(),
             rtx_mode=mode_from_rtx_flag(bool(config.rtx)),
-            pending_network_session=config.pending_network_session,
         )
-        pending = config.pending_network_session
-        if pending is not None:
-            from ..net.lockstep_protocol import current_build_id
-
-            endpoint = pending.config.endpoint
-            if isinstance(endpoint, LockstepEndpoint):
-                host = str(endpoint.host)
-                port = int(endpoint.port)
-            else:
-                host = str(endpoint.relay_host)
-                port = int(endpoint.relay_port)
-            log_path = init_lan_debug_log(
-                base_dir=base_dir,
-                role=str(pending.role),
-                mode=str(pending.config.mode),
-                build_id=str(current_build_id()),
-                host=host,
-                port=int(port),
-                player_count=pending.config.player_count,
-                auto_start=pending.auto_start,
-                debug_enabled=config.debug,
-            )
-            lan_debug_log(
-                "run_game_session",
-                width=int(width),
-                height=int(height),
-                fps=int(config.fps),
-                preserve_bugs=config.preserve_bugs,
-            )
-            console.log.log(f"lan debug log: {log_path}")
-            print(f"[lan-debug] role={pending.role} log={log_path}")
         register_boot_commands(console, _boot_command_handlers(state))
         register_core_cvars(console, width, height)
         _apply_debug_console_defaults(console, debug=config.debug)
@@ -335,6 +302,5 @@ def run_game(config: GameConfig) -> None:
         if state is not None:
             state.status.save_if_dirty()
     finally:
-        close_lan_debug_log()
         faulthandler.disable()
         crash_file.close()

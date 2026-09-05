@@ -25,7 +25,7 @@ def _make_players() -> list[PlayerState]:
     ]
 
 
-def _make_world(*, players: list[PlayerState], local_only: bool, local_slot: int) -> WorldRuntimeHost:
+def _make_world(*, players: list[PlayerState]) -> WorldRuntimeHost:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(player_count=len(players))
@@ -34,8 +34,6 @@ def _make_world(*, players: list[PlayerState], local_only: bool, local_slot: int
         runtime_player.aim = test_player.aim
         runtime_player.spread_heat = test_player.spread_heat
         runtime_player.health = test_player.health
-    world.lan_local_aim_indicators_only = bool(local_only)
-    world.lan_local_player_slot_index = int(local_slot)
     world.render_resources.resources = RuntimeResources(
         assets_dir=world.assets_dir,
         textures={TextureId.UI_AIM: rl.Texture()},
@@ -54,35 +52,10 @@ def _x_from_call_arg(call, *, key: str, arg_index: int) -> float:
     return float(call.args[arg_index].x)
 
 
-def test_lan_aim_indicators_draw_local_player_only(mocker) -> None:
-    world = _make_world(players=_make_players(), local_only=True, local_slot=1)
-    renderer = world.renderer
-    render_ctx = build_world_render_ctx(renderer, render_frame=world.build_render_frame())
-    ctx = _draw_ctx()
-    draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
-    draw_aim_circle = mocker.Mock()
-
-    draw_aim_indicators(
-        render_ctx,
-        ctx=ctx,
-        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
-        draw_aim_circle_fn=draw_aim_circle,
-        draw_clock_gauge_fn=lambda _pos, _ms, _scale, _alpha: None,
-    )
-    draw_aim_enhancements(
-        render_ctx,
-        ctx=ctx,
-        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
-    )
-
-    circles = [_x_from_call_arg(call, key="center", arg_index=0) for call in draw_aim_circle.call_args_list]
-    cursors = [_x_from_call_arg(call, key="pos", arg_index=-1) for call in draw_aim_cursor.call_args_list]
-    assert circles == [20.0]
-    assert cursors == [20.0]
 
 
-def test_non_lan_aim_indicators_draw_all_players(mocker) -> None:
-    world = _make_world(players=_make_players(), local_only=False, local_slot=1)
+def test_aim_indicators_draw_all_local_players(mocker) -> None:
+    world = _make_world(players=_make_players())
     renderer = world.renderer
     render_ctx = build_world_render_ctx(renderer, render_frame=world.build_render_frame())
     ctx = _draw_ctx()

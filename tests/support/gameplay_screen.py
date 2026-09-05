@@ -29,9 +29,6 @@ class GameplayScreenStub:
         self.last_screen_fade = None
         self.last_audio = None
         self.last_audio_rng = None
-        self.last_lan_runtime = None
-        self.last_lan_runtime_config: tuple[bool, str, int, int, bool] | None = None
-        self.last_lan_match_start: tuple[int, int, object | None] | None = None
         self.last_rtx_mode = None
         self.last_runtime_updates_per_frame = 0
 
@@ -62,28 +59,8 @@ class GameplayScreenStub:
         self.last_audio = audio
         self.last_audio_rng = audio_rng
 
-    def set_lan_runtime(
-        self,
-        *,
-        enabled: bool,
-        role: str,
-        expected_players: int,
-        connected_players: int,
-        waiting_for_players: bool,
-    ) -> None:
-        self.last_lan_runtime_config = (
-            bool(enabled),
-            str(role),
-            int(expected_players),
-            int(connected_players),
-            bool(waiting_for_players),
-        )
 
-    def bind_lan_runtime(self, runtime) -> None:
-        self.last_lan_runtime = runtime
 
-    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status=None) -> None:
-        self.last_lan_match_start = (int(seed), int(start_tick), status)
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
         _ = entity_alpha

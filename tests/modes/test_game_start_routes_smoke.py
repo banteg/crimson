@@ -13,7 +13,6 @@ from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
 from crimson.screens.high_scores_view import HighScoresView
-from crimson.screens.panels.network_session import NetworkSessionPanelView
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.rand import Crand
@@ -47,7 +46,6 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     assert isinstance(views["start_tutorial"], TutorialMode)
     assert isinstance(views["start_quest"], QuestMode)
     assert isinstance(views["open_high_scores"], HighScoresView)
-    assert isinstance(views["open_lan_session"], NetworkSessionPanelView)
 
 
 def test_quest_retry_counter_flows_through_persistent_mode(make_game_state, mocker) -> None:

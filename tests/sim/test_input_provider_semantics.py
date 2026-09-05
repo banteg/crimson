@@ -61,7 +61,7 @@ def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
     assert tick0.tick.inputs == ()
 
 
-def test_network_provider_returns_stalled_when_no_inputs() -> None:
+def test_provider_returns_stalled_when_no_inputs() -> None:
     provider = StalledInputProvider()
     provider.begin_frame(_FRAME_CTX)
 
@@ -70,7 +70,7 @@ def test_network_provider_returns_stalled_when_no_inputs() -> None:
     assert tick0.tick is None
 
 
-def test_network_provider_returns_resolved_tick_inline() -> None:
+def test_provider_returns_resolved_tick_inline() -> None:
     provider = ReadyTickInputProvider(inputs=(PlayerInput(),))
     provider.begin_frame(_FRAME_CTX)
 

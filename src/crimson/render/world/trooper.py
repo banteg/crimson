@@ -18,55 +18,10 @@ from .context import WorldRenderCtx
 if TYPE_CHECKING:
     from ...sim.state_types import PlayerState
 
-_LAN_PLAYER_RING_RGB: tuple[tuple[int, int, int], ...] = (
-    # Match existing trooper torso tint colors for P1/P2.
-    (77, 77, 255),
-    (255, 140, 89),
-    # Distinct colors for P3/P4 (4-player LAN readability).
-    (90, 240, 255),
-    (255, 120, 230),
-)
 
 
-def lan_player_ring_rgb(player_index: int) -> tuple[int, int, int]:
-    idx = max(0, min(len(_LAN_PLAYER_RING_RGB) - 1, int(player_index)))
-    return _LAN_PLAYER_RING_RGB[idx]
 
 
-def draw_lan_player_ring(
-    render_ctx: WorldRenderCtx,
-    *,
-    player: PlayerState,
-    screen_pos: Vec2,
-    base_size: float,
-    scale: float,
-    alpha: float,
-) -> None:
-    frame = render_ctx.frame
-    if not bool(frame.lan_player_rings_enabled):
-        return
-    if len(frame.players) <= 1:
-        return
-    if float(player.health) <= 0.0:
-        return
-    alpha = clamp(float(alpha), 0.0, 1.0)
-    if alpha <= 1e-3:
-        return
-
-    red, green, blue = lan_player_ring_rgb(int(player.index))
-    outer = max(8.0 * scale, float(base_size) * 0.58)
-    thickness = max(2.5 * scale, float(base_size) * 0.11)
-    inner = max(0.0, outer - thickness)
-    glow_outer = outer + max(2.0 * scale, float(base_size) * 0.08)
-    segments = max(24, int(outer * 1.5 + 0.5))
-    center = rl.Vector2(screen_pos.x, screen_pos.y)
-    core = rl.Color(red, green, blue, int(clamp(alpha * 0.9, 0.0, 1.0) * 255.0 + 0.5))
-    glow = rl.Color(red, green, blue, int(clamp(alpha * 0.35, 0.0, 1.0) * 255.0 + 0.5))
-
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    rl.draw_ring(center, inner, outer, 0.0, 360.0, int(segments), core)
-    rl.draw_ring(center, outer, glow_outer, 0.0, 360.0, int(segments), glow)
-    rl.end_blend_mode()
 
 
 def draw_player_trooper_sprite(
@@ -95,14 +50,6 @@ def draw_player_trooper_sprite(
     base_size = float(player.size) * scale
     base_scale = base_size / cell
 
-    draw_lan_player_ring(
-        render_ctx,
-        player=player,
-        screen_pos=screen_pos,
-        base_size=base_size,
-        scale=scale,
-        alpha=alpha,
-    )
 
     if perk_active(player, PerkId.RADIOACTIVE) and alpha > 1e-3:
         atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))

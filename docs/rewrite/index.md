@@ -16,9 +16,6 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson quests 1.1` (quest spawn dump)
 - `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig spawn-plan 0x12 --json` (native spawn-template summary)
 - `uv run crimson config` (inspect `crimson.cfg`)
-- `uv run crimson relay serve --bind 0.0.0.0 --port 31993` (run UDP relay)
-- `uv run crimson net host --mode survival --players 2 --relay-host 127.0.0.1 --relay-port 31993` (host rollback room)
-- `uv run crimson net join --code <ROOMCODE> --relay-host 127.0.0.1 --relay-port 31993` (join rollback room)
 
 ## Zig port (current WIP)
 
@@ -32,9 +29,9 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Project direction is a full native Zig port, not just a replay verifier.
 - The Zig tree now also has a real native desktop shell with boot/menu/gameplay/results/options/statistics flow and live Survival/Rush/Quests/Typ-o/Tutorial runs.
 - The default Zig install includes the CLI, the desktop `crimson-zig-window`
-  binary, relay/quest support tools, and the asset smoke validator.
+  binary, quest support tools, and the asset smoke validator.
 - Replay verification is still the most mature headless Zig surface, with native + wasm replay/checkpoint build targets already in-tree.
-- Current state is advanced but still incomplete parity. The biggest remaining Zig work is replay/tooling breadth, product-shell parity including demo/trial polish, with network/LAN still needing stress and lobby hardening.
+- Current state is advanced but still incomplete parity. The biggest remaining Zig work is replay/tooling breadth, product-shell parity including demo/trial polish, with [network play deferred](netplay.md).
 - See [Zig native port status](zig-verifier.md) for the current snapshot and [Zig port roadmap](zig-roadmap.md) for remaining work.
 
 ## What exists now
@@ -127,8 +124,7 @@ See also:
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Replay run start](replay-run-start.md)
 - [Quest identifiers](quest-identifiers.md)
-- [Netplay (rollback primary)](netplay-rollback.md)
-- [LAN lockstep (fallback mode)](lan-lockstep.md)
+- [Netplay (deferred)](netplay.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Rendering pipeline](rendering-pipeline.md)
 - [Float parity policy](float-parity-policy.md)
@@ -144,7 +140,6 @@ See also:
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
-- Rollback netplay is primary (relay + room codes, protocol v5, reconnect/resync hooks); Zig now has delayed-input, reordered-input, dropped-input, repeated-jitter, guest-requested resync, relay-token guest self-reconnect, reconnect-then-resync, and double-reconnect-then-resync smoke paths, and remaining hardening work is focused on broader stress runs plus lockstep fallback maintenance.
 - `game.cfg` progression/unlock wiring is in place; some tail fields/counter semantics still need deeper mapping validation.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Native online-score submission is out of scope; direction is a more advanced headless verification system.

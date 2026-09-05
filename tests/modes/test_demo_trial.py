@@ -48,14 +48,8 @@ class _DummyGameplay:
     def bind_audio(self, audio, audio_rng) -> None:
         _ = audio, audio_rng
 
-    def set_lan_runtime(self, *, enabled: bool, role: str, expected_players: int, connected_players: int, waiting_for_players: bool) -> None:
-        _ = enabled, role, expected_players, connected_players, waiting_for_players
 
-    def bind_lan_runtime(self, runtime) -> None:
-        _ = runtime
 
-    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status=None) -> None:
-        _ = seed, start_tick, status
 
     def steal_ground_for_menu(self):
         return None

@@ -26,7 +26,6 @@ def _advance_with_clock(
             tick_dt_seconds=float(clock.dt_tick),
             frame_index=int(frame_index),
             candidate_ticks=max(0, int(ticks_requested)),
-            is_networked=False,
             is_replay=False,
         ),
     )

@@ -33,7 +33,4 @@ class RenderFrame(msgspec.Struct, frozen=True):
 
     elapsed_ms: float
     bonus_anim_phase: float
-    lan_player_rings_enabled: bool
-    lan_local_aim_indicators_only: bool
-    lan_local_player_slot_index: int
     rtx_mode: RtxRenderMode

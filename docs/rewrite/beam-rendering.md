@@ -69,7 +69,7 @@ Render mode enum and helpers: `src/crimson/render/rtx/mode.py` (`classic|rtx`).
 
 Runtime/launch controls:
 
-- launch flag: `--rtx` (game/net/lan entrypoints)
+- launch flag: `--rtx` (game entrypoint)
 - console commands: `rendermode <classic|rtx>`, `togglertx`
 - debug hotkey: `F4` toggles mode (debug builds)
 

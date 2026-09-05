@@ -175,9 +175,6 @@ class RenderResources(msgspec.Struct):
         demo_mode_active: bool,
         elapsed_ms: float,
         bonus_anim_phase: float,
-        lan_player_rings_enabled: bool,
-        lan_local_aim_indicators_only: bool,
-        lan_local_player_slot_index: int,
         rtx_mode: RtxRenderMode,
     ) -> RenderFrame:
         return RenderFrame(
@@ -192,8 +189,5 @@ class RenderResources(msgspec.Struct):
             resources=self.resources,
             elapsed_ms=float(elapsed_ms),
             bonus_anim_phase=float(bonus_anim_phase),
-            lan_player_rings_enabled=bool(lan_player_rings_enabled),
-            lan_local_aim_indicators_only=bool(lan_local_aim_indicators_only),
-            lan_local_player_slot_index=int(lan_local_player_slot_index),
             rtx_mode=rtx_mode,
         )
