@@ -1,3 +1,8 @@
+---
+tags:
+  - runtime-analysis
+---
+
 # WinDbg sessions
 
 These dated logs preserve observations and hypotheses from their original

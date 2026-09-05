@@ -33,7 +33,7 @@ uvx crimsonland@latest
 
 - [Mechanics](mechanics/index.md): how the game actually plays. Behavior
   specs, reference tables, and game rules written without decompiler details.
-- [Rewrite](rewrite/index.md): the Python port. Architecture, module map,
+- [Rewrite](rewrite/index.md): the Python and Zig ports. Architecture, module map,
   debug views, and parity status.
 - [Reverse engineering](re/index.md): static analysis, runtime probes, struct
   layouts, and file formats extracted from the original binary.

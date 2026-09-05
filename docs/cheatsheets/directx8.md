@@ -1,3 +1,8 @@
+---
+tags:
+  - contributor
+---
+
 # DX8 → OpenGL (raylib/pyray) Porting Gotchas Cheat Sheet
 
 ## 1) The big mental-model mismatch: DX8 fixed-function vs OpenGL 3.3 shader pipeline

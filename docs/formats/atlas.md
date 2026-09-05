@@ -65,8 +65,9 @@ Extracted table (effect_id → size code + frame index):
 | `0x11` | `0x40` | 4 | `0x7` |
 | `0x12` | `0x10` | 16 | `0x26` |
 
-The frame index is passed to the renderer alongside the grid size;
-its semantics aren’t obvious from the decompile.
+The frame index selects a row-major cell in the corresponding UV grid.
+`effect_spawn` copies that cell origin and adds the effect-specific UV step to
+form four corners; see `tools/match/scratches/effect_spawn/scratch.cpp`.
 
 Visual note:
 

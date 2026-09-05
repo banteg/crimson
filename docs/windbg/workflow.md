@@ -1,3 +1,8 @@
+---
+tags:
+  - runtime-analysis
+---
+
 # WinDbg / CDB workflow
 
 ## Remote server setup (works reliably)

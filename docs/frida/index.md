@@ -1,3 +1,8 @@
+---
+tags:
+  - runtime-analysis
+---
+
 # Frida tooling
 
 Runtime instrumentation for evidence collection using Frida.

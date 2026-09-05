@@ -14,6 +14,8 @@ We go great lengths to achieve this goal, including a headless differential test
 
 The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, and Typ-o-Shooter, with full weapon/creature/perk content, terrain/sprite/decal rendering, music, gameplay SFX, and even secrets. The simulation is fully deterministic, supporting seeded runs and headless verifiable replays.
 
+The [native Zig port](docs/rewrite/zig-verifier.md) also has a desktop shell, all five gameplay modes, replay/debug tools and a headless WASM interface. See [coverage and validation limits](docs/rewrite/status.md) for what the current checks establish.
+
 ## Quick start
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
@@ -81,6 +83,7 @@ Useful flags: `--seed N` (deterministic runs), `--demo` (shareware teaser), `--p
 src/
   crimson/          game logic — modes, weapons, perks, creatures, UI, replay
   grim/             engine layer — raylib wrapper, PAQ/JAZ decoders, audio, fonts
+crimson-zig/        native desktop port, shared runtime, replay/debug CLI, WASM
 analysis/
   ghidra/           name/type maps (source of truth) and structured snapshots
   binary_ninja/     preferred live analysis databases
@@ -88,8 +91,8 @@ analysis/
   frida/            runtime capture evidence (state snapshots, RNG traces)
   windbg/           debugger session logs
 docs/               100+ pages: formats, structs, algorithms, parity tracking
-scripts/            40+ analysis and utility tools
-tests/              200+ tests: gameplay, perks, physics, replay, parity
+scripts/            analysis and utility tools
+tests/              gameplay, perks, physics, replay, and parity regression tests
 ```
 
 ## Reverse engineering
@@ -101,7 +104,7 @@ in Binary Ninja, IDA, then Ghidra using the shared address-keyed workflow in
 
 **Runtime tooling** (Frida, WinDbg) validates ambiguous behavior and captures ground truth. Evidence summaries live under [`analysis/frida/`](analysis/frida/).
 
-**Differential testing** captures original execution via Frida, replays the same inputs through the rewrite's headless oracle, and compares state checkpoints field-by-field.
+**Differential testing** captures original execution via Frida, replays the same inputs through the rewrite's headless oracle, and compares canonical input, state, entity, timing and RNG trace channels. Compact checkpoints help localize differences; complete session digests cover same-build port regressions.
 
 See [docs/contributor/project-tracking/provenance.md](docs/contributor/project-tracking/provenance.md) for exact binary hashes of the target build.
 

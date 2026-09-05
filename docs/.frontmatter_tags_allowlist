@@ -1,15 +1,1 @@
-# Temporary allowlist for docs missing frontmatter tags.
-# Keep this list shrinking over time; `scripts/check_docs.py` fails on stale entries.
-cheatsheets/directx8.md
-cheatsheets/frida.md
-cheatsheets/raylib.md
-frida/index.md
-frida/workflow.md
-contributor/project-tracking/provenance.md
-rewrite/float-parity-policy.md
-rewrite/local-multiplayer.md
-rewrite/original-bugs.md
-contributor/project-tracking/third-party-libs.md
-windbg/index.md
-windbg/sessions.md
-windbg/workflow.md
+# No maintained pages are exempt from frontmatter tags.

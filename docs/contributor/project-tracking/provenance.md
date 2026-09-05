@@ -1,3 +1,8 @@
+---
+tags:
+  - contributor
+---
+
 # Build provenance and hashes
 
 This repo currently decompiles the GOG Crimsonland Classic build whose

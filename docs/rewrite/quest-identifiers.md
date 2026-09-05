@@ -27,7 +27,6 @@ The value object intentionally stays small:
 - `global_index`
 - `QuestLevel.from_global_index(...)`
 - `QuestLevel.parse(...)`
-- `QuestLevel.try_parse(...)`
 
 ## Boundary shapes
 

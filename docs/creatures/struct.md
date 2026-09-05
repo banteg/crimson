@@ -109,7 +109,7 @@ Field map (medium confidence):
 | `0x54` | target_y | `creature_target_y` | derived from player/formation/linked enemy. |
 | `0x58` | contact damage | `creature_contact_damage` | Passed to `player_take_damage` (`0x00425e50`) on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
 | `0x5c` | move speed | `creature_move_speed` | Per-type speed scalar used to compute velocity; seeded to `0.9..` range in `FUN_00407611`. |
-| `0x60` | attack cooldown | `creature_attack_cooldown` | Decremented each frame; gates projectile spawns. |
+| `0x60` | attack cooldown | `creature_attack_cooldown` | Decremented in the living update; shared cooldown for melee and ranged attacks. |
 | `0x64` | reward value | `creature_reward_value` | Seeded from health/contact/speed (`health * 0.4 + contact * 0.8 + speed * 5 + rand(10..19)`), then scaled by `0.8` in the spawner. |
 | `0x6c` | type id | `creature_type_id` | written from spawn param; indexes behavior tables. |
 | `0x70` | target player index | `creature_target_player` | toggled based on distance; indexes player arrays. |

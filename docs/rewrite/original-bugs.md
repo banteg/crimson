@@ -1,3 +1,8 @@
+---
+tags:
+  - rewrite
+---
+
 # Original bugs (rewrite)
 
 The classic `crimsonland.exe` has a few behaviors that look like genuine bugs

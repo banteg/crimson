@@ -1,3 +1,8 @@
+---
+tags:
+  - contributor
+---
+
 # raylib (Python) cheatsheet
 
 This cheatsheet is written for the **PyPI package named `raylib`** (a.k.a. *raylib-python-cffi*), whose public, “pythonic” API lives in the **`pyray`** module and targets **raylib 5.5**. ([Electron Studio][1])

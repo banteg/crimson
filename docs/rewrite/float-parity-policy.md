@@ -1,3 +1,8 @@
+---
+tags:
+  - rewrite
+---
+
 # Float parity policy
 
 This project targets high-fidelity replay and deterministic simulation parity.

@@ -3,6 +3,7 @@
 
 Checks:
 - internal markdown links resolve
+- literal source references resolve and links do not point into a developer's home
 - nav coverage includes all docs markdown files
 - pages have frontmatter tags, with explicit temporary allowlist
 """
@@ -17,6 +18,8 @@ from pathlib import Path
 from typing import Any
 
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+SOURCE_PATH_RE = re.compile(r"`((?:src|tests|tools|scripts|crimson-zig)/[\w./-]+)(?::[^`\n]+)?`")
+GENERATED_DIRECTORY_PREFIXES = ("tests/fixtures/", "tools/match/bin/", "tools/match/compilers/")
 
 
 def parse_args() -> argparse.Namespace:
@@ -88,6 +91,9 @@ def find_broken_markdown_links(docs_dir: Path, docs_files: list[Path]) -> list[s
         for match in LINK_RE.finditer(content):
             raw_target = match.group(1)
             target = normalize_target(raw_target)
+            if target.startswith(("/Users/", "/home/", "~/", "file://")):
+                errors.append(f"{source.relative_to(docs_root)}: nonportable link '{raw_target}'")
+                continue
             if not target or is_external_link(target):
                 continue
 
@@ -103,10 +109,32 @@ def find_broken_markdown_links(docs_dir: Path, docs_files: list[Path]) -> list[s
                 resolved = (source.parent / path_part).resolve()
 
             # links must stay inside docs and point to an existing markdown page
-            if not str(resolved).startswith(str(docs_root)) or not resolved.exists():
+            if not resolved.is_relative_to(docs_root) or not resolved.is_file():
                 src_rel = source.relative_to(docs_root)
                 errors.append(f"{src_rel}: broken link '{raw_target}'")
 
+    return errors
+
+
+def find_broken_source_paths(root: Path, docs_dir: Path, docs_files: list[Path]) -> list[str]:
+    """Check literal checkout references, excluding generated directories.
+
+    Commands, glob patterns and placeholders are not literal path references.
+    Capture outputs and locally installed native toolchains need not exist in a
+    fresh checkout. Literal fixture-file references still require an input file.
+    """
+    errors: list[str] = []
+    root = root.resolve()
+    for source in docs_files:
+        content = source.read_text(encoding="utf-8")
+        for match in SOURCE_PATH_RE.finditer(content):
+            path = match.group(1)
+            if path.startswith(GENERATED_DIRECTORY_PREFIXES) and path.endswith("/"):
+                continue
+            resolved = (root / path).resolve()
+            if not resolved.is_relative_to(root) or not resolved.exists():
+                line = content.count("\n", 0, match.start()) + 1
+                errors.append(f"{source.relative_to(docs_dir)}:{line}: missing source path '{path}'")
     return errors
 
 
@@ -150,6 +178,7 @@ def main() -> int:
     nav_set = set(nav_entries)
 
     broken_links = find_broken_markdown_links(docs_dir, docs_files)
+    broken_source_paths = find_broken_source_paths(root, docs_dir, docs_files)
 
     nav_missing = sorted(nav_set - docs_rel_set)
     nav_orphans = sorted(docs_rel_set - nav_set)
@@ -161,6 +190,12 @@ def main() -> int:
     stale_allowlist = sorted(rel for rel in allowlist if rel not in set(missing_tags))
 
     has_errors = False
+
+    if broken_source_paths:
+        has_errors = True
+        print(f"Broken source references ({len(broken_source_paths)}):")
+        for error in broken_source_paths:
+            print(f"  - {error}")
 
     if broken_links:
         has_errors = True

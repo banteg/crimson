@@ -140,8 +140,10 @@ Recoil is driven by `player_state.muzzle_flash_alpha`:
 - Decay: `muzzle_flash_alpha = max(0, muzzle_flash_alpha - 2 * frame_dt)`
   (applied in both `player_update` and `player_fire_weapon`).
 
-- On fire: `muzzle_flash_alpha += weapon_table[weapon_id].spread_heat`, then clamped
-  (`<= 1.0` immediately, and `<= 0.8` at the end of `player_fire_weapon`).
+- Firing adds the weapon spread-heat increment (or the Fire Bullets fallback
+  value on that branch). Both player paths clamp to `0.8` at their tail.
+  Typ-o's `player_fire_weapon` also clamps the old value to `1.0` before adding
+  its increment; this is not a second post-shot cap.
 
 These are separate mode paths. Ordinary gameplay calls `player_update`, whose
 weapon-fire logic is inline; it does not call `player_fire_weapon`. Typ-o calls

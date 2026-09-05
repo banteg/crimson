@@ -1,3 +1,8 @@
+---
+tags:
+  - rewrite
+---
+
 # Local multiplayer rewrite notes
 
 ## Extension policy
