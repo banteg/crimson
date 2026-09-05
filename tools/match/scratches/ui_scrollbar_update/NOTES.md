@@ -242,3 +242,18 @@ The scratch remains `semantic-complete` with an honest `compiler` residual.
 The first residual is now after 26 exact instructions and is dominated by
 temporary stack-slot placement; later regions remain x87 scheduling and row
 loop allocation differences.
+
+## Row origin value boundary (2026-09-05)
+
+Constructing the row origin directly from `(xy->x - 2.0f, xy->y)` recovers
+one more native operation alignment than copying the input pair and then
+subtracting two from its X member. Both components remain rounded float
+values, and the constructor completes before the same hit-testing and text
+callbacks. Native matching validates the changed value boundary.
+
+The four complete controls in `row-origin-value-boundary-mutations.json`
+also test aggregate input copying, a named column offset, and a typed item
+index. The column local is neutral; the copy and typed-index forms regress.
+The retained source moves 82.217573% to 82.426778%, adding 3.696653 weighted
+bytes with unchanged 477/479 instructions, prefix 26, and 62/0/0 references.
+This leaves the two missing operations and other row/drag scheduling residuals.

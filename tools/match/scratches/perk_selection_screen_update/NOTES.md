@@ -98,3 +98,19 @@ The higher score is therefore a misleading stack-shift tradeoff rather than a
 better reconstruction. The canonical 314-instruction, `117/0/0` source remains
 unchanged, and the missing coalescing stays classified as compiler allocation
 residue.
+
+## Choice line height lifetime (2026-09-05)
+
+The initial row spacing now starts at its first use, immediately before the
+Perk Expert spacing branch. It is no longer live across the header and sponsor
+calls. The three valid controls in `choice-line-height-lifetime-mutations.json`
+include a full row scope and an anchor component copy; only the narrower
+initialization lifetime improves native alignment. Moving the static choice
+array to make the full-scope control well-formed introduces reference mismatches
+and is rejected.
+
+The retained source improves 87.579618% to 94.585987%, adding 94.375796
+weighted bytes, while preserving 314/314 instructions. The prefix increases
+from 0 to 15 and clean references improve from 117 to 119. Values, selection
+logic, and callback order are unchanged. Opening temporary slots, the native
+early line-height store, and the Cancel coordinate lifetime remain non-exact.

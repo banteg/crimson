@@ -399,3 +399,20 @@ Native's load/store pair is still visible, but no tested typed aggregate or
 scalar lifetime recovers it without a much larger scheduling regression. The
 canonical source therefore remains **93.92226%**, 1,408/1,422 instructions,
 prefix 370, and `528/0/0` references.
+
+## Slot31 position hover lifetime (2026-09-05)
+
+The options-panel position is published immediately after its template layer
+copy, before constructing the hover maximum. Both the template and the native
+field layout distinguish position from hover-minimum fields, so the reordered
+publication cannot change the values used to form that maximum. It ends the
+position temporary lifetime before the hover value is constructed, as native's
+shared coordinate stack area requires.
+
+The three complete controls in `slot31-position-hover-lifetime-mutations.json`
+show that publishing first and explicitly reusing the coordinate variable tie;
+a scope-only change is neutral. The simpler separate values are retained.
+Alignment improves 95.194346% to 95.689046%, adding 35.801413 weighted
+bytes, preserving 1,408/1,422 instructions and prefix 467, and improving
+clean reference alignment from 528 to 529. The fourteen missing native
+operations and the later narrow-screen/aggregate schedules remain open.

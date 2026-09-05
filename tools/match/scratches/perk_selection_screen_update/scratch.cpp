@@ -124,7 +124,6 @@ extern "C" void perk_selection_screen_update(void)
         *(perk_selection_vec2_t *)&ui_element_slot_27.pos
         + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;
 
-    float line_height = 19.0f;
     bool any_hovered = false;
     int choice_count = 5;
 
@@ -157,6 +156,7 @@ extern "C" void perk_selection_screen_update(void)
         choice_count = 6;
     }
 
+    float line_height = 19.0f;
     if (player_state_table[0].perk_counts[perk_id_perk_expert] > 0) {
         float choice_y = choice_position.y + 40.0f;
         line_height = 18.0f;

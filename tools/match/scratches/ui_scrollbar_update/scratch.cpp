@@ -208,8 +208,7 @@ extern "C" void ui_scrollbar_update(
 
     }
 
-    scrollbar_vec2_t row_position(xy->x, xy->y);
-    row_position.x -= 2.0f;
+    scrollbar_vec2_t row_position(xy->x - 2.0f, xy->y);
     int row = 0;
     if (state->visible_rows <= 0) {
         return;
