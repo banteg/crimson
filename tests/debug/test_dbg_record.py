@@ -215,8 +215,8 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
         lambda *_args, **_kwargs: SimStateSnapshot(
             gameplay=SnapshotGameplay(
                 mode_id=int(GameMode.SURVIVAL),
-                quest_stage_major=-1,
-                quest_stage_minor=-1,
+                quest_stage_major=0,
+                quest_stage_minor=0,
                 perk_pending_count=0,
                 perk_choices_dirty=False,
                 bonus_timers=SnapshotBonusTimers(
@@ -362,3 +362,25 @@ def _write_zig_compatible_msgpack_replay(path: Path, *, player_count: int) -> No
     from tests.replay.cli._helpers import build_replay
 
     dump_replay_file(path, build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=player_count))
+
+
+def test_quest_recording_preserves_scaled_simulation_clock(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from crimson.replay.codec import dump_replay_file
+    from crimson.replay.driver.playback_driver import build_verify_playback_driver
+    from tests.replay.cli._helpers import build_replay
+
+    replay_path, out_path = tmp_path / "quest.crd", tmp_path / "quest.cdt"
+    dump_replay_file(replay_path, build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1"))
+
+    def boosted_driver(*args, **kwargs):
+        driver = build_verify_playback_driver(*args, **kwargs)
+        driver.world.state.bonuses.reflex_boost = 5.0
+        driver.world.state.time_scale_active = True
+        return driver
+
+    monkeypatch.setattr(dbg_record, "build_verify_playback_driver", boosted_driver)
+    dbg_record.record_replay_to_trace(replay_path=replay_path, out_path=out_path, impl="python")
+    _, ticks, _ = load_trace(out_path)
+    assert [tick.elapsed_ms for tick in ticks] == [5, 10]
+    assert [tick.channels.checkpoint.elapsed_ms for tick in ticks] == [5, 10]
+    assert [tick.dt_ms_i32 for tick in ticks] == [16, 16]

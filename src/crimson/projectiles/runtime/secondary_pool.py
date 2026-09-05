@@ -98,6 +98,7 @@ class SecondaryProjectilePool:
 
     def reset(self) -> None:
         for entry in self._entries:
+            entry.generation = 0
             entry.active = False
 
     def spawn_from_spec(self, spec: SecondarySpawnSpec) -> int:
@@ -119,6 +120,7 @@ class SecondaryProjectilePool:
             index = len(self._entries) - 1
 
         entry = self._entries[index]
+        entry.generation += 1
         entry.active = True
         entry.angle = float(angle)
         entry.type_id = type_id

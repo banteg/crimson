@@ -57,6 +57,7 @@ class ProjectileHit(msgspec.Struct, frozen=True):
 
 
 class Projectile(msgspec.Struct):
+    generation: int = 0
     active: bool = False
     angle: float = 0.0
     pos: Vec2 = Vec2()
@@ -74,6 +75,7 @@ class Projectile(msgspec.Struct):
 
 
 class SecondaryProjectile(msgspec.Struct):
+    generation: int = 0
     active: bool = False
     angle: float = 0.0
     speed: float = 0.0

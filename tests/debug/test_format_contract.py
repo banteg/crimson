@@ -29,7 +29,7 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         CHECKPOINT_FORMAT_VERSION,
         FRIDA_CAPTURE_FORMAT_VERSION,
         FRIDA_EVIDENCE_FORMAT_VERSION,
-    ) == (2, 17, 18, 5, 25, 3)
+    ) == (2, 18, 18, 5, 26, 3)
 
 
 def test_cross_language_format_contract_is_wired() -> None:

@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 25;
+const CAPTURE_FORMAT_VERSION = 26;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -358,6 +358,9 @@ const FN = {
   weapon_assign_player: 0x00452d40,
   bonus_apply: 0x00409890,
   bonus_try_spawn_on_kill: 0x0041f8d0,
+  bonus_spawn_at: 0x0041f5b0,
+  bonus_spawn_at_pos: 0x0041f790,
+  creature_alloc_slot: 0x00428140,
   secondary_projectile_spawn: 0x00420360,
   projectile_spawn: 0x00420440,
   creature_find_in_radius: 0x004206a0,
@@ -509,6 +512,11 @@ const DATA = {
 };
 
 const REQUIRED_REPLAY_FN_NAMES = [
+  "creature_alloc_slot",
+  "projectile_spawn",
+  "secondary_projectile_spawn",
+  "bonus_spawn_at",
+  "bonus_spawn_at_pos",
   "perks_generate_choices",
   "perk_apply",
   "bonus_apply",
@@ -802,8 +810,6 @@ function buildProcessExceptionReason(payload) {
 function newEntityUidState() {
   return {
     generationByIndex: {},
-    activeIndices: {},
-    seenInTick: {},
   };
 }
 
@@ -816,19 +822,10 @@ function resetEntityUidStates() {
   };
 }
 
-function beginEntityUidTick(kind) {
-  const states = outState.entityUidStates || {};
-  const state = states[kind];
-  if (!state) return;
-  state.seenInTick = {};
-}
-
-function endEntityUidTick(kind) {
-  const states = outState.entityUidStates || {};
-  const state = states[kind];
-  if (!state) return;
-  state.activeIndices = state.seenInTick || {};
-  state.seenInTick = {};
+function noteEntityAllocation(kind, index) {
+  const state = outState.entityUidStates[kind];
+  const key = String(index);
+  state.generationByIndex[key] = (state.generationByIndex[key] || 0) + 1;
 }
 
 function nextEntityUid(kind, index) {
@@ -848,13 +845,8 @@ function nextEntityUid(kind, index) {
     failCaptureContract("entity pool index out of range: " + String(idx));
   }
   const key = String(idx);
-  if (!state.activeIndices[key]) {
-    const previous = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
-    state.generationByIndex[key] = (previous + 1) | 0;
-  }
-  state.seenInTick[key] = true;
   const generation = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
-  if (generation < 0 || generation >= 1000) {
+  if (generation <= 0 || generation >= 1000) {
     failCaptureContract("entity generation out of range: " + String(generation));
   }
   return {
@@ -1330,7 +1322,6 @@ function resetCurrentRunState() {
   outState.pendingRunCloseReason = null;
   outState.pendingReplayPrelude = [];
   outState.replayPreludeOperationStackByTid = {};
-  resetEntityUidStates();
 }
 
 function runSettingsFromTick(tickObj) {
@@ -1398,7 +1389,6 @@ function startRunForTick(tickObj, reason) {
     outState.currentRunElapsedRawStartMs = null;
     outState.currentRunElapsedRawLastMs = null;
     outState.currentRunElapsedNormalizedMs = null;
-    resetEntityUidStates();
     outState.runActive = true;
     // The setup latch holds the rand state observed before the run's first
     // terrain draw; replays must seed from it (the session srand seed is stale
@@ -1905,8 +1895,8 @@ function simStateFromTick(tickObj, expectedPlayers) {
   return {
     gameplay: {
       mode_id: tickModeId(tick),
-      quest_stage_major: tickQuestMajor(tick),
-      quest_stage_minor: tickQuestMinor(tick),
+      quest_stage_major: tickModeId(tick) === GAME_MODE_QUESTS ? tickQuestMajor(tick) : 0,
+      quest_stage_minor: tickModeId(tick) === GAME_MODE_QUESTS ? tickQuestMinor(tick) : 0,
       perk_pending_count: requireNonNegativeInt(globals.perk_pending_count, "after.globals.perk_pending_count"),
       perk_choices_dirty: requireInt(globals.perk_choices_dirty, "after.globals.perk_choices_dirty") !== 0,
       bonus_timers: {
@@ -1927,11 +1917,6 @@ function entitySamplesFromTick(tickObj) {
   const projectilesRaw = requireArray(samples.projectiles, "samples.projectiles");
   const secondaryRaw = requireArray(samples.secondary_projectiles, "samples.secondary_projectiles");
   const bonusesRaw = requireArray(samples.bonuses, "samples.bonuses");
-
-  beginEntityUidTick("creature");
-  beginEntityUidTick("projectile");
-  beginEntityUidTick("secondary_projectile");
-  beginEntityUidTick("bonus");
 
   const creatures = [];
   for (let i = 0; i < creaturesRaw.length; i++) {
@@ -2075,11 +2060,6 @@ function entitySamplesFromTick(tickObj) {
       amount: requireInt(row.amount_i32, "samples.bonuses[" + i + "].amount_i32"),
     });
   }
-
-  endEntityUidTick("creature");
-  endEntityUidTick("projectile");
-  endEntityUidTick("secondary_projectile");
-  endEntityUidTick("bonus");
 
   return {
     creatures: creatures,
@@ -4788,6 +4768,7 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
     rollRow.caller_static === RUN_SETUP_FIRST_RNG_CALLER_STATIC &&
     rollRow.state_before_u32 != null
   ) {
+    resetEntityUidStates();
     // Terrain generation begins a fresh run setup; the latest latch before
     // run_start wins so restarts and quest retries re-latch naturally.
     outState.pendingRunSetupRng = {
@@ -5958,6 +5939,26 @@ function installHooks() {
     });
   }
 
+  // Count materializations even between post-tick snapshots. Failed allocations
+  // return a sentinel and must not advance a real slot's generation.
+  attachHook("creature_alloc_slot", fnPtrs.creature_alloc_slot, {
+    onLeave(retval) {
+      const index = retval.toInt32();
+      if (index >= 0 && index < COUNTS.creatures) noteEntityAllocation("creature", index);
+    },
+  });
+  for (const name of ["bonus_spawn_at", "bonus_spawn_at_pos"]) {
+    attachHook(name, fnPtrs[name], {
+      onLeave(retval) {
+        const offset = retval.sub(dataPtrs.bonus_pool).toInt32();
+        const index = offset / STRIDES.bonus;
+        if (Number.isInteger(index) && index >= 0 && index < COUNTS.bonuses) {
+          noteEntityAllocation("bonus", index);
+        }
+      },
+    });
+  }
+
   attachHook("secondary_projectile_spawn", fnPtrs.secondary_projectile_spawn, {
     onEnter(args) {
       this._ctx = {
@@ -5974,6 +5975,7 @@ function installHooks() {
       const ctx = this._ctx;
       if (!ctx) return;
       const idx = retval.toInt32();
+      noteEntityAllocation("secondary_projectile", idx);
       const spawned = readSecondaryProjectileEntry(idx);
       const actualType = spawned ? spawned.type_id : null;
       const payload = {
@@ -6017,6 +6019,7 @@ function installHooks() {
       const ctx = this._ctx;
       if (!ctx) return;
       const idx = retval.toInt32();
+      noteEntityAllocation("projectile", idx);
       const spawned = readProjectileEntry(idx);
       const actualType = spawned ? spawned.type_id : null;
       const payload = {

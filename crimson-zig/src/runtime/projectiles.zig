@@ -24,6 +24,7 @@ pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
 
 pub const Projectile = struct {
+    generation: i32 = 0,
     active: bool = false,
     angle: f32 = 0.0,
     pos: state_mod.Vec2 = .{},
@@ -82,6 +83,7 @@ pub const ProjectilePool = struct {
         const budget = if (travel_budget > 0.0) travel_budget else projectileTravelBudgetFromRawId(type_id);
         var entry = &self.entries[index];
         entry.* = .{
+            .generation = entry.generation + 1,
             .active = true,
             .angle = angle,
             .pos = .{ .x = pos.x, .y = pos.y },

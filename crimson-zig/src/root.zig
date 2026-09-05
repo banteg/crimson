@@ -64,6 +64,10 @@ pub const window_atlas = @import("window_atlas.zig");
 pub const version = "0.1.0-dev";
 
 test {
+    _ = @import("cdt_trace.zig");
+    _ = @import("cdt_compare.zig");
+    _ = @import("cdt_wire.zig");
+    _ = @import("runtime/replay/diagnostic_trace.zig");
     _ = effects;
     _ = net;
     _ = projectiles;

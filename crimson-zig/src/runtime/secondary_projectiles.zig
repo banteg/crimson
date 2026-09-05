@@ -26,6 +26,7 @@ pub const SecondaryProjectileTypeId = enum(i32) {
 };
 
 pub const SecondaryProjectile = struct {
+    generation: i32 = 0,
     active: bool = false,
     angle: f32 = 0.0,
     speed: f32 = 0.0,
@@ -68,6 +69,7 @@ pub const SecondaryProjectilePool = struct {
 
         var entry = &self.entries[index];
         entry.* = .{
+            .generation = entry.generation + 1,
             .active = true,
             .angle = angle,
             .speed = time_to_live,

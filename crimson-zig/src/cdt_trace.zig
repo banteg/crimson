@@ -1,16 +1,17 @@
 const builtin = @import("builtin");
 const std = @import("std");
 const msgpack = @import("msgpack");
+const wire = @import("cdt_wire.zig");
 
 const game_ids = @import("game_ids.zig");
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
-const replay_runner = @import("runtime/replay_runner.zig");
+const replay_trace = @import("runtime/replay/diagnostic_trace.zig");
 const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v2\n";
 pub const trace_format_version: u32 = 2;
-pub const trace_schema_version: i32 = 17;
+pub const trace_schema_version: i32 = 18;
 pub const trace_required_channels = "replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 const trace_chunk_ticks: usize = 256;
 
@@ -266,12 +267,16 @@ pub const TraceDiffOptions = struct {
     tick_end: ?i32 = null,
 };
 
-pub const TraceDiffMismatch = struct {
-    kind: []const u8,
-    tick_index: i32,
-    field: ?[]const u8 = null,
-    expected: ?i64 = null,
-    actual: ?i64 = null,
+pub const TraceDiffMismatch = @import("cdt_compare.zig").Mismatch;
+const value_compare = @import("cdt_compare.zig");
+
+pub const ChannelMismatches = struct {
+    replay_step: ?TraceDiffMismatch = null,
+    checkpoint: ?TraceDiffMismatch = null,
+    rng_stream: ?TraceDiffMismatch = null,
+    sim_state: ?TraceDiffMismatch = null,
+    entity_samples: ?TraceDiffMismatch = null,
+    timing_samples: ?TraceDiffMismatch = null,
 };
 
 pub const TraceDiffReport = struct {
@@ -280,6 +285,16 @@ pub const TraceDiffReport = struct {
     tick_start: ?i32,
     tick_end: ?i32,
     mismatch: ?TraceDiffMismatch = null,
+    channel_first_mismatches: ChannelMismatches = .{},
+    channel_first_diagnostics: ChannelMismatches = .{},
+    arena: ?*std.heap.ArenaAllocator = null,
+
+    pub fn deinit(self: TraceDiffReport, allocator: std.mem.Allocator) void {
+        if (self.arena) |arena| {
+            arena.deinit();
+            allocator.destroy(arena);
+        }
+    }
 };
 
 pub const TraceBisectReport = struct {
@@ -289,6 +304,13 @@ pub const TraceBisectReport = struct {
     mismatch: ?TraceDiffMismatch = null,
     window_start: ?i32 = null,
     window_end: ?i32 = null,
+    arena: ?*std.heap.ArenaAllocator = null,
+    pub fn deinit(self: TraceBisectReport, allocator: std.mem.Allocator) void {
+        if (self.arena) |arena| {
+            arena.deinit();
+            allocator.destroy(arena);
+        }
+    }
 };
 
 pub const TraceFocusReport = struct {
@@ -296,6 +318,13 @@ pub const TraceFocusReport = struct {
     diverged: bool,
     checkpoint_diff_count: usize,
     mismatch: ?TraceDiffMismatch = null,
+    arena: ?*std.heap.ArenaAllocator = null,
+    pub fn deinit(self: TraceFocusReport, allocator: std.mem.Allocator) void {
+        if (self.arena) |arena| {
+            arena.deinit();
+            allocator.destroy(arena);
+        }
+    }
 };
 
 const TickRange = struct {
@@ -1038,6 +1067,9 @@ pub fn summarizeTraceHealthBytes(
     if (ticks_total == 0) {
         try issues.append(allocator, "trace window has no ticks");
     }
+    if (ticks_total > 0 and @as(i64, actual_end.?) - actual_start.? + 1 != ticks_total) {
+        try issues.append(allocator, "trace window contains missing ticks");
+    }
     if (channels_present.replay_step <= 0) try issues.append(allocator, "replay_step channel missing");
     if (channels_present.checkpoint <= 0) try issues.append(allocator, "checkpoint channel missing");
     if (channels_present.sim_state <= 0) try issues.append(allocator, "sim_state channel missing");
@@ -1438,11 +1470,11 @@ pub fn diffTraceBytes(
     actual_bytes: []const u8,
     options: TraceDiffOptions,
 ) !TraceDiffReport {
-    var expected_rows = try loadTraceDiffRows(allocator, expected_bytes, options);
-    defer expected_rows.deinit(allocator);
-    var actual_rows = try loadTraceDiffRows(allocator, actual_bytes, options);
-    defer actual_rows.deinit(allocator);
-    return diffTraceRows(expected_rows.items, actual_rows.items, options);
+    var scratch: std.heap.ArenaAllocator = .init(allocator);
+    defer scratch.deinit();
+    const expected_rows = try loadTraceDiffRows(scratch.allocator(), expected_bytes, options);
+    const actual_rows = try loadTraceDiffRows(scratch.allocator(), actual_bytes, options);
+    return diffTraceRows(allocator, expected_rows.items, actual_rows.items, options);
 }
 
 pub fn bisectTraceFiles(
@@ -1498,12 +1530,12 @@ pub fn focusTraceBytes(
         .tick_start = tick_index,
         .tick_end = tick_index,
     };
-    var expected_rows = try loadTraceDiffRows(allocator, expected_bytes, options);
-    defer expected_rows.deinit(allocator);
-    var actual_rows = try loadTraceDiffRows(allocator, actual_bytes, options);
-    defer actual_rows.deinit(allocator);
+    var scratch: std.heap.ArenaAllocator = .init(allocator);
+    defer scratch.deinit();
+    const expected_rows = try loadTraceDiffRows(scratch.allocator(), expected_bytes, options);
+    const actual_rows = try loadTraceDiffRows(scratch.allocator(), actual_bytes, options);
     if (expected_rows.items.len == 0 and actual_rows.items.len == 0) return error.TickNotFound;
-    const diff = diffTraceRows(expected_rows.items, actual_rows.items, options);
+    const diff = try diffTraceRows(allocator, expected_rows.items, actual_rows.items, options);
     return focusReportFromDiff(tick_index, diff);
 }
 
@@ -1660,60 +1692,13 @@ fn compareString(value: []const u8, op: QueryOp, literal: QueryLiteral) bool {
     };
 }
 
-const EntityGenerationState = struct {
-    generation_by_index: std.AutoHashMap(usize, i32),
-    active_indices: std.AutoHashMap(usize, void),
-    seen_in_tick: std.AutoHashMap(usize, void),
-
-    fn init(allocator: std.mem.Allocator) EntityGenerationState {
-        return .{
-            .generation_by_index = std.AutoHashMap(usize, i32).init(allocator),
-            .active_indices = std.AutoHashMap(usize, void).init(allocator),
-            .seen_in_tick = std.AutoHashMap(usize, void).init(allocator),
-        };
-    }
-
-    fn deinit(self: *EntityGenerationState) void {
-        self.generation_by_index.deinit();
-        self.active_indices.deinit();
-        self.seen_in_tick.deinit();
-        self.* = undefined;
-    }
-
-    fn beginTick(self: *EntityGenerationState) void {
-        self.seen_in_tick.clearRetainingCapacity();
-    }
-
-    fn nextGeneration(self: *EntityGenerationState, index: usize) !i32 {
-        var generation_ptr = self.generation_by_index.getPtr(index);
-        if (generation_ptr == null) {
-            try self.generation_by_index.put(index, 0);
-            generation_ptr = self.generation_by_index.getPtr(index);
-        }
-        if (generation_ptr == null) return error.OutOfMemory;
-        if (!self.active_indices.contains(index)) {
-            generation_ptr.?.* += 1;
-        }
-        try self.seen_in_tick.put(index, {});
-        return generation_ptr.?.*;
-    }
-
-    fn endTick(self: *EntityGenerationState) !void {
-        self.active_indices.clearRetainingCapacity();
-        var iter = self.seen_in_tick.iterator();
-        while (iter.next()) |entry| {
-            try self.active_indices.put(entry.key_ptr.*, {});
-        }
-    }
-};
-
 pub fn writeReplayTickTraceCdt(
     allocator: std.mem.Allocator,
     trace_path: []const u8,
     replay_path: []const u8,
     replay_bytes: []const u8,
     replay: replay_codec.Replay,
-    rows: []const replay_runner.ReplayTickTrace,
+    rows: []const replay_trace.ReplayTickTrace,
 ) TraceWriteError!void {
     if (rows.len == 0) return error.EmptyTrace;
 
@@ -1791,15 +1776,6 @@ pub fn writeReplayTickTraceCdt(
     var tick_blocks: std.ArrayList(TickBlockIndexEntry) = .empty;
     defer tick_blocks.deinit(allocator);
 
-    var creature_state = EntityGenerationState.init(allocator);
-    defer creature_state.deinit();
-    var projectile_state = EntityGenerationState.init(allocator);
-    defer projectile_state.deinit();
-    var secondary_state = EntityGenerationState.init(allocator);
-    defer secondary_state.deinit();
-    var bonus_state = EntityGenerationState.init(allocator);
-    defer bonus_state.deinit();
-
     var tick_records: std.ArrayList(TickRecord) = .empty;
     defer {
         for (tick_records.items) |*record| {
@@ -1823,10 +1799,6 @@ pub fn writeReplayTickTraceCdt(
             dt_ms_i32,
             elapsed_ms_accum,
             tick_rng_start_state,
-            &creature_state,
-            &projectile_state,
-            &secondary_state,
-            &bonus_state,
         );
         try tick_records.append(allocator, record);
         tick_rng_start_state = row.rng.rng_state;
@@ -1941,15 +1913,12 @@ fn writeChunk(
 fn buildTickRecord(
     allocator: std.mem.Allocator,
     replay: replay_codec.Replay,
-    row: replay_runner.ReplayTickTrace,
+    row: replay_trace.ReplayTickTrace,
     dt_ms_i32: i32,
-    elapsed_ms: i64,
+    summed_elapsed_ms: i64,
     tick_rng_start_state: u32,
-    creature_state: *EntityGenerationState,
-    projectile_state: *EntityGenerationState,
-    secondary_state: *EntityGenerationState,
-    bonus_state: *EntityGenerationState,
 ) TraceWriteError!TickRecord {
+    const elapsed_ms = if (replay.header.game_mode_id == @intFromEnum(game_ids.GameModeId.quests)) row.timing.elapsed_ms else summed_elapsed_ms;
     const tick_index_i32 = try castI32(row.tick_index);
     _ = tick_rng_start_state;
     const replay_step = try buildReplayStep(allocator, replay, row.tick_index);
@@ -1969,10 +1938,6 @@ fn buildTickRecord(
     const entity_samples = try buildEntitySamples(
         allocator,
         row,
-        creature_state,
-        projectile_state,
-        secondary_state,
-        bonus_state,
     );
 
     return .{
@@ -2114,22 +2079,13 @@ fn deinitReplayStep(allocator: std.mem.Allocator, replay_step: ReplayStepSnapsho
 
 fn buildEntitySamples(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
-    creature_state: *EntityGenerationState,
-    projectile_state: *EntityGenerationState,
-    secondary_state: *EntityGenerationState,
-    bonus_state: *EntityGenerationState,
+    row: replay_trace.ReplayTickTrace,
 ) TraceWriteError!EntitySamplesSnapshot {
-    creature_state.beginTick();
-    projectile_state.beginTick();
-    secondary_state.beginTick();
-    bonus_state.beginTick();
-
     var creatures = try allocator.alloc(CreatureEntitySample, row.entities.creatures.len);
     errdefer allocator.free(creatures);
     for (row.entities.creatures, 0..) |creature, idx| {
         const index_i32 = try castI32(creature.index);
-        const generation = try creature_state.nextGeneration(creature.index);
+        const generation = creature.generation;
         creatures[idx] = .{
             .uid = try entityUid(1, generation, creature.index),
             .generation = generation,
@@ -2168,7 +2124,7 @@ fn buildEntitySamples(
     errdefer allocator.free(projectiles);
     for (row.entities.projectiles, 0..) |projectile, idx| {
         const index_i32 = try castI32(projectile.index);
-        const generation = try projectile_state.nextGeneration(projectile.index);
+        const generation = projectile.generation;
         projectiles[idx] = .{
             .uid = try entityUid(2, generation, projectile.index),
             .generation = generation,
@@ -2192,7 +2148,7 @@ fn buildEntitySamples(
     errdefer allocator.free(secondary_projectiles);
     for (row.entities.secondary_projectiles, 0..) |projectile, idx| {
         const index_i32 = try castI32(projectile.index);
-        const generation = try secondary_state.nextGeneration(projectile.index);
+        const generation = projectile.generation;
         secondary_projectiles[idx] = .{
             .uid = try entityUid(3, generation, projectile.index),
             .generation = generation,
@@ -2214,7 +2170,7 @@ fn buildEntitySamples(
     errdefer allocator.free(bonuses);
     for (row.entities.bonuses, 0..) |bonus, idx| {
         const index_i32 = try castI32(bonus.index);
-        const generation = try bonus_state.nextGeneration(bonus.index);
+        const generation = bonus.generation;
         bonuses[idx] = .{
             .uid = try entityUid(4, generation, bonus.index),
             .generation = generation,
@@ -2230,11 +2186,6 @@ fn buildEntitySamples(
         };
     }
 
-    try creature_state.endTick();
-    try projectile_state.endTick();
-    try secondary_state.endTick();
-    try bonus_state.endTick();
-
     return .{
         .creatures = creatures,
         .projectiles = projectiles,
@@ -2245,7 +2196,7 @@ fn buildEntitySamples(
 
 fn buildSimState(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
+    row: replay_trace.ReplayTickTrace,
     mode_id: i32,
 ) TraceWriteError!SimStateSnapshot {
     const fallback_players = [_]state_mod.PlayerState{row.player_state};
@@ -2295,7 +2246,7 @@ fn buildSimState(
 
 fn buildCheckpoint(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
+    row: replay_trace.ReplayTickTrace,
     elapsed_ms: i64,
 ) TraceWriteError!CheckpointChannel {
     const fallback_players = [_]state_mod.PlayerState{row.player_state};
@@ -2416,7 +2367,7 @@ fn buildNonzeroPerkCounts(
 
 fn buildRngStream(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
+    row: replay_trace.ReplayTickTrace,
 ) TraceWriteError![]const RngStreamRow {
     if (row.rng_rows.len == 0) {
         return empty_rng_stream;
@@ -2437,7 +2388,7 @@ fn buildRngStream(
 
 fn buildTimingSamples(
     allocator: std.mem.Allocator,
-    row: replay_runner.ReplayTickTrace,
+    row: replay_trace.ReplayTickTrace,
 ) TraceWriteError![]const TimingSampleRow {
     if (row.timing_samples.len == 0) {
         return empty_timing_samples;
@@ -2471,35 +2422,9 @@ fn encodeMsgpackOwned(allocator: std.mem.Allocator, value: anytype) ![]u8 {
     return writer.toOwnedSlice();
 }
 
-const TraceDiffRow = struct {
-    tick_index: i32,
-    elapsed_ms: i64,
-    dt_ms_i32: i32,
-    mode_id: i32,
-    replay_step_prelude_count: i64,
-    replay_step_prelude_hash: i64,
-    replay_step_postlude_count: i64,
-    replay_step_postlude_hash: i64,
-    checkpoint_rng_state: i64,
-    checkpoint_elapsed_ms: i64,
-    checkpoint_score_xp: i32,
-    checkpoint_kills: i32,
-    checkpoint_creature_count: i32,
-    checkpoint_perk_pending: i32,
-    checkpoint_player_count: i64,
-    checkpoint_death_count: i64,
-    event_hit_count: i32,
-    event_pickup_count: i32,
-    event_sfx_count: i32,
-    event_sfx_head_count: i64,
-    entity_creature_count: i64,
-    entity_projectile_count: i64,
-    entity_secondary_projectile_count: i64,
-    entity_bonus_count: i64,
-    rng_stream_count: i64,
-    timing_samples_count: i64,
-};
+const TraceDiffRow = TickRecordRead;
 
+// allocator must be an arena; decoded blocks live through comparison.
 fn loadTraceDiffRows(
     allocator: std.mem.Allocator,
     bytes: []const u8,
@@ -2540,9 +2465,7 @@ fn loadTraceDiffRows(
         if (tick_chunk.payload.len != @as(usize, @intCast(entry.uncompressed_len))) return error.InvalidTraceTickChunk;
         if (checksum64(tick_chunk.payload) != entry.checksum) return error.InvalidTraceChecksum;
 
-        var decoded_block = try msgpack.decodeFromSlice(TickBlockRead, allocator, tick_chunk.payload);
-        defer decoded_block.deinit();
-        const block = decoded_block.value;
+        const block = try msgpack.decodeFromSliceLeaky(TickBlockRead, allocator, tick_chunk.payload);
         if (block.start_tick != entry.start_tick or block.end_tick != entry.end_tick) return error.InvalidTraceTickBlock;
 
         for (block.ticks) |tick| {
@@ -2552,112 +2475,86 @@ fn loadTraceDiffRows(
             if (options.tick_end) |tick_end| {
                 if (tick.tick_index > tick_end) continue;
             }
-            try rows.append(allocator, traceDiffRowFromTick(tick));
+            try rows.append(allocator, tick);
         }
     }
 
     return rows;
 }
 
-fn traceDiffRowFromTick(tick: TickRecordRead) TraceDiffRow {
-    const checkpoint = tick.channels.checkpoint;
-    const entities = tick.channels.entity_samples;
-    const prelude = tick.channels.replay_step.prelude;
-    const postlude = tick.channels.replay_step.postlude;
-    return .{
-        .tick_index = tick.tick_index,
-        .elapsed_ms = tick.elapsed_ms,
-        .dt_ms_i32 = tick.dt_ms_i32,
-        .mode_id = tick.mode_id,
-        .replay_step_prelude_count = @intCast(prelude.len),
-        .replay_step_prelude_hash = @bitCast(replayStepPreludeHash(prelude)),
-        .replay_step_postlude_count = @intCast(postlude.len),
-        .replay_step_postlude_hash = @bitCast(replayStepPostludeHash(postlude)),
-        .checkpoint_rng_state = checkpoint.rng_state,
-        .checkpoint_elapsed_ms = checkpoint.elapsed_ms,
-        .checkpoint_score_xp = checkpoint.score_xp,
-        .checkpoint_kills = checkpoint.kills,
-        .checkpoint_creature_count = checkpoint.creature_count,
-        .checkpoint_perk_pending = checkpoint.perk_pending,
-        .checkpoint_player_count = @intCast(checkpoint.players.len),
-        .checkpoint_death_count = @intCast(checkpoint.deaths.len),
-        .event_hit_count = checkpoint.events.hit_count,
-        .event_pickup_count = checkpoint.events.pickup_count,
-        .event_sfx_count = checkpoint.events.sfx_count,
-        .event_sfx_head_count = @intCast(checkpoint.events.sfx_head.len),
-        .entity_creature_count = @intCast(entities.creatures.len),
-        .entity_projectile_count = @intCast(entities.projectiles.len),
-        .entity_secondary_projectile_count = @intCast(entities.secondary_projectiles.len),
-        .entity_bonus_count = @intCast(entities.bonuses.len),
-        .rng_stream_count = @intCast(tick.channels.rng_stream.len),
-        .timing_samples_count = @intCast(tick.channels.timing_samples.len),
-    };
+fn diffTraceRows(allocator: std.mem.Allocator, expected: []const TraceDiffRow, actual: []const TraceDiffRow, options: TraceDiffOptions) !TraceDiffReport {
+    const arena = try allocator.create(std.heap.ArenaAllocator);
+    errdefer allocator.destroy(arena);
+    arena.* = .init(allocator);
+    errdefer arena.deinit();
+    const report_allocator = arena.allocator();
+    var report: TraceDiffReport = .{ .ok = true, .checked_count = 0, .tick_start = options.tick_start, .tick_end = options.tick_end, .arena = arena };
+    var i: usize = 0;
+    var j: usize = 0;
+    while (i < expected.len or j < actual.len) {
+        report.checked_count += 1;
+        if (j >= actual.len or (i < expected.len and expected[i].tick_index < actual[j].tick_index)) {
+            if (report.mismatch == null) report.mismatch = .{ .kind = "missing_tick", .tick_index = expected[i].tick_index, .field = "tick_present", .expected = 1, .actual = 0 };
+            report.ok = false;
+            i += 1;
+            continue;
+        }
+        if (i >= expected.len or actual[j].tick_index < expected[i].tick_index) {
+            if (report.mismatch == null) report.mismatch = .{ .kind = "extra_tick", .tick_index = actual[j].tick_index, .field = "tick_present", .expected = 0, .actual = 1 };
+            report.ok = false;
+            j += 1;
+            continue;
+        }
+        const left = expected[i];
+        const right = actual[j];
+        inline for (.{ "elapsed_ms", "dt_ms_i32", "mode_id" }) |field| {
+            if (try value_compare.firstMismatch(report_allocator, left.tick_index, @field(left, field), @field(right, field), field)) |mismatch| {
+                if (report.mismatch == null) report.mismatch = mismatch;
+                report.ok = false;
+            }
+        }
+        inline for (.{ "replay_step", "checkpoint", "rng_stream", "sim_state", "entity_samples", "timing_samples" }) |channel| {
+            if (@field(report.channel_first_mismatches, channel) == null) {
+                const mismatch = if (comptime std.mem.eql(u8, channel, "rng_stream"))
+                    try compareRngStream(report_allocator, left, right, &report.channel_first_diagnostics)
+                else
+                    try value_compare.firstMismatch(report_allocator, left.tick_index, @field(left.channels, channel), @field(right.channels, channel), channel);
+                if (mismatch) |found| {
+                    @field(report.channel_first_mismatches, channel) = found;
+                    if (report.mismatch == null) report.mismatch = found;
+                    report.ok = false;
+                }
+            }
+        }
+        i += 1;
+        j += 1;
+    }
+    return report;
 }
 
-fn diffTraceRows(
-    expected: []const TraceDiffRow,
-    actual: []const TraceDiffRow,
-    options: TraceDiffOptions,
-) TraceDiffReport {
-    var checked_count: usize = 0;
-    var expected_idx: usize = 0;
-    var actual_idx: usize = 0;
-
-    while (expected_idx < expected.len or actual_idx < actual.len) {
-        checked_count += 1;
-        if (actual_idx >= actual.len or (expected_idx < expected.len and expected[expected_idx].tick_index < actual[actual_idx].tick_index)) {
-            const tick = expected[expected_idx].tick_index;
-            return .{
-                .ok = false,
-                .checked_count = checked_count,
-                .tick_start = options.tick_start,
-                .tick_end = options.tick_end,
-                .mismatch = .{
-                    .kind = "missing_tick",
-                    .tick_index = tick,
-                    .field = "tick_present",
-                    .expected = 1,
-                    .actual = 0,
-                },
-            };
+fn compareRngStream(allocator: std.mem.Allocator, left: TraceDiffRow, right: TraceDiffRow, diagnostics: *ChannelMismatches) !?TraceDiffMismatch {
+    const expected = left.channels.rng_stream;
+    const actual = right.channels.rng_stream;
+    if (try value_compare.firstMismatch(allocator, left.tick_index, expected.len, actual.len, "rng_stream._len")) |found| return found;
+    var caller_mismatch: ?TraceDiffMismatch = null;
+    for (expected, actual, 0..) |a, b, index| {
+        var path_buffer: [80]u8 = undefined;
+        const path = try std.fmt.bufPrint(&path_buffer, "rng_stream[{d}]", .{index});
+        var a_behavior = a;
+        var b_behavior = b;
+        a_behavior.caller = null;
+        b_behavior.caller = null;
+        if (try value_compare.firstMismatch(allocator, left.tick_index, a_behavior, b_behavior, path)) |found| return found;
+        if (diagnostics.rng_stream == null and caller_mismatch == null) {
+            const caller_path = try std.fmt.bufPrint(&path_buffer, "rng_stream[{d}].caller", .{index});
+            caller_mismatch = try value_compare.firstMismatch(allocator, left.tick_index, a.caller, b.caller, caller_path);
         }
-        if (expected_idx >= expected.len or actual[actual_idx].tick_index < expected[expected_idx].tick_index) {
-            const tick = actual[actual_idx].tick_index;
-            return .{
-                .ok = false,
-                .checked_count = checked_count,
-                .tick_start = options.tick_start,
-                .tick_end = options.tick_end,
-                .mismatch = .{
-                    .kind = "extra_tick",
-                    .tick_index = tick,
-                    .field = "tick_present",
-                    .expected = 0,
-                    .actual = 1,
-                },
-            };
-        }
-
-        if (firstTraceRowMismatch(&expected[expected_idx], &actual[actual_idx])) |mismatch| {
-            return .{
-                .ok = false,
-                .checked_count = checked_count,
-                .tick_start = options.tick_start,
-                .tick_end = options.tick_end,
-                .mismatch = mismatch,
-            };
-        }
-
-        expected_idx += 1;
-        actual_idx += 1;
     }
-
-    return .{
-        .ok = true,
-        .checked_count = checked_count,
-        .tick_start = options.tick_start,
-        .tick_end = options.tick_end,
-    };
+    if (caller_mismatch) |*found| {
+        found.kind = "rng_caller_attribution_mismatch";
+        diagnostics.rng_stream = found.*;
+    }
+    return null;
 }
 
 fn bisectReportFromDiff(
@@ -2667,6 +2564,7 @@ fn bisectReportFromDiff(
 ) TraceBisectReport {
     if (diff.ok) {
         return .{
+            .arena = diff.arena,
             .ok = true,
             .first_bad_tick = null,
             .checked_count = diff.checked_count,
@@ -2680,18 +2578,20 @@ fn bisectReportFromDiff(
     const before = @max(window_before, 0);
     const after = @max(window_after, 0);
     return .{
+        .arena = diff.arena,
         .ok = false,
         .first_bad_tick = mismatch.tick_index,
         .checked_count = diff.checked_count,
         .mismatch = mismatch,
-        .window_start = mismatch.tick_index - before,
-        .window_end = mismatch.tick_index + after,
+        .window_start = @max(mismatch.tick_index - before, 0),
+        .window_end = std.math.add(i32, mismatch.tick_index, after) catch std.math.maxInt(i32),
     };
 }
 
 fn focusReportFromDiff(tick_index: i32, diff: TraceDiffReport) TraceFocusReport {
     if (diff.ok) {
         return .{
+            .arena = diff.arena,
             .tick_index = tick_index,
             .diverged = false,
             .checkpoint_diff_count = 0,
@@ -2699,100 +2599,11 @@ fn focusReportFromDiff(tick_index: i32, diff: TraceDiffReport) TraceFocusReport 
         };
     }
     return .{
+        .arena = diff.arena,
         .tick_index = tick_index,
         .diverged = true,
         .checkpoint_diff_count = 1,
         .mismatch = diff.mismatch,
-    };
-}
-
-fn firstTraceRowMismatch(expected: *const TraceDiffRow, actual: *const TraceDiffRow) ?TraceDiffMismatch {
-    if (diffI64(expected.tick_index, expected.tick_index, actual.tick_index, "tick_index")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.elapsed_ms, actual.elapsed_ms, "elapsed_ms")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.dt_ms_i32, actual.dt_ms_i32, "dt_ms_i32")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.mode_id, actual.mode_id, "mode_id")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.replay_step_prelude_count, actual.replay_step_prelude_count, "replay_step.prelude._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.replay_step_prelude_hash, actual.replay_step_prelude_hash, "replay_step.prelude")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.replay_step_postlude_count, actual.replay_step_postlude_count, "replay_step.postlude._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.replay_step_postlude_hash, actual.replay_step_postlude_hash, "replay_step.postlude")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_rng_state, actual.checkpoint_rng_state, "checkpoint.rng_state")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_elapsed_ms, actual.checkpoint_elapsed_ms, "checkpoint.elapsed_ms")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_score_xp, actual.checkpoint_score_xp, "checkpoint.score_xp")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_kills, actual.checkpoint_kills, "checkpoint.kills")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_creature_count, actual.checkpoint_creature_count, "checkpoint.creature_count")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_perk_pending, actual.checkpoint_perk_pending, "checkpoint.perk_pending")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_player_count, actual.checkpoint_player_count, "checkpoint.players._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.checkpoint_death_count, actual.checkpoint_death_count, "checkpoint.deaths._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.event_hit_count, actual.event_hit_count, "checkpoint.events.hit_count")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.event_pickup_count, actual.event_pickup_count, "checkpoint.events.pickup_count")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.event_sfx_count, actual.event_sfx_count, "checkpoint.events.sfx_count")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.event_sfx_head_count, actual.event_sfx_head_count, "checkpoint.events.sfx_head._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.entity_creature_count, actual.entity_creature_count, "entity_samples.creatures._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.entity_projectile_count, actual.entity_projectile_count, "entity_samples.projectiles._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.entity_secondary_projectile_count, actual.entity_secondary_projectile_count, "entity_samples.secondary_projectiles._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.entity_bonus_count, actual.entity_bonus_count, "entity_samples.bonuses._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.rng_stream_count, actual.rng_stream_count, "rng_stream._len")) |mismatch| return mismatch;
-    if (diffI64(expected.tick_index, expected.timing_samples_count, actual.timing_samples_count, "timing_samples._len")) |mismatch| return mismatch;
-    return null;
-}
-
-fn replayStepPreludeHash(prelude: []const ReplayStepPrelude) u64 {
-    var digest: u64 = 0xcbf29ce484222325;
-    for (prelude) |op| {
-        switch (op) {
-            .game_frame_rng_advance => |advance| {
-                digest = fnv1aByte(digest, 1);
-                digest = fnv1aU32(digest, advance.frames);
-            },
-            .perk_menu_open => |open| {
-                digest = fnv1aByte(digest, 2);
-                digest = fnv1aU32(digest, @bitCast(open.player_index));
-            },
-            .perk_pick => |pick| {
-                digest = fnv1aByte(digest, 3);
-                digest = fnv1aU32(digest, @bitCast(pick.player_index));
-                digest = fnv1aU32(digest, @bitCast(pick.choice_index));
-            },
-        }
-    }
-    return digest;
-}
-
-fn replayStepPostludeHash(postlude: []const ReplayStepPostlude) u64 {
-    var digest: u64 = 0xcbf29ce484222325;
-    for (postlude) |op| {
-        switch (op) {
-            .perk_menu_open => |open| {
-                digest = fnv1aByte(digest, 2);
-                digest = fnv1aU32(digest, @bitCast(open.player_index));
-            },
-        }
-    }
-    return digest;
-}
-
-fn fnv1aU32(initial: u64, value: u32) u64 {
-    var digest = initial;
-    inline for (0..4) |shift| {
-        digest = fnv1aByte(digest, @truncate(value >> @as(u5, @intCast(shift * 8))));
-    }
-    return digest;
-}
-
-fn fnv1aByte(initial: u64, value: u8) u64 {
-    return (initial ^ value) *% 0x100000001b3;
-}
-
-fn diffI64(tick_index: i32, expected: anytype, actual: anytype, field: []const u8) ?TraceDiffMismatch {
-    const exp: i64 = @intCast(expected);
-    const act: i64 = @intCast(actual);
-    if (exp == act) return null;
-    return .{
-        .kind = "field_mismatch",
-        .tick_index = tick_index,
-        .field = field,
-        .expected = exp,
-        .actual = act,
     };
 }
 
@@ -2854,6 +2665,137 @@ fn validateTraceChunkLayout(allocator: std.mem.Allocator, bytes: []const u8) !vo
         expected_offset = tick_chunk.end_offset;
     }
     if (expected_offset != footer_offset) return error.InvalidTraceChunkLayout;
+    try wire.validate(TraceFooter, footer_chunk.payload);
+    try validateTraceContents(allocator, bytes, decoded_footer.value, meta_chunk.payload);
+}
+
+fn validateTraceContents(allocator: std.mem.Allocator, bytes: []const u8, footer: TraceFooter, meta_payload: []const u8) !void {
+    try wire.validate(TraceMetaRead, meta_payload);
+    var meta_decoded = try msgpack.decodeFromSlice(TraceMetaRead, allocator, meta_payload);
+    defer meta_decoded.deinit();
+    const meta = meta_decoded.value;
+    if (meta.trace_format_version != trace_format_version or meta.trace_schema_version != trace_schema_version) return error.UnsupportedTraceSchemaVersion;
+    if (meta.created_utc.len == 0) return error.InvalidTraceMeta;
+    inline for (.{ "impl", "impl_version", "platform", "arch" }) |name| {
+        if (@field(meta.producer, name).len == 0) return error.InvalidTraceMeta;
+    }
+    const source = meta.source;
+    const kind = source.kind orelse return error.InvalidTraceMeta;
+    if (!std.mem.eql(u8, kind, "capture") and !std.mem.eql(u8, kind, "replay")) return error.InvalidTraceMeta;
+    inline for (.{ "sha256", "replay_sha256" }) |name| {
+        const digest = @field(source, name) orelse return error.InvalidTraceMeta;
+        if (digest.len != 64) return error.InvalidTraceMeta;
+        for (digest) |c| {
+            if (!std.ascii.isHex(c)) return error.InvalidTraceMeta;
+        }
+    }
+    if ((source.tick_rate orelse 0) <= 0 or (source.player_count orelse 0) <= 0 or source.seed == null or (source.mode_id orelse -1) < 0) return error.InvalidTraceMeta;
+    if (source.quest_level) |level| {
+        if (source.mode_id.? != @intFromEnum(game_ids.GameModeId.quests)) return error.InvalidTraceMeta;
+        var parts = std.mem.splitScalar(u8, level, '.');
+        const major = std.fmt.parseInt(i32, parts.next() orelse return error.InvalidTraceMeta, 10) catch return error.InvalidTraceMeta;
+        const minor = std.fmt.parseInt(i32, parts.next() orelse return error.InvalidTraceMeta, 10) catch return error.InvalidTraceMeta;
+        if (parts.next() != null or source.quest_stage_major != major or source.quest_stage_minor != minor) return error.InvalidTraceMeta;
+    } else if (source.mode_id.? == @intFromEnum(game_ids.GameModeId.quests) or source.quest_stage_major != null or source.quest_stage_minor != null) return error.InvalidTraceMeta;
+    if (footer.tick_count <= 0 or footer.tick_blocks.len == 0) return error.InvalidTraceFooter;
+    var count: usize = 0;
+    var first: ?i32 = null;
+    var previous: ?i32 = null;
+    for (footer.tick_blocks) |entry| {
+        const chunk = try chunkPayloadAt(bytes, @intCast(entry.file_offset));
+        if (chunk.start_tick != entry.start_tick or chunk.end_tick != entry.end_tick or entry.compressed_len < 0 or entry.uncompressed_len < 0 or
+            chunk.payload.len != entry.compressed_len or chunk.payload.len != entry.uncompressed_len or checksum64(chunk.payload) != entry.checksum) return error.InvalidTraceTickChunk;
+        try wire.validate(TickBlockRead, chunk.payload);
+        var decoded = try msgpack.decodeFromSlice(TickBlockRead, allocator, chunk.payload);
+        defer decoded.deinit();
+        const block = decoded.value;
+        if (block.ticks.len == 0 or block.start_tick != entry.start_tick or block.end_tick != entry.end_tick or
+            block.ticks[0].tick_index != block.start_tick or block.ticks[block.ticks.len - 1].tick_index != block.end_tick) return error.InvalidTraceTickBlock;
+        for (block.ticks) |tick| {
+            if (previous) |last| {
+                if (tick.tick_index <= last) return error.InvalidTickOrder;
+            }
+            try validateTraceTick(tick, source);
+            if (first == null) first = tick.tick_index;
+            previous = tick.tick_index;
+            count += 1;
+        }
+    }
+    if (footer.tick_count != count or footer.first_tick != first.? or footer.last_tick != previous.? or
+        meta.tick_range.tick_count != count or meta.tick_range.start_tick != first.? or meta.tick_range.end_tick != previous.?) return error.InvalidTraceFooter;
+}
+
+fn validateTraceTick(tick: TickRecordRead, source: Source) !void {
+    const c = tick.channels;
+    const step = c.replay_step;
+    const checkpoint = c.checkpoint;
+    const state = c.sim_state;
+    const n = step.inputs.len;
+    if (tick.tick_index < 0 or tick.elapsed_ms < 0 or tick.dt_ms_i32 < 0 or tick.mode_id < 0 or step.dt < 0 or n == 0) return error.InvalidTraceTick;
+    if (source.mode_id != tick.mode_id or source.player_count.? != n or checkpoint.tick_index != tick.tick_index or checkpoint.elapsed_ms != tick.elapsed_ms or
+        checkpoint.players.len != n or state.players.len != n or state.gameplay.mode_id != tick.mode_id) return error.InvalidTraceTickIdentity;
+    for (step.inputs) |input| _ = try replay_codec.validateInputFlags(input.flags);
+    for (step.prelude) |op| switch (op) {
+        .game_frame_rng_advance => |value| {
+            if (value.frames == 0) return error.InvalidTraceOperation;
+        },
+        .perk_menu_open => |value| {
+            if (value.player_index < 0 or value.player_index >= n) return error.InvalidTraceOperation;
+        },
+        .perk_pick => |value| {
+            if (value.player_index < 0 or value.player_index >= n or value.choice_index < 0 or value.choice_index >= 7) return error.InvalidTraceOperation;
+        },
+    };
+    for (step.postlude) |op| switch (op) {
+        .perk_menu_open => |value| {
+            if (value.player_index < 0 or value.player_index >= n) return error.InvalidTraceOperation;
+        },
+    };
+    if (step.commands.len > 0 and tick.mode_id != @intFromEnum(game_ids.GameModeId.typo)) return error.InvalidTraceOperation;
+    for (step.commands) |op| switch (op) {
+        inline else => |value| {
+            if (value.player_index < 0 or value.player_index >= n) return error.InvalidTraceOperation;
+        },
+    };
+    if (checkpoint.perk.choices.len != 7 or checkpoint.perk_pending != checkpoint.perk.pending_count or checkpoint.perk_pending != state.gameplay.perk_pending_count or
+        checkpoint.perk.choices_dirty != state.gameplay.perk_choices_dirty or checkpoint.deaths.len != 0 or checkpoint.events.sfx_count != 0 or
+        checkpoint.events.sfx_head.len != 0 or checkpoint.events.hit_head.len != 0) return error.InvalidTraceCheckpoint;
+    for (state.players, 0..) |player, index| {
+        if (player.index != index) return error.InvalidTraceTickIdentity;
+    }
+    const expected_major = if (tick.mode_id == @intFromEnum(game_ids.GameModeId.quests)) source.quest_stage_major.? else 0;
+    const expected_minor = if (tick.mode_id == @intFromEnum(game_ids.GameModeId.quests)) source.quest_stage_minor.? else 0;
+    if (state.gameplay.quest_stage_major != expected_major or state.gameplay.quest_stage_minor != expected_minor) return error.InvalidTraceTickIdentity;
+    var gpur_count: usize = 0;
+    for (c.timing_samples) |sample| {
+        if (sample.tick_index != tick.tick_index or sample.phase.len == 0) return error.InvalidTraceTiming;
+        if (std.mem.eql(u8, sample.phase, "gpur_enter")) {
+            gpur_count += 1;
+            if (sample.frame_dt_f32 != step.dt or sample.frame_dt_ms_i32 != tick.dt_ms_i32) return error.InvalidTraceTiming;
+        }
+    }
+    if (gpur_count != 1) return error.InvalidTraceTiming;
+    var previous_state: ?u32 = null;
+    for (c.rng_stream, 0..) |row, index| {
+        if (row.tick_call_index != index + 1) return error.InvalidTraceRng;
+        const before = std.math.cast(u32, row.state_before_u32) orelse return error.InvalidTraceRng;
+        const after = std.math.cast(u32, row.state_after_u32) orelse return error.InvalidTraceRng;
+        if (after != before *% 214013 +% 2531011 or row.value_15 != (after >> 16) & 0x7fff) return error.InvalidTraceRng;
+        if (previous_state) |previous_after| {
+            if (before != previous_after) return error.InvalidTraceRng;
+        }
+        previous_state = after;
+    }
+    inline for (.{ "creatures", "projectiles", "secondary_projectiles", "bonuses" }, .{ "creature", "projectile", "secondary_projectile", "bonus" }, 1..) |name, kind, kind_id| {
+        const entities = @field(c.entity_samples, name);
+        for (entities, 0..) |entity, i| {
+            if (!entity.active or !std.mem.eql(u8, entity.pool_kind, kind) or entity.index < 0) return error.InvalidTraceEntity;
+            if (entity.uid != try entityUid(kind_id, entity.generation, @intCast(entity.index))) return error.InvalidTraceEntity;
+            for (entities[0..i]) |other| {
+                if (other.uid == entity.uid) return error.InvalidTraceEntity;
+            }
+        }
+    }
 }
 
 fn chunkPayloadAt(bytes: []const u8, offset: usize) !ChunkPayload {
@@ -3011,7 +2953,9 @@ test "CDT reader rejects unindexed bytes between canonical chunks" {
     const allocator = std.testing.allocator;
     const canonical = try buildTestTraceEnvelope(allocator, .{});
     defer allocator.free(canonical);
-    try validateTraceEnvelopeAndMeta(allocator, canonical);
+    // The synthetic envelope deliberately omits source and tick fields. It
+    // passes the chunk layout check but must now fail semantic validation.
+    try std.testing.expectError(error.InvalidTraceMeta, validateTraceEnvelopeAndMeta(allocator, canonical));
 
     for ([_]TestTraceGaps{
         .{ .after_meta = true },
@@ -3089,7 +3033,7 @@ test "CDT checkpoint writer strips producer-specific event details" {
 
 test "CDT checkpoint keeps replay event counts" {
     const allocator = std.testing.allocator;
-    const row: replay_runner.ReplayTickTrace = .{
+    const row: replay_trace.ReplayTickTrace = .{
         .tick_index = 0,
         .timing = .{ .elapsed_ms = 0 },
         .rng = .{
@@ -3144,118 +3088,26 @@ test "CDT checkpoint perk choices preserve all seven raw slots" {
     try std.testing.expectEqual(choices[4], choices[6]);
 }
 
-test "trace diff rows report first summary mismatch" {
-    const expected = testTraceDiffRow(0);
-    var actual = expected;
-    actual.checkpoint_score_xp = 7;
-
-    const report = diffTraceRows(&.{expected}, &.{actual}, .{});
-
-    try std.testing.expect(!report.ok);
-    try std.testing.expectEqual(@as(usize, 1), report.checked_count);
-    try std.testing.expectEqualStrings("field_mismatch", report.mismatch.?.kind);
-    try std.testing.expectEqualStrings("checkpoint.score_xp", report.mismatch.?.field.?);
-    try std.testing.expectEqual(@as(?i64, 0), report.mismatch.?.expected);
-    try std.testing.expectEqual(@as(?i64, 7), report.mismatch.?.actual);
-}
-
-test "replay-step prelude hash preserves operation contents and order" {
-    const ordered = [_]ReplayStepPrelude{
-        .{ .game_frame_rng_advance = .{ .frames = 2 } },
-        .{ .perk_menu_open = .{ .player_index = 0 } },
-        .{ .perk_pick = .{ .player_index = 0, .choice_index = 6 } },
+test "Quest CDT records the simulation timeline while retaining unscaled dt" {
+    const allocator = std.testing.allocator;
+    var header = std.mem.zeroes(replay_codec.ReplayHeader);
+    header.game_mode_id = @intFromEnum(game_ids.GameModeId.quests);
+    header.player_count = 1;
+    var player_inputs = [_]replay_codec.ReplayPlayerInput{.{ .move_x = 0, .move_y = 0, .aim_x = 512, .aim_y = 512, .flags = 0 }};
+    var inputs = [_]replay_codec.ReplayTickInputs{&player_inputs};
+    var dt = [_]f32{0.016};
+    const replay: replay_codec.Replay = .{ .header = header, .inputs = &inputs, .dt = &dt, .events = &.{} };
+    const row: replay_trace.ReplayTickTrace = .{
+        .tick_index = 0,
+        .timing = .{ .elapsed_ms = 5 },
+        .rng = std.mem.zeroes(@FieldType(replay_trace.ReplayTickTrace, "rng")),
+        .summary = std.mem.zeroes(@FieldType(replay_trace.ReplayTickTrace, "summary")),
+        .gameplay_state = .{ .rng = .{ .state = 0 } },
+        .player_state = .{ .index = 0, .pos = .{} },
     };
-    const reordered = [_]ReplayStepPrelude{
-        ordered[1],
-        ordered[0],
-        ordered[2],
-    };
-    const changed = [_]ReplayStepPrelude{
-        .{ .game_frame_rng_advance = .{ .frames = 3 } },
-        ordered[1],
-        ordered[2],
-    };
-
-    try std.testing.expect(replayStepPreludeHash(&ordered) != replayStepPreludeHash(&reordered));
-    try std.testing.expect(replayStepPreludeHash(&ordered) != replayStepPreludeHash(&changed));
-
-    const expected = testTraceDiffRow(0);
-    var actual = expected;
-    actual.replay_step_prelude_hash = @bitCast(replayStepPreludeHash(&ordered));
-    const report = diffTraceRows(&.{expected}, &.{actual}, .{});
-    try std.testing.expect(!report.ok);
-    try std.testing.expectEqualStrings("replay_step.prelude", report.mismatch.?.field.?);
-}
-
-test "trace diff rows report missing ticks" {
-    const expected = testTraceDiffRow(3);
-
-    const report = diffTraceRows(&.{expected}, &.{}, .{ .tick_start = 3, .tick_end = 3 });
-
-    try std.testing.expect(!report.ok);
-    try std.testing.expectEqual(@as(usize, 1), report.checked_count);
-    try std.testing.expectEqual(@as(?i32, 3), report.tick_start);
-    try std.testing.expectEqualStrings("missing_tick", report.mismatch.?.kind);
-    try std.testing.expectEqual(@as(i32, 3), report.mismatch.?.tick_index);
-}
-
-test "trace bisect report derives first bad tick window" {
-    const expected = testTraceDiffRow(1);
-    var actual = expected;
-    actual.checkpoint_kills = 2;
-
-    const diff = diffTraceRows(&.{expected}, &.{actual}, .{});
-    const report = bisectReportFromDiff(diff, 12, 6);
-
-    try std.testing.expect(!report.ok);
-    try std.testing.expectEqual(@as(?i32, 1), report.first_bad_tick);
-    try std.testing.expectEqual(@as(usize, 1), report.checked_count);
-    try std.testing.expectEqual(@as(?i32, -11), report.window_start);
-    try std.testing.expectEqual(@as(?i32, 7), report.window_end);
-    try std.testing.expectEqualStrings("checkpoint.kills", report.mismatch.?.field.?);
-}
-
-test "trace focus report summarizes one tick divergence" {
-    const expected = testTraceDiffRow(4);
-    var actual = expected;
-    actual.rng_stream_count = 1;
-
-    const diff = diffTraceRows(&.{expected}, &.{actual}, .{ .tick_start = 4, .tick_end = 4 });
-    const report = focusReportFromDiff(4, diff);
-
-    try std.testing.expect(report.diverged);
-    try std.testing.expectEqual(@as(i32, 4), report.tick_index);
-    try std.testing.expectEqual(@as(usize, 1), report.checkpoint_diff_count);
-    try std.testing.expectEqualStrings("rng_stream._len", report.mismatch.?.field.?);
-}
-
-fn testTraceDiffRow(tick_index: i32) TraceDiffRow {
-    return .{
-        .tick_index = tick_index,
-        .elapsed_ms = @as(i64, tick_index) * 17,
-        .dt_ms_i32 = 17,
-        .mode_id = 1,
-        .replay_step_prelude_count = 0,
-        .replay_step_prelude_hash = @bitCast(replayStepPreludeHash(&.{})),
-        .replay_step_postlude_count = 0,
-        .replay_step_postlude_hash = @bitCast(replayStepPostludeHash(&.{})),
-        .checkpoint_rng_state = 1,
-        .checkpoint_elapsed_ms = @as(i64, tick_index) * 17,
-        .checkpoint_score_xp = 0,
-        .checkpoint_kills = 0,
-        .checkpoint_creature_count = 0,
-        .checkpoint_perk_pending = 0,
-        .checkpoint_player_count = 1,
-        .checkpoint_death_count = 0,
-        .event_hit_count = 0,
-        .event_pickup_count = 0,
-        .event_sfx_count = 0,
-        .event_sfx_head_count = 0,
-        .entity_creature_count = 0,
-        .entity_projectile_count = 0,
-        .entity_secondary_projectile_count = 0,
-        .entity_bonus_count = 0,
-        .rng_stream_count = 0,
-        .timing_samples_count = 0,
-    };
+    var tick = try buildTickRecord(allocator, replay, row, 16, 16, 0);
+    defer deinitTickRecord(allocator, &tick);
+    try std.testing.expectEqual(@as(i64, 5), tick.elapsed_ms);
+    try std.testing.expectEqual(@as(i64, 5), tick.channels.checkpoint.elapsed_ms);
+    try std.testing.expectEqual(@as(i32, 16), tick.dt_ms_i32);
 }

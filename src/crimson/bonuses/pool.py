@@ -35,6 +35,7 @@ BONUS_TELEKINETIC_PICKUP_MS = 650.0
 
 
 class BonusEntry(msgspec.Struct):
+    generation: int = 0
     bonus_id: BonusId = BonusId.UNUSED
     picked: bool = False
     time_left: float = 0.0
@@ -113,6 +114,7 @@ class BonusPool:
 
     def reset(self) -> None:
         for entry in self._entries:
+            entry.generation = 0
             entry.bonus_id = BonusId.UNUSED
             entry.picked = False
             entry.time_left = 0.0
@@ -169,6 +171,7 @@ class BonusPool:
             return None
         entry = self._alloc_slot_or_sentinel()
 
+        entry.generation += 1
         entry.bonus_id = bonus_id
         entry.picked = False
         entry.pos = clamped_pos
@@ -206,6 +209,7 @@ class BonusPool:
         amount: int,
     ) -> BonusEntry:
         entry = self._entries[int(index)]
+        entry.generation += 1
         entry.bonus_id = bonus_id
         entry.time_left = 100.0
         entry.time_max = 100.0
@@ -247,6 +251,7 @@ class BonusPool:
                 entry = self._sentinel
                 break
 
+        entry.generation += 1
         entry.bonus_id = bonus_id
         entry.picked = False
         entry.pos = pos

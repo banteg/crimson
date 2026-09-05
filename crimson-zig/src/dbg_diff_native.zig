@@ -36,6 +36,8 @@ const DiffJsonPayload = struct {
     tick_start: ?i32,
     tick_end: ?i32,
     mismatch: ?cdt_trace.TraceDiffMismatch,
+    channel_first_mismatches: cdt_trace.ChannelMismatches,
+    channel_first_diagnostics: cdt_trace.ChannelMismatches,
 };
 
 const usage =
@@ -68,6 +70,7 @@ pub fn runDbgDiff(
                     .tick_end = request.tick_end,
                 },
             ) catch |err| return buildDiffFailedOutput(allocator, traceDiffErrorDetail(err));
+            defer report.deinit(allocator);
             return buildDiffOutput(allocator, request, report);
         },
         .help => return buildUsageOutput(allocator, 0, ""),
@@ -125,9 +128,9 @@ fn buildDiffOutput(
             "detail=field={s} expected=",
             .{field},
         );
-        try writeOptionalI64(&stderr.writer, mismatch.expected);
+        try writeMismatchValue(&stderr.writer, mismatch.expected, mismatch.expected_float, mismatch.expected_text);
         try stderr.writer.writeAll(" actual=");
-        try writeOptionalI64(&stderr.writer, mismatch.actual);
+        try writeMismatchValue(&stderr.writer, mismatch.actual, mismatch.actual_float, mismatch.actual_text);
         try stderr.writer.writeByte('\n');
     }
 
@@ -157,6 +160,8 @@ fn buildDiffJson(
         .tick_start = report.tick_start,
         .tick_end = report.tick_end,
         .mismatch = report.mismatch,
+        .channel_first_mismatches = report.channel_first_mismatches,
+        .channel_first_diagnostics = report.channel_first_diagnostics,
     };
 
     var writer: std.Io.Writer.Allocating = .init(allocator);
@@ -235,11 +240,15 @@ fn parseTick(value: []const u8) ?i32 {
     return parsed;
 }
 
-fn writeOptionalI64(writer: *std.Io.Writer, value: ?i64) !void {
+fn writeMismatchValue(writer: *std.Io.Writer, value: ?i64, float_value: ?f64, text_value: ?[]const u8) !void {
     if (value) |int_value| {
         try writer.print("{d}", .{int_value});
     } else {
-        try writer.writeAll("null");
+        if (float_value) |number| {
+            try writer.print("{d}", .{number});
+        } else if (text_value) |text| {
+            try writer.writeAll(text);
+        } else try writer.writeAll("null");
     }
 }
 

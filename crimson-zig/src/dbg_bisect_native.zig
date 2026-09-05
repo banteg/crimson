@@ -73,6 +73,7 @@ pub fn runDbgBisect(
                 request.window_before,
                 request.window_after,
             ) catch |err| return buildBisectFailedOutput(allocator, traceErrorDetail(err));
+            defer report.deinit(allocator);
             return buildBisectOutput(allocator, request, report);
         },
         .help => return buildUsageOutput(allocator, 0, ""),

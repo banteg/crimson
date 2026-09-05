@@ -133,6 +133,7 @@ class ProjectilePool:
 
     def reset(self) -> None:
         for entry in self._entries:
+            entry.generation = 0
             entry.active = False
 
     def spawn(
@@ -154,6 +155,7 @@ class ProjectilePool:
             index = len(self._entries) - 1
         entry = self._entries[index]
 
+        entry.generation += 1
         entry.active = True
         # Native projectile spawn writes angle/pos as float32 fields; keep those
         # stores narrowed so next-tick movement uses the same precision.

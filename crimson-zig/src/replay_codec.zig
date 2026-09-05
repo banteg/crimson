@@ -2228,7 +2228,10 @@ fn canonicalF32(value: f64) ?f32 {
 
 fn parseInputFlagsValue(value: i32) ReplayCodecError!u32 {
     if (value < 0) return error.UnsupportedInputShape;
-    const flags: u32 = @intCast(value);
+    return validateInputFlags(@intCast(value));
+}
+
+pub fn validateInputFlags(flags: u32) ReplayCodecError!u32 {
     if ((flags & ~supported_input_flags_mask) != 0) return error.UnsupportedInputShape;
 
     const move_key_bits = move_forward_flag | move_backward_flag | turn_left_flag | turn_right_flag;

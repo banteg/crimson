@@ -66,6 +66,7 @@ fn unpackBonusOnDeathArgs(link_index: i32) ?struct { bonus_id: game_ids.BonusId,
 }
 
 pub const CreatureState = struct {
+    generation: i32 = 0,
     active: bool = false,
     type_id: i32 = 0,
     pos: state_mod.Vec2 = .{},
@@ -297,6 +298,7 @@ pub const CreaturePool = struct {
         const stale_max_hp = self.entries[slot].max_hp;
 
         self.entries[slot] = .{
+            .generation = self.entries[slot].generation + 1,
             .active = true,
             .type_id = @intFromEnum(init.type_id),
             .pos = .{
@@ -4055,6 +4057,7 @@ fn spawnSplitChildrenOnDeath(
         // itself matters for the stream.
         _ = state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed);
         var child = source;
+        child.generation = self.entries[child_idx].generation + 1;
         child.active = true;
         child.phase_seed = @intCast(state.rng.randTagged(if (heading_offset < 0.0) rng_callers.creature_handle_death_split_child_1_phase_seed else rng_callers.creature_handle_death_split_child_2_phase_seed) & 0xff);
         // Native updates only heading after copying the whole parent record:

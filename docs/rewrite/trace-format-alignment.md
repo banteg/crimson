@@ -22,11 +22,11 @@ all consumers see the same typed tick data and no producer-specific aliases.
 
 | Artifact | Current version | Authority |
 | --- | ---: | --- |
-| Frida raw JSONL | 22 | `scripts/frida/gameplay_diff_capture.js` |
-| Frida evidence sidecar | 2 | `src/crimson/dbg/frida_finalize.py` |
+| Frida raw JSONL | 26 | `scripts/frida/gameplay_diff_capture.js` |
+| Frida evidence sidecar | 3 | `src/crimson/dbg/frida_finalize.py` |
 | CDT container | 2 | `src/crimson/dbg/schema.py` |
-| CDT payload schema | 15 | `src/crimson/dbg/schema.py` |
-| CRD replay | 16 | `src/crimson/replay/types.py` |
+| CDT payload schema | 18 | `src/crimson/dbg/schema.py` |
+| CRD replay | 18 | `src/crimson/replay/types.py` |
 
 These artifacts are throwaway debugging data. Readers and finalizers require
 exactly these versions; they do not translate, normalize, or salvage an older
@@ -43,7 +43,11 @@ Every `TickRecord` contains:
 - `mode_id`
 - `channels`
 
-Schema 15 requires every channel on every tick:
+Schema 18 preserves Quest's scaled simulation timeline and uses stage `0.0`
+outside Quest. Entity generations count allocations rather than sampled active
+transitions. Capture 26 emits these semantics. Old recordings must be regenerated.
+
+Schema 18 requires every channel on every tick:
 
 - `replay_step`
 - `checkpoint`
@@ -111,7 +115,7 @@ supported.
 
 ### Frida original capture
 
-Capture format 22 emits typed lifecycle rows and canonical tick channels. The
+Capture format 26 emits typed lifecycle rows and canonical tick channels. The
 finalizer validates them, writes one CDT/CRD pair per completed run, and writes
 a sibling typed evidence sidecar containing the producer-only rows used to
 explain how canonical values were derived. The CDT, CRD, RNG report, and typed
@@ -130,7 +134,7 @@ replay fingerprint and implementation, and is validated through the same typed
 
 ### Zig replay recorder
 
-Zig writes the same CDT v2/schema 15 chunks and channel payloads. Use
+Zig writes the same CDT v2/schema 18 chunks and channel payloads. Use
 `crimson-zig dbg record <replay.crd> --out <trace.cdt>` to record and
 `crimson-zig dbg verify` to check that its compiled schema and replay versions
 match the owned contract.

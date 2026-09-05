@@ -58,6 +58,7 @@ pub const ReplayTickSummary = struct {
 };
 
 pub const ReplayTickCreatureSample = struct {
+    generation: i32 = 0,
     index: usize,
     type_id: i32,
     hp: f32,
@@ -82,6 +83,7 @@ pub const ReplayTickCreatureSample = struct {
 };
 
 pub const ReplayTickProjectileSample = struct {
+    generation: i32 = 0,
     index: usize,
     type_id: i32,
     angle: f32,
@@ -96,6 +98,7 @@ pub const ReplayTickProjectileSample = struct {
 };
 
 pub const ReplayTickSecondaryProjectileSample = struct {
+    generation: i32 = 0,
     index: usize,
     type_id: i32,
     angle: f32,
@@ -108,6 +111,7 @@ pub const ReplayTickSecondaryProjectileSample = struct {
 };
 
 pub const ReplayTickBonusSample = struct {
+    generation: i32 = 0,
     index: usize,
     bonus_id: i32,
     picked: bool,
@@ -294,6 +298,7 @@ fn collectCreatureSamples(
         if (!creature.active) continue;
         try rows.append(allocator, .{
             .index = index,
+            .generation = creature.generation,
             .type_id = creature.type_id,
             .hp = creature.hp,
             .pos = creature.pos,
@@ -329,6 +334,7 @@ fn collectProjectileSamples(
         if (!projectile.active) continue;
         try rows.append(allocator, .{
             .index = index,
+            .generation = projectile.generation,
             .type_id = projectile.type_id,
             .angle = projectile.angle,
             .pos = projectile.pos,
@@ -354,6 +360,7 @@ fn collectSecondaryProjectileSamples(
         if (!projectile.active) continue;
         try rows.append(allocator, .{
             .index = index,
+            .generation = projectile.generation,
             .type_id = @intFromEnum(projectile.type_id),
             .angle = projectile.angle,
             .pos = projectile.pos,
@@ -377,6 +384,7 @@ fn collectBonusSamples(
         if (bonus.bonus_id == .unused) continue;
         try rows.append(allocator, .{
             .index = index,
+            .generation = bonus.generation,
             .bonus_id = @intFromEnum(bonus.bonus_id),
             .picked = bonus.picked,
             .time_left = bonus.time_left,
@@ -414,4 +422,37 @@ test "creature diagnostic samples retain AI first-cause state" {
     try std.testing.expectEqual(@as(f32, 4.0), sample.target_offset.y);
     try std.testing.expectEqual(@as(f32, 0.25), sample.collision_timer);
     try std.testing.expectEqual(@as(f32, 0.5), sample.attack_cooldown);
+}
+
+test "entity samples retain allocation generations across unobserved reuse" {
+    const allocator = std.testing.allocator;
+    var creatures: creatures_mod.CreaturePool = .{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var bonuses: bonuses_mod.BonusPool = .{};
+    var state: state_mod.GameplayState = .{ .rng = .{ .state = 0 } };
+    for (0..2) |round| {
+        const creature = creatures.spawnInit(.{ .origin_template_id = 0, .pos = .{ .x = 0, .y = 0 }, .heading = 0, .phase_seed = 0 }).?;
+        // Force the native overwrite path: all projectile slots remain active.
+        for (&projectiles.entries) |*entry| entry.active = true;
+        for (&secondary.entries) |*entry| entry.active = true;
+        const projectile = projectiles.spawn(.{}, 0, 1, owner_ref.OwnerRef.fromLocalPlayer(0), 0, false);
+        const rocket = secondary.spawn(.{}, 0, .rocket, owner_ref.OwnerRef.fromLocalPlayer(0), 2, null, null);
+        _ = bonuses.spawnAt(.{}, .points, -1, &state, 1024);
+        const cs = try collectCreatureSamples(allocator, &creatures);
+        defer allocator.free(cs);
+        const ps = try collectProjectileSamples(allocator, &projectiles);
+        defer allocator.free(ps);
+        const ss = try collectSecondaryProjectileSamples(allocator, &secondary);
+        defer allocator.free(ss);
+        const bs = try collectBonusSamples(allocator, &bonuses);
+        defer allocator.free(bs);
+        const expected: i32 = @intCast(round + 1);
+        try std.testing.expectEqual(expected, cs[0].generation);
+        try std.testing.expectEqual(expected, ps[projectile].generation);
+        try std.testing.expectEqual(expected, ss[rocket].generation);
+        try std.testing.expectEqual(expected, bs[0].generation);
+        creatures.entries[creature].active = false;
+        bonuses.entries[0].bonus_id = .unused;
+    }
 }

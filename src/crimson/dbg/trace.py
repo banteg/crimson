@@ -415,6 +415,15 @@ def validate_tick_record(row: TickRecord, *, meta: TraceMeta | None = None) -> N
             f"tick {tick}: sim_state.gameplay.mode_id={int(channels.sim_state.gameplay.mode_id)} "
             f"does not match mode_id={int(row.mode_id)}",
         )
+    gameplay = channels.sim_state.gameplay
+    if int(row.mode_id) != int(GameMode.QUESTS):
+        if gameplay.quest_stage_major != 0 or gameplay.quest_stage_minor != 0:
+            raise TraceError(f"tick {tick}: non-Quest canonical quest stage must be 0.0")
+    elif meta is not None and (
+        gameplay.quest_stage_major != meta.source.quest_stage_major
+        or gameplay.quest_stage_minor != meta.source.quest_stage_minor
+    ):
+        raise TraceError(f"tick {tick}: canonical quest stage must match trace source")
     if meta is not None:
         source = meta.source
         source_mode_id = source.mode_id

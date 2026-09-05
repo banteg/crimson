@@ -11,6 +11,7 @@ import msgspec
 
 from grim.rand import RecordedCallerStatic
 
+from ..game_modes import GameMode
 from ..math_parity import f32
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
@@ -62,27 +63,6 @@ def _trace_f32(value: float) -> float:
     """Return the canonical f32 value stored by every CDT producer."""
 
     return float(f32(float(value)))
-
-
-class _EntityGenerationState(msgspec.Struct):
-    generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
-    active_indices: set[int] = msgspec.field(default_factory=set)
-    _seen_in_tick: set[int] = msgspec.field(default_factory=set)
-
-    def begin_tick(self) -> None:
-        self._seen_in_tick.clear()
-
-    def end_tick(self) -> None:
-        self.active_indices = set(self._seen_in_tick)
-
-    def next_generation(self, *, index: int) -> int:
-        idx = int(index)
-        if idx not in self.generation_by_index:
-            self.generation_by_index[idx] = 0
-        if idx not in self.active_indices:
-            self.generation_by_index[idx] += 1
-        self._seen_in_tick.add(idx)
-        return int(self.generation_by_index[idx])
 
 
 def _checkpoint_for_trace(checkpoint: ReplayCheckpoint) -> ReplayCheckpoint:
@@ -142,22 +122,12 @@ def _rng_stream_from_draws(draws: list[tuple[int, int, int, RecordedCallerStatic
 
 def _entity_samples_for_world(
     world: WorldState,
-    *,
-    creature_state: _EntityGenerationState,
-    projectile_state: _EntityGenerationState,
-    secondary_state: _EntityGenerationState,
-    bonus_state: _EntityGenerationState,
 ) -> EntitySamplesSnapshot:
-    creature_state.begin_tick()
-    projectile_state.begin_tick()
-    secondary_state.begin_tick()
-    bonus_state.begin_tick()
-
     creatures: list[CreatureEntitySample] = []
     for index, creature in enumerate(world.creatures.entries):
         if not creature.active:
             continue
-        generation = creature_state.next_generation(index=index)
+        generation = int(creature.generation)
         target_offset = creature.target_offset
         creatures.append(
             CreatureEntitySample(
@@ -201,7 +171,7 @@ def _entity_samples_for_world(
     for index, projectile in enumerate(world.state.projectiles.entries):
         if not projectile.active:
             continue
-        generation = projectile_state.next_generation(index=index)
+        generation = int(projectile.generation)
         projectiles.append(
             ProjectileEntitySample(
                 uid=entity_uid(pool_kind="projectile", index=index, generation=generation),
@@ -226,7 +196,7 @@ def _entity_samples_for_world(
     for index, projectile in enumerate(world.state.secondary_projectiles.entries):
         if not projectile.active:
             continue
-        generation = secondary_state.next_generation(index=index)
+        generation = int(projectile.generation)
         secondary_projectiles.append(
             SecondaryProjectileEntitySample(
                 uid=entity_uid(pool_kind="secondary_projectile", index=index, generation=generation),
@@ -249,7 +219,7 @@ def _entity_samples_for_world(
     for index, bonus in enumerate(world.state.bonus_pool.entries):
         if int(bonus.bonus_id) == 0:
             continue
-        generation = bonus_state.next_generation(index=index)
+        generation = int(bonus.generation)
         bonuses.append(
             BonusEntitySample(
                 uid=entity_uid(pool_kind="bonus", index=index, generation=generation),
@@ -265,11 +235,6 @@ def _entity_samples_for_world(
                 amount=int(bonus.amount),
             ),
         )
-
-    creature_state.end_tick()
-    projectile_state.end_tick()
-    secondary_state.end_tick()
-    bonus_state.end_tick()
 
     return EntitySamplesSnapshot(
         creatures=creatures,
@@ -449,10 +414,6 @@ def _record_replay_to_trace_python(
     sim_state_by_tick: dict[int, SimStateSnapshot] = {}
     rng_stream_by_tick: dict[int, list[RngStreamRow]] = {}
     timing_samples_by_tick: dict[int, list[TimingSampleRow]] = {}
-    creature_state = _EntityGenerationState()
-    projectile_state = _EntityGenerationState()
-    secondary_state = _EntityGenerationState()
-    bonus_state = _EntityGenerationState()
 
     driver = build_verify_playback_driver(
         replay,
@@ -480,15 +441,15 @@ def _record_replay_to_trace_python(
                 checkpoints.append(
                     msgspec.structs.replace(
                         checkpoint,
-                        elapsed_ms=int(canonical_elapsed_ms[tick_index]),
+                        elapsed_ms=(
+                            int(checkpoint.elapsed_ms)
+                            if replay.header.game_mode_id == GameMode.QUESTS
+                            else int(canonical_elapsed_ms[tick_index])
+                        ),
                     ),
                 )
             entity_samples_by_tick[tick_index] = _entity_samples_for_world(
                 world,
-                creature_state=creature_state,
-                projectile_state=projectile_state,
-                secondary_state=secondary_state,
-                bonus_state=bonus_state,
             )
             sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
 

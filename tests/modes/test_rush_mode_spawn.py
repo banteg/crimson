@@ -89,9 +89,9 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert_float_close(alien.move_speed, 2.5)
     assert_float_close(alien.reward_value, 144.0)
     assert_float_close(alien.size, 47.0)
-    expected_tint_r = float(f32(f32(1.0) * f32(1.0 / 120000.0) + 0.3))
+    expected_tint_r = 0.3000083565711975  # native PC24 fmul/fadd: 0x3e999ab2
     expected_tint_g = 1.0  # clamp01(0.3 + 10000.0)
-    expected_tint_b = float(f32(math.sin(float(f32(f32(1.0) * f32(1e-4)))) + 0.3))
+    expected_tint_b = float(f32(math.sin(float(f32(f32(1.0) * f32(1e-4)))) + f32(0.3)))
     assert alien.tint is not None
     assert_float_close(alien.tint[0], expected_tint_r)
     assert_float_close(alien.tint[1], expected_tint_g)

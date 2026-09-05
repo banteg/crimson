@@ -8,11 +8,11 @@ tags:
 # Gameplay differential capture
 
 `scripts/frida/gameplay_diff_capture.js` records the original executable using
-raw capture format 22. The host finalizes each completed run into the same
+raw capture format 26. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
-- CDT container 2, schema 15
-- CRD replay 16
+- CDT container 2, schema 18
+- CRD replay 18
 - a sibling `.rng_evidence.json` diagnostic report
 - a typed `.evidence.msgpack.zst` native-evidence sidecar
 
@@ -106,7 +106,7 @@ format.
 
 ## Tick contract
 
-Every tick has the canonical schema 15 channels:
+Every tick has the canonical schema 18 channels:
 
 - `replay_step`
 - `checkpoint`
@@ -152,7 +152,14 @@ Effective projectile hits exclude owner collisions, pickup counts are retained,
 and `sfx_count`, SFX/hit heads, and death rows are zero or empty. Their complete
 native values remain in the typed evidence sidecar. Quest elapsed time uses the
 native `quest_spawn_timeline`; native `time_played_ms` and the summed replay
-clock are retained beside it for diagnosis.
+clock are retained beside it for diagnosis. Outside Quest mode the canonical
+quest stage is `0.0`, while the native stage globals remain in evidence.
+
+Entity generations are counted at native allocation hooks, including reuse
+between tick snapshots. The creature allocator, both projectile spawners, and
+both bonus spawners are required hooks. Sentinel allocation failures do not
+advance generations. Session-global tick indices remain contiguous across run
+boundaries; the finalizer rejects both gaps and overlaps.
 
 ## RNG evidence
 
@@ -190,7 +197,7 @@ Each completed run produces a matching artifact set:
 The four files publish as one rollback-safe bundle. If any replacement fails,
 the previous complete bundle is restored and the raw JSONL is retained.
 
-The rich sidecar is evidence format 2: one zstd frame containing little-endian
+The rich sidecar is evidence format 3: one zstd frame containing little-endian
 u32-length-prefixed MessagePack `header`, `tick`, and `footer` rows. Its header
 binds the bundle to the session/module/pointer hashes and the raw/CDT/CRD
 SHA256 values. Missing or unknown typed fields, trailing bytes, and concatenated
@@ -225,6 +232,6 @@ It then writes versioned provenance to `manifest.json`. A stale or inconsistent
 pair aborts the import instead of being skipped.
 
 The importer and fixture tests accept only the current capture/CDT/CRD contract.
-Old checked-in recordings should be deleted and replaced with a fresh format 22
+Old checked-in recordings should be deleted and replaced with a fresh format 26
 capture. Fixture parity is a strict diff assertion; known mismatches are not
 hidden behind a blanket `xfail`.

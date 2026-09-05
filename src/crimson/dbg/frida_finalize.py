@@ -61,7 +61,7 @@ _EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-FRIDA_CAPTURE_FORMAT_VERSION = 25
+FRIDA_CAPTURE_FORMAT_VERSION = 26
 FRIDA_EVIDENCE_FORMAT_VERSION = 3
 FRIDA_RUNTIME_VERSION = "17.15.4"
 _EVIDENCE_ZSTD_LEVEL = 10
@@ -1085,15 +1085,17 @@ def _validate_tick_channels(
         raise FridaFinalizeError(
             f"{field}.sim_state.gameplay.mode_id={int(gameplay.mode_id)} does not match tick.mode_id {int(mode_id)}",
         )
-    if int(gameplay.quest_stage_major) != int(quest_stage_major):
+    expected_major = int(quest_stage_major) if mode_id == _GAME_MODE_QUESTS else 0
+    expected_minor = int(quest_stage_minor) if mode_id == _GAME_MODE_QUESTS else 0
+    if int(gameplay.quest_stage_major) != expected_major:
         raise FridaFinalizeError(
             f"{field}.sim_state.gameplay.quest_stage_major={int(gameplay.quest_stage_major)} "
-            f"does not match tick.quest_stage_major {int(quest_stage_major)}",
+            f"does not match canonical quest stage {expected_major}",
         )
-    if int(gameplay.quest_stage_minor) != int(quest_stage_minor):
+    if int(gameplay.quest_stage_minor) != expected_minor:
         raise FridaFinalizeError(
             f"{field}.sim_state.gameplay.quest_stage_minor={int(gameplay.quest_stage_minor)} "
-            f"does not match tick.quest_stage_minor {int(quest_stage_minor)}",
+            f"does not match canonical quest stage {expected_minor}",
         )
     timing_samples = list(channels.timing_samples)
     if len(timing_samples) <= 0:
@@ -1705,6 +1707,7 @@ def finalize_frida_jsonl_to_traces(
     session_start: _SessionStartRow | None = None
     active_run: _OpenRun | None = None
     closed_runs: list[_OpenRun] = []
+    next_session_tick: int | None = None
     seen_run_ids: set[int] = set()
 
     temp_dir_obj = TemporaryDirectory(prefix=".crimson-frida-finalize-", dir=output_root)
@@ -1767,6 +1770,11 @@ def finalize_frida_jsonl_to_traces(
                     case _RunStartRow() as run_start:
                         if active_run is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_start while run is active")
+                        if next_session_tick is not None and int(run_start.global_tick_index) != next_session_tick:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] run_start.global_tick_index={run_start.global_tick_index} "
+                                f"does not match expected session tick {next_session_tick}",
+                            )
                         if str(run_start.reason) not in _RUN_START_REASONS:
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].reason must be one of {sorted(_RUN_START_REASONS)!r}",
@@ -1951,6 +1959,7 @@ def finalize_frida_jsonl_to_traces(
                         active_run.evidence_count += 1
                         active_run.next_local_tick += 1
                         active_run.next_global_tick += 1
+                        next_session_tick = active_run.next_global_tick
                         active_run.tick_count += 1
                         global_tick = int(tick_row.global_tick_index)
                         if active_run.global_tick_first is None:

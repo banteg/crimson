@@ -59,6 +59,7 @@ inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
 }
 
 pub const BonusEntry = struct {
+    generation: i32 = 0,
     bonus_id: BonusId = .unused,
     picked: bool = false,
     time_left: f32 = 0.0,
@@ -198,6 +199,7 @@ pub const BonusPool = struct {
         const slot = allocSlotOrSentinel(self);
 
         var entry = slotPtr(self, slot);
+        entry.generation += 1;
         entry.bonus_id = bonus_id;
         entry.picked = false;
         entry.pos = clamped_pos;
@@ -216,6 +218,7 @@ pub const BonusPool = struct {
         amount: i32,
     ) *BonusEntry {
         const entry = &self.entries[index];
+        entry.generation += 1;
         entry.bonus_id = bonus_id;
         entry.time_left = 100.0;
         entry.time_max = 100.0;
@@ -1288,7 +1291,8 @@ const quest_unlock_weapon_by_index = [_]i32{
 
 fn allocSlot(self: *BonusPool) ?usize {
     for (self.entries, 0..) |entry, idx| {
-        if (isEmpty(entry)) return idx;
+        // Native bonus_alloc_slot tests only the id; linger fields may be stale.
+        if (entry.bonus_id == .unused) return idx;
     }
     return null;
 }
@@ -1309,7 +1313,7 @@ fn slotPtr(self: *BonusPool, slot: AllocSlot) *BonusEntry {
 
 fn clearEntry(self: *BonusPool, entry: *BonusEntry) void {
     _ = self;
-    entry.* = .{};
+    entry.* = .{ .generation = entry.generation };
 }
 
 fn countMatches(self: *const BonusPool, bonus_id: BonusId) usize {
@@ -1352,6 +1356,7 @@ fn spawnAtPos(
     }
 
     var entry = slotPtr(self, slot);
+    entry.generation += 1;
     entry.bonus_id = bonus_id;
     entry.picked = false;
     entry.pos = pos;

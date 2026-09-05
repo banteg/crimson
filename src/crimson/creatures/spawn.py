@@ -1665,9 +1665,11 @@ def tick_rush_mode_spawns(
         cooldown = f32(cooldown + 250.0)
 
         t = f32(float(int(float(survival_elapsed_ms) + 1.0)))
-        tint_r = clamp01(f32(t * f32(1.0 / 120000.0) + 0.3))
-        tint_g = clamp01(f32(t * 10000.0 + 0.3))
-        tint_b = clamp01(f32(math.sin(float(f32(t * _NATIVE_RUSH_TINT_SIN_SCALE))) + 0.3))
+        # 0x407336..0x407366: separate x87 PC=24 multiplies/adds,
+        # with the f32 0.3 constant at 0x46f258 (0x3e99999a).
+        tint_r = clamp01(x87_pc24_add(x87_pc24_mul(t, f32(1.0 / 120000.0)), f32(0.3)))
+        tint_g = clamp01(x87_pc24_add(x87_pc24_mul(t, 10000.0), f32(0.3)))
+        tint_b = clamp01(x87_pc24_add(math.sin(float(x87_pc24_mul(t, _NATIVE_RUSH_TINT_SIN_SCALE))), f32(0.3)))
         tint_a = 1.0
         tint = (tint_r, tint_g, tint_b, tint_a)
 

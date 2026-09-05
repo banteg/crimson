@@ -61,6 +61,7 @@ pub fn runDbgFocus(
                 request.actual_trace,
                 request.tick_index.?,
             ) catch |err| return buildFocusFailedOutput(allocator, traceErrorDetail(err));
+            defer report.deinit(allocator);
             return buildFocusOutput(allocator, request, report);
         },
         .help => return buildUsageOutput(allocator, 0, ""),

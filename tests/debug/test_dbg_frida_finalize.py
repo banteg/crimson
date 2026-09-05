@@ -257,8 +257,8 @@ def _sim_state_stub(
     return {
         "gameplay": {
             "mode_id": int(mode_id),
-            "quest_stage_major": int(quest_stage_major),
-            "quest_stage_minor": int(quest_stage_minor),
+            "quest_stage_major": int(quest_stage_major) if mode_id == 3 else 0,
+            "quest_stage_minor": int(quest_stage_minor) if mode_id == 3 else 0,
             "perk_pending_count": 0,
             "perk_choices_dirty": True,
             "bonus_timers": {
@@ -1157,6 +1157,11 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
 
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
     assert len(result.traces) == 3
+    for trace in result.traces:
+        meta, ticks, _ = load_trace(trace.out_path)
+        gameplay = ticks[0].channels.sim_state.gameplay
+        expected = (1, 5) if meta.source.mode_id == 3 else (0, 0)
+        assert (gameplay.quest_stage_major, gameplay.quest_stage_minor) == expected
     names = sorted(trace.out_path.name for trace in result.traces)
     assert names == [
         "capture.quest_1_5.run1.cdt",
@@ -2535,3 +2540,27 @@ def test_finalize_frida_jsonl_to_traces_rolls_back_bundle_publish(
     assert raw_path.is_file()
     for name in artifact_names:
         assert (output_dir / name).read_bytes() == b"previous-" + name.encode()
+
+
+@pytest.mark.parametrize("second_start", [0, 2])
+def test_finalize_rejects_session_index_overlap_and_gap(tmp_path: Path, second_start: int) -> None:
+    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))
+    second = _single_tick_rows(
+        run_start=_run_start_row(run_id=2, mode_id=1, global_tick_index=second_start),
+        tick_overrides={"run_id": 2, "global_tick_index": second_start},
+        run_end=_run_end_row(run_id=2, mode_id=1, ticks_written=1, global_tick_index=second_start),
+    )
+    path = _write_jsonl(tmp_path / "bad.jsonl", rows + second[1:])
+    with pytest.raises(FridaFinalizeError, match="expected session tick"):
+        finalize_frida_jsonl_to_traces(path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_rejects_stale_canonical_stage(tmp_path: Path) -> None:
+    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))
+    channels = cast(dict[str, object], rows[2]["channels"])
+    sim_state = cast(dict[str, object], channels["sim_state"])
+    gameplay = cast(dict[str, object], sim_state["gameplay"])
+    gameplay["quest_stage_major"] = 1
+    path = _write_jsonl(tmp_path / "bad.jsonl", rows)
+    with pytest.raises(FridaFinalizeError, match="canonical quest stage"):
+        finalize_frida_jsonl_to_traces(path, output_dir=tmp_path / "out", delete_raw=False)

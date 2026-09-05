@@ -230,6 +230,7 @@ def _travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
 
 
 class CreatureState(msgspec.Struct):
+    generation: int = 0
     # Core identity/alive flags.
     active: bool = False
     type_id: CreatureTypeId = CreatureTypeId.ZOMBIE
@@ -672,6 +673,7 @@ class CreaturePool:
     def _alloc_slot(self) -> int | None:
         for i, entry in enumerate(self._entries):
             if not entry.active:
+                entry.generation += 1
                 return i
         return None
 
@@ -1793,7 +1795,7 @@ class CreaturePool:
                 # subsequent struct copy from the parent immediately overwrites; only the
                 # draw itself matters for the stream.
                 rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)
-                child = msgspec.structs.replace(creature)
+                child = msgspec.structs.replace(creature, generation=self._entries[child_idx].generation)
                 child.phase_seed = int(rng.rand_tagged(phase_seed_caller)) & 0xFF
                 # Native stores `heading +- 1.5707964f` unwrapped and leaves
                 # `target_heading` as the parent's stale copy.

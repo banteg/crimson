@@ -144,8 +144,8 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
         sim_state=SimStateSnapshot(
             gameplay=SnapshotGameplay(
                 mode_id=1,
-                quest_stage_major=-1,
-                quest_stage_minor=-1,
+                quest_stage_major=0,
+                quest_stage_minor=0,
                 perk_pending_count=0,
                 perk_choices_dirty=False,
                 bonus_timers=SnapshotBonusTimers(

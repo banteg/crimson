@@ -18,7 +18,7 @@ workflow details, see
 ## Versioning
 
 - `trace_format_version = 2`: container and envelope
-- `trace_schema_version = 15`: typed tick payloads
+- `trace_schema_version = 18`: typed tick payloads
 
 The reader requires both exact versions. There is no compatibility path for an
 older CDT because traces are cheap to record again.
@@ -92,7 +92,16 @@ represent a selected window and therefore need not start at zero. The health
 report exposes gaps so a user can decide whether the selected evidence is
 suitable for a comparison.
 
-## Channel contract (schema 15)
+`elapsed_ms` is the Quest simulation spawn timeline in Quest mode, including
+time scaling and completion pauses. Other modes use the summed unscaled replay
+clock. `dt_ms_i32` always remains the unscaled frame delta. Outside Quest mode,
+canonical quest stage fields are `0.0`; stale native globals belong in evidence.
+
+Schema 18 changes these semantics and allocation generations. Earlier traces
+are rejected and must be regenerated; rewriting their version number cannot
+recover missing allocation events or correct their clocks.
+
+## Channel contract (schema 18)
 
 Every tick requires all six channels:
 
@@ -145,7 +154,13 @@ integration:
 
 Creature, projectile, secondary-projectile, and bonus samples use stable UIDs.
 UIDs must be unique within each entity kind for a tick, allowing `dbg entity`
-to follow slot reuse without confusing two lifetimes.
+to follow slot reuse without confusing two lifetimes. Generations advance on
+successful allocations, including an active projectile slot being overwritten
+or a slot being retired and reused between snapshots. Failed allocations to
+native sentinels do not advance a real slot. Frida resets the counters at run
+bootstrap, before any first-tick allocation; replay pools start a new epoch at
+reset. Generation zero denotes a directly seeded implementation state without
+an observed allocation. Generation overflow is an error, never UID reuse.
 
 ### `rng_stream`
 
@@ -175,9 +190,9 @@ enclosing `dt_ms_i32`, and its `mode_fn` identifies
 
 The intended comparison set is:
 
-1. Frida capture format 22 finalized into CDT v2/schema 15.
-2. Python CRD v16 replay recording.
-3. Zig CRD v16 replay recording.
+1. Frida capture format 26 finalized into CDT v2/schema 18.
+2. Python CRD v18 replay recording.
+3. Zig CRD v18 replay recording.
 
 All emit the same durable channel semantics. A producer may keep additional
 diagnostics before finalization, but it may not add aliases or optional channel

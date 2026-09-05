@@ -823,9 +823,10 @@ pub fn tickRushModeSpawnsBatch(
         const t_i32: i32 = @intFromFloat(survival_elapsed_ms + 1.0);
         const t: f32 = @floatFromInt(t_i32);
         const tint = [4]f32{
-            clamp01(narrowF32(t * (1.0 / 120000.0) + 0.3)),
-            clamp01(narrowF32(t * 10000.0 + 0.3)),
-            clamp01(narrowF32(std.math.sin(narrowF32(t * rush_tint_sin_scale)) + 0.3)),
+            // Native 0x407336..0x407366: separate PC=24 arithmetic and f32 constants.
+            clamp01(native_math.pc24Add(native_math.pc24Mul(t, @as(f32, 1.0 / 120000.0)), @as(f32, 0.3))),
+            clamp01(native_math.pc24Add(native_math.pc24Mul(t, @as(f32, 10000.0)), @as(f32, 0.3))),
+            clamp01(native_math.pc24Add(std.math.sin(@as(f64, native_math.pc24Mul(t, rush_tint_sin_scale))), @as(f32, 0.3))),
             1.0,
         };
 
