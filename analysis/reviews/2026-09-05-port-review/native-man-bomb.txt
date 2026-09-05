@@ -1,0 +1,29 @@
+player_update @ 0x004136b0: Man Bomb angle construction, live Binary Ninja disassembly
+
+00413917  f6 c3 01         test    bl, 0x1
+0041391a  55               push    ebp
+0041391b  74 19            je      0x413936
+0041391d  6a 15            push    0x15
+0041391f  e8 22 de 04 00   call    0x461746
+00413924  99               cdq     
+00413925  b9 32 00 00 00   mov     ecx, 0x32
+0041392a  f7 f9            idiv    ecx
+0041392c  89 54 24 24      mov     dword [esp+0x24], edx
+00413930  db 44 24 24      fild    st0, dword [esp+0x24]
+00413934  eb 17            jmp     0x41394d
+00413936  6a 16            push    0x16
+00413938  e8 09 de 04 00   call    0x461746
+0041393d  99               cdq     
+0041393e  b9 32 00 00 00   mov     ecx, 0x32
+00413943  f7 f9            idiv    ecx
+00413945  89 54 24 24      mov     dword [esp+0x24], edx
+00413949  db 44 24 24      fild    st0, dword [esp+0x24]
+0041394d  d8 0d 00 f3 46 00 fmul    st0, dword [0x46f300]
+00413953  db 44 24 28      fild    st0, dword [esp+0x28]
+00413957  51               push    ecx
+00413958  d8 0d 38 f5 46 00 fmul    st0, dword [0x46f538]
+0041395e  de c1            faddp   st1, st0
+00413960  d8 25 34 f5 46 00 fsub    st0, dword [0x46f534]
+00413966  d9 1c 24         fstp    dword [esp], st0
+00413969  56               push    esi
+0041396a  e8 d1 ca 00 00   call    0x420440

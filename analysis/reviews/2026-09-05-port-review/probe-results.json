@@ -1,0 +1,171 @@
+{
+  "input_field_loss": {
+    "reload_down": [
+      true,
+      false
+    ],
+    "resolved_move_mode": [
+      "1",
+      "2"
+    ],
+    "resolved_aim_scheme": [
+      "1",
+      "0"
+    ]
+  },
+  "zero_tick_edge_loss": {
+    "pressed_in_first_render_frame": true,
+    "first_sim_tick_fire_pressed": false
+  },
+  "man_bomb_pc24": [
+    {
+      "index": 5,
+      "port": 3.6769907474517822,
+      "native_expression": 3.6769909858703613,
+      "port_bits": "0x406b53d1",
+      "native_bits": "0x406b53d2"
+    },
+    {
+      "index": 7,
+      "port": 5.247786998748779,
+      "native_expression": 5.2477874755859375,
+      "port_bits": "0x40a7eddf",
+      "native_bits": "0x40a7ede0"
+    }
+  ],
+  "freeze_same_tick_kill": {
+    "current": {
+      "deaths": 1,
+      "freeze_pickups": 1,
+      "freeze_angle_draws": 0,
+      "all_rng_draws": 119,
+      "corpse_active": false
+    },
+    "without_tick_start_filter": {
+      "deaths": 1,
+      "freeze_pickups": 1,
+      "freeze_angle_draws": 9,
+      "all_rng_draws": 212,
+      "corpse_active": false
+    }
+  },
+  "quest_reaction_batching": {
+    "810.0": {
+      "at_each_tick": [
+        [
+          true,
+          false
+        ],
+        [
+          false,
+          false
+        ]
+      ],
+      "after_batch": [
+        [
+          false,
+          false
+        ],
+        [
+          false,
+          false
+        ]
+      ]
+    },
+    "2001.0": {
+      "at_each_tick": [
+        [
+          false,
+          true
+        ],
+        [
+          false,
+          false
+        ]
+      ],
+      "after_batch": [
+        [
+          false,
+          false
+        ],
+        [
+          false,
+          false
+        ]
+      ]
+    },
+    "790.0": {
+      "at_each_tick": [
+        [
+          false,
+          false
+        ],
+        [
+          true,
+          false
+        ]
+      ],
+      "after_batch": [
+        [
+          true,
+          false
+        ],
+        [
+          true,
+          false
+        ]
+      ]
+    }
+  },
+  "rollback_local_history": {
+    "original_local_inputs": [
+      [
+        0.2,
+        0.0,
+        100.0,
+        100.0,
+        0
+      ],
+      [
+        0.30000000000000004,
+        0.0,
+        100.0,
+        100.0,
+        0
+      ],
+      [
+        0.4,
+        0.0,
+        100.0,
+        100.0,
+        0
+      ]
+    ],
+    "rebuilt_local_inputs": [
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0
+      ],
+      [
+        0.4,
+        0.0,
+        100.0,
+        100.0,
+        0
+      ]
+    ],
+    "fourth_packet_tick_indices": [
+      3
+    ]
+  }
+}

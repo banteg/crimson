@@ -1,0 +1,41 @@
+bonus_apply @ 0x00409890: Freeze corpse loop, live Binary Ninja disassembly
+
+00409bbb  8a 46 ec         mov     al, byte [esi-0x14]
+00409bbe  84 c0            test    al, al
+00409bc0  74 6c            je      0x409c2e
+00409bc2  d9 46 10         fld     st0, dword [esi+0x10]
+00409bc5  d8 1d 28 f2 46 00 fcomp   st0, dword [0x46f228]
+00409bcb  df e0            fnstsw  ax
+00409bcd  f6 c4 41         test    ah, 0x41
+00409bd0  74 5c            je      0x409c2e
+00409bd2  bf 08 00 00 00   mov     edi, 0x8
+00409bd7  e8 6a 7b 05 00   call    0x461746
+00409bdc  99               cdq
+00409bdd  b9 64 02 00 00   mov     ecx, 0x264
+00409be2  f7 f9            idiv    ecx
+00409be4  51               push    ecx
+00409be5  89 54 24 28      mov     dword [esp+0x28], edx
+00409be9  db 44 24 28      fild    st0, dword [esp+0x28]
+00409bed  d8 0d 00 f3 46 00 fmul    st0, dword [0x46f300]
+00409bf3  d9 1c 24         fstp    dword [esp], st0
+00409bf6  56               push    esi
+00409bf7  e8 84 50 02 00   call    0x42ec80
+00409bfc  83 c4 08         add     esp, 0x8
+00409bff  4f               dec     edi
+00409c00  75 d5            jne     0x409bd7
+00409c02  e8 3f 7b 05 00   call    0x461746
+00409c07  99               cdq
+00409c08  b9 64 02 00 00   mov     ecx, 0x264
+00409c0d  f7 f9            idiv    ecx
+00409c0f  51               push    ecx
+00409c10  89 54 24 28      mov     dword [esp+0x28], edx
+00409c14  db 44 24 28      fild    st0, dword [esp+0x28]
+00409c18  d8 0d 00 f3 46 00 fmul    st0, dword [0x46f300]
+00409c1e  d9 1c 24         fstp    dword [esp], st0
+00409c21  56               push    esi
+00409c22  e8 d9 51 02 00   call    0x42ee00
+00409c27  83 c4 08         add     esp, 0x8
+00409c2a  c6 46 ec 00      mov     byte [esi-0x14], 0x0
+00409c2e  81 c6 98 00 00 00 add     esi, 0x98
+00409c34  81 fe 4c a3 4a 00 cmp     esi, 0x4aa34c
+00409c3a  0f 8c 7b ff ff ff jl      0x409bbb

@@ -1,0 +1,25 @@
+{
+  "reviewed_commit": "9ec5ea665f275bd075ebaea9af819c6574058d6d",
+  "date": "2026-09-05",
+  "native_database": "analysis/binary_ninja/crimsonland.exe.bndb",
+  "evidence_type": "live static instruction inspection; original executable was not run",
+  "probe_results": "probe-results.json",
+  "files": {
+    "probes.py": {
+      "bytes": 7907,
+      "sha256": "51855d155f6835f3a77e82f01b56bdda5c822de46cf0a0af3b691464578907a7"
+    },
+    "probe-results.json": {
+      "bytes": 2656,
+      "sha256": "c4cab38bbdf27700989d300a09984f9cbd9bb0ab5ffc0be4cdfb988cc114e08d"
+    },
+    "native-freeze.txt": {
+      "bytes": 1883,
+      "sha256": "c7251fb27c2d9da4ccb397fb70e37406b13a06145d1ab0d4dcb1338ad49186dc"
+    },
+    "native-man-bomb.txt": {
+      "bytes": 1343,
+      "sha256": "aa13a6b5a7894ef287a39ea4e32baa55ee84bba50bcff3f9242c457bcd640a63"
+    }
+  }
+}
