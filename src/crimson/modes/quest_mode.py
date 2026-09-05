@@ -20,18 +20,12 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import UNI_NUM_MASK
-from ..persistence.save_status import GameStatus, GameStatusData
+from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.level import QuestLevel
-from ..quests.runtime import build_quest_spawn_table
-from ..quests.status import tracked_quest_games_counter_index
-from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..replay import Replay, ReplayHeader, ReplayRecorder
-from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..rng_caller_static import RngCallerStatic
-from ..sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
-from ..sim.session_builders import build_quest_session
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState
+from ..quests.types import QuestDefinition
+from ..replay import Replay, ReplayRecorder
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSessionRuntime, QuestSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.quest_run import (
@@ -130,25 +124,6 @@ class QuestMode(BaseGameplayMode):
         self._grim_mono = None
         self._sim_session = None
         super().close()
-
-    def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> DeterministicSession:
-        quest_def = self._quest_def
-        session, quest_spawn_state = build_quest_session(
-            world=self.sim_world.world_state,
-            world_size=float(self.world_size),
-            damage_scale_by_type=self.sim_world.damage_scale_by_type,
-            detail_preset=5,
-            violence_disabled=0,
-            game_tune_started=bool(self.sim_world.game_tune_started),
-            demo_mode_active=bool(self.demo_mode_active),
-            apply_world_dt_steps=True,
-            finalize_post_render_lifecycle=True,
-            spawn_entries=tuple(spawn_entries),
-            quest_level=(None if quest_def is None else quest_def.level),
-            start_weapon_id=(None if quest_def is None else quest_def.start_weapon_id),
-        )
-        self._quest_spawn_state = quest_spawn_state
-        return session
 
     def _try_open_perk_menu(self) -> None:
         self._open_perk_menu_ui(
@@ -297,76 +272,16 @@ class QuestMode(BaseGameplayMode):
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.bind_status(status)
-        bound_status = self.state.status
-        generic_unlock_index = int(bound_status.quest_unlock_index) if bound_status is not None else 0
-        advance_unlock_terrain(
-            self.state.rng,
-            unlock_index=int(generic_unlock_index),
-            width=int(self.world_size),
-            height=int(self.world_size),
-        )
-        # Native `quest_start_selected()` burns one `crt_rand()` for
-        # `highscore_record_random_tag` before quest terrain and spawn setup.
-        highscore_rand = self.state.rng.rand_tagged(
-            RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG,
-        )
-        self._quest_highscore_random_tag = int(highscore_rand) & UNI_NUM_MASK
-        quest_terrain = advance_explicit_terrain(
-            self.state.rng,
-            terrain_slots=quest.terrain_slots,
-            width=int(self.world_size),
-            height=int(self.world_size),
-        )
-        self.apply_terrain_setup(
-            terrain_slots=quest_terrain.terrain_slots,
-            seed=int(quest_terrain.terrain_seed),
-        )
-
-        ctx = QuestContext(
-            width=int(self.world_size),
-            height=int(self.world_size),
-            player_count=len(self.sim_world.players),
-        )
-        entries = build_quest_spawn_table(
-            quest,
-            ctx,
-            rng=self.state.rng,
-            hardcore=hardcore_flag,
-            full_version=not self.demo_mode_active,
-        )
-        self.sim_world.state.rng.srand(int(self.state.rng.state))
-        total_spawn_count = sum(int(entry.count) for entry in entries)
-        self._quest_def = quest
+        prepared = self._initialize_run(GameMode.QUESTS, quest_level=quest.level)
+        self._sim_session = prepared.session
+        mode_runtime = prepared.session.mode_runtime
+        assert isinstance(mode_runtime, QuestSessionRuntime)
+        self._quest_spawn_state = mode_runtime.spawn
+        self._quest_highscore_random_tag = prepared.quest_highscore_random_tag & UNI_NUM_MASK
+        self._quest_def = prepared.quest
         self._quest_level = quest.level
-        self._quest_total_spawn_count = int(total_spawn_count)
+        self._quest_total_spawn_count = sum(entry.count for entry in mode_runtime.spawn.spawn_entries)
         self._reset_gameplay_frame_clock()
-        self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
-
-        replay_status = GameStatusData() if status is None else status.as_data()
-        self._replay_recorder = ReplayRecorder(
-            ReplayHeader(
-                game_mode_id=GameMode.QUESTS,
-                seed=int(self._run_reset_seed),
-                quest_level=quest.level,
-                tick_rate=int(self._gameplay_tick_rate()),
-                quest_fail_retry_count=int(self.quest_fail_retry_count),
-                hardcore=bool(self.hardcore),
-                preserve_bugs=bool(self.state.preserve_bugs),
-                detail_preset=self.config.display.detail_preset,
-                violence_disabled=self.config.display.violence_disabled,
-                world_size=float(self.world_size),
-                player_count=len(self.sim_world.players),
-                status=replay_status,
-            ),
-        )
-        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
-
-        if status is not None:
-            idx = tracked_quest_games_counter_index(quest.level)
-            if idx is not None:
-                status.increment_quest_play_count(idx)
 
     def _handle_input(self) -> None:
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):

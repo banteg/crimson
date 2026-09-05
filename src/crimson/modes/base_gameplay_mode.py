@@ -26,17 +26,20 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..perks.selection import perk_selection_open_choices
 from ..persistence.highscores import HighScoreRecord
+from ..persistence.save_status import GameStatusData
+from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
-from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
+from ..replay import Replay, ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, dump_replay
 from ..replay.checkpoints import (
-    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
-)
-from ..replay.checkpoints import (
+    DEFAULT_CHECKPOINT_SAMPLE_RATE,
     ReplayCheckpoint,
     ReplayCheckpoints,
     build_checkpoint,
     default_checkpoints_path,
     dump_checkpoints_file,
+)
+from ..replay.checkpoints import (
+    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
 from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
@@ -59,6 +62,8 @@ from ..sim.input_providers import (
     PerkMenuOpenCommand,
     PerkPickCommand,
 )
+from ..sim.run_init import PreparedRun, initialize_run
+from ..sim.run_spec import RunSpec
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickRunner
 from ..terrain_slots import TerrainSlotTriplet
@@ -74,7 +79,6 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureDeath, CreaturePool
     from ..game.types import GameState
     from ..persistence.save_status import GameStatus
-    from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents
 
@@ -669,6 +673,43 @@ class BaseGameplayMode:
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
+
+    def _initialize_run(
+        self,
+        game_mode: GameMode,
+        *,
+        quest_level: QuestLevel | None = None,
+        dictionary_words: tuple[str, ...] = (),
+        highscore_names: tuple[str, ...] = (),
+    ) -> PreparedRun:
+        status = self.state.status
+        spec = RunSpec(
+            game_mode_id=game_mode,
+            seed=self._run_reset_seed,
+            quest_level=quest_level,
+            tick_rate=self._gameplay_tick_rate(),
+            quest_fail_retry_count=self.quest_fail_retry_count,
+            hardcore=self.hardcore,
+            preserve_bugs=self.state.preserve_bugs,
+            detail_preset=self._deterministic_detail_preset(),
+            violence_disabled=self._deterministic_violence_disabled(),
+            world_size=self.world_size,
+            player_count=self._runtime_player_count(),
+            status=GameStatusData() if status is None else status.as_data(),
+            typo_dictionary_words=dictionary_words,
+            typo_highscore_names=highscore_names,
+        )
+        prepared = initialize_run(spec, status=status, demo_mode_active=self.demo_mode_active)
+        self.sim_world.load_world_state(prepared.session.world)
+        self._status_sim = prepared.session.world.state.status
+        self._bind_world()
+        self._local_input.reset(players=self.sim_world.players)
+        self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
+        self._replay_recorder = ReplayRecorder(msgspec.convert(spec, type=ReplayHeader, from_attributes=True))
+        self._replay_checkpoints_sample_rate = DEFAULT_CHECKPOINT_SAMPLE_RATE
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
+        return prepared
 
     def resume(self) -> None:
         self._action = None

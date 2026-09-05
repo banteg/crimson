@@ -12,6 +12,9 @@ from typing import Any, BinaryIO, Protocol
 import msgspec
 import zstandard as zstd
 
+from crimson.sim.run_spec import CreatureSlotResidue
+from grim.geom import Vec2
+
 from ..game_modes import GameMode
 from ..persistence.save_status import (
     QUEST_PLAY_COUNT,
@@ -22,7 +25,7 @@ from ..persistence.save_status import (
 from ..quests.level import QuestLevel
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
-from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayHeader, ReplayTick, ReplayVec2, quantize_f32
+from ..replay.types import Replay, ReplayHeader, ReplayTick, quantize_f32
 from ..sim.input_providers import (
     GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
@@ -527,7 +530,7 @@ class _OpenRun(msgspec.Struct):
     detail_preset: int
     violence_disabled: int
     world_size: float
-    pool_residue: tuple[ReplayCreatureSlotResidue, ...]
+    pool_residue: tuple[CreatureSlotResidue, ...]
     tick_count: int = 0
     next_local_tick: int = 0
     replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
@@ -583,18 +586,18 @@ def _residue_u8(value: int | None, *, field: str) -> int:
     return integer
 
 
-def _residue_vec2(row: _CaptureVec2Row, *, field: str) -> ReplayVec2:
-    return ReplayVec2(
+def _residue_vec2(row: _CaptureVec2Row, *, field: str) -> Vec2:
+    return Vec2(
         x=_residue_float(row.x, field=f"{field}.x"),
         y=_residue_float(row.y, field=f"{field}.y"),
     )
 
 
-def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tuple[ReplayCreatureSlotResidue, ...]:
+def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tuple[CreatureSlotResidue, ...]:
     rows = run_start.pool_residue
     if not rows:
         raise FridaFinalizeError(f"{field}.pool_residue must be non-empty")
-    out: list[ReplayCreatureSlotResidue] = []
+    out: list[CreatureSlotResidue] = []
     for i, row in enumerate(rows):
         slot_field = f"{field}.pool_residue[{i}]"
         if int(row.index) != i:
@@ -604,7 +607,7 @@ def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tupl
                 f"{slot_field} is active at run start; creature_reset_all must have run before the latch",
             )
         out.append(
-            ReplayCreatureSlotResidue(
+            CreatureSlotResidue(
                 index=i,
                 phase_seed=_residue_int(row.phase_seed, field=f"{slot_field}.phase_seed"),
                 state_flag=_residue_u8(row.state_flag, field=f"{slot_field}.state_flag"),

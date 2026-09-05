@@ -463,16 +463,23 @@ class DeterministicSession(msgspec.Struct):
         prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
         post_apply_sfx = list(prelude_post_apply_sfx or ())
+        tick_commands: list[GameCommand] = []
         for command in commands or ():
-            sfx = self._apply_command(command, dt=dt)
-            if sfx is not None:
-                post_apply_sfx.append(sfx)
+            match command:
+                case PerkPickCommand() | PerkMenuOpenCommand():
+                    sfx = self._apply_command(command, dt=dt)
+                    if sfx is not None:
+                        post_apply_sfx.append(sfx)
+                case _:
+                    tick_commands.append(command)
 
-        # Port recordings place these same commands in the between-tick
-        # prelude. Derive timing only after every command has taken effect.
+        # Perk commands belong to the between-tick prelude. Typ-o input belongs
+        # inside the tick, after its loadout enforcement (and reload sound).
         timing = self.timing_for_dt(dt)
         mode_runtime = self.mode_runtime
         mode_runtime.before_step()
+        for command in tick_commands:
+            self._apply_command(command, dt=dt)
 
         tick_inputs = inputs
         if tick_inputs is not None:

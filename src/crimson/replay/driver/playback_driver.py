@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from contextlib import contextmanager
-from pathlib import Path
 
 import msgspec
 
@@ -10,39 +9,28 @@ from crimson.quests.level import QuestLevel
 from grim.rand import CallerStatic, CrtRand, RecordedCallerStatic, RngTraceSink
 
 from ...game_modes import GameMode
-from ...persistence.save_status import GameStatus
 from ...quests import quest_by_level
-from ...quests.runtime import build_quest_spawn_table
-from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
+from ...quests.types import QuestDefinition, SpawnEntry
 from ...replay import Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.input_codec import unpack_tick_inputs
-from ...rng_caller_static import RngCallerStatic
-from ...sim.bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
+from ...sim.bootstrap import TerrainSetup
 from ...sim.hooks import TickResult
 from ...sim.input_providers import GameCommand, ResolvedTick
-from ...sim.session_builders import (
-    build_quest_session,
-    build_rush_session,
-    build_survival_session,
-    build_tutorial_session,
-    build_typo_session,
-)
+from ...sim.run_init import initialize_run
+from ...sim.run_spec import RunSpec
 from ...sim.sessions import (
-    DeterministicSession,
+    QuestSessionRuntime,
     QuestSpawnState,
-    enforce_rush_loadout,
 )
 from ...sim.world_state import WorldState
 from ...typo.state import typo_shot_counts
 from ...weapons import WeaponId
-from ...world.sim_world_state import apply_creature_pool_residue, reset_world_players
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
     RunResult,
-    build_damage_scale_by_type,
     player0_most_used_weapon_id,
     player0_shots,
 )
@@ -140,15 +128,6 @@ class PlaybackDriver:
         self.max_ticks = max_ticks
         self.trace_rng = bool(trace_rng)
         self.strict_rng_trace = bool(strict_rng_trace)
-        self._provided_world_size = float(world_size) if world_size is not None else None
-        self._quest_spawn_entries = tuple(spawn_entries) if spawn_entries is not None else None
-        self._quest_start_weapon_id = start_weapon_id
-        self._quest_spawn_state: QuestSpawnState | None = None
-        self._quest_definition: QuestDefinition | None = None
-        self._quest_total_spawn_count = 0
-        self._terrain_setup: TerrainSetup | None = None
-        self._quest_spawn_entries_resolved: tuple[SpawnEntry, ...] = ()
-        self._quest_start_weapon_resolved: WeaponId | None = None
 
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
@@ -165,211 +144,34 @@ class PlaybackDriver:
         self.tick_rate = int(tick_rate)
         self.dt = 1.0 / float(self.tick_rate)
 
-        self.world_size = self._resolve_world_size()
-        self.world = self._prepare_world()
-
-        apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
-            original_capture_replay=self.replay.header.initial_creature_pool is not None,
+        self.world_size = replay.header.world_size if world_size is None else float(world_size)
+        spec = msgspec.convert(replay.header, type=RunSpec, from_attributes=True)
+        spec = msgspec.structs.replace(spec, world_size=self.world_size)
+        try:
+            prepared = initialize_run(
+                spec,
+                apply_world_dt_steps=should_apply_world_dt_steps_for_replay(
+                    original_capture_replay=spec.initial_creature_pool is not None,
+                ),
+                spawn_entries=spawn_entries,
+                start_weapon_id=start_weapon_id,
+            )
+        except ValueError as exc:
+            raise ReplayRunnerError(str(exc)) from exc
+        self.session = prepared.session
+        self.world = self.session.world
+        self._terrain_setup = prepared.terrain
+        self._quest_definition = prepared.quest
+        mode_runtime = self.session.mode_runtime
+        self._quest_spawn_state = mode_runtime.spawn if isinstance(mode_runtime, QuestSessionRuntime) else None
+        self._quest_total_spawn_count = (
+            sum(entry.count for entry in self._quest_spawn_state.spawn_entries) if self._quest_spawn_state is not None else 0
         )
-        self.session = self._build_session(apply_world_dt_steps=bool(apply_world_dt_steps))
         self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()
 
         self.tick_limit = (
             len(replay.ticks) if self.max_ticks is None else min(len(replay.ticks), max(0, int(self.max_ticks)))
         )
-
-    def _resolve_world_size(self) -> float:
-        if self._provided_world_size is not None:
-            return float(self._provided_world_size)
-        return float(self.replay.header.world_size)
-
-    def _prepare_world(self) -> WorldState:
-        world = WorldState.build(
-            world_size=float(self.world_size),
-            demo_mode_active=False,
-            hardcore=bool(self.replay.header.hardcore),
-            quest_fail_retry_count=int(self.replay.header.quest_fail_retry_count),
-            preserve_bugs=bool(self.replay.header.preserve_bugs),
-        )
-        world.state.rng.srand(int(self.replay.header.seed))
-        world.creatures.apply_gameplay_reset_target_players(int(self.replay.header.player_count))
-        if self.replay.header.initial_creature_pool is not None:
-            apply_creature_pool_residue(
-                world.creatures.entries,
-                self.replay.header.initial_creature_pool,
-            )
-        reset_world_players(
-            world.players,
-            state=world.state,
-            world_size=float(self.world_size),
-            player_count=int(self.replay.header.player_count),
-        )
-        world.state.status = GameStatus.from_data(
-            path=Path("replay://status"),
-            data=self.replay.header.status,
-            dirty=False,
-        )
-        self._quest_definition = None
-        self._quest_total_spawn_count = 0
-        self._terrain_setup = None
-        self._quest_spawn_entries_resolved = ()
-        self._quest_start_weapon_resolved = None
-
-        match self.mode_id:
-            case GameMode.SURVIVAL | GameMode.RUSH:
-                terrain = advance_unlock_terrain(
-                    world.state.rng,
-                    unlock_index=int(self.replay.header.status.quest_unlock_index),
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                )
-                self._terrain_setup = terrain
-            case GameMode.TYPO:
-                terrain = advance_unlock_terrain(
-                    world.state.rng,
-                    unlock_index=int(self.replay.header.status.quest_unlock_index),
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                )
-                self._terrain_setup = terrain
-            case GameMode.TUTORIAL:
-                terrain = advance_unlock_terrain(
-                    world.state.rng,
-                    unlock_index=int(self.replay.header.status.quest_unlock_index),
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                )
-                self._terrain_setup = terrain
-            case GameMode.QUESTS:
-                quest_definition = resolve_replay_quest_definition(self.replay)
-                quest_level = quest_definition.level
-                start_weapon_id = (
-                    quest_definition.start_weapon_id
-                    if self._quest_start_weapon_id is None
-                    else self._quest_start_weapon_id
-                )
-                ctx = QuestContext(
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                    player_count=int(self.replay.header.player_count),
-                )
-                advance_unlock_terrain(
-                    world.state.rng,
-                    unlock_index=int(self.replay.header.status.quest_unlock_index),
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                )
-                # Native `quest_start_selected()` burns one `crt_rand()` for
-                # `highscore_record_random_tag` before quest terrain and spawn setup.
-                world.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-                quest_terrain = advance_explicit_terrain(
-                    world.state.rng,
-                    terrain_slots=quest_definition.terrain_slots,
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                )
-                generated_spawn_entries = tuple(
-                    build_quest_spawn_table(
-                        quest_definition,
-                        ctx,
-                        rng=world.state.rng,
-                        hardcore=bool(self.replay.header.hardcore),
-                        full_version=True,
-                    ),
-                )
-                spawn_entries = (
-                    tuple(self._quest_spawn_entries)
-                    if self._quest_spawn_entries is not None
-                    else generated_spawn_entries
-                )
-                world.state.quest_level = quest_level
-                self._quest_definition = quest_definition
-                self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
-                self._quest_spawn_entries_resolved = spawn_entries
-                self._quest_start_weapon_resolved = start_weapon_id
-                self._terrain_setup = TerrainSetup(
-                    terrain_slots=quest_definition.terrain_slots,
-                    terrain_seed=quest_terrain.terrain_seed,
-                )
-            case _:
-                pass
-
-        return world
-
-    def _build_session(self, *, apply_world_dt_steps: bool) -> DeterministicSession:
-        damage_scale_by_type = build_damage_scale_by_type()
-        self._quest_spawn_state = None
-        match self.mode_id:
-            case GameMode.SURVIVAL:
-                session, _ = build_survival_session(
-                    world=self.world,
-                    world_size=self.world_size,
-                    damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=self.replay.header.detail_preset,
-                    violence_disabled=self.replay.header.violence_disabled,
-                    game_tune_started=False,
-                    apply_world_dt_steps=apply_world_dt_steps,
-                    finalize_post_render_lifecycle=True,
-                )
-                return session
-            case GameMode.RUSH:
-                enforce_rush_loadout(self.world)
-                session, _ = build_rush_session(
-                    world=self.world,
-                    world_size=self.world_size,
-                    damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=self.replay.header.detail_preset,
-                    violence_disabled=self.replay.header.violence_disabled,
-                    game_tune_started=False,
-                    finalize_post_render_lifecycle=True,
-                )
-                return session
-            case GameMode.QUESTS:
-                quest_definition = self._quest_definition
-                if quest_definition is None:
-                    raise ReplayRunnerError("quest replay startup must resolve quest definition before session build")
-                spawn_entries = tuple(self._quest_spawn_entries_resolved)
-                quest_level = quest_definition.level
-                start_weapon_id = self._quest_start_weapon_resolved
-                session, quest_state = build_quest_session(
-                    world=self.world,
-                    world_size=self.world_size,
-                    damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=self.replay.header.detail_preset,
-                    violence_disabled=self.replay.header.violence_disabled,
-                    game_tune_started=False,
-                    demo_mode_active=self.world.state.demo_mode_active,
-                    apply_world_dt_steps=apply_world_dt_steps,
-                    finalize_post_render_lifecycle=True,
-                    spawn_entries=spawn_entries,
-                    quest_level=quest_level,
-                    start_weapon_id=start_weapon_id,
-                )
-                self._quest_spawn_state = quest_state
-                return session
-            case GameMode.TYPO:
-                return build_typo_session(
-                    world=self.world,
-                    world_size=self.world_size,
-                    damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=self.replay.header.detail_preset,
-                    violence_disabled=self.replay.header.violence_disabled,
-                    game_tune_started=False,
-                    dictionary_words=self.replay.header.typo_dictionary_words,
-                    highscore_names=self.replay.header.typo_highscore_names,
-                )
-            case GameMode.TUTORIAL:
-                return build_tutorial_session(
-                    world=self.world,
-                    world_size=self.world_size,
-                    damage_scale_by_type=damage_scale_by_type,
-                    detail_preset=self.replay.header.detail_preset,
-                    violence_disabled=self.replay.header.violence_disabled,
-                    game_tune_started=False,
-                    demo_mode_active=False,
-                )
-            case _:
-                raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
     def _prepare_tick(self, *, tick_index: int) -> None:
         if int(tick_index) < 0 or int(tick_index) >= int(self.tick_limit):

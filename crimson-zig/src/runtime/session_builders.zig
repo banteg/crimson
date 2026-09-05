@@ -91,7 +91,7 @@ pub fn buildQuestSession(
 
     const weapon_id = @max(1, options.quest_start_weapon_id);
     for (session.players()) |*player| {
-        player_runtime.weaponAssignPlayer(player, weapon_data.weaponIdFromInt(weapon_id));
+        player_runtime.weaponAssignPlayerWithState(player, weapon_data.weaponIdFromInt(weapon_id), &session.state);
     }
 
     return session;
@@ -282,4 +282,15 @@ test "build typo session copies replay dictionary sources" {
     );
     try std.testing.expectEqualStrings("amber", session.state.typo.dictionaryWordSlice(0));
     try std.testing.expectEqualStrings("Alpha", session.state.typo.highscoreNameSlice(0));
+}
+
+test "quest startup adds each assigned weapon to the pre-start usage counts" {
+    var config = testConfig(.quests);
+    config.player_count = 2;
+    config.status_weapon_usage_counts[@intFromEnum(game_ids.WeaponId.shotgun)] = 7;
+    const session = try buildQuestSession(config, .{
+        .quest_spawn_entries = &.{},
+        .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.shotgun),
+    });
+    try std.testing.expectEqual(@as(u32, 9), session.state.status_weapon_usage_counts.get(.shotgun));
 }

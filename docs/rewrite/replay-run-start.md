@@ -87,7 +87,7 @@ deterministic.
 
 ## Current replay contract
 
-CRD replay format 16 is the only supported version. A `ReplayHeader` includes
+CRD replay format 18 is the only supported version. A `ReplayHeader` includes
 the run seed/state, mode, player count, status, quest settings, and optional
 initial creature-pool residue.
 The file envelope is exactly one zstd frame containing the typed msgpack replay;
@@ -158,3 +158,26 @@ recoverable session snapshot.
 
 This keeps startup semantics in one current implementation and prevents
 compatibility code from masking a parity difference.
+
+
+## Shared port startup
+
+`sim.run_spec.RunSpec` describes the pre-start inputs; `ReplayHeader` adds only
+recording metadata. `sim.run_init.initialize_run` constructs the world and mode
+session for all five gameplay modes and playback. It consumes generic terrain,
+then the quest score tag, quest terrain and spawn draws when applicable, before
+assigning starting weapons. The returned terrain setup is consumed separately by
+the renderer.
+
+Live play binds the actual save object; replay binds a detached copy of the same
+pre-start snapshot. Starting weapon usage and quest play counters are applied
+once on both paths. Snapshotting after weapon assignment would count it twice
+on replay. Native creature residue is an explicit `RunSpec` input, while port
+runs always allocate fresh pools. The reset and residue types live in the
+simulation layer without importing the replay codec.
+
+`tests/replay/test_live_run_start.py` compares complete session state at startup
+and after input ticks through actual mode open/start and recorder/playback paths,
+including multiplayer-sized local runs, preserved quirks, and non-default visual
+settings. Typ-o commands retain their inside-tick phase, after loadout enforcement;
+perk picks run before timing is derived.

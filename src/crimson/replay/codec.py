@@ -8,7 +8,9 @@ from typing import cast
 import msgspec
 import zstandard as zstd
 
+from crimson.sim.run_spec import CreatureSlotResidue
 from grim.atomic_write import atomic_write_bytes
+from grim.geom import Vec2
 
 from ..game_modes import GameMode
 from ..math_parity import f32
@@ -28,10 +30,8 @@ from .types import (
     PackedTickInputs,
     Replay,
     ReplayClaimedStatsSnapshot,
-    ReplayCreatureSlotResidue,
     ReplayHeader,
     ReplayTick,
-    ReplayVec2,
     input_flags_validation_error,
 )
 
@@ -189,13 +189,13 @@ def _validate_replay_wire_shape(data: bytes) -> None:
         for index, residue in enumerate(initial_pool):
             residue_row = _require_exact_keys(
                 residue,
-                expected=ReplayCreatureSlotResidue.__struct_fields__,
+                expected=CreatureSlotResidue.__struct_fields__,
                 field=f"replay.header.initial_creature_pool[{index}]",
             )
             for vec_field in ("pos", "vel", "target", "target_offset"):
                 vec_row = _require_exact_keys(
                     residue_row[vec_field],
-                    expected=ReplayVec2.__struct_fields__,
+                    expected=Vec2.__struct_fields__,
                     field=f"replay.header.initial_creature_pool[{index}].{vec_field}",
                 )
                 _require_wire_float(
@@ -288,8 +288,8 @@ def _canonical_f32(value: float, *, field: str, require_canonical: bool = False)
     return canonical
 
 
-def _canonical_vec2(value: ReplayVec2, *, field: str, require_canonical: bool = False) -> ReplayVec2:
-    return ReplayVec2(
+def _canonical_vec2(value: Vec2, *, field: str, require_canonical: bool = False) -> Vec2:
+    return Vec2(
         x=_canonical_f32(value.x, field=f"{field}.x", require_canonical=require_canonical),
         y=_canonical_f32(value.y, field=f"{field}.y", require_canonical=require_canonical),
     )
@@ -303,11 +303,11 @@ def _require_int_range(value: int, *, low: int, high: int, field: str) -> int:
 
 
 def _canonical_residue(
-    value: ReplayCreatureSlotResidue,
+    value: CreatureSlotResidue,
     *,
     field: str,
     require_canonical: bool = False,
-) -> ReplayCreatureSlotResidue:
+) -> CreatureSlotResidue:
     replacements: dict[str, object] = {}
     for name in _RESIDUE_F32_FIELDS:
         replacements[name] = _canonical_f32(
@@ -360,7 +360,7 @@ def _canonical_header(header: ReplayHeader, *, require_canonical: bool = False) 
         raise ReplayCodecError("replay.header.world_size must be in the positive i32 range")
 
     pool = decoded.initial_creature_pool
-    canonical_pool: tuple[ReplayCreatureSlotResidue, ...] | None = None
+    canonical_pool: tuple[CreatureSlotResidue, ...] | None = None
     if pool is not None:
         canonical_pool = tuple(
             _canonical_residue(

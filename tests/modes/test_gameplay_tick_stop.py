@@ -11,6 +11,10 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
     mode = RushMode(
         ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(1),
     )
+    mocker.patch.object(mode, "apply_terrain_setup")
+    mocker.patch.object(mode.world_runtime, "open_runtime")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
+    mode.open()
     mocker.patch.object(mode, "_sync_audio_and_ground")
     mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput()])
     present = mocker.patch.object(base_gameplay_mode, "apply_presentation_outputs")

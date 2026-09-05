@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import survival_level_threshold
+from crimson.modes import base_gameplay_mode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.input import PlayerInput
 from grim.rand import Crand
@@ -14,9 +15,13 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
-def test_survival_mode_session_has_progression_enabled_and_levels_up(make_mode_config) -> None:
+def test_survival_mode_session_has_progression_enabled_and_levels_up(mocker, make_mode_config) -> None:
     config = make_mode_config(game_mode=GameMode.SURVIVAL)
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
+    mocker.patch.object(mode, "apply_terrain_setup")
+    mocker.patch.object(mode.world_runtime, "open_runtime")
+    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
+    mode.open()
     try:
         session = mode._sim_session
         assert session is not None

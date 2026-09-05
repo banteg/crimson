@@ -11,13 +11,9 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..persistence.highscores import scores_path_for_mode
-from ..persistence.save_status import GameStatusData
-from ..replay import Replay, ReplayHeader, ReplayRecorder
-from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..sim.bootstrap import advance_unlock_terrain
+from ..replay import Replay
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
-from ..sim.session_builders import build_typo_session
 from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
@@ -53,19 +49,7 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._sim_session: DeterministicSession | None = self._new_sim_session()
-
-    def _new_sim_session(self) -> DeterministicSession:
-        return build_typo_session(
-            world=self.sim_world.world_state,
-            world_size=float(self.world_size),
-            damage_scale_by_type=self.sim_world.damage_scale_by_type,
-            detail_preset=5,
-            violence_disabled=0,
-            game_tune_started=bool(self.sim_world.game_tune_started),
-            dictionary_words=self.state.typo.dictionary_words,
-            highscore_names=self.state.typo.highscore_names,
-        )
+        self._sim_session: DeterministicSession | None = None
 
     def open(self) -> None:
         super().open()
@@ -75,42 +59,8 @@ class TypoShooterMode(BaseGameplayMode):
             dictionary_words = tuple(load_typo_dictionary(dictionary_path))
         highscore_names = tuple(load_typo_highscore_names(scores_path_for_mode(self._base_dir, GameMode.TYPO)))
 
-        status = self.state.status
-        terrain = advance_unlock_terrain(
-            self.state.rng,
-            unlock_index=int(status.quest_unlock_index) if status is not None else 0,
-            width=int(self.world_size),
-            height=int(self.world_size),
-        )
-        self.apply_terrain_setup(
-            terrain_slots=terrain.terrain_slots,
-            seed=int(terrain.terrain_seed),
-        )
-        self.sim_world.state.rng.srand(int(self.state.rng.state))
-        self.state.typo.dictionary_words = dictionary_words
-        self.state.typo.highscore_names = highscore_names
-        self._sim_session = self._new_sim_session()
-
-        self._replay_recorder = ReplayRecorder(
-            ReplayHeader(
-                game_mode_id=GameMode.TYPO,
-                seed=int(self._run_reset_seed),
-                tick_rate=int(self._gameplay_tick_rate()),
-                quest_fail_retry_count=int(self.quest_fail_retry_count),
-                hardcore=bool(self.hardcore),
-                preserve_bugs=bool(self.state.preserve_bugs),
-                detail_preset=int(self._deterministic_detail_preset()),
-                violence_disabled=int(self._deterministic_violence_disabled()),
-                world_size=float(self.world_size),
-                player_count=1,
-                status=GameStatusData() if status is None else status.as_data(),
-                typo_dictionary_words=tuple(dictionary_words),
-                typo_highscore_names=tuple(highscore_names),
-            ),
-        )
-        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
+        prepared = self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
+        self._sim_session = prepared.session
 
     def close(self) -> None:
         self._sim_session = None

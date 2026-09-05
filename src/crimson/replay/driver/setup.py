@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from crimson.sim.world_reset import reset_world_players
 from grim.geom import Vec2
 
 from ...effects import FxQueue, FxQueueRotated
@@ -14,8 +15,7 @@ from ...persistence.save_status import GameStatus, GameStatusData
 from ...sim.state_types import PlayerState
 from ...sim.step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 from ...weapon_runtime import most_used_weapon_id_for_player
-from ...weapons import WEAPON_TABLE, WeaponId
-from ...world.sim_world_state import reset_world_players
+from ...weapons import WeaponId
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -37,15 +37,6 @@ class RunResult(msgspec.Struct, frozen=True):
     shots_fired: int
     shots_hit: int
     rng_state: int
-
-def build_damage_scale_by_type() -> dict[int, float]:
-    damage_scale_by_type: dict[int, float] = {}
-    for entry in WEAPON_TABLE:
-        if entry.weapon_id <= WeaponId.NONE:
-            continue
-        damage_scale_by_type[entry.weapon_id] = float(entry.damage_scale)
-    return damage_scale_by_type
-
 
 def build_empty_fx_queues() -> tuple[FxQueue, FxQueueRotated]:
     # Headless runners still need FX queues to satisfy sim APIs.

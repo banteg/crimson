@@ -18,12 +18,8 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..perks.selection import perk_selection_prepared_choices
-from ..persistence.save_status import GameStatusData
-from ..replay import Replay, ReplayHeader, ReplayRecorder
-from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..sim.bootstrap import advance_unlock_terrain
-from ..sim.session_builders import build_survival_session
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState
+from ..replay import Replay, ReplayRecorder
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSessionRuntime, SurvivalSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS
@@ -75,20 +71,7 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
-        self._sim_session: DeterministicSession | None = self._new_sim_session()
-
-    def _new_sim_session(self) -> DeterministicSession:
-        session, spawn_state = build_survival_session(
-            world=self.sim_world.world_state,
-            world_size=float(self.world_size),
-            damage_scale_by_type=self.sim_world.damage_scale_by_type,
-            detail_preset=5,
-            violence_disabled=0,
-            game_tune_started=bool(self.sim_world.game_tune_started),
-            finalize_post_render_lifecycle=True,
-        )
-        self._spawn_state = spawn_state
-        return session
+        self._sim_session: DeterministicSession | None = None
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
@@ -184,40 +167,12 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
         self._reset_gameplay_frame_clock()
-
-        status = self.state.status
-        quest_unlock_index = int(status.quest_unlock_index) if status is not None else 0
-        terrain = advance_unlock_terrain(
-            self.state.rng,
-            unlock_index=int(quest_unlock_index),
-            width=int(self.world_size),
-            height=int(self.world_size),
-        )
-        self.apply_terrain_setup(terrain_slots=terrain.terrain_slots, seed=terrain.terrain_seed)
-        self.sim_world.state.rng.srand(int(self.state.rng.state))
-
-        self._sim_session = self._new_sim_session()
-
+        prepared = self._initialize_run(GameMode.SURVIVAL)
+        self._sim_session = prepared.session
+        mode_runtime = prepared.session.mode_runtime
+        assert isinstance(mode_runtime, SurvivalSessionRuntime)
+        self._spawn_state = mode_runtime.spawn
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        replay_status = GameStatusData() if status is None else status.as_data()
-        self._replay_recorder = ReplayRecorder(
-            ReplayHeader(
-                game_mode_id=GameMode.SURVIVAL,
-                seed=int(self._run_reset_seed),
-                tick_rate=int(self._gameplay_tick_rate()),
-                quest_fail_retry_count=int(self.quest_fail_retry_count),
-                hardcore=bool(self.hardcore),
-                preserve_bugs=bool(self.state.preserve_bugs),
-                detail_preset=int(self._deterministic_detail_preset()),
-                violence_disabled=int(self._deterministic_violence_disabled()),
-                world_size=float(self.world_size),
-                player_count=len(self.sim_world.players),
-                status=replay_status,
-            ),
-        )
-        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
 
     def close(self) -> None:
         self._sim_session = None

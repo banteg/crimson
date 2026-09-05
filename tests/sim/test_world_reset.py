@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
-from crimson.world.sim_world_state import SimWorldState, reset_world_players
+from crimson.world.sim_world_state import SimWorldState
 from grim.geom import Vec2
 
 

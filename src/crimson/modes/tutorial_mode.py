@@ -14,12 +14,8 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..input_codes import input_code_is_down, input_code_is_pressed
 from ..perks.selection import perk_selection_prepared_choices
-from ..persistence.save_status import GameStatusData
-from ..replay import ReplayHeader, ReplayRecorder
-from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
-from ..sim.bootstrap import advance_unlock_terrain
+from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
-from ..sim.session_builders import build_tutorial_session
 from ..sim.sessions import DeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -68,17 +64,6 @@ class TutorialMode(BaseGameplayMode):
         self._frame_input_state: PlayerInput | None = None
         self._perk_pick_pending = False
 
-    def _new_sim_session(self) -> DeterministicSession:
-        return build_tutorial_session(
-            world=self.sim_world.world_state,
-            world_size=float(self.world_size),
-            damage_scale_by_type=self.sim_world.damage_scale_by_type,
-            detail_preset=int(self._deterministic_detail_preset()),
-            violence_disabled=int(self._deterministic_violence_disabled()),
-            game_tune_started=bool(self.sim_world.game_tune_started),
-            demo_mode_active=bool(self.demo_mode_active),
-        )
-
     def _runtime_player_count(self) -> int:
         return 1
 
@@ -97,39 +82,8 @@ class TutorialMode(BaseGameplayMode):
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
 
-        status = self.state.status
-        terrain = advance_unlock_terrain(
-            self.state.rng,
-            unlock_index=(0 if status is None else int(status.quest_unlock_index)),
-            width=int(self.world_size),
-            height=int(self.world_size),
-        )
-        self.apply_terrain_setup(
-            terrain_slots=terrain.terrain_slots,
-            seed=int(terrain.terrain_seed),
-        )
-        self.sim_world.state.rng.srand(int(self.state.rng.state))
-
-        self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
-        self._sim_session = self._new_sim_session()
-        self._replay_recorder = ReplayRecorder(
-            ReplayHeader(
-                game_mode_id=GameMode.TUTORIAL,
-                seed=int(self._run_reset_seed),
-                tick_rate=int(self._gameplay_tick_rate()),
-                quest_fail_retry_count=int(self.quest_fail_retry_count),
-                hardcore=bool(self.hardcore),
-                preserve_bugs=bool(self.state.preserve_bugs),
-                detail_preset=int(self._deterministic_detail_preset()),
-                violence_disabled=int(self._deterministic_violence_disabled()),
-                world_size=float(self.world_size),
-                player_count=1,
-                status=GameStatusData() if status is None else status.as_data(),
-            ),
-        )
-        self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
+        prepared = self._initialize_run(GameMode.TUTORIAL)
+        self._sim_session = prepared.session
 
     def close(self) -> None:
         self._sim_session = None

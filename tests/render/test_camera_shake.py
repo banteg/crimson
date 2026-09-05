@@ -8,7 +8,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
-from crimson.replay.driver.setup import build_damage_scale_by_type, reset_players
+from crimson.replay.driver.setup import reset_players
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -19,6 +19,7 @@ from crimson.sim.sessions import (
 )
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from crimson.weapons import build_damage_scale_by_type
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from tests.support.factories import RecordingCreatureDamageRuntime

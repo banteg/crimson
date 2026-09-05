@@ -25,8 +25,6 @@ from crimson.replay import (
 from crimson.replay import types as replay_types
 from crimson.replay.types import (
     REPLAY_FORMAT_VERSION,
-    ReplayCreatureSlotResidue,
-    ReplayVec2,
     current_replay_game_version,
 )
 from crimson.sim.input import PlayerInput
@@ -38,6 +36,7 @@ from crimson.sim.input_providers import (
     TypoCharCommand,
     TypoSubmitCommand,
 )
+from crimson.sim.run_spec import CreatureSlotResidue
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -317,10 +316,10 @@ def test_replay_dump_canonicalizes_header_and_pool_values() -> None:
         player_count=1,
         world_size=value,
         initial_creature_pool=(
-            ReplayCreatureSlotResidue(
+            CreatureSlotResidue(
                 index=0,
                 phase_seed=383,
-                pos=ReplayVec2(x=value, y=-value),
+                pos=Vec2(x=value, y=-value),
             ),
         ),
     )
@@ -341,7 +340,7 @@ def test_replay_load_rejects_float_phase_seed() -> None:
     replay_obj = _minimal_wire_replay_obj()
     header = cast("dict[str, object]", replay_obj["header"])
     header["initial_creature_pool"] = [
-        msgspec.to_builtins(ReplayCreatureSlotResidue(index=0, phase_seed=383)),
+        msgspec.to_builtins(CreatureSlotResidue(index=0, phase_seed=383)),
     ]
     residue = cast("dict[str, object]", cast("list[object]", header["initial_creature_pool"])[0])
     residue["phase_seed"] = 383.0
@@ -358,7 +357,7 @@ def test_replay_rejects_pool_byte_out_of_range(field: str, value: int) -> None:
         seed=1,
         player_count=1,
         initial_creature_pool=(
-            msgspec.structs.replace(ReplayCreatureSlotResidue(index=0), **{field: value}),
+            msgspec.structs.replace(CreatureSlotResidue(index=0), **{field: value}),
         ),
     )
     recorder = ReplayRecorder(header)

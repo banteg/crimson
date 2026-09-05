@@ -840,3 +840,12 @@ def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTemplateI
         return ProjectileTemplateId(weapon_id)
     except ValueError as exc:
         raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}") from exc
+
+
+def build_damage_scale_by_type() -> dict[int, float]:
+    damage_scale_by_type: dict[int, float] = {}
+    for entry in WEAPON_TABLE:
+        if entry.weapon_id <= WeaponId.NONE:
+            continue
+        damage_scale_by_type[entry.weapon_id] = float(entry.damage_scale)
+    return damage_scale_by_type
