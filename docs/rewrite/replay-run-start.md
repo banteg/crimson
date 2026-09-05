@@ -139,6 +139,15 @@ When movement diverges, compare `replay_step` first. Matching inputs with a
 different `sim_state` point at integration or state-reset behavior; different
 inputs point at capture or replay-driving data.
 
+For same-build port-to-port regression tests, `crimson.dbg.state_digest`
+provides `session_state_bytes` and `session_digest`. These include complete
+player, mode, pool, allocator, RNG, and terrain-queue state, including inactive
+slot residue. Compact checkpoints remain useful for native comparisons and
+readable diagnostics, but do not prove that all deterministic state agrees.
+The inspection encoding excludes file paths, dirty flags, RNG trace sinks,
+and profiling samples. It is neither a persisted replay format nor a
+recoverable session snapshot.
+
 ## Latest-only policy
 
 - CRD loaders require replay format 16.

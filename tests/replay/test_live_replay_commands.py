@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.replay import ReplayHeader, ReplayRecorder
@@ -37,5 +38,6 @@ def test_live_perk_commands_match_recorded_prelude(perk: PerkId, pick_count: int
     assert live.world.state.rng.state == playback.world.state.rng.state
     assert live.world.state.perk_selection == playback.world.state.perk_selection
     assert live.session.elapsed_ms == playback.session.elapsed_ms
+    assert session_digest(live.session) == session_digest(playback.session)
     if perk == PerkId.REFLEX_BOOSTED and pick_count == 1:
         assert live.session.elapsed_ms == 15.0
