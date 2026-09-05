@@ -67,6 +67,12 @@ extern "C" int creature_apply_damage(
             damage *= 1.2f;
         }
 
+    } else if (damage_type == 7
+        && perk_count_get(perk_id_ion_gun_master) != 0) {
+        damage *= 1.2f;
+    }
+
+    if (damage_type == 1) {
         if ((creature_pool[creature_id].flags
                 & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
             float turn =
@@ -77,9 +83,6 @@ extern "C" int creature_apply_damage(
             }
             creature_pool[creature_id].heading += turn;
         }
-    } else if (damage_type == 7
-        && perk_count_get(perk_id_ion_gun_master) != 0) {
-        damage *= 1.2f;
     }
 
     if (creature_pool[creature_id].health > 0.0f) {

@@ -129,3 +129,18 @@ The append-only five-record experiment ledger has SHA-256
 Further work should require new original-build block-order evidence rather
 than another local branch spelling, compiler alias, or neighboring-function
 probe.
+
+## Exact perk and heading phases (2026-09-05)
+
+The Ion Gun Master placement is source-structural, not an irreducible compiler
+residual. Damage-type perk modifiers now form one phase; the bullet-only heading
+change is a separate guarded phase immediately afterward. All original calls,
+conditions, damage arithmetic, and RNG ordering are preserved. VC6 combines the
+bullet predicates and places the ion modifier after the shock-effect loop exactly
+as native, without an explicit layout label or duplicated effect code.
+
+`perk-and-heading-phase-mutations.json` records four complete controls. Separating
+the heading phase, with either a combined or independent ion guard, reaches
+100%: 237/237 instructions, 83/0/0 references, and the full 963-byte extent.
+Splitting before Doctor or leaving Ion attached to heading is byte-neutral at
+89.87%. This supersedes the earlier closed compiler-provenance conclusion.
