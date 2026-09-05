@@ -131,7 +131,7 @@ Applied after the template switch to the returned creature:
 This tracks our `creature_spawn_template` rewrite coverage.
 
 - Ported: implemented in `build_spawn_plan` (pure plan builder).
-- Verified: covered by unit tests in `tests/test_spawn_plan.py`.
+- Verified: covered by unit tests in `tests/creatures/test_spawn_plan.py`.
 - Legend: ✅ complete · 🚧 in progress · ⬜ not started
 - Note: spawn id `0x02` does not appear in the decompile extracts and is omitted.
 
@@ -366,16 +366,16 @@ Notes:
 - Rewrite model (pure plan builder): `src/crimson/creatures/spawn.py`
 - Survival mode (pure models): `src/crimson/creatures/spawn.py`
   - `advance_survival_spawn_stage`, `tick_survival_wave_spawns`, `build_survival_spawn_creature`
-  - Tests: `tests/test_survival_milestones.py`, `tests/test_survival_wave.py`, `tests/test_survival_spawn.py`
+  - Tests: `tests/modes/test_survival_milestones.py`, `tests/modes/test_survival_wave.py`, `tests/modes/test_survival_spawn.py`
 - Rush mode (pure models): `src/crimson/creatures/spawn.py`
   - `tick_rush_mode_spawns`, `build_rush_mode_spawn_creature`
-  - Tests: `tests/test_rush_mode_spawn.py`
+  - Tests: `tests/modes/test_rush_mode_spawn.py`
 - Tutorial timeline (pure models): `src/crimson/creatures/spawn.py`
   - `build_tutorial_stage3_fire_spawns`, `build_tutorial_stage4_clear_spawns`,
     `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
 
-  - Tests: `tests/test_tutorial_timeline_spawns.py`
+  - Tests: `tests/modes/test_tutorial_timeline_spawns.py`
 - Quest timeline (pure model): `src/crimson/quests/timeline.py`
   - `tick_quest_spawn_timeline`, `tick_quest_mode_spawns`, `quest_spawn_table_empty`
-  - Tests: `tests/test_quest_spawn_timeline.py`, `tests/test_quest_mode_spawns.py`
+  - Tests: `tests/modes/test_quest_spawn_timeline.py`, `tests/modes/test_quest_mode_spawns.py`
 - MSVCRT-compatible RNG for deterministic replays: `src/grim/rand.py` (`Crand`)

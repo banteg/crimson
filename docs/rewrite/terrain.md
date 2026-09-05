@@ -1,3 +1,9 @@
+---
+tags:
+  - rewrite
+  - rendering
+---
+
 # Terrain (rewrite)
 
 This page describes how the **Python + raylib rewrite** models the classic game's
@@ -28,7 +34,7 @@ Intentional rewrite deviations:
 ## Ground dump fixtures (parity test)
 
 We captured **ground render-target dumps** via Frida and use the PNGs as
-fixtures to ensure the rewrite produces identical output for the same seed and
+fixtures to ensure the rewrite matches within measured image tolerances for the same seed and
 terrain texture indices.
 
 - Fixtures: `tests/fixtures/ground/ground_dump_*.png` + `tests/fixtures/ground/ground_dump_cases.json`
@@ -45,7 +51,7 @@ Notes:
 - Requires a display (raylib); the test skips if `DISPLAY` / `WAYLAND_DISPLAY` is missing.
 - Requires game assets at `game_bins/crimsonland/1.9.93-gog/crimson.paq`.
 
-## Decal baking (what was missing)
+## Decal baking
 
 The exe’s “persistent gore” works because it is drawn **into the ground render
 target** before terrain is blitted to the backbuffer.
@@ -109,13 +115,15 @@ Why this mode:
 - It keeps the terrain RT alpha pinned to `255` through generation and baking, which matches the XRGB mental model directly.
 - It is simpler than carrying separate blend-factor branches for alternate alpha behaviors that we do not intend to ship.
 
-## Current status
+## Runtime application
 
-- Gameplay produces decal events through `FxQueue` / `FxQueueRotated` (projectile hits and creature deaths) in `src/crimson/game_world.py`.
-- `GameWorld.update()` bakes queued decals into the ground render target via `bake_fx_queues(...)`; the result is then shown when `GroundRenderer.draw(...)` blits the RT to the screen.
-- The `ground` debug view is still useful for manual stamping when validating blend/filter behavior.
+Simulation collects generic and corpse decals in `src/crimson/sim/terrain_fx.py`.
+The session captures each tick's batch in its presentation plan;
+`src/crimson/sim/batch_apply.py` delivers it to
+`src/crimson/world/render_resources.py` for baking.
+`src/crimson/world/terrain_runtime.py` applies terrain setup and generation requests. GPU calls do not run inside
+the authoritative world step. See [run startup](replay-run-start.md#terrain-rng-and-rendering)
+for detached terrain generation and RNG ownership.
 
-## Remaining gaps
-
-- Validate effect selection, sizes, and tints against runtime captures for a wider set of weapons/bonuses.
-- Expand decal producers beyond the current hit/death hooks as more gameplay effects are ported.
+The captured fixtures cover specific terrain configurations. Broader weapon,
+bonus and corpse visual parity still needs corresponding runtime evidence.

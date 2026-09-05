@@ -5,138 +5,60 @@ tags:
   - zig
 ---
 
-# Zig native port status (`crimson-zig/`)
+# Zig port
 
-Scope target: a full native Zig port of Crimson systems, content, codecs,
-runtime, and product shell.
+`crimson-zig/` contains the native desktop game, deterministic runtime, replay and
+debug tooling, and a freestanding WASM interface. Live play and replay share
+`crimson-zig/src/runtime/session.zig` and
+`crimson-zig/src/runtime/session_builders.zig`; the desktop loop drives this core
+through `crimson-zig/src/runtime/live_runner.zig`.
 
-For the broader remaining-work breakdown, see
-[`zig-roadmap.md`](zig-roadmap.md).
+## Build and run
 
-## Current status
+```bash
+just zig-build
+crimson-zig/zig-out/bin/crimson-zig-window
+crimson-zig/zig-out/bin/crimson-zig --help
+```
 
-The Zig tree is no longer best described as “the verifier port”.
+The desktop shell implements boot, menu, gameplay, pause, results, high scores,
+statistics and options/controls. Survival, Rush, Quests, Typ-o and Tutorial can
+be launched from the shell or direct-start flags. `--demo` enables shareware
+limits. Inspect `crimson-zig-window --help` for current launch options.
 
-What exists today:
+The default build also installs archive smoke/extraction tools. Rendering and
+audio use original archive resources; config and status codecs read the native
+file formats. Custom network play is [deferred](netplay.md).
 
-- shared deterministic runtime/session ownership under
-  `crimson-zig/src/runtime/`,
-- native replay list/verification/info/benchmark/checkpoint tooling,
-- native debug contract verification and CDT trace export tooling,
-- native `crimson.cfg` and `game.cfg` inspection tooling,
-- native quest spawn-table dump tooling,
-- native `net host/join --format json` session construction,
-- a real raylib desktop app target,
-- archive/config/status codecs,
-- archive-backed rendering/audio,
-- live native gameplay for Survival, Rush, Quests, Typ-o, and Tutorial,
-- a freestanding WASM replay verify/info plus checkpoint diff/verify text and
-  JSON ABI.
+## Tooling surfaces
 
-Replay tooling is still the most mature headless/public surface, but it now
-consumes the same shared runtime used by the native desktop application.
+The native command authority is `crimson-zig/src/cli.zig`.
 
-## Ported in Zig
+| Surface | Commands or exports |
+| --- | --- |
+| Replay | `list`, `verify`, `info`, `benchmark`, `verify-checkpoints`, `diff-checkpoints` |
+| CDT debugging | `record`, `diff`, `bisect`, `focus`, `health`, `tick`, `entity`, `query`, `verify` |
+| Native data inspection | `config`, `status`, `quests`, `spawn-plan` |
+| Asset tools | `crimson-zig-asset-smoke`, `crimson-zig-asset-extract` |
+| WASM | Replay verify/info/benchmark and checkpoint diff/verify byte-input APIs in `crimson-zig/src/wasm_exports.zig` |
 
-- `.crd` replay ingestion and native simulation in Zig
-- shared deterministic session builders
-- native replay `list`, `verify`, `info`, `benchmark`, `verify-checkpoints`,
-  and `diff-checkpoints`
-- CDT/debug trace plumbing
-- typed RNG caller tagging for verifier/runtime draws
-- native config/status ownership for `crimson.cfg` and `game.cfg`, including
-  CLI inspection for both files
-- native spawn-template runtime summary tooling via `spawn-plan`
-- installed native asset smoke tool for `crimson.paq` archive/image decode
-  validation
-- installed native desktop `crimson-zig-window` binary for the playable product
-  shell
-- real boot/menu/gameplay/pause/results/final-quest end-note/statistics/options
-  shell
-- demo Play Game / Quest menu gating applies the native shareware quest unlock
-  index cap while still using the full saved progress in full builds
-- archive-backed world/UI asset loading
-- archive-backed audio loading and gameplay/menu audio routing
-- transient world FX, terrain baking, sprite/atlas rendering, and HUD/cursor
-  presentation
+Replay and debug commands expose structured output. Native benchmarking supports
+coarse profiling; Python retains render benchmarking, cProfile export and MP4
+replay rendering. The WASM target exposes headless replay services, not the
+desktop shell. See [trace contracts](trace-format-alignment.md) for the shared
+Python/Frida/Zig artifact boundary.
 
-## Supported native replay/runtime modes
+## Validation boundaries
 
-Current supported native replay/runtime modes:
+- `tests/replay/cli/test_zig_corpus.py` exercises a generated current-format
+  corpus covering all five modes, multiplayer and invalid inputs.
+- `tests/debug/test_zig_dbg_cli.py` covers native trace diagnostics.
+- `tests/grim/test_zig_window_cli.py` verifies installation and non-rendering
+  startup for the five modes.
+- `just check-zig` runs Zig tests, the native ReleaseFast build, and the WASM build.
 
-- Survival
-- Rush
-- Quests
-- Typ-o
-- Tutorial
-
-Current supported replay-tooling behavior:
-
-- preserve-bugs compatibility mode
-- replay directory listing via `replay list`, including `--format json` and
-  `--json-out`
-- checkpoint verification via `replay verify-checkpoints`, including
-  `--format json` and `--json-out`
-- checkpoint diffing via `replay diff-checkpoints`, including `--format json`
-  and `--json-out`
-- replay RNG tracing via `replay verify --trace-rng` and
-  `replay benchmark --trace-rng`
-- freestanding WASM replay verification and replay info JSON exports, with
-  replay info options for max ticks, player filtering, and verbose event output
-- freestanding WASM checkpoint diff/verify text and JSON exports
-- headless replay throughput timing and native coarse profiling via
-  `replay benchmark`, including native JSON profile summary export with
-  `--profile --profile-out`; render benchmark mode and cProfile `.pstats`
-  export remain Python-only
-- native CDT trace export via `dbg record <replay.crd> --out <trace.cdt>`
-- native CDT trace health inspection via
-  `dbg health <trace.cdt> --format json`, including tick-window filters and
-  `--json-out`
-- native one-tick CDT summaries via `dbg tick <trace.cdt> <tick> --json`,
-  including `--json-out`
-- native CDT entity-history summaries via
-  `dbg entity <trace.cdt> <entity_uid> --json`, including tick-range filters and
-  `--json-out`
-- native compact CDT row filtering via
-  `dbg query <trace.cdt> "ticks where checkpoint.kills >= 0" --json` and
-  `dbg query <trace.cdt> "entities where uid == 0" --json`
-- native debug schema contract reporting via `dbg verify`
-- native `crimson.cfg` human/JSON inspection via `config`
-- native `game.cfg` checksum-verified human/JSON inspection via `status`
-- native runtime asset archive/image validation via `crimson-zig-asset-smoke`
-- current Python-readable trace export contracts
-- quest spawn-table JSON dumps via `quests <level> --format json --seed <seed>`
-  and human allocation summaries via `quests <level> --show-plan`
-- spawn-template runtime summaries via `spawn-plan <template_id> --json`,
-  including optional non-demo burst-effect counts
-- invalid spawn-template / quest-table inputs reported as invalid replay/session
-  data rather than stale “unsupported path” wording
-
-## Current native architecture
-
-Important architectural state:
-
-- replay tooling no longer owns a separate simulation fork,
-- deterministic runtime is shared between replay and live desktop execution,
-- session construction is mode-oriented through
-  `runtime/session_builders.zig`,
-- live gameplay is driven through the same runtime core by
-  `runtime/live_runner.zig`.
-
-This is the main reason the older “verifier-only” framing is now wrong.
-
-## Remaining gaps
-
-The important remaining gaps are now:
-
-- replay/verifier breadth still lags Python,
-- some product-shell flows are still thinner than Python, though quest results
-  now include completion reward names from the native unlock tables,
-- demo/trial shell behavior exists and now honors the demo quest cap in the
-  product menus, but still needs polish alongside the surrounding product shell,
-- WASM still exposes a narrow replay/runtime surface, but now has replay
-  verify/info JSON byte-input exports, replay info filter/verbose options, plus
-  checkpoint diff/verify text and JSON exports,
-
-The biggest remaining technical risk is not basic gameplay ownership. It is
-closing the remaining replay/tooling and product-shell breadth gaps cleanly.
+These gates establish their tested behavior. They do not establish complete
+native replay parity or a visually verified boot-to-results walkthrough.
+Product-shell, demo/trial, visual and audio differences need concrete capture or
+walkthrough evidence before being declared closed. Keep individual investigation
+results with their artifacts as described in the [evidence policy](../verification/evidence-ledger/index.md).

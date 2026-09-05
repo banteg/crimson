@@ -1,63 +1,54 @@
-# Module map (Grim vs Crimson)
+---
+tags:
+  - rewrite
+  - architecture
+---
 
-This page documents the proposed two-package split under `src/`:
+# Module map
 
-- `src/grim/` = engine/platform layer (raylib wrapper, assets, rendering helpers).
-- `src/crimson/` = game layer (modes, simulation, UI, persistence, data tables).
+The Python port has two packages. `grim` provides platform, resource and rendering
+services; `crimson` owns the game. The split is not a strict one-way import
+boundary: `grim.config` uses game enums/quest identifiers, and `grim.terrain_render`
+uses native RNG caller tags. It reflects the original engine/game separation
+without requiring the port to reproduce its global layout or virtual interface.
 
-The intent is to mirror the original `grim.dll` vs `crimsonland.exe` boundary
-while staying idiomatic for the Python rewrite.
+| Responsibility | Implementation |
+| --- | --- |
+| Window, loop, debug view protocol | `src/grim/app.py`, `src/grim/view.py` |
+| Archive/image decoding and asset access | `src/grim/paq.py`, `src/grim/jaz.py`, `src/grim/assets.py` |
+| Input, audio, fonts, configuration | `src/grim/input.py`, `src/grim/audio.py`, `src/grim/fonts/`, `src/grim/config.py` |
+| CLI and tools | `src/crimson/cli/` |
+| Navigation and application resources | `src/crimson/game/navigation.py`, `src/crimson/game/resources.py` |
+| Screens, typed actions and retained stack | `src/crimson/screens/`, `src/crimson/screens/actions.py`, `src/crimson/screens/stack.py` |
+| Gameplay shell and mode-specific UI | `src/crimson/modes/` |
+| Run inputs and initialization | `src/crimson/sim/run_spec.py`, `src/crimson/sim/run_init.py` |
+| Deterministic session and world state | `src/crimson/sim/sessions.py`, `src/crimson/sim/world_state.py` |
+| Replay codec, recording and driving | `src/crimson/replay/` |
+| Camera, terrain and audio application | `src/crimson/world/` |
+| World drawing and atlas coordinates | `src/crimson/render/world/`, `src/crimson/atlas.py` |
+| Creature, projectile, perk and bonus behavior | `src/crimson/creatures/`, `src/crimson/projectiles/`, `src/crimson/perks/`, `src/crimson/bonuses/` |
+| Quest content, tutorial and typing rules | `src/crimson/quests/`, `src/crimson/tutorial/`, `src/crimson/typo/` |
+| Saves and high scores | `src/crimson/persistence/` |
+| Trace recording, comparison and state inspection | `src/crimson/dbg/` |
 
-## Principles
+## Ownership
 
-- `grim` should not import `crimson`.
-- `crimson` can import `grim` helpers.
-- Keep raylib calls confined to `grim` as much as practical.
-- Prefer small moves that preserve working entrypoints (`uv run crimson ...`).
-- When moving modules, do not leave compatibility re-exports or stubs.
+`ScreenNavigator` coordinates typed screen requests through `ScreenStack`. Back
+resumes a retained screen; it does not reopen its run. Modes and persistent
+panels are constructed on first use. Shared assets and audio belong to the
+application resource owner and outlive the Boot screen. Screen transitions and
+common drawing live in `src/crimson/ui/` and `src/crimson/screens/chrome.py`.
 
-## Current code → target package
+`WorldState` owns simulation state. `DeterministicSession` adds mode timing,
+ordered mode phases, and deterministic presentation planning. `WorldRuntime`
+binds that simulation to the live camera, terrain and resource consumers.
+`WorldRenderCtx` combines a frame with an immutable `ViewTransform` at draw time;
+there is no second renderer-owned copy of the camera or world dimensions.
 
-Subsystem | Current module(s) | Target | Notes
---- | --- | --- | ---
-Window/loop/timing | `src/grim/app.py` | `src/grim/app.py` | Owns window init, main loop, fps, views.
-Assets (PAQ/JAZ/cache) | `src/grim/paq.py`, `src/grim/jaz.py`, `src/grim/assets.py` | `src/grim/*` | Keep flat for now; split cache later if needed.
-Input | `src/grim/input.py` | `src/grim/input.py` | Minimal wrapper + action map stub.
-View protocol/context | `src/grim/view.py` | `src/grim/view.py` | Shared by debug views and view runner.
-Atlas helpers | `src/crimson/atlas.py` | `src/grim/atlas.py` (future) | Scripts import `crimson.atlas` today.
-Terrain rendering | `src/grim/terrain_render.py` | `src/grim/terrain_render.py` | Pure render pipeline; game selects params.
-Audio (music) | `src/grim/audio.py` | `src/grim/audio.py` | Later: split `music.py` / `sfx.py`.
-Config (crimson.cfg) | `src/grim/config.py` | `src/grim/config.py` | Global settings + persistence.
-Console/log | `src/grim/console.py` | `src/grim/console.py` | Console as engine/debug layer.
-Fonts (small, mono) | `src/grim/fonts/small.py`, `src/grim/fonts/grim_mono.py` | `src/grim/fonts/*` | Font loaders + draw/measure helpers.
-CLI entrypoint | `src/crimson/cli.py` | `src/crimson/cli.py` | Stays in game package.
-Main game flow | `src/crimson/game/__init__.py`, `src/crimson/demo.py` | `src/crimson/*` | State machine + demo flow.
-Game modes | `src/crimson/modes/*.py` | `src/crimson/modes/*` | Survival, Rush, Quest, Typ-o, Tutorial mode implementations.
-Quests | `src/crimson/quests/*` | `src/crimson/quests/*` | Game content (tiers 1-5) + runtime.
-Tutorial | `src/crimson/tutorial/*` | `src/crimson/tutorial/*` | Tutorial stage progression + hint system.
-Typ-o-Shooter | `src/crimson/typo/*` | `src/crimson/typo/*` | Typing mechanics + target matching.
-Simulation | `src/crimson/sim/*` | `src/crimson/sim/*` | World state, definitions, gameplay systems.
-Creatures | `src/crimson/creatures/*.py` | `src/crimson/creatures/*` | AI, animations, runtime pool, spawning.
-Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks/ids.py`, `src/crimson/bonuses/ids.py`, `src/crimson/creatures/spawn.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).
-Audio routing | `src/crimson/sim/presentation_step.py`, `src/crimson/world/audio_bridge.py` | `src/crimson/*` | Tick-local sound planning and playback.
-Debug views | `src/crimson/views/*` | `src/crimson/views/*` | Tooling/debug; view registry pattern.
+All five gameplay modes and replay initialize through `initialize_run`.
+Demo/attract and debug views use `src/crimson/world/standalone_tick_harness.py`
+for their separately configured sessions. See the [session contract](deterministic-step-pipeline.md)
+and [startup contract](replay-run-start.md) for ordering requirements.
 
-## Prefix map (decomp → rewrite)
-
-Prefix cluster | Proposed package
---- | ---
-`grim_*` | `grim.*` (graphics/input/audio/assets/config)
-`resource_*`, `buffer_reader_*` | `grim.paq` / `grim.assets`
-`console_*` | `grim.console`
-`ui_*`, `hud_*` | `crimson.ui.*`
-`quest_*`, `survival_*`, `rush_*`, `demo_*`, `tutorial_*` | `crimson.modes.*`
-`player_*`, `creature_*`, `projectile_*`, `bonus_*`, `effect_*`, `fx_*` | `crimson.sim.*`
-`weapon_*`, `perk_*` | `crimson.*` (keep code-side Python tables/enums)
-`highscore_*` | `crimson.persistence.*` / `crimson.services.*`
-`mod_*` | `crimson.mods.*`
-
-## Decisions (current)
-
-- Input lives in `grim/input.py` (minimal wrapper; keep API surface small).
-- Debug views stay under `crimson.views`.
-- Keep `grim/` flat for now (no `grim/graphics/*` yet).
+The [Zig port](zig-verifier.md) has its own native platform and product shell,
+with a shared runtime for live play and replay tools.

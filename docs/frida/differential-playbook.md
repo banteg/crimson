@@ -54,26 +54,20 @@ uv run crimson dbg record \
 
 `dbg record` always emits full traces; there is no profile mode or tick-cap mode.
 
-## 3) Decide session bookkeeping
+## 3) Record the investigation
 
-Search for the SHA in the differential capture ledger:
-`docs/frida/differential-sessions.md`.
+Keep the SHA-keyed investigation record beside its artifacts under `analysis/`;
+see [evidence records](../verification/evidence-ledger/index.md) for required
+provenance, commands and outcomes. Reuse the record for the same native capture,
+and distinguish each candidate implementation commit.
 
-Quick lookup:
-
-```bash
-rg "<sha256>" docs/frida/differential-sessions.md
-```
-
-- If SHA exists: update that ledger entry.
-- If SHA is new: add a concise entry from the template in the ledger.
-
-Do not assume you can re-record the same gameplay timeline. Use event and RNG
-anchors, not exact absolute tick equality across different recordings.
+Run `dbg health` on the candidate trace as well as the native trace. Both must be
+parity-ready before comparing. Do not assume a new playthrough reproduces the
+same absolute tick timeline; use event and RNG anchors across captures.
 
 ## 4) Baseline triage commands
 
-Unlike the legacy process, `dbg` diffing is extremely fast because playback and difﬁng are decoupled. Run the strict trace-based reports:
+Run the strict trace comparison after recording the candidate:
 
 ```bash
 uv run crimson dbg diff \
@@ -120,9 +114,10 @@ preserved in `analysis/overlays/ghidra_local_renames.json`.
 
 ## 6) Common mismatch classes
 
-- Early position drift (`players[0].pos.*`): usually input reconstruction quality.
-- XP/score-only one-tick blips: often timing/bridge artifacts; verify whether it
-  self-heals on the next tick.
+- For position drift, compare `replay_step` first, then movement state and
+  integration. Matching inputs do not rule out a reset or precision error.
+- For XP/score timing differences, inspect death and presentation boundaries.
+  Agreement on the next tick does not excuse an earlier mismatch.
 - RNG shortfall lead near focus tick: investigate missing branch/caller path
   before tuning downstream gameplay behavior.
 
@@ -130,7 +125,7 @@ preserved in `analysis/overlays/ghidra_local_renames.json`.
 
 1. Add targeted tests for every replay/trace-finalization behavior change.
 2. Run `just check`.
-3. Update `docs/frida/differential-sessions.md` with:
+3. Update the investigation record beside its artifacts with:
    - SHA
    - exact baseline commands
    - first mismatch progression

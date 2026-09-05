@@ -16,7 +16,7 @@ The rewrite already contains several **pure** (unit-testable) building blocks:
 - AI target selection: `docs/creatures/ai.md` + `src/crimson/creatures/ai.py`
 - Animation phase + frame selection: `docs/creatures/animations.md` + `src/crimson/creatures/anim.py`
 - Spawning (templates + spawn slots): `docs/creatures/spawning.md` + `src/crimson/creatures/spawn.py`
-  - Spawn-slot tick behavior is tested in `tests/test_spawn_slots.py`.
+  - Spawn-slot tick behavior is tested in `tests/creatures/test_spawn_slots.py`.
 
 What is *missing* is the “glue”: the per-tick order, state mutation, and event emission that
 ties these pieces into a realtime loop.
@@ -107,7 +107,7 @@ Observed high-level structure inside `creature_update_all` (mirrors `docs/crimso
      - If it returns a `child_template_id`, call `creature_spawn_template(child_template_id, ...)`
        (or the rewrite equivalent: `build_spawn_plan(...)` then materialize it).
 
-   - The tested semantics (`tests/test_spawn_slots.py`):
+   - The tested semantics (`tests/creatures/test_spawn_slots.py`):
      - Timer always decrements: `timer -= dt`
      - When `timer < 0`, it is incremented by `interval` **exactly once** (no loop).
      - `count` increments and a spawn triggers only if `count < limit`.

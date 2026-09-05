@@ -1,150 +1,32 @@
-# Rewrite (Python + raylib)
+---
+tags:
+  - rewrite
+---
 
-Goal: 100% parity with the classic game logic. For now the active rewrite is a
-Python + raylib reference implementation that we can iterate quickly while
-keeping close links to static/runtime evidence.
+# Rewrite
 
-Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
-`crimson` CLI.
+The Python + raylib implementation and the native Zig port reproduce Crimsonland
+Classic v1.9.93. Both have live gameplay and deterministic replay tooling. Native
+behavior is established from the executable and recovered source; passing port
+regression tests alone does not establish parity with the original.
 
-## How to run (current)
+Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or
+[Zig build and tooling](zig-verifier.md).
 
-- `uv run crimson` (boot + splash/logo + menu + panels; Survival/Rush/Quests/Typ-o/Tutorial are all fully wired; menu idle triggers demo/attract)
-- `uv run crimson --preserve-bugs` (re-enable known original exe bugs/quirks; useful for parity/diff testing)
-- `uv run crimson view <name>` (debug views)
-- `uv run crimson view arsenal` (weapon/arsenal sandbox)
-- `uv run crimson quests 1.1` (quest spawn dump)
-- `cd crimson-zig && zig build --prefix zig-out && ./zig-out/bin/crimson-zig spawn-plan 0x12 --json` (native spawn-template summary)
-- `uv run crimson config` (inspect `crimson.cfg`)
+## Architecture and contracts
 
-## Zig port (current WIP)
+- [Module map](module-map.md): package boundaries, screen ownership, and runtime components.
+- [Deterministic session](deterministic-step-pipeline.md): live/replay tick order, input, and presentation.
+- [Run startup](replay-run-start.md): shared initialization, native capture boundary, and terrain RNG.
+- [Perks architecture](perks-architecture.md): explicit effect phases and ordering.
+- [Rendering pipeline](rendering-pipeline.md) and [terrain](terrain.md): drawing and decal application.
+- [Local multiplayer](local-multiplayer.md): the 3/4-player extension to native 1/2-player behavior.
+- [Netplay](netplay.md): deferred scope and requirements for a replacement.
 
-- Workspace: `crimson-zig/`
-- Current headless CLI surface includes `replay list`, `replay verify`,
-  `replay info`, `replay benchmark`, `replay verify-checkpoints`, and
-  `replay diff-checkpoints`, plus native `dbg record` CDT trace export,
-  `dbg verify`, `config`/`status` inspection, `quests` spawn-table dumps with
-  optional plan summaries, `spawn-plan` runtime materialization summaries, and
-  the installed `crimson-zig-asset-smoke` asset decode validator.
-- Project direction is a full native Zig port, not just a replay verifier.
-- The Zig tree now also has a real native desktop shell with boot/menu/gameplay/results/options/statistics flow and live Survival/Rush/Quests/Typ-o/Tutorial runs.
-- The default Zig install includes the CLI, the desktop `crimson-zig-window`
-  binary, quest support tools, and the asset smoke validator.
-- Replay verification is still the most mature headless Zig surface, with native + wasm replay/checkpoint build targets already in-tree.
-- Current state is advanced but still incomplete parity. The biggest remaining Zig work is replay/tooling breadth, product-shell parity including demo/trial polish, with [network play deferred](netplay.md).
-- See [Zig native port status](zig-verifier.md) for the current snapshot and [Zig port roadmap](zig-roadmap.md) for remaining work.
+## Parity work
 
-## What exists now
-
-### Boot + front-end
-
-- Splash screen geometry and fade timings.
-- Stage-based texture loading (boot stages 0..9).
-- Company logo sequence (10tons / Reflexive) with skip behavior.
-- Intro/theme music handoff.
-- Main menu buttons + animations (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
-- Play Game panel (mode select + player count dropdown + tooltips + debug-gated F1 “times played” overlay).
-- Quest select menu UI (stage icons + hardcore toggle gating + quest list + debug-gated counts/unlock shortcuts; quest gameplay wired).
-- Options panel (volume/detail/mouse sliders + “UI Info texts”; Controls supports 1..4 player selection, per-player direction-arrow toggle, and right-panel key/button/axis rebinding).
-- Statistics hub (High scores / Weapons / Perks / Credits panels; playtime + weapon usage + quest counters).
-- Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
-- Menu terrain selection matches original unlock-gated random variants (`(0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)`).
-- Survival/Rush regenerate terrain on start (menu terrain does not carry into a fresh gameplay run).
-- Menu sign shadow pass matches the original when `shadows_enabled` is enabled.
-- Demo/attract mode: idle trigger + variant sequencing; upsell overlay + trial overlay + purchase screen flow in demo builds.
-
-### Assets + rendering
-
-- PAQ archive reader and JAZ decoder (Construct-based).
-- Texture cache from `crimson.paq` with JAZ/TGA/JPG loaders.
-- Terrain renderer (render-target generation + UV scroll draw; decal baking via FX queues).
-- Shared `GameWorld` renderer (terrain + sprites for player/creatures/projectiles/bonuses, with debug fallbacks when assets are missing).
-- Raylib view runner with screenshot capture (P key).
-
-### Data tables + content
-
-- Quest builders for tiers 1-5 with metadata (titles, timers, terrain ids).
-- Spawn template map used by quests and demo rendering.
-- Weapon table, perk ids, and bonus ids mirrored into Python.
-
-### Audio
-
-- Music pack loader (`music.paq`) with raylib music streams.
-- Intro + theme playback with volume from `crimson.cfg`.
-- SFX system (`sfx.paq` or unpacked `assets_dir/sfx/*`) with key mapping + variant selection.
-- Deterministic audio planning with `AudioBridge` playback with per-creature-type death SFX (zombie, lizard, alien, spider, trooper).
-- Gameplay SFX hooks: weapon fire/reload, projectile hit (bullet/beam/explosion variants), creature death.
-- Survival music trigger integration (game tune activation on first hits).
-
-### Gameplay (modes)
-
-- `GameWorld` owns the active runtime state: players, projectiles, creatures, bonuses/perks, FX queues, terrain, and sprite rendering.
-- Survival/Rush/Quest/Typ-o/Tutorial loops are wired into the default `crimson` runner via `src/crimson/modes/*`.
-  - Player/projectile updates, creature pool + spawns, XP/level/perk selection UI, HUD overlay, terrain decal baking.
-  - Quest mode has all tiers 1-5 implemented with full spawn scripting.
-  - Tutorial mode has full stage-based progression with hint system.
-  - Typ-o-Shooter has typing mechanics with target matching and reload command.
-- Game over / high score entry screen is implemented for Survival/Rush/Typ-o.
-- Quest completion/failure screens are implemented (results + failed), including native reward-name lines for completed quest unlocks.
-- Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
-
-### Gameplay (sandbox)
-
-These sandboxes and runtime modules are still useful for focused iteration:
-
-- `player_update` port (movement, aiming, reload, firing, perk timers).
-- Projectile pools (main + secondary) with basic spawn/update/hit logic.
-- Bonus/perk application logic + bonus HUD state.
-- HUD overlay renderer (`src/crimson/ui/hud.py`) validated by mode integration tests.
-
-### Persistence + console
-
-- `game.cfg` status file decode/encode + checksum, loaded on boot and saved on exit.
-- Statistics screen reads `game.cfg` values (quest unlock indices, mode play counters, checksum status).
-- In-game console UI overlay (toggle with backtick) with commands + cvars.
-
-### Debug views (raylib)
-
-Available via `uv run crimson view <name>`:
-
-- `fonts` (font preview)
-- `game_over` (game over screen preview)
-- `spawn-plan` (spawn plan visualization; native runtime summaries are also
-  available through `crimson-zig spawn-plan`)
-- `perk-menu-debug` (perk selection UI)
-- `small-font-debug` (font glyph testing)
-- `arsenal` (weapon/arsenal sandbox)
-- `lighting-debug` (lighting/SDF sandbox)
-
-See also:
-
-- [Module map (Grim vs Crimson)](module-map.md)
-- [RNG caller mapping workflow](rng-caller-mapping-workflow.md)
-- [Mode systems](mode-systems.md)
-- [Deterministic step pipeline](deterministic-step-pipeline.md)
-- [Replay run start](replay-run-start.md)
-- [Quest identifiers](quest-identifiers.md)
-- [Netplay (deferred)](netplay.md)
-- [Local multiplayer rewrite notes](local-multiplayer.md)
-- [Rendering pipeline](rendering-pipeline.md)
-- [Float parity policy](float-parity-policy.md)
-- [Float expression precision map](float-expression-precision-map.md)
-- [Beam rendering (classic + RTX)](beam-rendering.md)
-- [CDT trace format (rewrite tooling)](cdt-trace-format.md)
-- [Trace format alignment plan](trace-format-alignment.md)
-- [Terrain (rewrite)](terrain.md)
-- [Perks architecture (rewrite)](perks-architecture.md)
-- [Original bugs (and rewrite fixes)](original-bugs.md)
-
-## Known gaps (short list)
-
-- Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
-- Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
-- `game.cfg` progression/unlock wiring is in place; some tail fields/counter semantics still need deeper mapping validation.
-- Full Options/Controls parity (video/window mode editing, full widget set).
-- Native online-score submission is out of scope; direction is a more advanced headless verification system.
-- Mods/plugin runtime and Other Games/shareware ad flows are out of scope for the rewrite.
-
-## Roadmap
-
-See: [Rewrite status / parity gaps](status.md)
+- [Original bugs](original-bugs.md): intentional fixes and `--preserve-bugs` behavior.
+- [Float policy](float-parity-policy.md) and [precision map](float-expression-precision-map.md).
+- [Trace contracts](trace-format-alignment.md) and [CDT format](cdt-trace-format.md).
+- [Differential playbook](../frida/differential-playbook.md) and [evidence records](../verification/evidence-ledger/index.md).
+- [RNG caller mapping](rng-caller-mapping-workflow.md).

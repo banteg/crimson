@@ -18,7 +18,7 @@ that consumed RNG out of order.
 ## Workflow
 
 1. Capture paired traces with [gameplay differential capture](gameplay-diff-capture.md).
-2. Use [differential sessions](differential-sessions.md) to locate the first divergent tick.
+2. Use [Evidence records](../verification/evidence-ledger/index.md) to locate the first divergent tick.
 3. Compare surrounding call sites and state deltas using the [differential playbook](differential-playbook.md).
 4. Confirm candidate fix by re-running the same seed and input stream.
 

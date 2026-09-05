@@ -42,8 +42,8 @@ We track spawn-template rewrite coverage in `docs/creatures/spawning.md`.
 
 Tests live in:
 
-- `tests/test_spawn_plan.py` (template plan assertions)
-- `tests/test_spawn_slots.py` (spawn-slot tick semantics used by `creature_update_all`)
+- `tests/creatures/test_spawn_plan.py` (template plan assertions)
+- `tests/creatures/test_spawn_slots.py` (spawn-slot tick semantics used by `creature_update_all`)
 
 ## Spawn slots in the plan
 

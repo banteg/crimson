@@ -14,6 +14,6 @@ Original game file and asset format reverse engineering used by extraction and r
 - [Fonts](../../formats/fonts.md)
 - [Sprite atlas cutting](../../formats/atlas.md)
 - [Extraction pipeline](../../formats/pipeline.md)
-- [Python executable spec](../../formats/python-executable-spec.md)
+- [CLI setup and invocation](../../contributor/setup.md)
 - [Save/status format](../../formats/save-status-format.md)
 - [Config blob (crimson.cfg)](../../formats/crimson-cfg.md)

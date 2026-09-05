@@ -87,7 +87,7 @@ deterministic.
 
 ## Current replay contract
 
-CRD replay format 18 is the only supported version. A `ReplayHeader` includes
+Only the current [replay/trace formats](trace-format-alignment.md#current-only-contract) are supported. A `ReplayHeader` includes
 the run seed/state, mode, player count, status, quest settings, and optional
 initial creature-pool residue.
 The file envelope is exactly one zstd frame containing the typed msgpack replay;
@@ -110,12 +110,11 @@ Every `ReplayTick` carries:
 Live perk commands use the same ordered handler as the recorded prelude.
 Simulation timing is calculated after those commands, so a Reflex Boosted pick
 affects the same tick in live play and playback. Each pick's immediate effects
-see the timing established by earlier picks. These corrections retain format
-16's existing prelude semantics; there is no alternate legacy execution path.
+see the timing established by earlier picks. Live and recorded operations have the same phase ordering.
 
-Frida capture format 22 writes the same five values in each raw tick's
+The Frida capture producer writes the same five values in each raw tick's
 `channels.replay_step`. Finalization uses that channel to build the CRD sidecar,
-and CDT schema 15 preserves it for direct comparison with replay-recorded
+and CDT preserves it for direct comparison with replay-recorded
 traces.
 
 There is no independent replay-input stream or inferred movement input.
@@ -150,9 +149,8 @@ recoverable session snapshot.
 
 ## Latest-only policy
 
-- CRD loaders require replay format 16.
-- Frida finalization requires raw capture format 22.
-- CDT readers require container 2 and schema 15.
+- Readers require the current [version matrix](trace-format-alignment.md#current-only-contract).
+- `uv run crimson dbg verify` checks Python, Zig and Frida declarations for drift.
 - Unknown fields and incomplete lifecycle rows are rejected.
 - Older throwaway artifacts are regenerated, not migrated.
 
@@ -181,3 +179,24 @@ and after input ticks through actual mode open/start and recorder/playback paths
 including multiplayer-sized local runs, preserved quirks, and non-default visual
 settings. Typ-o commands retain their inside-tick phase, after loadout enforcement;
 perk picks run before timing is derived.
+
+## Terrain RNG and rendering
+
+`src/crimson/sim/bootstrap.py` owns terrain RNG advancement. Both
+`advance_unlock_terrain` and `advance_explicit_terrain` mutate the supplied RNG
+through all procedural stamping draws and return a `TerrainSetup` with the
+selected slots, the state before stamping, and the generation kind.
+Unlock-driven generation first consumes the native three-draw prelude and
+unlock-gated slot selection; explicit generation uses the supplied slots.
+
+The authoritative stream is already past the terrain window when simulation
+continues. `GroundRenderer` reconstructs the image from a local `CrtRand` seeded
+with `TerrainSetup.terrain_seed`; drawing or replacing a render target must not
+advance gameplay RNG again. The setup is derived during initialization, not
+stored as a second replay seed or serialized `TerrainSetup` in the CRD header.
+
+Quest ordering is generic unlock terrain, score-tag draw, explicit quest terrain,
+then spawn-table construction. Menu terrain uses the unlock helper; attract-mode
+variants use explicit terrain. Keep those native differences at setup call sites.
+See `tests/sim/test_terrain_bootstrap.py` and
+`tests/render/test_terrain_runtime_boundaries.py` for the boundary tests.

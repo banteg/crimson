@@ -38,7 +38,7 @@ This project prioritizes deterministic parity with the original executable. The 
 
 ## Suite Layout
 
-- Place tests under the nearest domain directory (`tests/perks/`, `tests/net/`, `tests/replay/`, `tests/render/`, and similar) instead of adding new top-level `tests/test_*.py` files.
+- Place tests under the nearest domain directory (`tests/perks/`, `tests/sim/`, `tests/replay/`, `tests/render/`, and similar) instead of adding new top-level `tests/test_*.py` files.
 - Keep shared builders, fixtures-as-code, and assertion helpers under `tests/support/`.
 - Keep binary/static fixtures under `tests/fixtures/`.
 - Keep syrupy snapshots in `__snapshots__/` beside the owning test package.

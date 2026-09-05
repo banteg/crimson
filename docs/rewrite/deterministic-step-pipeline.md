@@ -3,9 +3,11 @@ tags:
   - status-parity
 ---
 
-# Deterministic Step Pipeline
+# Deterministic session
 
-Live gameplay, replay verification/playback, and headless harnesses step the same
+All five gameplay modes initialize through `RunSpec` and `initialize_run`; see
+[run startup](replay-run-start.md). Live gameplay, replay verification/playback,
+and headless harnesses step the same
 `DeterministicSession` in `src/crimson/sim/sessions.py`.
 
 ## Tick contract
@@ -22,8 +24,8 @@ The session returns one `DeterministicSessionTick` containing:
 - an immutable `DeterministicPresentationPlan`, including quest sound and music requests;
 - elapsed time, creature count, and quest completion state for that tick.
 
-`TickResult` adds the source input and optional replay index. There is no nested
-step payload. Presentation profiling time lives on the session and is collected
+`TickResult` holds that result in `payload`, alongside the source input and
+optional replay index. Presentation profiling time lives on the session and is collected
 by the outer loop, outside the deterministic result.
 
 ```mermaid
@@ -62,7 +64,8 @@ replay source timing while sharing result application.
 
 Local input keeps unconsumed button edges across zero-tick render frames, uses
 the latest held controls and aim, and clears true edges after the first tick.
-Pausing clears pending edges and clock debt while retaining explicit commands.
+A pending fire press resolves to `fire_down=True` for one tick, so wheel input
+and clicks released before a tick still fire. Pausing clears pending edges and clock debt while retaining explicit commands.
 Movement fields named `*_pressed` represent held controls in the existing format.
 
 Survival and rush time belongs to `DeterministicSession.elapsed_ms`; quest time
@@ -89,73 +92,15 @@ The deterministic pipeline uses one authoritative RNG stream:
 `WorldState.step`, the deterministic session hooks, and replay verification all
 consume that stream in a stable per-tick order.
 
-### RNG Trace Mode
+## Validation and tools
 
-Replay verification and checkpoint verification expose `--trace-rng`:
+`tests/sim/test_step_pipeline_parity.py` covers live batching and playback
+behavior; `tests/replay/test_live_run_start.py` compares full session state
+through actual mode startup and recording. Compact checkpoints support native
+comparison but omit state: use `session_digest` in `src/crimson/dbg/state_digest.py`
+for same-build port regression checks.
 
-```bash
-uv run crimson replay verify replay.crd --trace-rng
-uv run crimson replay verify-checkpoints replay.crd --trace-rng
-```
-
-When enabled, the replay driver records per-tick presentation/gameplay RNG draw
-rows while building the usual checkpoint or verifier trace. Checkpoint sidecars
-still compare the stable checkpoint schema: state, RNG state, deaths, events,
-score/kills, and mode snapshots.
-
-## Replay Verify
-
-`replay verify` runs the replay headlessly through `PlaybackDriver` and emits
-the simulated run result: ticks, elapsed time, score, kills, weapon/shots
-stats, and RNG state.
-
-```bash
-uv run crimson replay verify replay.crd
-uv run crimson replay verify replay.crd --format json
-```
-
-Header claimed-stat mismatches still return exit code `3`.
-
-## Replay Info
-
-`replay info` runs the same deterministic replay simulation and emits a
-chronological event timeline sourced from `collect_replay_info(driver, ...)`.
-
-```bash
-uv run crimson replay info replay.crd
-uv run crimson replay info replay.crd --format json --json-out analysis/replay/info.json
-```
-
-The machine-readable payload is versioned (`schema_version=2`) and includes a
-summary plus ordered timeline events.
-
-## Replay Benchmark And Render
-
-`replay benchmark` and `replay render` also build on the same replay-driver contract.
-
-```bash
-uv run crimson replay benchmark replay.crd --runs 8 --warmup-runs 2
-uv run crimson replay benchmark replay.crd --mode render --runs 8 --warmup-runs 2
-uv run crimson replay render replay.crd
-```
-
-Headless benchmark uses the verify driver. Render benchmark and replay render
-use replay playback mode on top of the same deterministic replay stepping.
-
-## Replay Checkpoints Comparison
-
-Replay checkpoints are compared by replaying through the same deterministic
-driver path and diffing checkpoint state, RNG marks, deaths, events, and score/kills metadata.
-
-```bash
-uv run crimson replay verify-checkpoints replay.crd
-uv run crimson replay diff-checkpoints expected.crd.chk actual.crd.chk
-```
-
-This keeps checkpoint verification aligned with the same deterministic contract
-used by headless replay validation and replay playback.
-
-## Differential Testing Path
-
-For original-game comparison, use unified trace (`.cdt`) tooling.
-Frida capture host finalizes raw JSONL directly into `.cdt`.
+Replay play, verify, info, benchmark and render all use this simulation contract.
+Use `uv run crimson replay --help` and command-specific help for options. Native
+capture comparisons use the [CDT contract](trace-format-alignment.md) and
+[differential playbook](../frida/differential-playbook.md).

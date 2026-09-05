@@ -153,4 +153,4 @@ If any condition is missing, keep the native-looking float behavior.
 - Use explicit spill points (`roundF32`) where native would store to `float`.
 - Prefer parity captures and focused traces over intuitive “cleanup”.
 - Document any intentional float deviation in the differential capture ledger:
-  `docs/frida/differential-sessions.md`.
+  `analysis/` capture records.
