@@ -19,13 +19,20 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
         assert recorder.tick_index == 1
 
     game_over = mocker.patch.object(mode, "_enter_game_over", side_effect=check_finished_recording)
-    mode.player.health = 0.0
+    mode.player.health = 1.0
+    attacker = mode.creatures.entries[0]
+    attacker.active = True
+    attacker.hp = 100.0
+    attacker.size = 50.0
+    attacker.pos = mode.player.pos
+    attacker.contact_damage = 100.0
     session = mode._sim_session
     assert session is not None
 
     mode._run_deterministic_session_ticks(dt_frame=1 / 30, session=session, recorder=recorder)
 
     game_over.assert_called_once_with()
+    assert mode.player.health <= 0.0
     assert recorder.tick_index == mode._tick_runner_next_tick_index == 1
     assert session.elapsed_ms == 16.0
     assert len(present.call_args.kwargs["outputs"]) == 1
