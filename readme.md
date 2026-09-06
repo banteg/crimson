@@ -138,6 +138,11 @@ zensical serve
 For deterministic gameplay code, float behavior is part of the contract.  
 See [`docs/rewrite/float-parity-policy.md`](docs/rewrite/float-parity-policy.md).
 
+## Related projects
+
+- [CrimsonVR](https://github.com/Brobert-in-aus/CrimsonVR) — an independent
+  OpenXR port for Quest and PCVR, maintained separately from this project.
+
 ## Contributing
 
 - Keep changes small and reviewable — one subsystem at a time.
