@@ -14,12 +14,12 @@ fade envelopes and that the icon size pulse is `pow(sin(phase), 2.0)`, not a
 fourth power. The modern renderer parity fix is tracked separately from this
 matching scratch.
 
-The complete VC6 scratch currently matches 89.93% (1,088 target instructions,
-1,087 candidate instructions, 14-instruction exact prefix). Reference auditing
-reports 223 aligned references, no unresolved references, and 6 mismatches.
-The remaining reference mismatches are instruction-alignment or strength-
-reduced field-anchor differences such as `particle_style_id` versus the same
-record's `intensity` field; no reference aliases are used.
+The complete VC6 scratch now matches 92.647059% (1,088 target and candidate
+instructions, 14-instruction exact prefix). Reference auditing reports 232
+aligned references with no mismatches or unresolved references. The remaining
+differences concern the weapon-pass register lifetime, Telekinetic block
+placement, and beam x87 scheduling; no reference aliases are used. The dated
+measurements below describe earlier source checkpoints.
 
 The strongest source-shape evidence was VC6's treatment of index-based pool
 loops. Writing the particle, secondary-projectile, and sprite-effect walks as
@@ -325,3 +325,38 @@ controls against the 92.045977% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+
+## Telekinetic indexed publication recovery (2026-09-07)
+
+Native at `0x00429efa` keeps the selected bonus's byte-scaled index
+through `bonus_apply` and directly publishes the state and remaining time to
+the pool. The earlier local `bonus_entry_t *entry` caused VC6 to retain the
+record address instead. Calling and storing directly through
+`bonus_pool[nearby_bonus_index]` recovers the native indexed owner, raises the
+match from **92.045977% to 92.647059%**, restores **1,088/1,088 instructions**,
+and increases aligned references from **229/0/0 to 232/0/0**. The fuzzy gain is
+**24.572224 weighted bytes**; prefix remains 14 and `body_byte_exact` remains
+false.
+
+The nearby search also now publishes each field directly through the same
+ordinary integer index. This removes the redundant cursor and exposes the
+native signed loop bound (`jl` at `0x00429df0`). It is neutral in the aggregate
+score, whose branch-label differences already cover this region, while
+recovering the native comparison semantics. The found flag, exhaustion timer
+reset, label rendering, pickup threshold, and early exit keep their order.
+
+`telekinetic-indexed-publication-controls.json` uses the improved source as its
+baseline and preserves four focused controls. Restoring the pointer search
+keeps the score and instruction count but reintroduces its unsigned branch.
+Restoring the pickup pointer, alone or together with the search pointer,
+returns to 92.045977%, 1,087/1,088 instructions, and 229/0/0 references.
+A natural outer `for` with label rendering inside the search raises the fuzzy
+score to 95.448276% and references to 234/0/0, but loses the recovered
+instruction count (1,087/1,088), so it is retained only as an explicit
+instruction-count tradeoff control.
+
+The formatted source passes the scratch validator and its focused probe.
+No pool bounds, floating-point operations, helper contracts, compiler options,
+or reference mappings change. Integration validation belongs to the
+coordinating matching run.

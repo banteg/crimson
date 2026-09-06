@@ -237,20 +237,18 @@ extern "C" void bonus_render(void)
         while (1) {
             if (player->health > 0.0f) {
                 nearby_bonus_index = 0;
-                bonus_entry_t *nearby_bonus = bonus_pool;
                 int nearby_bonus_found = 0;
                 while (1) {
-                    if (nearby_bonus->bonus_id != BONUS_ID_NONE
+                    if (bonus_pool[nearby_bonus_index].bonus_id != BONUS_ID_NONE
                         && bonus_render_distance(
                                &player->aim,
-                               &nearby_bonus->time.position)
+                               &bonus_pool[nearby_bonus_index].time.position)
                             < 24.0f) {
                         nearby_bonus_found = 1;
                         break;
                     }
-                    ++nearby_bonus;
                     ++nearby_bonus_index;
-                    if (nearby_bonus >= &bonus_pool[16]) {
+                    if (nearby_bonus_index >= 16) {
                         *hover_timer = 0;
                         break;
                     }
@@ -282,11 +280,10 @@ extern "C" void bonus_render(void)
                 if (*hover_timer > 650
                     && perk_count_get(perk_id_telekinetic)
                     && bonus_pool[nearby_bonus_index].state == 0) {
-                    bonus_entry_t *entry =
-                        &bonus_pool[nearby_bonus_index];
-                    bonus_apply(player_index, entry);
-                    entry->state = 1;
-                    entry->time.time_left = 0.5f;
+                    bonus_apply(
+                        player_index, &bonus_pool[nearby_bonus_index]);
+                    bonus_pool[nearby_bonus_index].state = 1;
+                    bonus_pool[nearby_bonus_index].time.time_left = 0.5f;
                     telekinetic_bonus_hover_timer_ms[player_index] = 0;
                     break;
                 }
