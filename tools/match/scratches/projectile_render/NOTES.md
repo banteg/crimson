@@ -1115,3 +1115,22 @@ and
 `7a7e3b0203239dace6adaf364416c37e792ae610715ca0c19d48c0db683773b2`.
 The updated experiment log SHA-256 is
 `d6330d3e89f0a6debce638bb1097ba29dd2d3e3b630ff34b6c69316e089eec7e`.
+
+## Secondary sprite and glow value boundaries (2026-09-06)
+
+Native secondary sprites retain screen coordinates across the color callback
+(`0x0042588c..0x00425a08`). The glow arms separately materialize direction,
+scaled offset, screen coordinate, and the shifted draw position
+(`0x00425ae0..0x00425b73` and the following rocket/seeker arms).
+
+`secondary-glow-value-stages-2026-09-06-mutations.json` evaluates nine
+complete single-arm controls: named direction, named scaled offset, and all
+four value stages, for each glow type. All are byte-neutral.
+`secondary-draw-value-boundary-2026-09-06-mutations.json` evaluates two
+complete inline draw helpers carrying the sprite coordinate by value or
+const reference across all three sprite arms. Both are also byte-neutral.
+
+All 11 controls compile and complete; no source change is retained. The
+baseline remains **58.550626%**, **2885/3021** instructions, prefix **0**,
+and **448/0/10** references. The plans cover these specific secondary-pass
+boundaries, not the large ion-arc or conventional-trail regions.

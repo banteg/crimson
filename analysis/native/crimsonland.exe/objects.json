@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "c783a3ccef0591e69002e1e98fe489e7c63f2a2fa769947c462b5ae0b03983c9",
+  "audit_digest": "a5fa930111cc171e137cf19f210f37b250bba35d08cab3a16ed448591ef9aa34",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -56586,7 +56586,7 @@
         {
           "path": "tools/match/scratches/projectile_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "3b049fef102c64387f3a33e4c0a2975083cfa76cc6bdc52daeb88290e45fe400"
+          "sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1"
         },
         {
           "path": "tools/match/scratches/projectile_update/scratch.conf",
@@ -56642,23 +56642,23 @@
           "canonical_config_sha256": "f3588b2bda9b53ccf6f57e3c913040e47f20f6193883cc4841f4fb53e2604e50",
           "canonical_scratch": "tools/match/scratches/projectile_update",
           "canonical_source": "tools/match/scratches/projectile_update/scratch.cpp",
-          "canonical_source_sha256": "3b049fef102c64387f3a33e4c0a2975083cfa76cc6bdc52daeb88290e45fe400",
+          "canonical_source_sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1",
           "effective_end": 4336745,
           "end": 4336745,
-          "experiment_epoch": "7c160f77b6074f61cb24c7da026e7ac7bad23df5c30f7e2c531c5b7875254d7b",
+          "experiment_epoch": "bb7e320094457b7936a8a4a3b51f82243f8732772329c791a0dcb270735e9f45",
           "function": "projectile_update",
           "match": {
             "body_byte_exact": false,
-            "candidate_instructions": 2176,
-            "masked_mismatches": 18,
-            "masked_ok": 417,
+            "candidate_instructions": 2183,
+            "masked_mismatches": 13,
+            "masked_ok": 426,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
             "prefix_instructions": 0,
-            "ratio": 0.6266270838090888,
+            "ratio": 0.6288189694482444,
             "state": "wip",
             "target_instructions": 2203
           },
@@ -56668,25 +56668,25 @@
       ],
       "match": {
         "body_byte_exact": false,
-        "candidate_instructions": 2176,
-        "masked_mismatches": 18,
-        "masked_ok": 417,
+        "candidate_instructions": 2183,
+        "masked_mismatches": 13,
+        "masked_ok": 426,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
         "prefix_instructions": 0,
-        "ratio": 0.6266270838090888,
+        "ratio": 0.6288189694482444,
         "state": "wip",
         "target_instructions": 2203
       },
       "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
       "object_function_symbol": "_projectile_update",
-      "object_sha256": "fc1ba9f213cc1fa20c0912c68e456f83300a43f307109f420846e5361c186be2",
+      "object_sha256": "ed87d4aeadb4b96a765f943ed4597645c74e2f64037b62a4c3565abb5950e71c",
       "scratch": "tools/match/scratches/projectile_update",
       "source": "tools/match/scratches/projectile_update/scratch.cpp",
-      "source_sha256": "3b049fef102c64387f3a33e4c0a2975083cfa76cc6bdc52daeb88290e45fe400",
+      "source_sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1",
       "target_size": 8409,
       "translation_unit": {
         "kind": "isolated",
@@ -64724,7 +64724,7 @@
         {
           "path": "tools/match/scratches/creature_spawn_template/scratch.cpp",
           "repository_relative": true,
-          "sha256": "55b39c9935bb4ed7692a585685325756b86e6b906f5dbdaffbaed6ec65460070"
+          "sha256": "5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f"
         },
         {
           "path": "tools/match/scratches/creature_spawn_template/scratch.conf",
@@ -64770,10 +64770,10 @@
           "canonical_config_sha256": "99c8fd411c5991a0a904d0ccc19975e32f92990224059fd62d1f32084265cfdb",
           "canonical_scratch": "tools/match/scratches/creature_spawn_template",
           "canonical_source": "tools/match/scratches/creature_spawn_template/scratch.cpp",
-          "canonical_source_sha256": "55b39c9935bb4ed7692a585685325756b86e6b906f5dbdaffbaed6ec65460070",
+          "canonical_source_sha256": "5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f",
           "effective_end": 4407811,
           "end": 4407811,
-          "experiment_epoch": "8bd01ac02750f97d561659adeeae364b66be825f4ff2cf3bd4eb371fa33ba537",
+          "experiment_epoch": "1ff427cf4b9594f352fd27202b126840ca2ffd8fb37eecade85dc88a641bc2a9",
           "function": "creature_spawn_template",
           "match": {
             "body_byte_exact": false,
@@ -64786,7 +64786,7 @@
               "target": 0
             },
             "prefix_instructions": 23,
-            "ratio": 0.8876582278481012,
+            "ratio": 0.8889240506329114,
             "state": "wip",
             "target_instructions": 3159
           },
@@ -64805,16 +64805,16 @@
           "target": 0
         },
         "prefix_instructions": 23,
-        "ratio": 0.8876582278481012,
+        "ratio": 0.8889240506329114,
         "state": "wip",
         "target_instructions": 3159
       },
       "object": "tools/match/scratches/creature_spawn_template/build/msvc6.5/5e4a09ff02f61a15/scratch.obj",
       "object_function_symbol": "_creature_spawn_template",
-      "object_sha256": "4c34aeda439b0d86fd8784529cac773c039fc4f3238c185cce1456181a807497",
+      "object_sha256": "e1089e6c68874bc8c0f87bcdc371d5c21b4eb34a1320ce0af6e8a4c5082685fb",
       "scratch": "tools/match/scratches/creature_spawn_template",
       "source": "tools/match/scratches/creature_spawn_template/scratch.cpp",
-      "source_sha256": "55b39c9935bb4ed7692a585685325756b86e6b906f5dbdaffbaed6ec65460070",
+      "source_sha256": "5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f",
       "target_size": 14099,
       "translation_unit": {
         "kind": "isolated",

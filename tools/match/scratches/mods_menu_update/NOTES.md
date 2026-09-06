@@ -332,3 +332,18 @@ declarations, and inlined resource/render helpers are byte-neutral on this
 improved form. The 16-byte difference remains unproven source-storage debt;
 no array size, padding, union, forced stack address, or compiler option was
 changed to hide it.
+
+## Enumeration and version buffer lifetime cross (2026-09-06)
+
+The live native disassembly places the enumeration record at `[esp+0x3c]`
+(`0x0040eac5`) and later version text at the same base (`0x0040ee2c`, after
+argument cleanup). The candidate places only the enumeration record 16 bytes
+higher; version text and all other matched instructions already agree.
+
+`buffer-lifetime-cross-2026-09-06-mutations.json` evaluates all eight
+non-baseline combinations of function, branch, and narrow buffer lifetimes.
+Every control compiles and is byte-neutral at **98.919753%**, **648/648**
+instructions, prefix **0**, **184/0/0** references, and a **0x154** frame
+versus native **0x144**. No source, buffer extent, or storage overlay changed.
+The unresolved question is the original buffer ownership or compiler lifetime
+boundary; these scope controls alone do not recover it.

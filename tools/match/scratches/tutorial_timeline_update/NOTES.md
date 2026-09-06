@@ -209,3 +209,23 @@ than counted as matching evidence.
 This bounds the obvious construction syntax while preserving the recovered
 semantics. No source changed; the baseline remains **76.75597%**, 686/695
 instructions, prefix 6, and `169/0/1` references.
+
+## Complete formation joins and workspace interactions (2026-09-06)
+
+Live native instructions at `0x00409175..0x004092a9` reuse one position
+workspace across both formation branches and merge their final green-alien
+spawn. Eight complete branch-join controls preserve both branches' three
+ordinary spawns and optional carrier, including helper/direct calls, local
+scopes, and the pre-call repeat-count snapshot. All regress.
+
+Fifteen additional complete controls cross those forms with function-scope
+and already-escaped stage-three workspaces. None improves the baseline; the
+closest reaches 75.887038% versus 76.755965%. The remaining reference mismatch
+is the local five-case bonus jump table, whose destination offsets differ
+with the generated body; it was not suppressed.
+
+All 23 controls compiled and completed. Plans are
+`formation-branch-join-2026-09-06-mutations.json` and
+`formation-workspace-interactions-2026-09-06-mutations.json`.
+Canonical source stays at **76.755965%**, **686/695** instructions, prefix
+**6**, and **169/0/1** references. These results bound the tested forms only.

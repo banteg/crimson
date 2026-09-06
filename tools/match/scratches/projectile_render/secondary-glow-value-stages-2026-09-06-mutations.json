@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "glow-15",
+      "find": "            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(\n                          (float)cos(heading), (float)sin(heading))\n                    * 9.0f\n                - 15.0f;",
+      "replacements": [
+        {
+          "name": "direction",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - direction\n                    * 9.0f\n                - 15.0f;"
+        },
+        {
+          "name": "offset",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t offset = direction * 9.0f;\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - offset\n                - 15.0f;"
+        },
+        {
+          "name": "complete-stages",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t offset = direction * 9.0f;\n            projectile_render_vec2_t screen =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t glow = screen - offset;\n            projectile_render_vec2_t draw_pos = glow - 15.0f;"
+        }
+      ]
+    },
+    {
+      "name": "glow-30",
+      "find": "            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(\n                          (float)cos(heading), (float)sin(heading))\n                    * 9.0f\n                - 30.0f;",
+      "replacements": [
+        {
+          "name": "direction",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - direction\n                    * 9.0f\n                - 30.0f;"
+        },
+        {
+          "name": "offset",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t offset = direction * 9.0f;\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - offset\n                - 30.0f;"
+        },
+        {
+          "name": "complete-stages",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t offset = direction * 9.0f;\n            projectile_render_vec2_t screen =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t glow = screen - offset;\n            projectile_render_vec2_t draw_pos = glow - 30.0f;"
+        }
+      ]
+    },
+    {
+      "name": "glow-20",
+      "find": "            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(\n                          (float)cos(heading), (float)sin(heading))\n                    * 9.0f\n                - 20.0f;",
+      "replacements": [
+        {
+          "name": "direction",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - direction\n                    * 9.0f\n                - 20.0f;"
+        },
+        {
+          "name": "offset",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t offset = direction * 9.0f;\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - offset\n                - 20.0f;"
+        },
+        {
+          "name": "complete-stages",
+          "text": "            projectile_render_vec2_t direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t offset = direction * 9.0f;\n            projectile_render_vec2_t screen =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t glow = screen - offset;\n            projectile_render_vec2_t draw_pos = glow - 20.0f;"
+        }
+      ]
+    }
+  ]
+}

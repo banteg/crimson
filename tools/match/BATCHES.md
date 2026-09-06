@@ -1,21 +1,23 @@
 # Remaining EXE matching batches
 
-Snapshot: `5ab2935e2` (633-exact source checkpoint), refreshed on 2026-09-05. The native audit
+Snapshot: `6cb753d41` (633-exact source checkpoint), refreshed on 2026-09-06. The native audit
 and matching checkpoint reproduce all 671 EXE candidates, including the 38 remaining functions.
-The [latest UI storage follow-up](UI-STORAGE-FOLLOWUP-2026-09-05.md) improved the mods menu to
-98.92% after the [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md) and the
+The [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md) improves creature-template grid
+publication and projectile tint clamps. It follows the [UI storage recovery](UI-STORAGE-FOLLOWUP-2026-09-05.md),
+[two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md), and
 [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
 **EXE: 633/671 exact; Grim: 139/139 exact.** The EXE frontier is 38 functions spanning 153,591
-code bytes, with 30,031 fuzzy-gap bytes. The top five functions hold 68.2% of that gap, and the
+code bytes, with 29,995 fuzzy-gap bytes. The top five functions hold 68.2% of that gap, and the
 top ten hold 86.2%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
 Batches 01–08 have received a focused first pass; their remaining members need a new hypothesis
-or an interaction supported by the recorded results. Batch 09 is the next unworked focused
-group. Batches 10–14 need region-sized campaigns, with the smaller UI and worker findings
-available as controls. Keep batch IDs stable as exact members leave the frontier. Batch
+or an interaction supported by the recorded results. Batch 09 has now received focused tutorial
+and grid-template probes; creature rendering remains next within that group. Batch 12 has a
+retained tint gain and bounded secondary-render controls. Batches 10–14 still need region-sized
+campaigns, with the smaller UI and worker findings available as controls. Keep batch IDs stable as exact members leave the frontier. Batch
 membership describes related work, not an estimate that every member will become exact in one
 session.
 
@@ -37,18 +39,18 @@ successful siblings as controls rather than templates to copy mechanically.
 | [06](#batch-06) | Menu object and aggregate lifetimes | 3 | 481 |
 | [07](#batch-07) | UI loops, formatting, and board state | 3 | 926 |
 | [08](#batch-08) | HUD and effect rendering | 4 | 2,053 |
-| [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 3 | 2,834 |
+| [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 3 | 2,816 |
 | [10](#batch-10) | High-score screen | 1 | 1,731 |
 | [11](#batch-11) | Player simulation and weapon dispatch | 1 | 5,849 |
-| [12](#batch-12) | Projectile simulation and rendering | 2 | 8,342 |
+| [12](#batch-12) | Projectile simulation and rendering | 2 | 8,324 |
 | [13](#batch-13) | Creature simulation lifecycle | 1 | 2,403 |
 | [14](#batch-14) | Controls menu and repeated dispatch | 1 | 3,891 |
 
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 11 H
-functions and 27 with current records. Retained source changes start a new baseline epoch, so H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 35 H
+functions and 3 with current records. Retained source changes start a new baseline epoch, so H
 can include a function improved in this pass; the campaign report preserves the gain evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
@@ -94,10 +96,10 @@ changing syntax.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [perk_apply](scratches/perk_apply/NOTES.md) | 99.59% | 241/241 | 4 | 0 | S |
-| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | A |
-| [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | A |
-| [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | I |
+| [perk_apply](scratches/perk_apply/NOTES.md) | 99.59% | 241/241 | 4 | 0 | H |
+| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | H |
+| [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | H |
+| [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | H |
 
 - **perk_apply:** Bandage materializes the health cursor before the count guard; native does it
   after. Everything else now aligns (241 instructions, prefix 193). Trace why this one loop carries
@@ -127,11 +129,11 @@ record-construction boundary at a time; the successful idiom may differ between 
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | S |
-| [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | A |
+| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | H |
+| [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | H |
 | [quest_build_survival_of_the_fastest](scratches/quest_build_survival_of_the_fastest/NOTES.md) | 79.39% | 228/228 | 177 | 0 | H |
-| [creature_spawn](scratches/creature_spawn/NOTES.md) | 88.61% | 79/79 | 38 | 0 | I |
-| [projectile_spawn](scratches/projectile_spawn/NOTES.md) | 71.67% | 114/126 | 113 | 0 | S |
+| [creature_spawn](scratches/creature_spawn/NOTES.md) | 88.61% | 79/79 | 38 | 0 | H |
+| [projectile_spawn](scratches/projectile_spawn/NOTES.md) | 71.67% | 114/126 | 113 | 0 | H |
 
 - **quest_build_spiders_inc:** The wave count is computed before the pointer calculation in native
   but stored after coordinates. Candidate gets the registers right by storing it early. Recover a
@@ -166,7 +168,7 @@ target extents already include their epilogues.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [highscore_sync_worker](scratches/highscore_sync_worker/NOTES.md) | 77.14% | 525/525 | 453 | 0 | H |
-| [statistics_update_check_worker](scratches/statistics_update_check_worker/NOTES.md) | 78.38% | 373/367 | 297 | 0 | S |
+| [statistics_update_check_worker](scratches/statistics_update_check_worker/NOTES.md) | 78.38% | 373/367 | 297 | 0 | H |
 
 - **highscore_sync_worker:** Zeroing the complete 64-byte request path before literal character
   publication recovered the native initialization shape: 77.14%, 525/525 instructions, 119 clean
@@ -190,10 +192,10 @@ including later calls that can affect an earlier stack slot.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | 99.21% | 378/378 | 12 | 0 | A |
-| [survival_update](scratches/survival_update/NOTES.md) | 98.21% | 504/504 | 38 | 0 | A |
-| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | S |
-| [demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) | 98.11% | 636/636 | 46 | 0 | A |
+| [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | 99.21% | 378/378 | 12 | 0 | H |
+| [survival_update](scratches/survival_update/NOTES.md) | 98.21% | 504/504 | 38 | 0 | H |
+| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | H |
+| [demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) | 98.11% | 636/636 | 46 | 0 | H |
 
 - **player_fire_weapon:** Only the pellet position stack operands remain: native uses the upper
   position pair after the two sprite calls, candidate the lower pair. Trace both calls and pellet
@@ -222,10 +224,10 @@ and checks of its exact consumers.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [unlocked_weapons_database_update](scratches/unlocked_weapons_database_update/NOTES.md) | 99.81% | 523/523 | 4 | 0 | A |
-| [unlocked_perks_database_update](scratches/unlocked_perks_database_update/NOTES.md) | 99.80% | 511/511 | 4 | 0 | S |
-| [ui_cursor_render](scratches/ui_cursor_render/NOTES.md) | 98.87% | 177/177 | 8 | 0 | S |
-| [ui_element_render](scratches/ui_element_render/NOTES.md) | 97.89% | 521/521 | 38 | 0 | S |
+| [unlocked_weapons_database_update](scratches/unlocked_weapons_database_update/NOTES.md) | 99.81% | 523/523 | 4 | 0 | H |
+| [unlocked_perks_database_update](scratches/unlocked_perks_database_update/NOTES.md) | 99.80% | 511/511 | 4 | 0 | H |
+| [ui_cursor_render](scratches/ui_cursor_render/NOTES.md) | 98.87% | 177/177 | 8 | 0 | H |
+| [ui_element_render](scratches/ui_element_render/NOTES.md) | 97.89% | 521/521 | 38 | 0 | H |
 
 - **unlocked_weapons_database_update:** One title-separator schedule inversion: native loads the
   renderer vtable before converting title width with fild. Compare its expression boundary with the
@@ -253,8 +255,8 @@ local until a common owner is demonstrated.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | H |
-| [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md) | 95.89% | 803/803 | 141 | 0 | A |
+| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | A |
+| [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md) | 95.89% | 803/803 | 141 | 0 | H |
 | [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) | 95.69% | 1408/1422 | 312 | 0 | H |
 
 - **mods_menu_update:** Short separator and independent button lifetimes recovered all opening,
@@ -284,8 +286,8 @@ matters.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [ui_scrollbar_update](scratches/ui_scrollbar_update/NOTES.md) | 82.43% | 477/479 | 311 | 0 | H |
-| [statistics_menu_update](scratches/statistics_menu_update/NOTES.md) | 93.26% | 675/676 | 194 | 0 | A |
-| [credits_secret_alien_zookeeper_update](scratches/credits_secret_alien_zookeeper_update/NOTES.md) | 83.86% | 638/638 | 422 | 0 | S |
+| [statistics_menu_update](scratches/statistics_menu_update/NOTES.md) | 93.26% | 675/676 | 194 | 0 | H |
+| [credits_secret_alien_zookeeper_update](scratches/credits_secret_alien_zookeeper_update/NOTES.md) | 83.86% | 638/638 | 422 | 0 | H |
 
 - **ui_scrollbar_update:** Constructing the row origin directly from x minus two raised alignment
   to 82.43%, preserving 477/479 instructions, prefix 26, and 62 clean references. Typed row indices
@@ -311,10 +313,10 @@ boundaries, direct pool ownership, callback ordering, and rounded x87 intermedia
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md) | 79.80% | 407/405 | 316 | 0 | A |
-| [bonus_render](scratches/bonus_render/NOTES.md) | 92.05% | 1087/1088 | 325 | 0 | A |
-| [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 88.29% | 1823/1824 | 829 | 0 | A |
-| [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 87.29% | 1141/1148 | 583 | 0 | A |
+| [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md) | 79.80% | 407/405 | 316 | 0 | H |
+| [bonus_render](scratches/bonus_render/NOTES.md) | 92.05% | 1087/1088 | 325 | 0 | H |
+| [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 88.29% | 1823/1824 | 829 | 0 | H |
+| [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 87.29% | 1141/1148 | 583 | 0 | H |
 
 - **bonus_hud_slot_update_and_render:** Native delays the render-only EDI save until after the
   off-screen return, and the compact arm falls through to the shared tail. Candidate places the
@@ -345,17 +347,17 @@ together.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [tutorial_timeline_update](scratches/tutorial_timeline_update/NOTES.md) | 76.76% | 686/695 | 676 | 1 | A |
-| [creature_spawn_template](scratches/creature_spawn_template/NOTES.md) | 88.77% | 3161/3159 | 1,584 | 1 | S |
-| [creature_render_type](scratches/creature_render_type/NOTES.md) | 79.74% | 760/765 | 574 | 5 | A |
+| [creature_spawn_template](scratches/creature_spawn_template/NOTES.md) | 88.89% | 3161/3159 | 1,566 | 1 | H |
+| [creature_render_type](scratches/creature_render_type/NOTES.md) | 79.74% | 760/765 | 574 | 5 | H |
 
-- **tutorial_timeline_update:** Stage-five formation construction is a large remaining region (near
-  0x00409171). Recover the position workspace and odd/even branch join while preserving the common
-  third alien spawn. Prior high-scoring partial variants omitted or misplaced that spawn; stage-one
-  constructor syntax was byte-neutral.
-- **creature_spawn_template:** The large template dispatcher has two extra instructions and one
-  mismatched reference. Resolve that reference and choose one unmatched template publication
-  sequence. Template 0x13 tint ownership produced a genuine gain; transferring it to root velocity
-  or template 0x11 did not. Avoid whole-dispatcher initializer churn.
+- **tutorial_timeline_update:** Stage-five formation construction remains a large region at
+  0x00409175. Twenty-three complete branch-join and escaped-workspace controls regressed. Preserve
+  the common third alien spawn and seek a new lifetime boundary before reopening those forms.
+  Its lone reference mismatch is the displaced bonus jump table.
+- **creature_spawn_template:** Moving the grid-child aggregate tint after stat publication improves
+  alignment to 88.89%; changing loop induction reduces that gain. Two extra instructions remain.
+  The lone reference mismatch is a retry jump table displaced by body-size differences. Choose
+  another bounded publication sequence; avoid whole-dispatcher initializer churn.
 - **creature_render_type:** Five missing instructions and five reference mismatches remain across
   animation/detail/flash passes. Trace the atlas publication and exact creature field anchors per
   pass. Flash/main cursor rewrites reduced individual reference mismatches while losing overall
@@ -407,20 +409,23 @@ lifetimes.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [projectile_update](scratches/projectile_update/NOTES.md) | 62.66% | 2176/2203 | 3,140 | 18 | H |
-| [projectile_render](scratches/projectile_render/NOTES.md) | 58.55% | 2885/3021 | 5,202 | 10 | H |
+| [projectile_update](scratches/projectile_update/NOTES.md) | 62.88% | 2183/2203 | 3,121 | 13 | H |
+| [projectile_render](scratches/projectile_render/NOTES.md) | 58.55% | 2885/3021 | 5,202 | 10 | A |
 
-- **projectile_update:** 27 fewer instructions, 18 reference mismatches, and a native frame larger
+- **projectile_update:** 20 fewer instructions, 13 reference mismatches, and a native frame larger
   by 0x30. Partition movement/collision, impact/decal, child-spawn, and lifetime publication. Start
   with a reference-bearing region outside the repeatedly tested decal scale, Plasma-child staging,
   and particle geometry. Primary-impact double jitter gained score by removing three more
-  instructions, so it is not a retained solution.
+  instructions, so it is not a retained solution. A uniform const-reference tint clamp now recovers
+  seven instructions and removes five reference mismatches; in-place helper forms that lose an
+  instruction remain rejected.
 - **projectile_render:** 136 fewer instructions, ten reference mismatches, and a native frame of
   0x19c versus candidate 0x128. Partition Sharpshooter, conventional trails, plasma-family trails,
   primary ion/fire, overlays/billboards, and secondary passes. Choose one pass with a demonstrable
   missing materialization and audit its neighbors. SDK operator sweeps, Fire cross-pass owners, and
   billboard aggregate temporaries already regressed. The 0x74 frame delta is a clue to lifetimes,
-  not a request for padding.
+  not a request for padding. Eleven secondary glow and sprite-boundary controls are byte-neutral;
+  larger conventional/ion regions remain independent work.
 
 <a id="batch-13"></a>
 
