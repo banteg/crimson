@@ -104,3 +104,24 @@ controls against the 98.870056% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact glow coordinate lifetime recovery (2026-09-07)
+
+The full function now matches: 177/177 normalized instructions, a 177-instruction
+prefix, 57/0/0 references, and relocation-aware encoded-body identity. The
+730-byte target extent is unchanged and neither body has trailing padding.
+
+The residual at the final cursor quad depended on the earlier 128-by-128 glow
+quad. Keeping that glow's X and Y computations in named scalar locals recovers
+the native final size-push and vtable-load schedule without adding instructions.
+Both coordinates must be materialized: either alone improves to 99.435028%,
+while both recover 100%. Declaration order and const qualification preserve
+the exact result; named width and height add no benefit. The retained source
+uses two const float coordinates and the existing literal dimensions.
+
+`glow-coordinate-lifetimes-2026-09-07-mutations.json` records all 18 complete
+controls. Ordinary float values and const references are distinct controls; the
+reference variants do not reproduce the winning scalar lifetime. A prior
+diagnostic sweep of reference-input inline helpers across all five draw sites
+identified the earlier glow region. No helper, register constraint, artificial
+use, ABI change, or shared-header change is retained.

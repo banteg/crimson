@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **769/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **770/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**772/810** functions matched exactly (**95.3%**), **188401/341992** code bytes (**55.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**773/810** functions matched exactly (**95.4%**), **189131/341992** code bytes (**55.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **311997/341992** code bytes (**91.2%**).
+Fuzzy-weighted alignment is **312005/341992** code bytes (**91.2%**).
 
-Remaining exact-match debt is **38 functions**, **153591 code bytes**, and **29995 fuzzy-gap bytes**.
+Remaining exact-match debt is **37 functions**, **152861 code bytes**, and **29987 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**38** non-exact scratch-backed functions hold **29995 fuzzy-gap bytes**. The top 5 hold **68.2%** of that gap; the top 10 hold **86.2%**.
+**37** non-exact scratch-backed functions hold **29987 fuzzy-gap bytes**. The top 5 hold **68.3%** of that gap; the top 10 hold **86.2%**.
 
-Current-baseline experiments cover **3 functions / 5906 gap bytes**; **35 / 24089** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **3 functions / 5906 gap bytes**; **34 / 24081** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -72,10 +72,9 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 32 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | historical-only | 0/20 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 33 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,variant-errors,historical-only |
 | 34 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 35 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | historical-only | 0/11 | 0 | variant-errors,historical-only |
-| 36 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | historical-only | 0/32 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 37 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/24 | 0 | metric-tradeoffs,historical-only |
-| 38 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-specs,metric-tradeoffs,historical-only |
+| 35 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | historical-only | 0/32 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
+| 36 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/24 | 0 | metric-tradeoffs,historical-only |
+| 37 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-specs,metric-tradeoffs,historical-only |
 
 ## Function dispositions
 
@@ -145,12 +144,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 633/671 | 167236/320827 | 52.1% | 290832/320827 | 90.7% | 671/671 | 320827/320827 | 100.0% | 633/671 |
+| crimsonland.exe | 634/671 | 167966/320827 | 52.4% | 290840/320827 | 90.7% | 671/671 | 320827/320827 | 100.0% | 634/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**633/671** functions (**94.3%**), **167236/320827** bytes (**52.1%**), **290832/320827** fuzzy-weighted bytes (**90.7%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **633/671** scratches verified.
+**634/671** functions (**94.5%**), **167966/320827** bytes (**52.4%**), **290840/320827** fuzzy-weighted bytes (**90.7%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **634/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -388,7 +387,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | ui_menu_assets_init | 0x00419dd0 | 551 | 551/551 | 0 | 110/110 | 100.00% | 110/110 | 66/0/0 |  | ui-menu-template-assets |
 | match | reserved_color_global_init_thunk | 0x0041a000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-global-initializer |
 | match | reserved_color_global_init | 0x0041a010 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | reserved-four-float-global-initializer |
-| wip | ui_cursor_render | 0x0041a040 | 730 | 722/730 | 8 | 177/177 | 98.87% | 158/177 | 57/0/0 |  | ui-cursor-particle-renderer |
+| match | ui_cursor_render | 0x0041a040 | 730 | 730/730 | 0 | 177/177 | 100.00% | 177/177 | 57/0/0 |  | ui-cursor-particle-renderer |
 | match | ui_render_aim_enhancement | 0x0041a320 | 518 | 518/518 | 0 | 131/131 | 100.00% | 131/131 | 35/0/0 |  | ui-aim-enhancement-overlay |
 | match | ui_elements_update_and_render | 0x0041a530 | 409 | 409/409 | 0 | 103/103 | 100.00% | 103/103 | 41/0/0 |  | ui-transition-update-render |
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 237/237 | 0 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |

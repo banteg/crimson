@@ -1,14 +1,14 @@
 # Remaining EXE matching batches
 
-Snapshot: `6cb753d41` (633-exact source checkpoint), refreshed on 2026-09-06. The native audit
-and matching checkpoint reproduce all 671 EXE candidates, including the 38 remaining functions.
+Snapshot: 634-exact source checkpoint, refreshed on 2026-09-07. The native audit
+and matching checkpoint reproduce all 671 EXE candidates, including the 37 remaining functions.
 The [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md) improves creature-template grid
 publication and projectile tint clamps. It follows the [UI storage recovery](UI-STORAGE-FOLLOWUP-2026-09-05.md),
 [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md), and
 [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
-**EXE: 633/671 exact; Grim: 139/139 exact.** The EXE frontier is 38 functions spanning 153,591
-code bytes, with 29,995 fuzzy-gap bytes. The top five functions hold 68.2% of that gap, and the
+**EXE: 634/671 exact; Grim: 139/139 exact.** The EXE frontier is 37 functions spanning 152,861
+code bytes, with 29,987 fuzzy-gap bytes. The top five functions hold 68.3% of that gap, and the
 top ten hold 86.2%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
@@ -35,7 +35,7 @@ successful siblings as controls rather than templates to copy mechanically.
 | [02](#batch-02) | Spawn records and quest induction | 5 | 378 |
 | [03](#batch-03) | WinInet request and response workers | 2 | 750 |
 | [04](#batch-04) | Short coordinate lifetimes | 4 | 103 |
-| [05](#batch-05) | UI call scheduling and vector primitives | 4 | 54 |
+| [05](#batch-05) | UI call scheduling and vector primitives | 3 | 46 |
 | [06](#batch-06) | Menu object and aggregate lifetimes | 3 | 481 |
 | [07](#batch-07) | UI loops, formatting, and board state | 3 | 926 |
 | [08](#batch-08) | HUD and effect rendering | 4 | 2,053 |
@@ -49,7 +49,7 @@ successful siblings as controls rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 35 H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 34 H
 functions and 3 with current records. Retained source changes start a new baseline epoch, so H
 can include a function improved in this pass; the campaign report preserves the gain evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
@@ -218,6 +218,11 @@ including later calls that can affect an earlier stack slot.
 
 ## 05 — UI call scheduling and vector primitives
 
+[ui_cursor_render](scratches/ui_cursor_render/NOTES.md) is now exact, including
+encoded-body identity. Two named scalar coordinates in the earlier 128-by-128 glow
+quad recover the final cursor draw schedule. Earlier final-call-only probes had
+missed this interaction.
+
 Treat the database screens as a sibling pair. Very small gaps make these precise experiments,
 not guaranteed quick wins. Any proposed shared-header correction needs independent type evidence
 and checks of its exact consumers.
@@ -226,7 +231,6 @@ and checks of its exact consumers.
 |---|---:|---:|---:|---:|:---:|
 | [unlocked_weapons_database_update](scratches/unlocked_weapons_database_update/NOTES.md) | 99.81% | 523/523 | 4 | 0 | H |
 | [unlocked_perks_database_update](scratches/unlocked_perks_database_update/NOTES.md) | 99.80% | 511/511 | 4 | 0 | H |
-| [ui_cursor_render](scratches/ui_cursor_render/NOTES.md) | 98.87% | 177/177 | 8 | 0 | H |
 | [ui_element_render](scratches/ui_element_render/NOTES.md) | 97.89% | 521/521 | 38 | 0 | H |
 
 - **unlocked_weapons_database_update:** One title-separator schedule inversion: native loads the
@@ -236,10 +240,6 @@ and checks of its exact consumers.
 - **unlocked_perks_database_update:** The same title-separator inversion as the weapons screen. Test
   one shared, evidence-backed expression hypothesis on both screens. A recovered UI owner previously
   preserved code shape but introduced reference mismatches, so it was not a clean match.
-- **ui_cursor_render:** The final quad starts the mouse-Y-minus-two calculation before argument
-  pushes/vtable work in native. Inspect this final call and the lifetime of its argument vector.
-  Scalar/vector/helper and aggregate-owner probes did not fix it; extra materialization added
-  instructions and reference debt.
 - **ui_element_render:** Three panel Y additions and the counter-X temporary retain different
   operand/slot choices. Compare the counter shadow and final draw operand lifetimes against the
   already recovered shared position. Broad shared-position rewrites and vector operator/value

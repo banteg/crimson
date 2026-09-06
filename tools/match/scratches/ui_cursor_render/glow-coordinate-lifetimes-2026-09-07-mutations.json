@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "large-glow-inputs",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 64.0f + 16.0f,\n        ui_mouse_y - 64.0f + 16.0f,\n        128.0f,\n        128.0f);",
+      "replacements": [
+        {
+          "name": "x-float-xy",
+          "text": "    float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, ui_mouse_y - 64.0f + 16.0f, 128.0f, 128.0f);"
+        },
+        {
+          "name": "x-constfloat-xy",
+          "text": "    const float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, ui_mouse_y - 64.0f + 16.0f, 128.0f, 128.0f);"
+        },
+        {
+          "name": "x-constfloatref-xy",
+          "text": "    const float & glow_x = ui_mouse_x - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, ui_mouse_y - 64.0f + 16.0f, 128.0f, 128.0f);"
+        },
+        {
+          "name": "y-float-xy",
+          "text": "    float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 64.0f + 16.0f, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "y-constfloat-xy",
+          "text": "    const float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 64.0f + 16.0f, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "y-constfloatref-xy",
+          "text": "    const float & glow_y = ui_mouse_y - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 64.0f + 16.0f, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xy-float-xy",
+          "text": "    float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xy-float-yx",
+          "text": "    float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xy-constfloat-xy",
+          "text": "    const float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    const float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xy-constfloat-yx",
+          "text": "    const float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    const float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xy-constfloatref-xy",
+          "text": "    const float & glow_x = ui_mouse_x - 64.0f + 16.0f;\n    const float & glow_y = ui_mouse_y - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xy-constfloatref-yx",
+          "text": "    const float & glow_y = ui_mouse_y - 64.0f + 16.0f;\n    const float & glow_x = ui_mouse_x - 64.0f + 16.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, 128.0f, 128.0f);"
+        },
+        {
+          "name": "xywh-float-xy",
+          "text": "    float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    float glow_w = 128.0f;\n    float glow_h = 128.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, glow_w, glow_h);"
+        },
+        {
+          "name": "xywh-float-yx",
+          "text": "    float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    float glow_w = 128.0f;\n    float glow_h = 128.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, glow_w, glow_h);"
+        },
+        {
+          "name": "xywh-constfloat-xy",
+          "text": "    const float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    const float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    const float glow_w = 128.0f;\n    const float glow_h = 128.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, glow_w, glow_h);"
+        },
+        {
+          "name": "xywh-constfloat-yx",
+          "text": "    const float glow_y = ui_mouse_y - 64.0f + 16.0f;\n    const float glow_x = ui_mouse_x - 64.0f + 16.0f;\n    const float glow_w = 128.0f;\n    const float glow_h = 128.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, glow_w, glow_h);"
+        },
+        {
+          "name": "xywh-constfloatref-xy",
+          "text": "    const float & glow_x = ui_mouse_x - 64.0f + 16.0f;\n    const float & glow_y = ui_mouse_y - 64.0f + 16.0f;\n    const float & glow_w = 128.0f;\n    const float & glow_h = 128.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, glow_w, glow_h);"
+        },
+        {
+          "name": "xywh-constfloatref-yx",
+          "text": "    const float & glow_y = ui_mouse_y - 64.0f + 16.0f;\n    const float & glow_x = ui_mouse_x - 64.0f + 16.0f;\n    const float & glow_w = 128.0f;\n    const float & glow_h = 128.0f;\n    grim_interface_ptr->grim_draw_quad(\n        glow_x, glow_y, glow_w, glow_h);"
+        }
+      ]
+    }
+  ]
+}

@@ -41,11 +41,10 @@ extern "C" void ui_cursor_render(void)
         ui_mouse_x - 10.0f, ui_mouse_y - 18.0f, 64.0f, 64.0f);
     grim_interface_ptr->grim_draw_quad(
         ui_mouse_x - 18.0f, ui_mouse_y - 10.0f, 64.0f, 64.0f);
+    const float glow_x = ui_mouse_x - 64.0f + 16.0f;
+    const float glow_y = ui_mouse_y - 64.0f + 16.0f;
     grim_interface_ptr->grim_draw_quad(
-        ui_mouse_x - 64.0f + 16.0f,
-        ui_mouse_y - 64.0f + 16.0f,
-        128.0f,
-        128.0f);
+        glow_x, glow_y, 128.0f, 128.0f);
     grim_interface_ptr->grim_end_batch();
 
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
