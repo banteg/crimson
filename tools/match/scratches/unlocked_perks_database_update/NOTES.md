@@ -229,3 +229,39 @@ controls. Both are byte-identical; the shared header remains unchanged.
 ui-storage-followup-controls-mutations.json records 2 complete, compiling controls.
 These results bound the tested source forms and inputs; they do not establish that
 matching is impossible.
+
+## Source lifetime follow-up (2026-09-07)
+
+A fresh baseline still has the single title-outline dispatch-load / integer-width
+conversion inversion. `separator-byvalue-lifetime-mutations.json` compiles both
+its helper-only control and the complete by-value panel helper use with
+`--max-changes 2`. The helper use does recover native dispatch-before-conversion,
+but moves the height push ahead of the coordinate stores, so it is rejected.
+Instructions and references remain aligned; no source change is retained. This
+separates two scheduling decisions without classifying either as unmatchable.
+
+`sdk-temporary-call-interactions-mutations.json` tests the authenticated vector
+array view and all 26 title/Back/detail full-expression interactions (27 complete
+compiling variants with `--max-changes 4`). Required source dependencies exclude
+invalid array-member calls. No variant improves the 99.804305% baseline with
+511/511 instructions, prefix 74, and 148/0/0 references. The by-value helper use
+reaches 98.434371%, prefix 67, with the same instruction and reference counts.
+
+## Title-separator width ownership (2026-09-07)
+
+The title separator is now expressed as a small inline drawing helper that takes
+its panel position by value and borrows the measured integer width through
+`const int &`. It constructs the two separator coordinates inside that call
+and retains the original integer half-width calculation, x/y offsets, outline
+height, renderer, and call order. No compiler flags or reference aliases change.
+
+A focused two-control comparison isolates the interaction: the helper with a
+copied integer width puts the constant height push too early, while the same
+helper with the borrowed width restores the native dispatch-load and integer-
+conversion order without moving that push. Both variants compile. The final
+formatted source matches all 511 normalized instructions and all
+148 references, with zero mismatched or unresolved references and
+`body_byte_exact=true` across the 2065-byte native body.
+
+Source SHA-256: `3d23acf4b8cd9ce8c963b90ec2d837270c5f57659102f47aa1824a698cbd95f7`.
+Focused spec SHA-256: `6d723c144cd5d4a138938c412df10a3e3e118e8b2f6d762a6877741fa6c7f11c`.

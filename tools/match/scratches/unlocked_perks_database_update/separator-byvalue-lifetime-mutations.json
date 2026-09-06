@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "separator-byvalue-helper",
+      "find": "extern \"C\" {",
+      "replacements": [
+        {
+          "name": "panel-byvalue",
+          "text": "static __inline void draw_separator(database_vec2_t position, int width)\n{\n    database_vec2_t separator_position(position.x + (float)(132 - width / 2), position.y + 13.0f);\n    grim_interface_ptr->grim_draw_rect_outline((float *)&separator_position, (float)width, 1.0f);\n}\n\nextern \"C\" {"
+        }
+      ]
+    },
+    {
+      "name": "title-helper-use",
+      "find": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n",
+      "replacements": [
+        {
+          "name": "panel-byvalue-call",
+          "text": "    draw_separator(position, title_width);\n",
+          "requires": [
+            "separator-byvalue-helper/panel-byvalue"
+          ]
+        }
+      ]
+    }
+  ]
+}

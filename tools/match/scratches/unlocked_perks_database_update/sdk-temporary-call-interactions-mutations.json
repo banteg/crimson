@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-coordinate-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "sdk-array-view",
+          "text": "    union {\n        struct { float x; float y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "title-temporary",
+      "find": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n",
+      "replacements": [
+        {
+          "name": "constructed-array-view",
+          "text": "    grim_interface_ptr->grim_draw_rect_outline(\n        database_vec2_t(position.x + (float)(132 - title_width / 2), position.y + 13.0f).v,\n        (float)title_width, 1.0f);\n",
+          "requires": [
+            "vector-coordinate-storage/sdk-array-view"
+          ]
+        },
+        {
+          "name": "added-array-view",
+          "text": "    grim_interface_ptr->grim_draw_rect_outline(\n        (position + database_vec2_t((float)(132 - title_width / 2), 13.0f)).v,\n        (float)title_width, 1.0f);\n",
+          "requires": [
+            "vector-coordinate-storage/sdk-array-view"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "back-temporary",
+      "find": "        database_vec2_t button_position(\n            position.x + 132.0f, position.y);\n        if (ui_button_update(\n                (float *)&button_position, (ui_button_t *)&back_button))",
+      "replacements": [
+        {
+          "name": "constructed-array-view",
+          "text": "        if (ui_button_update(\n                database_vec2_t(position.x + 132.0f, position.y).v, (ui_button_t *)&back_button))",
+          "requires": [
+            "vector-coordinate-storage/sdk-array-view"
+          ]
+        },
+        {
+          "name": "added-array-view",
+          "text": "        if (ui_button_update(\n                (position + database_vec2_t(132.0f, 0.0f)).v, (ui_button_t *)&back_button))",
+          "requires": [
+            "vector-coordinate-storage/sdk-array-view"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "detail-temporary",
+      "find": "            database_vec2_t separator_position;\n            separator_position.x =\n                position.x + (float)(128 - name_width / 2);\n            separator_position.y = position.y + 13.0f;\n            grim_interface_ptr->grim_draw_rect_outline(\n                (float *)&separator_position, (float)name_width, 1.0f);",
+      "replacements": [
+        {
+          "name": "constructed-array-view",
+          "text": "            grim_interface_ptr->grim_draw_rect_outline(\n                database_vec2_t(position.x + (float)(128 - name_width / 2), position.y + 13.0f).v,\n                (float)name_width, 1.0f);",
+          "requires": [
+            "vector-coordinate-storage/sdk-array-view"
+          ]
+        },
+        {
+          "name": "added-array-view",
+          "text": "            grim_interface_ptr->grim_draw_rect_outline(\n                (position + database_vec2_t((float)(128 - name_width / 2), 13.0f)).v,\n                (float)name_width, 1.0f);",
+          "requires": [
+            "vector-coordinate-storage/sdk-array-view"
+          ]
+        }
+      ]
+    }
+  ]
+}

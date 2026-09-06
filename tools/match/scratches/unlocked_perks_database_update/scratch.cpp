@@ -76,6 +76,17 @@ struct database_button_t {
 
 #endif
 
+static __inline void draw_title_separator(
+    database_vec2_t position,
+    const int &width)
+{
+    database_vec2_t separator_position(
+        position.x + (float)(132 - width / 2),
+        position.y + 13.0f);
+    grim_interface_ptr->grim_draw_rect_outline(
+        (float *)&separator_position, (float)width, 1.0f);
+}
+
 extern "C" {
 extern ui_element_t ui_element_slot_09;
 extern ui_element_t ui_element_slot_33;
@@ -112,13 +123,7 @@ extern "C" void unlocked_perks_database_update(void)
         "Unlocked Perks Database");
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-    {
-        database_vec2_t separator_position(
-            position.x + (float)(132 - title_width / 2),
-            position.y + 13.0f);
-        grim_interface_ptr->grim_draw_rect_outline(
-            (float *)&separator_position, (float)title_width, 1.0f);
-    }
+    draw_title_separator(position, title_width);
 
     position.y += 20.0f;
     int database_count = 0;
