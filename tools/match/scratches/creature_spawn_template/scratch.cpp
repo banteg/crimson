@@ -92,7 +92,6 @@ typedef creature_spawn_template_named_locals_t creature_spawn_template_locals_t;
         *(creature_spawn_vec2_t *)&creature->position = chain_position;                                                    \
         *(creature_spawn_vec2_t *)&creature->velocity = zero_velocity;                                                     \
         creature->health = (child_health);                                                                                 \
-        *(creature_tint_t *)&creature->color = child_tint;                                                                 \
         creature->max_health = (child_health);                                                                             \
         grid_vertical_offset = grid_vertical_offset + 0x40;                                                                \
         creature->collision_flag = 0;                                                                                      \
@@ -106,6 +105,7 @@ typedef creature_spawn_template_named_locals_t creature_spawn_template_locals_t;
         creature->reward_value = 60.0f;                                                                                    \
         creature->size = (child_size);                                                                                     \
         creature->contact_damage = (damage);                                                                               \
+        *(creature_tint_t *)&creature->color = child_tint;                                                                 \
     } while (0)
 
 #define SPAWN_GRID(child_ai_mode, child_type, child_health, red, green, blue, child_speed, alpha, child_size, damage) \

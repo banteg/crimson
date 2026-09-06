@@ -1008,3 +1008,27 @@ and
 `7785eb5c8a2cc3c733b33e30030c4c694ea957ef4ad7bdf42af4a9409f26c456`.
 The updated experiment log SHA-256 is
 `a023c9c44210fba34ef5fcfe99eeb4fca065acf329f2779cfdb4429dfa81f215`.
+
+## Grid child tint publication (2026-09-06)
+
+The live masked-reference audit confirms that the remaining reference mismatch
+is the retry jump table: all four candidate destinations are displaced by
+`+0x11`. No alias or reference rule was changed.
+
+Native grid-child initialization near `0x00431537..0x004315f3` interleaves
+the tint copy with health and lifecycle stores, keeping its alpha publication
+late. Fifteen complete controls crossed tint publication with vertical-loop
+induction, then isolated each change. The strongest variant moves only the
+aggregate child tint copy after the stat stores in `INIT_GRID_CHILD`; the
+induction changes reduce that gain. There are no intervening calls or
+overlapping destination fields, and every grid child receives the same values.
+
+The retained result improves from **88.765823% to 88.892405%**, adding
+**17.846835 fuzzy-weighted bytes**. Candidate/native instructions remain
+**3161/3159**, prefix **23**, references **357/0/1**, and both prologues
+allocate **0x48** bytes. The source remains non-exact.
+
+Plans: `grid-publication-interactions-2026-09-06-mutations.json` (9 controls)
+and `grid-publication-single-controls-2026-09-06-mutations.json` (6 controls).
+All compiled, all were evaluated, and their current-baseline results are
+recorded in `experiments.jsonl`.
