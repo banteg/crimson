@@ -242,3 +242,37 @@ source shapes; any scope-generated static name changes must be verified against 
 before treating unresolved references as substantive debt. Canonical source and
 configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Source lifetime follow-up (2026-09-07)
+
+A fresh baseline still has the single title-outline dispatch-load / integer-width
+conversion inversion. `separator-byvalue-lifetime-mutations.json` compiles both
+its helper-only control and the complete by-value panel helper use with
+`--max-changes 2`. The helper use does recover native dispatch-before-conversion,
+but moves the height push ahead of the coordinate stores, so it is rejected.
+Instructions and references remain aligned; no source change is retained. This
+separates two scheduling decisions without classifying either as unmatchable.
+
+The weapons helper result is 98.470363%, 523/523 instructions, prefix 67, and
+157/0/0 references, versus the unchanged 99.808795% / prefix-74 baseline. Shared
+width-cast and direct vector-array temporary controls also reproduce the baseline
+in an independent weapons replay.
+
+## Title-separator width ownership (2026-09-07)
+
+The title separator is now expressed as a small inline drawing helper that takes
+its panel position by value and borrows the measured integer width through
+`const int &`. It constructs the two separator coordinates inside that call
+and retains the original integer half-width calculation, x/y offsets, outline
+height, renderer, and call order. No compiler flags or reference aliases change.
+
+A focused two-control comparison isolates the interaction: the helper with a
+copied integer width puts the constant height push too early, while the same
+helper with the borrowed width restores the native dispatch-load and integer-
+conversion order without moving that push. Both variants compile. The final
+formatted source matches all 523 normalized instructions and all
+157 references, with zero mismatched or unresolved references and
+`body_byte_exact=true` across the 2086-byte native body.
+
+Source SHA-256: `312d91fb6f1beb43f86c0322536a21ad1e30c75e29a8f0a79d7a764177426bf7`.
+Focused spec SHA-256: `b222b72112c1c72bf1fbe5c4fe4bbe2f7042824bb5030d87da36b33279e4799c`.
