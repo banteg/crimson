@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-panel-owner",
+      "find": "    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n",
+      "replacements": [
+        {
+          "name": "owner-sum-copy-init",
+          "text": "    quest_select_vec2_t panel_position =\n        *(quest_select_vec2_t *)&ui_element_slot_37.pos\n        + *(quest_select_vec2_t *)&ui_element_slot_37.vertices[0].position;\n    panel_position.x += 300.0f;\n\n"
+        }
+      ]
+    },
+    {
+      "name": "row-loop-owner",
+      "find": "        row = next_row;\n        position.y += 20.0f;\n    } while (next_row < 10);",
+      "replacements": [
+        {
+          "name": "independent-row-increment",
+          "text": "        ++row;\n        position.y += 20.0f;\n    } while (row < 10);"
+        }
+      ]
+    },
+    {
+      "name": "row-native-load-order",
+      "find": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }",
+      "replacements": [
+        {
+          "name": "branch-local-index",
+          "text": "        int stage_major = quest_select_stage_major;\n        if (config_hardcore) {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n        }"
+        }
+      ]
+    },
+    {
+      "name": "controls-x-ownership",
+      "find": "    float controls_x = hover_left;",
+      "replacements": [
+        {
+          "name": "borrow-saved-x",
+          "text": "    const float &controls_x = hover_left;"
+        }
+      ]
+    },
+    {
+      "name": "back-coordinate-construction",
+      "find": "        quest_select_vec2_t back_position;\n        back_position.x = position.x + 148.0f;\n        back_position.y = position.y;",
+      "replacements": [
+        {
+          "name": "constructed-position",
+          "text": "        quest_select_vec2_t back_position(\n            position.x + 148.0f, position.y);"
+        }
+      ]
+    }
+  ]
+}

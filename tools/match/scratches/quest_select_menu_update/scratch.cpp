@@ -126,13 +126,9 @@ void sfx_mute_all(int sfx_id);
 
 extern "C" void quest_select_menu_update(void)
 {
-    quest_select_vec2_t panel_position;
-    panel_position.x =
-        ui_element_slot_37.pos.x
-        + ui_element_slot_37.vertices[0].position.x;
-    panel_position.y =
-        ui_element_slot_37.vertices[0].position.y
-        + ui_element_slot_37.pos.y;
+    quest_select_vec2_t panel_position =
+        *(quest_select_vec2_t *)&ui_element_slot_37.pos
+        + *(quest_select_vec2_t *)&ui_element_slot_37.vertices[0].position;
     panel_position.x += 300.0f;
 
     bool row_hovered = false;
@@ -286,13 +282,17 @@ extern "C" void quest_select_menu_update(void)
                 (float *)&row_hover_color);
         }
 
-        int quest_index = row + quest_select_stage_major * 10 - 10;
+        int stage_major = quest_select_stage_major;
         if (config_hardcore) {
+            int quest_index = row + stage_major * 10 - 10;
             if (quest_unlock_index_full >= quest_index) {
                 goto unlocked_row;
             }
-        } else if (quest_unlock_index >= quest_index) {
-            goto unlocked_row;
+        } else {
+            int quest_index = row + stage_major * 10 - 10;
+            if (quest_unlock_index >= quest_index) {
+                goto unlocked_row;
+            }
         }
 
         next_row = row + 1;
@@ -350,9 +350,9 @@ unlocked_row:
         }
 
 row_done:
-        row = next_row;
+        ++row;
         position.y += 20.0f;
-    } while (next_row < 10);
+    } while (row < 10);
 
     if (show_counts) {
         grim_interface_ptr->grim_draw_text_small_fmt(
@@ -361,7 +361,7 @@ row_done:
             "(completed/games)");
     }
 
-    float controls_x = hover_left;
+    const float &controls_x = hover_left;
     position.y += 12.0f;
     position.x = controls_x;
     if (grim_interface_ptr->grim_was_key_pressed(203)) {
@@ -383,9 +383,8 @@ row_done:
     static quest_select_button_t back_button;
     back_button.label = menu_label_back;
     {
-        quest_select_vec2_t back_position;
-        back_position.x = position.x + 148.0f;
-        back_position.y = position.y;
+        quest_select_vec2_t back_position(
+            position.x + 148.0f, position.y);
         ui_button_update(
             (float *)&back_position,
             (ui_button_t *)&back_button);

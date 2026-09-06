@@ -335,3 +335,26 @@ control improves the retained metrics.
 ui-storage-followup-controls-mutations.json records 6 complete, compiling controls.
 These results bound the tested source forms and inputs; they do not establish that
 matching is impossible.
+
+## Exact ownership recovery (2026-09-07)
+
+The remaining regions are coupled source lifetimes, not an exhausted compiler
+boundary. Five ordinary ownership corrections recover the complete native body:
+
+- Copy-initialize the panel from its two vector owners. This preserves native
+  panel-Y materialization before the hover flag is cleared.
+- Advance the loop's `row` independently; `next_row` supplies the displayed
+  one-based row number. Native copies and compares the updated loop counter.
+- Read the major stage once and compute the quest index within the selected
+  Hardcore branch, allowing the mode byte test to precede the index arithmetic.
+- Borrow the saved controls X coordinate as `const float &` while updating Y.
+  This retains the native integer copy of X when restoring the controls position.
+- Construct the Back position directly from X and Y. Its short lifetime retains
+  the native x87 Y copy and completes the caller-register allocation interaction.
+
+`exact-ownership-interactions-mutations.json` tests every nonempty combination
+of these five corrections with `--max-changes 5 --max-variants 31`. All 31
+variants compile. The complete interaction advances 95.890411% to normalized
+exactness and `body_byte_exact=true`: 803/803 instructions, prefix 803,
+284/0/0 references, and 3,436/3,436 matched body bytes. No compiler, reference
+alias, ABI, or matching-scope change is involved.
