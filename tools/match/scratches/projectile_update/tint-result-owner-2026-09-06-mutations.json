@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "helper",
+      "find": "extern \"C\" void projectile_update(void)",
+      "replacements": [
+        {
+          "name": "value",
+          "text": "static __inline float projectile_clamp_value(float value)\n{\n    if (value < 0.0f) return 0.0f;\n    if (value > 1.0f) return 1.0f;\n    return value;\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "calls/value"
+          ]
+        },
+        {
+          "name": "const-reference",
+          "text": "static __inline float projectile_clamp_const_reference(const float & value)\n{\n    if (value < 0.0f) return 0.0f;\n    if (value > 1.0f) return 1.0f;\n    return value;\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "calls/const-reference"
+          ]
+        },
+        {
+          "name": "color-value",
+          "text": "static __inline effect_color_t projectile_clamp_color(effect_color_t color)\n{\n    if (color.r < 0.0f) {\n        color.r = 0.0f;\n    } else if (color.r > 1.0f) {\n        color.r = 1.0f;\n    }\n    if (color.g < 0.0f) {\n        color.g = 0.0f;\n    } else if (color.g > 1.0f) {\n        color.g = 1.0f;\n    }\n    if (color.b < 0.0f) {\n        color.b = 0.0f;\n    } else if (color.b > 1.0f) {\n        color.b = 1.0f;\n    }\n    if (color.a < 0.0f) {\n        color.a = 0.0f;\n    } else if (color.a > 1.0f) {\n        color.a = 1.0f;\n    }\n    return color;\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "calls/color-value"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "calls",
+      "find": "                                if (hit_creature->tint_r < 0.0f) {\n                                    hit_creature->tint_r = 0.0f;\n                                } else if (hit_creature->tint_r > 1.0f) {\n                                    hit_creature->tint_r = 1.0f;\n                                }\n                                if (hit_creature->tint_g < 0.0f) {\n                                    hit_creature->tint_g = 0.0f;\n                                } else if (hit_creature->tint_g > 1.0f) {\n                                    hit_creature->tint_g = 1.0f;\n                                }\n                                if (hit_creature->tint_b < 0.0f) {\n                                    hit_creature->tint_b = 0.0f;\n                                } else if (hit_creature->tint_b > 1.0f) {\n                                    hit_creature->tint_b = 1.0f;\n                                }\n                                if (hit_creature->tint_a < 0.0f) {\n                                    hit_creature->tint_a = 0.0f;\n                                } else if (hit_creature->tint_a > 1.0f) {\n                                    hit_creature->tint_a = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "value",
+          "text": "                                hit_creature->tint_r = projectile_clamp_value(hit_creature->tint_r);\n                                hit_creature->tint_g = projectile_clamp_value(hit_creature->tint_g);\n                                hit_creature->tint_b = projectile_clamp_value(hit_creature->tint_b);\n                                hit_creature->tint_a = projectile_clamp_value(hit_creature->tint_a);",
+          "requires": [
+            "helper/value"
+          ]
+        },
+        {
+          "name": "const-reference",
+          "text": "                                hit_creature->tint_r = projectile_clamp_const_reference(hit_creature->tint_r);\n                                hit_creature->tint_g = projectile_clamp_const_reference(hit_creature->tint_g);\n                                hit_creature->tint_b = projectile_clamp_const_reference(hit_creature->tint_b);\n                                hit_creature->tint_a = projectile_clamp_const_reference(hit_creature->tint_a);",
+          "requires": [
+            "helper/const-reference"
+          ]
+        },
+        {
+          "name": "color-value",
+          "text": "                                hit_creature->color = projectile_clamp_color(hit_creature->color);",
+          "requires": [
+            "helper/color-value"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "tint-helper",
+      "find": "extern \"C\" void projectile_update(void)",
+      "replacements": [
+        {
+          "name": "whole-value",
+          "text": "static __inline void projectile_tint_whole_value(effect_color_t &color, float intensity)\n{\n    if (color.r\n            + color.g\n            + color.b\n        > 1.6f) {\n        float tint_scale =\n            1.0f - intensity * 0.01f;\n        color.r *= tint_scale;\n        color.g *= tint_scale;\n        color.b *= tint_scale;\n\n        if (color.r < 0.0f) {\n            color.r = 0.0f;\n        } else if (color.r > 1.0f) {\n            color.r = 1.0f;\n        }\n        if (color.g < 0.0f) {\n            color.g = 0.0f;\n        } else if (color.g > 1.0f) {\n            color.g = 1.0f;\n        }\n        if (color.b < 0.0f) {\n            color.b = 0.0f;\n        } else if (color.b > 1.0f) {\n            color.b = 1.0f;\n        }\n        if (color.a < 0.0f) {\n            color.a = 0.0f;\n        } else if (color.a > 1.0f) {\n            color.a = 1.0f;\n        }\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "tint-use/whole-value"
+          ]
+        },
+        {
+          "name": "whole-reference",
+          "text": "static __inline void projectile_tint_whole_reference(effect_color_t &color, const float & intensity)\n{\n    if (color.r\n            + color.g\n            + color.b\n        > 1.6f) {\n        float tint_scale =\n            1.0f - intensity * 0.01f;\n        color.r *= tint_scale;\n        color.g *= tint_scale;\n        color.b *= tint_scale;\n\n        if (color.r < 0.0f) {\n            color.r = 0.0f;\n        } else if (color.r > 1.0f) {\n            color.r = 1.0f;\n        }\n        if (color.g < 0.0f) {\n            color.g = 0.0f;\n        } else if (color.g > 1.0f) {\n            color.g = 1.0f;\n        }\n        if (color.b < 0.0f) {\n            color.b = 0.0f;\n        } else if (color.b > 1.0f) {\n            color.b = 1.0f;\n        }\n        if (color.a < 0.0f) {\n            color.a = 0.0f;\n        } else if (color.a > 1.0f) {\n            color.a = 1.0f;\n        }\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "tint-use/whole-reference"
+          ]
+        },
+        {
+          "name": "clamp-color",
+          "text": "static __inline void projectile_tint_clamp_color(effect_color_t &color)\n{\n    if (color.r < 0.0f) {\n        color.r = 0.0f;\n    } else if (color.r > 1.0f) {\n        color.r = 1.0f;\n    }\n    if (color.g < 0.0f) {\n        color.g = 0.0f;\n    } else if (color.g > 1.0f) {\n        color.g = 1.0f;\n    }\n    if (color.b < 0.0f) {\n        color.b = 0.0f;\n    } else if (color.b > 1.0f) {\n        color.b = 1.0f;\n    }\n    if (color.a < 0.0f) {\n        color.a = 0.0f;\n    } else if (color.a > 1.0f) {\n        color.a = 1.0f;\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "tint-use/clamp-color"
+          ]
+        },
+        {
+          "name": "all-channels-color",
+          "text": "static __inline void projectile_tint_clamp(float &value)\n{\n    if (value < 0.0f) { value = 0.0f; return; }\n    if (value > 1.0f) { value = 1.0f; }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "tint-use/all-channels-color"
+          ]
+        },
+        {
+          "name": "scale-color",
+          "text": "static __inline void projectile_tint_scale_color(effect_color_t &color, float intensity)\n{\n    float tint_scale =\n        1.0f - intensity * 0.01f;\n    color.r *= tint_scale;\n    color.g *= tint_scale;\n    color.b *= tint_scale;\n\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "tint-use/scale-color"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tint-use",
+      "find": "                            if (hit_creature->tint_r\n                                    + hit_creature->tint_g\n                                    + hit_creature->tint_b\n                                > 1.6f) {\n                                float tint_scale =\n                                    1.0f - particle->intensity * 0.01f;\n                                hit_creature->tint_r *= tint_scale;\n                                hit_creature->tint_g *= tint_scale;\n                                hit_creature->tint_b *= tint_scale;\n\n                                if (hit_creature->tint_r < 0.0f) {\n                                    hit_creature->tint_r = 0.0f;\n                                } else if (hit_creature->tint_r > 1.0f) {\n                                    hit_creature->tint_r = 1.0f;\n                                }\n                                if (hit_creature->tint_g < 0.0f) {\n                                    hit_creature->tint_g = 0.0f;\n                                } else if (hit_creature->tint_g > 1.0f) {\n                                    hit_creature->tint_g = 1.0f;\n                                }\n                                if (hit_creature->tint_b < 0.0f) {\n                                    hit_creature->tint_b = 0.0f;\n                                } else if (hit_creature->tint_b > 1.0f) {\n                                    hit_creature->tint_b = 1.0f;\n                                }\n                                if (hit_creature->tint_a < 0.0f) {\n                                    hit_creature->tint_a = 0.0f;\n                                } else if (hit_creature->tint_a > 1.0f) {\n                                    hit_creature->tint_a = 1.0f;\n                                }\n                            }",
+      "replacements": [
+        {
+          "name": "whole-value",
+          "text": "                            projectile_tint_whole_value(hit_creature->color, particle->intensity);",
+          "requires": [
+            "tint-helper/whole-value"
+          ]
+        },
+        {
+          "name": "whole-reference",
+          "text": "                            projectile_tint_whole_reference(hit_creature->color, particle->intensity);",
+          "requires": [
+            "tint-helper/whole-reference"
+          ]
+        },
+        {
+          "name": "clamp-color",
+          "text": "                            if (hit_creature->color.r\n                                    + hit_creature->color.g\n                                    + hit_creature->color.b\n                                > 1.6f) {\n                                float tint_scale =\n                                    1.0f - particle->intensity * 0.01f;\n                                hit_creature->color.r *= tint_scale;\n                                hit_creature->color.g *= tint_scale;\n                                hit_creature->color.b *= tint_scale;\n\n                                projectile_tint_clamp_color(hit_creature->color);\n                            }",
+          "requires": [
+            "tint-helper/clamp-color"
+          ]
+        },
+        {
+          "name": "all-channels-color",
+          "text": "                            if (hit_creature->color.r\n                                    + hit_creature->color.g\n                                    + hit_creature->color.b\n                                > 1.6f) {\n                                float tint_scale =\n                                    1.0f - particle->intensity * 0.01f;\n                                hit_creature->color.r *= tint_scale;\n                                hit_creature->color.g *= tint_scale;\n                                hit_creature->color.b *= tint_scale;\n\n                                projectile_tint_clamp(hit_creature->color.r);\n                                projectile_tint_clamp(hit_creature->color.g);\n                                projectile_tint_clamp(hit_creature->color.b);\n                                projectile_tint_clamp(hit_creature->color.a);\n                            }",
+          "requires": [
+            "tint-helper/all-channels-color"
+          ]
+        },
+        {
+          "name": "scale-color",
+          "text": "                            if (hit_creature->color.r\n                                    + hit_creature->color.g\n                                    + hit_creature->color.b\n                                > 1.6f) {\n                                projectile_tint_scale_color(hit_creature->color, particle->intensity);\n                                if (hit_creature->color.r < 0.0f) {\n                                    hit_creature->color.r = 0.0f;\n                                } else if (hit_creature->color.r > 1.0f) {\n                                    hit_creature->color.r = 1.0f;\n                                }\n                                if (hit_creature->color.g < 0.0f) {\n                                    hit_creature->color.g = 0.0f;\n                                } else if (hit_creature->color.g > 1.0f) {\n                                    hit_creature->color.g = 1.0f;\n                                }\n                                if (hit_creature->color.b < 0.0f) {\n                                    hit_creature->color.b = 0.0f;\n                                } else if (hit_creature->color.b > 1.0f) {\n                                    hit_creature->color.b = 1.0f;\n                                }\n                                if (hit_creature->color.a < 0.0f) {\n                                    hit_creature->color.a = 0.0f;\n                                } else if (hit_creature->color.a > 1.0f) {\n                                    hit_creature->color.a = 1.0f;\n                                }\n                            }",
+          "requires": [
+            "tint-helper/scale-color"
+          ]
+        }
+      ]
+    }
+  ]
+}

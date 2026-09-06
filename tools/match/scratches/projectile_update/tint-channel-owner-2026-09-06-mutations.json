@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "clamp-helper",
+      "find": "extern \"C\" void projectile_update(void)",
+      "replacements": [
+        {
+          "name": "reference-ifelse",
+          "text": "static __inline void projectile_clamp_channel_reference_ifelse(float &value)\n{\n    if (value < 0.0f) {\n        value = 0.0f;\n    } else if (value > 1.0f) {\n        value = 1.0f;\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "clamp-calls/reference-ifelse"
+          ]
+        },
+        {
+          "name": "reference-return",
+          "text": "static __inline void projectile_clamp_channel_reference_return(float &value)\n{\n    if (value < 0.0f) {\n        value = 0.0f;\n        return;\n    }\n    if (value > 1.0f) {\n        value = 1.0f;\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "clamp-calls/reference-return"
+          ]
+        },
+        {
+          "name": "pointer-ifelse",
+          "text": "static __inline void projectile_clamp_channel_pointer_ifelse(float *value)\n{\n    if (*value < 0.0f) {\n        *value = 0.0f;\n    } else if (*value > 1.0f) {\n        *value = 1.0f;\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "clamp-calls/pointer-ifelse"
+          ]
+        },
+        {
+          "name": "reference-independent",
+          "text": "static __inline void projectile_clamp_channel_reference_independent(float &value)\n{\n    if (value < 0.0f) {\n        value = 0.0f;\n    }\n    if (value > 1.0f) {\n        value = 1.0f;\n    }\n}\n\nextern \"C\" void projectile_update(void)",
+          "requires": [
+            "clamp-calls/reference-independent"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "clamp-calls",
+      "find": "                                if (hit_creature->tint_r < 0.0f) {\n                                    hit_creature->tint_r = 0.0f;\n                                } else if (hit_creature->tint_r > 1.0f) {\n                                    hit_creature->tint_r = 1.0f;\n                                }\n                                if (hit_creature->tint_g < 0.0f) {\n                                    hit_creature->tint_g = 0.0f;\n                                } else if (hit_creature->tint_g > 1.0f) {\n                                    hit_creature->tint_g = 1.0f;\n                                }\n                                if (hit_creature->tint_b < 0.0f) {\n                                    hit_creature->tint_b = 0.0f;\n                                } else if (hit_creature->tint_b > 1.0f) {\n                                    hit_creature->tint_b = 1.0f;\n                                }\n                                if (hit_creature->tint_a < 0.0f) {\n                                    hit_creature->tint_a = 0.0f;\n                                } else if (hit_creature->tint_a > 1.0f) {\n                                    hit_creature->tint_a = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "reference-ifelse",
+          "text": "                                projectile_clamp_channel_reference_ifelse(hit_creature->tint_r);\n                                projectile_clamp_channel_reference_ifelse(hit_creature->tint_g);\n                                projectile_clamp_channel_reference_ifelse(hit_creature->tint_b);\n                                projectile_clamp_channel_reference_ifelse(hit_creature->tint_a);",
+          "requires": [
+            "clamp-helper/reference-ifelse"
+          ]
+        },
+        {
+          "name": "reference-return",
+          "text": "                                projectile_clamp_channel_reference_return(hit_creature->tint_r);\n                                projectile_clamp_channel_reference_return(hit_creature->tint_g);\n                                projectile_clamp_channel_reference_return(hit_creature->tint_b);\n                                projectile_clamp_channel_reference_return(hit_creature->tint_a);",
+          "requires": [
+            "clamp-helper/reference-return"
+          ]
+        },
+        {
+          "name": "pointer-ifelse",
+          "text": "                                projectile_clamp_channel_pointer_ifelse(&hit_creature->tint_r);\n                                projectile_clamp_channel_pointer_ifelse(&hit_creature->tint_g);\n                                projectile_clamp_channel_pointer_ifelse(&hit_creature->tint_b);\n                                projectile_clamp_channel_pointer_ifelse(&hit_creature->tint_a);",
+          "requires": [
+            "clamp-helper/pointer-ifelse"
+          ]
+        },
+        {
+          "name": "reference-independent",
+          "text": "                                projectile_clamp_channel_reference_independent(hit_creature->tint_r);\n                                projectile_clamp_channel_reference_independent(hit_creature->tint_g);\n                                projectile_clamp_channel_reference_independent(hit_creature->tint_b);\n                                projectile_clamp_channel_reference_independent(hit_creature->tint_a);",
+          "requires": [
+            "clamp-helper/reference-independent"
+          ]
+        }
+      ]
+    }
+  ]
+}

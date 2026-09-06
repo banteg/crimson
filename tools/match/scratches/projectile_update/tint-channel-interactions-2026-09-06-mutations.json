@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "helper",
+      "find": "extern \"C\" void projectile_update(void)",
+      "replacements": [
+        {
+          "name": "reference-return",
+          "text": "static __inline void projectile_clamp_channel_reference_return(float &value)\n{\n    if (value < 0.0f) {\n        value = 0.0f;\n        return;\n    }\n    if (value > 1.0f) {\n        value = 1.0f;\n    }\n}\n\nextern \"C\" void projectile_update(void)"
+        }
+      ]
+    },
+    {
+      "name": "channel-r",
+      "find": "                                if (hit_creature->tint_r < 0.0f) {\n                                    hit_creature->tint_r = 0.0f;\n                                } else if (hit_creature->tint_r > 1.0f) {\n                                    hit_creature->tint_r = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "reference-return",
+          "text": "                                projectile_clamp_channel_reference_return(hit_creature->tint_r);",
+          "requires": [
+            "helper/reference-return"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "channel-g",
+      "find": "                                if (hit_creature->tint_g < 0.0f) {\n                                    hit_creature->tint_g = 0.0f;\n                                } else if (hit_creature->tint_g > 1.0f) {\n                                    hit_creature->tint_g = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "reference-return",
+          "text": "                                projectile_clamp_channel_reference_return(hit_creature->tint_g);",
+          "requires": [
+            "helper/reference-return"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "channel-b",
+      "find": "                                if (hit_creature->tint_b < 0.0f) {\n                                    hit_creature->tint_b = 0.0f;\n                                } else if (hit_creature->tint_b > 1.0f) {\n                                    hit_creature->tint_b = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "reference-return",
+          "text": "                                projectile_clamp_channel_reference_return(hit_creature->tint_b);",
+          "requires": [
+            "helper/reference-return"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "channel-a",
+      "find": "                                if (hit_creature->tint_a < 0.0f) {\n                                    hit_creature->tint_a = 0.0f;\n                                } else if (hit_creature->tint_a > 1.0f) {\n                                    hit_creature->tint_a = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "reference-return",
+          "text": "                                projectile_clamp_channel_reference_return(hit_creature->tint_a);",
+          "requires": [
+            "helper/reference-return"
+          ]
+        }
+      ]
+    }
+  ]
+}

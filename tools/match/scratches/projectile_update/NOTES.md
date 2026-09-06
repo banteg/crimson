@@ -1124,3 +1124,29 @@ The recorded evidence log SHA is
 `faf9651342c6d65877064cb7c8dbabe5e6138db55ed63d4db628e29756dfddb7`.
 Do not retain the attractive `double` form unless a separate native-backed
 change recovers the three lost instructions without degrading references.
+
+## Particle-hit tint channel ownership (2026-09-06)
+
+Live native `0x00422a7a..0x00422b8d` scales RGB, reloads the published
+channels, and clamps RGBA in order. The retained inline clamp takes a
+`const float &`, preserving the field-backed input until its returned value
+is published. All four channels use the same helper, with the original
+lower-bound-first comparisons and no change to the scale or channel order.
+
+The final formatted source improves **62.662708% to 62.881897%**, adding
+**18.431566 fuzzy-weighted bytes**. Candidate instructions grow from
+**2176 to 2183/2203**, prefix stays **0**, and aligned references improve
+from **417/0/18 to 426/0/13**. It remains non-exact.
+
+Four complete plans evaluate 28 controls: `tint-channel-owner-2026-09-06-mutations.json` (4), `tint-channel-interactions-2026-09-06-mutations.json`
+(16), `tint-aggregate-owner-2026-09-06-mutations.json` (5), and
+`tint-result-owner-2026-09-06-mutations.json` (3). Every planned variant
+compiled and completed. A final recorded source probe confirms that naming
+and formatting preserve the retained gain.
+
+The in-place early-return helper applied to all channels scores higher but
+loses one instruction from an already-short candidate. Selective green/blue
+helpers avoid that loss, but the uniform const-reference result helper also
+recovers seven instructions and expresses one consistent operation. The
+higher-scoring instruction regressions and the by-value/aggregate controls
+remain recorded, not retained.

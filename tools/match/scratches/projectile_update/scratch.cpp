@@ -130,6 +130,17 @@ vec2f_t *__stdcall D3DXVec2Normalize(
     const vec2f_t *src);
 }
 
+static __inline float projectile_clamp_tint(const float &value)
+{
+    if (value < 0.0f) {
+        return 0.0f;
+    }
+    if (value > 1.0f) {
+        return 1.0f;
+    }
+    return value;
+}
+
 extern "C" void projectile_update(void)
 {
     int step_count;
@@ -1398,26 +1409,14 @@ extern "C" void projectile_update(void)
                                 hit_creature->tint_g *= tint_scale;
                                 hit_creature->tint_b *= tint_scale;
 
-                                if (hit_creature->tint_r < 0.0f) {
-                                    hit_creature->tint_r = 0.0f;
-                                } else if (hit_creature->tint_r > 1.0f) {
-                                    hit_creature->tint_r = 1.0f;
-                                }
-                                if (hit_creature->tint_g < 0.0f) {
-                                    hit_creature->tint_g = 0.0f;
-                                } else if (hit_creature->tint_g > 1.0f) {
-                                    hit_creature->tint_g = 1.0f;
-                                }
-                                if (hit_creature->tint_b < 0.0f) {
-                                    hit_creature->tint_b = 0.0f;
-                                } else if (hit_creature->tint_b > 1.0f) {
-                                    hit_creature->tint_b = 1.0f;
-                                }
-                                if (hit_creature->tint_a < 0.0f) {
-                                    hit_creature->tint_a = 0.0f;
-                                } else if (hit_creature->tint_a > 1.0f) {
-                                    hit_creature->tint_a = 1.0f;
-                                }
+                                hit_creature->tint_r =
+                                    projectile_clamp_tint(hit_creature->tint_r);
+                                hit_creature->tint_g =
+                                    projectile_clamp_tint(hit_creature->tint_g);
+                                hit_creature->tint_b =
+                                    projectile_clamp_tint(hit_creature->tint_b);
+                                hit_creature->tint_a =
+                                    projectile_clamp_tint(hit_creature->tint_a);
                             }
 
                             if (particle_index % 3 == 0) {
