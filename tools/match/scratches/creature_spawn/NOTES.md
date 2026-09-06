@@ -153,3 +153,35 @@ controls against the 88.607595% baseline. The source forms are `record-owner`,
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact record ownership and health constant (2026-09-07)
+
+The complete initializer and final record helpers recover the native schedule
+without altering the compiler, flags, aggregate layouts, or observed zero-velocity
+storage. The first helper owns the existing zero-velocity union, computes health
+after lifecycle initialization, and publishes velocity before health. The final
+helper owns the color aggregate, computes size, and then publishes contact damage
+and max health. The compiler inlines both helpers into the native global-pool
+addressing form and recovers all 79 instructions.
+
+The stronger alignment also exposes a real health-constant discrepancy hidden by
+the previous normalized alignment. Native `fmul` at `0x004282c5` references
+`0x0046f310`, whose bytes are `18 b7 d1 38` (`0x38d1b718`,
+0.00010000000474974513). The previous `0.0001f` compiled to `17 b7 d1 38`.
+Writing `0.000100000005f` recovers the native binary32 value. Both helpers
+without this correction already reach 100% normalized instructions but retain
+one reference mismatch and fail body-byte exactness.
+
+`current-record-ownership-controls.json` retains the complete seven-control
+ablation matrix for the initializer helper, final helper, and native health
+literal against the exact source. All controls compile. Only the retained
+full combination recovers **100%**,
+**79/79 instructions**, **prefix 79**, **35/0/0 references**, and
+**body_byte_exact=True**, with no padding difference.
+
+The old semantic-complete classification and claim that both ports already
+matched the health formula are superseded. Both current ports still spell the
+health multiplier as `1e-4`. At elapsed 474 ms, native PC24 operations produce
+health/max-health 10.04740047454834; the old multiplier produces
+10.047399520874023. This is an explicitly observed port-parity follow-up; the
+matching batch changes the recovered native source only.
