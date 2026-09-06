@@ -244,3 +244,40 @@ induction variables at their actual loops. All seven variants reproduce the old
 ui-storage-followup-controls-mutations.json records 7 complete, compiling controls.
 These results bound the tested source forms and inputs; they do not establish that
 matching is impossible.
+
+## Mixed loop-count ownership reaches exact output (2026-09-07)
+
+The remaining Bandage scheduling difference is resolved by recovering the count
+ownership of the two callback loops together. `player_count` is captured after
+the first mutually exclusive dispatcher group. Ammo Maniac and Bandage consume
+that count and refresh it after each callback, while Death Clock and My Favourite
+Weapon retain their direct configured-count loop conditions. Bandage zeros its
+index, checks the captured count, then initializes the health cursor inside the
+guard.
+
+These publications follow the native loads at `0x0040584c`, immediately after
+`weapon_assign_player`, and `0x00405901`, immediately after `effect_spawn_burst`.
+Each refreshed count controls the next iteration and remains available to the
+later effects, preserving callback-driven configuration changes. Native Bandage
+entry at `0x004058b9..0x004058bf` now matches its index, count test, conditional
+branch, and cursor initialization in order. This source produces all 885 native
+body bytes exactly: 100%, 241/241 instructions, a 241-instruction prefix, and
+`76/0/0` references.
+
+The earlier all-direct and all-cached ownership experiments did not test this
+mixed boundary. Four complete current-source controls in
+`mixed-loop-count-controls-mutations.json` isolate it:
+
+| Control | Match | Prefix | References |
+| --- | ---: | ---: | --- |
+| Guarded Bandage with direct configured-count reads | 77.178423% | 8 | `56/0/0` |
+| Cache all later player-loop conditions | 58.506224% | 4 | `55/0/0` |
+| Give Bandage a local count and leave Ammo direct | 77.178423% | 8 | `56/0/0` |
+| Keep mixed ownership but initialize the cursor before the guard | 99.585062% | 193 | `75/0/0` |
+
+All four retain 241 instructions and compile without unresolved or mismatched
+references. The 14 Bandage value/entry controls in
+`bandage-value-entry-2026-09-07-mutations.json` and 12 whole-loop helper controls
+in `bandage-loop-helper-2026-09-07-mutations.json` had tied the earlier baseline or
+rotated allocation. Their negative results bound those source forms; the mixed
+callback-count ownership supplies the missing interaction.

@@ -19,6 +19,7 @@ extern int player_experience;
 
 extern "C" void perk_apply(int perk_id)
 {
+    int player_count;
     float value;
     int i;
     int weapon_id;
@@ -95,6 +96,8 @@ extern "C" void perk_apply(int perk_id)
 
     }
 
+    player_count = config_player_count;
+
     if (perk_id == perk_id_infernal_contract) {
         player_state_table[0].level += 3;
         perk_pending_count += 3;
@@ -113,9 +116,9 @@ extern "C" void perk_apply(int perk_id)
     }
 
     if (perk_id == perk_id_ammo_maniac) {
-        for (i = 0; i < config_player_count; ++i) {
+        for (i = 0; i < player_count; ++i) {
             weapon_assign_player(i, player_state_table[i].weapon_id);
-
+            player_count = config_player_count;
         }
     }
 
@@ -130,20 +133,25 @@ extern "C" void perk_apply(int perk_id)
     }
 
     if (perk_id == perk_id_bandage) {
-        cursor = &player_state_table[0].health;
-        for (i = 0; i < config_player_count;
-             ++i, cursor += sizeof(player_state_t) / sizeof(*cursor)) {
-            value = (float)(crt_rand() % 50) + 1.0f;
-            value *= *cursor;
-            *cursor = value;
-            if (value > 100.0f) {
-                *cursor = 100.0f;
-            }
-            player_state_t *player = (player_state_t *)(
-                (char *)cursor - offsetof(player_state_t, health));
-            effect_spawn_burst(
-                &player->position,
-                8);
+        i = 0;
+        if (player_count > 0) {
+            cursor = &player_state_table[0].health;
+            do {
+                value = (float)(crt_rand() % 50) + 1.0f;
+                value *= *cursor;
+                *cursor = value;
+                if (value > 100.0f) {
+                    *cursor = 100.0f;
+                }
+                player_state_t *player = (player_state_t *)(
+                    (char *)cursor - offsetof(player_state_t, health));
+                effect_spawn_burst(
+                    &player->position,
+                    8);
+                player_count = config_player_count;
+                ++i;
+                cursor += sizeof(player_state_t) / sizeof(*cursor);
+            } while (i < player_count);
         }
     }
 
