@@ -1,6 +1,9 @@
 # demo_trial_overlay_render
 
-High-value recovery for the 2,413-byte demo-expiry overlay at `0x004047c0`.
+Exact reconstruction of the 2,413-byte demo-expiry overlay at `0x004047c0`:
+**636/636 instructions, a 636-instruction prefix, references `175/0/0`, and
+`body_byte_exact=true`**. The recovery sections below retain historical
+experiments and baselines.
 Live Binary Ninja control-flow, stack-slot, string, and callsite evidence
 recovers the complete panel, time formatter, message policy, local-static
 buttons, purchase action, and return-to-menu action.
@@ -173,3 +176,36 @@ trial is retained.
 ui-storage-followup-controls-mutations.json records 24 complete, compiling controls.
 These results bound the tested source forms and inputs; they do not establish that
 matching is impossible.
+
+
+## SDK expressions and next-line ownership (2026-09-07)
+
+The authenticated MOD SDK `cltypes.h` exposes `vec2_t` through named `x`/`y`
+components and the overlapping `v[2]` array, with a value-returning `operator+`.
+The button row now uses that original interface: construct its origin with
+`xy + vec2(22, 212)`, then pass the array of each offset expression directly
+to `ui_button_update`. Purchase uses `(row + vec2(6, 6)).v`; Maybe later uses
+`(row + vec2(326, 6)).v`. Those temporary arrays live through their respective
+calls. Together they recover both native button slots and shared Y storage,
+raising the result from 98.113208% to 99.528302%.
+
+The final expired-text residual was the ownership of the upcoming line's Y.
+After advancing by 24, the source names `expired_next_line_y = position.y + 18`
+before rendering the current line through `position.y`. It then publishes
+that next coordinate to `position.y`, renders the next line, and advances by
+18 for the common final sentence. Both text calls consume their coordinates
+by value. This keeps the same line positions and arithmetic while letting VC6
+retain the duplicated suffix and reuse the native Y slot.
+
+The combined result is **100%** with `body_byte_exact=true`: 636/636
+instructions and prefix, the original 0x124-byte frame, an empty localized
+diff, and references `175/0/0`.
+
+`sdk-expression-next-line-controls.json` evaluates all five nonempty
+combinations of two source boundaries against the exact source. Restoring
+only the branch-owned current-Y cursor yields 99.528302%; restoring only
+staged button coordinates yields 98.584906%; restoring both reproduces the
+98.113208% baseline. All three retain 636 instructions and clean references.
+Replacing the next-line owner with a direct current-Y cursor tail-merges the
+suffix, yielding 616 instructions and 171 references (95.686901% with the
+SDK button expressions, 94.249201% with staged button coordinates).

@@ -10,12 +10,23 @@
 extern IGrim2D_cpp *grim_interface_ptr;
 
 struct demo_trial_vec2_t {
-    float x;
-    float y;
+    union {
+        struct { float x; float y; };
+        float v[2];
+    };
 
     demo_trial_vec2_t() {}
 
-    demo_trial_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}
+    demo_trial_vec2_t(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+
+    demo_trial_vec2_t operator+(const demo_trial_vec2_t &other)
+    {
+        return demo_trial_vec2_t(x + other.x, y + other.y);
+    }
 };
 
 struct demo_trial_color_t {
@@ -184,16 +195,15 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             grim_interface_ptr->grim_draw_text_small_fmt(position.x, position.y,
                                                          "is very easy and takes just minutes.");
             position.y += 24.0f;
-            float expired_tail_y = position.y;
+            float expired_next_line_y = position.y + 18.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, expired_tail_y,
+                position.x, position.y,
                 "Buy the full version to gain unrestricted access to all 3");
-            expired_tail_y += 18.0f;
+            position.y = expired_next_line_y;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, expired_tail_y,
+                position.x, position.y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
-            expired_tail_y += 18.0f;
-            position.y = expired_tail_y;
+            position.y += 18.0f;
         } else {
             position.y -= 7.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
@@ -239,24 +249,20 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
     already_paid_button.label = "Already paid";
 
     {
-        demo_trial_vec2_t button_position;
-        button_position.x = xy[0] + 22.0f;
-        float button_y = xy[1] + 212.0f;
+        demo_trial_vec2_t button_position =
+            *(demo_trial_vec2_t *)xy + demo_trial_vec2_t(22.0f, 212.0f);
 
-        {
-            demo_trial_vec2_t position;
-            position.x = button_position.x + 6.0f;
-            position.y = button_y + 6.0f;
-            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {
-                shareware_offer_seen_latch = 1;
-                quit_requested = 1;
-                ShellExecuteA(0, "open", "http://buy.crimsonland.com", 0, 0, SW_SHOWNORMAL);
-            }
+        if (ui_button_update(
+                (button_position + demo_trial_vec2_t(6.0f, 6.0f)).v,
+                (ui_button_t *)&purchase_button)) {
+            shareware_offer_seen_latch = 1;
+            quit_requested = 1;
+            ShellExecuteA(0, "open", "http://buy.crimsonland.com", 0, 0, SW_SHOWNORMAL);
         }
 
-        button_position.x += 326.0f;
-        button_position.y = button_y + 6.0f;
-        if (ui_button_update((float *)&button_position, (ui_button_t *)&maybe_later_button)) {
+        if (ui_button_update(
+                (button_position + demo_trial_vec2_t(326.0f, 6.0f)).v,
+                (ui_button_t *)&maybe_later_button)) {
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_MAIN_MENU;
             render_pass_mode = 0;
