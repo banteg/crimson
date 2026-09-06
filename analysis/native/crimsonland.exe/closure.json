@@ -1,5 +1,5 @@
 {
-  "audit_digest": "e688bf99cebbf6a717dc23ec63a392e188da06da1abaac23b4af19acd51acce3",
+  "audit_digest": "4784080d9fd8a272d2edc2db0545a82e8709ece630db2ade50645f080b3985ab",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -11117,6 +11117,19 @@
     },
     {
       "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ff1d1b7180000000000",
+          "comdat_selection": 2,
+          "function": "creature_spawn",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/creature_spawn/build/msvc6.5/5f5fbfebc6dd955f/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
         {
           "comdat": true,
           "comdat_associative_section": null,
@@ -60986,7 +60999,7 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "__real@4@3ff1d1b7170000000000",
+          "comdat_key": "__real@4@3ff1d1b7180000000000",
           "comdat_selection": 2,
           "function": "creature_spawn",
           "kind": "section",
@@ -60995,12 +61008,7 @@
           "section": ".rdata",
           "size": null,
           "weak": false
-        }
-      ],
-      "name": "__real@4@3ff1d1b7170000000000"
-    },
-    {
-      "definitions": [
+        },
         {
           "comdat": true,
           "comdat_associative_section": null,
@@ -80691,7 +80699,7 @@
           "comdat_selection": 1,
           "function": "bonus_render",
           "kind": "section",
-          "logical_section_size": 4080,
+          "logical_section_size": 4096,
           "object": "tools/match/scratches/bonus_render/build/msvc6.5/cb3ecb42178af06a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -118975,7 +118983,7 @@
           "comdat_selection": 1,
           "function": "bonus_render",
           "kind": "section",
-          "logical_section_size": 4080,
+          "logical_section_size": 4096,
           "object": "tools/match/scratches/bonus_render/build/msvc6.5/cb3ecb42178af06a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -159391,7 +159399,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3062,
+    "defined_symbols": 3061,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},

@@ -1,29 +1,31 @@
 # Remaining EXE matching batches
 
-Snapshot: 634-exact source checkpoint, refreshed on 2026-09-07. The native audit
-and matching checkpoint reproduce all 671 EXE candidates, including the 37 remaining functions.
-The [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md) improves creature-template grid
-publication and projectile tint clamps. It follows the [UI storage recovery](UI-STORAGE-FOLLOWUP-2026-09-05.md),
+Snapshot: 642-exact source checkpoint, refreshed on 2026-09-07. The native audit
+and matching checkpoint reproduce all 671 EXE candidates, including the 29 remaining functions.
+The [eight exact recoveries](EXACT-MATCHES-2026-09-07.md) also improve statistics formatting
+and bonus pickup publication. They follow the [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md),
+[UI storage recovery](UI-STORAGE-FOLLOWUP-2026-09-05.md),
 [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md), and
 [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
-**EXE: 634/671 exact; Grim: 139/139 exact.** The EXE frontier is 37 functions spanning 152,861
-code bytes, with 29,987 fuzzy-gap bytes. The top five functions hold 68.3% of that gap, and the
-top ten hold 86.2%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
+**EXE: 642/671 exact; Grim: 139/139 exact.** The EXE frontier is 29 functions spanning 138,323
+code bytes, with 29,639 fuzzy-gap bytes. The top five functions hold 69.1% of that gap, and the
+top ten hold 87.2%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
-Batches 01–08 have received a focused first pass; their remaining members need a new hypothesis
-or an interaction supported by the recorded results. Batch 09 has now received focused tutorial
+Batches 01–08 have received focused follow-ups; batch 05 is complete. Their remaining members
+need a new hypothesis or an interaction supported by the recorded results. Batch 09 has received focused tutorial
 and grid-template probes; creature rendering remains next within that group. Batch 12 has a
 retained tint gain and bounded secondary-render controls. Batches 10–14 still need region-sized
 campaigns, with the smaller UI and worker findings available as controls. Keep batch IDs stable as exact members leave the frontier. Batch
 membership describes related work, not an estimate that every member will become exact in one
 session.
 
-Recent wins invalidate a blanket “compiler residual” stop rule. Options, perk selection, and
-credits now match exactly through interactions between opening values and later UI coordinate
-lifetimes. Worker initialization, quest publication, and menu/scrollbar scheduling also improved.
+Recent wins invalidate a blanket “compiler residual” stop rule. Player firing, the trial overlay,
+UI elements, and the quest menu now match through interactions between vector expressions and
+later value lifetimes. Both database separators match through a shared expression boundary;
+perk callbacks and creature initialization recover their native ownership and publication order.
 Treat previous negative sweeps as bounds on their specific source forms and baseline, and use
 successful siblings as controls rather than templates to copy mechanically.
 
@@ -31,14 +33,14 @@ successful siblings as controls rather than templates to copy mechanically.
 
 | Batch | Focus | Functions | Fuzzy gap, bytes |
 |---|---|---:|---:|
-| [01](#batch-01) | Scalar ownership and shared control flow | 4 | 236 |
-| [02](#batch-02) | Spawn records and quest induction | 5 | 378 |
+| [01](#batch-01) | Scalar ownership and shared control flow | 3 | 232 |
+| [02](#batch-02) | Spawn records and quest induction | 4 | 340 |
 | [03](#batch-03) | WinInet request and response workers | 2 | 750 |
-| [04](#batch-04) | Short coordinate lifetimes | 4 | 103 |
-| [05](#batch-05) | UI call scheduling and vector primitives | 3 | 46 |
-| [06](#batch-06) | Menu object and aggregate lifetimes | 3 | 481 |
-| [07](#batch-07) | UI loops, formatting, and board state | 3 | 926 |
-| [08](#batch-08) | HUD and effect rendering | 4 | 2,053 |
+| [04](#batch-04) | Short coordinate lifetimes | 2 | 46 |
+| [05](#batch-05) | UI call scheduling and vector primitives | 0 | 0 |
+| [06](#batch-06) | Menu object and aggregate lifetimes | 2 | 340 |
+| [07](#batch-07) | UI loops, formatting, and board state | 3 | 890 |
+| [08](#batch-08) | HUD and effect rendering | 4 | 2,028 |
 | [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 3 | 2,816 |
 | [10](#batch-10) | High-score screen | 1 | 1,731 |
 | [11](#batch-11) | Player simulation and weapon dispatch | 1 | 5,849 |
@@ -49,8 +51,8 @@ successful siblings as controls rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 34 H
-functions and 3 with current records. Retained source changes start a new baseline epoch, so H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 17 H
+functions and 12 with current records (8 A, 3 S, 1 I). Retained source changes start a new baseline epoch, so H
 can include a function improved in this pass; the campaign report preserves the gain evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
@@ -75,7 +77,7 @@ that baseline, not an impossibility proof.
    verify all affected consumers.
 
 ```sh
-uv run crimson match scratch tools/match/scratches/perk_apply --regions --max-regions 8
+uv run crimson match scratch tools/match/scratches/bonus_pick_random_type --regions --max-regions 8
 # Replace the scratch name for the selected member; add --json for structured regions.
 # After retaining a coherent source change:
 just native-audit crimsonland.exe
@@ -90,22 +92,17 @@ repeated/switch-block pairings before interpreting missing blocks or references.
 
 ## 01 — Scalar ownership and shared control flow
 
-The first pass retained no changes in these four small functions. They expose ownership and
-phase boundaries similar to those behind recent exact matches. Reconstruct the dependency before
-changing syntax.
+Three small functions remain after [perk_apply](scratches/perk_apply/NOTES.md) became exact.
+Its callback loops retain a cached player count while pure loops read the configured count.
+The remaining functions expose distinct ownership and phase boundaries; reconstruct their
+dependencies before changing syntax.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [perk_apply](scratches/perk_apply/NOTES.md) | 99.59% | 241/241 | 4 | 0 | H |
-| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | H |
-| [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | H |
-| [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | H |
+| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | S |
+| [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | A |
+| [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | A |
 
-- **perk_apply:** Bandage materializes the health cursor before the count guard; native does it
-  after. Everything else now aligns (241 instructions, prefix 193). Trace why this one loop carries
-  the cursor across the guard while the Ammo Maniac loop does not. Direct configured-count loops
-  already recovered the broad register allocation; nested guards and indexed player rewrites
-  reverted that gain.
 - **sfx_entry_start_playback:** Native saves ESI before the streaming arm but initializes its
   resident index after that arm returns. Candidate initializes it early; moving the initialization
   has instead moved the save into the resident arm. Reconstruct the restore/stream/resident result
@@ -124,15 +121,16 @@ changing syntax.
 
 ## 02 — Spawn records and quest induction
 
-Use the newly exact indexed quest builders and fx_queue_add as calibration examples. Work on one
-record-construction boundary at a time; the successful idiom may differ between functions.
+Use the newly exact [creature_spawn](scratches/creature_spawn/NOTES.md), indexed quest builders,
+and fx_queue_add as calibration examples. Creature initialization needed separate initialization
+and finalization helpers plus the exact native health literal. Work on one record-construction
+boundary at a time; the successful idiom may differ between functions.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | H |
-| [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | H |
+| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | S |
+| [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | A |
 | [quest_build_survival_of_the_fastest](scratches/quest_build_survival_of_the_fastest/NOTES.md) | 79.39% | 228/228 | 177 | 0 | H |
-| [creature_spawn](scratches/creature_spawn/NOTES.md) | 88.61% | 79/79 | 38 | 0 | H |
 | [projectile_spawn](scratches/projectile_spawn/NOTES.md) | 71.67% | 114/126 | 113 | 0 | H |
 
 - **quest_build_spiders_inc:** The wave count is computed before the pointer calculation in native
@@ -148,10 +146,6 @@ record-construction boundary at a time; the successful idiom may differ between 
   regressed, and a postincrement count was neutral. Revisit the early counter/loop ownership with
   the retained late edges as controls; a fixed twelve-entry count still specializes away later loops.
 
-- **creature_spawn:** Native and candidate have the same instruction count but differ in x87 health
-  scheduling and size/color publication. Inspect initialization dependencies around the actual
-  creature owner. Merely switching C/C++ or wrapping position, velocity, and color in aggregates did
-  not help.
 - **projectile_spawn:** Native retains a default damage value and a fire-bullet override backedge;
   candidate constant propagation removes twelve instructions. Revisit the initializer and override
   phase ownership against its callers. Shared-tail, loop, and value-ABI spellings have failed; an
@@ -186,21 +180,17 @@ target extents already include their epilogues.
 
 ## 04 — Short coordinate lifetimes
 
-These four remain after credits_screen_update became exact; all have equal instruction counts
-and clean references. Map where each vector is born, passed by address, and becomes dead,
-including later calls that can affect an earlier stack slot.
+Two remain after [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) and
+[demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) became exact, joining
+credits_screen_update. Both remaining functions have equal instruction counts and clean
+references. Map where each vector is born, passed by address, and becomes dead, including later
+calls that can affect an earlier stack slot.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | 99.21% | 378/378 | 12 | 0 | H |
-| [survival_update](scratches/survival_update/NOTES.md) | 98.21% | 504/504 | 38 | 0 | H |
-| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | H |
-| [demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) | 98.11% | 636/636 | 46 | 0 | H |
+| [survival_update](scratches/survival_update/NOTES.md) | 98.21% | 504/504 | 38 | 0 | S |
+| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | I |
 
-- **player_fire_weapon:** Only the pellet position stack operands remain: native uses the upper
-  position pair after the two sprite calls, candidate the lower pair. Trace both calls and pellet
-  generation as one lifetime graph. Fresh vectors, simple reuse, SDK forms, and movement-zero
-  separation already failed.
 - **survival_update:** Only the first three scripted spawn positions use a different temporary pair;
   native reuses a dead centroid slot. Later stages already align. Inspect the centroid-to-first-wave
   boundary. Numerous scopes and explicit centroid/vector reuse variants either materialize extra
@@ -209,54 +199,34 @@ including later calls that can affect an earlier stack slot.
   later button/row lifetime that could color this opening temporary. Opening declarations, row
   copies, and footer scopes have not recovered it; do not confine analysis to the first mismatch.
 
-- **demo_trial_overlay_render:** Three regions remain around the expired suffix and complementary
-  Purchase/Maybe Later coordinates; the quest suffix already matches. Compare branch-exclusive
-  coordinate owners and the shared draw tail. Direct suffix reuse merges native operations;
-  dedicated expired vectors and copies have not solved the lifetime.
-
 <a id="batch-05"></a>
 
 ## 05 — UI call scheduling and vector primitives
 
-[ui_cursor_render](scratches/ui_cursor_render/NOTES.md) is now exact, including
-encoded-body identity. Two named scalar coordinates in the earlier 128-by-128 glow
-quad recover the final cursor draw schedule. Earlier final-call-only probes had
-missed this interaction.
+Complete. [ui_cursor_render](scratches/ui_cursor_render/NOTES.md) was already exact;
+[unlocked_weapons_database_update](scratches/unlocked_weapons_database_update/NOTES.md),
+[unlocked_perks_database_update](scratches/unlocked_perks_database_update/NOTES.md), and
+[ui_element_render](scratches/ui_element_render/NOTES.md) now also have normalized and
+encoded-body identity.
 
-Treat the database screens as a sibling pair. Very small gaps make these precise experiments,
-not guaranteed quick wins. Any proposed shared-header correction needs independent type evidence
-and checks of its exact consumers.
-
-| Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
-|---|---:|---:|---:|---:|:---:|
-| [unlocked_weapons_database_update](scratches/unlocked_weapons_database_update/NOTES.md) | 99.81% | 523/523 | 4 | 0 | H |
-| [unlocked_perks_database_update](scratches/unlocked_perks_database_update/NOTES.md) | 99.80% | 511/511 | 4 | 0 | H |
-| [ui_element_render](scratches/ui_element_render/NOTES.md) | 97.89% | 521/521 | 38 | 0 | H |
-
-- **unlocked_weapons_database_update:** One title-separator schedule inversion: native loads the
-  renderer vtable before converting title width with fild. Compare its expression boundary with the
-  perks screen and exact drawing callers. Scalar width types, renderer aliases, wrappers,
-  neighboring TUs, and compiler profiles have already tied or regressed.
-- **unlocked_perks_database_update:** The same title-separator inversion as the weapons screen. Test
-  one shared, evidence-backed expression hypothesis on both screens. A recovered UI owner previously
-  preserved code shape but introduced reference mismatches, so it was not a clean match.
-- **ui_element_render:** Three panel Y additions and the counter-X temporary retain different
-  operand/slot choices. Compare the counter shadow and final draw operand lifetimes against the
-  already recovered shared position. Broad shared-position rewrites and vector operator/value
-  variants have not helped.
+Both database screens recover the separator schedule by passing its position by value and its
+measured integer width by const reference to an inline draw helper. UI element rendering uses
+the authenticated SDK vector expressions and their union-backed array view. These recoveries
+change only local scratches; shared headers and compiler settings are unchanged. Keep this batch
+ID reserved for its completed group.
 
 <a id="batch-06"></a>
 
 ## 06 — Menu object and aggregate lifetimes
 
-Three screens/initializers remain after options_menu_update and perk_selection_screen_update
-became exact. Use existing authenticated UI declarations as evidence, while keeping changes
-local until a common owner is demonstrated.
+Two screens/initializers remain after [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md)
+became exact, joining options_menu_update and perk_selection_screen_update. The quest menu needed
+interacting panel, row, index, checkbox, and Back-button owners. Use existing authenticated UI
+declarations as evidence, while keeping changes local until a common owner is demonstrated.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | A |
-| [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md) | 95.89% | 803/803 | 141 | 0 | H |
 | [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) | 95.69% | 1408/1422 | 312 | 0 | H |
 
 - **mods_menu_update:** Short separator and independent button lifetimes recovered all opening,
@@ -264,10 +234,6 @@ local until a common owner is demonstrated.
   the 0x154 versus 0x144 frame and five enumeration-buffer addresses. Version rendering now agrees.
   Narrow enumeration scopes, buffer declaration placement, and inline helpers are neutral on this
   improved source; recover the remaining storage ownership without inventing buffer sizes.
-- **quest_select_menu_update:** Both frames are 48 bytes. Opening panel-Y/hover stores and the
-  Back-button x87 reload remain locally reordered, with further row/register differences. Inspect
-  the interaction between the recovered checkbox and surrounding row/Back scopes. Opening-store
-  permutations and short Back-vector construction forms have already been replayed.
 
 - **ui_menu_layout_init:** Publishing slot 31 position immediately after copy_layer and before
   hover_max construction raised alignment to 95.69%, preserving prefix 467 and improving clean
@@ -286,7 +252,7 @@ matters.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [ui_scrollbar_update](scratches/ui_scrollbar_update/NOTES.md) | 82.43% | 477/479 | 311 | 0 | H |
-| [statistics_menu_update](scratches/statistics_menu_update/NOTES.md) | 93.26% | 675/676 | 194 | 0 | H |
+| [statistics_menu_update](scratches/statistics_menu_update/NOTES.md) | 94.53% | 676/676 | 157 | 0 | A |
 | [credits_secret_alien_zookeeper_update](scratches/credits_secret_alien_zookeeper_update/NOTES.md) | 83.86% | 638/638 | 422 | 0 | H |
 
 - **ui_scrollbar_update:** Constructing the row origin directly from x minus two raised alignment
@@ -294,10 +260,11 @@ matters.
   and an input copy regressed; a column local was neutral. Inspect one unmatched row/drag transition
   and its temporary lifetime before broadening the rewrite.
 
-- **statistics_menu_update:** Session-time formatting assigns hours and the renderer to different
-  EBP/EDI roles; total-time arithmetic crosses the F1 gate differently. Recover the formatting-call
-  inputs and their live ranges. Independent quotient/renderer declarations and explicit seconds
-  subtraction have not recovered the native schedule.
+- **statistics_menu_update:** Capturing the session renderer after deriving hours and reusing
+  minute/second locals for their remainders recovers the missing instruction and raises alignment
+  to 94.53%, preserving prefix 280 and 276 clean references. Session renderer/hour allocation and
+  total-time formatting still differ. Follow-up quotient and gate controls gained score only by
+  losing an instruction; keep the recovered remainder scheduling intact.
 - **credits_secret_alien_zookeeper_update:** Panel-expression and long-lived board vectors occupy
   opposite stack pairs despite equal 0x54 frames and instruction counts. Inspect later board
   consumers for an ownership/lifetime explanation. Reordering the two declarations, copying
@@ -314,7 +281,7 @@ boundaries, direct pool ownership, callback ordering, and rounded x87 intermedia
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md) | 79.80% | 407/405 | 316 | 0 | H |
-| [bonus_render](scratches/bonus_render/NOTES.md) | 92.05% | 1087/1088 | 325 | 0 | H |
+| [bonus_render](scratches/bonus_render/NOTES.md) | 92.65% | 1088/1088 | 301 | 0 | A |
 | [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 88.29% | 1823/1824 | 829 | 0 | H |
 | [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 87.29% | 1141/1148 | 583 | 0 | H |
 
@@ -322,10 +289,11 @@ boundaries, direct pool ownership, callback ordering, and rounded x87 intermedia
   off-screen return, and the compact arm falls through to the shared tail. Candidate places the
   single-bar arm differently. Recover cursor/color ownership across culling and bar rendering. Prior
   shared-tail score gains introduced a mismatched call reference.
-- **bonus_render:** Direct indexed particle-pool access already closed all references. The remaining
-  beam region spills/reloads unscaled width differently; candidate is one instruction short. Trace
-  width, height, and scale consumption across the beam calls. Recent named-scale, pointer, and
-  separate-height forms did not recover that spill.
+- **bonus_render:** Direct indexed telekinetic pickup publication recovers the missing instruction,
+  raises alignment to 92.65%, and improves clean references from 229 to 232. The indexed search also
+  recovers the native signed loop bound. The beam region still spills/reloads unscaled width
+  differently; trace width, height, and scale consumption across its calls. Named-scale, pointer,
+  and separate-height forms did not recover that spill.
 - **ui_render_hud:** Candidate is one instruction short; the bonus-popup entry is a known structural
   seam, while the quest banner differs only in temporary slots. Inspect the popup
   conversion/count/icon dependencies before changing the surrounding frame. Six entry-order and six
@@ -340,9 +308,9 @@ boundaries, direct pool ownership, callback ordering, and rounded x87 intermedia
 
 ## 09 — Creature templates, atlas passes, and tutorial stages
 
-Three domain-focused targets need narrow internal slices. Start with tutorial stage five, then
-one creature template or one render pass; this batch is not a request to rewrite all three
-together.
+Three domain-focused targets need narrow internal slices. Creature rendering is next; select one
+atlas, detail, or flash pass using the recorded field and call anchors. Reopen tutorial stage five
+or a creature template after identifying a new source dependency.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
