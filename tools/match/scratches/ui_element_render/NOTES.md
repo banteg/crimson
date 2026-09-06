@@ -2,9 +2,10 @@
 
 Native target: `crimsonland.exe` at `0x00446c40` (1,801 bytes).
 
-Current reconstruction: **97.50%**, exactly 521 candidate and native
-instructions, a 332-instruction exact prefix, and all 65 emitted references
-resolved.
+Current reconstruction: **100%**, 521/521 instructions and prefix, all 65
+emitted references resolved and equal, and `body_byte_exact=true` for the
+1,801-byte native body. The recovery sections below retain historical
+experiments and baselines.
 
 Live Binary Ninja and IDA evidence recovers the game-owned UI element render
 state machine: optional point-filter setup, keyboard-focus activation, panel
@@ -233,3 +234,29 @@ controls against the 97.888676% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+
+## SDK expression temporary recovery (2026-09-07)
+
+The authenticated MOD SDK `cltypes.h` gives `vec2_t` both named `x`/`y`
+components and the overlapping `v[2]` array. Restoring that local presentation
+allows the original vector addition result to pass its array directly to the
+vertex API. The offset-shadow calls now consume
+`(position + vec2(7, 7) + render_offset).v`; the plain offset-panel calls consume
+`(position + render_offset).v`. Each array remains valid for the full call
+expression. The transform-shadow and counter source stay as recovered.
+
+These whole expression lifetimes recover the native x87 operand ordering and
+stack-slot reuse together, including the later counter position's slot. The
+result improves from 97.888676% and prefix 332 to **100%**, prefix 521, and
+**byte identity**. Both native and candidate retain 521 instructions, the
+0x20-byte frame, and references `65/0/0`; the localized diff is empty.
+
+`sdk-expression-temporary-controls.json` checks three complete, compiling
+controls against the exact source. Reinstating the staged shadow owner yields
+97.696737% (prefix 328); replacing the shadow vector addition with equivalent
+scalar constructor arguments yields 99.232246% (prefix 325); reinstating a
+named panel position yields 91.362764% (prefix 0). Each keeps 521 instructions
+and clean references, but loses byte identity. The native lifetime boundary
+therefore depends on the combined expression form, beyond ordinary scalar
+operand order and independently scoped local declarations.
