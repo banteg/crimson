@@ -23,7 +23,42 @@ The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in
 3; Sawed-off Shotgun id 4 has distinct ordinary-runtime recipes and is not the
 mode loadout.
 
-MSVC 6.5 currently produces 378 instructions against the native 378 at a
+## Exact effect and pellet lifetimes (2026-09-07)
+
+MSVC 6.5 now reproduces all 378 native instructions and the complete 1,518-byte
+body. The exact prefix is 378, `body_byte_exact` is true, and all 142 masked
+references resolve with zero mismatches or unresolved references.
+
+Each muzzle sprite now owns a position and velocity in its own lexical scope;
+the pellet loop owns a fresh position per iteration. The cosine and sine values
+remain available across the two sprite scopes. This lets VC6 reuse dead local
+storage across the independent effects, including the opposite position and
+velocity roles visible in the native stack slots. The pellet position then
+lands in the native upper slot. The earlier explicit reuse of two source
+vectors overconstrained their ownership and left three wrong stack operands.
+
+`separate-effect-pellet-lifetimes-mutations.json` uses the exact source as its
+positive baseline and preserves four focused negative controls. Separate vector
+objects in one flat scope, or with both effects sharing a scope, produce
+91.798942%. Keeping the two effect scopes but moving the pellet vector outside
+its loop produces 93.386243%. Restoring the earlier shared vector owners
+reproduces 99.206349% and the original three stack operand differences. All
+four retain 378 instructions and `142/0/0` references. The individual effect
+lifetimes and the iteration-local pellet value are therefore both necessary
+for this recovered source shape.
+
+The value operations and call order are unchanged. `fx_spawn_sprite` copies its
+position and velocity arguments into the effect pool, and `projectile_spawn`
+copies its position into the projectile; neither retains a pointer to these
+locals. Each vector is fully assigned before its call. The two random-number
+calls per pellet, the 12-iteration count, x87 expression order, and post-call
+speed assignment are preserved. The source validator and focused probe pass;
+integration checks are recorded by the coordinating matching run.
+
+The earlier reconstruction and negative probes below describe the source before
+this lifetime recovery; their residual labels are historical.
+
+Before the lifetime recovery, MSVC 6.5 produced 378 instructions against the native 378 at a
 99.21% match, with a 245-instruction exact prefix, a 12.05-byte fuzzy gap, and
 all 142 masked references resolved. Declaring the perk-assisted readiness flag
 after aim computation but before the normal-readiness test reproduces the
@@ -37,13 +72,13 @@ both component sums before storing the canonical `vec2f_t`, reproducing the
 native x87 staging while retaining adjacent-vector semantics. Together these
 natural source boundaries raise the result from 95.24% to 99.21%.
 
-The remaining delta is three stack-slot operands in the pellet-position loop:
+That candidate differed in three stack-slot operands in the pellet-position loop:
 the native writes the same two component sums at `[esp+0x20]` and
 `[esp+0x24]`, while VC6 assigns the candidate `[esp+0x18]` and `[esp+0x1c]`,
-then passes that equivalent vector to the same projectile call. A separately
-scoped projectile vector regresses the frame and score, so the scratch retains
-the better semantic source rather than using a layout-only array, union,
-volatile state, or another artificial allocation constraint.
+then passed that equivalent vector to the same projectile call. A separately
+scoped projectile vector alone regressed the frame and score, so the scratch
+then retained the stronger source. The exact recovery above crosses this
+pellet lifetime with separate scopes for each muzzle effect.
 
 The two muzzle-sprite calls expose their position and velocity arguments as
 read-only vector aggregates at the shared `fx_spawn_sprite` boundary.

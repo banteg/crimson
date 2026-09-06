@@ -157,49 +157,58 @@ extern "C" void player_fire_weapon(
 
             if (player_state_table[render_overlay_player_index].weapon_id
                 == WEAPON_ID_SHOTGUN) {
-                vec2f_t effect_velocity;
-                vec2f_t effect_position;
-                float heading_cos = (float)cos(shot_heading);
-                effect_velocity.x = heading_cos * 25.0f;
-                float heading_sin = (float)sin(shot_heading);
-                effect_velocity.y = heading_sin * 25.0f;
-                typo_fire_vec_add(
-                    &effect_position,
-                    &player_state_table[render_overlay_player_index].position,
-                    &local_offset);
+                float heading_cos;
+                float heading_sin;
+                {
+                    vec2f_t effect_velocity;
+                    vec2f_t effect_position;
+                    heading_cos = (float)cos(shot_heading);
+                    effect_velocity.x = heading_cos * 25.0f;
+                    heading_sin = (float)sin(shot_heading);
+                    effect_velocity.y = heading_sin * 25.0f;
+                    typo_fire_vec_add(
+                        &effect_position,
+                        &player_state_table[render_overlay_player_index].position,
+                        &local_offset);
 
-                int effect_index = fx_spawn_sprite(
-                    &effect_position,
-                    &effect_velocity,
-                    1.0f);
-                sprite_effect_pool[effect_index].color.r = 0.5f;
-                sprite_effect_pool[effect_index].color.g = 0.5f;
-                sprite_effect_pool[effect_index].color.b = 0.5f;
-                sprite_effect_pool[effect_index].color.a = 0.25f;
+                    int effect_index = fx_spawn_sprite(
+                        &effect_position,
+                        &effect_velocity,
+                        1.0f);
+                    sprite_effect_pool[effect_index].color.r = 0.5f;
+                    sprite_effect_pool[effect_index].color.g = 0.5f;
+                    sprite_effect_pool[effect_index].color.b = 0.5f;
+                    sprite_effect_pool[effect_index].color.a = 0.25f;
+                }
 
-                effect_position.x = heading_cos * 15.0f;
-                effect_position.y = heading_sin * 15.0f;
-                vec2f_t *player_position =
-                    &player_state_table[render_overlay_player_index].position;
-                typo_fire_vec_add(
-                    &effect_velocity, player_position, &local_offset);
-                effect_index = fx_spawn_sprite(
-                    &effect_velocity,
-                    &effect_position,
-                    2.0f);
-                sprite_effect_pool[effect_index].color.r = 0.5f;
-                sprite_effect_pool[effect_index].color.g = 0.5f;
-                sprite_effect_pool[effect_index].color.b = 0.5f;
-                sprite_effect_pool[effect_index].color.a = 0.223f;
+                {
+                    vec2f_t effect_velocity;
+                    vec2f_t effect_position;
+                    effect_velocity.x = heading_cos * 15.0f;
+                    effect_velocity.y = heading_sin * 15.0f;
+                    vec2f_t *player_position =
+                        &player_state_table[render_overlay_player_index].position;
+                    typo_fire_vec_add(
+                        &effect_position, player_position, &local_offset);
+                    int effect_index = fx_spawn_sprite(
+                        &effect_position,
+                        &effect_velocity,
+                        2.0f);
+                    sprite_effect_pool[effect_index].color.r = 0.5f;
+                    sprite_effect_pool[effect_index].color.g = 0.5f;
+                    sprite_effect_pool[effect_index].color.b = 0.5f;
+                    sprite_effect_pool[effect_index].color.a = 0.223f;
+                }
 
                 int pellet_count = 12;
                 do {
-                    player_position =
+                    vec2f_t pellet_position;
+                    const vec2f_t *player_position =
                         &player_state_table[render_overlay_player_index].position;
                     typo_fire_vec_add(
-                        &effect_velocity, player_position, &local_offset);
+                        &pellet_position, player_position, &local_offset);
                     int projectile_index = projectile_spawn(
-                        &effect_velocity,
+                        &pellet_position,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + shot_heading,
                         PROJECTILE_TYPE_SHOTGUN,
