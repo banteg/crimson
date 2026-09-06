@@ -194,3 +194,25 @@ alignment.
 exact-followup-value-interactions-mutations.json records all 9 complete, compiling
 controls. No source change is retained. These outcomes bound the tested inputs and
 interactions, not the function's matchability.
+
+## Count and position ownership follow-up (2026-09-07)
+
+Three complete, compiling matrices retain 69 controls against the unchanged
+95.238095% baseline (105/105 instructions, prefix 54, references 8/0/0):
+
+- `count-position-owner-2026-09-07-mutations.json` crosses five shared-count
+  publication boundaries with position subobject pointers, references, coordinate
+  methods, record coordinate methods, and indexed coordinate ownership (25 forms).
+- `step-lifetime-2026-09-07-mutations.json` crosses four count ownership forms
+  with five semantically equivalent step-increment boundaries (20 forms).
+- `bottom-helper-2026-09-07-mutations.json` calculates the shared wave count
+  before a complete bottom-spawn helper, whose own body performs the two distinct
+  width reads and metadata stores. Pointer/indexed receivers, scalar/record
+  publication results, argument order, and constant/parameter template ownership
+  are covered (24 forms).
+
+None improves the retained source. The first matrix's early cached position
+subobject forms are byte-neutral. The other two matrices regress; the strongest
+step form is 89.523810%, while the strongest bottom-helper form is 88.151659%.
+These complete recorded overlay sweeps bound the listed source hypotheses only.
+Canonical source and configuration remain unchanged.

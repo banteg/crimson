@@ -126,3 +126,9 @@ controls against the 75.925926% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Bounded ownership follow-up (2026-09-07)
+
+The 16 retry-budget and exit-ownership controls retain the original 101-attempt fallback policy while crossing loop form with the retry scalar lifetime. The shared retry label ties the original 75.925926%, 162/162 instructions, prefix 55, and 20 clean references; all other forms regress. The native cold quest-stage edge remains unresolved.
+
+The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.

@@ -138,3 +138,20 @@ controls against the 91.228070% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+
+## Spawn-loop source ownership controls (2026-09-07)
+
+Four complete representative controls in
+`spawn-loop-source-ownership-2026-09-07-mutations.json` cover a whole-loop
+position/template/count helper, a direct SDK-form vector-add expression at the
+spawn call, and template/heading cursor ownership derived either from each
+current entry or from the retained scan cursor. All four compile with no
+unresolved or mismatched references. The helper, vector expression, and
+member-refreshed cursor each retain 91.228070%, 113/115 instructions, prefix 51,
+and `13/0/0` references. Retaining and advancing the scan cursor instead regresses
+to 44.255319%, 120/115 instructions, prefix 0, and `8/0/0` references.
+
+None produces the exact native 115-instruction body. Canonical source is unchanged. These controls bound the
+specified source boundaries, not the function's matchability; broader sources
+and results from this run remain in `/private/tmp/timeline-review`.

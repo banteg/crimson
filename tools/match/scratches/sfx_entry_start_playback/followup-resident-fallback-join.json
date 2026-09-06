@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "resident-selection",
+      "find": "    while (result < 16) {\n        if (entry->buffers[result] != 0) {\n            entry->buffers[result]->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n    }\n    result = rand() % 16;\n    entry->buffers[result]->Stop();\n\nplay_voice:\n",
+      "replacements": [
+        {
+          "name": "structured-break",
+          "text": "    while (1) {\n        if (entry->buffers[result] != 0) {\n            entry->buffers[result]->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                break;\n            }\n        }\n        ++result;\n        if (result >= 16) {\n            result = rand() % 16;\n            entry->buffers[result]->Stop();\n            break;\n        }\n    }\n\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "sdk-union",
+          "text": "    union {\n        struct { float x; float y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "list-expression",
+      "find": "    play_game_vec2_t list_position =\n        base_position + play_game_vec2_t(80.0f, 1.0f);\n    int selected = ui_list_widget_update(\n        (float *)&list_position, (ui_list_widget_t *)&player_count_list);",
+      "replacements": [
+        {
+          "name": "sdk-temporary-array",
+          "text": "    int selected = ui_list_widget_update(\n        (base_position + play_game_vec2_t(80.0f, 1.0f)).v,\n        (ui_list_widget_t *)&player_count_list);",
+          "requires": [
+            "vector-storage/sdk-union"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vector-add-qualification",
+      "find": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "sdk-nonconst",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)"
+        }
+      ]
+    }
+  ]
+}

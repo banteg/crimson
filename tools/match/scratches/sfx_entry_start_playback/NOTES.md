@@ -128,3 +128,38 @@ controls against the 87.096774% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+
+## Bounded result and voice-lifetime follow-up (2026-09-07)
+
+Fresh native comparison retains **87.096774%**, 93/93 instructions, prefix
+20, and **7/0/0** references. Native saves ESI in the common prologue but
+initializes the resident index only after the streaming return. The candidate
+initializes that index before the streaming test. The other differences are
+temporary registers in the final Stop, SetFrequency, and Play calls.
+
+Four compact plans preserve seven complete, compiling representative variant
+evaluations, including the delayed-index control shared by two plans:
+
+- `followup-status-result-lifetimes.json` (`--max-changes 4`, 3 controls) moves status
+  ownership into the non-null voice block, delays index initialization until
+  the resident scan, and combines them. Voice-local status is byte-neutral.
+  Both delayed forms reach 77.173913%, 91/93 instructions, prefix 1, and
+  7/0/0 references because the compiler moves the ESI save into the resident
+  arm.
+- `followup-selected-index-owner.json` (`--max-changes 2`, 1 control) separates the
+  scanned loop index from the selected voice returned by the function. It
+  produces the same 77.173913%, 91-instruction result.
+- `followup-stream-quarter-loop.json` (`--max-changes 3`, 2 controls) compares the
+  delayed baseline with an ordinary three-iteration stream-fill loop. VC6
+  retains a loop instead of producing the native three calls. The loop form
+  reaches 78.494624%, 93/93 instructions, prefix 26, and 5/0/0 references;
+  the reference and prefix pattern confirms that the native calls were not
+  recovered by this loop spelling.
+- `followup-resident-fallback-join.json` (`--max-changes 1`, 1 control) contains the
+  random fallback in the scan loop and uses structured breaks for both exits.
+  It is byte-neutral at the canonical metrics.
+
+No source or configuration change is retained. The complete controls preserve
+the negative evidence for these ownership and control-flow hypotheses without
+using register hints, artificial dependencies, or compiler-profile changes.

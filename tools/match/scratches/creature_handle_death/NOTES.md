@@ -136,3 +136,9 @@ controls against the 89.486553% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Bounded ownership follow-up (2026-09-07)
+
+Twenty-six complete field-owner, predicate-bound pointer, real prelude-helper, child-record-copy, and child-scope controls leave the 89.486553%, 205/204-instruction, 85-clean-reference source as the strongest candidate. The native flag load avoids the candidate's extra shared-index shift. Lower-scoring forms that recover the instruction count introduce reference debt and are rejected.
+
+The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.

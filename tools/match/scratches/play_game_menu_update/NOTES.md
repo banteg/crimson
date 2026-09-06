@@ -368,3 +368,35 @@ declaration placement alone is neutral.
 exact-followup-value-interactions-mutations.json records all 30 complete, compiling
 controls. No source change is retained. These outcomes bound the tested inputs and
 interactions, not the function's matchability.
+
+
+## Bounded coordinate-lifetime follow-up (2026-09-07)
+
+Fresh native comparison retains **99.742600%**, 777/777 instructions, prefix
+120, and **321/0/0** references. The sole mismatch is the opening Y sum's
+store and reload: native uses `[esp+0x24]`, while the candidate uses
+`[esp+0x14]`. Accounting for the pending call argument, the native temporary
+occupies the later list-position Y slot. Both retain the 0x2c-byte frame.
+
+Three compact plans preserve nine complete, compiling representative controls:
+
+- `followup-sdk-list-expression.json` (`--max-changes 3`, 5 controls) tests the
+  authenticated SDK vector union, non-const addition, and direct
+  `(base_position + play_game_vec2_t(80, 1)).v` list argument independently
+  and in their valid combinations. Every control is byte-neutral at the
+  baseline metrics. This tests the expression boundary that recovered exact
+  sibling UI functions without assuming it must improve this callback.
+- `followup-opening-origin-lifetimes.json` (`--max-changes 1`, 3 controls) gives the
+  opening sum a const value or const reference owner before constructing or
+  assigning the working position. Every control regresses. The best reaches
+  99.099099% but loses the exact prologue and has 316/1/2 references; the copy
+  forms fall to 93.359123%. No aliases were added to hide reference debt.
+- `followup-reused-list-coordinate.json` (`--max-changes 2`, 1 control) uses the opening
+  coordinate value again for the later list submission. It reaches
+  84.102564%, 783/777 instructions, prefix 1, and 273/0/20 references.
+
+The original SDK declaration was checked in `cltypes.h` from the local
+Crimsonland MOD SDK: vector storage is an anonymous x/y struct over `v[2]`,
+and addition is a non-const member returning a constructed vector value.
+No source or configuration change is retained. These controls bound the named
+ownership hypotheses; they do not establish that the function is unmatchable.

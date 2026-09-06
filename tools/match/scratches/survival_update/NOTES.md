@@ -118,3 +118,9 @@ native spawn slots.
 ui-storage-followup-controls-mutations.json records 16 complete, compiling controls.
 These results bound the tested source forms and inputs; they do not establish that
 matching is impossible.
+
+## Bounded ownership follow-up (2026-09-07)
+
+The SDK spawn-expression, consistent vector-phase, and whole centroid-helper controls evaluate 17, 10, and 12 complete variants. None improves the 98.214286% baseline, 504/504 instructions, prefix 102, and clean 139 references. The first three scripted spawn positions still use a later slot than native. One generated default-constructor declaration crossed the existing goto and was excluded as an invalid source-generation result before recording; it is not counted as matching evidence.
+
+The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.

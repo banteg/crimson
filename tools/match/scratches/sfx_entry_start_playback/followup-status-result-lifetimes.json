@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "early-result",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {",
+      "replacements": [
+        {
+          "name": "resident-only",
+          "text": "    if (entry->vorbis_stream != 0) {",
+          "requires": [
+            "resident-result/initialize"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resident-result",
+      "find": "    while (result < 16) {",
+      "replacements": [
+        {
+          "name": "initialize",
+          "text": "    result = 0;\n    while (result < 16) {",
+          "requires": [
+            "early-result/resident-only"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "function-status",
+      "find": "    DWORD status;\n",
+      "replacements": [
+        {
+          "name": "voice-local",
+          "text": "",
+          "requires": [
+            "voice-status/declare"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "voice-status",
+      "find": "        if (entry->buffers[result] != 0) {\n            entry->buffers[result]->GetStatus(&status);",
+      "replacements": [
+        {
+          "name": "declare",
+          "text": "        if (entry->buffers[result] != 0) {\n            DWORD status;\n            entry->buffers[result]->GetStatus(&status);",
+          "requires": [
+            "function-status/voice-local"
+          ]
+        }
+      ]
+    }
+  ]
+}

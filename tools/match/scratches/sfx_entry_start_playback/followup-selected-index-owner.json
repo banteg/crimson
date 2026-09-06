@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "early-result",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {",
+      "replacements": [
+        {
+          "name": "selected-only",
+          "text": "    if (entry->vorbis_stream != 0) {",
+          "requires": [
+            "resident-loop/separate-index"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resident-loop",
+      "find": "    while (result < 16) {\n        if (entry->buffers[result] != 0) {\n            entry->buffers[result]->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n    }\n",
+      "replacements": [
+        {
+          "name": "separate-index",
+          "text": "    for (int index = 0; index < 16; ++index) {\n        if (entry->buffers[index] != 0) {\n            entry->buffers[index]->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                result = index;\n                goto play_voice;\n            }\n        }\n    }\n",
+          "requires": [
+            "early-result/selected-only"
+          ]
+        }
+      ]
+    }
+  ]
+}

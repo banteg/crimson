@@ -347,3 +347,9 @@ instructions, prefix **0**, **184/0/0** references, and a **0x154** frame
 versus native **0x144**. No source, buffer extent, or storage overlay changed.
 The unresolved question is the original buffer ownership or compiler lifetime
 boundary; these scope controls alone do not recover it.
+
+## Bounded ownership follow-up (2026-09-07)
+
+Twenty complete SDK vector-expression, phase-scope, enumeration-buffer, and string-pointer ownership controls are byte-neutral at 98.919753%, 648/648 instructions, and 184 clean references. No buffer extent, compiler setting, storage overlay, or alias changed. Static-initialization hoists were rejected before this valid-control set because they changed initialization order.
+
+The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.

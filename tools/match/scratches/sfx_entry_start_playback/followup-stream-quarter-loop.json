@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "early-result",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {",
+      "replacements": [
+        {
+          "name": "resident-only",
+          "text": "    if (entry->vorbis_stream != 0) {",
+          "requires": [
+            "resident-result/initialize"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resident-result",
+      "find": "    while (result < 16) {",
+      "replacements": [
+        {
+          "name": "initialize",
+          "text": "    result = 0;\n    while (result < 16) {",
+          "requires": [
+            "early-result/resident-only"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stream-fills",
+      "find": "        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);",
+      "replacements": [
+        {
+          "name": "three-quarter-loop",
+          "text": "        for (result = 0; result < 3; ++result) {\n            music_stream_fill(entry);\n        }",
+          "requires": [
+            "early-result/resident-only",
+            "resident-result/initialize"
+          ]
+        }
+      ]
+    }
+  ]
+}

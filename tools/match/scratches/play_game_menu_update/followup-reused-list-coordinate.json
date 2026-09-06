@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-coordinate",
+      "find": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);",
+      "replacements": [
+        {
+          "name": "reuse-list-position",
+          "text": "    play_game_vec2_t list_position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    play_game_vec2_t position;\n    position = list_position + play_game_vec2_t(330.0f, 50.0f);",
+          "requires": [
+            "later-coordinate/reassign-list-position"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "later-coordinate",
+      "find": "    play_game_vec2_t list_position =\n        base_position + play_game_vec2_t(80.0f, 1.0f);",
+      "replacements": [
+        {
+          "name": "reassign-list-position",
+          "text": "    list_position = base_position + play_game_vec2_t(80.0f, 1.0f);",
+          "requires": [
+            "opening-coordinate/reuse-list-position"
+          ]
+        }
+      ]
+    }
+  ]
+}
