@@ -152,17 +152,18 @@ extern "C" void statistics_menu_update(void)
     grim_interface_ptr->grim_set_config_var(0x18, 0.43f);
 
     int session_seconds = (int)play_time_ms / 1000;
-    IGrim2D_cpp *session_renderer = grim_interface_ptr;
     int session_minutes = session_seconds / 60;
     int session_hours = session_minutes / 60;
-    int session_minute_part = session_minutes - session_hours * 60;
+    IGrim2D_cpp *session_renderer = grim_interface_ptr;
+    session_minutes -= session_hours * 60;
+    session_seconds -= session_minutes * 60;
     session_renderer->grim_draw_text_small_fmt(
         xy.x - 38.0f,
         xy.y + 230.0f,
         "played for %d hours %d minutes",
         session_hours,
-        session_minute_part,
-        session_seconds - session_minute_part * 60);
+        session_minutes,
+        session_seconds);
 
     if (online_sync_status != 0) {
         Sleep(10);

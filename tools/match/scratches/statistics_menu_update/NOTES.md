@@ -3,6 +3,10 @@
 Native target: `crimsonland.exe` at `0x0043f550` (2877 bytes, 676
 normalized instructions).
 
+Current reconstruction: **94.526627%**, 676/676 instructions, prefix 280,
+and references `276/0/0`. The sections below retain historical baselines.
+The candidate remains WIP and `body_byte_exact=false`.
+
 Live Binary Ninja disassembly/HLIL, with independent IDA and Ghidra
 decompilation, recovers the complete Statistics menu callback:
 
@@ -275,3 +279,34 @@ controls against the 93.264249% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+
+## Renderer and remainder ownership interaction (2026-09-07)
+
+The session readout now derives hours, captures its renderer, and then reuses
+both minute and second locals for their displayed remainders. This matches the
+native negative hour-product construction and quotient reuse while preserving
+the unused third integer formatting argument. In particular, the seconds
+expression continues subtracting the minute *remainder* times 60, as native
+does; the original formatting quirk is retained.
+
+The combined source boundary raises the result from 93.264249% to
+**94.526627%**, adds the missing instruction to reach **676/676**, and keeps
+prefix 280 and references `276/0/0`. The native 0x18-byte frame is unchanged.
+This is an instruction-count recovery with a clean weighted gain, not an exact
+match: the session renderer/hour allocation and the total-time readout still
+differ, so `body_byte_exact=false`.
+
+`session-renderer-remainder-controls.json` tests the three nearby ownership
+controls against the retained source: moving only the renderer capture back
+early, restoring only separately named remainders, and restoring both prior
+owners. The first two yield 89.563286% and the combined original form yields
+93.264249%; all three return to 675 instructions. The improvement therefore
+depends on the combined renderer and remainder boundary.
+
+A separate shared-current-hours probe recovered a 469-instruction prefix but
+lost one instruction overall. Capturing the total-key renderer further raised
+its fuzzy score to 96.817172%, still with only 675 instructions. Those
+instruction-count tradeoffs are not retained. Follow-up total quotient,
+remainder, scalar lifetime, gate, and formatter controls produced no exact
+candidate in this bounded family.
