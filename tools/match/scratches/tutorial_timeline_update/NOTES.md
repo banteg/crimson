@@ -2,6 +2,11 @@
 
 Native target: `crimsonland.exe` at `0x00408990` (2,907 bytes).
 
+The current source is **byte-for-byte exact** under the default VC6.5 profile:
+**695/695** instructions, prefix **695**, references **189/0/0**, and
+`body_byte_exact=True`. The earlier recovery and bounded negative controls below
+are historical; the final source-ownership recovery supersedes their residuals.
+
 Live Binary Ninja evidence, corroborated against the checked-in Ghidra and IDA
 decompilations, recovers the complete tutorial coordinator. It advances the
 prompt transition timer, owns the ten prompt strings and seven bonus-hint
@@ -229,3 +234,31 @@ All 23 controls compiled and completed. Plans are
 `formation-workspace-interactions-2026-09-06-mutations.json`.
 Canonical source stays at **76.755965%**, **686/695** instructions, prefix
 **6**, and **169/0/1** references. These results bound the tested forms only.
+
+
+## Exact stage and spawn ownership recovery (2026-09-07)
+
+The native stage index and two timers occupy consecutive signed integers at
+`0x00486fd8`, `0x00486fdc`, and `0x00486fe0`. A typed view of this existing
+12-byte state, anchored at the first mapped field, recovers the final pair of
+post-prompt reloads. Separate globals leave exactly those two loads reversed
+at 99.856115%, with the same 695 instructions. The view introduces no new
+storage, padding, reference aliases, or register constraints.
+
+Prompt decisions read the live stage field. The transition cap follows both
+transition paths; its native negative-path branch reaches the cap comparison
+before the prompt. Creature calls take temporary two-float vectors, including
+both branches of the common third spawn in each stage-five formation. VC6
+merges that call tail itself. The movement loop advances a `player_input_t`
+cursor and compares the corresponding backward-key field at the past-end
+player. The first two fixed bonus positions use whole-vector copies, and the
+repeat-wave count consumes the result of its own pre-increment.
+
+The seven complete controls in `stage-spawn-ownership-2026-09-07.json` each
+remove one recovered boundary from the final source. Only the full form is
+exact. Scalar stage fields and the nested transition cap each leave one local
+residual; component position copies lose eight instructions; whole-player
+iteration, shared spawn positions, and separate repeat-count publication
+regress allocation or references. The formatted cleanup is independently
+recorded and remains exact across all 2,907 native body bytes. Existing port
+behavior and original tutorial strings are unchanged.
