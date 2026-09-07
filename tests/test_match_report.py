@@ -35,7 +35,7 @@ def test_public_score_uses_full_denominator_without_crediting_prebuilt_libraries
     assert m["complete_code"] == "0"
     assert m["complete_units"] == 0
     assert result["version"] == 2
-    assert "categories" not in result
+    assert result["categories"][0]["measures"] == m
     assert result["units"][0]["metadata"]["source_path"] == "src/1.c"
     assert result["units"][2]["functions"][0]["fuzzy_match_percent"] == 0
 
@@ -44,6 +44,26 @@ def test_reference_debt_never_paints_a_perfect_match() -> None:
     result = report.build_report([_function(1, 100, matched=False)])
     assert result["measures"]["matched_functions"] == 0
     assert result["units"][0]["functions"][0]["fuzzy_match_percent"] < 100
+
+
+def test_library_filters_overlap_images_without_double_counting() -> None:
+    result = report.build_report([
+        _function(0x00401000, 100),
+        _function(0x00452EF0, 200, candidate="archive", source=None),
+        _function(0x1000A8D0, 300, image="grim.dll", ratio=0.5, matched=False),
+        _function(0x1000AAA6, 400, image="grim.dll"),
+    ])
+    categories = {c["id"]: c["measures"] for c in result["categories"]}
+    assert categories["exe"]["total_code"] == "300"
+    assert categories["dll"]["total_code"] == "700"
+    assert categories["libs"]["total_code"] == "900"
+    assert categories["libs.d3dx8"]["total_code"] == "600"
+    assert categories["libs.msvc6-crt"]["total_code"] == "300"
+    assert categories["libs"]["matched_code"] == "400"
+    assert categories["libs"]["fuzzy_match_percent"] == pytest.approx(55000 / 900)
+    assert result["measures"]["total_code"] == "1000"
+    assert result["units"][2]["metadata"]["progress_categories"] == ["dll", "libs", "libs.msvc6-crt"]
+    assert result["units"][3]["metadata"]["progress_categories"] == ["dll", "libs", "libs.d3dx8"]
 
 
 def test_function_identity_includes_the_image_and_names_are_disambiguated() -> None:

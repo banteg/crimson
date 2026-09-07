@@ -10,8 +10,16 @@ The GOG provenance and exact reference hashes remain documented in
 
 ## Scope and metrics
 
-There is one version (`1.9.93`) and one combined report, with no EXE/DLL
-categories. The denominator is every function in the curated `--scope all`
+There is one version (`1.9.93`) and one combined report. The **All** view keeps
+the full denominator; **Crimsonland EXE**, **Grim2D DLL**, and **Libraries**
+filter the same units. Libraries has **D3DX8** and **MSVC6 runtime** subcategories,
+using the image/address ranges in `analysis/library_provenance.json`. These
+describe established ranges, not an exhaustive attribution of every codec or
+runtime function. Embedded codecs within D3DX8 remain under D3DX8. Library units
+also belong to their image category, so category totals must not be added
+together. The treemap filters units rather than drawing nested group rectangles.
+
+The denominator is every function in the curated `--scope all`
 inventory of `crimsonland.exe` and `grim.dll`, including embedded libraries,
 compiler runtime, original Windows code, and functions without candidates.
 Separate dependency DLLs are outside these two target images. The primary

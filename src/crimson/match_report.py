@@ -6,6 +6,7 @@ evidence against its inputs and emits the report without distributing compilers.
 
 from __future__ import annotations
 
+import json
 import math
 import shutil
 import subprocess
@@ -198,8 +199,39 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         raise ValueError("report denominator differs from the full function inventory")
 
 
+def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
+    labels = {"exe": "Crimsonland EXE", "dll": "Grim2D DLL", "libs": "Libraries"}
+    library_labels = {"d3dx8": "D3DX8", "msvc6-crt": "MSVC6 runtime"}
+    provenance = json.loads((matchlib.REPO_ROOT / "analysis/library_provenance.json").read_text())
+    ranges = []
+    for artifact in provenance["artifacts"]:
+        if artifact["id"] not in matchlib.TRACKED_IMAGE_NAMES:
+            continue
+        for component in artifact.get("components", []):
+            for region in component.get("ranges", []):
+                category = f"libs.{component['id']}"
+                labels[category] = library_labels.get(component["id"], component["id"])
+                ranges.append((artifact["id"], int(region["start"], 0), int(region["end"], 0), category))
+    return labels, ranges
+
+
+def _sum_measures(measures: list[dict[str, Any]]) -> dict[str, Any]:
+    total = sum(int(m["total_code"]) for m in measures)
+    return _measures(
+        total,
+        sum(int(m["matched_code"]) for m in measures),
+        sum(int(m["complete_code"]) for m in measures),
+        sum(int(m["total_code"]) * m["fuzzy_match_percent"] for m in measures) / total if total else 0.0,
+        sum(m["total_functions"] for m in measures),
+        sum(m["matched_functions"] for m in measures),
+        sum(m["total_units"] for m in measures),
+        sum(m["complete_units"] for m in measures),
+    )
+
+
 def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
-    """One function per unit; no image categories or alternate game versions."""
+    """One function per unit, with overlapping image and proven library filters."""
+    labels, library_ranges = _category_definitions()
     names = Counter(row["name"] for row in functions)
     seen: set[tuple[str, int]] = set()
     units: list[dict[str, Any]] = []
@@ -235,6 +267,14 @@ def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
         )
         name = row["name"] if names[row["name"]] == 1 else f"{row['name']}@{row['address']:08x}"
         metadata: dict[str, Any] = {"complete": is_complete}
+        categories = [{"crimsonland.exe": "exe", "grim.dll": "dll"}[row["image"]]]
+        libraries = sorted({
+            category for image, start, end, category in library_ranges
+            if image == row["image"] and start <= row["address"] < end
+        })
+        if libraries:
+            categories.extend(["libs", *libraries])
+        metadata["progress_categories"] = categories
         if row["source"]:
             metadata["source_path"] = row["source"]
         if row["candidate"] in {"archive", "import-thunk"}:
@@ -273,6 +313,16 @@ def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
             complete_units,
         ),
         "units": units,
+        "categories": [
+            {
+                "id": category,
+                "name": label,
+                "measures": _sum_measures([
+                    unit["measures"] for unit in units if category in unit["metadata"]["progress_categories"]
+                ]),
+            }
+            for category, label in labels.items()
+        ],
     }
 
 
