@@ -115,7 +115,6 @@ extern "C" void player_render_overlays(void)
     float half_size;
     float sprite_size;
     player_render_vec2_t effect_offset;
-    player_render_vec2_t direction;
 
     if (player_overlay_suppressed_latch) {
         return;
@@ -220,7 +219,7 @@ extern "C" void player_render_overlays(void)
     float recoil_heading =
         player_state_table[render_overlay_player_index].aim_heading
         + 1.5707964f;
-    player_render_vec2_t recoil(
+    player_render_vec2_t render_delta(
         (float)cos(recoil_heading)
             * player_state_table[render_overlay_player_index]
                   .muzzle_flash_alpha
@@ -237,14 +236,15 @@ extern "C" void player_render_overlays(void)
     player_render_set_uv(effect_uv8, frame);
     grim_interface_ptr->grim_begin_batch();
 
-    half_size =
-        player_state_table[render_overlay_player_index].size * 0.5f - 2.0f;
+    player_render_vec2_t shadow_size(
+        player_state_table[render_overlay_player_index].size * 0.5f - 2.0f,
+        player_state_table[render_overlay_player_index].size * 0.5f - 2.0f);
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
               [render_overlay_player_index]
                   .pos_x
-        - half_size;
+        - shadow_size;
     sprite_size =
         player_state_table[render_overlay_player_index].size * 1.02f;
     grim_interface_ptr->grim_draw_quad(
@@ -264,7 +264,7 @@ extern "C" void player_render_overlays(void)
         - player_render_vec2_t(
             player_state_table[render_overlay_player_index].size * 0.5f,
             player_state_table[render_overlay_player_index].size * 0.5f)
-        + recoil;
+        + render_delta;
     sprite_size =
         player_state_table[render_overlay_player_index].size * 1.03f;
     grim_interface_ptr->grim_draw_quad(
@@ -321,7 +321,7 @@ extern "C" void player_render_overlays(void)
         - player_render_vec2_t(
             player_state_table[render_overlay_player_index].size * 0.5f,
             player_state_table[render_overlay_player_index].size * 0.5f)
-        + recoil;
+        + render_delta;
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x,
         render_scratch_f0.y,
@@ -454,7 +454,8 @@ extern "C" void player_render_overlays(void)
                 sprite_size,
                 sprite_size);
         } else {
-            half_size = sprite_size * 0.5f;
+            player_render_vec2_t muzzle_size(
+                sprite_size * 0.5f, sprite_size * 0.5f);
             sprite_size =
                 player_state_table[render_overlay_player_index].size;
             render_scratch_f0 =
@@ -462,7 +463,7 @@ extern "C" void player_render_overlays(void)
                 + *(player_render_vec2_t *)&player_state_table
                       [render_overlay_player_index]
                           .pos_x
-                - half_size
+                - muzzle_size
                 + effect_offset;
             grim_interface_ptr->grim_draw_quad(
                 render_scratch_f0.x,
@@ -491,18 +492,19 @@ extern "C" void player_render_overlays(void)
                             [line_player->auto_target]
                                 .position)
                     <= 80.0f) {
-                    direction.x =
+                    render_delta.x =
                         creature_pool[line_player->auto_target].pos_x
                         - line_player->pos_x;
-                    direction.y =
+                    render_delta.y =
                         creature_pool[line_player->auto_target].pos_y
                         - line_player->pos_y;
                     float distance = (float)sqrt(
-                        direction.y * direction.y
-                        + direction.x * direction.x);
+                        render_delta.y * render_delta.y
+                        + render_delta.x * render_delta.x);
+                    player_render_vec2_t normalized = render_delta;
                     D3DXVec2Normalize(
-                        (vec2f_t *)&direction,
-                        (const vec2f_t *)&direction);
+                        (vec2f_t *)&normalized,
+                        (const vec2f_t *)&normalized);
                     player_render_vec2_t draw_origin(
                         camera_offset.x + line_player->pos_x - 16.0f,
                         camera_offset.y + line_player->pos_y - 16.0f);
@@ -513,8 +515,8 @@ extern "C" void player_render_overlays(void)
                          offset < distance;
                          offset += 8.0f) {
                         grim_interface_ptr->grim_draw_quad(
-                            direction.x * offset + draw_origin.x,
-                            direction.y * offset + draw_origin.y,
+                            normalized.x * offset + draw_origin.x,
+                            normalized.y * offset + draw_origin.y,
                             32.0f,
                             32.0f);
                     }

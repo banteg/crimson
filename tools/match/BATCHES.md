@@ -19,6 +19,12 @@ The matcher and related validation suites pass 301 tests. The checkpoint against
 reports zero regression, evaluation, metadata, experiment, strict-experiment, scope, and native
 errors. Both native artifact sets are current.
 
+The subsequent overlay recovery reuses the recoil vector for raw target displacement, normalizes
+a separate copy, and recovers two half-size vector lifetimes. It gains 178.68 weighted bytes and
+three instructions with no metric tradeoffs, reaching 91.19% and 331 clean references. All seven
+reversion controls are worse. The refreshed native audit and checkpoint against `9b4ac10c6` pass
+with no errors; exact function totals are unchanged.
+
 This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 [eight exact recoveries](EXACT-MATCHES-2026-09-07.md),
 [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md),
@@ -28,8 +34,8 @@ This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 
 **EXE: 653/671 exact; Grim: 139/139 exact.** Across both images, 792/810 functions have normalized
 identity and 790/810 have encoded-body identity. The EXE frontier is 18 functions spanning 106,461
-code bytes, with 26,607 fuzzy-gap bytes. The top five functions hold 76.9% of that gap, and the
-top ten hold 96.8%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
+code bytes, with 26,429 fuzzy-gap bytes. The top five functions hold 77.4% of that gap, and the
+top ten hold 96.9%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
@@ -59,7 +65,7 @@ successful siblings as controls rather than templates to copy mechanically.
 | [05](#batch-05) | UI call scheduling and vector primitives | 0 | 0 |
 | [06](#batch-06) | Menu object and aggregate lifetimes | 0 | 0 |
 | [07](#batch-07) | UI loops, formatting, and board state | 0 | 0 |
-| [08](#batch-08) | HUD and effect rendering | 2 | 1,412 |
+| [08](#batch-08) | HUD and effect rendering | 2 | 1,233 |
 | [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 2 | 2,140 |
 | [10](#batch-10) | High-score screen | 1 | 1,731 |
 | [11](#batch-11) | Player simulation and weapon dispatch | 1 | 5,849 |
@@ -70,8 +76,9 @@ successful siblings as controls rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. All 18 remaining functions
-are H after the matcher changes started a new baseline epoch. Source and matcher changes can
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The overlay is A after its
+direction/size lifetime recovery; the other 17 functions are H after the matcher changes
+started a new baseline epoch. Source and matcher changes can
 make earlier records historical; the per-function notes preserve their evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
@@ -272,17 +279,17 @@ why the individual changes alone do not match.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 88.29% | 1823/1824 | 829 | 0 | H |
-| [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 87.29% | 1141/1148 | 583 | 0 | H |
+| [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 91.19% | 1144/1148 | 404 | 0 | A |
 
 - **ui_render_hud:** Candidate is one instruction short; the bonus-popup entry is a known structural
   seam, while the quest banner differs only in temporary slots. Inspect the popup
   conversion/count/icon dependencies before changing the surrounding frame. Six entry-order and six
   popup-origin variants already failed, so use another producer/consumer boundary if those
   dependencies are unchanged.
-- **player_render_overlays:** Seven native instructions remain absent after half-size ownership
-  recovery. Compare shield, muzzle, and target-trail value construction one pass at a time. Explicit
-  SDK vector subtraction improved the score only by deleting another instruction and was rejected;
-  local operator cleanup is not enough.
+- **player_render_overlays:** Four native instructions remain absent after the interacting
+  recoil/target-direction and shadow/muzzle half-size recoveries. Tint-alpha ownership and stack
+  publications remain different. SDK type spelling, color-object call boundaries, and simple
+  scalar-lifetime controls do not recover those operations on the tested baselines.
 
 <a id="batch-09"></a>
 

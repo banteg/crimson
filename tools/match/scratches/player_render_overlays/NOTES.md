@@ -339,3 +339,38 @@ The highest-score control, `shield-size-local-lifetime`, reaches 87.325175% but 
 rejected for instruction-count-further-from-target. Canonical source and configuration
 are unchanged. These results bound the recorded hypothesis, not the function's
 matchability.
+
+## Recoil, target direction, and half-size lifetimes (2026-09-07)
+
+The target trail at `0x0042940f..0x00429463` keeps the raw displacement in one
+vector, computes its length, and copies it into a second vector before
+normalizing that copy in place. Recovering the second vector alone enlarges
+the frame and regresses. Reusing the earlier recoil vector for the raw
+displacement preserves its original constructor lifetime and the native
+frame. The local is now named `render_delta` to describe both uses.
+
+That recovered lifetime also changes the two half-size constructions that
+previous controls could not retain. The alive shadow now constructs a named
+vector with `player.size * 0.5f - 2.0f` in both components, and the normal
+muzzle flash constructs one with `sprite_size * 0.5f` in both components.
+The small muzzle-flash branch retains its existing scalar lifetime.
+
+Together these changes raise normalized alignment from `87.2870249%` to
+`91.1867365%`, recover three instructions (`1,141` to `1,144` against `1,148`
+native), and improve reference agreement from `329/0/0` to `331/0/0`. Prefix
+remains 9. Weighted agreement gains `178.684784` bytes, leaving a
+`403.823735`-byte fuzzy gap. Encoded-body identity remains false; this is a
+partial recovery, not a new exact match.
+
+`direction-and-size-lifetimes-2026-09-07.json` preserves all seven complete
+reversion controls for the three retained changes. Every control compiles,
+and every partial or complete reversion is worse than the retained source.
+Restoring all three reproduces the original metrics. The experiments record
+the retained source SHA-256
+`a50f2d9af1995c22fdc442ffb9411364a99590927aa408cbe8a02b4292ba1339`.
+
+Authenticated SDK vector layout/constructor controls, color-object and tint
+call-boundary controls, and alternate local scalar lifetimes do not improve
+the retained form. The residual includes tint-alpha register ownership and
+stack publications; no artificial address escapes, dummy stores, or register
+constraints were introduced to reproduce them.

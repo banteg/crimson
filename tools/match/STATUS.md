@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **792/810** functions matched exactly (**97.8%**), **235531/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **315385/341992** code bytes (**92.2%**).
+Fuzzy-weighted alignment is **315563/341992** code bytes (**92.3%**).
 
-Remaining exact-match debt is **18 functions**, **106461 code bytes**, and **26607 fuzzy-gap bytes**.
+Remaining exact-match debt is **18 functions**, **106461 code bytes**, and **26429 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**18** non-exact scratch-backed functions hold **26607 fuzzy-gap bytes**. The top 5 hold **76.9%** of that gap; the top 10 hold **96.8%**.
+**18** non-exact scratch-backed functions hold **26429 fuzzy-gap bytes**. The top 5 hold **77.4%** of that gap; the top 10 hold **96.9%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **18 / 26607** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 404 gap bytes**; **17 / 26025** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -46,9 +46,9 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 6 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 7 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 8 | crimsonland.exe | ui_render_hud | 829 | semantic-complete | compiler | historical-only | 0/20 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 9 | crimsonland.exe | player_render_overlays | 583 | semantic-complete | compiler | historical-only | 0/31 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 10 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 11 | crimsonland.exe | highscore_sync_worker | 453 | semantic-complete | compiler | historical-only | 0/13 | 0 | metric-tradeoffs,variant-errors,historical-only |
+| 9 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 10 | crimsonland.exe | highscore_sync_worker | 453 | semantic-complete | compiler | historical-only | 0/13 | 0 | metric-tradeoffs,variant-errors,historical-only |
+| 11 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | current-active | 1/33 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
 | 12 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 13 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 14 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
@@ -125,12 +125,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 653/671 | 214366/320827 | 66.8% | 294220/320827 | 91.7% | 671/671 | 320827/320827 | 100.0% | 653/671 |
+| crimsonland.exe | 653/671 | 214366/320827 | 66.8% | 294398/320827 | 91.8% | 671/671 | 320827/320827 | 100.0% | 653/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**653/671** functions (**97.3%**), **214366/320827** bytes (**66.8%**), **294220/320827** fuzzy-weighted bytes (**91.7%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **653/671** scratches verified.
+**653/671** functions (**97.3%**), **214366/320827** bytes (**66.8%**), **294398/320827** fuzzy-weighted bytes (**91.8%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **653/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -487,7 +487,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | match | creature_spawn | 0x00428240 | 334 | 334/334 | 0 | 79/79 | 100.00% | 79/79 | 35/0/0 |  | gameplay-creature-spawn |
-| wip | player_render_overlays | 0x00428390 | 4582 | 3999/4582 | 583 | 1141/1148 | 87.29% | 9/1148 | 329/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| wip | player_render_overlays | 0x00428390 | 4582 | 4178/4582 | 404 | 1144/1148 | 91.19% | 9/1148 | 331/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | match | bonus_render | 0x004295f0 | 4088 | 4088/4088 | 0 | 1088/1088 | 100.00% | 1088/1088 | 239/0/0 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
