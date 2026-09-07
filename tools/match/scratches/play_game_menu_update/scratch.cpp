@@ -7,8 +7,10 @@
 extern IGrim2D_cpp *grim_interface_ptr;
 
 struct play_game_vec2_t {
-    float x;
-    float y;
+    union {
+        struct { float x; float y; };
+        float v[2];
+    };
 
     play_game_vec2_t() {}
 
@@ -154,11 +156,12 @@ extern "C" void play_game_menu_update(void)
 
     static play_game_button_t tutorial_button;
 
-    play_game_vec2_t position =
+    play_game_vec2_t origin =
         *(play_game_vec2_t *)&ui_element_slot_11.pos_x
         + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;
     tutorial_button.label = "Tutorial";
-    position = position + play_game_vec2_t(330.0f, 50.0f);
+    play_game_vec2_t position;
+    position = origin + play_game_vec2_t(330.0f, 50.0f);
     position.x += ui_element_slot_11.render_offset_x - 64.0f;
     play_game_vec2_t base_position = position;
 
@@ -304,10 +307,9 @@ extern "C" void play_game_menu_update(void)
     player_count_list.item_count = 2;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);
-    play_game_vec2_t list_position =
-        base_position + play_game_vec2_t(80.0f, 1.0f);
     int selected = ui_list_widget_update(
-        (float *)&list_position, (ui_list_widget_t *)&player_count_list);
+        (base_position + play_game_vec2_t(80.0f, 1.0f)).v,
+        (ui_list_widget_t *)&player_count_list);
     if (selected > -2
         && (input_primary_just_pressed()
             || grim_interface_ptr->grim_was_key_pressed(0x1c))) {

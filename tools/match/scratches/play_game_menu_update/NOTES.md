@@ -400,3 +400,26 @@ Crimsonland MOD SDK: vector storage is an anonymous x/y struct over `v[2]`,
 and addition is a non-const member returning a constructed vector value.
 No source or configuration change is retained. These controls bound the named
 ownership hypotheses; they do not establish that the function is unmatchable.
+
+
+## Exact opening and list expression interaction (2026-09-07)
+
+The opening panel sum now has its own `origin` value, with the working
+`position` default-constructed and then assigned the offset sum. The later
+player-list call consumes `(base_position + play_game_vec2_t(80, 1)).v`
+directly through the authenticated SDK array view. Its temporary remains alive
+through the call. Together these changes recover the native reuse of the later
+list-coordinate slot for the opening Y sum; the frame remains 0x2c bytes.
+
+`opening-list-expression-interactions-2026-09-07.json` records all 49 complete,
+compiling controls, including single changes and their interactions. The list
+expression alone remains 99.742600%, prefix 120; the selected opening form alone
+regresses to 99.099099%, prefix 1, with two reference mismatches. Their combined
+source is **100%**, **777/777 instructions**, **prefix 777**, **321/0/0
+references**, and **body_byte_exact=True** for all 3,238 body bytes. Two other
+default-constructed opening forms also reach exactness with the list expression.
+
+Earlier isolated ownership and SDK controls did not establish a compiler limit:
+the opening expression and later call temporary must be tested together. The
+recovery changes no compiler flags, target extent, reference aliases, aggregate
+layout size, or shared header.
