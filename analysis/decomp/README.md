@@ -11,7 +11,11 @@ The GOG provenance and exact reference hashes remain documented in
 ## Scope and metrics
 
 There is one version (`1.9.93`) and one combined report. **Game & Engine** is
-the default category and headline. It uses the ownership ranges recorded in
+the preferred category and headline, available through
+[`?category=game`](https://decomp.dev/banteg/crimson?category=game).
+Setting it as the project-wide default requires a decomp.dev maintainer to set
+`default_category` to `game`; the current project settings form does not expose
+this field. It uses the ownership ranges recorded in
 `analysis/matching_scope.json`, retaining original platform code omitted by the
 internal `port` workflow and excluding explicit third-party dispositions.
 The **All** view keeps
