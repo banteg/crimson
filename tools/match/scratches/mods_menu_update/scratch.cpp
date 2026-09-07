@@ -207,7 +207,7 @@ extern "C" void mods_menu_update(void)
             "%s",
             mods_menu_selected_info);
 
-        char version_text[16];
+        char version_text[256];
         crt_sprintf(
             version_text,
             "v%.2f",

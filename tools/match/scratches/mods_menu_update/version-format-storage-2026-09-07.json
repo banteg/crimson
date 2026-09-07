@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "formatted-version-buffer-capacity",
+      "find": "char version_text[16];",
+      "replacements": [
+        {
+          "name": "32-byte-version-text",
+          "text": "char version_text[32];"
+        },
+        {
+          "name": "64-byte-version-text",
+          "text": "char version_text[64];"
+        },
+        {
+          "name": "256-byte-version-text",
+          "text": "char version_text[256];"
+        },
+        {
+          "name": "260-byte-version-text",
+          "text": "char version_text[260];"
+        }
+      ]
+    }
+  ]
+}

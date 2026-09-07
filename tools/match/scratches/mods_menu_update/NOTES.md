@@ -3,6 +3,13 @@
 Native target: `crimsonland.exe` at `0x0040e9a0` (2,607 bytes, 648
 normalized instructions).
 
+The current default-VC6.5 source is **byte-for-byte exact**: **648/648**
+instructions, prefix **648**, references **184/0/0**, and
+`body_byte_exact=True` across 2,607 bytes. The earlier residuals below are
+historical. The formatting-buffer capacity remains an inference rather than a
+uniquely recoverable original source declaration; the final section records
+that boundary.
+
 Live Binary Ninja disassembly and decompilation recover the complete native
 Mods browser callback:
 
@@ -369,3 +376,26 @@ copy, and source-reference combinations. Reference-preserving helper forms and
 ordinary color constructors are neutral. Scalar color copies lose two
 instructions and introduce a reference mismatch. All three plans and their
 63 valid evaluations are retained; canonical source is unchanged.
+
+
+## Exact formatting-storage recovery (2026-09-07)
+
+The native code did not establish the previously assumed 16-byte capacity of
+`version_text`: it passes the buffer to `sprintf` and string-rendering calls,
+which encode no array bound. That small-buffer assumption kept the candidate's
+file-enumeration record in a separate stack slot and enlarged its frame.
+
+Using a conventional 256-byte string buffer recovers the native allocation.
+The compiler listing independently places both the ended `_finddata_t` and
+later `version_text` at frame offset -280, with the native `0x144` frame. The
+five enumeration addresses and both frame adjustments now match, while all
+other instructions and references remain exact. The storage belongs to a real
+formatted-string destination; no padding object, explicit union, forced stack
+address, reference alias, or compiler option is added.
+
+`version-format-storage-2026-09-07.json` records four complete controls:
+32 and 64 bytes remain inexact; 256 and 260 bytes both reproduce the entire
+native body. Consequently, 256 is a plausible retained capacity, **not proof
+of the original array's unique extent**. Native code and slot reuse constrain
+that choice without distinguishing those two declarations. The source retains
+the original formatting, rendering, enumeration, and plugin-launch behavior.
