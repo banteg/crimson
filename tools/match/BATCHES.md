@@ -1,19 +1,23 @@
 # Remaining EXE matching batches
 
-Snapshot: 648-exact source checkpoint, refreshed on 2026-09-07. The native audit
-and matching checkpoint reproduce all 671 EXE candidates, including the 23 remaining functions.
+Snapshot: 653-exact source checkpoint, refreshed on 2026-09-07. The native audit
+and matching checkpoint reproduce all 671 EXE candidates, including the 18 remaining functions.
 This pass adds five exact matches:
 
-- [quest_build_survival_of_the_fastest](scratches/quest_build_survival_of_the_fastest/NOTES.md)
-- [credits_secret_alien_zookeeper_update](scratches/credits_secret_alien_zookeeper_update/NOTES.md)
-- [ui_scrollbar_update](scratches/ui_scrollbar_update/NOTES.md)
-- [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md)
-- [survival_update](scratches/survival_update/NOTES.md)
+- [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md)
+- [statistics_menu_update](scratches/statistics_menu_update/NOTES.md)
+- [tutorial_timeline_update](scratches/tutorial_timeline_update/NOTES.md)
+- [mods_menu_update](scratches/mods_menu_update/NOTES.md)
+- [bonus_render](scratches/bonus_render/NOTES.md)
 
-Four have encoded-body identity; menu layout retains only equivalent commuted base/index
-encodings. The version-check worker also improves to 99.18% with native instruction count.
-The checkpoint against `ed4557d87` reports zero regression, evaluation, metadata, experiment,
-strict-experiment, scope, and native errors. Both native artifact sets are current.
+All five have encoded-body identity, recovering 14,045 exact code bytes. The matcher also
+correctly resolves local relative relocations for body comparison, preserves memory segment
+overrides, and accounts for addends into compiler constants. The relocation fix recognizes
+existing byte identity in console_log_node_free and sfx_mute_all; those are not new source
+matches. The segment/addend fixes leave all 810 canonical candidates' metrics unchanged.
+The matcher and related validation suites pass 301 tests. The checkpoint against `ac5c74a2f`
+reports zero regression, evaluation, metadata, experiment, strict-experiment, scope, and native
+errors. Both native artifact sets are current.
 
 This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 [eight exact recoveries](EXACT-MATCHES-2026-09-07.md),
@@ -22,15 +26,16 @@ This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md), and
 [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
-**EXE: 648/671 exact; Grim: 139/139 exact.** The EXE frontier is 23 functions spanning 120,506
-code bytes, with 28,086 fuzzy-gap bytes. The top five functions hold 72.9% of that gap, and the
-top ten hold 92.0%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
+**EXE: 653/671 exact; Grim: 139/139 exact.** Across both images, 792/810 functions have normalized
+identity and 790/810 have encoded-body identity. The EXE frontier is 18 functions spanning 106,461
+code bytes, with 26,607 fuzzy-gap bytes. The top five functions hold 76.9% of that gap, and the
+top ten hold 96.8%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
-Batches 01–08 have received focused follow-ups; batches 04 and 05 are complete. Their remaining members
-need a new hypothesis or an interaction supported by the recorded results. Batch 09 has received focused tutorial
-and grid-template probes; creature rendering remains next within that group. Batch 12 has a
+Batches 01–08 have received focused follow-ups; batches 04–07 are complete. Their remaining members
+need a new hypothesis or an interaction supported by the recorded results. Batch 09's tutorial is
+complete; creature templates and rendering remain. Batch 12 has a
 retained tint gain and bounded secondary-render controls. Batches 10–14 still need region-sized
 campaigns, with the smaller UI and worker findings available as controls. Keep batch IDs stable as exact members leave the frontier. Batch
 membership describes related work, not an estimate that every member will become exact in one
@@ -52,10 +57,10 @@ successful siblings as controls rather than templates to copy mechanically.
 | [03](#batch-03) | WinInet request and response workers | 2 | 464 |
 | [04](#batch-04) | Short coordinate lifetimes | 0 | 0 |
 | [05](#batch-05) | UI call scheduling and vector primitives | 0 | 0 |
-| [06](#batch-06) | Menu object and aggregate lifetimes | 1 | 28 |
-| [07](#batch-07) | UI loops, formatting, and board state | 1 | 157 |
-| [08](#batch-08) | HUD and effect rendering | 4 | 2,028 |
-| [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 3 | 2,816 |
+| [06](#batch-06) | Menu object and aggregate lifetimes | 0 | 0 |
+| [07](#batch-07) | UI loops, formatting, and board state | 0 | 0 |
+| [08](#batch-08) | HUD and effect rendering | 2 | 1,412 |
+| [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 2 | 2,140 |
 | [10](#batch-10) | High-score screen | 1 | 1,731 |
 | [11](#batch-11) | Player simulation and weapon dispatch | 1 | 5,849 |
 | [12](#batch-12) | Projectile simulation and rendering | 2 | 8,324 |
@@ -65,9 +70,9 @@ successful siblings as controls rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 13 H
-functions and 10 with current records (7 A, 3 S). Retained source changes start a new baseline epoch, so H
-can include a function improved in this pass; the campaign report preserves the gain evidence. H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. All 18 remaining functions
+are H after the matcher changes started a new baseline epoch. Source and matcher changes can
+make earlier records historical; the per-function notes preserve their evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
 
@@ -113,9 +118,9 @@ dependencies before changing syntax.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | S |
-| [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | A |
-| [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | A |
+| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | H |
+| [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | H |
+| [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | H |
 
 - **sfx_entry_start_playback:** Native saves ESI before the streaming arm but initializes its
   resident index after that arm returns. Candidate initializes it early; moving the initialization
@@ -145,8 +150,8 @@ phases, and the fourth-corner vector construction.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | S |
-| [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | A |
+| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | H |
+| [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | H |
 | [projectile_spawn](scratches/projectile_spawn/NOTES.md) | 71.67% | 114/126 | 113 | 0 | H |
 
 - **quest_build_spiders_inc:** The wave count is computed before the pointer calculation in native
@@ -221,66 +226,54 @@ ID reserved for its completed group.
 
 ## 06 — Menu object and aggregate lifetimes
 
-Only Mods remains. [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) now has
+Complete. [mods_menu_update](scratches/mods_menu_update/NOTES.md) recovers all 648 instructions,
+184 references, and exact encoded bytes through its version-formatting storage. The retained
+256-byte buffer shares stack storage with the earlier enumeration record and recovers the native
+0x144 frame. Both 256- and 260-byte controls are exact, so the precise original capacity remains
+an inference.
+
+[ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) has
 1,422/1,422 exact normalized instructions and 538/0/0 references after recovering panel
 values, indexed table passes, prompt transforms, and a relative narrow-screen shift. Its
 remaining raw-byte differences are equivalent commuted base/index encodings. It joins
 quest_select_menu_update, options_menu_update, and perk_selection_screen_update. Use existing
 authenticated UI declarations as evidence and keep changes local until a common owner is demonstrated.
 
-| Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
-|---|---:|---:|---:|---:|:---:|
-| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | S |
-
-- **mods_menu_update:** Short separator and independent button lifetimes recovered all opening,
-  selected-mod rendering, and button instructions, reaching 98.92%. Seven differences remain:
-  the 0x154 versus 0x144 frame and five enumeration-buffer addresses. Version rendering now agrees.
-  Narrow enumeration scopes, buffer declaration placement, and inline helpers are neutral on this
-  improved source; recover the remaining storage ownership without inventing buffer sizes.
-
 <a id="batch-07"></a>
 
 ## 07 — UI loops, formatting, and board state
 
-Only Statistics remains. [ui_scrollbar_update](scratches/ui_scrollbar_update/NOTES.md)
+Complete. [statistics_menu_update](scratches/statistics_menu_update/NOTES.md) recovers all
+676 instructions, 279 references, and exact encoded bytes. Session and total time share the
+hours value; minute conversion retains the original seconds, and the optional F1 readout has
+one guarded block. All three ownership/control changes are needed together.
+
+[ui_scrollbar_update](scratches/ui_scrollbar_update/NOTES.md)
 recovers exact bytes through geometry/focus ownership, color-before-position construction,
 and its row loop. [credits_secret_alien_zookeeper_update](scratches/credits_secret_alien_zookeeper_update/NOTES.md)
 recovers exact bytes through shared row/column indices, explicit direction-specific stores,
 and both direct button-vector expressions. Use their complete interaction controls as
-comparisons for the remaining formatting and rendering lifetimes.
+comparisons for other formatting and rendering lifetimes.
 
-| Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
-|---|---:|---:|---:|---:|:---:|
-| [statistics_menu_update](scratches/statistics_menu_update/NOTES.md) | 94.53% | 676/676 | 157 | 0 | A |
-
-- **statistics_menu_update:** Capturing the session renderer after deriving hours and reusing
-  minute/second locals for their remainders recovers the missing instruction and raises alignment
-  to 94.53%, preserving prefix 280 and 276 clean references. Session renderer/hour allocation and
-  total-time formatting still differ. Follow-up quotient and gate controls gained score only by
-  losing an instruction; keep the recovered remainder scheduling intact.
 <a id="batch-08"></a>
 
 ## 08 — HUD and effect rendering
 
-Four renderers offer smaller controls before the large projectile renderer. Preserve pass
+Two renderers remain after the bonus HUD slot and bonus renderer became byte-exact. Preserve pass
 boundaries, direct pool ownership, callback ordering, and rounded x87 intermediates.
+
+[bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md) recovers
+405 instructions through temporary position/color arguments, named bar ratios, and a shared
+mode join. [bonus_render](scratches/bonus_render/NOTES.md) recovers 1,088 instructions through
+bounded player and hover-search loops, an early return after label rendering, and reuse of the
+beam phase-size value for its scaled half-height. Their complete interaction controls document
+why the individual changes alone do not match.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md) | 79.80% | 407/405 | 316 | 0 | H |
-| [bonus_render](scratches/bonus_render/NOTES.md) | 92.65% | 1088/1088 | 301 | 0 | A |
 | [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 88.29% | 1823/1824 | 829 | 0 | H |
 | [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 87.29% | 1141/1148 | 583 | 0 | H |
 
-- **bonus_hud_slot_update_and_render:** Native delays the render-only EDI save until after the
-  off-screen return, and the compact arm falls through to the shared tail. Candidate places the
-  single-bar arm differently. Recover cursor/color ownership across culling and bar rendering. Prior
-  shared-tail score gains introduced a mismatched call reference.
-- **bonus_render:** Direct indexed telekinetic pickup publication recovers the missing instruction,
-  raises alignment to 92.65%, and improves clean references from 229 to 232. The indexed search also
-  recovers the native signed loop bound. The beam region still spills/reloads unscaled width
-  differently; trace width, height, and scale consumption across its calls. Named-scale, pointer,
-  and separate-height forms did not recover that spill.
 - **ui_render_hud:** Candidate is one instruction short; the bonus-popup entry is a known structural
   seam, while the quest banner differs only in temporary slots. Inspect the popup
   conversion/count/icon dependencies before changing the surrounding frame. Six entry-order and six
@@ -295,20 +288,17 @@ boundaries, direct pool ownership, callback ordering, and rounded x87 intermedia
 
 ## 09 — Creature templates, atlas passes, and tutorial stages
 
-Three domain-focused targets need narrow internal slices. Creature rendering is next; select one
-atlas, detail, or flash pass using the recorded field and call anchors. Reopen tutorial stage five
-or a creature template after identifying a new source dependency.
+Two targets remain. [tutorial_timeline_update](scratches/tutorial_timeline_update/NOTES.md) now
+has 695 exact instructions, 189 clean references, and encoded-body identity. Its adjacent stage
+index/timer tuple, unconditional cap, direct spawn temporaries, and preincrement recover the
+native ownership and control flow. For creature rendering or templates, select one pass or
+publication sequence using the recorded field and call anchors.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [tutorial_timeline_update](scratches/tutorial_timeline_update/NOTES.md) | 76.76% | 686/695 | 676 | 1 | A |
 | [creature_spawn_template](scratches/creature_spawn_template/NOTES.md) | 88.89% | 3161/3159 | 1,566 | 1 | H |
 | [creature_render_type](scratches/creature_render_type/NOTES.md) | 79.74% | 760/765 | 574 | 5 | H |
 
-- **tutorial_timeline_update:** Stage-five formation construction remains a large region at
-  0x00409175. Twenty-three complete branch-join and escaped-workspace controls regressed. Preserve
-  the common third alien spawn and seek a new lifetime boundary before reopening those forms.
-  Its lone reference mismatch is the displaced bonus jump table.
 - **creature_spawn_template:** Moving the grid-child aggregate tint after stat publication improves
   alignment to 88.89%; changing loop induction reduces that gain. Two extra instructions remain.
   The lone reference mismatch is a retry jump table displaced by body-size differences. Choose
@@ -365,7 +355,7 @@ lifetimes.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [projectile_update](scratches/projectile_update/NOTES.md) | 62.88% | 2183/2203 | 3,121 | 13 | H |
-| [projectile_render](scratches/projectile_render/NOTES.md) | 58.55% | 2885/3021 | 5,202 | 10 | A |
+| [projectile_render](scratches/projectile_render/NOTES.md) | 58.55% | 2885/3021 | 5,202 | 10 | H |
 
 - **projectile_update:** 20 fewer instructions, 13 reference mismatches, and a native frame larger
   by 0x30. Partition movement/collision, impact/decal, child-spawn, and lifetime publication. Start

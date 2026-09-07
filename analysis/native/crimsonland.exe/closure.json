@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f7a041c2070ad495c1147f8a774cfc84616827274acae969d1fe96b6b6387cd4",
+  "audit_digest": "85adfc55e5461de526aa3d2875acabf7a890dd0e7cc277e21b0bcb989271c34c",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -102317,7 +102317,7 @@
           "comdat_selection": 1,
           "function": "tutorial_timeline_update",
           "kind": "section",
-          "logical_section_size": 2896,
+          "logical_section_size": 2928,
           "object": "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
           "section": ".text",
           "size": null,
@@ -152604,11 +152604,6 @@
           "function": "tutorial_prompt_dialog",
           "object": "tools/match/scratches/tutorial_prompt_dialog/build/msvc6.5/e00ab673887106b2/scratch.obj",
           "weak": false
-        },
-        {
-          "function": "tutorial_timeline_update",
-          "object": "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
-          "weak": false
         }
       ]
     },
@@ -152640,11 +152635,6 @@
           "function": "tutorial_prompt_dialog",
           "object": "tools/match/scratches/tutorial_prompt_dialog/build/msvc6.5/e00ab673887106b2/scratch.obj",
           "weak": false
-        },
-        {
-          "function": "tutorial_timeline_update",
-          "object": "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
-          "weak": false
         }
       ]
     },
@@ -152657,7 +152647,7 @@
           "comdat_selection": 1,
           "function": "tutorial_timeline_update",
           "kind": "section",
-          "logical_section_size": 2896,
+          "logical_section_size": 2928,
           "object": "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
           "section": ".text",
           "size": null,
