@@ -60,10 +60,11 @@ def test_executable_partition_retains_unknown_gaps_and_rejects_overlap():
         accounting.reconcile_sections(sections, [{**function(), "address": 130}])
 
 
-def test_rename_preserves_unit_and_function_identity():
+def test_readable_unit_names_preserve_native_function_identity():
     before = match_report.build_report([function()])["units"][0]
     after = match_report.build_report([{**function(), "name": "recovered"}])["units"][0]
-    assert before["name"] == after["name"] == "crimsonland.exe/00000064"
+    assert before["name"] == "example"
+    assert after["name"] == "recovered"
     assert before["functions"][0]["name"] == after["functions"][0]["name"]
     assert after["functions"][0]["metadata"]["demangled_name"] == "recovered"
 

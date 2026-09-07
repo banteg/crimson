@@ -70,9 +70,11 @@ matches. The internal `port` dashboard and `body_byte_exact` diagnostic are
 unchanged.
 
 Each report unit represents one function, not a recovered original translation
-unit. Unit and function keys use stable `image/address` identities. Recovered
-names live in function `demangled_name` metadata, so renames preserve history.
-This is a one-time key migration from the earlier human-name keys. Source links point to the actual candidate file.
+unit. Unit names use recovered names for readable decomp.dev treemap labels;
+duplicates include image/address suffixes. Function keys and our evidence/delta
+tooling retain stable `image/address` identities, with recovered function names
+in `demangled_name` metadata. decomp.dev uses unit names for both display and
+history identity, so unit renames can still appear as removal and addition there. Source links point to the actual candidate file.
 This gives a useful function treemap without implying recovered file boundaries.
 
 ## Data accounting

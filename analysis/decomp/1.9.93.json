@@ -109759,7 +109759,7 @@
   "identities": {
     "inventory": "d3f5b7c0b16f8b76988f540dabba711baa52f189b80aa03fa96c66428b575e02",
     "inventory_policy": "curated-functions-v1; executable-gaps-unresolved-v1",
-    "scoring": "1f6c3e5262e9d93b8d654c15973a169181d430ebe299a0888957545e207cee22",
+    "scoring": "bc5c1114443e66094dc440cbc4471a7b8044d55fdc97d933f3e3f67ba27a63c7",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1",
     "target": {
       "game_bins/crimsonland/1.9.93-gog/crimsonland.exe": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
@@ -109791,8 +109791,8 @@
     "src/crimson/match_mutation.py": "870fbe5ea48eff5e7c244adc2b536c1bb72c4271b5674a60827b73e5f4f47f61",
     "src/crimson/match_process.py": "1b21faa053d880c42673aaaf868528487e4befee0d231bec3f9ef640ed0eadbe",
     "src/crimson/match_regressions.py": "563702d40c48480ece78ed05f3d71241dee52df8e56ebf0b34c94073083e16da",
-    "src/crimson/match_report.py": "3ec24c017f14bcbfddbc37b7308fd0aacb6a3055149a12f7a3e230e98c2bfc1b",
-    "src/crimson/match_report_accounting.py": "2f3857200dd5e7d2f0b38b569acd9bd2f69b92e708687c40437b294f7de28d0d",
+    "src/crimson/match_report.py": "482fb2f741aba6979c1279b77a3a900b66eb7959a5091e5ee5a7afccb7750adc",
+    "src/crimson/match_report_accounting.py": "bdf9dff18dc1feb4051a8ac4aa347e88b37c69166f0a2dc5cb58d69434b0e74a",
     "src/crimson/match_toolchain.py": "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
     "src/crimson/native_link.py": "5ff0b9b159edc58229d6f4a73dfa5d78053aabae7dd74a28af8fe4a25c21f9e0",
     "third_party/headers/_mingw_dxhelper.h": "2069e1e4c762cc1d0585c3b789d30d0dc56a996520d7d37b98514c6f774ba0d4",

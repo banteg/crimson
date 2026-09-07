@@ -200,7 +200,8 @@ def diagnostics(
         by_id = {native_id(r): r for r in rows}
         result["scopes"] = {}
         for category in report["categories"]:
-            members = [by_id[u["name"]] for u in report["units"] if u["name"] in by_id
+            members = [by_id[u["functions"][0]["name"]] for u in report["units"]
+                       if len(u["functions"]) == 1 and u["functions"][0]["name"] in by_id
                        and category["id"] in u["metadata"]["progress_categories"]]
             size = sum(r["size"] for r in members)
             encoded_size = sum(r["size"] for r in members if r["candidate"] == "source" and r["matched"]

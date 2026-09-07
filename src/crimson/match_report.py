@@ -10,6 +10,7 @@ import json
 import math
 import shutil
 import subprocess
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -264,6 +265,7 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
         for disposition in dispositions if disposition.disposition == "third-party"
     }
     labels["libs.other"] = "Other identified libraries"
+    names = Counter(row["name"] for row in functions)
     seen: set[tuple[str, int]] = set()
     units: list[dict[str, Any]] = []
     total = matched = complete = matched_functions = complete_units = 0
@@ -296,7 +298,7 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             1,
             int(is_complete),
         )
-        name = accounting.native_id(row)
+        name = row["name"] if names[row["name"]] == 1 else f"{row['name']}@{accounting.native_id(row)}"
         metadata: dict[str, Any] = {"complete": is_complete}
         categories = [{"crimsonland.exe": "exe", "grim.dll": "dll"}[row["image"]]]
         libraries = sorted({
@@ -327,7 +329,7 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
                 "measures": measures,
                 "functions": [
                     {
-                        "name": name,
+                        "name": accounting.native_id(row),
                         "size": str(size),
                         "fuzzy_match_percent": percent,
                         "metadata": {"virtual_address": str(row["address"]), "demangled_name": row["name"]},
