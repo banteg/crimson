@@ -4,6 +4,9 @@ import json
 import struct
 from unittest.mock import patch
 
+from crimson.net.rollback import RollbackController
+from crimson.sim.presentation_reactions import build_post_apply_reaction
+
 from crimson.aim_schemes import AimScheme
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.ids import BonusId
@@ -11,14 +14,12 @@ from crimson.gameplay import GameplayState, _resolve_aim_scheme_for_update, _res
 from crimson.local_input import clear_input_edges
 from crimson.math_parity import NATIVE_QUARTER_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.movement_controls import MovementControlType
-from crimson.net.rollback import RollbackController
 from crimson.owner_ref import OwnerRef
 from crimson.perks.ids import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import FrameContext, LocalInputProvider
-from crimson.sim.presentation_reactions import build_post_apply_reaction
 from crimson.sim.session_builders import build_quest_session
 from crimson.sim.state_types import PlayerState
 from crimson.sim.tick_runner import TickRunner
