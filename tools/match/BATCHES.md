@@ -1,15 +1,17 @@
 # Remaining EXE matching batches
 
-Snapshot: 642-exact source checkpoint, refreshed on 2026-09-07. The native audit
-and matching checkpoint reproduce all 671 EXE candidates, including the 29 remaining functions.
-The [eight exact recoveries](EXACT-MATCHES-2026-09-07.md) also improve statistics formatting
+Snapshot: 643-exact source checkpoint, refreshed on 2026-09-07. The native audit
+and matching checkpoint reproduce all 671 EXE candidates, including the 28 remaining functions.
+The subsequent [Play Game recovery](scratches/play_game_menu_update/NOTES.md) adds one exact
+function from a four-function follow-up; Mods, Spiders Inc., and Statistics retain bounded
+negative controls. The [eight exact recoveries](EXACT-MATCHES-2026-09-07.md) also improve statistics formatting
 and bonus pickup publication. They follow the [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md),
 [UI storage recovery](UI-STORAGE-FOLLOWUP-2026-09-05.md),
 [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md), and
 [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
-**EXE: 642/671 exact; Grim: 139/139 exact.** The EXE frontier is 29 functions spanning 138,323
-code bytes, with 29,639 fuzzy-gap bytes. The top five functions hold 69.1% of that gap, and the
+**EXE: 643/671 exact; Grim: 139/139 exact.** The EXE frontier is 28 functions spanning 135,085
+code bytes, with 29,631 fuzzy-gap bytes. The top five functions hold 69.1% of that gap, and the
 top ten hold 87.2%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
@@ -36,7 +38,7 @@ successful siblings as controls rather than templates to copy mechanically.
 | [01](#batch-01) | Scalar ownership and shared control flow | 3 | 232 |
 | [02](#batch-02) | Spawn records and quest induction | 4 | 340 |
 | [03](#batch-03) | WinInet request and response workers | 2 | 750 |
-| [04](#batch-04) | Short coordinate lifetimes | 2 | 46 |
+| [04](#batch-04) | Short coordinate lifetimes | 1 | 38 |
 | [05](#batch-05) | UI call scheduling and vector primitives | 0 | 0 |
 | [06](#batch-06) | Menu object and aggregate lifetimes | 2 | 340 |
 | [07](#batch-07) | UI loops, formatting, and board state | 3 | 890 |
@@ -52,7 +54,7 @@ Individual and batch gaps are rounded independently. Each function appears in ex
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
 **A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 17 H
-functions and 12 with current records (8 A, 3 S, 1 I). Retained source changes start a new baseline epoch, so H
+functions and 11 with current records (7 A, 4 S). Retained source changes start a new baseline epoch, so H
 can include a function improved in this pass; the campaign report preserves the gain evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
@@ -180,24 +182,20 @@ target extents already include their epilogues.
 
 ## 04 — Short coordinate lifetimes
 
-Two remain after [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) and
-[demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) became exact, joining
-credits_screen_update. Both remaining functions have equal instruction counts and clean
-references. Map where each vector is born, passed by address, and becomes dead, including later
-calls that can affect an earlier stack slot.
+Only survival_update remains. [play_game_menu_update](scratches/play_game_menu_update/NOTES.md)
+is now exact after combining a default-constructed opening position with the later direct SDK
+list-call expression. Each change had failed independently. It joins player_fire_weapon,
+demo_trial_overlay_render, and credits_screen_update. Map where each vector is born, passed
+by address, and becomes dead, including later calls that can affect an earlier stack slot.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [survival_update](scratches/survival_update/NOTES.md) | 98.21% | 504/504 | 38 | 0 | S |
-| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | I |
 
 - **survival_update:** Only the first three scripted spawn positions use a different temporary pair;
   native reuses a dead centroid slot. Later stages already align. Inspect the centroid-to-first-wave
   boundary. Numerous scopes and explicit centroid/vector reuse variants either materialize extra
   coordinates or disturb allocation.
-- **play_game_menu_update:** Two opening Y-sum operands use a different stack slot. Inspect the
-  later button/row lifetime that could color this opening temporary. Opening declarations, row
-  copies, and footer scopes have not recovered it; do not confine analysis to the first mismatch.
 
 <a id="batch-05"></a>
 
@@ -226,7 +224,7 @@ declarations as evidence, while keeping changes local until a common owner is de
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | A |
+| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | S |
 | [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) | 95.69% | 1408/1422 | 312 | 0 | H |
 
 - **mods_menu_update:** Short separator and independent button lifetimes recovered all opening,

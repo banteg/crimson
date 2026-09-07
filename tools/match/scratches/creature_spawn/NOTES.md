@@ -180,8 +180,12 @@ full combination recovers **100%**,
 **body_byte_exact=True**, with no padding difference.
 
 The old semantic-complete classification and claim that both ports already
-matched the health formula are superseded. Both current ports still spell the
-health multiplier as `1e-4`. At elapsed 474 ms, native PC24 operations produce
+matched the health formula are superseded. At the matching checkpoint both ports
+still spelled the health multiplier as `1e-4`. At elapsed 474 ms, native PC24 operations produce
 health/max-health 10.04740047454834; the old multiplier produces
 10.047399520874023. This is an explicitly observed port-parity follow-up; the
 matching batch changes the recovered native source only.
+
+Port follow-up `b72618d7d` now uses the native `0x38d1b718` multiplier in both
+Python and Zig, with per-operation PC24 rounding and exact health/max-health
+assertions at 474 ms. All six Python Rush tests and all 670 Zig tests pass.

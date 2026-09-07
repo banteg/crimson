@@ -85,9 +85,10 @@ Bounded unsuccessful controls are also recorded for eight remaining functions: r
 selection, creature death, Mods, Play Game, Spiders Inc., quest spawn scheduling, audio playback,
 and survival. The invalid Play Game SDK plan generation is explicitly audited alongside its
 corrected constrained replay; it is not counted as a valid source experiment. Current evidence
-labels and the remaining 29-function map are in [STATUS.md](STATUS.md) and [BATCHES.md](BATCHES.md).
+labels and the remaining-function map are maintained in [STATUS.md](STATUS.md) and [BATCHES.md](BATCHES.md).
 
 The creature health literal exposes a separate port-parity follow-up. Native uses `0x38d1b718`,
-while the Python and Zig ports still spell the multiplier as `1e-4` (`0x38d1b717`). The
+while the Python and Zig ports then spelled the multiplier as `1e-4` (`0x38d1b717`). The
 [creature spawn notes](scratches/creature_spawn/NOTES.md) record the native data address and a
 concrete rounding difference. This batch changes the recovered matching source only.
+The subsequent port fix `b72618d7d` corrects both implementations and their exact-value tests.
