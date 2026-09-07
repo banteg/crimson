@@ -416,3 +416,36 @@ Alignment improves 95.194346% to 95.689046%, adding 35.801413 weighted
 bytes, preserving 1,408/1,422 instructions and prefix 467, and improving
 clean reference alignment from 528 to 529. The fourteen missing native
 operations and the later narrow-screen/aggregate schedules remain open.
+
+## Exact normalized layout recovery (2026-09-07)
+
+All fourteen missing operations and the remaining instruction/reference
+residuals are recovered. Slot 39 now publishes a complete position vector;
+the right panel keeps a named vector after its template copy. The prompt loop
+updates X directly for its horizontal shift and obtains the indexed vertex
+again between compound transform stages, preserving the native intermediate
+float stores. The three table passes use ordinary indexed for loops and derive
+their time/position offsets from the index. The options panel publishes its
+callbacks before its completed hover-maximum vector.
+
+The final narrow-screen clue was a relative vector operation. The controls
+panel starts at (-165, 200), then subtracts (18, 0). VC6 folds the X result to
+-183 while retaining the integer Y copy seen at 0x00450c2c..0x00450c3c. An
+absolute X-only store omitted that copy; a scalar position setter used an x87
+copy, and whole-vector reconstruction added three instructions. The relative
+compound operation reproduces the native instructions without an artificial
+self-assignment or forced load.
+
+The complete eight-case `panel-prompt-loop-interactions-2026-09-07.json`
+matrix records the coupled indexed loops, hover publication, and relative
+position controls with the recovered panel/prompt body fixed. Cleanup removes
+unused trial vector methods and preserves the exact result. The final match is
+100%, 1,422/1,422 instructions, prefix 1,422, and 538/0/0 references across the
+7,237-byte function, versus 95.689046%, 1,408 instructions, prefix 467, and
+529/0/0 references before this recovery.
+
+`body_byte_exact=False`: a direct encoded-byte audit finds only commuted SIB
+base/index fields in scale-one address expressions in the transform loops.
+These encode identical effective addresses, and the existing matcher
+normalizes them. The full instruction and reference match is exact; raw
+encoded-body identity is not claimed.
