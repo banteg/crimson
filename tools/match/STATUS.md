@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **790/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **791/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**792/810** functions matched exactly (**97.8%**), **235531/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**793/810** functions matched exactly (**97.9%**), **235746/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **315563/341992** code bytes (**92.3%**).
+Fuzzy-weighted alignment is **315869/341992** code bytes (**92.4%**).
 
-Remaining exact-match debt is **18 functions**, **106461 code bytes**, and **26429 fuzzy-gap bytes**.
+Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **26123 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**18** non-exact scratch-backed functions hold **26429 fuzzy-gap bytes**. The top 5 hold **77.4%** of that gap; the top 10 hold **96.9%**.
+**17** non-exact scratch-backed functions hold **26123 fuzzy-gap bytes**. The top 5 hold **78.3%** of that gap; the top 10 hold **97.0%**.
 
-Current-baseline experiments cover **1 functions / 404 gap bytes**; **17 / 26025** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **2 functions / 955 gap bytes**; **15 / 25168** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -45,17 +45,16 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 6 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 7 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 8 | crimsonland.exe | ui_render_hud | 829 | semantic-complete | compiler | historical-only | 0/20 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 9 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 8 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | current-active | 1/21 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
 | 10 | crimsonland.exe | highscore_sync_worker | 453 | semantic-complete | compiler | historical-only | 0/13 | 0 | metric-tradeoffs,variant-errors,historical-only |
 | 11 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | current-active | 1/33 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
 | 12 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 13 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 14 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 15 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 16 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | historical-only | 0/18 | 0 | repeated-variants,metric-tradeoffs,historical-only |
-| 17 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | historical-only | 0/24 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 18 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 16 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | historical-only | 0/24 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 17 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -125,12 +124,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 653/671 | 214366/320827 | 66.8% | 294398/320827 | 91.8% | 671/671 | 320827/320827 | 100.0% | 653/671 |
+| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 294704/320827 | 91.9% | 671/671 | 320827/320827 | 100.0% | 654/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**653/671** functions (**97.3%**), **214366/320827** bytes (**66.8%**), **294398/320827** fuzzy-weighted bytes (**91.8%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **653/671** scratches verified.
+**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **294704/320827** fuzzy-weighted bytes (**91.9%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -376,7 +375,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | bonus_hud_slot_table_global_init | 0x0041a7d0 | 56 | 56/56 | 0 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | bonus-hud-slot-table-global-constructor |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 159/159 | 0 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
 | match | bonus_hud_slot_update_and_render | 0x0041a8b0 | 1566 | 1566/1566 | 0 | 405/405 | 100.00% | 405/405 | 80/0/0 |  | bonus-hud-slot-animation-and-rendering |
-| wip | ui_render_hud | 0x0041aed0 | 7081 | 6252/7081 | 829 | 1823/1824 | 88.29% | 42/1824 | 390/0/0 |  | gameplay-hud-health-ammo-quest-xp-and-bonus-overlay |
+| wip | ui_render_hud | 0x0041aed0 | 7081 | 6530/7081 | 551 | 1824/1824 | 92.21% | 42/1824 | 393/0/0 |  | gameplay-hud-health-ammo-quest-xp-and-bonus-overlay |
 | match | ui_hud_progress_color_destroy | 0x0041ca80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-hud-static-progress-color-destructor |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 531/531 | 0 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
 | match | grim_load_interface | 0x0041dc80 | 83 | 83/83 | 0 | 36/36 | 100.00% | 36/36 | 5/0/0 |  | grim-interface-loader |
@@ -638,7 +637,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | resource_read_alloc | 0x0043bca0 | 75 | 75/75 | 0 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
 | match | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 304/304 | 0 | 99/99 | 100.00% | 99/99 | 10/0/0 |  | audio-ogg-resident-load |
 | match | sfx_entry_seek | 0x0043be20 | 56 | 56/56 | 0 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
-| wip | sfx_entry_start_playback | 0x0043be60 | 215 | 187/215 | 28 | 93/93 | 87.10% | 20/93 | 7/0/0 |  | audio-entry-voice-start |
+| match | sfx_entry_start_playback | 0x0043be60 | 215 | 215/215 | 0 | 93/93 | 100.00% | 93/93 | 8/0/0 |  | audio-entry-voice-start |
 | match | sfx_entry_resume | 0x0043bf40 | 27 | 27/27 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
 | match | sfx_entry_stop | 0x0043bf60 | 60 | 60/60 | 0 | 29/29 | 100.00% | 29/29 | 0/0/0 |  | audio-entry-playback |
 | match | sfx_entry_set_volume | 0x0043bfa0 | 120 | 120/120 | 0 | 45/45 | 100.00% | 45/45 | 5/0/0 |  | audio-entry-volume-nonnull-stream-break |

@@ -292,3 +292,32 @@ controls against the 88.291747% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Render lifetime recovery (2026-09-08)
+
+Three interacting source boundaries improve the retained candidate from
+**88.291747% to 92.214912%**, recover **1,824/1,824 instructions**, and increase
+the clean reference audit from **390/0/0 to 393/0/0**. The exact prefix remains
+42 instructions, and `body_byte_exact` remains false.
+
+- Reset the quest-progress global before initializing the queued-creature
+  accumulator. This restores the native immediate-zero publication.
+- Reuse one scoped position value for the heart, ammunition, and quest-progress
+  panels. End its lifetime before the timer and XP panels. The empty default
+  constructor follows the authenticated SDK vector class; every use follows a
+  complete two-component initialization.
+- Keep the popup text row as the single source coordinate, derive the icon row
+  as `text_y - 6`, and advance `text_y` by 32. VC6 now derives both native loop
+  registers and retains the previously missing instruction.
+
+The complete seven-way reversion matrix is recorded in
+`render-lifetime-reversion-controls-2026-09-08.json`. All seven variants compile;
+every nonempty reversion regresses the retained score. Reverting all three
+boundaries reproduces the previous 88.291747%, 1,823-instruction candidate and
+390 clean references. The source does not change compiler settings or reference
+aliases.
+
+The diagnostic alignment pairs all 1,824 instructions without ambiguity. All
+operations, registers, constants, branches, and references now agree; the
+remaining 142 paired differences are stack displacements. This diagnostic
+classification does not make the function exact or relax its acceptance rules.
