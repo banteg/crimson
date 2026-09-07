@@ -19,6 +19,7 @@ from .. import (
     match_mutation,
     match_regressions,
     match_report,
+    match_report_accounting,
     mod_sdk,
 )
 from .. import library_provenance as provenance
@@ -31,6 +32,7 @@ match_app = typer.Typer(add_completion=False)
 def cmd_match_report(
     refresh: bool = typer.Option(False, "--refresh", help="evaluate all scratches and save fresh full-scope evidence"),
     output: Path = typer.Option(match_report.DEFAULT_REPORT, "--out", help="objdiff v2 report output"),
+    baseline: Path | None = typer.Option(None, "--baseline", help="previous evidence for a measurement-aware delta"),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel matching jobs"),
 ) -> None:
     """Validate saved evidence and export Crimsonland 1.9.93 to decomp.dev."""
@@ -47,7 +49,11 @@ def cmd_match_report(
             match_data_inventory.write_inventory(inventory)
         else:
             match_data_inventory.validate_inventory(inventory)
+        diagnostics = match_report_accounting.diagnostics(
+            evidence, json.loads(baseline.read_text()) if baseline is not None else None, report=report,
+        )
         matchlib.write_match_json(output, report)
+        matchlib.write_match_json(output.with_name(output.stem + ".metrics.json"), diagnostics)
     except (ValueError, KeyError, TypeError, OSError, subprocess.CalledProcessError) as exc:
         typer.echo(f"decomp.dev report failed: {exc}", err=True)
         raise typer.Exit(code=2) from exc
@@ -56,6 +62,7 @@ def cmd_match_report(
         f"{match_report.VERSION}: {measures['matched_functions']}/{measures['total_functions']} functions; "
         f"{measures['matched_code']}/{measures['total_code']} bytes matched "
         f"({measures['matched_code_percent']:.2f}%); fuzzy={measures['fuzzy_match_percent']:.2f}%; "
+        f"encoded-body={diagnostics['encoded_body_matched_code']}/{diagnostics['total_code']} bytes; "
         f"linked={measures['complete_code_percent']:.2f}%; "
         f"data={measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes; report={output}",
     )

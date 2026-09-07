@@ -52,6 +52,13 @@ jobs:
           chmod +x "$RUNNER_TEMP/objdiff-cli"
           "$RUNNER_TEMP/objdiff-cli" report changes artifacts/decomp/report.json artifacts/decomp/report.json
 
+      - name: Upload measurement diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1.9.93_measurement
+          path: artifacts/decomp/report.metrics.json
+          if-no-files-found: error
+
       - name: Upload progress report
         uses: actions/upload-artifact@v4
         with:

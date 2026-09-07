@@ -101,14 +101,17 @@ def test_invalid_or_unsupported_credit_is_rejected(changes: dict[str, Any]) -> N
 
 
 def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.MonkeyPatch) -> None:
-    function = _function(1, 100)
+    function = _function(1, 100, candidate=None, source=None, ratio=0, matched=False, proof=None)
     evidence: dict[str, Any] = {
-        "schema": 2, "version": "1.9.93", "scope": "all", "inputs": {"scratch.c": "original"},
+        "schema": 3, "version": "1.9.93", "scope": "all", "inputs": {"scratch.c": "original"},
         "external_inputs": {}, "toolchains": {}, "functions": [function], "data": {},
     }
     monkeypatch.setattr(report, "repository_inputs", lambda: {"scratch.c": "original"})
     monkeypatch.setattr(report.match_data_report, "validate_evidence", lambda _: None)
     monkeypatch.setattr(report, "_inventory", lambda: [{k: function[k] for k in ("image", "address", "name", "size")}])
+    evidence.update(verification=report.accounting.VERIFICATION,
+                    identities=report.accounting.identities([function], evidence["inputs"], {}), code_inventory=[])
+    monkeypatch.setattr(report.accounting, "code_inventory", lambda _: [])
     report.validate_evidence(evidence)
     altered = deepcopy(evidence)
     altered["functions"][0]["size"] = 99
@@ -121,7 +124,7 @@ def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.Monk
 
 def test_missing_reference_images_fail_even_when_ci_lacks_compilers(monkeypatch: pytest.MonkeyPatch) -> None:
     evidence = {
-        "schema": 2, "version": "1.9.93", "scope": "all", "inputs": {},
+        "schema": 3, "version": "1.9.93", "scope": "all", "inputs": {},
         "external_inputs": {"game_bins/reference.exe": "a" * 64}, "toolchains": {}, "functions": [],
     }
     monkeypatch.setattr(report, "repository_inputs", dict)

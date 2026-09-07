@@ -10,12 +10,12 @@ import json
 import math
 import shutil
 import subprocess
-from collections import Counter
 from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
 from . import match_data_report, match_toolchain
+from . import match_report_accounting as accounting
 
 VERSION = "1.9.93"
 DEFAULT_EVIDENCE = matchlib.REPO_ROOT / "analysis" / "decomp" / f"{VERSION}.json"
@@ -142,6 +142,7 @@ def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, An
     for row in inventory:
         status = selected.get((row["image"], row["address"]))
         row.update({"candidate": None, "source": None, "ratio": 0.0, "matched": False, "linked": False})
+        row.update(accounting.candidate_evidence(status))
         if status is None:
             continue
         if status.target_size < row["size"]:
@@ -158,14 +159,17 @@ def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, An
                 "candidate": kind,
                 "source": source,
                 "ratio": status.ratio,
-                "matched": status.state == "match",
+                "matched": accounting.normalized_exact(row, ratio=status.ratio),
             },
         )
     data = match_data_report.refresh_evidence(configs)
     if repository_inputs() != before or _external_inputs(configs, before) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
-        "schema": 2,
+        "schema": 3,
+        "verification": accounting.VERIFICATION,
+        "identities": accounting.identities(inventory, before, external, toolchains),
+        "code_inventory": accounting.code_inventory(inventory),
         "version": VERSION,
         "scope": "all",
         "inputs": before,
@@ -177,7 +181,7 @@ def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, An
 
 
 def validate_evidence(evidence: dict[str, Any]) -> None:
-    if evidence.get("schema") != 2 or evidence.get("version") != VERSION or evidence.get("scope") != "all":
+    if evidence.get("schema") != 3 or evidence.get("version") != VERSION or evidence.get("scope") != "all":
         raise ValueError("unsupported decomp.dev evidence")
     current = repository_inputs()
     recorded = evidence["inputs"]
@@ -202,11 +206,20 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
     inventory = [{k: row[k] for k in ("image", "address", "name", "size")} for row in evidence["functions"]]
     if inventory != _inventory():
         raise ValueError("report denominator differs from the full function inventory")
+    for row in evidence["functions"]:
+        accounting.validate_function(row)
+    if evidence["verification"] != accounting.VERIFICATION:
+        raise ValueError("unsupported evidence verification mode")
+    if evidence["identities"] != accounting.identities(inventory, recorded, evidence["external_inputs"], evidence["toolchains"]):
+        raise ValueError("report measurement identities differ")
+    if evidence["code_inventory"] != accounting.code_inventory(inventory):
+        raise ValueError("executable inventory reconciliation differs")
     match_data_report.validate_evidence(evidence["data"])
 
 
 def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
-    labels = {"game": "Game & Engine", "exe": "Crimsonland EXE", "dll": "Grim2D DLL", "libs": "Libraries"}
+    labels = {"game": "Game & Engine", "exe": "Crimsonland EXE", "dll": "Grim2D DLL", "libs": "Libraries",
+              "unknown": "Unclassified ownership"}
     library_labels = {"d3dx8": "D3DX8", "msvc6-crt": "MSVC6 runtime"}
     provenance = json.loads((matchlib.REPO_ROOT / "analysis/library_provenance.json").read_text())
     ranges = []
@@ -251,7 +264,6 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
         for disposition in dispositions if disposition.disposition == "third-party"
     }
     labels["libs.other"] = "Other identified libraries"
-    names = Counter(row["name"] for row in functions)
     seen: set[tuple[str, int]] = set()
     units: list[dict[str, Any]] = []
     total = matched = complete = matched_functions = complete_units = 0
@@ -284,7 +296,7 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             1,
             int(is_complete),
         )
-        name = row["name"] if names[row["name"]] == 1 else f"{row['name']}@{row['address']:08x}"
+        name = accounting.native_id(row)
         metadata: dict[str, Any] = {"complete": is_complete}
         categories = [{"crimsonland.exe": "exe", "grim.dll": "dll"}[row["image"]]]
         libraries = sorted({
@@ -297,6 +309,8 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             categories.append("game")
         if libraries:
             categories.extend(["libs", *libraries])
+        if "game" not in categories and "libs" not in categories:
+            categories.append("unknown")
         if data is not None and "ownership" in data:
             if "game" in categories:
                 categories.append("game.data")
@@ -313,10 +327,10 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
                 "measures": measures,
                 "functions": [
                     {
-                        "name": row["name"],
+                        "name": name,
                         "size": str(size),
                         "fuzzy_match_percent": percent,
-                        "metadata": {"virtual_address": str(row["address"])},
+                        "metadata": {"virtual_address": str(row["address"]), "demangled_name": row["name"]},
                     },
                 ],
                 "metadata": metadata,
