@@ -227,3 +227,29 @@ Only the three supported late edges are retained. A separate named late range
 and second-edge pointer publication probe regress; neither justifies changing
 the early dynamic-counter reconstruction. This is a source-ownership gain,
 not evidence that the remaining loop and corner schedules are exhausted.
+
+## Exact indexed route recovery (2026-09-07)
+
+The retained source is now exact: **228/228 instructions**, prefix **228**,
+references **0/0/0**, and **body_byte_exact=True** across all **861 bytes**
+under the unchanged VC6.5 profile.
+
+The first two phases use an ordinary path index for their coordinate and time
+expressions and a separate scalar entry count for destination publication.
+VC6 removes both fixed six-iteration inductions late enough to materialize the
+native pair of twelve-valued registers while retaining the general later loops.
+This differs from assigning a literal twelve before optimization or keeping
+entry count in the earlier speculative builder object. The same path index
+continues through the remaining route; copying it to a new scalar at that
+boundary changes the allocation graph.
+
+The fourth corner now uses the same vector constructor as the other three.
+`route-counter-corner-interactions.json` records the complete three-control
+interaction: indexed counters alone reach 97.345133% with prefix 197; the
+fourth constructor alone regresses the frame; together they recover the whole
+function. A separately recorded cleanup removes the unused builder type and
+member setter without changing the exact object. All coordinates, times,
+templates, counts, and untouched headings retain the recovered native behavior.
+
+Earlier negative reservation and all-corner results bound their old source
+forms; they did not establish that these interactions were exhausted.

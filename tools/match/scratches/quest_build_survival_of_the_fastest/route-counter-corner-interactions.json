@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "route-counter-ownership",
+      "find": "    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++builder.count;\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n\n    int path_index = builder.count;\n    int y = 256;\n    trigger_time_ms = 5900;\n    spawn = &builder.spawns[builder.count];\n    while (y < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        ++builder.count;\n        ++path_index;\n        y += 72;\n        trigger_time_ms += 900;\n    }\n\n    int entry_count = builder.count;\n",
+      "replacements": [
+        {
+          "name": "scalar-index-and-entry-count",
+          "text": "    int x;\n    int y;\n    int trigger_time_ms;\n    int path_index;\n    int entry_count = 0;\n    for (path_index = 0; path_index < 6; ++path_index) {\n        builder.spawns[entry_count].pos = quest_vec2_t((float)(path_index * 72 + 256), 256.0f);\n        builder.spawns[entry_count].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        builder.spawns[entry_count].trigger_time_ms = path_index * 900 + 500;\n        builder.spawns[entry_count].count = 1;\n        ++entry_count;\n    }\n    for (; path_index < 12; ++path_index) {\n        builder.spawns[entry_count].pos = quest_vec2_t(688.0f, (float)((path_index - 6) * 72 + 256));\n        builder.spawns[entry_count].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        builder.spawns[entry_count].trigger_time_ms = path_index * 900 + 500;\n        builder.spawns[entry_count].count = 1;\n        ++entry_count;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "fourth-corner",
+      "find": "    builder.spawns[entry_count].pos.x = 896.0f;\n    builder.spawns[entry_count].pos.y = 896.0f;",
+      "replacements": [
+        {
+          "name": "whole-vector",
+          "text": "    builder.spawns[entry_count].pos = quest_vec2_t(896.0f, 896.0f);"
+        }
+      ]
+    }
+  ]
+}
