@@ -7,26 +7,28 @@
 #define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
 #include "crimsonland_config_owner.h"
 
-extern IGrim2D_cpp *grim_interface_ptr;
+extern IGrim2D_cpp* grim_interface_ptr;
 
 struct statistics_vec2_t {
     float x;
     float y;
 
-    statistics_vec2_t() {}
+    statistics_vec2_t() { }
 
     statistics_vec2_t(float x_value, float y_value)
-        : x(x_value), y(y_value) {}
+        : x(x_value)
+        , y(y_value)
+    {
+    }
 
-    statistics_vec2_t operator+(const statistics_vec2_t &other) const
+    statistics_vec2_t operator+(const statistics_vec2_t& other) const
     {
         return statistics_vec2_t(x + other.x, other.y + y);
     }
-
 };
 
 struct statistics_button_t {
-    char *label;
+    char* label;
     bool hovered;
     bool activated;
     bool enabled;
@@ -51,7 +53,7 @@ struct statistics_button_t {
         hover_anim = 0;
     }
 
-    ~statistics_button_t() {}
+    ~statistics_button_t() { }
 };
 
 extern "C" {
@@ -63,22 +65,19 @@ extern unsigned char ui_transition_direction;
 extern unsigned char screen_fade_ramp_flag;
 extern unsigned char render_pass_mode;
 extern int online_sync_status;
-extern char *update_notice_url;
+extern char* update_notice_url;
 extern unsigned char update_notice_pending;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
 extern int music_track_extra_0;
 extern char menu_label_back[];
 
-bool ui_button_update(float *xy, ui_button_t *button);
+bool ui_button_update(float* xy, ui_button_t* button);
 void highscore_load_table_thunk(void);
 void sfx_mute_all(int sfx_id);
 void sfx_play_exclusive(int sfx_id);
-void statistics_update_check_worker(void *arg);
-void crt_beginthread(
-    void (*function)(void *),
-    unsigned int stack_size,
-    void *arg);
+void statistics_update_check_worker(void* arg);
+void crt_beginthread(void (*function)(void*), unsigned int stack_size, void* arg);
 }
 
 #define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
@@ -126,13 +125,11 @@ extern "C" void statistics_menu_update(void)
         high_scores_button.enabled = false;
     }
 
-    statistics_vec2_t panel_position =
-        *(statistics_vec2_t *)&ui_element_slot_39.pos_x
-        + *(statistics_vec2_t *)&ui_element_slot_39.vertices[0].x
+    statistics_vec2_t panel_position = *(statistics_vec2_t*)&ui_element_slot_39.pos_x
+        + *(statistics_vec2_t*)&ui_element_slot_39.vertices[0].x
         + statistics_vec2_t(300.0f, 40.0f);
     statistics_vec2_t xy = panel_position;
-    xy.x =
-        ui_element_slot_39.render_offset_x - 110.0f + xy.x + 52.0f;
+    xy.x = ui_element_slot_39.render_offset_x - 110.0f + xy.x + 52.0f;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     xy.y += 16.0f;
@@ -140,10 +137,7 @@ extern "C" void statistics_menu_update(void)
     grim_interface_ptr->grim_set_uv(0.0f, 0.375f, 1.0f, 0.5f);
     grim_interface_ptr->grim_set_config_var(0x15, 1u);
     grim_interface_ptr->grim_draw_quad(
-        xy.x + 64.0f - 16.0f,
-        xy.y - 4.0f,
-        128.0f,
-        32.0f);
+        xy.x + 64.0f - 16.0f, xy.y - 4.0f, 128.0f, 32.0f);
     grim_interface_ptr->grim_end_batch();
     grim_interface_ptr->grim_set_config_var(0x15, 2u);
 
@@ -153,96 +147,80 @@ extern "C" void statistics_menu_update(void)
 
     int session_seconds = (int)play_time_ms / 1000;
     int session_minutes = session_seconds / 60;
-    int session_hours = session_minutes / 60;
-    IGrim2D_cpp *session_renderer = grim_interface_ptr;
-    session_minutes -= session_hours * 60;
+    int time_hours = session_minutes / 60;
+    IGrim2D_cpp* session_renderer = grim_interface_ptr;
+    session_minutes -= time_hours * 60;
     session_seconds -= session_minutes * 60;
-    session_renderer->grim_draw_text_small_fmt(
-        xy.x - 38.0f,
-        xy.y + 230.0f,
-        "played for %d hours %d minutes",
-        session_hours,
-        session_minutes,
-        session_seconds);
+    int session_hours = time_hours;
+    session_renderer->grim_draw_text_small_fmt(xy.x - 38.0f, xy.y + 230.0f,
+        "played for %d hours %d minutes", time_hours, session_minutes, session_seconds);
 
     if (online_sync_status != 0) {
         Sleep(10);
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-        char *status_text = "";
+        char* status_text = "";
         if (online_sync_status == 1) {
-            grim_interface_ptr->grim_set_color(
-                0.2f, 1.0f, 0.2f, 0.8f);
+            grim_interface_ptr->grim_set_color(0.2f, 1.0f, 0.2f, 0.8f);
             status_text = "Connecting server..";
         } else if (online_sync_status == 5) {
-            grim_interface_ptr->grim_set_color(
-                0.4f, 1.0f, 0.4f, 0.8f);
+            grim_interface_ptr->grim_set_color(0.4f, 1.0f, 0.4f, 0.8f);
             status_text = "Done..";
         } else if (online_sync_status == 6) {
-            grim_interface_ptr->grim_set_color(
-                1.0f, 0.1f, 0.1f, 0.8f);
+            grim_interface_ptr->grim_set_color(1.0f, 0.1f, 0.1f, 0.8f);
             status_text = "Failed..";
         }
         grim_interface_ptr->grim_draw_text_small_fmt(
             xy.x - 38.0f, xy.y + 186.0f, status_text);
     } else {
         if (update_notice_pending && update_notice_url == 0) {
-            grim_interface_ptr->grim_set_color(
-                0.5f, 0.6f, 1.0f, 0.8f);
+            grim_interface_ptr->grim_set_color(0.5f, 0.6f, 1.0f, 0.8f);
             grim_interface_ptr->grim_draw_text_small_fmt(
-                xy.x - 40.0f,
-                xy.y + 186.0f,
-                "You've got the newest version");
+                xy.x - 40.0f, xy.y + 186.0f, "You've got the newest version");
             grim_interface_ptr->grim_draw_text_small_fmt(
-                xy.x - 40.0f,
-                xy.y + 200.0f,
-                "of Crimsonland.");
+                xy.x - 40.0f, xy.y + 200.0f, "of Crimsonland.");
         } else if (update_button.hover_anim > 0) {
             grim_interface_ptr->grim_set_color(
-                1.0f,
-                1.0f,
-                1.0f,
-                (float)update_button.hover_anim * 0.001f);
+                1.0f, 1.0f, 1.0f, (float)update_button.hover_anim * 0.001f);
             grim_interface_ptr->grim_draw_text_small_fmt(
-                xy.x - 38.0f,
-                xy.y + 186.0f,
-                "Connect the Internet and check");
+                xy.x - 38.0f, xy.y + 186.0f, "Connect the Internet and check");
             grim_interface_ptr->grim_draw_text_small_fmt(
-                xy.x - 38.0f,
-                xy.y + 200.0f,
-                "for new Crimsonland versions");
+                xy.x - 38.0f, xy.y + 200.0f, "for new Crimsonland versions");
         }
     }
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-    int total_seconds = time_played_ms / 1000;
-    int total_minutes = total_seconds / 60;
-    int total_hours = total_minutes / 60;
-    total_minutes -= total_hours * 60;
-    if (total_hours != session_hours
-        && grim_interface_ptr->grim_is_key_active(0x3b)) {
-        IGrim2D_cpp *total_renderer = grim_interface_ptr;
-        total_renderer->grim_draw_text_small_fmt(
-            xy.x - 38.0f,
-            xy.y + 230.0f - 15.0f,
-            "(total %dh)",
-            total_hours,
-            total_minutes,
-            total_seconds - total_minutes * 60);
-    }
+    int total_minutes = time_played_ms / 1000;
+    const int original_seconds = total_minutes;
+    total_minutes /= 60;
+    time_hours = total_minutes;
+    time_hours /= 60;
+    total_minutes -= time_hours * 60;
+    int total_seconds = original_seconds - total_minutes * 60;
+    do {
+        if (time_hours == session_hours) {
+            break;
+        }
+        if (!grim_interface_ptr->grim_is_key_active(0x3b)) {
+            break;
+        }
+        IGrim2D_cpp* total_renderer = grim_interface_ptr;
+        total_renderer->grim_draw_text_small_fmt(xy.x - 38.0f, xy.y + 230.0f - 15.0f,
+            "(total %dh)", time_hours, total_minutes, total_seconds);
+    } while (false);
 
     xy.x += 28.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);
+    ui_button_update((float*)&xy, (ui_button_t*)&high_scores_button);
     xy.y += 34.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);
+    ui_button_update((float*)&xy, (ui_button_t*)&weapons_button);
     xy.y += 34.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);
+    ui_button_update((float*)&xy, (ui_button_t*)&perks_button);
     xy.y += 34.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);
+    ui_button_update((float*)&xy, (ui_button_t*)&credits_button);
     xy.y += 34.0f;
     xy.y += 34.0f;
     xy.x += 124.0f;
     xy.y += 16.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&back_button);
+    ui_button_update((float*)&xy, (ui_button_t*)&back_button);
     xy.y += 34.0f;
 
     if (high_scores_button.activated) {

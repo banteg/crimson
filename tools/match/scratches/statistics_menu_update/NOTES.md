@@ -3,9 +3,9 @@
 Native target: `crimsonland.exe` at `0x0043f550` (2877 bytes, 676
 normalized instructions).
 
-Current reconstruction: **94.526627%**, 676/676 instructions, prefix 280,
-and references `276/0/0`. The sections below retain historical baselines.
-The candidate remains WIP and `body_byte_exact=false`.
+Current reconstruction: **100%**, 676/676 instructions, prefix 676,
+and references `279/0/0`, with `body_byte_exact=true` across all 2877 body
+bytes. The sections below retain historical baselines and bounded controls.
 
 Live Binary Ninja disassembly/HLIL, with independent IDA and Ghidra
 decompilation, recovers the complete Statistics menu callback:
@@ -327,3 +327,27 @@ The total-time remainder calculation remains on the wrong side of the key
 query and its register allocation differs. Returned records and constructors
 regress the earlier allocation too. These controls preserve the diagnostic
 source paths without accepting the higher score as an exact recovery.
+
+## Exact playtime ownership and guarded readout (2026-09-07)
+
+The remaining allocation depends on both playtime calculations. The session
+readout uses a shared current-hour local and snapshots the session hour before
+formatting. The lifetime calculation reuses its minute local for successive
+seconds/minutes quotients, takes an immutable copy of the original seconds,
+and then derives the displayed remainders. The original subtraction of the
+minute remainder times 60 remains intact.
+
+The optional total readout is a single guarded block: equal hours exit it,
+then an inactive F1 key exits it, otherwise it captures the renderer and draws.
+The ordinary `do { ... } while (false)` form preserves these two forward exits;
+the recovered Quest Failed callback uses the same structured-block idiom.
+This is evidence for a plausible source form, not proof of the original text.
+The block introduces no extra runtime predicate or artificial dependency.
+
+`playtime-quotient-guard-interactions-2026-09-07.json` records all seven nonempty
+combinations of shared hours, quotient ownership, and guarded draw. Only their
+combination is exact. Shared hours with quotient ownership but without the
+block reaches 94.970414% and prefix 472; the other controls retain distinct
+allocation or scheduling residuals. All seven compile. A separate cleanup
+probe verifies the formatted source at **676/676**, prefix **676**, references
+**279/0/0**, and relocation-aware body-byte identity over **2877 bytes**.
