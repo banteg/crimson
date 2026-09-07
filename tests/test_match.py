@@ -1289,6 +1289,20 @@ def test_normalize_preserves_noncommutative_scaled_sib() -> None:
     assert normalize_function(ecx_base)[0] == "mov eax, dword [ecx+eax*2+0xc]"
 
 
+@pytest.mark.parametrize("candidate", ["648b00c3", "658b00c3", "8b00c3"])
+def test_match_function_preserves_memory_segment(candidate: str) -> None:
+    result = match_function(
+        bytes.fromhex("648b00c3"),
+        ObjectFunction("_foo", bytes.fromhex(candidate), frozenset()),
+        image=LoadedImage(b"", 0x400000, 0),
+        target_va=0x401000,
+    )
+
+    assert result.target_lines[0] == "mov eax, dword fs:[eax]"
+    assert result.exact is (candidate == "648b00c3")
+    assert result.body_byte_exact is (candidate == "648b00c3")
+
+
 def test_normalize_resolves_vc_exception_chain_relocation_to_fs_zero() -> None:
     function = ObjectFunction(
         name="_probe",
@@ -1310,7 +1324,7 @@ def test_normalize_resolves_vc_exception_chain_relocation_to_fs_zero() -> None:
         relocation_references=function.relocation_references,
     )
 
-    assert disassembly[0].text == "mov eax, dword [0x0]"
+    assert disassembly[0].text == "mov eax, dword fs:[0x0]"
     assert disassembly[0].masked_references == ()
 
 
@@ -1587,16 +1601,19 @@ def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> No
     assert observed[-1] == ("symbol", None, 9)
 
 
-def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
+@pytest.mark.parametrize("copy_segment", [b"", b"\x64", b"\x65"])
+def test_match_function_accepts_first_load_from_proven_vc6_copy_range(copy_segment: bytes) -> None:
     image_base = 0x400000
     function_address = 0x401000
     source_address = 0x402000
     destination_address = 0x402100
+    load_relocation_offset = 19 + len(copy_segment)
     target = (
         bytes.fromhex("b902000000be")
         + struct.pack("<I", source_address)
         + b"\xbf"
         + struct.pack("<I", destination_address)
+        + copy_segment
         + bytes.fromhex("f3a5d905")
         + struct.pack("<I", destination_address + 4)
         + b"\xc3"
@@ -1608,15 +1625,16 @@ def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
             + b"\x00" * 4
             + b"\xbf"
             + b"\x00" * 4
+            + copy_segment
             + bytes.fromhex("f3a5d905")
             + struct.pack("<I", 4)
             + b"\xc3"
         ),
-        relocation_offsets=frozenset({6, 11, 19}),
+        relocation_offsets=frozenset({6, 11, load_relocation_offset}),
         relocation_references=(
             ObjectRelocationReference(6, "copy_source", "name:copy_source", True, addend=0),
             ObjectRelocationReference(11, "copy_destination", "name:copy_destination", True, addend=0),
-            ObjectRelocationReference(19, "copy_source", "name:copy_source+0x4", True, addend=4),
+            ObjectRelocationReference(load_relocation_offset, "copy_source", "name:copy_source+0x4", True, addend=4),
         ),
     )
     result = match_function(
@@ -1632,12 +1650,12 @@ def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
         ),
     )
 
-    assert result.exact
-    assert result.masked_operand_audit.ok_count == 3
+    assert result.exact is (copy_segment == b"")
+    assert result.masked_operand_audit.ok_count == (3 if copy_segment == b"" else 2)
     assert (
         f"{VC6_PROVEN_COPY_LOAD_KEY}:0x{source_address + 4:08x}"
         in result.masked_operand_audit.entries[-1].target_references[0].keys
-    )
+    ) is (copy_segment == b"")
 
 
 def test_proven_vc6_copy_load_expires_on_first_direct_access() -> None:
@@ -1857,6 +1875,51 @@ def test_match_function_audits_compiler_float_by_content() -> None:
     )
     assert result.exact
     assert result.masked_operand_audit.ok_count == 1
+
+
+@pytest.mark.parametrize(
+    ("symbol", "opcode", "literal"),
+    [
+        ("__real@constant", bytes.fromhex("d905"), bytes.fromhex("0000803f00000040")),
+        ("??_C@string", b"\x68", b"abcdwxyz\x00"),
+    ],
+)
+@pytest.mark.parametrize(
+    ("addend", "target_offset", "exact"),
+    [(0, 0, True), (4, 4, True), (4, 0, False), (-1, 0, False), (9, 0, False)],
+)
+def test_match_function_audits_compiler_constant_addend(
+    symbol: str, opcode: bytes, literal: bytes, addend: int, target_offset: int, exact: bool,
+) -> None:
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=opcode + struct.pack("<i", addend) + b"\xc3",
+                characteristics=0x20,
+                relocations=(CoffRelocation(len(opcode), 1, 6),),
+            ),
+            CoffSection(name=".rdata", data=literal, characteristics=0x40, relocations=()),
+        ),
+        symbols=(
+            CoffSymbol(0, "_foo", 0, 1, 0x20, 2),
+            CoffSymbol(1, symbol, 0, 2, 0, 3),
+        ),
+    )
+    mapped = bytearray(0x3000)
+    mapped[0x2000 : 0x2000 + len(literal)] = literal
+    result = match_function(
+        opcode + struct.pack("<I", 0x402000 + target_offset) + b"\xc3",
+        extract_object_function(obj, "foo"),
+        image=LoadedImage(bytes(mapped), 0x400000, len(mapped)),
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({}),
+    )
+
+    assert result.ratio == 1.0
+    assert result.exact is exact
+    assert result.body_byte_exact is exact
+    assert result.masked_operand_audit.ok_count == int(exact)
 
 
 def test_match_function_audits_read_only_local_data_by_content() -> None:

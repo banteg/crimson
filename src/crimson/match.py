@@ -2311,7 +2311,8 @@ def _format_memory_operand(insn, operand, masked_disp: bool) -> str:
     elif mem.disp != 0 or not parts:
         parts.append(f"0x{mem.disp:x}" if mem.disp >= 0 else f"-0x{-mem.disp:x}")
     size = _OPERAND_SIZE_NAMES.get(operand.size, str(operand.size))
-    return f"{size} [{'+'.join(parts)}]"
+    segment = f"{insn.reg_name(mem.segment)}:" if mem.segment != 0 else ""
+    return f"{size} {segment}[{'+'.join(parts)}]"
 
 
 def disassemble_normalized_function(
@@ -2382,14 +2383,18 @@ def disassemble_normalized_function(
         keys = tuple(dict.fromkeys((*keys, *reference.alternate_keys)))
         explained = reference.explained
         symbol_data = reference.symbol_data or b""
+        data_offset = reference.addend or 0
+        # Content evidence must describe the relocated address, including a
+        # compiler constant's byte addend, rather than the symbol's beginning.
+        referenced_data = symbol_data[data_offset:] if 0 <= data_offset < len(symbol_data) else b""
         if reference.local_target_offset is not None:
             keys = (f"local:{reference.local_target_offset:+#x}",)
             explained = True
-        elif reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(symbol_data)):
+        elif reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(referenced_data)):
             keys = (string_key,)
             explained = True
-        elif reference.symbol_name.startswith("__real@") and len(symbol_data) >= byte_count:
-            keys = (f"bytes{byte_count}:{symbol_data[:byte_count].hex()}",)
+        elif reference.symbol_name.startswith("__real@") and len(referenced_data) >= byte_count:
+            keys = (f"bytes{byte_count}:{referenced_data[:byte_count].hex()}",)
             explained = True
         elif reference.key is not None and reference.key.startswith("compiler:vc6-"):
             pass
@@ -2402,7 +2407,6 @@ def disassemble_normalized_function(
             )
             explained = True
         elif reference.read_only_data:
-            data_offset = reference.addend or 0
             if 0 <= data_offset and data_offset + byte_count <= len(symbol_data):
                 keys = (
                     f"bytes{byte_count}:{symbol_data[data_offset : data_offset + byte_count].hex()}",
@@ -2715,7 +2719,7 @@ def _annotate_vc6_proven_copy_loads(
         annotated.append(replace(line, masked_references=tuple(references)))
         text = line.text
 
-        if text == "rep movsd dword [edi], dword [esi]":
+        if text == "rep movsd dword es:[edi], dword [esi]":
             if (
                 copy_count is not None
                 and 0 < copy_count <= 0x1000
