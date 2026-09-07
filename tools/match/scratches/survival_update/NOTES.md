@@ -124,3 +124,30 @@ matching is impossible.
 The SDK spawn-expression, consistent vector-phase, and whole centroid-helper controls evaluate 17, 10, and 12 complete variants. None improves the 98.214286% baseline, 504/504 instructions, prefix 102, and clean 139 references. The first three scripted spawn positions still use a later slot than native. One generated default-constructor declaration crossed the existing goto and was excluded as an invalid source-generation result before recording; it is not counted as matching evidence.
 
 The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.
+
+## Exact milestone argument lifetimes (2026-09-07)
+
+The first three native spawn slots are recovered by passing complete temporary
+vectors at every milestone spawn call. The early and later milestone phases
+must change together. The existing component assignments and compound sums
+remain appropriate for the recent-death centroid, and the random edge-spawn
+phase retains its named positions. Temporary addresses use the target VC6
+C++ expression form and remain live through their consuming calls.
+
+The complete eight-case `milestone-vector-interactions-2026-09-07.json`
+matrix crosses early milestone arguments, later milestone arguments, and
+centroid copying. Early arguments alone regress to 83.333333% with prefix 1;
+later arguments alone reach 98.412698% but lose the former prefix (58 versus
+102). Together they recover 100%. Copy-constructing the centroid is a separate
+regression, so its explicit component initialization is retained. The larger
+16-case exploratory sweep also shows that converting edge-spawn arguments is
+neutral once the milestone pair is exact; those unrelated call sites are left
+in their existing form.
+
+Cleanup removes every unused milestone position declaration and formats the
+source without changing the result. The final function has 504/504
+instructions, prefix 504, 139/0/0 references, and `body_byte_exact=True` across
+the 2,102-byte body. The candidate's two trailing alignment bytes are reported
+separately as padding. All former stack-coloring residuals above are resolved;
+the old negative controls bounded individual forms and missed the interaction
+between the two milestone phases.

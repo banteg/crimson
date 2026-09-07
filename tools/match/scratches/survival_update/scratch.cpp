@@ -6,8 +6,18 @@
 #include "crimsonland_terrain_owner.h"
 
 struct survival_vec2_t {
-    float x;
-    float y;
+    union {
+        struct {
+            float x, y;
+        };
+        float v[2];
+    };
+    survival_vec2_t() { }
+    survival_vec2_t(float new_x, float new_y)
+    {
+        x = new_x;
+        y = new_y;
+    }
 
     survival_vec2_t &operator+=(const survival_vec2_t &other)
     {
@@ -48,74 +58,55 @@ extern "C" void survival_update(void)
 
     {
         if (config_player_count == 1) {
-        if (!survival_reward_damage_seen
-            && !survival_reward_fire_seen
-            && survival_elapsed_ms > 64000
-            && survival_reward_handout_enabled) {
-            if (player_state_table[0].weapon_id == WEAPON_ID_PISTOL) {
-                weapon_assign_player(0, WEAPON_ID_SHRINKIFIER_5K);
-                survival_reward_weapon_guard_id = WEAPON_ID_SHRINKIFIER_5K;
-            }
-            survival_reward_handout_enabled = 0;
-            survival_reward_damage_seen = 1;
-            survival_reward_fire_seen = 1;
-        }
-
-        if (survival_recent_death_count == 3
-            && !survival_reward_fire_seen) {
-            survival_vec2_t pos;
-            pos.x = survival_recent_death_pos[0].x;
-            pos.y = survival_recent_death_pos[0].y;
-            pos += survival_recent_death_pos[1];
-            pos += survival_recent_death_pos[2];
-            pos.x *= 0.333333343f;
-            pos.y *= 0.333333343f;
-            float dx = player_state_table[0].position.x - pos.x;
-            float dy = player_state_table[0].position.y - pos.y;
-            if ((float)sqrt(dx * dx + dy * dy) < 16.0f
-                && player_state_table[0].health < 15.0f) {
-                weapon_assign_player(0, WEAPON_ID_BLADE_GUN);
-                survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;
-                survival_reward_fire_seen = 1;
+            if (!survival_reward_damage_seen && !survival_reward_fire_seen
+                && survival_elapsed_ms > 64000 && survival_reward_handout_enabled) {
+                if (player_state_table[0].weapon_id == WEAPON_ID_PISTOL) {
+                    weapon_assign_player(0, WEAPON_ID_SHRINKIFIER_5K);
+                    survival_reward_weapon_guard_id = WEAPON_ID_SHRINKIFIER_5K;
+                }
                 survival_reward_handout_enabled = 0;
+                survival_reward_damage_seen = 1;
+                survival_reward_fire_seen = 1;
+            }
+
+            if (survival_recent_death_count == 3 && !survival_reward_fire_seen) {
+                survival_vec2_t pos;
+                pos.x = survival_recent_death_pos[0].x;
+                pos.y = survival_recent_death_pos[0].y;
+                pos += survival_recent_death_pos[1];
+                pos += survival_recent_death_pos[2];
+                pos.x *= 0.333333343f;
+                pos.y *= 0.333333343f;
+                float dx = player_state_table[0].position.x - pos.x;
+                float dy = player_state_table[0].position.y - pos.y;
+                if ((float)sqrt(dx * dx + dy * dy) < 16.0f
+                    && player_state_table[0].health < 15.0f) {
+                    weapon_assign_player(0, WEAPON_ID_BLADE_GUN);
+                    survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;
+                    survival_reward_fire_seen = 1;
+                    survival_reward_handout_enabled = 0;
+                }
             }
         }
-        }
 
-        survival_vec2_t pos;
         if (survival_spawn_stage == 0) {
-        if (player_state_table[0].level <= 4) {
-            goto update_wave_spawns;
-        }
-        survival_spawn_stage = 1;
-        pos.x = -164.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            (const vec2f_t *)&pos,
-            3.14159274f
-        );
-        pos.x = 1188.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            (const vec2f_t *)&pos,
-            3.14159274f
-        );
+            if (player_state_table[0].level <= 4) {
+                goto update_wave_spawns;
+            }
+            survival_spawn_stage = 1;
+            creature_spawn_template(SPAWN_ID_FORMATION_RING_ALIEN_8_12,
+                (const vec2f_t *)&survival_vec2_t(-164.0f, 512.0f), 3.14159274f);
+            creature_spawn_template(SPAWN_ID_FORMATION_RING_ALIEN_8_12,
+                (const vec2f_t *)&survival_vec2_t(1188.0f, 512.0f), 3.14159274f);
         }
 
         if (survival_spawn_stage == 1) {
-        if (player_state_table[0].level <= 8) {
-            goto update_wave_spawns;
-        }
-        survival_spawn_stage = 2;
-        pos.x = 1088.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_ALIEN_CONST_RED_BOSS_2C,
-            (const vec2f_t *)&pos,
-            3.14159274f
-        );
+            if (player_state_table[0].level <= 8) {
+                goto update_wave_spawns;
+            }
+            survival_spawn_stage = 2;
+            creature_spawn_template(SPAWN_ID_ALIEN_CONST_RED_BOSS_2C,
+                (const vec2f_t *)&survival_vec2_t(1088.0f, 512.0f), 3.14159274f);
         }
     }
 
@@ -124,15 +115,11 @@ extern "C" void survival_update(void)
             goto update_wave_spawns;
         }
         survival_spawn_stage = 3;
-        vec2f_t pos;
         for (int i0 = 0; i0 < 12; ++i0) {
-            pos.x = 1088.0f;
-            pos.y = (float)i0 * 42.6666679f + 256.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_SP2_RANDOM_35,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_SP2_RANDOM_35,
+                (const vec2f_t *)&survival_vec2_t(
+                    1088.0f, (float)i0 * 42.6666679f + 256.0f),
+                3.14159274f);
         }
     }
 
@@ -141,15 +128,10 @@ extern "C" void survival_update(void)
             goto update_wave_spawns;
         }
         survival_spawn_stage = 4;
-        vec2f_t pos;
         for (int i1 = 0; i1 < 4; ++i1) {
-            pos.x = 1088.0f;
-            pos.y = (float)i1 * 64.0f + 384.0f;
-            creature_spawn_template(
-                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_ALIEN_DEADLY_FAST_2B,
+                (const vec2f_t *)&survival_vec2_t(1088.0f, (float)i1 * 64.0f + 384.0f),
+                3.14159274f);
         }
     }
 
@@ -158,24 +140,15 @@ extern "C" void survival_update(void)
             goto update_wave_spawns;
         }
         survival_spawn_stage = 5;
-        vec2f_t pos;
         for (int i2 = 0; i2 < 4; ++i2) {
-            pos.x = 1088.0f;
-            pos.y = (float)i2 * 64.0f + 384.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
+                (const vec2f_t *)&survival_vec2_t(1088.0f, (float)i2 * 64.0f + 384.0f),
+                3.14159274f);
         }
         for (int i3 = 0; i3 < 4; ++i3) {
-            pos.x = -64.0f;
-            pos.y = (float)i3 * 64.0f + 384.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
+                (const vec2f_t *)&survival_vec2_t(-64.0f, (float)i3 * 64.0f + 384.0f),
+                3.14159274f);
         }
     }
 
@@ -184,14 +157,8 @@ extern "C" void survival_update(void)
             goto update_wave_spawns;
         }
         survival_spawn_stage = 6;
-        vec2f_t pos;
-        pos.x = 1088.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_SPIDER_BOSS_3A,
-            &pos,
-            3.14159274f
-        );
+        creature_spawn_template(SPAWN_ID_SPIDER_BOSS_3A,
+            (const vec2f_t *)&survival_vec2_t(1088.0f, 512.0f), 3.14159274f);
     }
 
     if (survival_spawn_stage == 6) {
@@ -199,14 +166,8 @@ extern "C" void survival_update(void)
             goto update_wave_spawns;
         }
         survival_spawn_stage = 7;
-        vec2f_t pos;
-        pos.x = 640.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-            &pos,
-            3.14159274f
-        );
+        creature_spawn_template(SPAWN_ID_SPIDER_SP2_SPLITTER_01,
+            (const vec2f_t *)&survival_vec2_t(640.0f, 512.0f), 3.14159274f);
     }
 
     if (survival_spawn_stage == 7) {
@@ -214,82 +175,41 @@ extern "C" void survival_update(void)
             goto update_wave_spawns;
         }
         survival_spawn_stage = 8;
-        vec2f_t pos;
-        pos.x = 384.0f;
-        pos.y = 256.0f;
-        creature_spawn_template(
-            SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-            &pos,
-            3.14159274f
-        );
-        pos.x = 640.0f;
-        pos.y = 768.0f;
-        creature_spawn_template(
-            SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-            &pos,
-            3.14159274f
-        );
+        creature_spawn_template(SPAWN_ID_SPIDER_SP2_SPLITTER_01,
+            (const vec2f_t *)&survival_vec2_t(384.0f, 256.0f), 3.14159274f);
+        creature_spawn_template(SPAWN_ID_SPIDER_SP2_SPLITTER_01,
+            (const vec2f_t *)&survival_vec2_t(640.0f, 768.0f), 3.14159274f);
     }
 
-    if (survival_spawn_stage == 8
-        && player_state_table[0].level > 25) {
+    if (survival_spawn_stage == 8 && player_state_table[0].level > 25) {
         survival_spawn_stage = 9;
-        vec2f_t pos;
         for (int i4 = 0; i4 < 4; ++i4) {
-            pos.x = 1088.0f;
-            pos.y = (float)i4 * 64.0f + 384.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
+                (const vec2f_t *)&survival_vec2_t(1088.0f, (float)i4 * 64.0f + 384.0f),
+                3.14159274f);
         }
         for (int i5 = 0; i5 < 4; ++i5) {
-            pos.x = -64.0f;
-            pos.y = (float)i5 * 64.0f + 384.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
+                (const vec2f_t *)&survival_vec2_t(-64.0f, (float)i5 * 64.0f + 384.0f),
+                3.14159274f);
         }
     }
 
-    if (survival_spawn_stage == 9
-        && player_state_table[0].level > 31) {
+    if (survival_spawn_stage == 9 && player_state_table[0].level > 31) {
         survival_spawn_stage = 10;
-        vec2f_t pos;
-        pos.x = 1088.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_SPIDER_BOSS_3A,
-            &pos,
-            3.14159274f
-        );
-        pos.x = -64.0f;
-        pos.y = 512.0f;
-        creature_spawn_template(
-            SPAWN_ID_SPIDER_BOSS_3A,
-            &pos,
-            3.14159274f
-        );
+        creature_spawn_template(SPAWN_ID_SPIDER_BOSS_3A,
+            (const vec2f_t *)&survival_vec2_t(1088.0f, 512.0f), 3.14159274f);
+        creature_spawn_template(SPAWN_ID_SPIDER_BOSS_3A,
+            (const vec2f_t *)&survival_vec2_t(-64.0f, 512.0f), 3.14159274f);
         for (int i6 = 0; i6 < 4; ++i6) {
-            pos.x = (float)i6 * 64.0f + 384.0f;
-            pos.y = -64.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
+                (const vec2f_t *)&survival_vec2_t((float)i6 * 64.0f + 384.0f, -64.0f),
+                3.14159274f);
         }
         for (int i7 = 0; i7 < 4; ++i7) {
-            pos.x = (float)i7 * 64.0f + 384.0f;
-            pos.y = 1088.0f;
-            creature_spawn_template(
-                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-                &pos,
-                3.14159274f
-            );
+            creature_spawn_template(SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
+                (const vec2f_t *)&survival_vec2_t((float)i7 * 64.0f + 384.0f, 1088.0f),
+                3.14159274f);
         }
     }
 
@@ -303,43 +223,43 @@ update_wave_spawns:
             interval += (int)extra_count * 2;
             do {
                 switch (crt_rand() & 3) {
-                    case 0: {
-                        vec2f_t top;
-                        int width = terrain_texture_width;
-                        int roll = crt_rand();
-                        top.x = (float)(roll % width);
-                        top.y = -40.0f;
-                        survival_spawn_creature(&top);
-                        break;
-                    }
-                    case 1: {
-                        vec2f_t bottom;
-                        int width = terrain_texture_width;
-                        int roll = crt_rand();
-                        bottom.x = (float)(roll % width);
-                        bottom.y = (float)terrain_texture_height + 40.0f;
-                        survival_spawn_creature(&bottom);
-                        break;
-                    }
-                    case 2: {
-                        vec2f_t left;
-                        int height = terrain_texture_height;
-                        int roll = crt_rand();
-                        left.x = -40.0f;
-                        left.y = (float)(roll % height);
-                        survival_spawn_creature(&left);
-                        break;
-                    }
-                    case 3: {
-                        vec2f_t right;
-                        int height = terrain_texture_height;
-                        int roll = crt_rand();
-                        float y = (float)(roll % height);
-                        right.x = (float)terrain_texture_width + 40.0f;
-                        right.y = y;
-                        survival_spawn_creature(&right);
-                        break;
-                    }
+                case 0: {
+                    vec2f_t top;
+                    int width = terrain_texture_width;
+                    int roll = crt_rand();
+                    top.x = (float)(roll % width);
+                    top.y = -40.0f;
+                    survival_spawn_creature(&top);
+                    break;
+                }
+                case 1: {
+                    vec2f_t bottom;
+                    int width = terrain_texture_width;
+                    int roll = crt_rand();
+                    bottom.x = (float)(roll % width);
+                    bottom.y = (float)terrain_texture_height + 40.0f;
+                    survival_spawn_creature(&bottom);
+                    break;
+                }
+                case 2: {
+                    vec2f_t left;
+                    int height = terrain_texture_height;
+                    int roll = crt_rand();
+                    left.x = -40.0f;
+                    left.y = (float)(roll % height);
+                    survival_spawn_creature(&left);
+                    break;
+                }
+                case 3: {
+                    vec2f_t right;
+                    int height = terrain_texture_height;
+                    int roll = crt_rand();
+                    float y = (float)(roll % height);
+                    right.x = (float)terrain_texture_width + 40.0f;
+                    right.y = y;
+                    survival_spawn_creature(&right);
+                    break;
+                }
                 }
                 --extra_count;
             } while (extra_count != 0);
@@ -351,43 +271,43 @@ update_wave_spawns:
         survival_spawn_cooldown += interval;
 
         switch (crt_rand() & 3) {
-            case 0: {
-                vec2f_t top;
-                int width = terrain_texture_width;
-                int roll = crt_rand();
-                top.x = (float)(roll % width);
-                top.y = -40.0f;
-                survival_spawn_creature(&top);
-                break;
-            }
-            case 1: {
-                vec2f_t bottom;
-                int width = terrain_texture_width;
-                int roll = crt_rand();
-                bottom.x = (float)(roll % width);
-                bottom.y = (float)terrain_texture_height + 40.0f;
-                survival_spawn_creature(&bottom);
-                break;
-            }
-            case 2: {
-                vec2f_t left;
-                int height = terrain_texture_height;
-                int roll = crt_rand();
-                left.x = -40.0f;
-                left.y = (float)(roll % height);
-                survival_spawn_creature(&left);
-                break;
-            }
-            case 3: {
-                vec2f_t right;
-                int height = terrain_texture_height;
-                int roll = crt_rand();
-                float y = (float)(roll % height);
-                right.x = (float)terrain_texture_width + 40.0f;
-                right.y = y;
-                survival_spawn_creature(&right);
-                break;
-            }
+        case 0: {
+            vec2f_t top;
+            int width = terrain_texture_width;
+            int roll = crt_rand();
+            top.x = (float)(roll % width);
+            top.y = -40.0f;
+            survival_spawn_creature(&top);
+            break;
+        }
+        case 1: {
+            vec2f_t bottom;
+            int width = terrain_texture_width;
+            int roll = crt_rand();
+            bottom.x = (float)(roll % width);
+            bottom.y = (float)terrain_texture_height + 40.0f;
+            survival_spawn_creature(&bottom);
+            break;
+        }
+        case 2: {
+            vec2f_t left;
+            int height = terrain_texture_height;
+            int roll = crt_rand();
+            left.x = -40.0f;
+            left.y = (float)(roll % height);
+            survival_spawn_creature(&left);
+            break;
+        }
+        case 3: {
+            vec2f_t right;
+            int height = terrain_texture_height;
+            int roll = crt_rand();
+            float y = (float)(roll % height);
+            right.x = (float)terrain_texture_width + 40.0f;
+            right.y = y;
+            survival_spawn_creature(&right);
+            break;
+        }
         }
     }
 }
