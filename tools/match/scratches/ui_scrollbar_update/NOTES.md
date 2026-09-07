@@ -257,3 +257,29 @@ index. The column local is neutral; the copy and typed-index forms regress.
 The retained source moves 82.217573% to 82.426778%, adding 3.696653 weighted
 bytes with unchanged 477/479 instructions, prefix 26, and 62/0/0 references.
 This leaves the two missing operations and other row/drag scheduling residuals.
+
+## Exact geometry, row, and focus ownership (2026-09-07)
+
+The earlier geometry scope and cached item/row counts were useful intermediate
+recoveries, but their interaction with later vector lifetimes prevented exact
+stack-slot allocation. The final source reads the item/row fields directly,
+keeps geometry in the function scope, and constructs a named focus position.
+Only that combination is exact: with the recovered drawing/row body fixed,
+retaining cached counts scores 99.164927%, retaining the geometry scope scores
+99.373695% with the direct focus expression, and using the direct expression
+without the scope scores 70.981211%. These are coupled source boundaries.
+
+The drawing body constructs both hovered and unhovered fill colors before
+constructing their positions. This recovers the two operations previously
+hoisted across the hover branch. The thumb point uses a relative vector sum;
+the row origin copies the input pair and then adjusts X. The row loop tests
+both visible-row and item bounds at its head. These ordinary source forms
+recover the native floating-point order and row control flow.
+
+The complete eight-case `geometry-row-focus-interactions-2026-09-07.json`
+matrix records the coupled scope, field, and focus controls against the former
+82.426778% baseline. A separate cleanup probe removes an unused vector operator
+and formats the source. Both the winning matrix case and cleaned source are
+100% exact: 479/479 instructions, prefix 479, 66/0/0 references, native 0x40
+frame, and `body_byte_exact=True` across the 1,767-byte function. The historical
+compiler residuals above are resolved.
