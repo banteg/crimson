@@ -885,6 +885,31 @@ prologue allocation once, with their signed delta. Treat that as a root-cause
 clue: one frame-size difference can shift every later stack operand and must
 not be counted as dozens of independent missing locals.
 
+Use the opt-in residual summary when displacement changes swamp the diff:
+
+```sh
+uv run crimson match scratch tools/match/scratches/ui_render_hud \
+  --residual-summary --region-context 2 --max-regions 8
+```
+
+This diagnostic aligns instruction shapes while masking only simple `esp`/`ebp`
+displacements and direct local branch labels. It groups branch-offset changes
+only when the destinations agree under the diagnostic pairing; unknown,
+conflicting, or ambiguously paired destinations remain visible. Other operand
+and instruction changes retain native addresses, candidate offsets, and bounded
+assembly context. The report lists observed displacement relationships, including
+unchanged operands that contradict a proposed global mapping. One-to-many or
+many-to-one observations flag possible lifetime reuse or alignment problems;
+even a one-to-one observation does not prove equivalent variables. Stack-pointer
+movement and general-purpose use of `ebp` are not modeled.
+
+`--max-regions` bounds each summary section (default eight), and large residuals
+truncate assembly with explicit omitted counts. Add `--full` to include the
+ordinary full diff, or `--json` to add a `residual_summary` field to the existing
+match payload. `match diff` supports the same options. The summary never changes
+normalization, scoring, masked-reference audits, encoded-body identity, acceptance,
+or exit status. The ordinary reports remain unchanged without the flag.
+
 CFG edge consistency is evaluated only through unique exact block anchors.
 Predecessor counts never turn otherwise duplicate instruction blocks into
 unique anchors: that can cross-pair repeated loop latches merely because their
