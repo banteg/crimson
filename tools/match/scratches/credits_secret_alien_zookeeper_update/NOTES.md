@@ -3,6 +3,9 @@
 Native target: `crimsonland.exe` at `0x0040f4f0`, 2,612 bytes and 638
 normalized instructions.
 
+Current recovery is exact: 638/638 instructions, a 638-instruction prefix,
+158/0/0 references, and relocation-aware `body_byte_exact=true`.
+
 This scratch recovers the complete frame callback for the credits-secret
 AlienZooKeeper minigame:
 
@@ -177,3 +180,28 @@ controls against the 83.855799% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+
+## Exact board and button value recovery (2026-09-07)
+
+The timer outline constructs its position after the color call. The selection
+uses the complete scaled vector sum, and its row/column locals are reused by
+the indexed board-render loop. Each match-direction branch explicitly clears
+its three cells; factoring out the first store had changed the match-output
+loads and the earlier scalar stack allocation. These changes preserve board
+behavior, RNG order, and all displayed text.
+
+Both navigation calls consume the SDK vector array expression directly. Reset
+uses `(button_origin + vec2(38, 256)).v`, and Back uses the corresponding
+`(138, 256)` offset. The complete nine-control
+`board-button-interactions-2026-09-07.json` compares named positions, direct
+component constructors, and direct vector sums at both calls. With the other
+recovered boundaries fixed, the named pair reaches 99.843260% with prefix 623;
+changing either call alone to a direct sum regresses to 97.335423% and prefix
+15. Changing both produces the exact native 638-instruction body and all 158
+clean references. A separately recorded cleanup probe removes unused vector
+operators and redundant scopes while preserving byte identity.
+
+The native 0x54-byte frame and all 2,612 body bytes now agree. This supersedes
+the earlier compiler-residual stopping points; it does not identify every
+original variable name or source spelling uniquely.
