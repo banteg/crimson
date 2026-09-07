@@ -12,6 +12,7 @@ import typer
 
 from .. import (
     library_match,
+    match_data_inventory,
     match_diagnostics,
     match_experiments,
     match_listing_diagnostics,
@@ -40,8 +41,12 @@ def cmd_match_report(
             evidence = json.loads(match_report.DEFAULT_EVIDENCE.read_text(encoding="utf-8"))
         match_report.validate_evidence(evidence)
         report = match_report.build_report(evidence["functions"], data=evidence["data"])
+        inventory = match_data_inventory.build_inventory(evidence["data"])
         if refresh:
             matchlib.write_match_json(match_report.DEFAULT_EVIDENCE, evidence)
+            match_data_inventory.write_inventory(inventory)
+        else:
+            match_data_inventory.validate_inventory(inventory)
         matchlib.write_match_json(output, report)
     except (ValueError, KeyError, TypeError, OSError, subprocess.CalledProcessError) as exc:
         typer.echo(f"decomp.dev report failed: {exc}", err=True)
@@ -54,6 +59,23 @@ def cmd_match_report(
         f"linked={measures['complete_code_percent']:.2f}%; "
         f"data={measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes; report={output}",
     )
+
+
+@match_app.command("data-inventory")
+def cmd_data_inventory(
+    output: Path = typer.Option(match_data_inventory.DEFAULT_INVENTORY, "--out", help="complete byte-partition inventory JSON"),
+    summary: Path = typer.Option(match_data_inventory.DEFAULT_SUMMARY, "--summary", help="ranked Markdown backlog"),
+) -> None:
+    """Rank uncredited data and retain all unknown ownership and unnamed gaps."""
+    try:
+        evidence = json.loads(match_report.DEFAULT_EVIDENCE.read_text())
+        match_report.validate_evidence(evidence)
+        inventory = match_data_inventory.build_inventory(evidence["data"])
+        match_data_inventory.write_inventory(inventory, output=output, summary=summary)
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        typer.echo(f"data inventory failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(f"data inventory: {inventory['totals']}; ownership_complete={inventory['ownership_complete']}; {summary}")
 
 
 def _parse_hex(value: str | None) -> int | None:

@@ -1,15 +1,17 @@
 """Source-built data evidence for the public matching report.
 
 Native definitions locate and describe reference objects; they do not themselves
-earn matching credit. Zero-initialized C++ definitions are compiled by VC6, with
-sizeof assertions, and their COFF storage is checked against the reference.
+earn matching credit. C++ definitions are compiled by VC6 with sizeof assertions;
+their COFF storage and symbolic pointer relocations are checked against the reference.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
+import struct
 import subprocess
 import tempfile
 from itertools import pairwise
@@ -57,6 +59,7 @@ def _load_plan() -> tuple[str, list[dict[str, Any]]]:
         if payload is None:
             raise ValueError(f"missing native data definitions for {image}")
         definitions[image] = {row["name"]: row for row in payload["entries"]}
+    reference_relocations = _reference_relocations()
     seen = set()
     sources = []
     for source in manifest["sources"]:
@@ -70,11 +73,12 @@ def _load_plan() -> tuple[str, list[dict[str, Any]]]:
                 raise ValueError(f"invalid or duplicate data symbol: {image}:{name}")
             seen.add((image, name))
             definition = definitions[image][name]
-            if definition.get("initializer_fill") != "00" or not definition.get("size"):
-                raise ValueError(f"data candidate is not an explicit zero-filled object: {name}")
+            if not definition.get("size"):
+                raise ValueError(f"data candidate has no independently recorded extent: {name}")
             rows.append({
                 "image": image, "name": name, "source": path.as_posix(),
                 "address": definition["address"], "size": definition["size"],
+                **_initializer_plan(definition, reference_relocations[image]),
             })
         if not rows:
             raise ValueError(f"empty data source: {path}")
@@ -82,16 +86,68 @@ def _load_plan() -> tuple[str, list[dict[str, Any]]]:
     return manifest["compiler"], sources
 
 
-def _check_storage(obj: matchlib.CoffObject, name: str, size: int) -> str:
-    symbols = [
-        symbol for symbol in obj.symbols
-        if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
-        and (symbol.name == f"_{name}" or symbol.name.startswith(f"?{name}@@3"))
-    ]
+def _reference_relocations() -> dict[str, list[tuple[int, int]] | None]:
+    import pefile
+
+    result = {}
+    for image in matchlib.TRACKED_IMAGE_NAMES:
+        with pefile.PE(str(matchlib._paths_for_image(image)[0])) as pe:
+            base = int(pe.OPTIONAL_HEADER.ImageBase)
+            result[image] = None if pe.FILE_HEADER.Characteristics & 1 else [(base + relocation.rva, relocation.type)
+                             for block in getattr(pe, "DIRECTORY_ENTRY_BASERELOC", [])
+                             for relocation in block.entries if relocation.type]
+    return result
+
+
+def _initializer_plan(definition: dict[str, Any], reference_relocations: list[tuple[int, int]] | None) -> dict[str, Any]:
+    """Keep expected bytes and symbolic targets independent of compiled output."""
+    size = definition["size"]
+    target = definition.get("initializer_target")
+    symbols = definition.get("initializer_symbols") or []
+    if target:
+        symbols = [{"offset": 0, "address": target["address"], "symbol": "_" + target["name"]}]
+    if symbols:
+        expected = native_link._symbol_initializer_bytes(size, symbols)
+    elif definition.get("initializer_hex") is not None:
+        expected = bytes.fromhex(definition["initializer_hex"])
+    elif definition.get("initializer_fill") is not None:
+        expected = bytes.fromhex(definition["initializer_fill"]) * size
+    else:
+        raise ValueError(f"missing reference initializer: {definition['name']}")
+    if len(expected) != size:
+        raise ValueError(f"invalid reference initializer size: {definition['name']}")
+    # Literal pointer bytes do not establish the target's identity. Require the
+    # symbol recipe before accepting any object containing PE base relocations.
+    start = definition["address"]
+    offsets = []
+    for address, kind in reference_relocations or []:
+        if kind and start - 3 <= address < start + size:
+            if kind != 3 or address < start or address + 4 > start + size:
+                raise ValueError(f"unsupported reference relocation: {definition['name']}")
+            offsets.append(address - start)
+    if reference_relocations is not None and sorted(offsets) != sorted(item["offset"] for item in symbols):
+        raise ValueError(f"pointer initializer needs symbolic relocation evidence: {definition['name']}")
+    return {"initializer_sha256": hashlib.sha256(expected).hexdigest(),
+            "initializer_hex": expected.hex(), "relocations": symbols}
+
+
+def _check_storage(
+    obj: matchlib.CoffObject, name: str, size: int, *,
+    expected: bytes | None = None, relocations: list[dict[str, Any]] | None = None,
+) -> str:
+    expected = bytes(size) if expected is None else expected
+    relocations = [] if relocations is None else relocations
+    if size <= 0 or len(expected) != size:
+        raise ValueError(f"invalid data object size: {name}")
+    symbols = [symbol for symbol in obj.symbols
+               if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+               and (symbol.name == f"_{name}" or symbol.name.startswith(f"?{name}@@3"))]
     if len(symbols) != 1:
         raise ValueError(f"data object does not define exactly one {name}")
     symbol = symbols[0]
     if symbol.section_number == 0 and symbol.value == size:
+        if expected != bytes(size) or relocations:
+            raise ValueError(f"common storage differs from reference initializer: {name}")
         return "coff-common"
     if symbol.section_number <= 0:
         raise ValueError(f"data object has no storage for {name}")
@@ -99,17 +155,39 @@ def _check_storage(obj: matchlib.CoffObject, name: str, size: int) -> str:
     start, end = symbol.value, symbol.value + size
     if section.characteristics & 0x20000000 or section.logical_size is None or end > section.logical_size:
         raise ValueError(f"invalid data object extent: {name}")
-    if any(
-        relocation.virtual_address < end
-        and relocation.virtual_address + matchlib.IMAGE_REL_I386_WIDTHS[relocation.relocation_type] > start
-        for relocation in section.relocations
-    ):
-        raise ValueError(f"zero-filled data object has a relocation: {name}")
-    if section.characteristics & matchlib.IMAGE_SCN_CNT_UNINITIALIZED_DATA:
-        return "coff-bss"
-    if section.data[start:end] != bytes(size):
-        raise ValueError(f"data object is not zero-initialized: {name}")
-    return "coff-data"
+    actual_relocations = []
+    for relocation in section.relocations:
+        width = matchlib.IMAGE_REL_I386_WIDTHS.get(relocation.relocation_type)
+        if width is None:
+            raise ValueError(f"unsupported COFF relocation: {name}")
+        if relocation.virtual_address < end and relocation.virtual_address + width > start:
+            actual_relocations.append(relocation)
+    if len(actual_relocations) != len(relocations):
+        raise ValueError(f"data relocation count differs: {name}")
+    data = bytearray(bytes(size) if section.characteristics & matchlib.IMAGE_SCN_CNT_UNINITIALIZED_DATA
+                     else section.data[start:end])
+    expected_by_offset = {row["offset"]: row for row in relocations}
+    if len(expected_by_offset) != len(relocations):
+        raise ValueError(f"duplicate reference relocation: {name}")
+    seen = set()
+    symbol_by_index = {row.raw_index: row for row in obj.symbols}
+    for relocation in actual_relocations:
+        offset = relocation.virtual_address - start
+        target = expected_by_offset.get(offset)
+        if (target is None or offset in seen or offset < 0 or offset + 4 > size
+                or relocation.relocation_type != matchlib.IMAGE_REL_I386_DIR32):
+            raise ValueError(f"data relocation offset/type differs: {name}")
+        seen.add(offset)
+        ref = symbol_by_index.get(relocation.symbol_index)
+        if ref is None or ref.name != target["symbol"]:
+            raise ValueError(f"data relocation target differs: {name}")
+        # A literal address hidden in the COFF addend must not earn pointer credit.
+        if struct.unpack_from("<I", data, offset)[0] != 0:
+            raise ValueError(f"unexpected pointer addend: {name}")
+        struct.pack_into("<I", data, offset, target["address"])
+    if data != expected:
+        raise ValueError(f"compiled data differs from reference initializer: {name}")
+    return "coff-bss" if section.characteristics & matchlib.IMAGE_SCN_CNT_UNINITIALIZED_DATA else "coff-data"
 
 
 def refresh_evidence(configs: list[matchlib.ScratchConfig]) -> dict[str, Any]:
@@ -140,9 +218,14 @@ def refresh_evidence(configs: list[matchlib.ScratchConfig]) -> dict[str, Any]:
         obj = matchlib.parse_coff_object(object_bytes)
         digest = native_link._normalized_coff_sha256(object_bytes)
         for row in source["rows"]:
-            storage = _check_storage(obj, row["name"], row["size"])
-            candidates.append({**row, "storage": storage, "object_sha256": digest})
-    evidence = {"sections": section_inventory(), "candidates": candidates}
+            storage = _check_storage(obj, row["name"], row["size"],
+                                     expected=bytes.fromhex(row["initializer_hex"]), relocations=row["relocations"])
+            candidates.append({**{key: value for key, value in row.items() if key != "initializer_hex"},
+                               "storage": storage, "object_sha256": digest})
+    from . import match_data_inventory
+
+    evidence = {"sections": section_inventory(), "candidates": candidates,
+                "ownership": match_data_inventory.ownership_plan(match_data_inventory.catalog())}
     validate_evidence(evidence)
     return evidence
 
@@ -151,9 +234,10 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
     if evidence["sections"] != section_inventory():
         raise ValueError("data denominator differs from the reference PE sections")
     _, sources = _load_plan()
-    expected = [row for source in sources for row in source["rows"]]
+    expected = [{key: value for key, value in row.items() if key != "initializer_hex"}
+                for source in sources for row in source["rows"]]
     actual = [
-        {key: row[key] for key in ("image", "name", "source", "address", "size")}
+        {key: row[key] for key in ("image", "name", "source", "address", "size", "initializer_sha256", "relocations")}
         for row in evidence["candidates"]
     ]
     if actual != expected:
@@ -173,6 +257,12 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         if len(containing) != 1:
             raise ValueError(f"data candidate is outside the data denominator: {row['name']}")
 
+    from . import match_data_inventory
+
+    if evidence.get("ownership") != match_data_inventory.ownership_plan(match_data_inventory.catalog()):
+        raise ValueError("data ownership differs from the evidenced object assignments")
+    report_spans(evidence)
+
 
 def report_spans(evidence: dict[str, Any]) -> list[dict[str, Any]]:
     """Partition complete sections, counting overlapping declarations only once."""
@@ -181,7 +271,7 @@ def report_spans(evidence: dict[str, Any]) -> list[dict[str, Any]]:
         if section["size"] <= 0 or section["address"] < previous_end.get(section["image"], 0):
             raise ValueError("invalid or overlapping data sections")
         previous_end[section["image"]] = section["address"] + section["size"]
-    for row in evidence["candidates"]:
+    for row in evidence["candidates"] + evidence.get("ownership", []):
         if row["size"] <= 0 or sum(
             section["image"] == row["image"]
             and section["address"] <= row["address"]
@@ -196,11 +286,18 @@ def report_spans(evidence: dict[str, Any]) -> list[dict[str, Any]]:
             row for row in evidence["candidates"]
             if row["image"] == section["image"] and start <= row["address"] < end
         ]
-        boundaries = sorted({start, end, *(value for row in candidates for value in (row["address"], row["address"] + row["size"]))})
+        ownership = [row for row in evidence.get("ownership", [])
+                     if row["image"] == section["image"] and start <= row["address"] < end]
+        boundaries = sorted({start, end, *(value for row in candidates + ownership for value in (row["address"], row["address"] + row["size"]))})
         for left, right in pairwise(boundaries):
             owners = [row for row in candidates if row["address"] <= left and right <= row["address"] + row["size"]]
             owner = min(owners, key=lambda row: (-row["size"], row["name"])) if owners else None
+            categories = {row["owner"] for row in ownership
+                          if row["address"] <= left and right <= row["address"] + row["size"]}
+            if len(categories) > 1 or categories - {"game", "libraries"}:
+                raise ValueError(f"invalid or conflicting data ownership: {section['image']}:0x{left:x}")
             spans.append({
+                "owner": next(iter(categories), "unknown"),
                 "image": section["image"], "section": section["name"], "address": left, "size": right - left,
                 "name": owner["name"] if owner else "unmatched", "source": owner["source"] if owner else None,
                 "matched": owner is not None,

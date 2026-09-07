@@ -242,6 +242,78 @@
         "grim_timing_frozen",
         "grim_fps"
       ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_hints.cpp",
+      "symbols": [
+        "secret_hint_haxx0r",
+        "secret_hint_muzzy",
+        "secret_hint_wonder",
+        "secret_hint_magic_paint",
+        "secret_hint_secret_path",
+        "secret_hint_alienzookeeper",
+        "secret_hint_not_meant_to_see",
+        "secret_hint_secret_weapons",
+        "secret_hint_reijo",
+        "secret_hint_redistr_build",
+        "s_empty_string",
+        "console_empty_arg",
+        "developer_hint_redistribution_build",
+        "developer_hint_reijo",
+        "developer_hint_secret_weapons",
+        "developer_hint_warning",
+        "developer_hint_alien_zookeeper",
+        "developer_hint_secret_path",
+        "developer_hint_magic_paint",
+        "developer_hint_muzzy",
+        "developer_hint_haxxor"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_effect_table.cpp",
+      "symbols": [
+        "effect_id_table"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_buffers.cpp",
+      "symbols": [
+        "console_input_buf",
+        "console_tokenize_buf",
+        "credits_line_table",
+        "mods_menu_filenames",
+        "mods_menu_display_names",
+        "fx_rotated_color_r",
+        "highscore_screen_score_line_buffers",
+        "typo_target_name_table"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_texture_slots.cpp",
+      "symbols": [
+        "grim_texture_slots"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_unlock_index",
+      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 2 bytes. Rejected by the compiler size assertion."
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_unlock_index_full",
+      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 2 bytes. Rejected by the compiler size assertion."
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "player_plaguebearer_active",
+      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 1 byte. Rejected by the compiler size assertion."
     }
   ]
 }

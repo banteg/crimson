@@ -240,6 +240,10 @@ def _sum_measures(measures: list[dict[str, Any]]) -> dict[str, Any]:
 def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None = None) -> dict[str, Any]:
     """One function per unit, with overlapping image and proven library filters."""
     labels, library_ranges = _category_definitions()
+    if data is not None and "ownership" in data:
+        labels.update({"game.data": "Game & Engine + attributed data",
+                       "libs.data": "Libraries + attributed data",
+                       "data_unknown": "Unattributed data"})
     ownership = matchlib._load_matching_scope_definition("port")
     third_party = {
         (image, disposition.address)
@@ -293,6 +297,11 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             categories.append("game")
         if libraries:
             categories.extend(["libs", *libraries])
+        if data is not None and "ownership" in data:
+            if "game" in categories:
+                categories.append("game.data")
+            if "libs" in categories:
+                categories.append("libs.data")
         metadata["progress_categories"] = categories
         if row["source"]:
             metadata["source_path"] = row["source"]
@@ -327,6 +336,9 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             "complete": False,
             "progress_categories": [{"crimsonland.exe": "exe", "grim.dll": "dll"}[span["image"]]],
         }
+        if data is not None and "ownership" in data:
+            metadata["progress_categories"].append(
+                {"game": "game.data", "libraries": "libs.data", "unknown": "data_unknown"}[span["owner"]])
         if span["source"]:
             metadata["source_path"] = span["source"]
         units.append({

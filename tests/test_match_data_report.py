@@ -118,7 +118,8 @@ def test_coff_storage_rejects_nonzero_bytes_relocations_and_code() -> None:
 
 
 def test_saved_candidate_cannot_extend_beyond_the_data_denominator(monkeypatch: pytest.MonkeyPatch) -> None:
-    row = _candidate(110, 20)
+    row = {**_candidate(110, 20), "initializer_hex": "00" * 20,
+           "initializer_sha256": "a" * 64, "relocations": []}
     sections = [{"image": "crimsonland.exe", "name": ".data", "address": 100, "size": 20}]
     monkeypatch.setattr(data_report, "section_inventory", lambda: sections)
     monkeypatch.setattr(data_report, "_load_plan", lambda: ("msvc6.5", [{"rows": [row]}]))
@@ -129,3 +130,53 @@ def test_saved_candidate_cannot_extend_beyond_the_data_denominator(monkeypatch: 
         })
     with pytest.raises(ValueError, match="outside the data denominator"):
         data_report.report_spans({"sections": sections, "candidates": [row]})
+
+
+def test_initialized_scalar_requires_exact_bytes() -> None:
+    import struct
+
+    value = struct.pack("<f", 0.5)
+    section = matchlib.CoffSection(".data", value, 0xC0000040, (), index=1, logical_size=4)
+    obj = matchlib.CoffObject((section,), (_symbol(1, 0),))
+    assert data_report._check_storage(obj, "pool", 4, expected=value) == "coff-data"
+    with pytest.raises(ValueError, match="differs from reference"):
+        data_report._check_storage(obj, "pool", 4, expected=struct.pack("<f", 1.0))
+    with pytest.raises(ValueError, match="common storage"):
+        data_report._check_storage(matchlib.CoffObject((), (_symbol(0, 4),)), "pool", 4, expected=value)
+
+
+def test_symbolic_pointer_requires_correct_target_offset_type_and_addend() -> None:
+    import struct
+
+    target = matchlib.CoffSymbol(1, "_target", 0, 0, 0, matchlib.IMAGE_SYM_CLASS_EXTERNAL)
+    relocation = matchlib.CoffRelocation(0, 1, matchlib.IMAGE_REL_I386_DIR32)
+    section = matchlib.CoffSection(".data", bytes(4), 0xC0000040, (relocation,), index=1, logical_size=4)
+    obj = matchlib.CoffObject((section,), (_symbol(1, 0), target))
+    expected = struct.pack("<I", 0x471234)
+    recipe = [{"offset": 0, "symbol": "_target", "address": 0x471234}]
+    assert data_report._check_storage(obj, "pool", 4, expected=expected, relocations=recipe) == "coff-data"
+    bad_objects = [
+        replace(obj, symbols=(_symbol(1, 0), replace(target, name="_wrong"))),
+        replace(obj, sections=(replace(section, relocations=(replace(relocation, virtual_address=1),)),)),
+        replace(obj, sections=(replace(section, relocations=(replace(relocation, relocation_type=matchlib.IMAGE_REL_I386_REL32),)),)),
+        replace(obj, sections=(replace(section, data=b"\x01\0\0\0"),)),
+        # Exact final address bytes without a compiler relocation cannot earn pointer credit.
+        replace(obj, sections=(replace(section, data=expected, relocations=()),)),
+    ]
+    for bad in bad_objects:
+        with pytest.raises(ValueError):
+            data_report._check_storage(bad, "pool", 4, expected=expected, relocations=recipe)
+
+
+def test_reference_relocations_require_symbolic_recipes_and_complete_slots() -> None:
+    definition = {"name": "pool", "address": 0x1000, "size": 4, "initializer_hex": "78563412"}
+    with pytest.raises(ValueError, match="symbolic relocation evidence"):
+        data_report._initializer_plan(definition, [(0x1000, 3)])
+    with pytest.raises(ValueError, match="unsupported reference relocation"):
+        data_report._initializer_plan(definition, [(0x0FFF, 3)])
+    definition = {"name": "pool", "address": 0x1000, "size": 4,
+                  "initializer_target": {"name": "target", "address": 0x12345678}}
+    assert data_report._initializer_plan(definition, [(0x1000, 3)])["relocations"] == [
+        {"offset": 0, "address": 0x12345678, "symbol": "_target"}]
+    # The EXE has relocations stripped; a recorded symbolic recipe is still checked against COFF.
+    assert data_report._initializer_plan(definition, None)["initializer_hex"] == "78563412"

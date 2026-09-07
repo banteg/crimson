@@ -69,31 +69,57 @@ resources, and relocation sections. Mapped switch tables within `.text` are not
 counted again as data. For the pinned binaries this is **517,738 bytes**.
 
 `tools/native/data_candidates.json` selects ordinary C++ definitions under
-`tools/match/data/`, using types and declarations already present in the matching
-headers. The refresh builds them with the pinned VC6 compiler. A generated
-verification harness checks every `sizeof` against the independently recorded
-native extent, and the report verifies the actual COFF common/BSS/data storage.
-Only zero-initialized definitions are supported in this first pass. Their
-reference bytes are checked through the existing native-definition loader.
-No array bounds, padding, or byte initializers are invented to make a candidate
-fit. Overlapping declarations count each original byte only once.
+`tools/match/data/`, using recovered types and declarations. Refresh builds them
+with the pinned VC6 compiler. A verification harness checks each `sizeof` against
+an independently recorded native extent. The reporter then compares the emitted
+COFF common/BSS/data storage with the reference initializer, byte for byte.
+Overlapping declarations count each original byte only once.
 
-The initial candidate set has **157 definitions covering 267,177 unique bytes**.
-Fully specified native data recipes cover more, but copied literal bytes,
-pointer tables, incomplete declarations, and uncompiled types remain unmatched
-until independently built data candidates exist. In particular, the initial
-compiler probe rejected `quest_unlock_index` and `quest_unlock_index_full`
-(header `int`, native extent 2), and `player_plaguebearer_active` (header `int`,
-native extent 1). Those declarations are excluded from data credit; this report
-does not change their existing function-matching sources.
+The current set has **188 definitions covering 304,765 unique bytes**. Alongside
+zero-initialized state, it includes the original developer-hint strings, symbolic
+hint pointers, the console empty-string pointer, and the typed effect atlas table.
+Original text and single-byte encodings are preserved. Array extents and types
+come from existing recovery evidence; no padding or byte arrays are introduced
+to make a definition fit.
 
-Data units belong to their **EXE/DLL** category and **All**. They are not assigned
-to **Game & Engine** or **Libraries**, because the existing ownership ranges
-describe code and do not establish a complete data denominator for those
-categories. The Game & Engine view therefore remains code-only. Data-only units
-have no functions and do not add tiles to the code treemap. Data does not affect
-the code/fuzzy percentages, and no linked-data credit is claimed: these source
-groupings do not recover the original translation units or final data placement.
+Pointer slots must emit `IMAGE_REL_I386_DIR32` relocations at the recorded offsets,
+reference the exact recorded symbols, and have zero addends. A copied numeric
+address is rejected even when its final bytes are identical. Grim's PE relocation
+directory independently checks the slot layout. The EXE has its relocations
+stripped, so its pointer layout relies on the explicit symbolic native definitions.
+Literal recipes containing Grim relocations cannot earn credit until they have
+symbolic target evidence. Other relocation kinds and nonzero addends remain
+unsupported and fail verification.
+
+The compiler rejects `quest_unlock_index` and `quest_unlock_index_full` (header
+`int`, native extent 2), and `player_plaguebearer_active` (header `int`, native
+extent 1). These exclusions are recorded in the manifest and inventory; their
+function-matching declarations are unchanged.
+
+[The data inventory](DATA.md) ranks remaining objects by uncredited bytes and
+blocker and lists the largest unnamed regions. Its JSON companion partitions
+all 517,738 bytes exactly once. Object opportunities can overlap and must not be
+summed; span totals are authoritative. Report refresh regenerates both automatically,
+and CI rejects stale inventory output. To regenerate the inventory separately:
+
+```sh
+uv run crimson match data-inventory
+```
+
+`tools/native/data_ownership.json` records explicit whole-object ownership and
+its evidence, independently of whether the object has a compiled match. It
+currently attributes 341,469 bytes to Game & Engine and 27,299 to libraries;
+148,970 bytes remain unknown. No ownership is inferred from adjacency, code
+ranges, or successful matching. All unknown bytes remain in All and EXE/DLL totals.
+
+The existing **Game & Engine** filter stays code-only. **Game & Engine + attributed
+data** shows that same code treemap plus the explicitly owned data subset,
+including unmatched objects. **Libraries + attributed data** works the same way.
+**Unattributed data** exposes the remaining bytes. These subsets do not claim a
+complete Game & Engine or library data denominator. Data-only units have no
+functions and create no code treemap tiles. Data never changes code/fuzzy
+percentages, and no linked-data credit is claimed: source groupings do not recover
+original translation units or final data placement.
 
 ## Refresh and publish
 

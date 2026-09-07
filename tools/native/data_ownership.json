@@ -1,0 +1,3516 @@
+{
+  "schema": 1,
+  "notes": "Explicit whole-object ownership only. Unassigned bytes remain unknown; adjacency and code ownership never assign data gaps. Compiled and unmatched objects share the same rules.",
+  "objects": [
+    {
+      "image": "crimsonland.exe",
+      "name": "audio_asset_id_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "audio_assets_loaded_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "audio_resource_pack_available",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "audio_suspend_flag",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_double_xp_timer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_energizer_timer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_double_experience",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_energizer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_fire_bullets",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_freeze",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_reflex_boost",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_shield",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_speed",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_icon_weapon_power_up",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_meta_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_pool_sentinel",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "bonus_weapon_power_up_timer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "buffer_reader_offset",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_resource.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "buffer_reader_size",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_resource.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "camera_shake_pulses",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "camera_shake_timer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "config_blob",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "config_violence_disabled",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_cmd_argc",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_console.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_empty_arg",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_exec_line_buf",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_console.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_format_buffer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_console.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_input_buf",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_input_enabled",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_console.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "console_tokenize_buf",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "creature_active_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "creature_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "creature_spawn_slot_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "creature_spawned_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "creatures_any_active_flag",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "credits_line_max_index",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "credits_line_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_big_number",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: big_number at offset 0x54 through dispatch_table at offset 0x5e"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_dispatch_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: dispatch_table at offset 0x5e through the 0x160-byte .data section end"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_half",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_one_shl_63",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_one_shl_64",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_one_shr_64",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_risc_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_scale_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fdiv_scale_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: adjacent .data symbol offsets"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_four_nul_literal",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib a_cmp.obj, a_map.obj, and a_str.obj: ??_C@_13A@?$AA?$AA?$AA?$AA@ occupies its complete four-byte COMDAT .rdata section"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_fprem_risc_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib adj_fdiv.obj: fprem_risc_table at offset 0x1c through one_shl_64 at offset 0x34"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_lock_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib mlock.obj: __locktable occupies the complete 0xc0-byte .data section; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_48_is_0xc0"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_nlg_destination",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib exsup.obj: __NLG_Destination occupies the complete 0x10-byte .data section"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_old_small_block_heap",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib sbheap.obj: ___old_small_block_heap at .data offset 0 through ___old_sbh_p_starting_region at offset 0x2020"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_pow10_negative",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib constpow.obj: __pow10neg at offset 0x160 through the 0x2bc-byte .data section end"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_pow10_positive",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib constpow.obj: __pow10pos at offset 0 through __pow10neg at offset 0x160"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_standard_buffers",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib _sftbuf.obj: __stdbuf occupies its complete eight-byte BSS section; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_2_is_0x08"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "crt_two_nul_literal",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "libcmt.lib a_cmp.obj, a_map.obj, and a_str.obj: ??_C@_01A@?$AA?$AA@ occupies its complete two-byte COMDAT .rdata section"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_inverse_sqrt_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathx86.obj .data symbol layout: _invSqrtTab occupies 4096 bytes before _a1"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse2_math_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 288-byte .data section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse2_math_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 192-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse2_quaternion_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 32-byte .data section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse2_quaternion_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 160-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse2_trig_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse2.obj: complete 544-byte .data section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse2_trig_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse2.obj: complete 768-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_math_bss",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 32-byte .bss section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_math_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 448-byte .data section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_math_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 224-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_quaternion_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 64-byte .data section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_quaternion_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 160-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_rsqrt_half_vector",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: float[4] object-local rsqrt_nr constant symbol"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_rsqrt_init_guard",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: VC6 static-initialization guard symbol; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_rsqrt_three_vector",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: float[4] object-local rsqrt_nr constant symbol"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_trig_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 736-byte .data section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_sse_trig_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 768-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_abs_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_acos_bound",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_acos_p0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_acos_p1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_acos_q0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_acos_q1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_atan_p0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_atan_p1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_atan_p2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_atan_q0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_atan_q1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_atan_q2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_exponent_bias",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_exponent_decrement",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_exponent_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_four_over_pi",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_half",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_ln2_high",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_ln2_low",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_log_c0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_log_c1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_log_c2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_mantissa_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_max_normal",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_negative_halves",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_negative_pi_over_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_one",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_ones",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_out_of_bounds",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_pi_over_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_pi_over_4_head_tail",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_pi_over_4_pair",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_root_two",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_sign",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_sin_coeff_12_6",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_sin_coeff_30_20",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_sin_coeff_56_42",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "d3dx_x87_math_sin_max",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_alien_zookeeper",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_haxxor",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_magic_paint",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_muzzy",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_redistribution_build",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_reijo",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_secret_path",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_secret_weapons",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "developer_hint_warning",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "dsound_iface",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_discard_entry",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_id_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_effect_table.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_pool_pos_x",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered effect_entry_t object: Effect pool pos_x (stride 0xbc bytes). Extent: analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_age",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_color_a",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_color_b",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_color_g",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_color_r",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_flags",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_half_height",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_half_width",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_lifetime",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_rotation",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_scale_step",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_vel_x",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_template_vel_y",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_uv16",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_uv2",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_uv4",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_uv8",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "effect_uv_strip16",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "frame_dt_copy",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "fx_queue",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "fx_queue_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "fx_queue_rotated",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "fx_rotated_color_r",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "game_status_blob",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_game_status_owner.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "gameplay_run_reserved_zero",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "highscore_active_record",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "highscore_record_shots_fired",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "highscore_score_xp",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_highscore.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "highscore_screen_score_line_buffers",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "highscore_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "highscore_table_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_highscore.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "main_menu_full_version_layout_latch",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "mods_menu_display_names",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "mods_menu_filenames",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_entry_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_playlist",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_playlist_entry_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_playlist_randomized_latch",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_track_crimsonquest_id",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_track_extra_1",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "music_track_intro_id",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "particle_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_alternate_weapon",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_ammo_maniac",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_ammunition_within",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_antiperk",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_bonus_economist",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_bonus_magnet",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_death_clock",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_dodger",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_fastloader",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_final_revenge",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_fire_caugh",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_highlander",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_instant_winner",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_living_fortress",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_man_bomb",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_max",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_my_favourite_weapon",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_ninja",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_plaguebearer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_poison_bullets",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_regression_bullets",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_thick_skinned",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_tough_reloader",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_unstoppable",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_id_veins_of_poison",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "perk_meta_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "play_time_ms",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "player_aux_timer",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "player_heading_turn_delta",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "player_reset_reserved_zero",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "player_state_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "plugin_runtime_active_latch",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "projectile_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_fail_retry_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x13",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered quest_meta_t object: Quest metadata entry used by demo_setup_variant_1 terrain_generate(desc) and by terrain_generate_random when quest_unlock_index > 0x13.. Extent: third_party/headers/crimsonland_types.h: quest_meta_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_is_0x2c"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x1d",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered quest_meta_t object: Quest metadata entry used by terrain_generate_random when quest_unlock_index > 0x1d.. Extent: third_party/headers/crimsonland_types.h: quest_meta_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_is_0x2c"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_meta_terrain_desc_unlock_gt_0x27",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered quest_meta_t object: Quest metadata entry used by terrain_generate_random when quest_unlock_index > 0x27.. Extent: third_party/headers/crimsonland_types.h: quest_meta_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_is_0x2c"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_selected_meta",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_spawn_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_spawn_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_transition_timer_ms",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "resource_pack_enabled",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_resource.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "s_empty_string",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "screen_fade_alpha",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secondary_projectile_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_alienzookeeper",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_haxx0r",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_magic_paint",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_muzzy",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_not_meant_to_see",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_redistr_build",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_reijo",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_secret_path",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_secret_weapons",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "secret_hint_wonder",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_hints.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_cooldown_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_entry_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_explosion_large",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_explosion_medium",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_flamer_fire_01",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_flamer_fire_02",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_mute_flags",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_shock_hit_01",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_shockwave",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_trooper_die_01",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_trooper_inpain_01",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_ui_bonus",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_voice_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sfx_volume_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_audio.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "shock_chain_links_left",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "shock_chain_projectile_id",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "sprite_effect_pool",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "survival_elapsed_ms",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "survival_reward_damage_seen",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "survival_reward_handout_enabled",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_game_state_owner.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "survival_spawn_stage",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "terrain_render_target",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_terrain_owner.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "terrain_texture_failed",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "time_played_ms",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "typo_target_name_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_buffers.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_cursor_texture",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_textures_owner.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_01_main_menu_aux",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 1 (main menu auxiliary slot).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_02_main_menu_primary",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 2 (main-menu primary top entry: MODS/BUY NOW).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_03_main_menu_play_game",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 3 (main-menu PLAY GAME entry).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_04_main_menu_options",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 4 (main-menu OPTIONS entry).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_05_main_menu_statistics",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 5 (main-menu STATISTICS entry).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_08",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 8.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_09",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 9.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_10",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 10.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_11",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 11.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_12_layout_a",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 12 (layout group A root).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_13",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 13.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_14",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 14.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_15",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 15.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_16",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 16.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_17",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 17.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_18_layout_b",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 18 (layout group B root).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_19",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 19.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_20",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 20.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_21",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 21.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_22",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 22.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_23",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 23.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_24",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 24.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_25",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 25.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_26",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_ui.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_27",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_ui.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_28",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 28.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_29",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 29.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_30",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 30.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_31",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 31.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_32_layout_c",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 32 (layout group C root).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_33",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 33.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_34",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 34.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_35",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 35.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_36",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 36.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_37",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 37.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_38",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 38.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_39",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 39.. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_40",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage backing pointer-table slot 40 (start/high anchor).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_footer_variant_a",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage for main-menu footer variant A (swapped between slots 6/7 via config var 100).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_footer_variant_b",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: UI element storage for main-menu footer variant B (complementary slot to ui_element_slot_footer_variant_a).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_focus_count",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_ui.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_focus_index",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_ui.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_focus_timer_ms",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_ui.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_perk_prompt_element",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_ui.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "ui_sign_crimson",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered ui_element_t object: Main menu logo sign UI element (ui_signCrimson).. Extent: third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "weapon_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "weapon_usage_counts",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "weapon_usage_time",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/crimsonland_gameplay.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_0_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_1_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_1_n1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_2_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_3_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_dword_lo",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_epsilon",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_flt_min",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_halves",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_sign_bit_hi",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_sign_bit_lo",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_sign_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_sign_mask_hi",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const3dn_sign_masks",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_0_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_1_0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_3",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_half",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_n2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_n2_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_negate_high_low",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_const_niner",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_negate_high",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "x3d_negate_low",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib x3d object symbols: complete __m64 constants; analysis/ghidra/maps/data_map.json: two-lane types"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_cpu_optimization",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 cpudetect.obj .data symbol layout"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_inverse_sqrt_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathx86.obj .data symbol layout: _invSqrtTab occupies 4096 bytes before _a1"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_is_mmx",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 cpudetect.obj .data symbol layout"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_rsqrt_half_vector",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 optimized-math relocation identifies the rsqrt_nr fvecf0pt5 static; target movaps accesses prove a complete four-float extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_rsqrt_init_guard",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 optimized-math relocation identifies the rsqrt_nr static initialization guard; target byte accesses prove its extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_rsqrt_three_vector",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 optimized-math relocation identifies the rsqrt_nr fvecf3pt0 static; target movaps accesses prove a complete four-float extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse2_math_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 288-byte .data section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse2_math_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 192-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse2_quaternion_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 32-byte .data section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse2_quaternion_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 160-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse2_trig_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse2.obj: complete 544-byte .data section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse2_trig_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse2.obj: complete 768-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse_math_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 448-byte .data section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse_math_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 224-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse_quaternion_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 64-byte .data section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse_quaternion_vectors",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 160-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse_trig_constants",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 736-byte .data section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_sse_trig_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 768-byte .data1 section extent"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_adapter_identifier",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered D3DADAPTER_IDENTIFIER8 object: Scratch D3D adapter identifier populated by GetAdapterIdentifier in the config dialog.. Extent: analysis/ghidra/maps/data_map.json: D3DADAPTER_IDENTIFIER8; tools/native/abi/grim.dll/abi_assertions.cpp: adapter_identifier_is_0x42c"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_config_blob",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered crimson_cfg_t object: Raw crimson_cfg config blob (0x480 bytes read/write).. Extent: tools/native/abi/grim.dll/abi_assertions.cpp: config_blob_is_0x480_bytes"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_config_values",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered grim_config_value_t[128] object: 128-entry table of 16-byte config values returned by grim_get_config_var.. Extent: tools/match/scratches: recovered 128-entry config table; tools/native/abi/grim.dll/abi_assertions.cpp: config_value_is_16_bytes"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_format_info_entries",
+      "owner": "game",
+      "evidence": {
+        "path": "analysis/ghidra/maps/data_map.json",
+        "reason": "Recovered grim_format_info_t[43] object: Start of the 36-byte D3D pixel-format descriptor table.. Extent: analysis/ghidra/maps/data_map.json: grim_format_info_t[43]; tools/native/abi/grim.dll/abi_assertions.cpp: format_info_table_43_is_0x60c"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_fps",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_timing.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_frame_dt",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_timing.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_joystick_found",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_joystick_input.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_joystick_state",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_joystick_state.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_png_signature",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "third_party/headers/png.h: png_sig[8]; pinned DirectX 8.1 d3dx8.lib obj\\i386\\png.obj:?png_sig_cmp; tools/match/scratches/grim_png_sig_cmp"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_present_parameters",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_texture.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_texture_slots",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_texture_slots.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_timing_frozen",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/data/grim_timing.cpp",
+        "reason": "Recovered game/engine state or content definition; this object belongs to the subsystem declared in this source."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_IEND",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_IEND section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_IHDR",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_IHDR section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_PLTE",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_PLTE section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_gAMA",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_gAMA section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_gamma_shift",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngrtran.obj: complete 0x20-byte _png_gamma_shift section; analysis/ghidra/maps/data_map.json: int[8]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_pass_dsp_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete seven-entry _png_pass_dsp_mask section; analysis/ghidra/maps/data_map.json: const int[7]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_pass_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete seven-entry _png_pass_mask section; analysis/ghidra/maps/data_map.json: const int[7]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_read_IDAT",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_IDAT section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_sRGB",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_sRGB section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "png_tRNS",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_tRNS section; analysis/ghidra/maps/data_map.json: const png_byte[5]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_0_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_1_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_1_n1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_2_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_3_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_dword_lo",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_epsilon",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_flt_min",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj and objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_halves",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_neg_quarters",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_sign_bit_hi",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_sign_bit_lo",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_sign_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_sign_mask_hi",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const3dn_sign_masks",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_0_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj and objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_1_0",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_3",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_half",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_n2",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_n2_1",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_negate_high_low",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_const_niner",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_negate_high",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj and objd\\i386\\x3d_vec3.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "x3d_negate_low",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
+      }
+    }
+  ]
+}
