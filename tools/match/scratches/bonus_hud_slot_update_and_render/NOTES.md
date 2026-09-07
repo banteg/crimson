@@ -15,19 +15,33 @@ later slot remains active, draws the normal or compact indicator panel and icon,
 then renders one or two timer bars. Normal indicators also draw the slot label;
 compact indicators intentionally omit it.
 
-The recovered source compiles to 79.80% with the calibrated
-`msvc6.5 /O2 /GB` profile: 407 candidate instructions against 405 native,
-an exact 0x18-byte local frame, and 72/0/0 audited references. Explicit
-component construction for the compact primary, normal secondary, and normal
-single bars improves the native store and address schedule without adding
-artificial dependencies.
+The recovered source is exact with the calibrated `msvc6.5 /O2 /GB` profile:
+**405/405 instructions**, prefix **405**, references **80/0/0**, and
+`body_byte_exact=true` for all **1566 bytes**. The frame remains 0x18 bytes.
 
-The remaining delta is compiler-shaped. Native VC6 shrink-wraps the `edi` save
-until the render path after the off-screen retirement return, while the
-available compiler saves it in the prologue. Repeated color/vector temporary
-stores are also scheduled differently around the progress-bar calls. VC6.6 is
-identical; `msvc6.5pp`, MSVC 7.0, `/G6`, and an explicit shared-tail rewrite all
-regress, so no compiler override or ordering-only construct is retained.
+## Exact temporary and mode-join recovery (2026-09-07)
+
+Each progress bar computes its ratio in a named local and passes temporary
+position and color values to the consuming call. Both compact timer branches
+perform their own final color call. The compact and normal modes then join at
+one Y-cursor increment after an ordinary `if/else`. These interacting source
+boundaries recover the native color-store schedule, compact single-bar block
+placement, and delayed EDI save. The earlier retirement path and all panel,
+timer, label, and cursor behavior stay the same.
+
+The complete 16-control `bar-temporary-mode-interactions-2026-09-07.json`
+crosses named versus argument-local ratios, shared versus per-branch color
+finishes, joined modes versus an early compact return, and reference versus
+lowered pointer arguments. Every control compiles. The full combination is
+byte-exact with either argument spelling; references retain the natural C++
+temporary binding while preserving the same four-argument machine ABI.
+Omitting the named ratio gives 86.666667%; sharing the compact color finish
+gives 92.725031%; retaining the early compact return gives 90.258940%.
+A separately recorded formatting probe preserves exactness. No compiler,
+layout, padding, or reference-map change is needed.
+
+The following sections preserve the earlier bounded probes. Their WIP metrics
+and residual classifications are historical and superseded by this recovery.
 
 ## Recorded compact primary-bar lifetime sweep
 

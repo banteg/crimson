@@ -10,12 +10,11 @@ struct bonus_hud_vec2_t {
     float x;
     float y;
 
-    bonus_hud_vec2_t()
-    {
-    }
+    bonus_hud_vec2_t() { }
 
     bonus_hud_vec2_t(float x_value, float y_value)
-        : x(x_value), y(y_value)
+        : x(x_value)
+        , y(y_value)
     {
     }
 };
@@ -26,16 +25,13 @@ struct bonus_hud_color_t {
     float b;
     float a;
 
-    bonus_hud_color_t()
-    {
-    }
+    bonus_hud_color_t() { }
 
-    bonus_hud_color_t(
-        float r_value,
-        float g_value,
-        float b_value,
-        float a_value)
-        : r(r_value), g(g_value), b(b_value), a(a_value)
+    bonus_hud_color_t(float r_value, float g_value, float b_value, float a_value)
+        : r(r_value)
+        , g(g_value)
+        , b(b_value)
+        , a(a_value)
     {
     }
 };
@@ -47,20 +43,14 @@ extern bonus_hud_slot_t bonus_hud_slot_table[];
 extern int ui_hud_panel_texture;
 extern int bonus_texture;
 
-void ui_draw_progress_bar(
-    float *xy,
-    float width,
-    float ratio,
-    float *rgba);
+void ui_draw_progress_bar(const bonus_hud_vec2_t &xy, float width, float ratio,
+    const bonus_hud_color_t &rgba);
 }
 
 #define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
 #include "crimsonland_textures_owner.h"
 
-extern "C" void bonus_hud_slot_update_and_render(
-    float *y,
-    int slot_index,
-    float alpha)
+extern "C" void bonus_hud_slot_update_and_render(float *y, int slot_index, float alpha)
 {
     bonus_hud_slot_t *slot = &bonus_hud_slot_table[slot_index];
     if (!slot->active) {
@@ -68,8 +58,7 @@ extern "C" void bonus_hud_slot_update_and_render(
     }
 
     if (*slot->slide.timer_ptr <= 0.0f) {
-        if (!slot->slide.alt_timer_ptr
-            || *slot->slide.alt_timer_ptr <= 0.0f) {
+        if (!slot->slide.alt_timer_ptr || *slot->slide.alt_timer_ptr <= 0.0f) {
             slot->slide.slide_x -= frame_dt * 320.0f;
         } else {
             slot->slide.slide_x += frame_dt * 350.0f;
@@ -108,142 +97,81 @@ extern "C" void bonus_hud_slot_update_and_render(
         grim_interface_ptr->grim_set_rotation(0.0f);
         grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
         panel_alpha = alpha * 0.7f;
-        grim_interface_ptr->grim_set_color(
-            1.0f, 1.0f, 1.0f, panel_alpha);
+        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, panel_alpha);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_draw_quad(
-            slot->slide.slide_x - 100.0f + 4.0f,
-            *y + 5.0f,
-            182.0f,
-            26.5f);
+            slot->slide.slide_x - 100.0f + 4.0f, *y + 5.0f, 182.0f, 26.5f);
         grim_interface_ptr->grim_end_batch();
     } else {
         grim_interface_ptr->grim_bind_texture(ui_hud_panel_texture, 0);
         grim_interface_ptr->grim_set_rotation(0.0f);
         grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
         panel_alpha = alpha * 0.7f;
-        grim_interface_ptr->grim_set_color(
-            1.0f, 1.0f, 1.0f, panel_alpha);
+        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, panel_alpha);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_draw_quad(
-            slot->slide.slide_x,
-            *y - 11.0f,
-            182.0f,
-            53.0f);
+            slot->slide.slide_x, *y - 11.0f, 182.0f, 53.0f);
         grim_interface_ptr->grim_end_batch();
     }
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);
     grim_interface_ptr->grim_bind_texture(bonus_texture, 0);
     grim_interface_ptr->grim_set_atlas_frame(4, slot->slide.icon_id);
-    grim_interface_ptr->grim_draw_quad(
-        slot->slide.slide_x - 1.0f,
-        *y,
-        32.0f,
-        32.0f);
+    grim_interface_ptr->grim_draw_quad(slot->slide.slide_x - 1.0f, *y, 32.0f, 32.0f);
     grim_interface_ptr->grim_end_batch();
 
     if (cv_uiSmallIndicators->value != 0.0f) {
         if (slot->slide.alt_timer_ptr) {
             {
-                bonus_hud_color_t bar_color;
-                bonus_hud_vec2_t bar_pos;
-                bar_pos.x = slot->slide.slide_x + 36.0f;
-                bar_pos.y = *y + 21.0f - 4.0f - 4.0f;
-                bar_color.r = 0.1f;
-                bar_color.g = 0.3f;
-                bar_color.b = 0.6f;
-                bar_color.a = panel_alpha;
-                ui_draw_progress_bar(
-                    (float *)&bar_pos,
-                    32.0f,
-                    *slot->slide.timer_ptr * 0.05f,
-                    (float *)&bar_color);
+                float bar_ratio = *slot->slide.timer_ptr * 0.05f;
+                ui_draw_progress_bar(bonus_hud_vec2_t(slot->slide.slide_x + 36.0f,
+                                         *y + 21.0f - 4.0f - 4.0f),
+                    32.0f, bar_ratio, bonus_hud_color_t(0.1f, 0.3f, 0.6f, panel_alpha));
             }
             {
-                bonus_hud_color_t bar_color(
-                    0.1f, 0.3f, 0.6f, panel_alpha);
-                bonus_hud_vec2_t bar_pos(
-                    slot->slide.slide_x + 36.0f,
-                    *y + 23.0f - 4.0f);
+                float bar_ratio = *slot->slide.alt_timer_ptr * 0.05f;
                 ui_draw_progress_bar(
-                    (float *)&bar_pos,
-                    32.0f,
-                    *slot->slide.alt_timer_ptr * 0.05f,
-                    (float *)&bar_color);
+                    bonus_hud_vec2_t(slot->slide.slide_x + 36.0f, *y + 23.0f - 4.0f),
+                    32.0f, bar_ratio, bonus_hud_color_t(0.1f, 0.3f, 0.6f, panel_alpha));
             }
-        } else {
-            bonus_hud_color_t bar_color(
-                0.1f, 0.3f, 0.6f, panel_alpha);
-            bonus_hud_vec2_t bar_pos(
-                slot->slide.slide_x + 36.0f,
-                *y + 21.0f - 4.0f);
-            ui_draw_progress_bar(
-                (float *)&bar_pos,
-                32.0f,
-                *slot->slide.timer_ptr * 0.05f,
-                (float *)&bar_color);
-        }
-        grim_interface_ptr->grim_set_color(
-            1.0f, 1.0f, 1.0f, panel_alpha);
-        *y += 52.0f;
-        return;
-    }
 
-    if (slot->slide.alt_timer_ptr) {
-        {
-            bonus_hud_color_t bar_color(
-                0.1f, 0.3f, 0.6f, panel_alpha);
-            bonus_hud_vec2_t bar_pos(
-                slot->slide.slide_x + 36.0f,
-                *y + 21.0f - 4.0f);
+            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, panel_alpha);
+        } else {
+            float bar_ratio = *slot->slide.timer_ptr * 0.05f;
             ui_draw_progress_bar(
-                (float *)&bar_pos,
-                100.0f,
-                *slot->slide.timer_ptr * 0.05f,
-                (float *)&bar_color);
+                bonus_hud_vec2_t(slot->slide.slide_x + 36.0f, *y + 21.0f - 4.0f), 32.0f,
+                bar_ratio, bonus_hud_color_t(0.1f, 0.3f, 0.6f, panel_alpha));
+
+            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, panel_alpha);
         }
-        {
-            bonus_hud_color_t bar_color;
-            bonus_hud_vec2_t bar_pos;
-            bar_pos.x = slot->slide.slide_x + 36.0f;
-            bar_pos.y = *y + 23.0f;
-            bar_color.r = 0.1f;
-            bar_color.g = 0.3f;
-            bar_color.b = 0.6f;
-            bar_color.a = panel_alpha;
-            ui_draw_progress_bar(
-                (float *)&bar_pos,
-                100.0f,
-                *slot->slide.alt_timer_ptr * 0.05f,
-                (float *)&bar_color);
-        }
-        grim_interface_ptr->grim_set_color(
-            1.0f, 1.0f, 1.0f, panel_alpha);
-        grim_interface_ptr->grim_draw_text_small(
-            slot->slide.slide_x + 36.0f,
-            *y + 2.0f,
-            slot->slide.label);
     } else {
-        bonus_hud_color_t bar_color;
-        bonus_hud_vec2_t bar_pos;
-        bar_pos.x = slot->slide.slide_x + 36.0f;
-        bar_pos.y = *y + 21.0f;
-        bar_color.r = 0.1f;
-        bar_color.g = 0.3f;
-        bar_color.b = 0.6f;
-        bar_color.a = panel_alpha;
-        ui_draw_progress_bar(
-            (float *)&bar_pos,
-            100.0f,
-            *slot->slide.timer_ptr * 0.05f,
-            (float *)&bar_color);
-        grim_interface_ptr->grim_set_color(
-            1.0f, 1.0f, 1.0f, panel_alpha);
-        grim_interface_ptr->grim_draw_text_small(
-            slot->slide.slide_x + 36.0f,
-            *y + 6.0f,
-            slot->slide.label);
+
+        if (slot->slide.alt_timer_ptr) {
+            {
+                float bar_ratio = *slot->slide.timer_ptr * 0.05f;
+                ui_draw_progress_bar(
+                    bonus_hud_vec2_t(slot->slide.slide_x + 36.0f, *y + 21.0f - 4.0f),
+                    100.0f, bar_ratio,
+                    bonus_hud_color_t(0.1f, 0.3f, 0.6f, panel_alpha));
+            }
+            {
+                float bar_ratio = *slot->slide.alt_timer_ptr * 0.05f;
+                ui_draw_progress_bar(
+                    bonus_hud_vec2_t(slot->slide.slide_x + 36.0f, *y + 23.0f), 100.0f,
+                    bar_ratio, bonus_hud_color_t(0.1f, 0.3f, 0.6f, panel_alpha));
+            }
+            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, panel_alpha);
+            grim_interface_ptr->grim_draw_text_small(
+                slot->slide.slide_x + 36.0f, *y + 2.0f, slot->slide.label);
+        } else {
+            float bar_ratio = *slot->slide.timer_ptr * 0.05f;
+            ui_draw_progress_bar(
+                bonus_hud_vec2_t(slot->slide.slide_x + 36.0f, *y + 21.0f), 100.0f,
+                bar_ratio, bonus_hud_color_t(0.1f, 0.3f, 0.6f, panel_alpha));
+            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, panel_alpha);
+            grim_interface_ptr->grim_draw_text_small(
+                slot->slide.slide_x + 36.0f, *y + 6.0f, slot->slide.label);
+        }
     }
     *y += 52.0f;
 }
