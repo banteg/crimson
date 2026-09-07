@@ -39,7 +39,7 @@ def cmd_match_report(
         else:
             evidence = json.loads(match_report.DEFAULT_EVIDENCE.read_text(encoding="utf-8"))
         match_report.validate_evidence(evidence)
-        report = match_report.build_report(evidence["functions"])
+        report = match_report.build_report(evidence["functions"], data=evidence["data"])
         if refresh:
             matchlib.write_match_json(match_report.DEFAULT_EVIDENCE, evidence)
         matchlib.write_match_json(output, report)
@@ -51,7 +51,8 @@ def cmd_match_report(
         f"{match_report.VERSION}: {measures['matched_functions']}/{measures['total_functions']} functions; "
         f"{measures['matched_code']}/{measures['total_code']} bytes matched "
         f"({measures['matched_code_percent']:.2f}%); fuzzy={measures['fuzzy_match_percent']:.2f}%; "
-        f"linked={measures['complete_code_percent']:.2f}%; report={output}",
+        f"linked={measures['complete_code_percent']:.2f}%; "
+        f"data={measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes; report={output}",
     )
 
 

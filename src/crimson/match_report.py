@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_toolchain
+from . import match_data_report, match_toolchain
 
 VERSION = "1.9.93"
 DEFAULT_EVIDENCE = matchlib.REPO_ROOT / "analysis" / "decomp" / f"{VERSION}.json"
@@ -25,7 +25,10 @@ DEFAULT_REPORT = matchlib.REPO_ROOT / "artifacts" / "decomp" / "report.json"
 def _input_path(path: str) -> bool:
     """Pin relevant code/config, including newly added or removed scratches."""
     p = Path(path)
-    if path in {"pyproject.toml", "uv.lock", "analysis/library_provenance.json", "analysis/matching_scope.json"}:
+    if path in {
+        "pyproject.toml", "uv.lock", "analysis/library_provenance.json", "analysis/matching_scope.json",
+        "src/crimson/native_link.py",
+    }:
         return True
     if path.startswith("src/crimson/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
@@ -158,21 +161,23 @@ def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, An
                 "matched": status.state == "match",
             },
         )
+    data = match_data_report.refresh_evidence(configs)
     if repository_inputs() != before or _external_inputs(configs, before) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
-        "schema": 1,
+        "schema": 2,
         "version": VERSION,
         "scope": "all",
         "inputs": before,
         "external_inputs": dict(sorted(external.items())),
         "toolchains": toolchains,
         "functions": inventory,
+        "data": data,
     }
 
 
 def validate_evidence(evidence: dict[str, Any]) -> None:
-    if evidence.get("schema") != 1 or evidence.get("version") != VERSION or evidence.get("scope") != "all":
+    if evidence.get("schema") != 2 or evidence.get("version") != VERSION or evidence.get("scope") != "all":
         raise ValueError("unsupported decomp.dev evidence")
     current = repository_inputs()
     recorded = evidence["inputs"]
@@ -197,6 +202,7 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
     inventory = [{k: row[k] for k in ("image", "address", "name", "size")} for row in evidence["functions"]]
     if inventory != _inventory():
         raise ValueError("report denominator differs from the full function inventory")
+    match_data_report.validate_evidence(evidence["data"])
 
 
 def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
@@ -226,10 +232,12 @@ def _sum_measures(measures: list[dict[str, Any]]) -> dict[str, Any]:
         sum(m["matched_functions"] for m in measures),
         sum(m["total_units"] for m in measures),
         sum(m["complete_units"] for m in measures),
+        total_data=sum(int(m.get("total_data", 0)) for m in measures),
+        matched_data=sum(int(m.get("matched_data", 0)) for m in measures),
     )
 
 
-def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
+def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None = None) -> dict[str, Any]:
     """One function per unit, with overlapping image and proven library filters."""
     labels, library_ranges = _category_definitions()
     ownership = matchlib._load_matching_scope_definition("port")
@@ -311,6 +319,28 @@ def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
         matched_functions += int(is_matched)
         complete_units += int(is_complete)
         fuzzy += size * percent
+    data_total = data_matched = 0
+    for span in match_data_report.report_spans(data) if data is not None else []:
+        size = span["size"]
+        matched_size = size if span["matched"] else 0
+        metadata = {
+            "complete": False,
+            "progress_categories": [{"crimsonland.exe": "exe", "grim.dll": "dll"}[span["image"]]],
+        }
+        if span["source"]:
+            metadata["source_path"] = span["source"]
+        units.append({
+            "name": f"{span['image']}/data/{span['section']}/{span['name']}@{span['address']:08x}",
+            "measures": _measures(0, 0, 0, 0.0, 0, 0, 1, 0, total_data=size, matched_data=matched_size),
+            "sections": [{
+                "name": span["section"], "size": str(size),
+                "fuzzy_match_percent": 100.0 if span["matched"] else 0.0,
+                "metadata": {"virtual_address": str(span["address"])},
+            }],
+            "functions": [], "metadata": metadata,
+        })
+        data_total += size
+        data_matched += matched_size
     return {
         "version": 2,
         "measures": _measures(
@@ -322,6 +352,8 @@ def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
             matched_functions,
             len(units),
             complete_units,
+            total_data=data_total,
+            matched_data=data_matched,
         ),
         "units": units,
         "categories": [
@@ -346,8 +378,11 @@ def _measures(
     matched_functions: int,
     units: int,
     complete_units: int,
+    *,
+    total_data: int = 0,
+    matched_data: int = 0,
 ) -> dict[str, Any]:
-    return {
+    measures = {
         "total_code": str(total),
         "matched_code": str(matched),
         "complete_code": str(complete),
@@ -360,3 +395,10 @@ def _measures(
         "total_units": units,
         "complete_units": complete_units,
     }
+    if total_data:
+        measures.update({
+            "total_data": str(total_data), "matched_data": str(matched_data),
+            "matched_data_percent": 100 * matched_data / total_data,
+            "complete_data": "0", "complete_data_percent": 0.0,
+        })
+    return measures

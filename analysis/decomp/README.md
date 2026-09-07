@@ -45,8 +45,9 @@ change the denominator; they invalidate the saved evidence and must be reviewed.
 - **Linked:** currently zero. The bespoke structural linker uses provider and
   alias machinery and does not establish recovery of the original translation
   units and code organization. Its receipts give no public linked credit.
-- **Data:** not reported. Typed/initialized data coverage does not establish
-  matching data-layout progress.
+- **Data:** source-built definitions verified against the original data bytes,
+  reported separately from code. See the data accounting below. Native data-map
+  records and generated linker data objects do not automatically earn credit.
 
 Pinned archive matches are valuable dependency-identification evidence, but
 decomp.dev labels its headline "decompiled". They remain in the denominator at
@@ -58,6 +59,41 @@ Each report unit represents one function, not a recovered original translation
 unit. Names are disambiguated by address when necessary; image/address identity
 is retained in the evidence. Source links point to the actual candidate file.
 This gives a useful function treemap without implying recovered file boundaries.
+
+## Data accounting
+
+The full-image denominator uses the PE virtual extents of `.rdata`, `.data`,
+`.data1`, and `.bss` (where present). This includes zero-filled storage and
+unattributed gaps, but excludes file-alignment padding, executable sections,
+resources, and relocation sections. Mapped switch tables within `.text` are not
+counted again as data. For the pinned binaries this is **517,738 bytes**.
+
+`tools/native/data_candidates.json` selects ordinary C++ definitions under
+`tools/match/data/`, using types and declarations already present in the matching
+headers. The refresh builds them with the pinned VC6 compiler. A generated
+verification harness checks every `sizeof` against the independently recorded
+native extent, and the report verifies the actual COFF common/BSS/data storage.
+Only zero-initialized definitions are supported in this first pass. Their
+reference bytes are checked through the existing native-definition loader.
+No array bounds, padding, or byte initializers are invented to make a candidate
+fit. Overlapping declarations count each original byte only once.
+
+The initial candidate set has **157 definitions covering 267,177 unique bytes**.
+Fully specified native data recipes cover more, but copied literal bytes,
+pointer tables, incomplete declarations, and uncompiled types remain unmatched
+until independently built data candidates exist. In particular, the initial
+compiler probe rejected `quest_unlock_index` and `quest_unlock_index_full`
+(header `int`, native extent 2), and `player_plaguebearer_active` (header `int`,
+native extent 1). Those declarations are excluded from data credit; this report
+does not change their existing function-matching sources.
+
+Data units belong to their **EXE/DLL** category and **All**. They are not assigned
+to **Game & Engine** or **Libraries**, because the existing ownership ranges
+describe code and do not establish a complete data denominator for those
+categories. The Game & Engine view therefore remains code-only. Data-only units
+have no functions and do not add tiles to the code treemap. Data does not affect
+the code/fuzzy percentages, and no linked-data credit is claimed: these source
+groupings do not recover the original translation units or final data placement.
 
 ## Refresh and publish
 
@@ -71,8 +107,9 @@ This evaluates the complete scratch corpus using the matcher's content-checked
 cache, rejects failures, duplicate targets and partial function extents, and
 updates `analysis/decomp/1.9.93.json`. Commit that evidence alongside changes to
 matching sources, shared headers, maps, toolchain configuration or the reporter.
-It records source/input hashes, compiler fingerprints, reference hashes, and
-per-function results. Inputs must stay unchanged throughout the evaluation.
+It records source/input hashes, compiler fingerprints, reference hashes,
+per-function results, and compiled data evidence. Inputs must stay unchanged
+throughout the evaluation.
 
 To verify saved evidence and generate `artifacts/decomp/report.json`:
 
@@ -82,7 +119,8 @@ uv run crimson match report
 
 The `Decompilation progress` workflow runs on pushes to `master` and PRs. It
 downloads and checks the two reference images, verifies the evidence against
-repository inputs and the complete live function inventory, exports objdiff v2
+repository inputs, the complete live function inventory, and reference data
+extents, exports objdiff v2
 JSON, validates it with the SHA-256-pinned objdiff CLI, and uploads only
 `report.json` as `1.9.93_report`. CI does not recompile the corpus; it rejects
 stale evidence rather than attaching old scores to a new source revision.

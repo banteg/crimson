@@ -1,0 +1,247 @@
+{
+  "schema": 1,
+  "compiler": "msvc6.5",
+  "sources": [
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_audio.cpp",
+      "symbols": [
+        "frame_dt_copy",
+        "config_blob",
+        "plugin_runtime_active_latch",
+        "audio_suspend_flag",
+        "dsound_iface",
+        "sfx_cooldown_table",
+        "sfx_voice_table",
+        "audio_asset_id_table",
+        "sfx_flamer_fire_01",
+        "sfx_flamer_fire_02",
+        "music_track_intro_id",
+        "music_track_extra_1",
+        "music_track_crimsonquest_id",
+        "sfx_volume_table",
+        "music_entry_table",
+        "sfx_mute_flags",
+        "sfx_entry_table",
+        "music_playlist",
+        "music_playlist_entry_count",
+        "music_playlist_randomized_latch",
+        "audio_resource_pack_available",
+        "audio_assets_loaded_count"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_console.cpp",
+      "symbols": [
+        "console_exec_line_buf",
+        "console_format_buffer",
+        "console_cmd_argc",
+        "console_input_enabled"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_game_state_owner.cpp",
+      "symbols": [
+        "survival_reward_handout_enabled"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_game_status_owner.cpp",
+      "symbols": [
+        "game_status_blob"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_gameplay.cpp",
+      "symbols": [
+        "config_violence_disabled",
+        "credits_line_max_index",
+        "bonus_pool",
+        "quest_spawn_count",
+        "highscore_table",
+        "quest_selected_meta",
+        "creature_spawn_slot_table",
+        "bonus_meta_table",
+        "bonus_icon_energizer",
+        "bonus_icon_weapon_power_up",
+        "bonus_icon_double_experience",
+        "bonus_icon_reflex_boost",
+        "bonus_icon_shield",
+        "bonus_icon_freeze",
+        "bonus_icon_speed",
+        "bonus_icon_fire_bullets",
+        "weapon_usage_counts",
+        "play_time_ms",
+        "quest_spawn_table",
+        "main_menu_full_version_layout_latch",
+        "creature_spawned_count",
+        "shock_chain_links_left",
+        "shock_chain_projectile_id",
+        "creature_active_count",
+        "survival_reward_damage_seen",
+        "creatures_any_active_flag",
+        "bonus_weapon_power_up_timer",
+        "bonus_energizer_timer",
+        "bonus_double_xp_timer",
+        "gameplay_run_reserved_zero",
+        "highscore_active_record",
+        "survival_elapsed_ms",
+        "highscore_record_shots_fired",
+        "quest_transition_timer_ms",
+        "weapon_usage_time",
+        "time_played_ms",
+        "survival_spawn_stage",
+        "quest_fail_retry_count",
+        "player_heading_turn_delta",
+        "terrain_texture_failed",
+        "player_aux_timer",
+        "camera_shake_timer",
+        "camera_shake_pulses",
+        "screen_fade_alpha",
+        "bonus_pool_sentinel",
+        "player_state_table",
+        "effect_uv_strip16",
+        "effect_uv8",
+        "effect_uv4",
+        "effect_uv2",
+        "fx_queue",
+        "projectile_pool",
+        "particle_pool",
+        "secondary_projectile_pool",
+        "sprite_effect_pool",
+        "creature_pool",
+        "effect_uv16",
+        "fx_queue_count",
+        "player_reset_reserved_zero",
+        "fx_queue_rotated",
+        "effect_template",
+        "effect_template_vel_x",
+        "effect_template_vel_y",
+        "effect_template_rotation",
+        "effect_template_half_width",
+        "effect_template_half_height",
+        "effect_template_age",
+        "effect_template_lifetime",
+        "effect_template_flags",
+        "effect_template_color_r",
+        "effect_template_color_g",
+        "effect_template_color_b",
+        "effect_template_color_a",
+        "effect_template_scale_step",
+        "effect_discard_entry",
+        "effect_pool",
+        "perk_id_antiperk",
+        "perk_id_instant_winner",
+        "perk_id_fastloader",
+        "perk_id_alternate_weapon",
+        "perk_id_plaguebearer",
+        "perk_id_ammo_maniac",
+        "perk_id_final_revenge",
+        "perk_id_unstoppable",
+        "perk_id_bonus_magnet",
+        "perk_id_veins_of_poison",
+        "perk_id_thick_skinned",
+        "perk_id_ammunition_within",
+        "perk_id_regression_bullets",
+        "perk_id_highlander",
+        "perk_id_dodger",
+        "perk_id_ninja",
+        "perk_id_bonus_economist",
+        "perk_id_poison_bullets",
+        "perk_id_death_clock",
+        "perk_id_my_favourite_weapon",
+        "perk_id_man_bomb",
+        "perk_id_living_fortress",
+        "perk_id_fire_caugh",
+        "perk_id_tough_reloader",
+        "perk_id_max",
+        "perk_meta_table",
+        "sfx_trooper_inpain_01",
+        "sfx_trooper_die_01",
+        "sfx_shock_hit_01",
+        "sfx_explosion_medium",
+        "sfx_explosion_large",
+        "sfx_shockwave",
+        "sfx_ui_bonus",
+        "weapon_table"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_highscore.cpp",
+      "symbols": [
+        "highscore_score_xp",
+        "highscore_table_count"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_resource.cpp",
+      "symbols": [
+        "resource_pack_enabled",
+        "buffer_reader_size",
+        "buffer_reader_offset"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_terrain_owner.cpp",
+      "symbols": [
+        "terrain_render_target"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_textures_owner.cpp",
+      "symbols": [
+        "ui_cursor_texture"
+      ]
+    },
+    {
+      "image": "crimsonland.exe",
+      "source": "tools/match/data/crimsonland_ui.cpp",
+      "symbols": [
+        "ui_element_slot_26",
+        "ui_element_slot_27",
+        "ui_perk_prompt_element",
+        "ui_focus_count",
+        "ui_focus_index",
+        "ui_focus_timer_ms"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_joystick_input.cpp",
+      "symbols": [
+        "grim_joystick_found"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_joystick_state.cpp",
+      "symbols": [
+        "grim_joystick_state"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_texture.cpp",
+      "symbols": [
+        "grim_present_parameters"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_timing.cpp",
+      "symbols": [
+        "grim_frame_dt",
+        "grim_timing_frozen",
+        "grim_fps"
+      ]
+    }
+  ]
+}

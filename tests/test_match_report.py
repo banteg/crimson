@@ -103,10 +103,11 @@ def test_invalid_or_unsupported_credit_is_rejected(changes: dict[str, Any]) -> N
 def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.MonkeyPatch) -> None:
     function = _function(1, 100)
     evidence: dict[str, Any] = {
-        "schema": 1, "version": "1.9.93", "scope": "all", "inputs": {"scratch.c": "original"},
-        "external_inputs": {}, "toolchains": {}, "functions": [function],
+        "schema": 2, "version": "1.9.93", "scope": "all", "inputs": {"scratch.c": "original"},
+        "external_inputs": {}, "toolchains": {}, "functions": [function], "data": {},
     }
     monkeypatch.setattr(report, "repository_inputs", lambda: {"scratch.c": "original"})
+    monkeypatch.setattr(report.match_data_report, "validate_evidence", lambda _: None)
     monkeypatch.setattr(report, "_inventory", lambda: [{k: function[k] for k in ("image", "address", "name", "size")}])
     report.validate_evidence(evidence)
     altered = deepcopy(evidence)
@@ -120,7 +121,7 @@ def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.Monk
 
 def test_missing_reference_images_fail_even_when_ci_lacks_compilers(monkeypatch: pytest.MonkeyPatch) -> None:
     evidence = {
-        "schema": 1, "version": "1.9.93", "scope": "all", "inputs": {},
+        "schema": 2, "version": "1.9.93", "scope": "all", "inputs": {},
         "external_inputs": {"game_bins/reference.exe": "a" * 64}, "toolchains": {}, "functions": [],
     }
     monkeypatch.setattr(report, "repository_inputs", dict)
@@ -134,6 +135,8 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("tools/match/include/shared.h")
     assert report._input_path("analysis/ida/raw/grim.dll/functions.json")
     assert report._input_path("analysis/matching_scope.json")
+    assert report._input_path("tools/native/data_candidates.json")
+    assert report._input_path("src/crimson/native_link.py")
     assert not report._input_path("analysis/decomp/1.9.93.json")
     assert not report._input_path("tools/match/scratches/new_function/experiments.jsonl")
     assert not report._input_path("tools/match/STATUS.md")
