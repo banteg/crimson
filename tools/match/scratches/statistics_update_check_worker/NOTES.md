@@ -1,9 +1,11 @@
 # `statistics_update_check_worker`
 
-Native target: `crimsonland.exe` at `0x0042d8a0` (1364 bytes).
+Native target: `crimsonland.exe` at `0x0042d8a0` (1375 bytes).
 
-Work in progress: 78.38% normalized match, 22/367-instruction exact prefix,
-373 candidate instructions, and 106/0/0 reference audit.
+Work in progress: 99.182561% normalized match, 252/367-instruction exact prefix,
+367 candidate instructions, and 120/0/0 reference audit. The remaining three
+instruction differences prepare the `sscanf` outputs after URL duplication;
+`body_byte_exact` remains false.
 
 Live Binary Ninja evidence and the MSVC candidate recover the complete worker:
 
@@ -196,3 +198,23 @@ The highest-score control, `path-character-publication`, reaches 83.845127% but 
 rejected for instruction-count-further-from-target. Canonical source and configuration
 are unchanged. These results bound the recorded hypothesis, not the function's
 matchability.
+
+
+## Network source ownership recovery (2026-09-07)
+
+The MIME array now precedes header-length publication, and the request path is
+zeroed before its individual character stores. Connection and request success
+blocks share their failure cleanup. The receive loop branches directly to its
+error, overflow, or parse continuation without repeating its stopping tests.
+Finally, the three parsed version components share one local array. Together
+these boundaries recover the native handle slots and all but the final scanner
+argument scheduling. Request bytes, parsing rules, and status transitions are
+unchanged.
+
+The complete 31-control `network-source-ownership-2026-09-07.json` crosses all
+five changes. Every control compiles. The retained combination improves
+78.378378% to 99.182561%, removes six surplus instructions to reach 367/367,
+extends the prefix from 22 to 252, and raises clean references from 106 to 120.
+A separately recorded formatting probe preserves those metrics. The remaining
+URL-store and scanner-address ordering is explicitly a compiler residual, not
+an exact match.
