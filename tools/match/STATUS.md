@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **779/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **783/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**782/810** functions matched exactly (**96.5%**), **206907/341992** code bytes (**60.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**787/810** functions matched exactly (**97.2%**), **221486/341992** code bytes (**64.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **312361/341992** code bytes (**91.3%**).
+Fuzzy-weighted alignment is **313906/341992** code bytes (**91.8%**).
 
-Remaining exact-match debt is **28 functions**, **135085 code bytes**, and **29631 fuzzy-gap bytes**.
+Remaining exact-match debt is **23 functions**, **120506 code bytes**, and **28086 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**28** non-exact scratch-backed functions hold **29631 fuzzy-gap bytes**. The top 5 hold **69.1%** of that gap; the top 10 hold **87.2%**.
+**23** non-exact scratch-backed functions hold **28086 fuzzy-gap bytes**. The top 5 hold **72.9%** of that gap; the top 10 hold **92.0%**.
 
-Current-baseline experiments cover **11 functions / 6682 gap bytes**; **17 / 22949** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **10 functions / 6645 gap bytes**; **13 / 21441** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -50,22 +50,17 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 10 | crimsonland.exe | player_render_overlays | 583 | semantic-complete | compiler | historical-only | 0/31 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 11 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 12 | crimsonland.exe | highscore_sync_worker | 453 | semantic-complete | compiler | historical-only | 0/13 | 0 | metric-tradeoffs,variant-errors,historical-only |
-| 13 | crimsonland.exe | credits_secret_alien_zookeeper_update | 422 | semantic-complete | compiler | historical-only | 0/12 | 0 | repeated-variants,metric-tradeoffs,historical-only |
-| 14 | crimsonland.exe | bonus_hud_slot_update_and_render | 316 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 15 | crimsonland.exe | ui_menu_layout_init | 312 | semantic-complete | compiler,references | historical-only | 0/30 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 16 | crimsonland.exe | ui_scrollbar_update | 311 | semantic-complete | compiler | historical-only | 0/39 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 17 | crimsonland.exe | bonus_render | 301 | semantic-complete | compiler | current-active | 1/24 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 18 | crimsonland.exe | statistics_update_check_worker | 297 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 19 | crimsonland.exe | quest_build_survival_of_the_fastest | 177 | semantic-complete | compiler | historical-only | 0/13 | 0 | repeated-variants,repeated-specs,historical-only |
-| 20 | crimsonland.exe | statistics_menu_update | 157 | semantic-complete | compiler | current-active | 2/19 | 2 | repeated-variants,metric-tradeoffs |
-| 21 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 1/9 | 1 | repeated-variants,repeated-specs,metric-tradeoffs |
-| 22 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 23 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-active | 1/17 | 1 | repeated-variants,repeated-specs,variant-errors |
-| 24 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-stalled | 3/10 | 3 | repeated-variants,stalled,variant-errors |
-| 25 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/8 | 1 | variant-errors |
-| 26 | crimsonland.exe | mods_menu_update | 28 | semantic-complete | compiler | current-stalled | 5/30 | 5 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
-| 27 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-stalled | 4/18 | 4 | repeated-variants,stalled,metric-tradeoffs |
-| 28 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | current-stalled | 4/24 | 4 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
+| 13 | crimsonland.exe | bonus_hud_slot_update_and_render | 316 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 14 | crimsonland.exe | bonus_render | 301 | semantic-complete | compiler | current-active | 1/24 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
+| 15 | crimsonland.exe | statistics_menu_update | 157 | semantic-complete | compiler | current-active | 2/19 | 2 | repeated-variants,metric-tradeoffs |
+| 16 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 1/9 | 1 | repeated-variants,repeated-specs,metric-tradeoffs |
+| 17 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 18 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-active | 1/17 | 1 | repeated-variants,repeated-specs,variant-errors |
+| 19 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/8 | 1 | variant-errors |
+| 20 | crimsonland.exe | mods_menu_update | 28 | semantic-complete | compiler | current-stalled | 5/30 | 5 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
+| 21 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-stalled | 4/18 | 4 | repeated-variants,stalled,metric-tradeoffs |
+| 22 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | current-stalled | 4/24 | 4 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
+| 23 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -135,12 +130,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 643/671 | 185742/320827 | 57.9% | 291196/320827 | 90.8% | 671/671 | 320827/320827 | 100.0% | 643/671 |
+| crimsonland.exe | 648/671 | 200321/320827 | 62.4% | 292741/320827 | 91.2% | 671/671 | 320827/320827 | 100.0% | 648/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**643/671** functions (**95.8%**), **185742/320827** bytes (**57.9%**), **291196/320827** fuzzy-weighted bytes (**90.8%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **643/671** scratches verified.
+**648/671** functions (**96.6%**), **200321/320827** bytes (**62.4%**), **292741/320827** fuzzy-weighted bytes (**91.2%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **648/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -225,7 +220,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_mode_update | 0x004070e0 | 455 | 455/455 | 0 | 108/108 | 100.00% | 108/108 | 52/0/0 |  | quest-completion-transition-coordinator |
 | match | rush_mode_update | 0x004072b0 | 594 | 594/594 | 0 | 136/136 | 100.00% | 136/136 | 51/0/0 |  | rush-mode-edge-wave-spawn-update |
 | match | survival_spawn_creature | 0x00407510 | 1973 | 1973/1973 | 0 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
-| wip | survival_update | 0x00407cd0 | 2102 | 2064/2102 | 38 | 504/504 | 98.21% | 102/504 | 139/0/0 |  | survival-handouts-milestones-and-edge-wave-spawns |
+| match | survival_update | 0x00407cd0 | 2102 | 2102/2102 | 0 | 504/504 | 100.00% | 504/504 | 139/0/0 |  | survival-handouts-milestones-and-edge-wave-spawns |
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 1084/1084 | 0 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
 | match | tutorial_primary_button_destroy | 0x00408970 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-tutorial-primary-button-destroy |
 | match | tutorial_repeat_button_destroy | 0x00408980 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-tutorial-repeat-button-destroy |
@@ -300,7 +295,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | mods_menu_main_menu_button_destroy | 0x0040f3e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-main-menu-button-empty-destructor |
 | match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
 | match | credits_secret_match3_find | 0x0040f400 | 230 | 230/230 | 0 | 96/96 | 100.00% | 96/96 | 0/0/0 |  | credits-secret-match3-scan |
-| wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 2190/2612 | 422 | 638/638 | 83.86% | 15/638 | 154/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
+| match | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 2612/2612 | 0 | 638/638 | 100.00% | 638/638 | 158/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
 | match | credits_secret_back_button_destroy | 0x0040ff30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-credits-secret-back-button-destroy |
 | match | credits_secret_reset_button_destroy | 0x0040ff40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-credits-secret-reset-button-destroy |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 105/105 | 0 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
@@ -519,7 +514,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | match | crimsonland_main | 0x0042c450 | 3214 | 3214/3214 | 0 | 832/832 | 100.00% | 832/832 | 395/0/0 |  | primary-game-bootstrap-and-shutdown |
 | wip | highscore_sync_worker | 0x0042d0e0 | 1981 | 1528/1981 | 453 | 525/525 | 77.14% | 26/525 | 119/0/0 |  | online-highscore-submit-receive-worker |
-| wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1078/1375 | 297 | 373/367 | 78.38% | 22/367 | 106/0/0 |  | statistics-version-update-check-worker |
+| wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1364/1375 | 11 | 367/367 | 99.18% | 252/367 | 120/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
 | match | crimson_crt_empty_initializer_slot_48_thunk | 0x0042de40 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-48-thunk |
@@ -587,7 +582,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_build_syntax_terror | 0x00436c10 | 339 | 339/339 | 0 | 104/104 | 100.00% | 104/104 | 6/0/0 |  | quest-syntax-terror-polynomial-spawners |
 | match | quest_build_spider_spawns | 0x00436d70 | 365 | 365/365 | 0 | 73/73 | 100.00% | 73/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
 | match | quest_build_two_fronts | 0x00436ee0 | 383 | 383/383 | 0 | 112/112 | 100.00% | 112/112 | 3/0/0 |  | quest-two-fronts-cardinal-waves |
-| wip | quest_build_survival_of_the_fastest | 0x00437060 | 861 | 684/861 | 177 | 228/228 | 79.39% | 5/228 | 0/0/0 |  | quest-survival-fastest-three-corner-construction |
+| match | quest_build_survival_of_the_fastest | 0x00437060 | 861 | 861/861 | 0 | 228/228 | 100.00% | 228/228 | 0/0/0 |  | quest-survival-fastest-indexed-route-and-corner-construction |
 | match | quest_build_spideroids | 0x004373c0 | 224 | 224/224 | 0 | 62/62 | 100.00% | 62/62 | 3/0/0 |  | quest-spideroids-append-publication |
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 244/244 | 0 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
 | match | quest_build_everred_pastures | 0x004375a0 | 367 | 367/367 | 0 | 114/114 | 100.00% | 114/114 | 8/0/0 |  | quest-everred-pastures-cardinal-waves |
@@ -691,7 +686,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | ui_focus_draw | 0x0043d940 | 104 | 104/104 | 0 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 714/714 | 0 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 622/622 | 0 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
-| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 1456/1767 | 311 | 477/479 | 82.43% | 26/479 | 62/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
+| match | ui_scrollbar_update | 0x0043def0 | 1767 | 1767/1767 | 0 | 479/479 | 100.00% | 479/479 | 66/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 548/548 | 0 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_menu_hover_color_destroy | 0x0043e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-hover-color-empty-destructor |
 | match | ui_menu_idle_color_destroy | 0x0043e820 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-idle-color-empty-destructor |
@@ -808,7 +803,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | ui_element_layout_calc | 0x0044fb50 | 288 | 288/288 | 0 | 86/86 | 100.00% | 86/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs-exact |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 39/39 | 0 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 8/8 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
-| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6925/7237 | 312 | 1408/1422 | 95.69% | 467/1422 | 529/0/0 |  | menu-element-graph-layout-and-responsive-transforms |
+| match | ui_menu_layout_init | 0x0044fcb0 | 7237 | 7237/7237 | 0 | 1422/1422 | 100.00% | 1422/1422 | 538/0/0 |  | menu-element-graph-layout-and-responsive-transforms |
 | match | weapon_table_defaults_global_init_thunk | 0x00451900 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | weapon-table-default-global-initialization-thunk |
 | match | weapon_table_defaults_global_init | 0x00451910 | 150 | 150/150 | 0 | 47/47 | 100.00% | 47/47 | 2/0/0 |  | weapon-table-default-global-initialization |
 | match | weapon_table_init | 0x004519b0 | 4885 | 4885/4885 | 0 | 1000/1000 | 100.00% | 1000/1000 | 477/0/0 |  | weapon-metadata-database |

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "aa2fd3b075cd5e9a0d8815d00463e6519c1800456fac04d9e6e0df9b8ef258d9",
+  "audit_digest": "f7a041c2070ad495c1147f8a774cfc84616827274acae969d1fe96b6b6387cd4",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -40930,24 +40930,6 @@
         }
       ],
       "name": "??_C@_0BA@FIHJ@image?1x?9xbitmap?$AA@"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "??_C@_0BA@FNKF@?1ra_version?4php?$AA@",
-          "comdat_selection": 2,
-          "function": "statistics_update_check_worker",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/7b103e09a3170e6e/scratch.obj",
-          "section": ".data",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "??_C@_0BA@FNKF@?1ra_version?4php?$AA@"
     },
     {
       "definitions": [
@@ -95861,7 +95843,7 @@
           "comdat_selection": 1,
           "function": "quest_build_survival_of_the_fastest",
           "kind": "section",
-          "logical_section_size": 848,
+          "logical_section_size": 864,
           "object": "tools/match/scratches/quest_build_survival_of_the_fastest/build/msvc6.5/fdb5d8c9321efa41/scratch.obj",
           "section": ".text",
           "size": null,
@@ -104453,7 +104435,7 @@
           "comdat_selection": 1,
           "function": "ui_menu_layout_init",
           "kind": "section",
-          "logical_section_size": 7184,
+          "logical_section_size": 7248,
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
           "section": ".text",
           "size": null,
@@ -105083,7 +105065,7 @@
           "comdat_selection": 1,
           "function": "ui_scrollbar_update",
           "kind": "section",
-          "logical_section_size": 1760,
+          "logical_section_size": 1776,
           "object": "tools/match/scratches/ui_scrollbar_update/build/msvc6.5/0a6cf0d3a7ca3c38/scratch.obj",
           "section": ".text",
           "size": null,
@@ -142844,7 +142826,7 @@
           "comdat_selection": 1,
           "function": "quest_build_survival_of_the_fastest",
           "kind": "section",
-          "logical_section_size": 848,
+          "logical_section_size": 864,
           "object": "tools/match/scratches/quest_build_survival_of_the_fastest/build/msvc6.5/fdb5d8c9321efa41/scratch.obj",
           "section": ".text",
           "size": null,
@@ -156059,7 +156041,7 @@
           "comdat_selection": 1,
           "function": "ui_menu_layout_init",
           "kind": "section",
-          "logical_section_size": 7184,
+          "logical_section_size": 7248,
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
           "section": ".text",
           "size": null,
@@ -157053,7 +157035,7 @@
           "comdat_selection": 1,
           "function": "ui_scrollbar_update",
           "kind": "section",
-          "logical_section_size": 1760,
+          "logical_section_size": 1776,
           "object": "tools/match/scratches/ui_scrollbar_update/build/msvc6.5/0a6cf0d3a7ca3c38/scratch.obj",
           "section": ".text",
           "size": null,
@@ -159399,7 +159381,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3061,
+    "defined_symbols": 3060,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
