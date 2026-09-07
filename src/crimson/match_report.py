@@ -25,7 +25,7 @@ DEFAULT_REPORT = matchlib.REPO_ROOT / "artifacts" / "decomp" / "report.json"
 def _input_path(path: str) -> bool:
     """Pin relevant code/config, including newly added or removed scratches."""
     p = Path(path)
-    if path in {"pyproject.toml", "uv.lock", "analysis/library_provenance.json"}:
+    if path in {"pyproject.toml", "uv.lock", "analysis/library_provenance.json", "analysis/matching_scope.json"}:
         return True
     if path.startswith("src/crimson/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
@@ -200,7 +200,7 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
 
 
 def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
-    labels = {"exe": "Crimsonland EXE", "dll": "Grim2D DLL", "libs": "Libraries"}
+    labels = {"game": "Game & Engine", "exe": "Crimsonland EXE", "dll": "Grim2D DLL", "libs": "Libraries"}
     library_labels = {"d3dx8": "D3DX8", "msvc6-crt": "MSVC6 runtime"}
     provenance = json.loads((matchlib.REPO_ROOT / "analysis/library_provenance.json").read_text())
     ranges = []
@@ -232,6 +232,13 @@ def _sum_measures(measures: list[dict[str, Any]]) -> dict[str, Any]:
 def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
     """One function per unit, with overlapping image and proven library filters."""
     labels, library_ranges = _category_definitions()
+    ownership = matchlib._load_matching_scope_definition("port")
+    third_party = {
+        (image, disposition.address)
+        for image, dispositions in ownership.function_dispositions.items()
+        for disposition in dispositions if disposition.disposition == "third-party"
+    }
+    labels["libs.other"] = "Other identified libraries"
     names = Counter(row["name"] for row in functions)
     seen: set[tuple[str, int]] = set()
     units: list[dict[str, Any]] = []
@@ -272,6 +279,10 @@ def build_report(functions: list[dict[str, Any]]) -> dict[str, Any]:
             category for image, start, end, category in library_ranges
             if image == row["image"] and start <= row["address"] < end
         })
+        if key in third_party and not libraries:
+            libraries.append("libs.other")
+        if not libraries and any(region.contains(row["address"]) for region in ownership.ranges[row["image"]]):
+            categories.append("game")
         if libraries:
             categories.extend(["libs", *libraries])
         metadata["progress_categories"] = categories

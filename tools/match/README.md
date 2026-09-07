@@ -958,6 +958,37 @@ symbols describe how the selected compiler scheduled the reconstructed source;
 they do not recover original local names or prove native variable lifetimes.
 Use them alongside the CFG anchors and live native stack/data-flow evidence.
 
+Add `--stack-residuals` to connect those compiler aliases to paired native
+instructions without treating every raw stack displacement as a variable home:
+
+```sh
+uv run crimson match listing tools/match/scratches/ui_render_hud \
+  --stack-residuals --max-stack-entries 12
+```
+
+This optional report uses the listing command's existing object-equivalence
+check, verifies the listing and candidate hashes, and compares a snapshot of
+that candidate object. It accepts only unambiguous pairs from the residual
+summary's instruction-shape alignment, with identical other normalized operands
+and clean paired references. Each listing alias expression must also evaluate to
+the candidate instruction's actual displacement. Wrapped machine rows and source
+lines are scoped to the selected function's `PROC`. Nonzero listing `PROC`
+origins are currently rejected rather than assuming an object-offset mapping.
+
+Named locals and generated `$T` temporaries retain their declared candidate
+frame offsets and observed target-minus-candidate displacement deltas, with
+source lines and native-addressed samples. Multiple deltas remain conflicts.
+Numeric frame expressions without names are reported separately as possible
+spills or reused storage; bare `[esp+N]` accesses receive no inferred local name
+or frame offset. A shared declared offset never merges distinct named aliases.
+These observations do not establish native variable identity, stack-pointer
+adjustments, object fields, or lifetimes.
+
+`--max-stack-entries` bounds each section and its delta samples; omitted counts
+remain visible. `--json` adds a `stack_residuals` field to the existing listing
+payload. Normal listing behavior and match acceptance remain unchanged; a
+successful diagnostic listing can still describe a non-exact match.
+
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. Cache keys use content fingerprints for scratch source/config,
 compiler arguments, the complete compiler `Bin` and `Include` trees, Wibo,

@@ -35,7 +35,7 @@ def test_public_score_uses_full_denominator_without_crediting_prebuilt_libraries
     assert m["complete_code"] == "0"
     assert m["complete_units"] == 0
     assert result["version"] == 2
-    assert result["categories"][0]["measures"] == m
+    assert next(c for c in result["categories"] if c["id"] == "exe")["measures"] == m
     assert result["units"][0]["metadata"]["source_path"] == "src/1.c"
     assert result["units"][2]["functions"][0]["fuzzy_match_percent"] == 0
 
@@ -64,6 +64,23 @@ def test_library_filters_overlap_images_without_double_counting() -> None:
     assert result["measures"]["total_code"] == "1000"
     assert result["units"][2]["metadata"]["progress_categories"] == ["dll", "libs", "libs.msvc6-crt"]
     assert result["units"][3]["metadata"]["progress_categories"] == ["dll", "libs", "libs.d3dx8"]
+
+
+def test_game_category_keeps_platform_code_but_excludes_known_libraries() -> None:
+    ownership = report.matchlib._load_matching_scope_definition("port")
+    platform = next(d for d in ownership.function_dispositions["crimsonland.exe"] if d.disposition == "platform-replaced")
+    library = next(d for d in ownership.function_dispositions["grim.dll"] if d.disposition == "third-party")
+    result = report.build_report([
+        _function(platform.address, 100),
+        _function(library.address, 200, image="grim.dll"),
+        _function(0x00452EF0, 300),
+        _function(0x1004B5B0, 400, image="grim.dll"),
+    ])
+    categories = {c["id"]: c["measures"] for c in result["categories"]}
+    assert categories["game"]["total_code"] == "100"
+    assert categories["libs"]["total_code"] == "500"
+    assert categories["libs.other"]["total_code"] == "200"
+    assert result["measures"]["total_code"] == "1000"
 
 
 def test_function_identity_includes_the_image_and_names_are_disambiguated() -> None:
@@ -116,6 +133,7 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("tools/match/scratches/new_function/scratch.conf")
     assert report._input_path("tools/match/include/shared.h")
     assert report._input_path("analysis/ida/raw/grim.dll/functions.json")
+    assert report._input_path("analysis/matching_scope.json")
     assert not report._input_path("analysis/decomp/1.9.93.json")
     assert not report._input_path("tools/match/scratches/new_function/experiments.jsonl")
     assert not report._input_path("tools/match/STATUS.md")

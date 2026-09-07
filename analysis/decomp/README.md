@@ -10,12 +10,17 @@ The GOG provenance and exact reference hashes remain documented in
 
 ## Scope and metrics
 
-There is one version (`1.9.93`) and one combined report. The **All** view keeps
+There is one version (`1.9.93`) and one combined report. **Game & Engine** is
+the default category and headline. It uses the ownership ranges recorded in
+`analysis/matching_scope.json`, retaining original platform code omitted by the
+internal `port` workflow and excluding explicit third-party dispositions.
+The **All** view keeps
 the full denominator; **Crimsonland EXE**, **Grim2D DLL**, and **Libraries**
 filter the same units. Libraries has **D3DX8** and **MSVC6 runtime** subcategories,
 using the image/address ranges in `analysis/library_provenance.json`. These
 describe established ranges, not an exhaustive attribution of every codec or
-runtime function. Embedded codecs within D3DX8 remain under D3DX8. Library units
+runtime function. Explicit third-party dispositions outside those library ranges
+appear under **Other identified libraries**. Embedded codecs within D3DX8 remain under D3DX8. Library units
 also belong to their image category, so category totals must not be added
 together. The treemap filters units rather than drawing nested group rectangles.
 

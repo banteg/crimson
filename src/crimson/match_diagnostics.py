@@ -87,18 +87,9 @@ def _context_payload(
     }
 
 
-def residual_summary_payload(
-    result: MatchResult,
-    *,
-    context: int = 4,
-    limit: int = 8,
-) -> dict[str, Any]:
-    """Explain patterns without substituting a more permissive MatchResult."""
-    if context < 0 or limit < 1:
-        raise ValueError("context must be non-negative and limit must be positive")
-    target, candidate = result.target_lines, result.candidate_lines
-    target_asm = _checked_disassembly(target, result.target_disassembly)
-    candidate_asm = _checked_disassembly(candidate, result.candidate_disassembly)
+def _residual_alignment(
+    target: tuple[str, ...], candidate: tuple[str, ...],
+) -> tuple[dict[int, int], set[int], list[tuple[str, int, int, int, int]]]:
     target_shapes = tuple(map(_shape, target))
     candidate_shapes = tuple(map(_shape, candidate))
     opcodes = difflib.SequenceMatcher(a=target_shapes, b=candidate_shapes, autojunk=False).get_opcodes()
@@ -113,6 +104,22 @@ def residual_summary_payload(
         run = target_shapes[a0:a1]
         if _repeated_run(target_shapes, run) or _repeated_run(candidate_shapes, run):
             ambiguous.update(range(a0, a1))
+    return pairs, ambiguous, remaining
+
+
+def residual_summary_payload(
+    result: MatchResult,
+    *,
+    context: int = 4,
+    limit: int = 8,
+) -> dict[str, Any]:
+    """Explain patterns without substituting a more permissive MatchResult."""
+    if context < 0 or limit < 1:
+        raise ValueError("context must be non-negative and limit must be positive")
+    target, candidate = result.target_lines, result.candidate_lines
+    target_asm = _checked_disassembly(target, result.target_disassembly)
+    candidate_asm = _checked_disassembly(candidate, result.candidate_disassembly)
+    pairs, ambiguous, remaining = _residual_alignment(target, candidate)
 
     target_offsets = {line.offset: index for index, line in enumerate(target_asm)}
     candidate_offsets = {line.offset: index for index, line in enumerate(candidate_asm)}

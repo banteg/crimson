@@ -14,6 +14,7 @@ from .. import (
     library_match,
     match_diagnostics,
     match_experiments,
+    match_listing_diagnostics,
     match_mutation,
     match_regressions,
     match_report,
@@ -445,6 +446,12 @@ def cmd_match_listing(
         "--output",
         help="output .cod path; defaults to the ignored match cache",
     ),
+    stack_residuals: bool = typer.Option(
+        False, "--stack-residuals", help="compare compiler stack aliases with unambiguous paired native operands",
+    ),
+    max_stack_entries: int = typer.Option(
+        12, "--max-stack-entries", min=1, help="maximum entries per stack diagnostic section",
+    ),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
 ) -> None:
     """Emit a source/assembly compiler listing after proving object equivalence."""
@@ -455,13 +462,22 @@ def cmd_match_listing(
             match_root,
             output=output,
         )
+        stack = (
+            match_listing_diagnostics.compiler_stack_residual_payload(config, result, limit=max_stack_entries)
+            if stack_residuals else None
+        )
     except Exception as exc:
         typer.echo(f"listing failed: {str(exc).splitlines()[0]}", err=True)
         raise typer.Exit(code=2) from exc
     if as_json:
-        typer.echo(json.dumps(matchlib.compiler_listing_payload(result), indent=2, sort_keys=True))
+        payload = matchlib.compiler_listing_payload(result)
+        if stack is not None:
+            payload["stack_residuals"] = stack
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
         typer.echo(matchlib.render_compiler_listing_result(result))
+        if stack is not None:
+            typer.echo("\n" + match_listing_diagnostics.render_stack_local_observations(stack))
 
 
 @match_app.command("validate")
