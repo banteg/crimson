@@ -7410,6 +7410,35 @@ def test_body_identity_masks_only_reference_proven_relocations(key: str) -> None
     assert result.body_byte_exact is (key == "name:expected")
 
 
+@pytest.mark.parametrize(
+    ("target", "addend", "body_exact"),
+    [
+        ("90e8faffffffc3", 0, True),
+        ("90e8fbffffffc3", 1, True),
+        ("90e8fbffffffc3", 0, False),
+    ],
+)
+def test_body_identity_resolves_coff_local_rel32(
+    target: str, addend: int, body_exact: bool,
+) -> None:
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=b"\x90\xe8" + addend.to_bytes(4, "little") + b"\xc3",
+                characteristics=0x20,
+                relocations=(CoffRelocation(2, 0, 0x14),),
+            ),
+        ),
+        symbols=(CoffSymbol(0, "_foo", 0, 1, 0x20, 2),),
+    )
+    result = match_function(
+        bytes.fromhex(target), extract_object_function(obj, "foo"),
+        image=LoadedImage(b"", 0x400000, 0), target_va=0x401000,
+    )
+    assert result.body_byte_exact is body_exact
+
+
 def test_worker_and_mutation_acceptance_reject_the_same_score_tradeoffs(tmp_path: Path) -> None:
     from crimson.match import scratch_status_payload, status_improves, status_improves_claim_baseline
 

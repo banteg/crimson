@@ -3262,7 +3262,7 @@ def _encoded_body_comparison(
     candidate: ObjectFunction,
     result: MatchResult,
 ) -> tuple[bool, int, int]:
-    """Ignore only audited COFF relocation fields, preserving every encoding bit."""
+    """Resolve local relative relocations and mask only audited external fields."""
     target_end = max((line.offset + line.size for line in result.target_disassembly), default=0)
     candidate_end = max((line.offset + line.size for line in result.candidate_disassembly), default=0)
     padding = (len(target_data) - target_end, len(candidate.data) - candidate_end)
@@ -3275,6 +3275,15 @@ def _encoded_body_comparison(
         if reference.offset not in candidate.relocation_offsets:
             continue
         if reference.relocation_type not in (IMAGE_REL_I386_DIR32, IMAGE_REL_I386_REL32):
+            continue
+        if (
+            reference.relocation_type == IMAGE_REL_I386_REL32
+            and reference.local_target_offset is not None
+            and 0 <= reference.local_target_offset < candidate_end
+            and 0 <= reference.offset <= candidate_end - 4
+        ):
+            displacement = reference.local_target_offset - (reference.offset + 4)
+            encoded[reference.offset : reference.offset + 4] = struct.pack("<i", displacement)
             continue
         for index in audited:
             line = result.candidate_disassembly[index]
