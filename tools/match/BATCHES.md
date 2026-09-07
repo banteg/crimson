@@ -1,29 +1,33 @@
 # Remaining EXE matching batches
 
-Snapshot: 653-exact source checkpoint, refreshed on 2026-09-07. The native audit
-and matching checkpoint reproduce all 671 EXE candidates, including the 18 remaining functions.
-This pass adds five exact matches:
+Snapshot: 654-exact source checkpoint, refreshed on 2026-09-08. The native audit
+and matching checkpoint reproduce all 671 EXE candidates, including the 17 remaining functions.
+The requested two-function follow-up has **one new exact match**:
+[sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md), with
+93/93 instructions, 8 clean references, and encoded-body identity over 215 bytes.
+The second exact function remains unresolved.
 
-- [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md)
-- [statistics_menu_update](scratches/statistics_menu_update/NOTES.md)
-- [tutorial_timeline_update](scratches/tutorial_timeline_update/NOTES.md)
-- [mods_menu_update](scratches/mods_menu_update/NOTES.md)
-- [bonus_render](scratches/bonus_render/NOTES.md)
+Three additional source recoveries are retained as partial improvements:
 
-All five have encoded-body identity, recovering 14,045 exact code bytes. The matcher also
-correctly resolves local relative relocations for body comparison, preserves memory segment
-overrides, and accounts for addends into compiler constants. The relocation fix recognizes
-existing byte identity in console_log_node_free and sfx_mute_all; those are not new source
-matches. The segment/addend fixes leave all 810 canonical candidates' metrics unchanged.
-The matcher and related validation suites pass 301 tests. The checkpoint against `ac5c74a2f`
-reports zero regression, evaluation, metadata, experiment, strict-experiment, scope, and native
-errors. Both native artifact sets are current.
+- The overlay's recoil, normalized-direction, and half-size vector lifetimes recover
+  178.68 weighted bytes, reaching 91.19% with 331 clean references.
+- The HUD's quest reset order, shared panel position, and single popup text coordinate
+  recover 277.80 weighted bytes, reaching 92.21%. All 1,824 instruction shapes and 393
+  references align; 142 stack displacements still differ.
+- The high-score worker's setup, request/read continuations, and response/state lifetimes
+  recover 305.64 weighted bytes, reaching 92.57%, prefix 130, and 125 clean references.
+  Its 525/525 instruction count includes a missing submit-owner instruction and an extra
+  cleanup copy, so it does not establish identity.
 
-The subsequent overlay recovery reuses the recoil vector for raw target displacement, normalizes
-a separate copy, and recovers two half-size vector lifetimes. It gains 178.68 weighted bytes and
-three instructions with no metric tradeoffs, reaching 91.19% and 331 clean references. All seven
-reversion controls are worse. The refreshed native audit and checkpoint against `9b4ac10c6` pass
-with no errors; exact function totals are unchanged.
+Each partial recovery has seven complete group-reversion controls, all worse. The checkpoint
+against `9b4ac10c6` reports zero regression, evaluation, metadata, experiment, strict-experiment,
+scope, and native errors. Both native artifact sets are current. The new residual-summary and
+compiler-listing diagnostics leave matching and acceptance rules unchanged.
+
+The preceding five-function pass completed the bonus HUD slot, statistics menu, tutorial
+timeline, mods menu, and bonus renderer, recovering 14,045 exact code bytes. Its matcher
+corrections separately recognized existing body identity in console_log_node_free and
+sfx_mute_all; those were not new source matches.
 
 This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 [eight exact recoveries](EXACT-MATCHES-2026-09-07.md),
@@ -32,10 +36,10 @@ This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md), and
 [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
-**EXE: 653/671 exact; Grim: 139/139 exact.** Across both images, 792/810 functions have normalized
-identity and 790/810 have encoded-body identity. The EXE frontier is 18 functions spanning 106,461
-code bytes, with 26,429 fuzzy-gap bytes. The top five functions hold 77.4% of that gap, and the
-top ten hold 96.9%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
+**EXE: 654/671 exact; Grim: 139/139 exact.** Across both images, 793/810 functions have normalized
+identity and 791/810 have encoded-body identity. The EXE frontier is 17 functions spanning 106,246
+code bytes, with 25,818 fuzzy-gap bytes. The top five functions hold 79.3% of that gap, and the
+top ten hold 98.0%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
@@ -58,14 +62,14 @@ successful siblings as controls rather than templates to copy mechanically.
 
 | Batch | Focus | Functions | Fuzzy gap, bytes |
 |---|---|---:|---:|
-| [01](#batch-01) | Scalar ownership and shared control flow | 3 | 232 |
+| [01](#batch-01) | Scalar ownership and shared control flow | 2 | 205 |
 | [02](#batch-02) | Spawn records and quest induction | 3 | 162 |
-| [03](#batch-03) | WinInet request and response workers | 2 | 464 |
+| [03](#batch-03) | WinInet request and response workers | 2 | 158 |
 | [04](#batch-04) | Short coordinate lifetimes | 0 | 0 |
 | [05](#batch-05) | UI call scheduling and vector primitives | 0 | 0 |
 | [06](#batch-06) | Menu object and aggregate lifetimes | 0 | 0 |
 | [07](#batch-07) | UI loops, formatting, and board state | 0 | 0 |
-| [08](#batch-08) | HUD and effect rendering | 2 | 1,233 |
+| [08](#batch-08) | HUD and effect rendering | 2 | 955 |
 | [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 2 | 2,140 |
 | [10](#batch-10) | High-score screen | 1 | 1,731 |
 | [11](#batch-11) | Player simulation and weapon dispatch | 1 | 5,849 |
@@ -76,10 +80,9 @@ successful siblings as controls rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The overlay is A after its
-direction/size lifetime recovery; the other 17 functions are H after the matcher changes
-started a new baseline epoch. Source and matcher changes can
-make earlier records historical; the per-function notes preserve their evidence. H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The overlay, HUD, and
+high-score worker are A after their retained recoveries; the other 14 functions are H.
+Source and matcher changes can make earlier records historical; the per-function notes preserve their evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
 
@@ -118,24 +121,20 @@ repeated/switch-block pairings before interpreting missing blocks or references.
 
 ## 01 — Scalar ownership and shared control flow
 
-Three small functions remain after [perk_apply](scratches/perk_apply/NOTES.md) became exact.
-Its callback loops retain a cached player count while pure loops read the configured count.
+Two small functions remain after [perk_apply](scratches/perk_apply/NOTES.md) and
+[sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) became exact.
+The perk callback loops retain a cached player count while pure loops read the configured count.
 The remaining functions expose distinct ownership and phase boundaries; reconstruct their
 dependencies before changing syntax.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | H |
 | [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | H |
 | [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | H |
 
-- **sfx_entry_start_playback:** Native saves ESI before the streaming arm but initializes its
-  resident index after that arm returns. Candidate initializes it early; moving the initialization
-  has instead moved the save into the resident arm. Reconstruct the restore/stream/resident result
-  lifetimes together. Call-owner permutations and simple shared-return shapes have failed; every
-  path must initialize any consumed local.
 - **bonus_pick_random_type:** The quest-stage Nuke rejection occupies a cold block after the native
-  final return. Candidate keeps it inline despite equal total instruction counts. Separate the
+  retry backedge and before its accepted return. Candidate keeps it inline despite equal total
+  instruction counts. Separate the
   eligibility and selection phases using their actual state dependencies. Predicate inversion,
   switch rewrites, and synthetic shared-return shapes have already been tested.
 - **creature_handle_death:** One extra opening shift comes from commoning the creature-index scale
@@ -178,26 +177,26 @@ phases, and the fourth-corner vector construction.
 
 ## 03 — WinInet request and response workers
 
-A compact two-function batch with 464 rounded gap bytes after the version-worker recovery.
+A compact two-function batch with 158 rounded gap bytes after both worker recoveries.
 Compare genuine sibling request/cleanup lifetimes; both reference audits are clean and both
 target extents already include their epilogues.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [highscore_sync_worker](scratches/highscore_sync_worker/NOTES.md) | 77.14% | 525/525 | 453 | 0 | H |
+| [highscore_sync_worker](scratches/highscore_sync_worker/NOTES.md) | 92.57% | 525/525 | 147 | 0 | A |
 | [statistics_update_check_worker](scratches/statistics_update_check_worker/NOTES.md) | 99.18% | 367/367 | 11 | 0 | H |
 
-- **highscore_sync_worker:** Zeroing the complete 64-byte request path before literal character
-  publication recovered the native initialization shape: 77.14%, 525/525 instructions, 119 clean
-  references. Host-character publication and shared report tails introduced metric tradeoffs.
-  Next inspect the outgoing field cursor, received-record publication, or MIME/cleanup ownership;
-  keep the recovered request-path boundary intact.
+- **highscore_sync_worker:** Combined setup, request/read control flow, and independent response
+  storage recover 92.57%, 525/525 instructions, prefix 130, and 125 clean references. The remaining
+  regions are submission ownership, error-query output-address registers, and request cleanup.
+  A flags-reference diagnostic restores the submit owner but retains an extra cleanup copy;
+  its 96.86% score and 526 instructions are not accepted over the retained source.
 
 - **statistics_update_check_worker:** MIME initialization before header-length publication,
   character-wise request-path construction, nested request/connection flow, and grouped version
   outputs recover 99.18%, 367/367 instructions, prefix 252, and 120/0/0 references. The remaining
   three instruction differences are the version-output address registers and the URL-store
-  schedule immediately before sscanf. This is an improvement, not one of the five new matches.
+  schedule immediately before sscanf. It remains a partial match.
 
 <a id="batch-04"></a>
 
@@ -278,14 +277,14 @@ why the individual changes alone do not match.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 88.29% | 1823/1824 | 829 | 0 | H |
+| [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 92.21% | 1824/1824 | 551 | 0 | A |
 | [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 91.19% | 1144/1148 | 404 | 0 | A |
 
-- **ui_render_hud:** Candidate is one instruction short; the bonus-popup entry is a known structural
-  seam, while the quest banner differs only in temporary slots. Inspect the popup
-  conversion/count/icon dependencies before changing the surrounding frame. Six entry-order and six
-  popup-origin variants already failed, so use another producer/consumer boundary if those
-  dependencies are unchanged.
+- **ui_render_hud:** All 1,824 instruction shapes, branches, and 393 references align after
+  recovering the quest reset order, heart/ammo/quest position lifetime, and single popup text
+  coordinate. The remaining 142 operand differences are stack displacements. Use the verified
+  compiler listing to relate those accesses to named values and temporary lifetimes; raw ESP
+  displacements alone are not variable identities.
 - **player_render_overlays:** Four native instructions remain absent after the interacting
   recoil/target-direction and shadow/muzzle half-size recoveries. Tint-alpha ownership and stack
   publications remain different. SDK type spelling, color-object call boundaries, and simple

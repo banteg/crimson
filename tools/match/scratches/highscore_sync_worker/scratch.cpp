@@ -48,7 +48,6 @@ extern "C" void highscore_sync_worker(void *)
     BOOL request_ok;
     BOOL read_ok;
     DWORD received;
-    DWORD headers_length = strlen(headers);
     const char *accept_types[] = {
         "image/gif",
         "image/x-xbitmap",
@@ -62,6 +61,7 @@ extern "C" void highscore_sync_worker(void *)
         "*/*",
         0,
     };
+    DWORD headers_length = strlen(headers);
 
     char *data = new char[0x8000];
     config_highscore_date_mode = 0;
@@ -106,25 +106,29 @@ extern "C" void highscore_sync_worker(void *)
 
     score_count = 0;
     if (game_is_full_version()) {
-        char *write_cursor = data + payload_length;
-        for (int index = 0; index < highscore_table_count; index++) {
-            highscore_record_t *record = &highscore_table[index];
-            unsigned char flags = record->flags;
-            if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {
-                if (highscore_submit_full_version_guard(record)) {
-                    highscore_record_pack_for_submit(
-                        record,
-                        (highscore_record_t *)packed_record);
-                    memcpy(write_cursor, packed_record, sizeof(packed_record));
-                    payload_length += sizeof(packed_record);
-                    write_cursor += sizeof(packed_record);
-                    score_count++;
-                } else {
-                    console_printf(
-                        &console_log_queue,
-                        "Detected a potential illegal score: refusing to send it online.\n");
+        int index = 0;
+        if (highscore_table_count > 0) {
+            char *write_cursor = data + payload_length;
+            do {
+                highscore_record_t *record = &highscore_table[index];
+                unsigned char flags = record->flags;
+                if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {
+                    if (highscore_submit_full_version_guard(record)) {
+                        highscore_record_pack_for_submit(
+                            record,
+                            (highscore_record_t *)packed_record);
+                        memcpy(write_cursor, packed_record, sizeof(packed_record));
+                        payload_length += sizeof(packed_record);
+                        write_cursor += sizeof(packed_record);
+                        score_count++;
+                    } else {
+                        console_printf(
+                            &console_log_queue,
+                            "Detected a potential illegal score: refusing to send it online.\n");
+                    }
                 }
-            }
+                ++index;
+            } while (index < highscore_table_count);
         }
     }
     if (game_is_full_version()) {
@@ -140,7 +144,30 @@ extern "C" void highscore_sync_worker(void *)
     }
 
     {
-        char server_address[64] = "scores.crimsonland.com";
+        char server_address[64];
+        memset(server_address, 0, sizeof(server_address));
+        server_address[0] = 's';
+        server_address[1] = 'c';
+        server_address[2] = 'o';
+        server_address[3] = 'r';
+        server_address[4] = 'e';
+        server_address[5] = 's';
+        server_address[6] = '.';
+        server_address[7] = 'c';
+        server_address[8] = 'r';
+        server_address[9] = 'i';
+        server_address[10] = 'm';
+        server_address[11] = 's';
+        server_address[12] = 'o';
+        server_address[13] = 'n';
+        server_address[14] = 'l';
+        server_address[15] = 'a';
+        server_address[16] = 'n';
+        server_address[17] = 'd';
+        server_address[18] = '.';
+        server_address[19] = 'c';
+        server_address[20] = 'o';
+        server_address[21] = 'm';
         connection = InternetConnectA(
             internet,
             server_address,
@@ -172,145 +199,132 @@ extern "C" void highscore_sync_worker(void *)
         request_path[14] = 'p';
         request_path[15] = 'h';
         request_path[16] = 'p';
-        if (!connection) {
-            console_printf(
-                &console_log_queue,
+        if (connection) {
+            request = HttpOpenRequestA(
+                connection,
+                "POST",
+                request_path,
+                "HTTP/1.1",
+                "none",
+                accept_types,
+                0x04000000,
+                0x1289);
+            if (request) {
+                request_ok = HttpSendRequestA(
+                    request,
+                    headers,
+                    headers_length,
+                    data,
+                    payload_length);
+                console_printf(
+                    &console_log_queue,
+                    "<-- Sending %d scores in %d bytes.\n",
+                    (unsigned int)score_count,
+                    payload_length);
+                if (!request_ok) {
+                    console_printf(
+                        &console_log_queue,
+                        "ONLINE Scores: HttpSendRequest failed.\n");
+                    goto cleanup;
+                }
+
+                memset(data, 0, 0x8000);
+                read_ok = InternetReadFile(request, data, 0x400, &bytes_read);
+                received = bytes_read;
+                while (read_ok) {
+                    if ((int)(received + 0x400) > 0x8000) {
+                        goto receive_overflow;
+                    }
+                    if (bytes_read == 0) {
+                        goto parse_data;
+                    }
+                    read_ok = InternetReadFile(request, data + received, 0x400, &bytes_read);
+                    received += bytes_read;
+                }
+
+                {
+                    console_printf(&console_log_queue,
+                        "ONLINE Scores: InternetReadFile failed.\n");
+                    console_printf(&console_log_queue, "Reason: %d\n", GetLastError());
+                    DWORD response_length = 0x8000;
+                    DWORD response_error;
+                    InternetGetLastResponseInfoA(&response_error, data, &response_length);
+                    console_printf(&console_log_queue, "Or: %s\n", data);
+                    goto cleanup;
+                }
+            receive_overflow:
+                console_printf(&console_log_queue,
+                    "Warning: receiving too much data, breaking out..\n");
+            parse_data:
+                console_printf(
+                    &console_log_queue,
+                    "ONLINE Scores: Beginning to parse data..\n");
+                if ((unsigned char)data[0] == 0x15) {
+                    unsigned int count_b = (unsigned char)data[2];
+                    unsigned int count_a = (unsigned char)data[1];
+                    int total_count = count_a + count_b;
+                    console_printf(
+                        &console_log_queue,
+                        "<-- %d scores (%d+%d) received in %d bytes.\n",
+                        total_count,
+                        count_a,
+                        count_b,
+                        received);
+
+                    int expected_length = total_count * 0x44;
+                    if ((int)received - 3 != expected_length) {
+                        console_printf(
+                            &console_log_queue,
+                            "! Invalid number of bytes received (%d should be %d).\n",
+                            received - 3,
+                            expected_length);
+                        data[0x200] = 0;
+                        console_printf(&console_log_queue, "->%s<-\n", data);
+                        goto cleanup;
+                    }
+
+                    console_printf(&console_log_queue, "- Saving scores...\n");
+                    if (total_count > 0) {
+                        char *read_cursor = data + 3;
+                        int remaining = total_count;
+                        do {
+                            unsigned char hardcore_marker =
+                                config_hardcore ? 0x75 : 0;
+                            memcpy(&received_record, read_cursor, 0x44);
+                            received_record.flags = 1;
+                            received_record.hardcore_marker = hardcore_marker;
+                            highscore_save_record(&received_record);
+                            read_cursor += 0x44;
+                            remaining--;
+                        } while (remaining != 0);
+                    }
+                } else {
+                    data[0x200] = 0;
+                    console_printf(
+                        &console_log_queue,
+                        "invalid feedback (%d bytes).\n",
+                        received);
+                    console_printf(
+                        &console_log_queue,
+                        "<-- (%d %d)\n",
+                        (unsigned char)data[0],
+                        (unsigned char)data[1]);
+                    console_printf(&console_log_queue, "->%s<-\n", data);
+                }
+
+                console_printf(
+                    &console_log_queue,
+                    "ONLINE Scores: Scores sent and received ok.\n");
+                success = true;
+            } else {
+                console_printf(&console_log_queue,
+                    "ONLINE Scores: HttpOpenRequest failed.\n");
+            }
+        } else {
+            console_printf(&console_log_queue,
                 "ONLINE Scores: InternetConnect failed.\n");
-            goto cleanup;
         }
-
-        request = HttpOpenRequestA(
-            connection,
-            "POST",
-            request_path,
-            "HTTP/1.1",
-            "none",
-            accept_types,
-            0x04000000,
-            0x1289);
     }
-    if (!request) {
-        console_printf(
-            &console_log_queue,
-            "ONLINE Scores: HttpOpenRequest failed.\n");
-        goto cleanup;
-    }
-
-    request_ok = HttpSendRequestA(
-        request,
-        headers,
-        headers_length,
-        data,
-        payload_length);
-    console_printf(
-        &console_log_queue,
-        "<-- Sending %d scores in %d bytes.\n",
-        (unsigned int)score_count,
-        payload_length);
-    if (!request_ok) {
-        console_printf(
-            &console_log_queue,
-            "ONLINE Scores: HttpSendRequest failed.\n");
-        goto cleanup;
-    }
-
-    memset(data, 0, 0x8000);
-    read_ok = InternetReadFile(request, data, 0x400, &bytes_read);
-    received = bytes_read;
-    while (read_ok
-        && (int)(received + 0x400) <= 0x8000
-        && bytes_read != 0) {
-        read_ok = InternetReadFile(
-            request,
-            data + received,
-            0x400,
-            &bytes_read);
-        received += bytes_read;
-    }
-
-    if (!read_ok) {
-        console_printf(
-            &console_log_queue,
-            "ONLINE Scores: InternetReadFile failed.\n");
-        console_printf(
-            &console_log_queue,
-            "Reason: %d\n",
-            GetLastError());
-        headers_length = 0x8000;
-        DWORD response_error;
-        InternetGetLastResponseInfoA(
-            &response_error,
-            data,
-            &headers_length);
-        console_printf(&console_log_queue, "Or: %s\n", data);
-        goto cleanup;
-    }
-    if ((int)(received + 0x400) > 0x8000) {
-        console_printf(
-            &console_log_queue,
-            "Warning: receiving too much data, breaking out..\n");
-    }
-
-    console_printf(
-        &console_log_queue,
-        "ONLINE Scores: Beginning to parse data..\n");
-    if ((unsigned char)data[0] == 0x15) {
-        unsigned int count_b = (unsigned char)data[2];
-        unsigned int count_a = (unsigned char)data[1];
-        int total_count = count_a + count_b;
-        console_printf(
-            &console_log_queue,
-            "<-- %d scores (%d+%d) received in %d bytes.\n",
-            total_count,
-            count_a,
-            count_b,
-            received);
-
-        int expected_length = total_count * 0x44;
-        if ((int)received - 3 != expected_length) {
-            console_printf(
-                &console_log_queue,
-                "! Invalid number of bytes received (%d should be %d).\n",
-                received - 3,
-                expected_length);
-            data[0x200] = 0;
-            console_printf(&console_log_queue, "->%s<-\n", data);
-            goto cleanup;
-        }
-
-        console_printf(&console_log_queue, "- Saving scores...\n");
-        if (total_count > 0) {
-            char *read_cursor = data + 3;
-            int remaining = total_count;
-            do {
-                unsigned char hardcore_marker =
-                    config_hardcore ? 0x75 : 0;
-                memcpy(&received_record, read_cursor, 0x44);
-                received_record.flags = 1;
-                received_record.hardcore_marker = hardcore_marker;
-                highscore_save_record(&received_record);
-                read_cursor += 0x44;
-                remaining--;
-            } while (remaining != 0);
-        }
-    } else {
-        data[0x200] = 0;
-        console_printf(
-            &console_log_queue,
-            "invalid feedback (%d bytes).\n",
-            received);
-        console_printf(
-            &console_log_queue,
-            "<-- (%d %d)\n",
-            (unsigned char)data[0],
-            (unsigned char)data[1]);
-        console_printf(&console_log_queue, "->%s<-\n", data);
-    }
-
-    console_printf(
-        &console_log_queue,
-        "ONLINE Scores: Scores sent and received ok.\n");
-    success = true;
 
 cleanup:
     console_printf(&console_log_queue, "ONLINE Scores: CleanUp\n");
@@ -326,10 +340,9 @@ cleanup:
     }
 
     highscore_load_table_thunk();
-    unsigned char batch_mode = highscore_batch_sync_mode;
     highscore_active_record = active_record_backup;
     if (success) {
-        if (!batch_mode) {
+        if (!highscore_batch_sync_mode) {
             Sleep(300);
         } else {
             Sleep(20);
@@ -342,7 +355,7 @@ cleanup:
         }
         online_sync_status = 0;
     } else {
-        if (!batch_mode) {
+        if (!highscore_batch_sync_mode) {
             Sleep(300);
         } else {
             Sleep(20);

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "d25f2410057e04398f5464892f0f1d820c90db19202775218a4ab4996714f80a",
+  "audit_digest": "4189e0834ffc5c8d02e527c52311ff6c3133bcfae27e27c26eff3d263f7558af",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -45360,24 +45360,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "??_C@_0BH@CAMI@scores?4crimsonland?4com?$AA@",
-          "comdat_selection": 2,
-          "function": "highscore_sync_worker",
-          "kind": "section",
-          "logical_section_size": 23,
-          "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
-          "section": ".data",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "??_C@_0BH@CAMI@scores?4crimsonland?4com?$AA@"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "??_C@_0BH@CLIJ@cv_uiPointFilterPanels?$AA@",
           "comdat_selection": 2,
           "function": "register_core_cvars",
@@ -89699,7 +89681,7 @@
           "comdat_selection": 1,
           "function": "highscore_sync_worker",
           "kind": "section",
-          "logical_section_size": 1952,
+          "logical_section_size": 1984,
           "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
           "section": ".text",
           "size": null,
@@ -133428,7 +133410,7 @@
           "comdat_selection": 1,
           "function": "highscore_sync_worker",
           "kind": "section",
-          "logical_section_size": 1952,
+          "logical_section_size": 1984,
           "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
           "section": ".text",
           "size": null,
@@ -159371,7 +159353,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3060,
+    "defined_symbols": 3059,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},

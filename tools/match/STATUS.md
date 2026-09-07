@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **793/810** functions matched exactly (**97.9%**), **235746/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **315869/341992** code bytes (**92.4%**).
+Fuzzy-weighted alignment is **316174/341992** code bytes (**92.5%**).
 
-Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **26123 fuzzy-gap bytes**.
+Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **25818 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**17** non-exact scratch-backed functions hold **26123 fuzzy-gap bytes**. The top 5 hold **78.3%** of that gap; the top 10 hold **97.0%**.
+**17** non-exact scratch-backed functions hold **25818 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
 
-Current-baseline experiments cover **2 functions / 955 gap bytes**; **15 / 25168** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **3 functions / 1102 gap bytes**; **14 / 24715** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -47,8 +47,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 7 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 8 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | current-active | 1/21 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
-| 10 | crimsonland.exe | highscore_sync_worker | 453 | semantic-complete | compiler | historical-only | 0/13 | 0 | metric-tradeoffs,variant-errors,historical-only |
-| 11 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | current-active | 1/33 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
+| 10 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | current-active | 1/33 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
+| 11 | crimsonland.exe | highscore_sync_worker | 147 | semantic-complete | compiler | current-active | 1/15 | 1 | repeated-variants,metric-tradeoffs,variant-errors |
 | 12 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 13 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 14 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
@@ -124,12 +124,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 294704/320827 | 91.9% | 671/671 | 320827/320827 | 100.0% | 654/671 |
+| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 295009/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 654/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **294704/320827** fuzzy-weighted bytes (**91.9%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
+**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **295009/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -507,7 +507,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 100/100 | 0 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | match | crimsonland_main | 0x0042c450 | 3214 | 3214/3214 | 0 | 832/832 | 100.00% | 832/832 | 395/0/0 |  | primary-game-bootstrap-and-shutdown |
-| wip | highscore_sync_worker | 0x0042d0e0 | 1981 | 1528/1981 | 453 | 525/525 | 77.14% | 26/525 | 119/0/0 |  | online-highscore-submit-receive-worker |
+| wip | highscore_sync_worker | 0x0042d0e0 | 1981 | 1834/1981 | 147 | 525/525 | 92.57% | 130/525 | 125/0/0 |  | online-highscore-submit-receive-worker |
 | wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1364/1375 | 11 | 367/367 | 99.18% | 252/367 | 120/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |

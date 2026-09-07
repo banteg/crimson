@@ -3,8 +3,8 @@
 Native target: `crimsonland.exe` at `0x0042d0e0..0x0042d89d`
 (1981 bytes, exclusive end).
 
-Work in progress: 67.75% normalized match, 26/525-instruction exact prefix,
-517 candidate instructions, and 107/0/0 reference audit. The candidate also
+Work in progress: 92.571429% normalized match, 130/525-instruction exact prefix,
+525 candidate instructions, and 125/0/0 reference audit. The candidate also
 reproduces the native `0x160`-byte frame.
 
 Live Binary Ninja evidence recovers the complete upload/download worker:
@@ -27,16 +27,13 @@ Live Binary Ninja evidence recovers the complete upload/download worker:
 - every request, connection, and session handle is closed after deleting the
   response buffer, and all terminal console/status transitions are present.
 
-The remaining mismatch is compiler shape rather than missing behavior. The
-native frame places the reused 64-byte host/path slot below the MIME array,
-lowers both strings into individual stores, field-anchors the submit iterator,
-keeps `InternetReadFile` results in `EAX`, and tail-merges several failure
-messages. MSVC gives the typed candidate the opposite array-slot order, literal
-block copies, a base-anchored record iterator, and different scalar stack-slot
-reuse. Natural initializer, scoped-buffer, pointer-loop, read-loop, branch, and
-declaration-order variants were tested; the retained source has the exact body
-instruction count and best honest score without byte-spelled literals,
-volatility, padding, fake references, or artificial register constraints.
+The current source recovers the host/path storage, character publication,
+receive continuations, failure joins, and scalar storage lifetimes. Three
+localized compiler differences remain: the submission loop retains a record
+cursor rather than the native flags cursor, the error query rotates its two
+output-address registers, and request cleanup contains an extra register copy.
+The missing submit-owner `lea` and extra cleanup copy cancel in the instruction
+count; 525/525 does not establish instruction or encoded-body identity.
 
 ## Recorded record-cursor mutation sweep
 
@@ -212,3 +209,37 @@ three or four request-error reports introduces reference mismatches, both
 with the path-only and combined string candidates. Only the tradeoff-free
 path initialization is retained. The preliminary shared-error probes needed
 `char *`, matching the existing console API; the recorded variants all compile.
+
+
+## Network boundaries and response storage (2026-09-08)
+
+The retained source improves from **77.142857% to 92.571429%**, preserves
+**525/525 instructions**, extends the exact prefix from **26 to 130**, and
+raises the clean reference audit from **119/0/0 to 125/0/0**. It recovers
+305.64 fuzzy-weighted bytes, leaving a 147.16-byte fuzzy gap. Encoded-body
+identity remains false.
+
+Three coherent source groups reproduce native behavior and allocation:
+
+- Setup initializes the MIME list before publishing its computed header length
+  and writes the hostname characters after clearing the complete buffer.
+- Control flow guards the submission cursor, nests request work under successful
+  connection/request handles, and enters overflow or parsing directly from the
+  read loop. This recovers the shared failure tails without repeated read tests.
+- Storage gives the WinINet response length its own scoped `DWORD` and reads the
+  batch-mode state at terminal decisions after restoring the active record.
+  The compiler reuses the native scalar homes without conflating their source
+  lifetimes.
+
+`network-reversion-controls-2026-09-08.json` records every nonempty reversion of
+these three groups: **7/7 complete, compiling controls**, all worse. Reverting
+storage alone gives 90.857143%; reverting all three reproduces 77.142857%.
+
+A separate flags-reference diagnostic recovers the native submission owner and
+reaches 96.860133%, prefix 340, and 126 clean references. It also has **526/525
+instructions**, because the request-close register copy remains. That source
+is not retained. Its two remaining regions are the error-query output-address
+registers at `0x0042d604` and the request close at `0x0042d7d9`. The retained
+source additionally has the submission cursor difference at `0x0042d31c`.
+These observations describe the remaining work; they do not establish a
+compiler limitation or a second exact match for the current campaign.
