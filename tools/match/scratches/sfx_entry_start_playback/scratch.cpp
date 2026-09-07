@@ -20,7 +20,6 @@ extern "C" int sfx_entry_start_playback(sfx_entry_t *entry)
         sfx_entry_upload_buffer(entry);
     }
 
-    result = 0;
     if (entry->vorbis_stream != 0) {
 stream_playback:
         sfx_entry_seek(entry, 0);
@@ -31,11 +30,14 @@ stream_playback:
         return 0;
     }
 
+    result = 0;
     while (result < 16) {
         if (entry->buffers[result] != 0) {
             entry->buffers[result]->GetStatus(&status);
             if ((status & DSBSTATUS_PLAYING) == 0) {
-                goto play_voice;
+                entry->buffers[result]->SetFrequency(sfx_rate_scale);
+                entry->buffers[result]->Play(0, 0, 0);
+                return result;
             }
         }
         ++result;
@@ -43,7 +45,6 @@ stream_playback:
     result = rand() % 16;
     entry->buffers[result]->Stop();
 
-play_voice:
     entry->buffers[result]->SetFrequency(sfx_rate_scale);
     entry->buffers[result]->Play(0, 0, 0);
     return result;

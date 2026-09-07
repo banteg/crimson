@@ -5,6 +5,12 @@ prefill three quarters, and loop the primary buffer. Resident entries select
 the first non-playing voice, falling back to a random voice and stopping it when
 all 16 are busy, then apply the global playback frequency and start once.
 
+The retained default `msvc6.5 /O2 /GB /W3 /GR-` source is an exact match:
+215 encoded bytes, 93/93 instructions, prefix 93, `8/0/0` audited references,
+and `body_byte_exact=true` at native `0x0043be60`.
+
+## Historical recovery
+
 The default VC6 `/O2 /GB` result is 87.10% with a 27.74-byte fuzzy gap
 (93/93 instructions, `7/0/0` audited references). The historical Processor Pack
 `/G6` experiment reached 80.21%, but it also added an instruction and cannot be
@@ -163,3 +169,28 @@ evaluations, including the delayed-index control shared by two plans:
 No source or configuration change is retained. The complete controls preserve
 the negative evidence for these ownership and control-flow hypotheses without
 using register hints, artificial dependencies, or compiler-profile changes.
+
+## Exact resident return and index lifetime (2026-09-07)
+
+Native `0x0043be60..0x0043bf37` saves ESI in the common prologue, initializes
+the resident index after the streaming return, and shares the final frequency
+and playback instructions between the free-voice and random fallback paths.
+That merged machine tail did not establish a shared source-level `goto`.
+Returning immediately after playing a free voice lets VC6 merge the duplicated
+frequency/play statements while recovering the native register allocation.
+
+`resident-return-lifetime-interactions-2026-09-07.json` records all three
+nonempty combinations of two source changes against the 87.096774% baseline:
+
+| Change | Match | Instructions | Prefix | References |
+| --- | ---: | ---: | ---: | --- |
+| Initialize the scan index after the streaming return | 77.173913% | 91/93 | 1 | 7/0/0 |
+| Play and return directly at free-voice selection | 70.967742% | 93/93 | 2 | 8/0/0 |
+| Both | 100% | 93/93 | 93 | 8/0/0 |
+
+The complete interaction is exact even though both individual changes regress.
+It removes the 27.741935 fuzzy-gap bytes without changing the streaming,
+restore, scan, or fallback behavior. A separately recorded source probe confirms
+all 215 encoded bytes and all eight references. An exploratory helper spelling
+of the same two resident play/return arms is also exact; the retained source
+uses direct statements and no added helper or compiler override.
