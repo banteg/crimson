@@ -47,6 +47,7 @@ from .spawn_ids import (
 from .spawn_templates import SPAWN_ID_TO_TEMPLATE, SPAWN_TEMPLATES, TYPE_ID_TO_NAME, SpawnTemplate
 
 _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE = f32_from_bits(0x3727C5AD)
+_NATIVE_CREATURE_SPAWN_HEALTH_SCALE = f32_from_bits(0x38D1B718)  # 0x0046f310
 _NATIVE_RUSH_TINT_SIN_SCALE = f32_from_bits(0x38D1B718)
 _NATIVE_FORMATION_CHAIN_LIZARD_ANGLE_STEP = f32_from_bits(0x3EC90FDB)
 _NATIVE_FORMATION_CHAIN_ALIEN_ANGLE_STEP = f32_from_bits(0x3EB2B8C3)
@@ -1632,7 +1633,7 @@ def build_rush_mode_spawn_creature(
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     elapsed_f32 = f32(float(elapsed_ms))
-    c.health = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-4)), 10.0)
+    c.health = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
     c.heading = float(f32(f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314)) * f32(0.01)))
     c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
     c.reward_value = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)

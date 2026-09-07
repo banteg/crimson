@@ -57,7 +57,8 @@ def test_rush_spawn_stats_round_each_native_x87_operation() -> None:
         survival_elapsed_ms=3792,
     )
 
-    assert health_case.health == 10.047399520874023
+    assert health_case.health == 10.04740047454834  # native health scale at 0x0046f310
+    assert health_case.max_health == health_case.health
     assert speed_case.move_speed == 2.5023701190948486
     assert size_case.size == 47.03792190551758
 

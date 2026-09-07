@@ -753,7 +753,7 @@ pub fn buildRushModeSpawnCreature(
     creature.ai_mode = CreatureAiMode.orbit_player;
 
     const elapsed_f32: f32 = @floatFromInt(elapsed_ms);
-    creature.health = narrowF32(elapsed_f32 * 1e-4 + 10.0);
+    creature.health = native_math.pc24Add(native_math.pc24Mul(elapsed_f32, native_math.native_creature_spawn_health_scale), 10.0);
     {
         const heading_base: f32 = @floatFromInt(rng.randTagged(rng_callers.creature_spawn_heading) % 314);
         const heading_scaled: f32 = heading_base * 0.01;
@@ -1714,6 +1714,11 @@ test "rush wave no trigger" {
 }
 
 test "rush spawn uses exact native elapsed scale" {
+    var health_rng = Crand.init(1);
+    const health = buildRushModeSpawnCreature(.{ .x = 0.0, .y = 0.0 }, .{ 1.0, 1.0, 1.0, 1.0 }, &health_rng, .alien, 474);
+    try std.testing.expectEqual(@as(f32, 10.04740047454834), health.health);
+    try std.testing.expectEqual(health.health, health.max_health);
+
     var speed_rng = Crand.init(1);
     const speed = buildRushModeSpawnCreature(.{ .x = 0.0, .y = 0.0 }, .{ 1.0, 1.0, 1.0, 1.0 }, &speed_rng, .alien, 237);
     try std.testing.expectEqual(@as(u32, 0x402026D5), @as(u32, @bitCast(speed.move_speed)));

@@ -6,6 +6,7 @@ pub const native_quarter_pi: f32 = @bitCast(@as(u32, 0x3F490FDB));
 pub const native_tau: f32 = @bitCast(@as(u32, 0x40C90FDB));
 pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 pub const native_creature_spawn_elapsed_scale: f32 = @bitCast(@as(u32, 0x3727C5AD));
+pub const native_creature_spawn_health_scale: f32 = @bitCast(@as(u32, 0x38D1B718)); // 0x0046f310
 pub const native_float_epsilon: f32 = @bitCast(@as(u32, 0x34000000));
 pub const native_float_min: f32 = @bitCast(@as(u32, 0x00800000));
 pub const native_fire_muzzle_rotation: f32 = @bitCast(@as(u32, 0x3E1A8976));
