@@ -216,3 +216,14 @@ subobject forms are byte-neutral. The other two matrices regress; the strongest
 step form is 89.523810%, while the strongest bottom-helper form is 88.151659%.
 These complete recorded overlay sweeps bound the listed source hypotheses only.
 Canonical source and configuration remain unchanged.
+
+
+## Borrowed wave metadata controls (2026-09-07)
+
+The complete 24-control `borrowed-wave-metadata-2026-09-07.json` crosses
+by-value/const-reference count and trigger arguments with returned input/stored
+counts and pointer/indexed/precomputed call boundaries. All controls compile.
+None improves 95.238095%, 105/105 instructions, prefix 54, and references
+8/0/0. The strongest helper forms reach 88.151659% with 106 instructions and
+prefix 17. Borrowing the metadata does not retain the native count register
+while delaying its field store; canonical source is unchanged.

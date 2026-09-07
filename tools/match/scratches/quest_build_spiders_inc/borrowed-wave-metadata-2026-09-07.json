@@ -1,0 +1,353 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bottom-helper",
+      "find": "    void set_spawn(",
+      "replacements": [
+        {
+          "name": "count-value-time-value-spawn_count-pointer",
+          "text": "    int set_bottom_wave_count_value_time_value_spawn_count_pointer(int spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-value-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-value-spawn_count-index",
+          "text": "    int set_bottom_wave_count_value_time_value_spawn_count_index(int spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-value-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-value-spawn_count-precomputed",
+          "text": "    int set_bottom_wave_count_value_time_value_spawn_count_precomputed(int spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-value-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-value-time-value-count-pointer",
+          "text": "    int set_bottom_wave_count_value_time_value_count_pointer(int spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-value-count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-value-count-index",
+          "text": "    int set_bottom_wave_count_value_time_value_count_index(int spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-value-count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-value-count-precomputed",
+          "text": "    int set_bottom_wave_count_value_time_value_count_precomputed(int spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-value-count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-spawn_count-pointer",
+          "text": "    int set_bottom_wave_count_ref_time_value_spawn_count_pointer(const int &spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-value-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-spawn_count-index",
+          "text": "    int set_bottom_wave_count_ref_time_value_spawn_count_index(const int &spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-value-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-spawn_count-precomputed",
+          "text": "    int set_bottom_wave_count_ref_time_value_spawn_count_precomputed(const int &spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-value-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-count-pointer",
+          "text": "    int set_bottom_wave_count_ref_time_value_count_pointer(const int &spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-value-count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-count-index",
+          "text": "    int set_bottom_wave_count_ref_time_value_count_index(const int &spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-value-count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-count-precomputed",
+          "text": "    int set_bottom_wave_count_ref_time_value_count_precomputed(const int &spawn_count, int spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-value-count-precomputed"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-spawn_count-pointer",
+          "text": "    int set_bottom_wave_count_value_time_ref_spawn_count_pointer(int spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-ref-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-spawn_count-index",
+          "text": "    int set_bottom_wave_count_value_time_ref_spawn_count_index(int spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-ref-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-spawn_count-precomputed",
+          "text": "    int set_bottom_wave_count_value_time_ref_spawn_count_precomputed(int spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-ref-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-count-pointer",
+          "text": "    int set_bottom_wave_count_value_time_ref_count_pointer(int spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-ref-count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-count-index",
+          "text": "    int set_bottom_wave_count_value_time_ref_count_index(int spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-ref-count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-count-precomputed",
+          "text": "    int set_bottom_wave_count_value_time_ref_count_precomputed(int spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-value-time-ref-count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-spawn_count-pointer",
+          "text": "    int set_bottom_wave_count_ref_time_ref_spawn_count_pointer(const int &spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-ref-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-spawn_count-index",
+          "text": "    int set_bottom_wave_count_ref_time_ref_spawn_count_index(const int &spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-ref-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-spawn_count-precomputed",
+          "text": "    int set_bottom_wave_count_ref_time_ref_spawn_count_precomputed(const int &spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return spawn_count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-ref-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-count-pointer",
+          "text": "    int set_bottom_wave_count_ref_time_ref_count_pointer(const int &spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-ref-count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-count-index",
+          "text": "    int set_bottom_wave_count_ref_time_ref_count_index(const int &spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-ref-count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-count-precomputed",
+          "text": "    int set_bottom_wave_count_ref_time_ref_count_precomputed(const int &spawn_count, const int &spawn_trigger_time_ms)\n    {\n        pos.y = (float)(terrain_texture_width + 64);\n        pos.x = (float)(terrain_texture_width / 2);\n        template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return count;\n    }\n\n    void set_spawn(",
+          "requires": [
+            "bottom-call/count-ref-time-ref-count-precomputed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "bottom-call",
+      "find": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count =\n            wave_spawn->count = step_count / 2 + 3;\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;",
+      "replacements": [
+        {
+          "name": "count-value-time-value-spawn_count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_value_spawn_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-value-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-value-spawn_count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_value_time_value_spawn_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-value-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-value-spawn_count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_value_spawn_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-value-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-value-time-value-count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_value_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-value-count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-value-count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_value_time_value_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-value-count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-value-count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_value_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-value-count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-spawn_count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_value_spawn_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-value-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-spawn_count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_ref_time_value_spawn_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-value-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-spawn_count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_value_spawn_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-value-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_value_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-value-count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_ref_time_value_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-value-count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-value-count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_value_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-value-count-precomputed"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-spawn_count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_ref_spawn_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-ref-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-spawn_count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_value_time_ref_spawn_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-ref-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-spawn_count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_ref_spawn_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-ref-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_ref_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-ref-count-pointer"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_value_time_ref_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-ref-count-index"
+          ]
+        },
+        {
+          "name": "count-value-time-ref-count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_value_time_ref_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-value-time-ref-count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-spawn_count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_ref_spawn_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-ref-spawn_count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-spawn_count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_ref_time_ref_spawn_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-ref-spawn_count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-spawn_count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_ref_spawn_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-ref-spawn_count-precomputed"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-count-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_ref_count_pointer(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-ref-count-pointer"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-count-index",
+          "text": "        int wave_count = builder.spawns[builder.count].set_bottom_wave_count_ref_time_ref_count_index(step_count / 2 + 3, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-ref-count-index"
+          ]
+        },
+        {
+          "name": "count-ref-time-ref-count-precomputed",
+          "text": "        int next_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = wave_spawn->set_bottom_wave_count_ref_time_ref_count_precomputed(next_count, trigger_time_ms);",
+          "requires": [
+            "bottom-helper/count-ref-time-ref-count-precomputed"
+          ]
+        }
+      ]
+    }
+  ]
+}

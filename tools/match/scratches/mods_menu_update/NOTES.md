@@ -353,3 +353,19 @@ boundary; these scope controls alone do not recover it.
 Twenty complete SDK vector-expression, phase-scope, enumeration-buffer, and string-pointer ownership controls are byte-neutral at 98.919753%, 648/648 instructions, and 184 clean references. No buffer extent, compiler setting, storage overlay, or alias changed. Static-initialization hoists were rejected before this valid-control set because they changed initialization order.
 
 The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.
+
+
+## Opening/call interactions and color ownership (2026-09-07)
+
+Following the exact Play Game recovery, 44 complete controls cross four
+opening vector boundaries with the SDK array view and direct separator,
+Launch, and Main Menu call expressions. All 44 compile; none improves the
+98.919753%, 648/648-instruction, prefix-zero, 184/0/0 baseline. The persistent
+16-byte enumeration-frame difference is not recovered by this interaction.
+
+Two further complete matrices test nine selected-render helpers with reference,
+pointer, value, and selected-index inputs, and ten color constructor, array-view,
+copy, and source-reference combinations. Reference-preserving helper forms and
+ordinary color constructors are neutral. Scalar color copies lose two
+instructions and introduce a reference mismatch. All three plans and their
+63 valid evaluations are retained; canonical source is unchanged.

@@ -310,3 +310,20 @@ its fuzzy score to 96.817172%, still with only 675 instructions. Those
 instruction-count tradeoffs are not retained. Follow-up total quotient,
 remainder, scalar lifetime, gate, and formatter controls produced no exact
 candidate in this bounded family.
+
+
+## Time decomposition and shared scalar controls (2026-09-07)
+
+`time-value-controls-2026-09-07.json` records ten complete representative
+controls covering session-helper renderer timing, shared hour/minute/second
+lifetimes, and total-time decomposition through a constructor, returned record,
+or reference outputs. Every control compiles; none improves the canonical
+94.526627%, 676/676 instructions, prefix 280, and references 276/0/0 without
+a tradeoff.
+
+Sharing all three time scalars retains the diagnostic 96.817172% variant with
+prefix 469 and 277 clean references, but it still has only 675 instructions.
+The total-time remainder calculation remains on the wrong side of the key
+query and its register allocation differs. Returned records and constructors
+regress the earlier allocation too. These controls preserve the diagnostic
+source paths without accepting the higher score as an exact recovery.

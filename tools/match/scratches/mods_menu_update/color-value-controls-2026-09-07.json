@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-value-type",
+      "find": "struct mods_color_t {\n    float r;\n    float g;\n    float b;\n    float a;\n};\n",
+      "replacements": [
+        {
+          "name": "color-constructors",
+          "text": "struct mods_color_t {\n    float r;\n    float g;\n    float b;\n    float a;\n    mods_color_t() {}\n    mods_color_t(float r_, float g_, float b_, float a_) : r(r_), g(g_), b(b_), a(a_) {}\n};\n"
+        },
+        {
+          "name": "explicit-color-copy",
+          "text": "struct mods_color_t {\n    float r;\n    float g;\n    float b;\n    float a;\n    mods_color_t(const mods_color_t &other) : r(other.r), g(other.g), b(other.b), a(other.a) {}\n};\n"
+        },
+        {
+          "name": "color-array-view",
+          "text": "struct mods_color_t {\n    union {\n        struct { float r; float g; float b; float a; };\n        float v[4];\n    };\n};\n"
+        }
+      ]
+    },
+    {
+      "name": "color-copy-publication",
+      "find": "        mods_color_t separator_color =\n            *(mods_color_t *)&render_tint_color_r;",
+      "replacements": [
+        {
+          "name": "member-copy",
+          "text": "        mods_color_t separator_color;\n        separator_color.r = render_tint_color_r;\n        separator_color.g = render_tint_color_g;\n        separator_color.b = render_tint_color_b;\n        separator_color.a = render_tint_color_a;",
+          "conflicts": [
+            "color-value-type/explicit-color-copy"
+          ]
+        },
+        {
+          "name": "const-source-ref",
+          "text": "        const mods_color_t &current_color = *(mods_color_t *)&render_tint_color_r;\n        mods_color_t separator_color = current_color;"
+        }
+      ]
+    }
+  ]
+}

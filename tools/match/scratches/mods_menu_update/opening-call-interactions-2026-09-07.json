@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-value-boundary",
+      "find": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;\n",
+      "replacements": [
+        {
+          "name": "origin-default-position",
+          "text": "    mods_vec2_t origin =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    mods_vec2_t position;\n    position = origin + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;\n"
+        },
+        {
+          "name": "default-position-origin",
+          "text": "    mods_vec2_t position;\n    mods_vec2_t origin =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = origin + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;\n"
+        },
+        {
+          "name": "default-position-chain",
+          "text": "    mods_vec2_t position;\n    position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x\n        + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;\n"
+        },
+        {
+          "name": "initialized-position-chain",
+          "text": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x\n        + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;\n"
+        }
+      ]
+    },
+    {
+      "name": "vector-array-view",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "sdk-union",
+          "text": "    union {\n        struct { float x; float y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "launch-call",
+      "find": "        mods_vec2_t button_position;\n        button_position.x = button_origin.x + 58.0f;\n        button_position.y = button_origin.y + 232.0f;\n        if (ui_button_update(\n                (float *)&button_position,\n                (ui_button_t *)&launch_button)) {",
+      "replacements": [
+        {
+          "name": "sdk-expression",
+          "text": "        if (ui_button_update(\n                (button_origin + mods_vec2_t(58.0f, 232.0f)).v,\n                (ui_button_t *)&launch_button)) {",
+          "requires": [
+            "vector-array-view/sdk-union"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "main-menu-call",
+      "find": "        mods_vec2_t button_position;\n        button_position.x = button_origin.x + 58.0f;\n        button_position.y = button_origin.y + 266.0f;\n        if (ui_button_update(\n                (float *)&button_position,\n                (ui_button_t *)&main_menu_button)) {",
+      "replacements": [
+        {
+          "name": "sdk-expression",
+          "text": "        if (ui_button_update(\n                (button_origin + mods_vec2_t(58.0f, 266.0f)).v,\n                (ui_button_t *)&main_menu_button)) {",
+          "requires": [
+            "vector-array-view/sdk-union"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "separator-call",
+      "find": "            mods_vec2_t separator_position(\n                position.x - 4.0f, position.y);\n            grim_interface_ptr->grim_draw_rect_outline(\n                (float *)&separator_position, 200.0f, 1.0f);",
+      "replacements": [
+        {
+          "name": "sdk-expression",
+          "text": "            grim_interface_ptr->grim_draw_rect_outline(\n                mods_vec2_t(position.x - 4.0f, position.y).v,\n                200.0f, 1.0f);",
+          "requires": [
+            "vector-array-view/sdk-union"
+          ]
+        }
+      ]
+    }
+  ]
+}
