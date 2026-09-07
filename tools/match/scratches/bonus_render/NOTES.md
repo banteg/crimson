@@ -14,12 +14,10 @@ fade envelopes and that the icon size pulse is `pow(sin(phase), 2.0)`, not a
 fourth power. The modern renderer parity fix is tracked separately from this
 matching scratch.
 
-The complete VC6 scratch now matches 92.647059% (1,088 target and candidate
-instructions, 14-instruction exact prefix). Reference auditing reports 232
-aligned references with no mismatches or unresolved references. The remaining
-differences concern the weapon-pass register lifetime, Telekinetic block
-placement, and beam x87 scheduling; no reference aliases are used. The dated
-measurements below describe earlier source checkpoints.
+The complete MSVC 6.5 scratch now has **encoded-body identity**: 1,088/1,088
+instructions, full prefix, all 239 references aligned, and all 4,088 body bytes
+exact after audited relocation handling. No reference aliases are used. The
+2026-09-07 recovery below supersedes the earlier compiler-residual assessments.
 
 The strongest source-shape evidence was VC6's treatment of index-based pool
 loops. Writing the particle, secondary-projectile, and sprite-effect walks as
@@ -35,13 +33,12 @@ source increment advances one 0x360-byte player record. This removes the prior
 `offsetof` container recovery without inventing a field alias and improves
 both the byte score and reference agreement.
 
-The nearby-bonus search now uses a natural `nearby_bonus_found` flag instead of
-a reconstruction-only `goto`. VC6 optimizes the flag away and emits
-byte-for-byte identical code: search exhaustion resets the current hover timer,
-the found path owns label rendering, and both paths share the Telekinetic
-threshold test. The induction pointer now starts directly at
-`player_state_table[0].aim`, and the outer guard retains the existing player
-index; both type-safe expressions are likewise matcher-neutral.
+The nearby-bonus search is a bounded loop in an inlined label helper. A hit
+renders its label and returns its index; exhaustion resets the hover timer and
+returns the end index. Both paths reach the caller's Telekinetic threshold
+check. The reset makes its short-circuit guard false on exhaustion before any
+end-index state access. The outer player loop advances the index, aggregate
+player cursor, and hover-timer cursor together.
 
 The three particle render passes now use the canonical `particle_t` directly
 instead of a scratch-local 0x38-byte record with two padding regions. Static
@@ -360,3 +357,43 @@ The formatted source passes the scratch validator and its focused probe.
 No pool bounds, floating-point operations, helper contracts, compiler options,
 or reference mappings change. Integration validation belongs to the
 coordinating matching run.
+
+
+## Exact hover-search and beam lifetimes (2026-09-07)
+
+Three interacting source lifetimes recover the complete native body:
+
+- The player walk uses a bounded `for`, exposing its induction variable to
+  VC6. This recovers the native EBX zero shared with the preceding weapon pass
+  and removes the candidate's promoted weapon-id constant.
+- The inner search is also bounded. Returning immediately after rendering a
+  found bonus lets its exhaustion path reset the timer without rechecking the
+  index. Native places the label arm after the player-loop latch and jumps back
+  to the shared threshold check. Both an inlined helper with an early return
+  and an in-function forward-exit control reproduce this body; the helper is
+  retained as the clearer source, without claiming a unique original boundary.
+- The beam phase variable becomes the scaled half-height directly. Removing
+  the additional scalar copy restores the native unscaled-width spill, height
+  calculation, and width reload/scale sequence. A reference alias is an exact
+  diagnostic too, but the retained source needs no alias.
+
+The accepted probe moves **92.647059% to 100%**, prefix **14 to 1,088**, and
+references **232/0/0 to 239/0/0**, while preserving **1,088/1,088** instructions.
+`body_byte_exact` is true, with no terminal padding. The helper is fully inlined;
+no function ABI, shared type, compiler option, pool bound, or constant changes.
+
+`hover-search-height-lifetimes-2026-09-07.json` records all seven nonempty
+combinations of restoring the earlier search loop, player loop, and beam-height
+copy against the exact source. All seven compile and all lose exactness:
+
+| restored source lifetime | match | candidate/native | prefix | refs |
+| --- | ---: | ---: | ---: | --- |
+| beam-height copy | 98.252070% | 1086/1088 | 14 | 238/0/0 |
+| unbounded hover search | 97.197979% | 1089/1088 | 508 | 235/0/0 |
+| player-loop exit test | 94.674013% | 1090/1088 | 14 | 237/0/0 |
+| all three | 92.512632% | 1089/1088 | 14 | 232/0/0 |
+
+The three pair controls also fail to match. The accepted source probe and full
+control sweep are in `experiments.jsonl`; strict validation reports zero
+current-baseline evaluation or log errors. The corpus native audit and final
+checkpoint are coordinated after the five-function recovery batch.

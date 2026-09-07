@@ -92,6 +92,37 @@ static __inline float bonus_render_distance(
     return (float)sqrt(dy * dy + dx * dx);
 }
 
+static __inline int bonus_render_hover_label(player_state_t *player,
+                                             int *hover_timer)
+{
+    int nearby_bonus_index = 0;
+    for (; nearby_bonus_index < 16; ++nearby_bonus_index) {
+        if (bonus_pool[nearby_bonus_index].bonus_id != BONUS_ID_NONE &&
+            bonus_render_distance(
+                &player->aim, &bonus_pool[nearby_bonus_index].time.position) <
+                24.0f) {
+            if (game_state_id == GAME_STATE_GAMEPLAY) {
+                *hover_timer += frame_dt_ms;
+            }
+
+            char *label =
+                bonus_label_for_entry(&bonus_pool[nearby_bonus_index]);
+            float label_x = camera_offset_x + player->aim.x + 16.0f;
+            float label_y = camera_offset_y + player->aim.y - 7.0f;
+            float label_width =
+                (float)grim_interface_ptr->grim_measure_text_width(label);
+            if (label_x + label_width > (float)config_screen_width) {
+                label_x = (float)config_screen_width - label_width;
+            }
+            grim_interface_ptr->grim_draw_text_small(label_x, label_y, label);
+            return nearby_bonus_index;
+        }
+    }
+    *hover_timer = 0;
+
+    return nearby_bonus_index;
+}
+
 extern "C" void bonus_render(void)
 {
     int bonus_index;
@@ -233,67 +264,21 @@ extern "C" void bonus_render(void)
     if (player_index < config_player_count) {
         int *hover_timer = telekinetic_bonus_hover_timer_ms;
         player_state_t *player = player_state_table;
-        int nearby_bonus_index;
-        while (1) {
+        for (; player_index < config_player_count;
+             ++player_index, ++player, ++hover_timer) {
             if (player->health > 0.0f) {
-                nearby_bonus_index = 0;
-                int nearby_bonus_found = 0;
-                while (1) {
-                    if (bonus_pool[nearby_bonus_index].bonus_id != BONUS_ID_NONE
-                        && bonus_render_distance(
-                               &player->aim,
-                               &bonus_pool[nearby_bonus_index].time.position)
-                            < 24.0f) {
-                        nearby_bonus_found = 1;
-                        break;
-                    }
-                    ++nearby_bonus_index;
-                    if (nearby_bonus_index >= 16) {
-                        *hover_timer = 0;
-                        break;
-                    }
-                }
-
-                if (nearby_bonus_found) {
-                    if (game_state_id == GAME_STATE_GAMEPLAY) {
-                        *hover_timer += frame_dt_ms;
-                    }
-
-                    char *label = bonus_label_for_entry(
-                        &bonus_pool[nearby_bonus_index]);
-                    float label_x =
-                        camera_offset_x + player->aim.x + 16.0f;
-                    float label_y =
-                        camera_offset_y + player->aim.y - 7.0f;
-                    float label_width =
-                        (float)grim_interface_ptr
-                            ->grim_measure_text_width(label);
-                    if (label_x + label_width
-                        > (float)config_screen_width) {
-                        label_x =
-                            (float)config_screen_width - label_width;
-                    }
-                    grim_interface_ptr->grim_draw_text_small(
-                        label_x, label_y, label);
-                }
+                int nearby_bonus_index =
+                    bonus_render_hover_label(player, hover_timer);
 
                 if (*hover_timer > 650
                     && perk_count_get(perk_id_telekinetic)
                     && bonus_pool[nearby_bonus_index].state == 0) {
-                    bonus_apply(
-                        player_index, &bonus_pool[nearby_bonus_index]);
+                    bonus_apply(player_index, &bonus_pool[nearby_bonus_index]);
                     bonus_pool[nearby_bonus_index].state = 1;
                     bonus_pool[nearby_bonus_index].time.time_left = 0.5f;
                     telekinetic_bonus_hover_timer_ms[player_index] = 0;
                     break;
                 }
-            }
-
-            ++player_index;
-            ++player;
-            ++hover_timer;
-            if (player_index >= config_player_count) {
-                break;
             }
         }
     }
@@ -405,8 +390,7 @@ extern "C" void bonus_render(void)
                 * 7.0f;
             half_width =
                 half_width * particle_pool[beam_index].scale_x * 7.0f;
-            float half_height = phase_size;
-            float height = half_height + half_height;
+            float height = phase_size + phase_size;
             float width = half_width + half_width;
             grim_interface_ptr->grim_draw_quad(
                 camera_offset_x
@@ -414,7 +398,7 @@ extern "C" void bonus_render(void)
                     - half_width,
                 camera_offset_y
                     + particle_pool[beam_index].pos_y
-                    - half_height,
+                    - phase_size,
                 width,
                 height);
         }
