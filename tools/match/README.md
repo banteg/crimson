@@ -550,6 +550,19 @@ and reference inputs still hash to the live repository, and the generated
 `objects.txt` and `exports.def` companions match their recorded hashes;
 otherwise it is explicitly labeled stale, missing, or invalid.
 
+After matching or shared-input changes, refresh the full-scope public report
+before committing:
+
+```sh
+uv run crimson match report --refresh -j 8
+git add analysis/decomp/1.9.93.json
+```
+
+This is separate from the internal `port` dashboard. The
+[decomp.dev report contract](../../analysis/decomp/README.md) defines the full
+denominator, source-only matched/fuzzy credit, and zero linked credit until
+original build organization is recovered. CI rejects stale public evidence.
+
 Each status row includes fuzzy-weighted bytes and its remaining fuzzy gap in
 addition to exact-match state. Keep the canonical Markdown board complete, but
 filter the terminal report when investigating a narrower slice:

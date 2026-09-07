@@ -10,11 +10,48 @@ from typing import Any, Literal
 
 import typer
 
-from .. import library_match, match_diagnostics, match_experiments, match_mutation, match_regressions, mod_sdk
+from .. import (
+    library_match,
+    match_diagnostics,
+    match_experiments,
+    match_mutation,
+    match_regressions,
+    match_report,
+    mod_sdk,
+)
 from .. import library_provenance as provenance
 from .. import match as matchlib
 
 match_app = typer.Typer(add_completion=False)
+
+
+@match_app.command("report")
+def cmd_match_report(
+    refresh: bool = typer.Option(False, "--refresh", help="evaluate all scratches and save fresh full-scope evidence"),
+    output: Path = typer.Option(match_report.DEFAULT_REPORT, "--out", help="objdiff v2 report output"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel matching jobs"),
+) -> None:
+    """Validate saved evidence and export Crimsonland 1.9.93 to decomp.dev."""
+    try:
+        if refresh:
+            evidence = match_report.refresh_evidence(jobs=jobs)
+        else:
+            evidence = json.loads(match_report.DEFAULT_EVIDENCE.read_text(encoding="utf-8"))
+        match_report.validate_evidence(evidence)
+        report = match_report.build_report(evidence["functions"])
+        if refresh:
+            matchlib.write_match_json(match_report.DEFAULT_EVIDENCE, evidence)
+        matchlib.write_match_json(output, report)
+    except (ValueError, KeyError, TypeError, OSError, subprocess.CalledProcessError) as exc:
+        typer.echo(f"decomp.dev report failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    measures = report["measures"]
+    typer.echo(
+        f"{match_report.VERSION}: {measures['matched_functions']}/{measures['total_functions']} functions; "
+        f"{measures['matched_code']}/{measures['total_code']} bytes matched "
+        f"({measures['matched_code_percent']:.2f}%); fuzzy={measures['fuzzy_match_percent']:.2f}%; "
+        f"linked={measures['complete_code_percent']:.2f}%; report={output}",
+    )
 
 
 def _parse_hex(value: str | None) -> int | None:

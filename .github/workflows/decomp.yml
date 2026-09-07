@@ -1,0 +1,60 @@
+name: Decompilation progress
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Fetch pinned reference images
+        run: |
+          game_dir="game_bins/crimsonland/1.9.93-gog"
+          mkdir -p "$game_dir"
+          for name in crimsonland.exe grim.dll; do
+            curl --fail --location --retry 3 --retry-all-errors \
+              --output "$game_dir/$name" "https://paq.crimson.banteg.xyz/v1.9.93/$name"
+          done
+          sha256sum --check <<'EOF'
+          771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+          373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70  game_bins/crimsonland/1.9.93-gog/grim.dll
+          EOF
+
+      - name: Verify matching evidence and export progress
+        run: uv run --no-sync crimson match report
+
+      - name: Validate with objdiff's report parser
+        run: |
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output "$RUNNER_TEMP/objdiff-cli" \
+            https://github.com/encounter/objdiff/releases/download/v3.8.1/objdiff-cli-linux-x86_64
+          echo "c8290281e82114bcc1a06ff73061110d3902a177822e750337de2537188e358f  $RUNNER_TEMP/objdiff-cli" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/objdiff-cli"
+          "$RUNNER_TEMP/objdiff-cli" report changes artifacts/decomp/report.json artifacts/decomp/report.json
+
+      - name: Upload progress report
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1.9.93_report
+          path: artifacts/decomp/report.json
+          if-no-files-found: error
