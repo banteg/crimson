@@ -2439,7 +2439,7 @@
     },
     {
       "name": "source-zero-font-uv-table-00800",
-      "types": [null],
+      "types": ["GrimUV[256]"],
       "size": 2048,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_font2_uv_u[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
       "alignment": 4,
@@ -2452,7 +2452,7 @@
     },
     {
       "name": "source-zero-subrect-table-00800",
-      "types": [null],
+      "types": ["GrimUV[256]"],
       "size": 2048,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
       "alignment": 4,
@@ -2465,7 +2465,7 @@
     },
     {
       "name": "source-zero-subrect-table-00200",
-      "types": [null],
+      "types": ["GrimUV[64]"],
       "size": 512,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "alignment": 4,
@@ -2478,7 +2478,7 @@
     },
     {
       "name": "source-zero-subrect-table-00080",
-      "types": [null],
+      "types": ["GrimUV[16]"],
       "size": 128,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_1[16]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "alignment": 4,
@@ -2491,7 +2491,7 @@
     },
     {
       "name": "source-zero-subrect-table-00020",
-      "types": [null],
+      "types": ["GrimUV[4]"],
       "size": 32,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
       "alignment": 4,

@@ -11,13 +11,7 @@ struct GrimDepth {
         : z(z_value), rhw(rhw_value) {}
 };
 
-struct GrimUV {
-    float u;
-    float v;
-
-    GrimUV() {}
-    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}
-};
+#include "grim_uv.h"
 
 extern grim_config_value_t grim_config_default;
 extern grim_config_value_t grim_config_values[128];

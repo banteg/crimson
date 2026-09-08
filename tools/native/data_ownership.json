@@ -3511,6 +3511,78 @@
         "path": "tools/native/data_definitions/grim.dll.json",
         "reason": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]"
       }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_unlock_index",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Native game progression owns the 32-bit runtime counter; serialization narrows it to 16 bits."
+      }
+    },
+    {
+      "image": "crimsonland.exe",
+      "name": "quest_unlock_index_full",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Native game progression owns the 32-bit runtime counter; serialization narrows it to 16 bits."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_key_repeat_timers",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_font2_uv_u",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_subrect_table",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_subrect_table_0",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_subrect_table_1",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_subrect_table_2",
+      "owner": "game",
+      "evidence": {
+        "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
+        "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
+      }
     }
   ]
 }

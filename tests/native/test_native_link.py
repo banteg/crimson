@@ -2349,7 +2349,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["summary"]["source_entry_count"] == 484
     assert payload["summary"]["code_label_entries"] == 6
     assert payload["summary"]["entry_count"] == 478
-    assert payload["summary"]["typed_entries"] == 428
+    assert payload["summary"]["typed_entries"] == 433
     assert payload["summary"]["explicit_size_entries"] == 352
     assert payload["summary"]["explicit_alignment_entries"] == 352
     assert payload["summary"]["explicit_initializer_entries"] == 352
@@ -2830,7 +2830,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["console_log_queue"]["size"] == 0x2C
     assert defined["grim_interface_ptr"]["size"] == 4
     assert defined["sfx_unmuted_flag"]["size"] == 1
-    assert defined["quest_unlock_index"]["size"] == 2
+    for name in ("quest_unlock_index", "quest_unlock_index_full"):
+        assert defined[name]["type"] == "int"
+        assert defined[name]["size"] == 4
+        assert defined[name]["alignment"] == 4
     assert defined["perk_pending_count"]["definition_group"] == "zero-int32"
     assert defined["plugin_interface_ptr"]["definition_group"] == "zero-pointer32"
     assert defined["ui_elements_timeline"]["definition_group"] == (

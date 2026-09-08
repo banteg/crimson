@@ -4873,22 +4873,22 @@
     {
       "address": "0x00487034",
       "name": "quest_unlock_index",
-      "size": 2,
-      "size_source": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
-      "alignment": 2,
-      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_u16_alignment_is_two",
+      "size": 4,
+      "size_source": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
       "initializer_fill": "00",
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487034..0x00487036"
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487034..0x00487038"
     },
     {
       "address": "0x00487038",
       "name": "quest_unlock_index_full",
-      "size": 2,
-      "size_source": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
-      "alignment": 2,
-      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_u16_alignment_is_two",
+      "size": 4,
+      "size_source": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
       "initializer_fill": "00",
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487038..0x0048703a"
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487038..0x0048703c"
     },
     {
       "address": "0x0048703c",

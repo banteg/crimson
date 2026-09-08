@@ -4,6 +4,7 @@
 #include "crimsonland_types.h"
 #include "crimsonland_console.h"
 #include "crimsonland_mod_api.h"
+#include "crimsonland_game_state_owner.h"
 
 #define CRIMSON_ABI_ASSERT(name, condition) \
     typedef char crimson_abi_assert_##name[(condition) ? 1 : -1]
@@ -88,6 +89,14 @@ struct crimson_systemtime_alignment_probe_t {
 };
 
 CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
+CRIMSON_ABI_ASSERT(runtime_unlock_is_dword,
+    sizeof(((gameplay_run_state_original_t *)0)->quest_unlock_index) == 4);
+CRIMSON_ABI_ASSERT(runtime_unlock_full_is_dword,
+    sizeof(((gameplay_run_state_original_t *)0)->quest_unlock_index_full) == 4);
+CRIMSON_ABI_ASSERT(runtime_unlock_offset,
+    offsetof(gameplay_run_state_original_t, quest_unlock_index) == 0x8c);
+CRIMSON_ABI_ASSERT(runtime_unlock_full_offset,
+    offsetof(gameplay_run_state_original_t, quest_unlock_index_full) == 0x90);
 CRIMSON_ABI_ASSERT(
     pointer_array_2_is_0x08,
     sizeof(char *[2]) == 0x08);

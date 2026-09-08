@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f544c80fdb956f38e7a920b410ef97be87a1ebba2e0b25978b04d3b3d60f729a",
+  "audit_digest": "fea7ddfefc164ec7e4ab12ac95fd3ee8a5c99145116bc05a5c4397b7399bac81",
   "entries": [
     {
       "address": 4211888,
@@ -16134,42 +16134,42 @@
     {
       "address": 4747316,
       "aliases": [],
-      "alignment": 2,
-      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_u16_alignment_is_two",
-      "comment": "Max quest unlock index (u16). Updated on quest completion; used to unlock perks/weapons; saved in game_status_blob.",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "Runtime quest unlock index (32-bit); native gameplay uses dword accesses. Only its low 16 bits are serialized in game_status_blob.",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487034..0x00487036",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487034..0x00487038",
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "quest_unlock_index",
       "section": ".data",
       "section_offset": 90164,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": 2,
-      "size_source": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
-      "type": "u16_t"
+      "size": 4,
+      "size_source": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
+      "type": "int"
     },
     {
       "address": 4747320,
       "aliases": [],
-      "alignment": 2,
-      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_u16_alignment_is_two",
-      "comment": "Full-version quest unlock index (u16). Saved in game_status_blob; gated by game_is_full_version().",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "Runtime quest unlock index (32-bit); native gameplay uses dword accesses. Only its low 16 bits are serialized in game_status_blob.",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487038..0x0048703a",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487038..0x0048703c",
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "quest_unlock_index_full",
       "section": ".data",
       "section_offset": 90168,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": 2,
-      "size_source": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
-      "type": "u16_t"
+      "size": 4,
+      "size_source": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
+      "type": "int"
     },
     {
       "address": 4747324,
@@ -37780,9 +37780,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "d68023457c8e351064d8583a0d6bd9975cc9c37ad062300b28c37bd911c83fee",
+    "data_map_sha256": "c844c9bdad1aafa46adb78a1341bf333d9f7d329567c0f388a75d44c6b03528c",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "24a4d581a8054eb2aafc417b7c45c43e8a2db19f822e132998fcafc5812d6470",
+    "definitions_sha256": "e4533e2d2671925a178e8ed532d44e7c7a0bb0e30d476190c56c169c4549d8c9",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"

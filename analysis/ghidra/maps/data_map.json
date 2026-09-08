@@ -5967,17 +5967,17 @@
     },
     {
       "address": "0x00487034",
-      "comment": "Max quest unlock index (u16). Updated on quest completion; used to unlock perks/weapons; saved in game_status_blob.",
+      "comment": "Runtime quest unlock index (32-bit); native gameplay uses dword accesses. Only its low 16 bits are serialized in game_status_blob.",
       "name": "quest_unlock_index",
       "program": "crimsonland.exe",
-      "type": "u16_t"
+      "type": "int"
     },
     {
       "address": "0x00487038",
-      "comment": "Full-version quest unlock index (u16). Saved in game_status_blob; gated by game_is_full_version().",
+      "comment": "Runtime quest unlock index (32-bit); native gameplay uses dword accesses. Only its low 16 bits are serialized in game_status_blob.",
       "name": "quest_unlock_index_full",
       "program": "crimsonland.exe",
-      "type": "u16_t"
+      "type": "int"
     },
     {
       "address": "0x0048703c",
@@ -14162,7 +14162,8 @@
       "address": "0x1005a678",
       "comment": "Atlas sub-rect table referenced by pointer table.",
       "name": "grim_subrect_table",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV[256]"
     },
     {
       "address": "0x1005ae78",
@@ -14304,7 +14305,8 @@
       "address": "0x1005b2c8",
       "comment": "Small-font glyph U coordinates (float, indexed by glyph * 2).",
       "name": "grim_font2_uv_u",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV[256]"
     },
     {
       "address": "0x1005b2cc",
@@ -14530,13 +14532,15 @@
       "address": "0x1005c908",
       "comment": "Atlas sub-rect table (pointer table entry 2).",
       "name": "grim_subrect_table_2",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV[64]"
     },
     {
       "address": "0x1005cb08",
       "comment": "Atlas sub-rect table (pointer table entry 1).",
       "name": "grim_subrect_table_1",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV[16]"
     },
     {
       "address": "0x1005cb88",
@@ -14772,7 +14776,8 @@
       "address": "0x1005d388",
       "comment": "Atlas sub-rect table (pointer table entry 0).",
       "name": "grim_subrect_table_0",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV[4]"
     },
     {
       "address": "0x1005d3bc",

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f544c80fdb956f38e7a920b410ef97be87a1ebba2e0b25978b04d3b3d60f729a",
+  "audit_digest": "fea7ddfefc164ec7e4ab12ac95fd3ee8a5c99145116bc05a5c4397b7399bac81",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -105593,7 +105593,7 @@
     {
       "definitions": [
         {
-          "alignment": 2,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
@@ -105605,10 +105605,10 @@
           "data_storage_name": "quest_unlock_index",
           "function": null,
           "kind": "section",
-          "logical_section_size": 2,
+          "logical_section_size": 4,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 2,
+          "size": 4,
           "weak": false
         }
       ],
@@ -105617,7 +105617,7 @@
     {
       "definitions": [
         {
-          "alignment": 2,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
@@ -105629,10 +105629,10 @@
           "data_storage_name": "quest_unlock_index_full",
           "function": null,
           "kind": "section",
-          "logical_section_size": 2,
+          "logical_section_size": 4,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 2,
+          "size": 4,
           "weak": false
         }
       ],
@@ -155310,7 +155310,7 @@
     {
       "definitions": [
         {
-          "alignment": 2,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
@@ -155322,10 +155322,10 @@
           "data_storage_name": "quest_unlock_index",
           "function": null,
           "kind": "section",
-          "logical_section_size": 2,
+          "logical_section_size": 4,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 2,
+          "size": 4,
           "weak": false
         }
       ],
@@ -155424,7 +155424,7 @@
     {
       "definitions": [
         {
-          "alignment": 2,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
@@ -155436,10 +155436,10 @@
           "data_storage_name": "quest_unlock_index_full",
           "function": null,
           "kind": "section",
-          "logical_section_size": 2,
+          "logical_section_size": 4,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 2,
+          "size": 4,
           "weak": false
         }
       ],
@@ -171857,7 +171857,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "d68023457c8e351064d8583a0d6bd9975cc9c37ad062300b28c37bd911c83fee"
+        "sha256": "c844c9bdad1aafa46adb78a1341bf333d9f7d329567c0f388a75d44c6b03528c"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -171866,7 +171866,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "29be041a60e76b83715e6e8dcf07df9837b84a65d040f0cab768098cfea6c0cf"
+        "sha256": "6bc0f0c6c8ffba16b40e55922ebe891c7412b153f9fafe9d3aab881e821fafa7"
       },
       {
         "path": "analysis/matching_scope.json",

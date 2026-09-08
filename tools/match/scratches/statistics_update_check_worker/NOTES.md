@@ -218,3 +218,19 @@ extends the prefix from 22 to 252, and raises clean references from 106 to 120.
 A separately recorded formatting probe preserves those metrics. The remaining
 URL-store and scanner-address ordering is explicitly a compiler residual, not
 an exact match.
+
+## Version aggregate controls (2026-09-08)
+
+The two complete plans `version-aggregate-2026-09-08.json` (7 controls)
+and `version-storage-layout-2026-09-08.json` (9 controls) test named version
+records, all six record orders, component arrays, three shorter array
+lifetimes, pointer arithmetic, and named output-component pointers. All
+16 compile; none improves the 99.182561%, 367/367-instruction, prefix-252
+baseline. Array and pointer spellings are neutral; record layouts regress.
+The remaining scanner-address scheduling starts at native offset `0x3b4`.
+Canonical source is unchanged. These results bound only these source forms.
+
+Four additional `version-parser-ownership-2026-09-08.json` controls move the
+scanner into an inline helper receiving an array pointer, array reference,
+component pointers, or component references. All four are byte-neutral with
+120 clean references. The total for this follow-up is 20 compiling controls.

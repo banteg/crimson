@@ -43,48 +43,6 @@
       "unmatched_bytes": 4096
     },
     {
-      "address": 268805752,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
-      "image": "grim.dll",
-      "name": "grim_subrect_table",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 2048,
-      "type": null,
-      "unmatched_bytes": 2048
-    },
-    {
-      "address": 268808904,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_font2_uv_u[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
-      "image": "grim.dll",
-      "name": "grim_font2_uv_u",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 2048,
-      "type": null,
-      "unmatched_bytes": 2048
-    },
-    {
-      "address": 268815240,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered 128-entry config table; tools/native/abi/grim.dll/abi_assertions.cpp: config_value_is_16_bytes",
-      "image": "grim.dll",
-      "name": "grim_config_values",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 2048,
-      "type": "grim_config_value_t[128]",
-      "unmatched_bytes": 2048
-    },
-    {
       "address": 268747696,
       "blocker": "initialized-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: grim_format_info_t[43]; tools/native/abi/grim.dll/abi_assertions.cpp: format_info_table_43_is_0x60c",
@@ -125,20 +83,6 @@
       "size": 1068,
       "type": "D3DADAPTER_IDENTIFIER8",
       "unmatched_bytes": 1068
-    },
-    {
-      "address": 268804184,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/grim_was_key_pressed: grim_key_repeat_timers[256]; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_key_repeat_timers",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 1024,
-      "type": "float[256]",
-      "unmatched_bytes": 1024
     },
     {
       "address": 4747920,
@@ -1000,20 +944,6 @@
       "extent_evidence": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
       "image": "grim.dll",
       "name": "grim_slot_floats",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 512,
-      "type": null,
-      "unmatched_bytes": 512
-    },
-    {
-      "address": 268814600,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
-      "image": "grim.dll",
-      "name": "grim_subrect_table_2",
       "owners": [
         "unknown"
       ],
@@ -2045,20 +1975,6 @@
       "unmatched_bytes": 128
     },
     {
-      "address": 268815112,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_1[16]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
-      "image": "grim.dll",
-      "name": "grim_subrect_table_1",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 128,
-      "type": null,
-      "unmatched_bytes": 128
-    },
-    {
       "address": 4725376,
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
@@ -2694,20 +2610,6 @@
       "extent_evidence": "tools/match/scratches/grim_draw_quad and grim_state_init: GrimUV grim_uv_u0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
       "image": "grim.dll",
       "name": "grim_uv_u0",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 32,
-      "type": null,
-      "unmatched_bytes": 32
-    },
-    {
-      "address": 268817288,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
-      "image": "grim.dll",
-      "name": "grim_subrect_table_0",
       "owners": [
         "unknown"
       ],
@@ -5570,20 +5472,6 @@
       "reason": null,
       "size": 16,
       "type": "unsigned char[16]",
-      "unmatched_bytes": 16
-    },
-    {
-      "address": 268816840,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/native/recovered/grim/app/app_init.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
-      "image": "grim.dll",
-      "name": "grim_client_rect",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 16,
-      "type": "GrimClientRect",
       "unmatched_bytes": 16
     },
     {
@@ -17418,20 +17306,6 @@
       "unmatched_bytes": 4
     },
     {
-      "address": 268808908,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches: recovered float aliases into the owning GrimUV arrays; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_font2_uv_v",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": null,
-      "unmatched_bytes": 4
-    },
-    {
       "address": 268810952,
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
@@ -17667,174 +17541,6 @@
       "reason": null,
       "size": 4,
       "type": "LPDIRECT3DSURFACE8",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268815624,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_font_scale",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "float",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268815896,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
-      "image": "grim.dll",
-      "name": "grim_config_mode_width",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "int",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268815912,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
-      "image": "grim.dll",
-      "name": "grim_config_mode_height",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "int",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268815928,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
-      "image": "grim.dll",
-      "name": "grim_config_mode_bpp",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "int",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816056,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
-      "image": "grim.dll",
-      "name": "grim_config_backbuffer_count",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "int",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816148,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_joystick_state_ptr",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "DIJOYSTATE2 *",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816532,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_active_d3d8",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "LPDIRECT3D8",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816548,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_active_d3d_device",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "LPDIRECT3DDEVICE8",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816564,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_main_window_hwnd_ref",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "HWND *",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816696,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_joystick_deadzone",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "float",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816712,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_joystick_center_x",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "float",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 268816728,
-      "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
-      "image": "grim.dll",
-      "name": "grim_joystick_center_y",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "float",
       "unmatched_bytes": 4
     },
     {
@@ -18955,34 +18661,6 @@
       "reason": null,
       "size": 2,
       "type": "char[2]",
-      "unmatched_bytes": 2
-    },
-    {
-      "address": 4747316,
-      "blocker": "declaration-conflict",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
-      "image": "crimsonland.exe",
-      "name": "quest_unlock_index",
-      "owners": [
-        "unknown"
-      ],
-      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 2 bytes. Rejected by the compiler size assertion.",
-      "size": 2,
-      "type": "u16_t",
-      "unmatched_bytes": 2
-    },
-    {
-      "address": 4747320,
-      "blocker": "declaration-conflict",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
-      "image": "crimsonland.exe",
-      "name": "quest_unlock_index_full",
-      "owners": [
-        "unknown"
-      ],
-      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 2 bytes. Rejected by the compiler size assertion.",
-      "size": 2,
-      "type": "u16_t",
       "unmatched_bytes": 2
     },
     {
@@ -20589,132 +20267,6 @@
       "name": "grim_device_ready",
       "owners": [
         "unknown"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268815368,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_windowed_mode_enabled",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268815416,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_keyboard_enabled",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "bool",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268815432,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_mouse_enabled",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "bool",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268815448,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_input_cached",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "unsigned char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268815464,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_joystick_enabled",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "bool",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268815608,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_font_texture_bound",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "unsigned char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268816072,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_use_ref_device",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268816088,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_enable_auto_depth_stencil",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 268816584,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
-      "image": "grim.dll",
-      "name": "grim_config_dialog_option_3ef_checked",
-      "owners": [
-        "game"
       ],
       "reason": null,
       "size": 1,
@@ -23522,6 +23074,34 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 4747316,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
+      "image": "crimsonland.exe",
+      "name": "quest_unlock_index",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4747320,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
+      "image": "crimsonland.exe",
+      "name": "quest_unlock_index_full",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "int",
+      "unmatched_bytes": 0
+    },
+    {
       "address": 4747328,
       "blocker": "matched",
       "extent_evidence": "third_party/headers/crimsonland_types.h: highscore_record_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: highscore_record_is_0x48",
@@ -24210,13 +23790,14 @@
     {
       "address": 4786361,
       "blocker": "matched",
+      "declaration_note": "The scalar Plaguebearer byte is an interior label of the matched player_state_table (offset 0x09, record stride 0x360), not an independent contiguous per-player array.",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered unsigned-char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
       "name": "player_plaguebearer_active",
       "owners": [
         "game"
       ],
-      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 1 byte. Rejected by the compiler size assertion.",
+      "reason": null,
       "size": 1,
       "type": "unsigned char",
       "unmatched_bytes": 0
@@ -29836,6 +29417,20 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 268804184,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_was_key_pressed: grim_key_repeat_timers[256]; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_key_repeat_timers",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1024,
+      "type": "float[256]",
+      "unmatched_bytes": 0
+    },
+    {
       "address": 268805232,
       "blocker": "matched",
       "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
@@ -29850,6 +29445,20 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 268805752,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
+      "image": "grim.dll",
+      "name": "grim_subrect_table",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 2048,
+      "type": "GrimUV[256]",
+      "unmatched_bytes": 0
+    },
+    {
       "address": 268808892,
       "blocker": "matched",
       "extent_evidence": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
@@ -29861,6 +29470,398 @@
       "reason": null,
       "size": 4,
       "type": null,
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268808904,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_font2_uv_u[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
+      "image": "grim.dll",
+      "name": "grim_font2_uv_u",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 2048,
+      "type": "GrimUV[256]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268808908,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered float aliases into the owning GrimUV arrays; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_font2_uv_v",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": null,
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268814600,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
+      "image": "grim.dll",
+      "name": "grim_subrect_table_2",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 512,
+      "type": "GrimUV[64]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815112,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_1[16]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
+      "image": "grim.dll",
+      "name": "grim_subrect_table_1",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 128,
+      "type": "GrimUV[16]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815240,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered 128-entry config table; tools/native/abi/grim.dll/abi_assertions.cpp: config_value_is_16_bytes",
+      "image": "grim.dll",
+      "name": "grim_config_values",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 2048,
+      "type": "grim_config_value_t[128]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815368,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_windowed_mode_enabled",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815416,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_keyboard_enabled",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "bool",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815432,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_mouse_enabled",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "bool",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815448,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_input_cached",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "unsigned char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815464,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_joystick_enabled",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "bool",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815608,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_font_texture_bound",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "unsigned char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815624,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_font_scale",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "float",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815896,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "image": "grim.dll",
+      "name": "grim_config_mode_width",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815912,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "image": "grim.dll",
+      "name": "grim_config_mode_height",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268815928,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "image": "grim.dll",
+      "name": "grim_config_mode_bpp",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816056,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "image": "grim.dll",
+      "name": "grim_config_backbuffer_count",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816072,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_use_ref_device",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816088,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_enable_auto_depth_stencil",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816148,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_joystick_state_ptr",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "DIJOYSTATE2 *",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816532,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_active_d3d8",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "LPDIRECT3D8",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816548,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_active_d3d_device",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "LPDIRECT3DDEVICE8",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816564,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_main_window_hwnd_ref",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "HWND *",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816584,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "image": "grim.dll",
+      "name": "grim_config_dialog_option_3ef_checked",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816696,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_joystick_deadzone",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "float",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816712,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_joystick_center_x",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "float",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816728,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "image": "grim.dll",
+      "name": "grim_joystick_center_y",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "float",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268816840,
+      "blocker": "matched",
+      "extent_evidence": "tools/native/recovered/grim/app/app_init.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
+      "image": "grim.dll",
+      "name": "grim_client_rect",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 16,
+      "type": "GrimClientRect",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268817288,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
+      "image": "grim.dll",
+      "name": "grim_subrect_table_0",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 32,
+      "type": "GrimUV[4]",
       "unmatched_bytes": 0
     },
     {
@@ -29950,8 +29951,8 @@
   ],
   "ownership": {
     "game": {
-      "matched_bytes": 304765,
-      "total_bytes": 341469
+      "matched_bytes": 312613,
+      "total_bytes": 347269
     },
     "libraries": {
       "matched_bytes": 0,
@@ -29959,7 +29960,7 @@
     },
     "unknown": {
       "matched_bytes": 0,
-      "total_bytes": 148970
+      "total_bytes": 143170
     }
   },
   "ownership_complete": false,
@@ -43713,50 +43714,28 @@
     {
       "address": 4747316,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "quest_unlock_index",
       "objects": [
         "quest_unlock_index"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
-      "size": 2,
-      "source": null
-    },
-    {
-      "address": 4747318,
-      "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
-      "objects": [],
-      "owner": "unknown",
-      "section": ".data",
-      "size": 2,
-      "source": null
+      "size": 4,
+      "source": "tools/match/data/crimsonland_gameplay.cpp"
     },
     {
       "address": 4747320,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "quest_unlock_index_full",
       "objects": [
         "quest_unlock_index_full"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
-      "size": 2,
-      "source": null
-    },
-    {
-      "address": 4747322,
-      "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
-      "objects": [],
-      "owner": "unknown",
-      "section": ".data",
-      "size": 2,
-      "source": null
+      "size": 4,
+      "source": "tools/match/data/crimsonland_gameplay.cpp"
     },
     {
       "address": 4747324,
@@ -62814,15 +62793,15 @@
     {
       "address": 268804184,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_key_repeat_timers",
       "objects": [
         "grim_key_repeat_timers"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 1024,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268805208,
@@ -63055,15 +63034,15 @@
     {
       "address": 268805752,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_subrect_table",
       "objects": [
         "grim_subrect_table"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 2048,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268807800,
@@ -63373,42 +63352,42 @@
     {
       "address": 268808904,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_font2_uv_u",
       "objects": [
         "grim_font2_uv_u"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268808908,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_font2_uv_u",
       "objects": [
         "grim_font2_uv_u",
         "grim_font2_uv_v"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268808912,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_font2_uv_u",
       "objects": [
         "grim_font2_uv_u"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 2040,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268810952,
@@ -64015,47 +63994,47 @@
     {
       "address": 268814600,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_subrect_table_2",
       "objects": [
         "grim_subrect_table_2"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 512,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815112,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_subrect_table_1",
       "objects": [
         "grim_subrect_table_1"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 128,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815240,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 128,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815368,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_windowed_mode_enabled"
@@ -64063,26 +64042,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815369,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 47,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815416,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_keyboard_enabled"
@@ -64090,26 +64069,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815417,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 15,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815432,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_mouse_enabled"
@@ -64117,26 +64096,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815433,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 15,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815448,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_input_cached"
@@ -64144,26 +64123,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815449,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 15,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815464,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_joystick_enabled"
@@ -64171,26 +64150,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815465,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 143,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815608,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_font_texture_bound"
@@ -64198,26 +64177,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815609,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 15,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815624,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_font_scale"
@@ -64225,26 +64204,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815628,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 268,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815896,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_mode_width",
         "grim_config_values"
@@ -64252,26 +64231,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815900,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815912,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_mode_height",
         "grim_config_values"
@@ -64279,26 +64258,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815916,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815928,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_mode_bpp",
         "grim_config_values"
@@ -64306,26 +64285,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268815932,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 124,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816056,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_backbuffer_count",
         "grim_config_values"
@@ -64333,26 +64312,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816060,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816072,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_use_ref_device"
@@ -64360,26 +64339,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816073,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 15,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816088,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_enable_auto_depth_stencil"
@@ -64387,26 +64366,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816089,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 59,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816148,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_joystick_state_ptr"
@@ -64414,26 +64393,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816152,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 380,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816532,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_active_d3d8",
         "grim_config_values"
@@ -64441,26 +64420,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816536,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816548,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_active_d3d_device",
         "grim_config_values"
@@ -64468,26 +64447,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816552,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816564,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_main_window_hwnd_ref"
@@ -64495,26 +64474,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816568,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 16,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816584,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_dialog_option_3ef_checked",
         "grim_config_values"
@@ -64522,26 +64501,26 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816585,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 111,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816696,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_joystick_deadzone"
@@ -64549,26 +64528,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816700,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816712,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_joystick_center_x"
@@ -64576,26 +64555,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816716,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 12,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816728,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values",
         "grim_joystick_center_y"
@@ -64603,26 +64582,26 @@
       "owner": "game",
       "section": ".data",
       "size": 4,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816732,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 108,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816840,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_client_rect",
         "grim_config_values"
@@ -64630,33 +64609,33 @@
       "owner": "game",
       "section": ".data",
       "size": 16,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268816856,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_values",
       "objects": [
         "grim_config_values"
       ],
       "owner": "game",
       "section": ".data",
       "size": 432,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268817288,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_subrect_table_0",
       "objects": [
         "grim_subrect_table_0"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 32,
-      "source": null
+      "source": "tools/match/data/grim_state_tables.cpp"
     },
     {
       "address": 268817320,
@@ -65626,9 +65605,921 @@
     }
   ],
   "totals": {
-    "matched_bytes": 304765,
+    "matched_bytes": 312613,
     "total_bytes": 517738,
-    "unmatched_bytes": 212973,
-    "unnamed_bytes": 114233
-  }
+    "unmatched_bytes": 205125,
+    "unnamed_bytes": 114229
+  },
+  "unbounded_objects": [
+    {
+      "address": 268749248,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_format_conversion_matrix",
+      "type": "const int[5][5]"
+    },
+    {
+      "address": 268750408,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_std_message_table",
+      "type": "const char *[120]"
+    },
+    {
+      "address": 268757184,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_natural_order",
+      "type": "const int[80]"
+    },
+    {
+      "address": 268757504,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_first_pool_slop",
+      "type": "const size_t[2]"
+    },
+    {
+      "address": 268757512,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_extra_pool_slop",
+      "type": "const size_t[2]"
+    },
+    {
+      "address": 268757648,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "png_pass_start",
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757676,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "png_pass_inc",
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757704,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "png_pass_ystart",
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757732,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "png_pass_yinc",
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757760,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "png_IDAT",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": 268758928,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_crc_table",
+      "type": "const unsigned long[256]"
+    },
+    {
+      "address": 268759976,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_huff_extend_test",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268760040,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_huff_extend_offset",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268760208,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_phuff_extend_test",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268760272,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_phuff_extend_offset",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268760336,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_idct_aanscales",
+      "type": "const short[64]"
+    },
+    {
+      "address": 268760464,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_idct_aanscalefactor",
+      "type": "const double[8]"
+    },
+    {
+      "address": 268760528,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_base_dither_matrix",
+      "type": "const unsigned char[16][16]"
+    },
+    {
+      "address": 268760784,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_quant1_rgb_order",
+      "type": "const int[3]"
+    },
+    {
+      "address": 268760800,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_inflate_border",
+      "type": "const unsigned int[19]"
+    },
+    {
+      "address": 268761192,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cplens",
+      "type": "const unsigned int[31]"
+    },
+    {
+      "address": 268761320,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cplext",
+      "type": "const unsigned int[31]"
+    },
+    {
+      "address": 268761448,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cpdist",
+      "type": "const unsigned int[30]"
+    },
+    {
+      "address": 268761568,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cpdext",
+      "type": "const unsigned int[30]"
+    },
+    {
+      "address": 268763996,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_std_message_table",
+      "type": "const char *[120]"
+    },
+    {
+      "address": 268764480,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_first_pool_slop",
+      "type": "const size_t[2]"
+    },
+    {
+      "address": 268764488,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_extra_pool_slop",
+      "type": "const size_t[2]"
+    },
+    {
+      "address": 268764496,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_natural_order",
+      "type": "const int[80]"
+    },
+    {
+      "address": 268764816,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_huff_extend_test",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268764880,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_huff_extend_offset",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268764944,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_phuff_extend_test",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268765008,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_phuff_extend_offset",
+      "type": "const int[16]"
+    },
+    {
+      "address": 268765072,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_idct_aanscales",
+      "type": "const short[64]"
+    },
+    {
+      "address": 268765200,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_idct_aanscalefactor",
+      "type": "const double[8]"
+    },
+    {
+      "address": 268765264,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_base_dither_matrix",
+      "type": "const unsigned char[16][16]"
+    },
+    {
+      "address": 268765520,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_quant1_rgb_order",
+      "type": "const int[3]"
+    },
+    {
+      "address": 268765532,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_idct_float_factor_1_082392200",
+      "type": "const float"
+    },
+    {
+      "address": 268765536,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_idct_float_factor_2_613125930",
+      "type": "const float"
+    },
+    {
+      "address": 268765540,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_idct_float_factor_1_847759065",
+      "type": "const float"
+    },
+    {
+      "address": 268765544,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_jpeg_idct_float_factor_1_414213562",
+      "type": "const float"
+    },
+    {
+      "address": 268765732,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_extra_literal_bits",
+      "type": "const int[29]"
+    },
+    {
+      "address": 268765848,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_extra_distance_bits",
+      "type": "const int[30]"
+    },
+    {
+      "address": 268766044,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_bit_length_order",
+      "type": "const unsigned char[19]"
+    },
+    {
+      "address": 268766064,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_static_literal_tree",
+      "type": "unsigned int[288]"
+    },
+    {
+      "address": 268767216,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_static_distance_tree",
+      "type": "unsigned int[30]"
+    },
+    {
+      "address": 268767336,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_distance_code",
+      "type": "const unsigned char[512]"
+    },
+    {
+      "address": 268767848,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_length_code",
+      "type": "const unsigned char[256]"
+    },
+    {
+      "address": 268768104,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_base_length",
+      "type": "const int[29]"
+    },
+    {
+      "address": 268768220,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_base_distance",
+      "type": "const int[30]"
+    },
+    {
+      "address": 268768340,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_inflate_border",
+      "type": "const unsigned int[19]"
+    },
+    {
+      "address": 268768464,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_cplens",
+      "type": "const unsigned int[31]"
+    },
+    {
+      "address": 268768588,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_cplext",
+      "type": "const unsigned int[31]"
+    },
+    {
+      "address": 268768712,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_cpdist",
+      "type": "const unsigned int[30]"
+    },
+    {
+      "address": 268768832,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_cpdext",
+      "type": "const unsigned int[30]"
+    },
+    {
+      "address": 268768952,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "msvc_vector_destructor_iterator_scope_table",
+      "type": "const int[4]"
+    },
+    {
+      "address": 268768968,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "msvc_array_unwind_scope_table",
+      "type": "const int[4]"
+    },
+    {
+      "address": 268768984,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "msvc_vector_constructor_iterator_eh_scope_table",
+      "type": "const int[4]"
+    },
+    {
+      "address": 268769000,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_decode_jaz_texture_eh_info",
+      "type": null
+    },
+    {
+      "address": 268769740,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_dxt_destructor_eh_info",
+      "type": null
+    },
+    {
+      "address": 268769856,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_yuv_constructor_eh_info",
+      "type": null
+    },
+    {
+      "address": 268769928,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_yuv_destructor_eh_info",
+      "type": null
+    },
+    {
+      "address": 268775424,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_xc_a",
+      "type": "void *"
+    },
+    {
+      "address": 268775476,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_xc_z",
+      "type": "void *"
+    },
+    {
+      "address": 268779048,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_bmp_formats",
+      "type": "const int[6]"
+    },
+    {
+      "address": 268779072,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_dds_formats",
+      "type": "const int[6]"
+    },
+    {
+      "address": 268779208,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_dds_pixel_format_table",
+      "type": "unsigned char[1224]"
+    },
+    {
+      "address": 268780568,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_dither_bayer_pattern",
+      "type": "float[32]"
+    },
+    {
+      "address": 268784872,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_idct_enabled",
+      "type": "unsigned char"
+    },
+    {
+      "address": 268785728,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_sub128",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": 268785736,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_vu_mul",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": 268785744,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_yv_mul",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": 268785752,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_yu_mul",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": 268785760,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_high_dword_mask",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": 268787160,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_ones",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787232,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_pi_over_4_head_tail",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787240,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_sin_coeff_56_42",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787248,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_pi_over_4_pair",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787256,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_sin_coeff_30_20",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787264,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_sin_coeff_12_6",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787272,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_negative_halves",
+      "type": "uint64_t"
+    },
+    {
+      "address": 268787288,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_sign",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787292,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_abs_mask",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787296,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_mantissa_mask",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787300,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_exponent_mask",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787304,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_one",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787308,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_half",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787316,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_out_of_bounds",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787336,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_atan_q0",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787340,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_atan_q1",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787344,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_atan_q2",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787348,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_atan_p0",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787352,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_atan_p1",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787356,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_atan_p2",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787360,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_acos_bound",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787364,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_acos_p0",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787368,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_acos_p1",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787372,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_acos_q0",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787376,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_acos_q1",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787380,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_pi_over_2",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787384,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_negative_pi_over_2",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787400,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_ln2_high",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787404,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_ln2_low",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787408,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_root_two",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787412,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_exponent_decrement",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787416,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_exponent_bias",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787420,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_log_c2",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787424,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_log_c1",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787428,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_log_c0",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787436,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_max_normal",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787472,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_four_over_pi",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787476,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_x87_math_sin_max",
+      "type": "uint32_t"
+    },
+    {
+      "address": 268787480,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "type": "unsigned int"
+    },
+    {
+      "address": 268787484,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_distance_bits",
+      "type": "unsigned int"
+    },
+    {
+      "address": 268787488,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_literal_tree",
+      "type": "unsigned char[4096]"
+    },
+    {
+      "address": 268791584,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_distance_tree",
+      "type": "unsigned char[256]"
+    },
+    {
+      "address": 268791840,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_inflate_mask",
+      "type": "unsigned int[17]"
+    },
+    {
+      "address": 268796944,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_fixed_literal_bits",
+      "type": "unsigned int"
+    },
+    {
+      "address": 268796948,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_fixed_distance_bits",
+      "type": "unsigned int"
+    },
+    {
+      "address": 268796952,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_fixed_literal_tree",
+      "type": "unsigned char[4096]"
+    },
+    {
+      "address": 268801048,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_fixed_distance_tree",
+      "type": "unsigned char[256]"
+    },
+    {
+      "address": 268801544,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "zlib_inflate_mask",
+      "type": "const unsigned int[17]"
+    },
+    {
+      "address": 268819292,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_proc_attached",
+      "type": "int"
+    },
+    {
+      "address": 268819296,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_debug_mute_d3d8d_callback",
+      "type": "void (__cdecl *)(int)"
+    },
+    {
+      "address": 268819300,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_debug_mute_d3d8_callback",
+      "type": "void (__cdecl *)(int)"
+    },
+    {
+      "address": 268819328,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_sse_math_bss",
+      "type": "unsigned char[32]"
+    },
+    {
+      "address": 268819360,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_mmx_zero",
+      "type": "unsigned char[8]"
+    },
+    {
+      "address": 268819392,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_adjust_fdiv",
+      "type": "int"
+    },
+    {
+      "address": 268819396,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_raw_dll_main",
+      "type": "void *"
+    },
+    {
+      "address": 268819400,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_onexit_end",
+      "type": "void *"
+    },
+    {
+      "address": 268819404,
+      "blocker": "missing-extent",
+      "image": "grim.dll",
+      "name": "grim_crt_onexit_begin",
+      "type": "void *"
+    }
+  ]
 }

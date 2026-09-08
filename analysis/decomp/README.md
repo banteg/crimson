@@ -92,7 +92,7 @@ an independently recorded native extent. The reporter then compares the emitted
 COFF common/BSS/data storage with the reference initializer, byte for byte.
 Overlapping declarations count each original byte only once.
 
-The current set has **188 definitions covering 304,765 unique bytes**. Alongside
+The current set has **197 definitions covering 312,613 unique bytes**. Alongside
 zero-initialized state, it includes the original developer-hint strings, symbolic
 hint pointers, the console empty-string pointer, and the typed effect atlas table.
 Original text and single-byte encodings are preserved. Array extents and types
@@ -108,13 +108,17 @@ Literal recipes containing Grim relocations cannot earn credit until they have
 symbolic target evidence. Other relocation kinds and nonzero addends remain
 unsupported and fail verification.
 
-The compiler rejects `quest_unlock_index` and `quest_unlock_index_full` (header
-`int`, native extent 2), and `player_plaguebearer_active` (header `int`, native
-extent 1). These exclusions are recorded in the manifest and inventory; their
-function-matching declarations are unchanged.
+Native dword accesses establish that `quest_unlock_index` and
+`quest_unlock_index_full` are four-byte runtime counters; only serialization
+narrows them to 16 bits. Their corrected definitions now compile and match.
+`player_plaguebearer_active` is an interior byte of the already matched player
+array. Its declaration note remains in the inventory without creating false
+unresolved byte debt.
 
 [The data inventory](DATA.md) ranks remaining objects by uncredited bytes and
-blocker and lists the largest unnamed regions. Its JSON companion partitions
+blocker and lists the largest unnamed regions. It also retains mapped labels
+without proven extents in `unbounded_objects`, without guessing their sizes or
+ownership. Its JSON companion partitions
 all 517,738 bytes exactly once. Object opportunities can overlap and must not be
 summed; span totals are authoritative. Report refresh regenerates both automatically,
 and CI rejects stale inventory output. To regenerate the inventory separately:

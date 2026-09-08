@@ -26,20 +26,20 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1788 | 1788 | 1788 | 1788 | 1788 |
-| grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 352 | 352 | 352 |
+| grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 433 | 352 | 352 | 352 |
 
 ## Residual frontier
 
 **17** non-exact scratch-backed functions hold **25814 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
 
-Current-baseline experiments cover **2 functions / 5215 gap bytes**; **15 / 20599** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25814** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
 | rank | image | function | fuzzy gap | recovery | residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5849 | semantic-complete | compiler,references | historical-only | 0/68 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 2 | crimsonland.exe | projectile_render | 5202 | semantic-complete | compiler,references | current-active | 1/65 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
+| 2 | crimsonland.exe | projectile_render | 5202 | semantic-complete | compiler,references | historical-only | 0/65 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | controls_menu_update | 3891 | semantic-complete | compiler,references | historical-only | 0/63 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
@@ -53,8 +53,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 13 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 14 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 15 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 16 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | current-active | 1/37 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 17 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 16 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 17 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/19 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 

@@ -167,7 +167,9 @@
         "sfx_explosion_large",
         "sfx_shockwave",
         "sfx_ui_bonus",
-        "weapon_table"
+        "weapon_table",
+        "quest_unlock_index",
+        "quest_unlock_index_full"
       ]
     },
     {
@@ -297,23 +299,26 @@
       "symbols": [
         "grim_texture_slots"
       ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_state_tables.cpp",
+      "symbols": [
+        "grim_config_values",
+        "grim_key_repeat_timers",
+        "grim_font2_uv_u",
+        "grim_subrect_table",
+        "grim_subrect_table_0",
+        "grim_subrect_table_1",
+        "grim_subrect_table_2"
+      ]
     }
   ],
   "excluded": [
     {
       "image": "crimsonland.exe",
-      "name": "quest_unlock_index",
-      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 2 bytes. Rejected by the compiler size assertion."
-    },
-    {
-      "image": "crimsonland.exe",
-      "name": "quest_unlock_index_full",
-      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 2 bytes. Rejected by the compiler size assertion."
-    },
-    {
-      "image": "crimsonland.exe",
       "name": "player_plaguebearer_active",
-      "reason": "Existing header declares int (4 bytes); the independently recorded native extent is 1 byte. Rejected by the compiler size assertion."
+      "reason": "The scalar Plaguebearer byte is an interior label of the matched player_state_table (offset 0x09, record stride 0x360), not an independent contiguous per-player array."
     }
   ]
 }

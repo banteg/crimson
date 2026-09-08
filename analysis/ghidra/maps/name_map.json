@@ -21219,5 +21219,25 @@
     "signature": "int msvc_array_unwind_filter(void *exception_pointers)",
     "comment": "VC6 ArrayUnwindFilter identity proven by the exact __ArrayUnwind relocation.",
     "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461159",
+    "name": "crt_pow_entry",
+    "aliases": [
+      "_pow"
+    ],
+    "include_library": true,
+    "comment": "VC6 SP6 libcmt _pow nine-byte public entry prefix. Native IDA extent ends at the shared implementation fallthrough; the archive symbol continues into that implementation. See tools/match/CRT-MATH-ENTRIES-2026-09-08.md."
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463194",
+    "name": "crt_acos_entry",
+    "aliases": [
+      "_acos"
+    ],
+    "include_library": true,
+    "comment": "VC6 SP6 libcmt _acos nine-byte public entry prefix. Native IDA extent ends at the shared implementation fallthrough; the archive symbol continues into that implementation. See tools/match/CRT-MATH-ENTRIES-2026-09-08.md."
   }
 ]

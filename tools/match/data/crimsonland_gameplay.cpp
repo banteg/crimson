@@ -111,3 +111,7 @@ int sfx_explosion_large;
 int sfx_shockwave;
 int sfx_ui_bonus;
 weapon_stats_t weapon_table[64];
+
+// Runtime counters are wider than their serialized status-file fields.
+int quest_unlock_index;
+int quest_unlock_index_full;

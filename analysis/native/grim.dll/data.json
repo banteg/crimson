@@ -1,5 +1,5 @@
 {
-  "audit_digest": "14b21b01453f0b1ae387d5e00285ccf1dd06ebb13b253892e360dd5ec3d04e31",
+  "audit_digest": "dcf5e98b2d287f7a57da39fc7b4aa21ab0a7e73eef835ff9e72f0e46e81233ec",
   "entries": [
     {
       "address": 268747320,
@@ -7772,7 +7772,7 @@
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 2048,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
-      "type": null
+      "type": "GrimUV[256]"
     },
     {
       "address": 268807800,
@@ -8228,7 +8228,7 @@
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 2048,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_font2_uv_u[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
-      "type": null
+      "type": "GrimUV[256]"
     },
     {
       "address": 268808908,
@@ -8974,7 +8974,7 @@
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 512,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
-      "type": null
+      "type": "GrimUV[64]"
     },
     {
       "address": 268815112,
@@ -8995,7 +8995,7 @@
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 128,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_1[16]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
-      "type": null
+      "type": "GrimUV[16]"
     },
     {
       "address": 268815240,
@@ -9495,7 +9495,7 @@
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 32,
       "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
-      "type": null
+      "type": "GrimUV[4]"
     },
     {
       "address": 268817320,
@@ -10945,9 +10945,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "775e342966ed71bb8ef473cb4991fd243ebc5d25d5433963a1971d28e6c7235e",
+    "data_map_sha256": "bd8e1045239d322dcaaafdb9744811f2231815ad20c9b02e0b27ecb1393757b8",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "e3022feda4c7230e2f011492e87ab325eb231564ef0d101bd9cb233e3222ead8",
+    "definitions_sha256": "63982c15d539f9aa613d999a3b167b3164da67cf6cfa474da823368ce2ef0187",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -10965,7 +10965,7 @@
     "explicit_alignment_entries": 352,
     "explicit_initializer_entries": 352,
     "explicit_size_entries": 352,
-    "fixed_array_types": 201,
+    "fixed_array_types": 206,
     "fully_specified_entries": 352,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -10979,8 +10979,8 @@
       ".rdata": 173
     },
     "source_entry_count": 484,
-    "typed_entries": 428,
+    "typed_entries": 433,
     "unique_addresses": 477,
-    "untyped_entries": 50
+    "untyped_entries": 45
   }
 }

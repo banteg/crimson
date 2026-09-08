@@ -19,13 +19,24 @@ def catalog() -> list[dict[str, Any]]:
     mapped = {(row["program"], matchlib.parse_int(row["address"]), row["name"]): row
               for row in json.loads(matchlib.DEFAULT_DATA_MAP_PATH.read_text())["entries"]}
     rows = []
+    defined = set()
     for image in matchlib.TRACKED_IMAGE_NAMES:
         payload = native_link.load_native_data_definitions(image, reference_image_path=matchlib._paths_for_image(image)[0])
         if payload is None:
             raise ValueError(f"missing data definitions: {image}")
         for definition in payload["entries"]:
-            annotation = mapped.get((image, definition["address"], definition["name"]), {})
+            key = (image, definition["address"], definition["name"])
+            defined.add(key)
+            annotation = mapped.get(key, {})
             rows.append({**definition, "image": image, "type": annotation.get("type"),
+                         "comment": annotation.get("comment", "")})
+    # A mapped label without a definition is still a recovery task. It cannot
+    # acquire a guessed extent or disappear merely because the linker has not
+    # needed a provider for it yet.
+    for (image, address, name), annotation in sorted(mapped.items()):
+        if image in matchlib.TRACKED_IMAGE_NAMES and (image, address, name) not in defined:
+            rows.append({"image": image, "address": address, "name": name,
+                         "size": None, "size_source": None, "type": annotation.get("type"),
                          "comment": annotation.get("comment", "")})
     return rows
 
@@ -99,7 +110,15 @@ def build_inventory(evidence: dict[str, Any]) -> dict[str, Any]:
     exclusions = json.loads(match_data_report.MANIFEST.read_text()).get("excluded", [])
     rejected = {(row["image"], row["name"]): row["reason"] for row in exclusions}
     objects: list[dict[str, Any]] = []
+    unbounded = []
     for row in definitions:
+        if not row.get("size"):
+            if any(section["image"] == row["image"]
+                   and section["address"] <= row["address"] < section["address"] + section["size"]
+                   for section in evidence["sections"]):
+                unbounded.append({"image": row["image"], "name": row["name"], "address": row["address"],
+                                  "type": row.get("type"), "blocker": "missing-extent"})
+            continue
         covered = [span for span in spans if span["image"] == row["image"] and row["name"] in span["objects"]]
         if not covered:
             continue  # Code-local tables are outside the data denominator.
@@ -113,7 +132,9 @@ def build_inventory(evidence: dict[str, Any]) -> dict[str, Any]:
         objects.append({"image": row["image"], "name": row["name"], "address": row["address"],
                         "size": row["size"], "unmatched_bytes": remaining, "type": row.get("type"),
                         "owners": sorted({span["owner"] for span in covered}), "blocker": blocker,
-                        "reason": reason, "extent_evidence": row["size_source"]})
+                        "reason": reason if remaining else None,
+                        **({"declaration_note": reason} if reason else {}),
+                        "extent_evidence": row["size_source"]})
     objects.sort(key=lambda row: (-row["unmatched_bytes"], row["image"], row["address"], row["name"]))
     owner_totals = {}
     for owner in sorted(OWNERS):
@@ -126,7 +147,8 @@ def build_inventory(evidence: dict[str, Any]) -> dict[str, Any]:
     totals["unmatched_bytes"] = totals["total_bytes"] - totals["matched_bytes"]
     return {"schema": 1, "totals": totals, "ownership": owner_totals,
             "ownership_complete": owner_totals["unknown"]["total_bytes"] == 0,
-            "objects": objects, "spans": spans}
+            "objects": objects, "unbounded_objects": sorted(unbounded, key=lambda row: (row["image"], row["address"], row["name"])),
+            "spans": spans}
 
 
 def render_summary(inventory: dict[str, Any]) -> str:
@@ -144,10 +166,18 @@ def render_summary(inventory: dict[str, Any]) -> str:
     lines += ["", "## Largest unnamed regions", "", "| Image | Start | End (exclusive) | Bytes |", "|---|---|---|---:|"]
     for span in sorted((span for span in inventory["spans"] if not span["objects"]), key=lambda span: -span["size"])[:20]:
         lines.append(f"| {span['image']} | `0x{span['address']:08x}` | `0x{span['address']+span['size']:08x}` | {span['size']:,} |")
+    unbounded = inventory.get("unbounded_objects", [])
+    lines += ["", "## Labels without proven extents", "",
+              f"**{len(unbounded)} mapped data labels** need an independent size before compilation or ownership assignment. Their bytes remain in the section denominator; nearby labels do not establish array bounds. The JSON retains the complete list.", "",
+              "| Image | Address | Label | Type |", "|---|---|---|---|"]
+    for row in unbounded[:30]:
+        lines.append(f"| {row['image']} | `0x{row['address']:08x}` | `{row['name']}` | {row['type'] or 'unknown'} |")
     lines += ["", "## Rejected declarations", ""]
-    for row in inventory["objects"]:
-        if row["reason"]:
-            lines.append(f"- `{row['image']}:{row['name']}`: {row['reason']}")
+    rejected = [row for row in inventory["objects"] if row["reason"]]
+    for row in rejected:
+        lines.append(f"- `{row['image']}:{row['name']}`: {row['reason']}")
+    if not rejected:
+        lines.append("None with unresolved byte debt.")
     return "\n".join(lines) + "\n"
 
 
