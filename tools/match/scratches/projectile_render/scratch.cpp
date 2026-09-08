@@ -215,40 +215,40 @@ extern "C" void projectile_render(float transition_alpha)
         projectile_render_vec2_t point2;
         projectile_render_vec2_t point3;
         if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {
-            projectile_render_vec2_t current_result =
-                camera_offset
-                + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t current;
-            current.x = current_result.x;
-            current.y = current_result.y;
-            projectile_render_vec2_t half_width =
-                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;
-            point0 = current - half_width;
-            point1 = current + half_width;
-            projectile_render_vec2_t origin_result =
+            projectile_render_vec2_t trail_origin_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->pos.origin;
-            projectile_render_vec2_t origin;
-            origin.x = origin_result.x;
-            origin.y = origin_result.y;
-            point2 = origin + half_width;
-            point3 = origin - half_width;
+            projectile_render_vec2_t trail_origin;
+            trail_origin.x = trail_origin_result.x;
+            trail_origin.y = trail_origin_result.y;
+            projectile_render_vec2_t half_width =
+                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;
+            point0 = trail_origin - half_width;
+            point1 = trail_origin + half_width;
+            projectile_render_vec2_t trail_head_result =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->position;
+            projectile_render_vec2_t trail_head;
+            trail_head.x = trail_head_result.x;
+            trail_head.y = trail_head_result.y;
+            point2 = trail_head + half_width;
+            point3 = trail_head - half_width;
         } else if (type_id == PROJECTILE_TYPE_PISTOL) {
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 1.2f;
-            projectile_render_vec2_t current_result =
-                camera_offset
-                + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t current = current_result;
-            projectile_render_vec2_t origin_result =
+            projectile_render_vec2_t trail_origin_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->pos.origin;
-            projectile_render_vec2_t origin = origin_result;
-            point0 = current - half_width;
-            point1 = current + half_width;
-            point2 = origin + half_width;
-            point3 = origin - half_width;
+            projectile_render_vec2_t trail_origin = trail_origin_result;
+            projectile_render_vec2_t trail_head_result =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->position;
+            projectile_render_vec2_t trail_head = trail_head_result;
+            point0 = trail_origin - half_width;
+            point1 = trail_origin + half_width;
+            point2 = trail_head + half_width;
+            point3 = trail_head - half_width;
         } else if (type_id == PROJECTILE_TYPE_GAUSS_GUN) {
             grim_interface_ptr->grim_set_color_slot(
                 2, 0.2f, 0.5f, 1.0f, alpha);
@@ -257,34 +257,34 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 1.1f;
-            projectile_render_vec2_t current_result =
-                camera_offset
-                + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t current = current_result;
-            projectile_render_vec2_t origin_result =
+            projectile_render_vec2_t trail_origin_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->pos.origin;
-            projectile_render_vec2_t origin = origin_result;
-            point0 = current - half_width;
-            point1 = current + half_width;
-            point2 = origin + half_width;
-            point3 = origin - half_width;
+            projectile_render_vec2_t trail_origin = trail_origin_result;
+            projectile_render_vec2_t trail_head_result =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->position;
+            projectile_render_vec2_t trail_head = trail_head_result;
+            point0 = trail_origin - half_width;
+            point1 = trail_origin + half_width;
+            point2 = trail_head + half_width;
+            point3 = trail_head - half_width;
         } else {
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 0.7f;
-            projectile_render_vec2_t current_result =
-                camera_offset
-                + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t current = current_result;
-            point0 = current - half_width;
-            point1 = current + half_width;
-            projectile_render_vec2_t origin_result =
+            projectile_render_vec2_t trail_origin_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->pos.origin;
-            projectile_render_vec2_t origin = origin_result;
-            point2 = origin + half_width;
-            point3 = origin - half_width;
+            projectile_render_vec2_t trail_origin = trail_origin_result;
+            point0 = trail_origin - half_width;
+            point1 = trail_origin + half_width;
+            projectile_render_vec2_t trail_head_result =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->position;
+            projectile_render_vec2_t trail_head = trail_head_result;
+            point2 = trail_head + half_width;
+            point3 = trail_head - half_width;
         }
         grim_interface_ptr->grim_draw_quad_points(
             point0.x,

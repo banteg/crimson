@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -10,9 +12,13 @@ from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
-def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
+@pytest.mark.parametrize(
+    ("experience", "remaining"),
+    [(1000, 760), (16_777_217, 16_776_977), (16_777_219, 16_776_979)],
+)
+def test_regression_bullets_fires_during_reload_and_costs_experience(experience: int, remaining: int) -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), experience=1000)
+    player = PlayerState(index=0, pos=Vec2(), experience=experience)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
@@ -28,9 +34,10 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
         ),
     )
 
-    # int(1000 - f32(1.2) * 200): the native f32 reload time (1.2000000476...)
-    # truncates the result to 759, not 760.
-    assert player.experience == 759
+    # Native FMUL then FSUBP round at PC=24: 240.000015... then 760.0,
+    # before _ftol truncates. Host double arithmetic incorrectly gives 759.
+    # FILD preserves integer XP exactly until the subtraction, even above 2**24.
+    assert player.experience == remaining
     assert any(entry.active for entry in state.projectiles.entries)
     assert player.weapon.ammo == -1
 
@@ -53,9 +60,8 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
         ),
     )
 
-    # int(1000 - f32(1.2) * 200): the native f32 reload time (1.2000000476...)
-    # truncates the result to 759, not 760.
-    assert player.experience == 759
+    # The PC=24 subtraction rounds to 760.0 before the truncating conversion.
+    assert player.experience == 760
     assert any(entry.active for entry in state.projectiles.entries)
     assert player.weapon.ammo == 4
 
@@ -81,9 +87,13 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
     assert not any(entry.active for entry in state.projectiles.entries)
 
 
-def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_ammo() -> None:
+@pytest.mark.parametrize(("experience", "remaining"), [(1000, 992), (2_147_483_647, 0)])
+def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_ammo(
+    experience: int,
+    remaining: int,
+) -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), experience=1000)
+    player = PlayerState(index=0, pos=Vec2(), experience=experience)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.FLAMETHROWER
     player.weapon.ammo = 5
@@ -99,6 +109,7 @@ def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_am
         ),
     )
 
-    assert player.experience == 992  # int(1000 - (flamethrower.reload_time=2.0) * 4)
+    # Cost is 2.0*4. At INT32_MAX, PC24 rounds to 2**31; EAX is negative and clamps to zero.
+    assert player.experience == remaining
     assert any(entry.active for entry in state.particles.entries)
     assert_float_close(player.weapon.ammo, 4.9)

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "assault-width-native-memory-operand",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;",
+      "replacements": [
+        {
+          "name": "const-reference",
+          "text": "            const projectile_render_vec2_t &half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;"
+        },
+        {
+          "name": "mutable-reference",
+          "text": "            projectile_render_vec2_t &half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;"
+        }
+      ]
+    }
+  ]
+}

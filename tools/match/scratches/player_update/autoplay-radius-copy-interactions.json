@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "autoplay-radius-branch",
+      "find": "            if ((float)sqrt(\n                    (player_position->y - 512.0f)\n                            * (player_position->y - 512.0f)\n                        + (player_position->x - 512.0f)\n                            * (player_position->x - 512.0f))\n                <= 300.0f) {\n                scratch_pos.y = player_position->y\n                    - creature_pool[player->auto_target].position.y;\n                scratch_pos.x = player_position->x\n                    - creature_pool[player->auto_target].position.x;\n            } else {\n                scratch_pos.y = player_position->y - 512.0f;\n                scratch_pos.x = player_position->x - 512.0f;\n            }\n",
+      "replacements": [
+        {
+          "name": "center-return-fallthrough",
+          "text": "            if ((float)sqrt(\n                    (player_position->y - 512.0f)\n                            * (player_position->y - 512.0f)\n                        + (player_position->x - 512.0f)\n                            * (player_position->x - 512.0f))\n                > 300.0f) {\n                scratch_pos.y = player_position->y - 512.0f;\n                scratch_pos.x = player_position->x - 512.0f;\n            } else {\n                scratch_pos.y = player_position->y\n                    - creature_pool[player->auto_target].position.y;\n                scratch_pos.x = player_position->x\n                    - creature_pool[player->auto_target].position.x;\n            }\n"
+        }
+      ]
+    },
+    {
+      "name": "autoplay-direction-copy",
+      "find": "            movement_input.x = scratch_pos.x;\n            movement_input.y = scratch_pos.y;",
+      "replacements": [
+        {
+          "name": "whole-vector-copy",
+          "text": "            movement_input = scratch_pos;"
+        }
+      ]
+    }
+  ]
+}

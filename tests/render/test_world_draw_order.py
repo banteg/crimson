@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, cast
@@ -9,6 +10,7 @@ import pytest
 
 import crimson.render.world.draw as world_draw
 from crimson.creatures.spawn import CreatureTypeId
+from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world.context import WorldRenderCtx
@@ -48,7 +50,10 @@ def _render_ctx_for_creatures(creatures: Sequence[object]):
     return WorldRenderCtx(
         frame=frame,
         view=view_transform(
-            world_size=frame.world_size, config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024),
+            world_size=frame.world_size,
+            config=frame.config,
+            camera=frame.camera,
+            out_size=Vec2(1024, 1024),
         ),
     )
 
@@ -107,3 +112,62 @@ def test_draw_world_requires_initialized_ground(mocker) -> None:
 
     with pytest.raises(AssertionError, match="ground renderer must be initialized"):
         world_draw.draw_world(render_ctx)
+
+
+@pytest.mark.parametrize("entity_alpha", [0.0, 0.0005, 0.001])
+def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mocker, entity_alpha: float) -> None:
+    render_ctx = _render_ctx_for_creatures([])
+    projectiles = render_ctx.frame.state.projectiles.entries
+    projectiles[0] = Projectile(
+        active=True,
+        type_id=ProjectileTemplateId.GAUSS_GUN,
+        origin=Vec2(120, 90),
+        pos=Vec2(120, 80),
+        vel=Vec2(1.5, 0),
+        life_timer=0.3,
+    )
+    projectiles[1] = Projectile(active=False, type_id=ProjectileTemplateId.GAUSS_GUN, life_timer=0.3)
+    projectiles[2] = Projectile(active=True, type_id=ProjectileTemplateId.PISTOL, life_timer=0.3)
+    events = []
+
+    @contextmanager
+    def alpha_scope():
+        events.append("alpha_enter")
+        try:
+            yield
+        finally:
+            events.append("alpha_exit")
+
+    resources = cast(Any, render_ctx.frame.resources)
+    resources.alpha_test = SimpleNamespace(scope=alpha_scope)
+    mocker.patch.object(resources, "texture", return_value=SimpleNamespace(id=1))
+    background = mocker.patch.object(world_draw, "draw_background")
+    unrelated_passes = [
+        mocker.patch.object(world_draw, name)
+        for name in (
+            "draw_players",
+            "draw_creatures",
+            "draw_freeze_overlay",
+            "draw_projectiles_and_effects",
+            "draw_bonus_and_ui",
+        )
+    ]
+    for name in ("begin_blend_mode", "rl_set_texture", "rl_begin", "rl_end", "end_blend_mode", "rl_tex_coord2f"):
+        mocker.patch.object(world_draw.rl, name)
+    vertices = mocker.patch.object(world_draw.rl, "rl_vertex2f")
+
+    def record_color(*_args):
+        assert events[-1] == "alpha_enter"
+
+    colors = mocker.patch.object(world_draw.rl, "rl_color4ub", side_effect=record_color)
+    projectile_draw = mocker.spy(world_draw, "draw_projectile")
+
+    world_draw.draw_world(render_ctx, entity_alpha=entity_alpha)
+
+    assert vertices.call_count == 4
+    assert [tuple(call.args) for call in colors.call_args_list] == ([(127, 127, 127, 0)] * 2 + [(51, 127, 255, 76)] * 2)
+    projectile_draw.assert_called_once_with(render_ctx, projectiles[0], proj_index=0, alpha=entity_alpha)
+    background.assert_called_once()
+    assert events == ["alpha_enter", "alpha_exit"]
+    for draw_pass in unrelated_passes:
+        draw_pass.assert_not_called()

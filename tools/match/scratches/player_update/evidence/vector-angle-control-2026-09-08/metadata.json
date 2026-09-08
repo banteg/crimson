@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "classification": "separate-alias-config-control-not-canonical-epoch-ledger-evidence",
+  "baseline_commit": "5d47470f01c7e4a58336b23a1526905da3564426",
+  "baseline_source_path": "tools/match/scratches/player_update/scratch.cpp",
+  "baseline_source_sha256": "1a7e3490cde7dfc566818418d2dfd7a242fbb6eb0dab810aa4eab854aa94c7fe",
+  "copied_config_difference": "Adds ??Gvec2_t@@QBE?AU0@ABU0@@Z:vec2_sub alongside the canonical explicit-method alias.",
+  "source_variants_stored": false,
+  "binaries_stored": false,
+  "files": {
+    "mutations.json": "280081d8d4fe8b13e1d22ba5c2393316f2abedf452ba0966e460f3f7ee99a16b",
+    "results.json": "1b8a6b538f38aed87496c98eeb656f7900c04c69a3bbb9d0b24a301ba17ab365",
+    "control.conf": "a265ee6e5db550eb78eb84ee7cb092cefb2b867c03f80c113c20d68554a94b04"
+  }
+}

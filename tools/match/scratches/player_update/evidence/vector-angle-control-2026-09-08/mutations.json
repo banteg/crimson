@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-value-contract",
+      "find": "struct vec2_t {\n    float x;\n    float y;\n\n    float *vec2_sub(float *dst, float *rhs);\n};",
+      "replacements": [
+        {
+          "name": "operator-and-angle",
+          "text": "struct vec2_t {\n    float x;\n    float y;\n\n    vec2_t operator-(const vec2_t &rhs) const;\n    float *vec2_sub(float *dst, float *rhs);\n};\n\nstatic __inline float player_update_vector_angle(const vec2_t &v)\n{\n    return (float)atan2(v.y, v.x);\n}"
+        }
+      ]
+    },
+    {
+      "name": "fire-cough-angle-consumer",
+      "find": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;",
+      "replacements": [
+        {
+          "name": "expression-temporary",
+          "text": "            float shot_heading = player_update_vector_angle(\n                *(const vec2_t *)player_position\n                - *(const vec2_t *)&random_offset) - 1.5707964f;",
+          "requires": [
+            "vector-value-contract/operator-and-angle"
+          ]
+        },
+        {
+          "name": "named-value-control",
+          "text": "            vec2_t shot_offset = *(const vec2_t *)player_position\n                - *(const vec2_t *)&random_offset;\n            float shot_heading =\n                player_update_vector_angle(shot_offset) - 1.5707964f;",
+          "requires": [
+            "vector-value-contract/operator-and-angle"
+          ]
+        }
+      ]
+    }
+  ]
+}

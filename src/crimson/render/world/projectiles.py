@@ -9,6 +9,7 @@ from grim.raylib_api import rd, rl
 
 from ...perks import PerkId
 from ...perks.helpers import perk_active
+from ...projectiles.types import ProjectileTemplateId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
 from ..projectile_draw import (
     ProjectileDrawCtx,
@@ -32,7 +33,8 @@ def draw_projectile(
     alpha: float = 1.0,
 ) -> None:
     alpha = clamp(float(alpha), 0.0, 1.0)
-    if alpha <= 1e-3:
+    # Native Gauss trail slots use life alpha even when the world transition is zero.
+    if alpha <= 1e-3 and proj.type_id != ProjectileTemplateId.GAUSS_GUN:
         return
 
     scale = render_ctx.view.scale

@@ -114,6 +114,22 @@ pub const TickInputFlags = struct {
     preprocessed_player_tick: bool = false,
 };
 
+const FireGate = struct {
+    normal_ready: bool,
+    perk_ready: bool,
+};
+
+fn captureFireGate(player: *const state_mod.PlayerState, perk_player: *const state_mod.PlayerState) FireGate {
+    const cooldown_ready = player.weapon.shot_cooldown <= 0.0;
+    const normal_ready = cooldown_ready and player.weapon.reload_timer == 0.0;
+    return .{
+        .normal_ready = normal_ready,
+        .perk_ready = cooldown_ready and player.experience > 0 and
+            (perks.perkActive(perk_player, PerkId.regression_bullets) or
+                perks.perkActive(perk_player, PerkId.ammunition_within)),
+    };
+}
+
 pub fn preprocessPlayerForPerkTicks(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
@@ -382,12 +398,10 @@ pub fn stepPlayerForTickWithEffects(
         );
     }
 
-    if (player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0) {
-        player.weapon.reload_active = false;
-    }
-
-    const fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0;
-    var swapped_alt_weapon = false;
+    // player_update captures both readiness latches at 0x415753..0x4157be,
+    // before Alternate Weapon swaps the active slot at 0x415813..0x4158dd.
+    const fire_gate = captureFireGate(player, perk_player);
+    if (fire_gate.normal_ready) player.weapon.reload_active = false;
     const reload_key_active = input_flags.reload_down or input_flags.reload_pressed;
     const reload_key_released = !input_flags.reload_active_any;
     if (has_alt_weapon_perk) {
@@ -401,7 +415,6 @@ pub fn stepPlayerForTickWithEffects(
 
         if (cooldown_ms < 1 and reload_key_active) {
             if (player_runtime.playerSwapAltWeapon(player)) {
-                swapped_alt_weapon = true;
                 player.weapon.shot_cooldown = narrowF32(player.weapon.shot_cooldown + 0.1);
                 state.player_alt_weapon_swap_cooldown_ms = 200;
             } else {
@@ -415,13 +428,8 @@ pub fn stepPlayerForTickWithEffects(
         }
     }
 
-    const force_pre_swap_fire_gate = swapped_alt_weapon and fire_gate_open_pre_reload and input_flags.fire_down;
-    if (force_pre_swap_fire_gate) {
-        player.weapon.shot_cooldown = 0.0;
-    }
-
     if (input_flags.fire_down) {
-        _ = try tryFireWeaponWithForce(
+        _ = try tryFireWeaponWithGate(
             state,
             player,
             all_players,
@@ -434,7 +442,7 @@ pub fn stepPlayerForTickWithEffects(
             player_damage_runtime,
             detail_preset,
             dt,
-            force_pre_swap_fire_gate,
+            fire_gate,
         );
     }
 }
@@ -473,7 +481,7 @@ pub fn tryFireWeaponWithEffects(
     sprite_effects: *effects_mod.SpriteEffectPool,
     detail_preset: i32,
 ) WeaponRuntimeError!bool {
-    return tryFireWeaponWithForce(
+    return tryFireWeaponWithGate(
         state,
         player,
         null,
@@ -486,11 +494,11 @@ pub fn tryFireWeaponWithEffects(
         null,
         detail_preset,
         0.0,
-        false,
+        captureFireGate(player, player),
     );
 }
 
-fn tryFireWeaponWithForce(
+fn tryFireWeaponWithGate(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
     all_players: ?[]const state_mod.PlayerState,
@@ -503,17 +511,15 @@ fn tryFireWeaponWithForce(
     player_damage_runtime: ?PlayerDamageRuntime,
     detail_preset: i32,
     dt: f32,
-    force_pre_swap_fire_gate: bool,
+    fire_gate: FireGate,
 ) WeaponRuntimeError!bool {
+    if (!fire_gate.normal_ready and !fire_gate.perk_ready) return false;
     const perk_player = playerUpdatePerkSource(state, player, all_players);
-    if (player.weapon.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
     const weapon_id = player.weapon.weapon_id;
-    const perk_fire_ready = player.weapon.reload_timer > 0.0 and !force_pre_swap_fire_gate;
+    const perk_fire_ready = !fire_gate.normal_ready;
     var use_regression_bullets = false;
     var use_ammunition_within = false;
     if (perk_fire_ready) {
-        if (player.experience <= 0) return false;
-
         use_regression_bullets = perks.perkActive(perk_player, PerkId.regression_bullets);
         use_ammunition_within = !use_regression_bullets and perks.perkActive(perk_player, PerkId.ammunition_within);
         if (!use_regression_bullets and !use_ammunition_within) return false;
@@ -523,13 +529,18 @@ fn tryFireWeaponWithForce(
     // reload-bypass perk and dispatching the shot.
     state.survival_reward_fire_seen = true;
 
+    // The old normal latch decides whether to charge, but native reads the
+    // incoming weapon id for the cost at 0x41596f / 0x4159d3.
     if (perk_fire_ready) {
         if (use_regression_bullets) {
             const reload_time = weapon_data.weapon_stats.get(weapon_id).reload_time;
             const factor: f32 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
             const drained = narrowF32(reload_time * factor);
-            const before: f32 = @floatFromInt(player.experience);
-            var after: i32 = @intFromFloat(before - drained);
+            // FILD keeps XP exact until the PC24 FSUBP at 0x4159b1.
+            const before: f64 = @floatFromInt(player.experience);
+            const remaining: i64 = @intFromFloat(native_math.pc24Sub(before, drained));
+            // Native _ftol returns EAX low32 before the signed-negative clamp.
+            var after: i32 = @truncate(remaining);
             if (after < 0) after = 0;
             player.experience = after;
         } else if (use_ammunition_within) {
@@ -816,7 +827,7 @@ fn tryFireWeaponWithForce(
     player.muzzle_flash_alpha = @min(1.0, player.muzzle_flash_alpha + muzzle_inc);
     player.muzzle_flash_alpha = @min(0.8, player.muzzle_flash_alpha);
 
-    if (player.weapon.ammo <= 0.0 and (force_pre_swap_fire_gate or player.weapon.reload_timer <= 0.0)) {
+    if (player.weapon.ammo <= 0.0 and (fire_gate.normal_ready or player.weapon.reload_timer <= 0.0)) {
         player_runtime.playerStartReloadWithPlayers(player, state, all_players);
     }
 
@@ -2130,6 +2141,151 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
     try std.testing.expect(player.shot_seq >= 1);
 }
 
+test "alternate weapon swap preserves perk fire readiness and charges the incoming weapon" {
+    const cases = .{
+        .{ .regression = true, .ammunition = false, .incoming = WeaponId.pistol, .experience = @as(i32, 760), .health = @as(f32, 100.0), .ammo = @as(f32, 11.0) },
+        .{ .regression = false, .ammunition = true, .incoming = WeaponId.pistol, .experience = @as(i32, 1000), .health = @as(f32, 99.0), .ammo = @as(f32, 11.0) },
+        .{ .regression = true, .ammunition = true, .incoming = WeaponId.pistol, .experience = @as(i32, 760), .health = @as(f32, 100.0), .ammo = @as(f32, 11.0) },
+        .{ .regression = false, .ammunition = true, .incoming = WeaponId.flamethrower, .experience = @as(i32, 1000), .health = @as(f32, 99.85), .ammo = @as(f32, 11.9) },
+    };
+    inline for (cases) |case| {
+        var state = state_mod.GameplayState.init(1);
+        var projectiles: projectiles_mod.ProjectilePool = .{};
+        var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+        var creatures: creatures_mod.CreaturePool = .{};
+        var particles: particles_mod.ParticlePool = .{};
+        var player: state_mod.PlayerState = .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .aim = .{ .x = 700.0, .y = 512.0 },
+            .health = 100.0,
+            .experience = 1000,
+        };
+        player.perk_counts.set(PerkId.alternate_weapon, 1);
+        if (case.regression) player.perk_counts.set(PerkId.regression_bullets, 1);
+        if (case.ammunition) player.perk_counts.set(PerkId.ammunition_within, 1);
+        player_runtime.weaponAssignPlayer(&player, .plasma_minigun);
+        player.weapon.reload_timer = 1.0;
+        player.weapon.reload_timer_max = 1.0;
+        player.weapon.reload_active = true;
+        player.alt_weapon = .{
+            .weapon_id = case.incoming,
+            .clip_size = 12,
+            .ammo = 12.0,
+        };
+
+        try stepPlayerForTick(
+            &state,
+            &player,
+            &projectiles,
+            &secondary_projectiles,
+            &creatures,
+            &particles,
+            .{ .fire_down = true, .reload_pressed = true, .reload_active_any = true },
+            0.01,
+        );
+
+        try std.testing.expectEqual(case.incoming, player.weapon.weapon_id);
+        try std.testing.expectEqual(@as(i32, 1), player.shot_seq);
+        try std.testing.expectEqual(case.experience, player.experience);
+        try expectFloatClose(case.health, player.health);
+        try expectFloatClose(case.ammo, player.weapon.ammo);
+        try expectFloatClose(weapon_data.weapon_stats.get(case.incoming).shot_cooldown, player.weapon.shot_cooldown);
+        try std.testing.expect(state.survival_reward_fire_seen);
+        try std.testing.expect(player.alt_weapon.?.reload_active);
+    }
+}
+
+test "captured closed fire gate stays closed after the weapon slot changes" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var particles: particles_mod.ParticlePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    var sprite_effects: effects_mod.SpriteEffectPool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .experience = 1000,
+        .weapon = .{ .weapon_id = .plasma_minigun, .shot_cooldown = 0.5 },
+        .alt_weapon = .{ .weapon_id = .pistol, .clip_size = 12, .ammo = 12.0 },
+    };
+    player.perk_counts.set(PerkId.regression_bullets, 1);
+    const fire_gate = captureFireGate(&player, &player);
+    try std.testing.expect(!fire_gate.normal_ready and !fire_gate.perk_ready);
+    try std.testing.expect(player_runtime.playerSwapAltWeapon(&player));
+
+    // Exercise the snapshot contract directly: even a ready incoming slot
+    // must not cause the shot helper to recompute a closed captured gate.
+    try std.testing.expect(!try tryFireWeaponWithGate(
+        &state,
+        &player,
+        null,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        &effects,
+        &sprite_effects,
+        null,
+        5,
+        0.01,
+        fire_gate,
+    ));
+    try std.testing.expectEqual(@as(i32, 0), player.shot_seq);
+    try std.testing.expectEqual(@as(i32, 1000), player.experience);
+    try expectFloatClose(12.0, player.weapon.ammo);
+    try std.testing.expect(!state.survival_reward_fire_seen);
+}
+
+test "alternate weapon normal readiness takes priority over perk charges after swap" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var particles: particles_mod.ParticlePool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .aim = .{ .x = 700.0, .y = 512.0 },
+        .health = 100.0,
+        .experience = 1000,
+    };
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
+    player.perk_counts.set(PerkId.regression_bullets, 1);
+    player.perk_counts.set(PerkId.ammunition_within, 1);
+    player_runtime.weaponAssignPlayer(&player, .plasma_minigun);
+    player.alt_weapon = .{
+        .weapon_id = .pistol,
+        .clip_size = 12,
+        .ammo = 12.0,
+        .reload_active = true,
+        .reload_timer = 0.85,
+        .reload_timer_max = 1.2,
+        .shot_cooldown = 0.5,
+    };
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .fire_down = true, .reload_pressed = true, .reload_active_any = true },
+        0.01,
+    );
+
+    try std.testing.expectEqual(WeaponId.pistol, player.weapon.weapon_id);
+    try std.testing.expectEqual(@as(i32, 1), player.shot_seq);
+    try std.testing.expectEqual(@as(i32, 1000), player.experience);
+    try expectFloatClose(100.0, player.health);
+    try expectFloatClose(11.0, player.weapon.ammo);
+    try expectFloatClose(0.85, player.weapon.reload_timer);
+    try std.testing.expect(!player.alt_weapon.?.reload_active);
+}
+
 test "multi plasma and mini rocket use special shot counts" {
     var state = state_mod.GameplayState.init(1);
     var projectiles: projectiles_mod.ProjectilePool = .{};
@@ -2680,35 +2836,51 @@ test "sharpshooter forces spread heat and slows firing" {
 }
 
 test "regression bullets fires during reload and costs experience" {
-    var state = state_mod.GameplayState.init(1);
-    var projectiles: projectiles_mod.ProjectilePool = .{};
-    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
-    var creatures: creatures_mod.CreaturePool = .{};
-    var particles: particles_mod.ParticlePool = .{};
-    var player: state_mod.PlayerState = .{
-        .index = 0,
-        .pos = .{},
-        .aim = .{ .x = 10.0, .y = 0.0 },
-        .experience = 1000,
+    const cases = [_]struct {
+        weapon_id: WeaponId = .pistol,
+        before: i32,
+        after: i32,
+        ammo: f32 = -1.0,
+    }{
+        .{ .before = 1000, .after = 760 },
+        .{ .before = 1, .after = 0 },
+        .{ .before = 16_777_217, .after = 16_776_977 },
+        .{ .before = 16_777_219, .after = 16_776_979 },
+        .{ .before = 2_147_483_647, .after = 2_147_483_392 },
+        .{ .weapon_id = .flamethrower, .before = 2_147_483_647, .after = 0, .ammo = -0.1 },
     };
-    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts.set(PerkId.regression_bullets, 1);
-    player.weapon.ammo = 0.0;
-    player.weapon.reload_active = true;
-    player.weapon.reload_timer = 0.5;
+    for (cases) |case| {
+        var state = state_mod.GameplayState.init(1);
+        var projectiles: projectiles_mod.ProjectilePool = .{};
+        var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+        var creatures: creatures_mod.CreaturePool = .{};
+        var particles: particles_mod.ParticlePool = .{};
+        var player: state_mod.PlayerState = .{
+            .index = 0,
+            .pos = .{},
+            .aim = .{ .x = 10.0, .y = 0.0 },
+            .experience = case.before,
+        };
+        player_runtime.weaponAssignPlayer(&player, case.weapon_id);
+        player.perk_counts.set(PerkId.regression_bullets, 1);
+        player.weapon.ammo = 0.0;
+        player.weapon.reload_active = true;
+        player.weapon.reload_timer = 0.5;
 
-    try std.testing.expect(try tryFireWeapon(
-        &state,
-        &player,
-        &projectiles,
-        &secondary_projectiles,
-        &creatures,
-        &particles,
-    ));
+        try std.testing.expect(try tryFireWeapon(
+            &state,
+            &player,
+            &projectiles,
+            &secondary_projectiles,
+            &creatures,
+            &particles,
+        ));
 
-    try std.testing.expectEqual(@as(i32, 760), player.experience);
-    try std.testing.expect(projectiles.entries[0].active);
-    try expectFloatClose(-1.0, player.weapon.ammo);
+        try std.testing.expectEqual(case.after, player.experience);
+        try std.testing.expectEqual(@as(i32, 1), player.shot_seq);
+        try std.testing.expect(projectiles.entries[0].active or particles.entries[0].active);
+        try expectFloatClose(case.ammo, player.weapon.ammo);
+    }
 }
 
 test "regression bullets blocks fire when experience is zero" {

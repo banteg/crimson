@@ -46,7 +46,7 @@ The native callback's geometry is built from the game's two-float vector type,
 not from independently named scalar coordinates. Live Binary Ninja IL and
 disassembly establish the important object lifetimes: all four Sharpshooter
 quad points are materialized before the perk gate; each conventional-bullet
-type constructs its current point, origin point, half-width, and four output
+type constructs its camera-space endpoints, half-width, and four output
 points within its own branch; and the fading ion-chain arm constructs a
 normalized perpendicular, its camera-space endpoints, and four strip points.
 After drawing the 10-unit strip, native mutates those same four points by four
@@ -140,10 +140,11 @@ An explicit player-pool cursor probe preserved the 2,854-instruction behavior
 but regressed the score from 50.96% to 50.28%, increased aligned-reference
 mismatches from 16 to 21, and raised the fuzzy gap from 6,154.797 to 6,240.250
 bytes. The alternate `msvc6.5pp` profile also regressed to 44.77% with 29
-reference mismatches. Together with the previously rejected natural geometry
-spellings, this leaves compiler allocation and aligned-reference scheduling,
-not missing behavior. The scratch is therefore classified
-`semantic-complete` with compiler residuals.
+reference mismatches. These observations motivated the `semantic-complete`
+classification at that time, but pass and callee coverage does not establish
+every operand owner. The conventional endpoint reversal corrected on
+2026-09-08 survived this audit. These finite geometry and compiler probes
+therefore do not prove that only compiler residuals remain.
 
 ## Compiler-residual source-shape refinement
 
@@ -301,9 +302,10 @@ x/y relocation sequence. It likewise pairs native `effect_scale * 16.0f` at
 `0x004245b8` with a candidate `* 2.5f` from a different block, and pairs the
 native 3/4/2-pixel small-billboard branches at
 `0x00425561-0x0042561e` with constants from neighboring candidate blocks.
-Both the source and the native disassembly confirm those values and field
-offsets are already correct. This leaves no second locally coherent reference
-cluster to repair honestly.
+The checked values and shared data layouts require no alias change. This
+bounded aligned-reference audit did not detect the conventional endpoint-owner
+reversal corrected on 2026-09-08; correct layout offsets alone do not prove
+which field each rendered point reads.
 
 ## Native geometry-lifetime mutation wave
 
@@ -788,14 +790,14 @@ variants with SHA-256
 
 ## Conventional projectile result-ownership wave
 
-The four conventional trail arms expose the same missing expression-result
-boundary as the ion paths. In the Assault Rifle and catch-all arms, native
-finishes the camera-plus-current result and its first two strip points before
-materializing the camera-plus-origin result and the final two points. The
-Pistol and Gauss arms preserve both results across their four point
-calculations. The previous source collapsed each camera addition directly
-into its long-lived vector and obscured both the result copy and the native
-branch-local ordering.
+Native constructs the camera-plus-origin result and vertices 0/1 before the
+camera-plus-current-position result and vertices 2/3 in all four conventional
+trail arms. This wave investigated expression-result copies but assigned the
+first endpoint to current position and the second to origin in its source.
+That owner assumption was wrong and was corrected on 2026-09-08, as documented
+below. The historical probes and metrics remain evidence for their listed
+source shapes on that earlier baseline; they do not prove the endpoint
+semantics or a compiler limit.
 
 `conventional-result-ownership-mutations.json` (SHA-256
 `8fd4eda06fb7c654bad33b69605df530befa0456eb9f4631ab80ff40a819f819`)
@@ -811,8 +813,8 @@ copies for the catch-all arm. It adds 34.649 fuzzy-weighted bytes without
 changing the `442/0/10` reference audit. VC6 emits four fewer instructions,
 moving the aggregate instruction count from 2,882 to 2,878 against 3,021
 native instructions; that count-distance tradeoff is recorded rather than
-hidden. The local alignment improvement and native-supported ownership and
-ordering are the retention evidence.
+hidden. The measured result-copy improvement was retained at that time;
+the endpoint-owner assumption was later disproved by the native field offsets.
 
 The weighted match rises from 7,169.570 to 7,204.219 bytes, the gap falls from
 5,381.430 to 5,346.781 bytes, and the ratio moves from 57.1234965% to
@@ -1072,10 +1074,12 @@ explain the native frame debt and are not retained.
 
 Live native Assault paths also preserve vector inputs across their local draw
 sequences, so `assault-input-value-boundary-mutations.json` exhausts the seven
-single and combined component-construction spellings for current position,
-beam width, and origin. Width is byte-neutral; current loses 23.732 weighted
-bytes; origin loses 57.722 weighted bytes and four good references; combined
-forms regress further. No source change is retained. The baseline remains
+single and combined component-construction spellings labeled current position,
+beam width, and origin in the then-current scratch. Width is byte-neutral;
+current loses 23.732 weighted bytes; origin loses 57.722 weighted bytes and four
+good references; combined forms regress further. Those historical labels used
+the reversed endpoint owners corrected on 2026-09-08. No source change was
+retained from this sweep. Its baseline remains
 58.55062648154419%, 7348.689129698611 weighted bytes, 2885/3021 instructions,
 and `448/0/10` references.
 
@@ -1161,3 +1165,34 @@ No source is retained. The canonical result stays **58.550626%**,
 **2885/3021** instructions, prefix **0**, **448/0/10** references, and
 `body_byte_exact=false`. This bounds the tested clamp and input-lifetime
 interaction, not other vector ownership or earlier trail lifetimes.
+
+## Conventional trail endpoint ownership (2026-09-08)
+
+Raw native field offsets expose a semantic error in the four conventional
+trail arms: vertices 0/1 read origin, while vertices 2/3 read current position.
+At `0x00423011`, `ESI = projectile_pool + 0x1c`; the first endpoint uses
+`[esi-0x0c]/[esi-0x08]` and the second uses `[esi-0x14]/[esi-0x10]`.
+The old scratch reversed those owners, which also reversed the trail fade
+because color slots 0/1 have zero alpha. The source now reads the correct
+fields and names the endpoints `trail_origin` and `trail_head`. See the
+[address table and reproduction](CONVENTIONAL-ENDPOINT-EVIDENCE-2026-09-08.md).
+
+The complete 15-variant endpoint sweep selects all four corrections. The final
+probe, including the semantic local names, raises the weighted match from
+**7,348.689129698611** to **7,429.4439552996955** bytes out of 12,551
+(**58.55062648154419% → 59.19403995936336%**, **+80.75482560108412**
+weighted bytes). Instructions remain **2,885/3,021**, prefix **0**, and
+references improve from **448/0/10** to **456/0/10**. The candidate remains
+non-exact with `body_byte_exact=false`; the native/candidate frame remains
+`0x19c/0x128`. The retained source SHA-256 is
+`5043ceab80ce808557be531c16785e585fcd0681974a6d73fdae8f0088bcbc3e`.
+
+The adjacent controls are bounded negative evidence. Both Assault width
+reference forms lose 43.581672 weighted bytes and six instructions alone;
+after endpoint correction they still lose 47.754125 weighted bytes, six
+instructions, and eight proven references against the corrected control.
+All 16 controls covering named output-point result lifetimes have the same
+match, instruction, and reference metrics as corrected endpoints alone.
+Across the four plans, all **38 controls** compile and complete without
+errors; no width alias or extra output local is retained. These results bound
+the tested lifetimes, not other source owners or the remaining function.

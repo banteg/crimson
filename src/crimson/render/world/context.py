@@ -72,31 +72,23 @@ def draw_bullet_trail_quad(
     type_id: int,
     alpha: int,
     scale: float,
-    angle: float,
+    velocity: Vec2,
 ) -> bool:
     bullet_trail_texture = render_ctx.frame.resources.texture(TextureId.BULLET_TRAIL)
     if alpha <= 0:
         return False
 
-    segment = end - start
-    direction, dist = segment.normalized_with_length()
-
-    # Native uses projectile travel direction as the side-offset basis and still emits the
-    # trail quad even when origin=head (degenerate impact frames).
-    if type_id in (ProjectileTemplateId.PISTOL, ProjectileTemplateId.ASSAULT_RIFLE):
+    # Native 0x423108/0x423120 reads the stored velocity as the half-width,
+    # including degenerate impact frames. It is already scaled by 1.5 at spawn.
+    if type_id == ProjectileTemplateId.ASSAULT_RIFLE:
+        side_mul = 1.0
+    elif type_id == ProjectileTemplateId.PISTOL:
         side_mul = 1.2
     elif type_id == ProjectileTemplateId.GAUSS_GUN:
         side_mul = 1.1
     else:
         side_mul = 0.7
-    half = 1.5 * side_mul * scale
-
-    if dist > 1e-6:
-        side = direction.perp_left()
-    else:
-        side = Vec2.from_angle(angle)
-
-    side_offset = side * half
+    side_offset = velocity * (side_mul * scale)
     p0 = start - side_offset
     p1 = start + side_offset
     p2 = end + side_offset
@@ -105,11 +97,11 @@ def draw_bullet_trail_quad(
     # Native uses additive blending for bullet trails and sets color slots per projectile type.
     # Gauss has a distinct blue tint; most other bullet trails are neutral gray.
     if type_id == ProjectileTemplateId.GAUSS_GUN:
-        head_rgb = (51, 128, 255)  # (0.2, 0.5, 1.0)
+        head_rgb = (51, 127, 255)  # (0.2, 0.5, 1.0), truncated after *255
     else:
-        head_rgb = (128, 128, 128)  # (0.5, 0.5, 0.5)
+        head_rgb = (127, 127, 127)  # (0.5, 0.5, 0.5)
 
-    tail_rgb = (128, 128, 128)
+    tail_rgb = (127, 127, 127)
     head = rl.Color(head_rgb[0], head_rgb[1], head_rgb[2], alpha)
     tail = rl.Color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
 

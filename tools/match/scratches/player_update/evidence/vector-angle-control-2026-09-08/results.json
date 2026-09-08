@@ -1,0 +1,300 @@
+{
+  "baseline": {
+    "address": 4273840,
+    "archive": null,
+    "archive_member": null,
+    "archive_sha256": null,
+    "body_byte_exact": false,
+    "candidate_instructions": 4066,
+    "cflags": "/O2 /GB /W3 /GR-",
+    "compiler": "msvc6.5",
+    "error": null,
+    "first_mismatch": {
+      "candidate_offset": 15,
+      "target_offset": 15
+    },
+    "function": "player_update",
+    "fuzzy_gap_bytes": 5848.7466150870405,
+    "fuzzy_weighted_bytes": 10408.25338491296,
+    "image": "crimsonland.exe",
+    "import_thunk": null,
+    "match_ratio": 0.6402321083172147,
+    "note": "core-player-simulation",
+    "padding_bytes": {
+      "candidate": 0,
+      "target": 0
+    },
+    "prefix_instructions": 7,
+    "recovery": "semantic-complete",
+    "references": {
+      "mismatch": 2,
+      "ok": 805,
+      "unresolved": 0
+    },
+    "residuals": [
+      "compiler",
+      "references"
+    ],
+    "scratch": "/private/tmp/player-update-2026-09-08/vector-contract-scratch",
+    "state": "wip",
+    "target_bytes": 16257,
+    "target_instructions": 4206
+  },
+  "best_improves": false,
+  "best_source_written_to": null,
+  "best_tradeoffs": [],
+  "combinations_never_evaluated": 0,
+  "coverage_by_changes": [
+    {
+      "changes": 1,
+      "evaluated": 1,
+      "never_evaluated": 0,
+      "planned": 1,
+      "possible": 1
+    },
+    {
+      "changes": 2,
+      "evaluated": 2,
+      "never_evaluated": 0,
+      "planned": 2,
+      "possible": 2
+    }
+  ],
+  "evaluated_variants": 3,
+  "metric_best_improves": false,
+  "mutation_source": "/private/tmp/player-update-2026-09-08/vector-contract-scratch/scratch.cpp",
+  "planned_variants": 3,
+  "possible_variants": 3,
+  "recorded_to": null,
+  "results": [
+    {
+      "delta": {
+        "candidate_instructions": 0,
+        "first_mismatch": {
+          "baseline_candidate_offset": 15,
+          "baseline_target_offset": 15,
+          "probe_candidate_offset": 15,
+          "probe_target_offset": 15
+        },
+        "fuzzy_weighted_bytes": 0.0,
+        "match_ratio": 0.0,
+        "prefix_instructions": 0,
+        "references": {
+          "mismatch": 0,
+          "ok": 0,
+          "unresolved": 0
+        }
+      },
+      "label": "vector-value-contract/operator-and-angle",
+      "mutations": [
+        {
+          "replacement": "operator-and-angle",
+          "replacement_index": 1,
+          "site": "vector-value-contract"
+        }
+      ],
+      "rank": 1,
+      "source_sha256": "c31bb99cfefcc0b5fe0e62ca68a62dc9d24ad3fe2b8bcd81f3fe8ea8353c73eb",
+      "status": {
+        "address": 4273840,
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "body_byte_exact": false,
+        "candidate_instructions": 4066,
+        "cflags": "/O2 /GB /W3 /GR-",
+        "compiler": "msvc6.5",
+        "error": null,
+        "first_mismatch": {
+          "candidate_offset": 15,
+          "target_offset": 15
+        },
+        "function": "player_update",
+        "fuzzy_gap_bytes": 5848.7466150870405,
+        "fuzzy_weighted_bytes": 10408.25338491296,
+        "image": "crimsonland.exe",
+        "import_thunk": null,
+        "match_ratio": 0.6402321083172147,
+        "note": "core-player-simulation",
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 7,
+        "recovery": "semantic-complete",
+        "references": {
+          "mismatch": 2,
+          "ok": 805,
+          "unresolved": 0
+        },
+        "residuals": [
+          "compiler",
+          "references"
+        ],
+        "scratch": "<shadow>",
+        "state": "wip",
+        "target_bytes": 16257,
+        "target_instructions": 4206
+      },
+      "tradeoffs": []
+    },
+    {
+      "delta": {
+        "candidate_instructions": -1,
+        "first_mismatch": {
+          "baseline_candidate_offset": 15,
+          "baseline_target_offset": 15,
+          "probe_candidate_offset": 5,
+          "probe_target_offset": 5
+        },
+        "fuzzy_weighted_bytes": -1060.1344150181467,
+        "match_ratio": -0.06521095005340138,
+        "prefix_instructions": -6,
+        "references": {
+          "mismatch": 14,
+          "ok": -62,
+          "unresolved": 0
+        }
+      },
+      "label": "vector-value-contract/operator-and-angle+fire-cough-angle-consumer/expression-temporary",
+      "mutations": [
+        {
+          "replacement": "operator-and-angle",
+          "replacement_index": 1,
+          "site": "vector-value-contract"
+        },
+        {
+          "replacement": "expression-temporary",
+          "replacement_index": 1,
+          "site": "fire-cough-angle-consumer"
+        }
+      ],
+      "rank": 2,
+      "source_sha256": "9c34e5c250764d59e98c64f5748895aa540306d5a00a780e0c2d71548807d656",
+      "status": {
+        "address": 4273840,
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "body_byte_exact": false,
+        "candidate_instructions": 4065,
+        "cflags": "/O2 /GB /W3 /GR-",
+        "compiler": "msvc6.5",
+        "error": null,
+        "first_mismatch": {
+          "candidate_offset": 5,
+          "target_offset": 5
+        },
+        "function": "player_update",
+        "fuzzy_gap_bytes": 6908.881030105187,
+        "fuzzy_weighted_bytes": 9348.118969894813,
+        "image": "crimsonland.exe",
+        "import_thunk": null,
+        "match_ratio": 0.5750211582638133,
+        "note": "core-player-simulation",
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 1,
+        "recovery": "semantic-complete",
+        "references": {
+          "mismatch": 16,
+          "ok": 743,
+          "unresolved": 0
+        },
+        "residuals": [
+          "compiler",
+          "references"
+        ],
+        "scratch": "<shadow>",
+        "state": "wip",
+        "target_bytes": 16257,
+        "target_instructions": 4206
+      },
+      "tradeoffs": []
+    },
+    {
+      "delta": {
+        "candidate_instructions": 0,
+        "first_mismatch": {
+          "baseline_candidate_offset": 15,
+          "baseline_target_offset": 15,
+          "probe_candidate_offset": 5,
+          "probe_target_offset": 5
+        },
+        "fuzzy_weighted_bytes": -1320.6847195357823,
+        "match_ratio": -0.081237911025145,
+        "prefix_instructions": -6,
+        "references": {
+          "mismatch": 19,
+          "ok": -99,
+          "unresolved": 0
+        }
+      },
+      "label": "vector-value-contract/operator-and-angle+fire-cough-angle-consumer/named-value-control",
+      "mutations": [
+        {
+          "replacement": "operator-and-angle",
+          "replacement_index": 1,
+          "site": "vector-value-contract"
+        },
+        {
+          "replacement": "named-value-control",
+          "replacement_index": 2,
+          "site": "fire-cough-angle-consumer"
+        }
+      ],
+      "rank": 3,
+      "source_sha256": "2bc2391cad754a4aa94e0cb26602efced2dbcf69c7951e26a00107a32d5f18f1",
+      "status": {
+        "address": 4273840,
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "body_byte_exact": false,
+        "candidate_instructions": 4066,
+        "cflags": "/O2 /GB /W3 /GR-",
+        "compiler": "msvc6.5",
+        "error": null,
+        "first_mismatch": {
+          "candidate_offset": 5,
+          "target_offset": 5
+        },
+        "function": "player_update",
+        "fuzzy_gap_bytes": 7169.431334622823,
+        "fuzzy_weighted_bytes": 9087.568665377177,
+        "image": "crimsonland.exe",
+        "import_thunk": null,
+        "match_ratio": 0.5589941972920697,
+        "note": "core-player-simulation",
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 1,
+        "recovery": "semantic-complete",
+        "references": {
+          "mismatch": 21,
+          "ok": 706,
+          "unresolved": 0
+        },
+        "residuals": [
+          "compiler",
+          "references"
+        ],
+        "scratch": "<shadow>",
+        "state": "wip",
+        "target_bytes": 16257,
+        "target_instructions": 4206
+      },
+      "tradeoffs": []
+    }
+  ],
+  "schema": 1,
+  "spec_sha256": "280081d8d4fe8b13e1d22ba5c2393316f2abedf452ba0966e460f3f7ee99a16b",
+  "stop_reason": null,
+  "tradeoff_variants": 0,
+  "truncated": false,
+  "winner": null
+}

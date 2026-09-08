@@ -93,13 +93,10 @@ pub fn drawSecondaryProjectile(
 fn drawBulletTrail(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool {
     if (!window_atlas.isBulletTrailType(projectile.type_id)) return false;
 
-    const start = toRlVec(projectile.origin);
     const end = toRlVec(projectile.pos);
-    const segment = vecSub(end, start);
-    const distance = vecLength(segment);
     const alpha = std.math.clamp(projectile.life_timer, @as(f32, 0.0), @as(f32, 1.0)) * ctx.entity_alpha;
 
-    drawBulletTrailQuad(projectile.type_id, start, end, distance, projectile.angle, alpha, ctx.assets.texture(.bullet_trail));
+    drawBulletTrailQuad(bulletTrailQuad(projectile, ctx.entity_alpha), ctx.assets.texture(.bullet_trail));
 
     if (projectile.life_timer >= 0.39) {
         const size = window_atlas.bulletSpriteSize(projectile.type_id);
@@ -627,57 +624,61 @@ fn drawTextureCenteredRotated(texture: rl.Texture2D, center: rl.Vector2, width: 
     rl.drawTexturePro(texture, src, dest, rl.Vector2.init(width * 0.5, height * 0.5), rotation_deg, tint);
 }
 
-fn drawBulletTrailQuad(
-    type_id: i32,
-    start: rl.Vector2,
-    end: rl.Vector2,
-    distance: f32,
-    angle: f32,
-    alpha: f32,
-    texture: rl.Texture2D,
-) void {
-    if (!(alpha > 1e-3)) return;
+const BulletTrailQuad = struct {
+    points: [4]rl.Vector2,
+    head: rl.Color,
+    tail: rl.Color,
+};
 
-    const side_mul: f32 = switch (type_id) {
-        @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        @intFromEnum(game_ids.ProjectileTypeId.assault_rifle),
-        => 1.2,
+fn bulletTrailQuad(projectile: cz.projectiles.Projectile, transition_alpha: f32) BulletTrailQuad {
+    const side_mul: f32 = switch (projectile.type_id) {
+        @intFromEnum(game_ids.ProjectileTypeId.assault_rifle) => 1.0,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol) => 1.2,
         @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => 1.1,
         else => 0.7,
     };
-    const half = 1.5 * side_mul;
-    const side = if (distance > 1e-6) blk: {
-        const inv_len = 1.0 / distance;
-        break :blk rl.Vector2.init(-(end.y - start.y) * inv_len, (end.x - start.x) * inv_len);
-    } else rl.Vector2.init(-std.math.sin(angle), std.math.cos(angle));
+    // Native 0x423108/0x423120 uses stored vel, already scaled by 1.5 at spawn.
+    const side_offset = vecScale(toRlVec(projectile.vel), side_mul);
+    const start = toRlVec(projectile.origin);
+    const end = toRlVec(projectile.pos);
+    const life_alpha = std.math.clamp(projectile.life_timer, @as(f32, 0.0), @as(f32, 1.0));
+    const is_gauss = projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
+    // Native 0x42334e overwrites Gauss slots 2/3 with life, without transition.
+    return .{
+        .points = .{
+            vecSub(start, side_offset),
+            vecAdd(start, side_offset),
+            vecAdd(end, side_offset),
+            vecSub(end, side_offset),
+        },
+        .head = if (is_gauss)
+            colorWithAlpha(rl.Color.init(51, 127, 255, 255), life_alpha)
+        else
+            colorWithAlpha(rl.Color.init(127, 127, 127, 255), life_alpha * transition_alpha),
+        .tail = rl.Color.init(127, 127, 127, 0),
+    };
+}
 
-    const side_offset = rl.Vector2.init(side.x * half, side.y * half);
-    const p0 = rl.Vector2.init(start.x - side_offset.x, start.y - side_offset.y);
-    const p1 = rl.Vector2.init(start.x + side_offset.x, start.y + side_offset.y);
-    const p2 = rl.Vector2.init(end.x + side_offset.x, end.y + side_offset.y);
-    const p3 = rl.Vector2.init(end.x - side_offset.x, end.y - side_offset.y);
-
-    const head = if (type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun))
-        colorWithAlpha(rl.Color.init(51, 128, 255, 255), alpha)
-    else
-        colorWithAlpha(rl.Color.init(128, 128, 128, 255), alpha);
-    const tail = rl.Color.init(128, 128, 128, 0);
+fn drawBulletTrailQuad(quad: BulletTrailQuad, texture: rl.Texture2D) void {
+    if (quad.head.a == 0) return;
+    const head = quad.head;
+    const tail = quad.tail;
 
     rl.beginBlendMode(.additive);
     rl.gl.rlSetTexture(texture.id);
     rl.gl.rlBegin(rl.gl.rl_quads);
     rl.gl.rlColor4ub(tail.r, tail.g, tail.b, tail.a);
     rl.gl.rlTexCoord2f(0.0, 0.0);
-    rl.gl.rlVertex2f(p0.x, p0.y);
+    rl.gl.rlVertex2f(quad.points[0].x, quad.points[0].y);
     rl.gl.rlColor4ub(tail.r, tail.g, tail.b, tail.a);
     rl.gl.rlTexCoord2f(1.0, 0.0);
-    rl.gl.rlVertex2f(p1.x, p1.y);
+    rl.gl.rlVertex2f(quad.points[1].x, quad.points[1].y);
     rl.gl.rlColor4ub(head.r, head.g, head.b, head.a);
     rl.gl.rlTexCoord2f(1.0, 0.5);
-    rl.gl.rlVertex2f(p2.x, p2.y);
+    rl.gl.rlVertex2f(quad.points[2].x, quad.points[2].y);
     rl.gl.rlColor4ub(head.r, head.g, head.b, head.a);
     rl.gl.rlTexCoord2f(0.0, 0.5);
-    rl.gl.rlVertex2f(p3.x, p3.y);
+    rl.gl.rlVertex2f(quad.points[3].x, quad.points[3].y);
     rl.gl.rlEnd();
     rl.gl.rlSetTexture(0);
     rl.endBlendMode();
@@ -760,4 +761,93 @@ fn rgbfColor(rgb: window_atlas.ColorRgbf, alpha: f32) rl.Color {
         .b = @intFromFloat(std.math.clamp(rgb.b, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
         .a = @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
     };
+}
+
+test "bullet trail native widths keep origin at slots zero and one" {
+    const cases = .{
+        .{ game_ids.ProjectileTypeId.assault_rifle, @as(f32, 1.5) },
+        .{ game_ids.ProjectileTypeId.pistol, @as(f32, 1.8) },
+        .{ game_ids.ProjectileTypeId.gauss_gun, @as(f32, 1.65) },
+        .{ game_ids.ProjectileTypeId.shotgun, @as(f32, 1.05) },
+        .{ game_ids.ProjectileTypeId.splitter_gun, @as(f32, 1.05) },
+    };
+    inline for (cases) |case| {
+        const projectile: cz.projectiles.Projectile = .{
+            .type_id = @intFromEnum(case[0]),
+            .origin = .{ .x = 120, .y = 90 },
+            .pos = .{ .x = 120, .y = 80 },
+            .vel = .{ .x = 1.5, .y = 0 },
+            .life_timer = 1.0,
+        };
+        const quad = bulletTrailQuad(projectile, 1.0);
+        const expected = [_]rl.Vector2{
+            .{ .x = 120 - case[1], .y = 90 },
+            .{ .x = 120 + case[1], .y = 90 },
+            .{ .x = 120 + case[1], .y = 80 },
+            .{ .x = 120 - case[1], .y = 80 },
+        };
+        for (quad.points, expected) |actual, point| {
+            try std.testing.expectApproxEqAbs(point.x, actual.x, 1e-5);
+            try std.testing.expectApproxEqAbs(point.y, actual.y, 1e-5);
+        }
+        try std.testing.expectEqual(rl.Color.init(127, 127, 127, 0), quad.tail);
+        try std.testing.expectEqual(@as(u8, 255), quad.head.a);
+    }
+}
+
+test "bullet trail width uses stored velocity for both nonzero and zero length" {
+    const cases = [_]struct { vel: state_mod.Vec2, offset: rl.Vector2 }{
+        .{ .vel = .{ .x = 1.2, .y = 0.9 }, .offset = .{ .x = 1.44, .y = 1.08 } },
+        .{ .vel = .{ .x = 2, .y = 1 }, .offset = .{ .x = 2.4, .y = 1.2 } },
+    };
+    for (cases) |case| {
+        for ([_]f32{ 80, 90 }) |end_y| {
+            const projectile: cz.projectiles.Projectile = .{
+                .type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol),
+                .origin = .{ .x = 120, .y = 90 },
+                .pos = .{ .x = 120, .y = end_y },
+                .vel = case.vel,
+                .angle = 0,
+                .life_timer = 1.0,
+            };
+            const quad = bulletTrailQuad(projectile, 1.0);
+            const expected = [_]rl.Vector2{
+                .{ .x = 120 - case.offset.x, .y = 90 - case.offset.y },
+                .{ .x = 120 + case.offset.x, .y = 90 + case.offset.y },
+                .{ .x = 120 + case.offset.x, .y = end_y + case.offset.y },
+                .{ .x = 120 - case.offset.x, .y = end_y - case.offset.y },
+            };
+            for (quad.points, expected) |actual, point| {
+                try std.testing.expectApproxEqAbs(point.x, actual.x, 1e-5);
+                try std.testing.expectApproxEqAbs(point.y, actual.y, 1e-5);
+            }
+        }
+    }
+}
+
+test "Gauss trail retains life alpha through a zero world transition" {
+    const projectile: cz.projectiles.Projectile = .{
+        .type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun),
+        .life_timer = 0.5,
+    };
+    for ([_]f32{ 1.0, 0.5, 0.0 }) |transition_alpha| {
+        const quad = bulletTrailQuad(projectile, transition_alpha);
+        try std.testing.expectEqual(rl.Color.init(51, 127, 255, 127), quad.head);
+    }
+}
+
+test "bullet trail packs alpha after applying world transition" {
+    const cases = [_]struct { life: f32, transition: f32, expected_alpha: u8 }{
+        .{ .life = 0.5, .transition = 0.5, .expected_alpha = 63 },
+        .{ .life = 0.5, .transition = 0.4, .expected_alpha = 51 },
+        .{ .life = 1.5, .transition = 0.5, .expected_alpha = 127 },
+    };
+    for (cases) |case| {
+        const projectile: cz.projectiles.Projectile = .{
+            .type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol),
+            .life_timer = case.life,
+        };
+        const quad = bulletTrailQuad(projectile, case.transition);
+        try std.testing.expectEqual(rl.Color.init(127, 127, 127, case.expected_alpha), quad.head);
+    }
 }

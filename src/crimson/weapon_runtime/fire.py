@@ -94,6 +94,23 @@ _PELLET_SPEED_SCALE_CALLER_BY_WEAPON: dict[WeaponId, int] = {
 }
 
 
+class WeaponFireGate(msgspec.Struct, frozen=True):
+    normal_ready: bool
+    perk_ready: bool
+
+
+def capture_fire_gate(player: PlayerState, perk_player: PlayerState) -> WeaponFireGate:
+    """Snapshot native firing readiness before Alternate Weapon exchanges slots."""
+    cooldown_ready = player.weapon.shot_cooldown <= 0.0
+    return WeaponFireGate(
+        normal_ready=cooldown_ready and player.weapon.reload_timer == 0.0,
+        perk_ready=cooldown_ready and player.experience > 0 and (
+            perk_active(perk_player, PerkId.REGRESSION_BULLETS)
+            or perk_active(perk_player, PerkId.AMMUNITION_WITHIN)
+        ),
+    )
+
+
 class WeaponFireCtx(msgspec.Struct):
     player: PlayerState
     input_state: PlayerInput
@@ -102,7 +119,7 @@ class WeaponFireCtx(msgspec.Struct):
     detail_preset: int = 5
     creatures: Sequence[CreatureState] | None = None
     players: Sequence[PlayerState] | None = None
-    force_pre_swap_fire_gate: bool = False
+    fire_gate: WeaponFireGate | None = None
     player_death_runtime: PlayerDeathRuntime | None = None
 
 
@@ -199,34 +216,29 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     state = ctx.state
     creatures = ctx.creatures
     players = ctx.players
-    force_pre_swap_fire_gate = bool(ctx.force_pre_swap_fire_gate)
     player_death_runtime = ctx.player_death_runtime
     perk_player = players[0] if state.preserve_bugs and players else player
+    fire_gate = ctx.fire_gate if ctx.fire_gate is not None else capture_fire_gate(player, perk_player)
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
 
-    if (not force_pre_swap_fire_gate) and player.weapon.shot_cooldown > 0.0:
+    if not (fire_gate.normal_ready or fire_gate.perk_ready):
         return WeaponFireResult(fired=False)
     if not input_state.fire_down:
         return WeaponFireResult(fired=False)
 
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
-    perk_fire_ready = (not force_pre_swap_fire_gate) and player.weapon.reload_timer > 0.0
+    perk_fire_ready = not fire_gate.normal_ready
     use_regression_bullets = False
     use_ammunition_within = False
     if perk_fire_ready:
-        if player.experience <= 0:
-            return WeaponFireResult(fired=False)
-
         use_regression_bullets = perk_active(perk_player, PerkId.REGRESSION_BULLETS)
         use_ammunition_within = (not use_regression_bullets) and perk_active(
             perk_player,
             PerkId.AMMUNITION_WITHIN,
         )
-        if not (use_regression_bullets or use_ammunition_within):
-            return WeaponFireResult(fired=False)
 
     # Native writes this after the ready/input gates, but before charging the
     # reload-bypass perk and dispatching the shot.
@@ -238,7 +250,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
 
             reload_time = float(weapon.reload_time)
             factor = 4.0 if ammo_class == 1 else 200.0
-            player.experience = int(float(player.experience) - reload_time * factor)
+            # Native rounds FMUL and FSUBP at PC=24 before the truncating _ftol.
+            cost = x87_pc24_mul(reload_time, factor)
+            remaining = int(x87_pc24_sub(float(player.experience), cost)) & 0xFFFFFFFF
+            # _ftol returns the low signed 32 bits in EAX before the negative clamp.
+            player.experience = remaining - 0x100000000 if remaining & 0x80000000 else remaining
             if player.experience < 0:
                 player.experience = 0
         elif use_ammunition_within:
@@ -511,7 +527,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         # (for example Regression Bullets), and replay checkpoints rely on that.
         player.weapon.ammo = float(player.weapon.ammo) - float(ammo_cost)
     reload_start_gate_open = bool(player.weapon.reload_timer <= 0.0)
-    if force_pre_swap_fire_gate:
+    if fire_gate.normal_ready:
         # Alt-weapon same-tick fire uses the pre-swap gate (reload_timer==0) for
         # reload restart eligibility after ammo drains below zero.
         reload_start_gate_open = True

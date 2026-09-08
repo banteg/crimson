@@ -36,6 +36,9 @@ from .weapon_runtime import (
     WeaponFireCtx as _WeaponFireCtx,
 )
 from .weapon_runtime import (
+    capture_fire_gate as _capture_fire_gate,
+)
+from .weapon_runtime import (
     fire_weapon as _fire_weapon,
 )
 from .weapon_runtime import (
@@ -1005,14 +1008,15 @@ def player_update(
             x87_pc24_sub(player.spread_heat, x87_pc24_mul(dt, f32(0.4))),
         )
 
-    fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0
+    # Native latches both normal and perk readiness before exchanging weapon
+    # slots; the old normal flag also decides whether the incoming shot costs XP/HP.
+    fire_gate = _capture_fire_gate(player, perk_player)
 
     # Native clears `reload_active` whenever the cooldown/timer gates are open,
     # even if ammo is empty and perk firing paths can still proceed.
-    if fire_gate_open_pre_reload:
+    if fire_gate.normal_ready:
         player.weapon.reload_active = False
 
-    swapped_alt_weapon = False
     reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
     reload_key_released = (not bool(reload_active_any)) if reload_active_any is not None else (not reload_key_active)
     if has_alt_weapon_perk:
@@ -1025,7 +1029,6 @@ def player_update(
 
         if cooldown_ms < 1 and reload_key_active:
             if _player_swap_alt_weapon(player):
-                swapped_alt_weapon = True
                 weapon = _weapon_entry(player.weapon.weapon_id)
                 state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
                 player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
@@ -1037,12 +1040,6 @@ def player_update(
             if reload_key_released:
                 state.player_alt_weapon_swap_cooldown_ms = 0
 
-    # Native computes the fire gate (`shot_cooldown <= 0 && reload_timer == 0`)
-    # before alt-weapon swap mutates cooldown; preserve same-tick fire eligibility.
-    force_pre_swap_fire_gate = swapped_alt_weapon and fire_gate_open_pre_reload and input_state.fire_down
-    if force_pre_swap_fire_gate:
-        player.weapon.shot_cooldown = 0.0
-
     _fire_weapon(
         _WeaponFireCtx(
             player=player,
@@ -1052,7 +1049,7 @@ def player_update(
             detail_preset=int(detail_preset),
             creatures=creatures,
             players=players,
-            force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
+            fire_gate=fire_gate,
             player_death_runtime=player_death_runtime,
         ),
     )

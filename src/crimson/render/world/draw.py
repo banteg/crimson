@@ -16,6 +16,7 @@ from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...perks.helpers import perk_active
+from ...projectiles.types import ProjectileTemplateId
 from ...sim.world_defs import CREATURE_ANIM, CREATURE_ASSET
 from ...ui.cursor import draw_aim_cursor
 from . import viewport
@@ -77,6 +78,12 @@ def draw_world(
     with profile_pass("background"):
         draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size)
     if entity_alpha <= 1e-3:
+        # Native 0x405b95 still calls projectile_render at zero transition;
+        # its Gauss slots retain life alpha. Keep that pass inside alpha testing.
+        with render_ctx.frame.resources.alpha_test.scope():
+            for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
+                if proj.active and proj.type_id == ProjectileTemplateId.GAUSS_GUN:
+                    draw_projectile(render_ctx, proj, proj_index=proj_index, alpha=entity_alpha)
         return
 
     with render_ctx.frame.resources.alpha_test.scope():

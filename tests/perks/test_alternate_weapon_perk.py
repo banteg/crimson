@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import player_update
@@ -19,6 +21,45 @@ from tests.support.helpers import assert_float_close
 def _alt(player: PlayerState) -> WeaponSlot:
     assert player.alt_weapon is not None
     return player.alt_weapon
+
+
+@pytest.mark.parametrize("regression,ammunition,expected_xp,expected_health", [
+    (True, False, 760, 100.0),
+    (False, True, 1000, 99.0),
+    (True, True, 760, 100.0),
+])
+def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon(
+    regression: bool, ammunition: bool, expected_xp: int, expected_health: float,
+) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    weapon_assign_player(player, WeaponId.PLASMA_MINIGUN, state=state)
+    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = int(regression)
+    player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = int(ammunition)
+    player.experience = 1000
+    player.weapon.shot_cooldown = 0.0
+    player.weapon.reload_timer = 1.0
+    player.weapon.reload_timer_max = 1.0
+    player.weapon.reload_active = True
+    player.alt_weapon = WeaponSlot(
+        weapon_id=WeaponId.PISTOL, clip_size=12, ammo=12.0,
+        reload_timer=0.0, reload_timer_max=1.2, shot_cooldown=0.0,
+    )
+
+    player_update(
+        player, PlayerInput(reload_pressed=True, fire_down=True, aim=Vec2(700.0, 512.0)),
+        dt=0.01, state=state,
+    )
+
+    # Native captures both ready flags before swapping, then charges the new
+    # weapon despite its zero reload timer and the swap's added cooldown.
+    assert player.weapon.weapon_id == WeaponId.PISTOL
+    assert player.shot_seq == 1
+    assert_float_close(player.weapon.ammo, 11.0)
+    assert state.survival_reward_fire_seen
+    assert player.experience == expected_xp
+    assert_float_close(player.health, expected_health)
 
 
 def test_alternate_weapon_slows_movement() -> None:

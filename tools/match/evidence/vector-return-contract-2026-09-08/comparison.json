@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "kind": "vector-return-contract-control",
+  "verified": true,
+  "compiler_profile": "msvc6.5",
+  "commands": [
+    {
+      "argv": [
+        "tools/match/cl.sh",
+        "/c",
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-",
+        "/FAs",
+        "helpers.cpp"
+      ],
+      "returncode": 0,
+      "stdout": "helpers.cpp\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "tools/match/cl.sh",
+        "/c",
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-",
+        "/FAs",
+        "callers.cpp"
+      ],
+      "returncode": 0,
+      "stdout": "callers.cpp\n",
+      "stderr": ""
+    }
+  ],
+  "verifier_sha256": "c4e9cf3992cce46c23b5a98f7d848a5bd5c8509b2c24d1eea625cb5e46775fe0",
+  "compiler_sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+  "cl_wrapper_sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8",
+  "toolchain": {
+    "compiler_trees": {
+      "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+      "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+    },
+    "runner_sha256": "e81ef773fb511e3780bbd8dcf324ffec2497f52805f10fa20d6e4a29bc0f94bc",
+    "runner_mode": 493,
+    "cl_environment": {
+      "CL": null,
+      "_CL_": null
+    }
+  },
+  "source_sha256": {
+    "vectors.h": "b520ca4122395c433ace205c1ab56382be4678f96386d70b238861432d35e846",
+    "helpers.cpp": "8dc3cd1462943620cc6d2813ef44befe42f6fd0b21c47a7f970088c4a10249ce",
+    "callers.cpp": "c9463a3677727acd16c33f4eca5d2d2bac20757d68946faf81b1cb038dad927d"
+  },
+  "original_image": {
+    "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
+    "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+    "coff_symbol_table_offset": 0,
+    "coff_symbol_count": 0,
+    "export_count": 0,
+    "name_string_offsets": {
+      "vec2_sub": -1,
+      "vec2_add_out": -1,
+      "controls_vec2_t": -1,
+      "vec2_t@@": -1
+    }
+  },
+  "native_fire_cough_call_and_angle": {
+    "address": "0x00413b7f",
+    "size": 14,
+    "bytes_hex": "e8bc3a0000d900d94004d9c9d9f3"
+  },
+  "helper_bodies": [
+    {
+      "symbol": "?sub@explicit_vec2_t@@QAEPAMPAM0@Z",
+      "native_address": "0x00417640",
+      "size": 26,
+      "native_size": 26,
+      "byte_exact": true,
+      "relocations": [],
+      "candidate_sha256": "daa189f7e7d38db18fe359dbfd4b06c5ee5b97f6552ecf8ec19a7d2ad165698c",
+      "native_sha256": "daa189f7e7d38db18fe359dbfd4b06c5ee5b97f6552ecf8ec19a7d2ad165698c"
+    },
+    {
+      "symbol": "??Gvalue_vec2_t@@QBE?AU0@ABU0@@Z",
+      "native_address": "0x00417640",
+      "size": 26,
+      "native_size": 26,
+      "byte_exact": true,
+      "relocations": [],
+      "candidate_sha256": "daa189f7e7d38db18fe359dbfd4b06c5ee5b97f6552ecf8ec19a7d2ad165698c",
+      "native_sha256": "daa189f7e7d38db18fe359dbfd4b06c5ee5b97f6552ecf8ec19a7d2ad165698c"
+    },
+    {
+      "symbol": "?add@explicit_vec2_t@@QAEPAMPAM0@Z",
+      "native_address": "0x0044ecf0",
+      "size": 26,
+      "native_size": 26,
+      "byte_exact": true,
+      "relocations": [],
+      "candidate_sha256": "b6cfeedef0fbae3804a393c104f8a3da68750bc0c95644e9fa42f6fbba42dca8",
+      "native_sha256": "b6cfeedef0fbae3804a393c104f8a3da68750bc0c95644e9fa42f6fbba42dca8"
+    },
+    {
+      "symbol": "??Hvalue_vec2_t@@QBE?AU0@ABU0@@Z",
+      "native_address": "0x0044ecf0",
+      "size": 26,
+      "native_size": 26,
+      "byte_exact": true,
+      "relocations": [],
+      "candidate_sha256": "b6cfeedef0fbae3804a393c104f8a3da68750bc0c95644e9fa42f6fbba42dca8",
+      "native_sha256": "b6cfeedef0fbae3804a393c104f8a3da68750bc0c95644e9fa42f6fbba42dca8"
+    }
+  ],
+  "caller_pairs": [
+    {
+      "left": "_value_expression_angle",
+      "right": "_explicit_expression_angle",
+      "left_size": 33,
+      "right_size": 33,
+      "object_body_bytes_equal": true,
+      "references_equal_after_verified_helper_mapping": true,
+      "left_references": [
+        {
+          "offset": 18,
+          "symbol": "??Gvalue_vec2_t@@QBE?AU0@ABU0@@Z",
+          "addend": 0
+        }
+      ],
+      "right_references": [
+        {
+          "offset": 18,
+          "symbol": "?sub@explicit_vec2_t@@QAEPAMPAM0@Z",
+          "addend": 0
+        }
+      ],
+      "left_sha256": "79f28fc2e8c37ab8a845f8f2df56e55f27caf7365469e1a87afd8ab35b07ad89",
+      "right_sha256": "79f28fc2e8c37ab8a845f8f2df56e55f27caf7365469e1a87afd8ab35b07ad89"
+    },
+    {
+      "left": "_value_expression_consume",
+      "right": "_explicit_caller",
+      "left_size": 32,
+      "right_size": 32,
+      "object_body_bytes_equal": true,
+      "references_equal_after_verified_helper_mapping": true,
+      "left_references": [
+        {
+          "offset": 18,
+          "symbol": "??Gvalue_vec2_t@@QBE?AU0@ABU0@@Z",
+          "addend": 0
+        },
+        {
+          "offset": 24,
+          "symbol": "_consume",
+          "addend": 0
+        }
+      ],
+      "right_references": [
+        {
+          "offset": 18,
+          "symbol": "?sub@explicit_vec2_t@@QAEPAMPAM0@Z",
+          "addend": 0
+        },
+        {
+          "offset": 24,
+          "symbol": "_consume",
+          "addend": 0
+        }
+      ],
+      "left_sha256": "7db831b4bbd7ae35996c4fc5ef8f7338cc86ed8e9b2acb46e3bc8cefa878cefb",
+      "right_sha256": "7db831b4bbd7ae35996c4fc5ef8f7338cc86ed8e9b2acb46e3bc8cefa878cefb"
+    }
+  ]
+}

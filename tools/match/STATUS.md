@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **793/810** functions matched exactly (**97.9%**), **235746/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **316178/341992** code bytes (**92.5%**).
+Fuzzy-weighted alignment is **316262/341992** code bytes (**92.5%**).
 
-Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **25814 fuzzy-gap bytes**.
+Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **25730 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,16 +30,16 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**17** non-exact scratch-backed functions hold **25814 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
+**17** non-exact scratch-backed functions hold **25730 fuzzy-gap bytes**. The top 5 hold **79.2%** of that gap; the top 10 hold **98.0%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25814** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25730** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
 | rank | image | function | fuzzy gap | recovery | residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
-| 1 | crimsonland.exe | player_update | 5849 | semantic-complete | compiler,references | historical-only | 0/68 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 2 | crimsonland.exe | projectile_render | 5202 | semantic-complete | compiler,references | historical-only | 0/65 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 1 | crimsonland.exe | player_update | 5845 | semantic-complete | compiler,references | historical-only | 0/70 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 2 | crimsonland.exe | projectile_render | 5122 | semantic-complete | compiler,references | historical-only | 0/69 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | controls_menu_update | 3891 | semantic-complete | compiler,references | historical-only | 0/63 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
@@ -124,12 +124,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 295013/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 654/671 |
+| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 295097/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 654/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **295013/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
+**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **295097/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -346,7 +346,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | gameplay_reset_state | 0x00412dc0 | 1639 | 1639/1639 | 0 | 307/307 | 100.00% | 307/307 | 216/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 10408/16257 | 5849 | 4066/4206 | 64.02% | 7/4206 | 805/0/2 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 10412/16257 | 5845 | 4066/4206 | 64.05% | 7/4206 | 805/0/2 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | ui_menu_template_pool_init_thunk | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
@@ -474,7 +474,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | match | creature_apply_damage | 0x004207c0 | 963 | 963/963 | 0 | 237/237 | 100.00% | 237/237 | 83/0/0 |  | creature-damage-and-lethal-effects |
 | wip | projectile_update | 0x00420b90 | 8409 | 5288/8409 | 3121 | 2183/2203 | 62.88% | 0/2203 | 426/0/13 |  | core-projectile-simulation |
-| wip | projectile_render | 0x00422c70 | 12551 | 7349/12551 | 5202 | 2885/3021 | 58.55% | 0/3021 | 448/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
+| wip | projectile_render | 0x00422c70 | 12551 | 7429/12551 | 5122 | 2885/3021 | 59.19% | 0/3021 | 456/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | wip | creature_update_all | 0x00426220 | 5330 | 2927/5330 | 2403 | 1299/1338 | 54.91% | 0/1338 | 225/0/2 |  | creature-ai-movement-attacks-and-corpse-lifecycle |

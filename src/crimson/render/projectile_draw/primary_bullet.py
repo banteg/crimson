@@ -4,6 +4,7 @@ from grim.assets import TextureId
 from grim.math import clamp
 from grim.raylib_api import rl
 
+from ...projectiles.types import ProjectileTemplateId
 from ..world.context import bullet_sprite_size, draw_bullet_trail_quad, is_bullet_trail_type
 from .common import RAD_TO_DEG, proj_origin
 from .types import ProjectileDrawCtx
@@ -22,6 +23,10 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
 
     bullet_trail = resources.texture(TextureId.BULLET_TRAIL)
     if bullet_trail is not None:
+        # Native Gauss color slots overwrite life*transition with clamped life.
+        trail_alpha = clamp(float(ctx.life), 0.0, 1.0)
+        if type_id != ProjectileTemplateId.GAUSS_GUN:
+            trail_alpha *= float(ctx.alpha)
         origin = proj_origin(ctx.proj, ctx.pos)
         origin_screen = renderer.world_to_screen(origin)
         drawn = draw_bullet_trail_quad(
@@ -29,9 +34,9 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
             origin_screen,
             ctx.screen_pos,
             type_id=type_id,
-            alpha=alpha_byte,
+            alpha=int(clamp(trail_alpha * 255.0, 0.0, 255.0)),
             scale=ctx.scale,
-            angle=ctx.angle,
+            velocity=ctx.proj.vel,
         )
 
     bullet = resources.texture(TextureId.BULLET_I)

@@ -1339,3 +1339,59 @@ The spec SHA-256 is
 
 The 67-record experiment ledger SHA-256 is
 `d31637b87bfa7d1446c08f34c9cecb7d022fcad043759fc878502eeac0b21402`.
+
+## Native movement boundaries and readiness ownership (2026-09-08)
+
+Native autoplay tests the distance from arena center at
+`0x00414ccc..0x00414cd7` with `fcomp 300; fnstsw ax; test ah,0x41;
+jne pursuit`. The center-return path is the fallthrough. The previous source
+spelled pursuit first with `<= 300.0f`; the retained `> 300.0f` condition and
+center-first arm order restore that native branch shape while preserving the
+finite gameplay decisions.
+
+The complete 3/3 `autoplay-radius-copy-interactions.json` plan tests that
+branch change together with scalar-pair versus whole-vector direction-copy
+spelling. The branch-only and combined forms tie at
+`+3.930609284332604` weighted bytes; the aggregate copy alone is byte-neutral,
+so only the branch change is retained. Its spec SHA-256 is
+`5be4f5b15d77aad725b623065a2912e211521cc53bebacf052198e5e60511e75`.
+Both extracted COFF function bodies remain 15,891 bytes: exactly 43 raw bytes
+change within offsets `0x1525..0x1555`, and all bytes before `0x1525` and
+after `0x1559` remain identical. Candidate offset `0x1525` changes `je` to
+`jne` and the two ordinary arm bodies change order. This is a local branch
+recovery without a hidden whole-function allocation change.
+
+The canonical result is 4,066/4,206 instructions at
+`64.04738878143134%`: `10,412.183994197292` weighted bytes, a
+`5,844.816005802708`-byte gap, prefix 7, and `805/0/2` references. Source
+SHA-256 is
+`61ce66d1d73dd0b7064b89019dd94d20c1b8e4dd1d133e118a630fa833a5a46b`.
+Normalized exactness and encoded-body exactness both remain false.
+
+The adjacent negative plan, `turn-scale-owner-interactions.json`, tests a
+distinct ordinary block-local turn scale in all four point-click, dual-axis,
+keyboard, and autoplay turn paths. Native separates the direction selector
+from the post-heading scale, for example at `0x00414329..0x0041435f` and
+`0x00414b70..0x00414ba6`. Unlike the older mode-2-only source-shape control,
+this plan evaluates every subset of the four related lifetime changes.
+All 15/15 variants are byte-neutral at the pre-branch-change epoch; no source
+form is retained. Spec SHA-256 is
+`4b8f14eb6e80056e7a568f4adc49b1ba2e1c9ebef986fb39772c6fd2cc5d8bae`.
+
+A separate 3/3 SDK subtraction-expression/angle-consumer experiment is
+packaged under
+[`evidence/vector-angle-control-2026-09-08`](evidence/vector-angle-control-2026-09-08/README.md).
+It uses an explicitly copied alias config, not the canonical experiment
+epoch. The added unused declarations are neutral; an expression temporary
+loses `1,060.1344150181467` weighted bytes, one instruction, and reduces
+prefix/reference agreement to `1` and `743/0/16`. A named-value control
+loses `1,320.6847195357823` weighted bytes with prefix/reference results
+`1` and `706/0/21`. Neither the added alias nor a call-signature rewrite is
+retained. These complete results bound only the tested forms.
+
+The same native audit identifies normal and perk-funded readiness snapshots
+at `0x00415753..0x004157be`, taken before Alternate Weapon and consumed
+after the swap at `0x0041590e..0x00415918`. The recovered scratch already
+preserves both lifetimes. The corresponding port correction and validation
+are documented in the
+[player/projectile boundary evidence](../../PLAYER-PROJECTILE-BOUNDARIES-2026-09-08.md).

@@ -744,14 +744,14 @@ extern "C" void player_update(void)
                             * (player_position->y - 512.0f)
                         + (player_position->x - 512.0f)
                             * (player_position->x - 512.0f))
-                <= 300.0f) {
+                > 300.0f) {
+                scratch_pos.y = player_position->y - 512.0f;
+                scratch_pos.x = player_position->x - 512.0f;
+            } else {
                 scratch_pos.y = player_position->y
                     - creature_pool[player->auto_target].position.y;
                 scratch_pos.x = player_position->x
                     - creature_pool[player->auto_target].position.x;
-            } else {
-                scratch_pos.y = player_position->y - 512.0f;
-                scratch_pos.x = player_position->x - 512.0f;
             }
             movement_input.x = scratch_pos.x;
             movement_input.y = scratch_pos.y;

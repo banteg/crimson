@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "point-click-turn-scale-owner",
+      "find": "                        movement_heading = 3.1415927f - angle_step;\n                        player->move_dx =\n                            (float)cos(player->heading - 1.5707964f)\n                            * player->move_speed * movement_heading\n                            * scalar * 7.957747f;\n                        player->move_dy =\n                            (float)sin(player->heading - 1.5707964f)\n                            * player->move_speed * movement_heading\n                            * scalar * 7.957747f;",
+      "replacements": [
+        {
+          "name": "separate-turn-scale",
+          "text": "                        const float turn_scale = 3.1415927f - angle_step;\n                        player->move_dx =\n                            (float)cos(player->heading - 1.5707964f)\n                            * player->move_speed * turn_scale\n                            * scalar * 7.957747f;\n                        player->move_dy =\n                            (float)sin(player->heading - 1.5707964f)\n                            * player->move_speed * turn_scale\n                            * scalar * 7.957747f;"
+        }
+      ]
+    },
+    {
+      "name": "dual-axis-turn-scale-owner",
+      "find": "                    movement_heading = 3.1415927f - angle_step;\n                    player->move_dx =\n                        (float)cos(player->heading - 1.5707964f)\n                        * player->move_speed * movement_heading * scalar\n                        * 7.957747f;\n                    player->move_dy =\n                        (float)sin(player->heading - 1.5707964f)\n                        * player->move_speed * movement_heading * scalar\n                        * 7.957747f;",
+      "replacements": [
+        {
+          "name": "separate-turn-scale",
+          "text": "                    const float turn_scale = 3.1415927f - angle_step;\n                    player->move_dx =\n                        (float)cos(player->heading - 1.5707964f)\n                        * player->move_speed * turn_scale * scalar\n                        * 7.957747f;\n                    player->move_dy =\n                        (float)sin(player->heading - 1.5707964f)\n                        * player->move_speed * turn_scale * scalar\n                        * 7.957747f;"
+        }
+      ]
+    },
+    {
+      "name": "keyboard-turn-scale-owner",
+      "find": "                movement_heading = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * movement_heading * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * movement_heading * scalar\n                    * 7.957747f;",
+      "replacements": [
+        {
+          "name": "separate-turn-scale",
+          "text": "                const float turn_scale = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * turn_scale * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * turn_scale * scalar\n                    * 7.957747f;"
+        }
+      ]
+    },
+    {
+      "name": "autoplay-turn-scale-owner",
+      "find": "            movement_heading = 3.1415927f - angle_step;\n            player->move_dx =\n                (float)cos(player->heading - 1.5707964f)\n                * player->move_speed * movement_heading * scalar\n                * 7.957747f;\n            player->move_dy =\n                (float)sin(player->heading - 1.5707964f)\n                * player->move_speed * movement_heading * scalar\n                * 7.957747f;",
+      "replacements": [
+        {
+          "name": "separate-turn-scale",
+          "text": "            const float turn_scale = 3.1415927f - angle_step;\n            player->move_dx =\n                (float)cos(player->heading - 1.5707964f)\n                * player->move_speed * turn_scale * scalar\n                * 7.957747f;\n            player->move_dy =\n                (float)sin(player->heading - 1.5707964f)\n                * player->move_speed * turn_scale * scalar\n                * 7.957747f;"
+        }
+      ]
+    }
+  ]
+}
