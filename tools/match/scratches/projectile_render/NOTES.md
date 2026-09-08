@@ -1134,3 +1134,30 @@ All 11 controls compile and complete; no source change is retained. The
 baseline remains **58.550626%**, **2885/3021** instructions, prefix **0**,
 and **448/0/10** references. The plans cover these specific secondary-pass
 boundaries, not the large ion-arc or conventional-trail regions.
+
+## Ion clamp value boundary interactions (2026-09-08)
+
+Native `0x004247fb..0x00424838` loads the fading ion lifetime from the
+projectile, multiplies by 2.5, stores its float result, then performs the
+upper/lower clamp tests. The canonical VC6 listing instead keeps the result
+on the x87 stack through the tests, with separate result stores in each arm.
+The listing's function bytes and relocations were verified against the
+canonical object before using its source associations.
+
+`ion-clamp-value-boundary-2026-09-08.json` evaluates all **17** single, pair,
+and triple combinations of a const-reference clamp input, an assigned clamp
+parameter, two direct local clamp spellings, and a field-backed primary
+lifetime reference. All compile and complete without evaluation errors.
+
+The best score combines the assigned parameter and field-backed lifetime:
+**58.741733%**, **459/0/10** references, and **2876/3021** instructions. Its
+23.985790-byte weighted gain and eleven additional aligned references come
+with nine fewer candidate instructions, farther from the native extent. The
+acceptance gate rejects that tradeoff. The helper change alone removes one
+reference mismatch but loses 12.556226 weighted bytes and seven instructions.
+Both direct ion-local clamp forms lose 69.789401 weighted bytes in isolation.
+
+No source is retained. The canonical result stays **58.550626%**,
+**2885/3021** instructions, prefix **0**, **448/0/10** references, and
+`body_byte_exact=false`. This bounds the tested clamp and input-lifetime
+interaction, not other vector ownership or earlier trail lifetimes.

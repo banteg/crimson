@@ -945,7 +945,20 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["summary"]["retained_placeholder_symbols"] == 0
     assert manifest["summary"]["retained_link_dependency_import_symbols"] == 87
     assert manifest["summary"]["validated_output_import_symbols"] == 121
-    assert manifest["summary"]["input_object_count"] == 705
+    objects_path = matchlib.REPO_ROOT / "analysis/native/crimsonland.exe/objects.json"
+    objects = json.loads(objects_path.read_text(encoding="utf-8"))
+    assert manifest["audit_digest"] == objects["audit_digest"]
+    expected_inputs = (
+        len(objects["objects"])
+        + len(objects["data_objects"])
+        + len(objects["linker_alias_objects"])
+        + len(manifest["archives"])
+        + sum("aliases" in provider for provider in manifest["providers"])
+        + sum("import_library" in provider for provider in manifest["providers"])
+        + int("aliases" in manifest["entry"])
+        + int(manifest["placeholder_object"] is not None)
+    )
+    assert manifest["summary"]["input_object_count"] == expected_inputs
     assert manifest["entry"]["symbol"] == "WinMainCRTStartup"
     assert manifest["entry"]["aliases"]["symbols"] == [
         {
@@ -967,12 +980,14 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
         "__imp__SetConsoleCtrlHandler@8",
         "__imp__TlsFree@4",
     ]
-    assert manifest["output"]["pe"] == {
+    pe = manifest["output"]["pe"]
+    # Source recovery and TU ownership change layout while preserving the PE contract.
+    assert 0 < pe["entry_point_rva"] < pe["image_size"]
+    assert pe["image_size"] % 0x1000 == 0
+    assert {key: value for key, value in pe.items() if key not in {"entry_point_rva", "image_size"}} == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 324446,
         "image_base": 0x00400000,
-        "image_size": 876544,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,
         "optional_magic": 0x10B,
         "section_count": 4,

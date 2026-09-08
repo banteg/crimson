@@ -9,6 +9,7 @@ function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 See [Matching Status](STATUS.md) for generated progress and
 [Remaining EXE batches](BATCHES.md) for the current function map, focused hypotheses,
 and campaign order. See the [eight exact recoveries](EXACT-MATCHES-2026-09-07.md),
+[22 lifecycle ownership groups](LIFECYCLE-OWNERSHIP-2026-09-08.md),
 [five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md),
 [batches 01–08 results](BATCHES-01-08-RESULTS.md),
 [exact-match follow-up](EXACT-FOLLOWUP-2026-09-05.md), and

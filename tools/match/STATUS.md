@@ -20,7 +20,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | stale | 671 | 650 | 6 | passed | yes | yes | no | 0 | 1269 | 97 |
+| crimsonland.exe | current | 671 | 570 | 28 | passed | yes | yes | no | 0 | 1269 | 97 |
 | grim.dll | current | 139 | 132 | 4 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
@@ -28,21 +28,18 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1788 | 1788 | 1788 | 1788 | 1788 |
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 352 | 352 | 352 |
 
-Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 1 recorded file inputs changed or missing: tools/match/scratches/quest_build_spiders_inc/scratch.cpp
-
 ## Residual frontier
 
 **17** non-exact scratch-backed functions hold **25814 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
 
-Current-baseline experiments cover **1 functions / 13 gap bytes**; **16 / 25801** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **2 functions / 5215 gap bytes**; **15 / 20599** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
 | rank | image | function | fuzzy gap | recovery | residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5849 | semantic-complete | compiler,references | historical-only | 0/68 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 2 | crimsonland.exe | projectile_render | 5202 | semantic-complete | compiler,references | historical-only | 0/64 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 2 | crimsonland.exe | projectile_render | 5202 | semantic-complete | compiler,references | current-active | 1/65 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 3 | crimsonland.exe | controls_menu_update | 3891 | semantic-complete | compiler,references | historical-only | 0/63 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |

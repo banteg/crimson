@@ -1,0 +1,3891 @@
+{
+  "schema": 1,
+  "reference_image": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
+  "reference_image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "baseline_commit": "8f9dbab82",
+  "scope": "Minimum callback/local-static destructor co-residence; no complete original TU or filename claim.",
+  "groups": [
+    {
+      "owner": "credits_screen_update",
+      "source_sha256": "023e619e6465adb15e21b4cb4c09cd5e8a174055aeff46a15eeabf3419bc71da",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "credits_back_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x40df60",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40d812",
+              "candidate_offset": "0x12",
+              "status": "ok",
+              "target_values": [
+                "0x40df60"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40d85b",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40d812",
+            "end_exclusive": "0x40d860",
+            "bytes": "6860df400080ca01c605a611480001881578094800881db5114800881db4114800c705b01148000000803f891dac114800891da0114800881da4114800881da5114800891da8114800e826350500"
+          }
+        },
+        {
+          "function": "credits_secret_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x40df50",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40d871",
+              "candidate_offset": "0x71",
+              "status": "ok",
+              "target_values": [
+                "0x40df50"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40d8b9",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40d871",
+            "end_exclusive": "0x40d8be",
+            "bytes": "6850df40000ad0c6058e11480001881578094800881d9d114800881d9c114800c705981148000000803f891d94114800891d88114800881d8c114800881d8d114800891d90114800e8c8340500"
+          }
+        }
+      ],
+      "config_sha256": "6a52d2e8b3b502cb4d1e27f39b57f0c3f2f7557d586af0ef511cdd6130679c0f",
+      "object_sha256_normalized": "7afaec80fdf8de82edbb0de9a1018dda1bc2f176c5da60d77271f6969411c79d",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 454,
+        "masked_mismatches": 0,
+        "masked_ok": 176,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 454,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 454
+      }
+    },
+    {
+      "owner": "credits_secret_alien_zookeeper_update",
+      "source_sha256": "2919773b09f7155e771ec28deb5aaad6b20a456461e9d33a350976dad5d9de0c",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "credits_secret_reset_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x40ff40",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40fd84",
+              "candidate_offset": "0x894",
+              "status": "ok",
+              "target_values": [
+                "0x40ff40"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40fdcd",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40fd84",
+            "end_exclusive": "0x40fdd2",
+            "bytes": "6840ff400080ca01c605d6194800018815101c4800881de5194800881de4194800c705e01948000000803f891ddc194800891dd0194800881dd4194800881dd5194800891dd8194800e8b40f0500"
+          }
+        },
+        {
+          "function": "credits_secret_back_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x40ff30",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40fe85",
+              "candidate_offset": "0x995",
+              "status": "ok",
+              "target_values": [
+                "0x40ff30"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40fece",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40fe85",
+            "end_exclusive": "0x40fed3",
+            "bytes": "6830ff400080ca02c605c61b4800018815101c4800881dd51b4800881dd41b4800c705d01b48000000803f891dcc1b4800891dc01b4800881dc41b4800881dc51b4800891dc81b4800e8b30e0500"
+          }
+        }
+      ],
+      "config_sha256": "60c71cdadff56e33118e6a1c23084c7dd119b0ff659772156f2b237bfc17e4c0",
+      "object_sha256_normalized": "58834a02117e48212e8463022cbc61865adafe30e33623c10a3acd8c164c8d20",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 638,
+        "masked_mismatches": 0,
+        "masked_ok": 158,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 638,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 638
+      }
+    },
+    {
+      "owner": "demo_purchase_screen_update",
+      "source_sha256": "3ee70b2d3ef3db8d0f7060b0ad4843cbbc0d62a65a57899092627332ada64421",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "demo_purchase_maybe_later_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x40c1b0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40b804",
+              "candidate_offset": "0xc4",
+              "status": "ok",
+              "target_values": [
+                "0x40c1b0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40b84d",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40b804",
+            "end_exclusive": "0x40b852",
+            "bytes": "68b0c1400080ca01c605b602480001881520034800881dc5024800881dc4024800c705c00248000000803f891dbc024800891db0024800881db4024800881db5024800891db8024800e834550500"
+          }
+        },
+        {
+          "function": "demo_purchase_purchase_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x40c1a0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40b870",
+              "candidate_offset": "0x130",
+              "status": "ok",
+              "target_values": [
+                "0x40c1a0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40b8b9",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40b870",
+            "end_exclusive": "0x40b8be",
+            "bytes": "68a0c1400080ca02c6057ef6470001881520034800881d8df64700881d8cf64700c70588f647000000803f891d84f64700891d78f64700881d7cf64700881d7df64700891d80f64700e8c8540500"
+          }
+        }
+      ],
+      "config_sha256": "271dee1a95b3af5f2b96b759cb7f0532b30c362e93d5c9b04036177eab434744",
+      "object_sha256_normalized": "63873158ae669c3ac8a952814e4a608e5f4ccae9712ed2b83ce8d3f97565c71f",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 691,
+        "masked_mismatches": 0,
+        "masked_ok": 198,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 691,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 691
+      }
+    },
+    {
+      "owner": "demo_trial_overlay_render",
+      "source_sha256": "b1933fb1c31730a6f08c153cdc891afb58e959352d51bd30821787a2a66153b3",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "demo_trial_maybe_later_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x405150",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x404f10",
+              "candidate_offset": "0x750",
+              "status": "ok",
+              "target_values": [
+                "0x405150"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x404f5d",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x404f10",
+            "end_exclusive": "0x404f62",
+            "bytes": "685051400080ca01c6050e0848000188152cf64700c6051d08480000c6051c08480000c705180848000000803f891d14084800891d08084800c6050c08480000c6050d08480000891d10084800e824be0500"
+          }
+        },
+        {
+          "function": "demo_trial_purchase_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x405140",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x404f7d",
+              "candidate_offset": "0x7bd",
+              "status": "ok",
+              "target_values": [
+                "0x405140"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x404fc9",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x404f7d",
+            "end_exclusive": "0x404fce",
+            "bytes": "68405140000ad0c605fef547000188152cf64700c6050df6470000c6050cf6470000c70508f647000000803f891d04f64700891df8f54700c605fcf5470000c605fdf5470000891d00f64700e8b8bd0500"
+          }
+        },
+        {
+          "function": "demo_trial_already_paid_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x405130",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x404fe9",
+              "candidate_offset": "0x829",
+              "status": "ok",
+              "target_values": [
+                "0x405130"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x405035",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x404fe9",
+            "end_exclusive": "0x40503a",
+            "bytes": "68305140000ad0c60516f647000188152cf64700c60525f6470000c60524f6470000c70520f647000000803f891d1cf64700891d10f64700c60514f6470000c60515f6470000891d18f64700e84cbd0500"
+          }
+        }
+      ],
+      "config_sha256": "fe2949d8b291798b11b53838a4795a467ebcecf3a869486333582469f1de821d",
+      "object_sha256_normalized": "43e42762e6dbd6d05b5025977c383f3213e26422b309d4680f0563f102c1ff00",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 636,
+        "masked_mismatches": 0,
+        "masked_ok": 175,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 636,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 636
+      }
+    },
+    {
+      "owner": "game_over_screen_update",
+      "source_sha256": "b84fe74a41e641aba485b9549f7e05cd2003693b06f84b2b6d801d0d05bc98c9",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "game_over_name_submit_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x4107d0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40ffd4",
+              "candidate_offset": "0x14",
+              "status": "ok",
+              "target_values": [
+                "0x4107d0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x41001d",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40ffd4",
+            "end_exclusive": "0x410022",
+            "bytes": "68d007410080ca01c605ae254800018815fc254800881dbd254800881dbc254800c705b82548000000803f891db4254800891da8254800881dac254800881dad254800891db0254800e8640d0500"
+          }
+        },
+        {
+          "function": "game_over_name_input_state_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x4107c0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410038",
+              "candidate_offset": "0x78",
+              "status": "ok",
+              "target_values": [
+                "0x4107c0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x41006f",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410038",
+            "end_exclusive": "0x410074",
+            "bytes": "68c00741000ad0c705a02548000000803f8815fc254800892d90254800891d94254800c7059825480018000000c7059c25480060000000e8120d0500"
+          }
+        },
+        {
+          "function": "game_over_play_again_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x4107b0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4104fe",
+              "candidate_offset": "0x53e",
+              "status": "ok",
+              "target_values": [
+                "0x4107b0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410547",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4104fe",
+            "end_exclusive": "0x41054c",
+            "bytes": "68b007410080ca04c6050e254800018815fc254800881d1d254800881d1c254800c705182548000000803f891d14254800891d08254800881d0c254800881d0d254800891d10254800e83a080500"
+          }
+        },
+        {
+          "function": "game_over_highscores_button_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x4107a0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410567",
+              "candidate_offset": "0x5a7",
+              "status": "ok",
+              "target_values": [
+                "0x4107a0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4105af",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410567",
+            "end_exclusive": "0x4105b4",
+            "bytes": "68a00741000ad0c60556254800018815fc254800881d65254800881d64254800c705602548000000803f891d5c254800891d50254800881d54254800881d55254800891d58254800e8d2070500"
+          }
+        },
+        {
+          "function": "game_over_main_menu_button_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x410790",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4105cf",
+              "candidate_offset": "0x60f",
+              "status": "ok",
+              "target_values": [
+                "0x410790"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410617",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4105cf",
+            "end_exclusive": "0x41061c",
+            "bytes": "68900741000ad0c6053e254800018815fc254800881d4d254800881d4c254800c705482548000000803f891d44254800891d38254800881d3c254800881d3d254800891d40254800e86a070500"
+          }
+        }
+      ],
+      "config_sha256": "2b9254f312676369d6d822d42228bfa9b4bdac0c20213d88c3e91c78c8dd50a5",
+      "object_sha256_normalized": "4a41891ab3aa73897da96dc91fda5f920bf8cb45de4c73a9683b00bcf4fac43d",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 471,
+        "masked_mismatches": 0,
+        "masked_ok": 215,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 471,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 471
+      }
+    },
+    {
+      "owner": "game_update_victory_screen",
+      "source_sha256": "64f52f26c9aeb420a5e9b32278921fcbb14c4d8ef3c3935d7a799eac53f49822",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "game_completed_survival_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x406ae0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x406756",
+              "candidate_offset": "0x406",
+              "status": "ok",
+              "target_values": [
+                "0x406ae0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40679f",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x406756",
+            "end_exclusive": "0x4067a4",
+            "bytes": "68e06a400080ca01c605e6f5470001881521034800881df5f54700881df4f54700c705f0f547000000803f891decf54700891de0f54700881de4f54700881de5f54700891de8f54700e8e2a50500"
+          }
+        },
+        {
+          "function": "game_completed_rush_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x406ad0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4067bc",
+              "candidate_offset": "0x46c",
+              "status": "ok",
+              "target_values": [
+                "0x406ad0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x406805",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4067bc",
+            "end_exclusive": "0x40680a",
+            "bytes": "68d06a400080ca02c6058602480001881521034800881d95024800881d94024800c705900248000000803f891d8c024800891d80024800881d84024800881d85024800891d88024800e87ca50500"
+          }
+        },
+        {
+          "function": "game_completed_typo_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x406ac0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x406822",
+              "candidate_offset": "0x4d2",
+              "status": "ok",
+              "target_values": [
+                "0x406ac0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40686b",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x406822",
+            "end_exclusive": "0x406870",
+            "bytes": "68c06a400080ca04c6052e03480001881521034800881d3d034800881d3c034800c705380348000000803f891d34034800891d28034800881d2c034800881d2d034800891d30034800e816a50500"
+          }
+        },
+        {
+          "function": "game_completed_main_menu_button_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x406ab0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40688b",
+              "candidate_offset": "0x53b",
+              "status": "ok",
+              "target_values": [
+                "0x406ab0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4068d3",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40688b",
+            "end_exclusive": "0x4068d8",
+            "bytes": "68b06a40000ad0c6056e02480001881521034800881d7d024800881d7c024800c705780248000000803f891d74024800891d68024800881d6c024800881d6d024800891d70024800e8aea40500"
+          }
+        }
+      ],
+      "config_sha256": "839d51823eee2d7b26b42e94f26c3de7a6dce59cb370b405242546929ba5d4e5",
+      "object_sha256_normalized": "a4e2f2b2ebd05569674660746311a86ebb8c7b81f5aecaae429afdcc5dcdf9f9",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 447,
+        "masked_mismatches": 0,
+        "masked_ok": 189,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 447,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 447
+      }
+    },
+    {
+      "owner": "mod_load_info",
+      "source_sha256": "64b5e5f52b0f4eb86fe8bac83dbbddb503fae86baceca13e78816ae53e909d6a",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "mod_info_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x40e850",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40e7d1",
+              "candidate_offset": "0xd1",
+              "status": "ok",
+              "target_values": [
+                "0x40e850"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40e7ea",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40e7d1",
+            "end_exclusive": "0x40e7ef",
+            "bytes": "6850e84000f3abb908000000bfa81c4800f3ab8815c8194800e897250500"
+          }
+        }
+      ],
+      "config_sha256": "e81af8e90daa7140cee5b7e1392ad09466160277333384a2b2d247f85e7b597d",
+      "object_sha256_normalized": "fd9a85b2ec0e1fe298fa6fb7917ab31bc7a814bdaa88d4240f2dd428906e939a",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 91,
+        "masked_mismatches": 0,
+        "masked_ok": 36,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 91,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 91
+      }
+    },
+    {
+      "owner": "mods_menu_update",
+      "source_sha256": "4d8d59855f66c4770e7a36ea55d7cf4715f26fcb4270ec75eb56c94f82d04785",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "mods_menu_scrollbar_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x40f3f0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40ec4b",
+              "candidate_offset": "0x2ab",
+              "status": "ok",
+              "target_values": [
+                "0x40f3f0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40ec5c",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40ec4b",
+            "end_exclusive": "0x40ec61",
+            "bytes": "68f0f340008815b81b4800890dec1b4800e825210500"
+          }
+        },
+        {
+          "function": "mods_menu_main_menu_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x40f3e0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40f1a2",
+              "candidate_offset": "0x802",
+              "status": "ok",
+              "target_values": [
+                "0x40f3e0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40f1ed",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40f1a2",
+            "end_exclusive": "0x40f1f2",
+            "bytes": "68e0f340000ad0881df61a48008815b81b4800c605051b480000c605041b480000c705001b48000000803f893dfc1a4800893df01a4800c605f41a480000c605f51a480000893df81a4800e8941b0500"
+          }
+        },
+        {
+          "function": "mods_menu_launch_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x40f3d0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40f20a",
+              "candidate_offset": "0x86a",
+              "status": "ok",
+              "target_values": [
+                "0x40f3d0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40f256",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40f20a",
+            "end_exclusive": "0x40f25b",
+            "bytes": "68d0f3400080ca04881d8e1b48008815b81b4800c6059d1b480000c6059c1b480000c705981b48000000803f893d941b4800893d881b4800c6058c1b480000c6058d1b480000893d901b4800e82b1b0500"
+          }
+        }
+      ],
+      "config_sha256": "5297fbad2287cd23eef1910066e62f85b1a28e992626ed3bf8a437e2616d3072",
+      "object_sha256_normalized": "635ecefb1dde6a688fb0dbea9ed3cbebe13e7e1f8c9e8da5b62f95d169820c60",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 648,
+        "masked_mismatches": 0,
+        "masked_ok": 184,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 648,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 648
+      }
+    },
+    {
+      "owner": "options_menu_update",
+      "source_sha256": "701048dc7cd3a9103837cbc09df6a9dd8a4694f678a0b1b0698c6862256b0454",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "options_info_checkbox_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x447c80",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4477cd",
+              "candidate_offset": "0x1fd",
+              "status": "ok",
+              "target_values": [
+                "0x447c80"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4477f3",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4477cd",
+            "end_exclusive": "0x4477f8",
+            "bytes": "68807c440080ca01881de0774d008815a0794d00881de1774d00881de2774d00891de4774d00e88e950100"
+          }
+        },
+        {
+          "function": "options_sfx_volume_slider_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x447c70",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44786f",
+              "candidate_offset": "0x29f",
+              "status": "ok",
+              "target_values": [
+                "0x447c70"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44789c",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44786f",
+            "end_exclusive": "0x4478a1",
+            "bytes": "68707c440080ca02c60504784d00018815a0794d00881d05784d00891df8774d008935fc774d00891d00784d00e8e5940100"
+          }
+        },
+        {
+          "function": "options_music_volume_slider_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x447c60",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44790c",
+              "candidate_offset": "0x33c",
+              "status": "ok",
+              "target_values": [
+                "0x447c60"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447938",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44790c",
+            "end_exclusive": "0x44793d",
+            "bytes": "68607c44000ad0c605f4754d00018815a0794d00881df5754d00891de8754d008935ec754d00891df0754d00e849940100"
+          }
+        },
+        {
+          "function": "options_graphics_detail_slider_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x447c50",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44799e",
+              "candidate_offset": "0x3ce",
+              "status": "ok",
+              "target_values": [
+                "0x447c50"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4479ca",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44799e",
+            "end_exclusive": "0x4479cf",
+            "bytes": "68507c44000ad0c6059c754d00018815a0794d00881d9d754d00891d90754d00893594754d00891d98754d00e8b7930100"
+          }
+        },
+        {
+          "function": "options_mouse_sensitivity_slider_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x447c40",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447a51",
+              "candidate_offset": "0x481",
+              "status": "ok",
+              "target_values": [
+                "0x447c40"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447a7d",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447a51",
+            "end_exclusive": "0x447a82",
+            "bytes": "68407c44000ad0c6058c764d00018815a0794d00881d8d764d00891d80764d00893584764d00891d88764d00e804930100"
+          }
+        },
+        {
+          "function": "options_controls_button_destroy",
+          "symbol": "_$E7",
+          "symbol_storage_class": 3,
+          "address": "0x447c30",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447b2f",
+              "candidate_offset": "0x55f",
+              "status": "ok",
+              "target_values": [
+                "0x447c30"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447b77",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447b2f",
+            "end_exclusive": "0x447b7c",
+            "bytes": "68307c44000ad0c6058e794d00018815a0794d00881d9d794d00881d9c794d00c70598794d000000803f891d94794d00891d88794d00881d8c794d00881d8d794d00891d90794d00e80a920100"
+          }
+        }
+      ],
+      "config_sha256": "40a8ccaa61869ea6872506ce50d88c349173be8c0cfbc2b05601d0ef638277b0",
+      "object_sha256_normalized": "79acb9fc7ba81c48041da2e012229e315971108791ccdeca5c0a68913753bbc3",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 377,
+        "masked_mismatches": 0,
+        "masked_ok": 168,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 377,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 377
+      }
+    },
+    {
+      "owner": "perk_selection_screen_update",
+      "source_sha256": "b1ba798b5688ae4ebb5c97f4f63fbb4d89bb159256b572586b66af7e51338233",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "perk_selection_idle_color_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x406170",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x405db3",
+              "candidate_offset": "0x1d3",
+              "status": "ok",
+              "target_values": [
+                "0x406170"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x405de9",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x405db3",
+            "end_exclusive": "0x405dee",
+            "bytes": "687061400080ca01c705980248008d8c8c3e8815c8074800c7059c024800b5b4343fc705a0024800f1f0703fc705a40248009a99193fe898af0500"
+          }
+        },
+        {
+          "function": "perk_selection_hover_color_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x406160",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x405dff",
+              "candidate_offset": "0x21f",
+              "status": "ok",
+              "target_values": [
+                "0x406160"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x405e34",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x405dff",
+            "end_exclusive": "0x405e39",
+            "bytes": "68606140000ad0c705100348008d8c8c3e8815c8074800c70514034800b5b4343fc70518034800f1f0703fc7051c0348000000803fe84daf0500"
+          }
+        },
+        {
+          "function": "perk_selection_choice_items_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x406150",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x405e94",
+              "candidate_offset": "0x2b4",
+              "status": "ok",
+              "target_values": [
+                "0x406150"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x405e99",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x405e94",
+            "end_exclusive": "0x405e9e",
+            "bytes": "6850614000e8e8ae0500"
+          }
+        },
+        {
+          "function": "perk_selection_cancel_button_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x406140",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x405fb0",
+              "candidate_offset": "0x3d0",
+              "status": "ok",
+              "target_values": [
+                "0x406140"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x405ff8",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x405fb0",
+            "end_exclusive": "0x405ffd",
+            "bytes": "68406140000ad0c60596004800018815c8074800881da5004800881da4004800c705a00048000000803f891d9c004800891d90004800881d94004800881d95004800891d98004800e889ad0500"
+          }
+        },
+        {
+          "function": "perk_selection_select_button_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x406130",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x406015",
+              "candidate_offset": "0x435",
+              "status": "ok",
+              "target_values": [
+                "0x406130"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40605e",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x406015",
+            "end_exclusive": "0x406063",
+            "bytes": "683061400080ca10c60526084800018815c8074800881d35084800881d34084800c705300848000000803f891d2c084800891d20084800881d24084800881d25084800891d28084800e823ad0500"
+          }
+        }
+      ],
+      "config_sha256": "1996e6707db610348a394430c242166fc0964c33415fe98a26b14153f966c82d",
+      "object_sha256_normalized": "dda9c98de73f3b005727f2bc1976ba850b85ece79bdf296dd769d103d10d2f71",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 314,
+        "masked_mismatches": 0,
+        "masked_ok": 119,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 314,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 314
+      }
+    },
+    {
+      "owner": "play_game_menu_update",
+      "source_sha256": "8016946cbacf3cab42d66c3a9081e5f7174bb306607af5ca5f071f379ed2f95a",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "play_game_quests_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x44fa90",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44ed92",
+              "candidate_offset": "0x12",
+              "status": "ok",
+              "target_values": [
+                "0x44fa90"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44eddb",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44ed92",
+            "end_exclusive": "0x44ede0",
+            "bytes": "6890fa440080ca01c605fe754d0001881530774d00881d0d764d00881d0c764d00c70508764d000000803f891d04764d00891df8754d00881dfc754d00881dfd754d00891d00764d00e8a61f0100"
+          }
+        },
+        {
+          "function": "play_game_rush_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x44fa80",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44edf8",
+              "candidate_offset": "0x78",
+              "status": "ok",
+              "target_values": [
+                "0x44fa80"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44ee41",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44edf8",
+            "end_exclusive": "0x44ee46",
+            "bytes": "6880fa440080ca02c605a6754d0001881530774d00881db5754d00881db4754d00c705b0754d000000803f891dac754d00891da0754d00881da4754d00881da5754d00891da8754d00e8401f0100"
+          }
+        },
+        {
+          "function": "play_game_survival_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x44fa70",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44ee5e",
+              "candidate_offset": "0xde",
+              "status": "ok",
+              "target_values": [
+                "0x44fa70"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44eea7",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44ee5e",
+            "end_exclusive": "0x44eeac",
+            "bytes": "6870fa440080ca04c605ce764d0001881530774d00881ddd764d00881ddc764d00c705d8764d000000803f891dd4764d00891dc8764d00881dcc764d00881dcd764d00891dd0764d00e8da1e0100"
+          }
+        },
+        {
+          "function": "play_game_typo_button_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x44fa60",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44eec4",
+              "candidate_offset": "0x144",
+              "status": "ok",
+              "target_values": [
+                "0x44fa60"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44ef0d",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44eec4",
+            "end_exclusive": "0x44ef12",
+            "bytes": "6860fa440080ca08c60516764d0001881530774d00881d25764d00881d24764d00c70520764d000000803f891d1c764d00891d10764d00881d14764d00881d15764d00891d18764d00e8741e0100"
+          }
+        },
+        {
+          "function": "play_game_hardcore_checkbox_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x44fa50",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44ef2d",
+              "candidate_offset": "0x1ad",
+              "status": "ok",
+              "target_values": [
+                "0x44fa50"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44ef52",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44ef2d",
+            "end_exclusive": "0x44ef57",
+            "bytes": "6850fa44000ad0881d58764d00881530774d00881d59764d00881d5a764d00891d5c764d00e82f1e0100"
+          }
+        },
+        {
+          "function": "play_game_tutorial_button_destroy",
+          "symbol": "_$E7",
+          "symbol_storage_class": 3,
+          "address": "0x44fa40",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44ef72",
+              "candidate_offset": "0x1f2",
+              "status": "ok",
+              "target_values": [
+                "0x44fa40"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44efba",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44ef72",
+            "end_exclusive": "0x44efbf",
+            "bytes": "6840fa44000ad0c605d6754d0001881530774d00881de5754d00881de4754d00c705e0754d000000803f891ddc754d00891dd0754d00881dd4754d00881dd5754d00891dd8754d00e8c71d0100"
+          }
+        },
+        {
+          "function": "play_game_player_count_list_destroy",
+          "symbol": "_$E8",
+          "symbol_storage_class": 3,
+          "address": "0x44fa30",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x44f578",
+              "candidate_offset": "0x7f8",
+              "status": "ok",
+              "target_values": [
+                "0x44fa30"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44f5b0",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x44f578",
+            "end_exclusive": "0x44f5b5",
+            "bytes": "6830fa44000ad0c605b8794d0001881530774d00891dd0794d00881dcc794d00891dc0794d00891dbc794d00891dc8794d00891dc4794d00e8d1170100"
+          }
+        }
+      ],
+      "config_sha256": "bb858d4ceb1002841d4c21ead4fe38f95a6894005d27d8fe46d93f4458249db6",
+      "object_sha256_normalized": "0310a4a680307bbfca5a413e99c2e90671b6942f7fcc8e89c566a8de43f133bb",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 777,
+        "masked_mismatches": 0,
+        "masked_ok": 321,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 777,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 777
+      }
+    },
+    {
+      "owner": "quest_failed_screen_update",
+      "source_sha256": "12f093230d3ebb8ffdc14b6782864774c7ef7d04df4dbb5b1f3479765e25f199",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "quest_failed_play_again_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x410d10",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410a43",
+              "candidate_offset": "0x263",
+              "status": "ok",
+              "target_values": [
+                "0x410d10"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410a8c",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410a43",
+            "end_exclusive": "0x410a91",
+            "bytes": "68100d410080ca01c60586264800018815d8254800881d95264800881d94264800c705902648000000803f891d8c264800891d80264800881d84264800881d85264800891d88264800e8f5020500"
+          }
+        },
+        {
+          "function": "quest_failed_play_another_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x410d00",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410aac",
+              "candidate_offset": "0x2cc",
+              "status": "ok",
+              "target_values": [
+                "0x410d00"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410af4",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410aac",
+            "end_exclusive": "0x410af9",
+            "bytes": "68000d41000ad0c6059e264800018815d8254800881dad264800881dac264800c705a82648000000803f891da4264800891d98264800881d9c264800881d9d264800891da0264800e88d020500"
+          }
+        },
+        {
+          "function": "quest_failed_main_menu_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x410cf0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410b14",
+              "candidate_offset": "0x334",
+              "status": "ok",
+              "target_values": [
+                "0x410cf0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410b5c",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410b14",
+            "end_exclusive": "0x410b61",
+            "bytes": "68f00c41000ad0c605f6244800018815d8254800881d05254800881d04254800c705002548000000803f891dfc244800891df0244800881df4244800881df5244800891df8244800e825020500"
+          }
+        }
+      ],
+      "config_sha256": "1cd6aa7448634f3b4f9a04104369becbbfb590abdeb118aec2f9042e4c151f3c",
+      "object_sha256_normalized": "92c4d308ca133f7972464008d9ec2ad57fce064f14e77e6ee53f0ca493b78825",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 292,
+        "masked_mismatches": 0,
+        "masked_ok": 151,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 3,
+          "target": 0
+        },
+        "prefix_instructions": 292,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 292
+      }
+    },
+    {
+      "owner": "quest_results_screen_update",
+      "source_sha256": "0edf12f64b4602aef06905341d4ceb2934f43a26648b82ce2a48f3f9293a106d",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "quest_results_name_submit_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x412070",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410d8a",
+              "candidate_offset": "0x6a",
+              "status": "ok",
+              "target_values": [
+                "0x412070"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410dd3",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410d8a",
+            "end_exclusive": "0x410dd8",
+            "bytes": "687020410080ca01c6052625480001881568254800881d35254800881d34254800c705302548000000803f891d2c254800891d20254800881d24254800881d25254800891d28254800e8aeff0400"
+          }
+        },
+        {
+          "function": "quest_results_name_input_state_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x412060",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x410de6",
+              "candidate_offset": "0xc6",
+              "status": "ok",
+              "target_values": [
+                "0x412060"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x410e22",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x410de6",
+            "end_exclusive": "0x410e27",
+            "bytes": "686020410080ca02c705f82648000000803f881568254800c705e8264800dc254800891dec264800c705f026480018000000c705f426480060000000e85fff0400"
+          }
+        },
+        {
+          "function": "quest_results_play_next_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x412050",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x411c54",
+              "candidate_offset": "0xf34",
+              "status": "ok",
+              "target_values": [
+                "0x412050"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x411c9c",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x411c54",
+            "end_exclusive": "0x411ca1",
+            "bytes": "68502041000ad0c605c625480001881568254800881dd5254800881dd4254800c705d02548000000803f891dcc254800891dc0254800881dc4254800881dc5254800891dc8254800e8e5f00400"
+          }
+        },
+        {
+          "function": "quest_results_play_again_button_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x412040",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x411cb9",
+              "candidate_offset": "0xf99",
+              "status": "ok",
+              "target_values": [
+                "0x412040"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x411d02",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x411cb9",
+            "end_exclusive": "0x411d07",
+            "bytes": "684020410080ca08c6050e26480001881568254800881d1d264800881d1c264800c705182648000000803f891d14264800891d08264800881d0c264800881d0d264800891d10264800e87ff00400"
+          }
+        },
+        {
+          "function": "quest_results_highscores_button_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x412030",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x411d22",
+              "candidate_offset": "0x1002",
+              "status": "ok",
+              "target_values": [
+                "0x412030"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x411d6a",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x411d22",
+            "end_exclusive": "0x411d6f",
+            "bytes": "68302041000ad0c6056e26480001881568254800881d7d264800881d7c264800c705782648000000803f891d74264800891d68264800881d6c264800881d6d264800891d70264800e817f00400"
+          }
+        },
+        {
+          "function": "quest_results_main_menu_button_destroy",
+          "symbol": "_$E7",
+          "symbol_storage_class": 3,
+          "address": "0x412020",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x411d89",
+              "candidate_offset": "0x1069",
+              "status": "ok",
+              "target_values": [
+                "0x412020"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x411dce",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x411d89",
+            "end_exclusive": "0x411dd3",
+            "bytes": "6820204100a268254800c605b626480001881dc5264800881dc4264800c705c02648000000803f891dbc264800891db0264800881db4264800881db5264800891db8264800e8b3ef0400"
+          }
+        }
+      ],
+      "config_sha256": "6141e099e5d589a18a6f6721e8e32a11a750db5e8d15ab0f90bd20d29714488f",
+      "object_sha256_normalized": "d68e5625402e9a8794325836be368b0cf7de8b1c472677de2ffba04ec86d853f",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1168,
+        "masked_mismatches": 0,
+        "masked_ok": 468,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 1168,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 1168
+      }
+    },
+    {
+      "owner": "quest_select_menu_update",
+      "source_sha256": "40ac810522aaa508ec43db28403db7912d5c2dd727df9c08868abfeb5707f060",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "quest_select_row_idle_color_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x448b40",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447dc3",
+              "candidate_offset": "0x83",
+              "status": "ok",
+              "target_values": [
+                "0x448b40"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447df9",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447dc3",
+            "end_exclusive": "0x447dfe",
+            "bytes": "68408b440080ca01c70528764d008d8c8c3e8815a0764d00c7052c764d00b5b4343fc70530764d00f1f0703fc70534764d009a99193fe8888f0100"
+          }
+        },
+        {
+          "function": "quest_select_row_hover_color_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x448b30",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447e0c",
+              "candidate_offset": "0xcc",
+              "status": "ok",
+              "target_values": [
+                "0x448b30"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447e42",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447e0c",
+            "end_exclusive": "0x447e47",
+            "bytes": "68308b440080ca02c705f0764d008d8c8c3e8815a0764d00c705f4764d00b5b4343fc705f8764d00f1f0703fc705fc764d000000803fe83f8f0100"
+          }
+        },
+        {
+          "function": "quest_select_unused_blue_color_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x448b20",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447e55",
+              "candidate_offset": "0x115",
+              "status": "ok",
+              "target_values": [
+                "0x448b20"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447e8b",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447e55",
+            "end_exclusive": "0x447e90",
+            "bytes": "68208b440080ca04c70588784d00000000008815a0764d00c7058c784d00fdfcfc3ec70590784d00c7c6463fc70594784d000000803fe8f68e0100"
+          }
+        },
+        {
+          "function": "quest_select_unused_blue_dim_color_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x448b10",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447e9e",
+              "candidate_offset": "0x15e",
+              "status": "ok",
+              "target_values": [
+                "0x448b10"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447ed4",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447e9e",
+            "end_exclusive": "0x447ed9",
+            "bytes": "68108b440080ca08c70538774d00000000008815a0764d00c7053c774d00fdfcfc3ec70540774d00c7c6463fc70544774d000000003fe8ad8e0100"
+          }
+        },
+        {
+          "function": "quest_select_title_color_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x448b00",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447eea",
+              "candidate_offset": "0x1aa",
+              "status": "ok",
+              "target_values": [
+                "0x448b00"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447f1f",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447eea",
+            "end_exclusive": "0x447f24",
+            "bytes": "68008b44000ad0c70520774d003333333f8815a0764d00c70524774d003333333fc70528774d003333333fc7052c774d003333333fe8628e0100"
+          }
+        },
+        {
+          "function": "quest_select_selected_stage_color_destroy",
+          "symbol": "_$E7",
+          "symbol_storage_class": 3,
+          "address": "0x448af0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447f35",
+              "candidate_offset": "0x1f5",
+              "status": "ok",
+              "target_values": [
+                "0x448af0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447f6a",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447f35",
+            "end_exclusive": "0x447f6f",
+            "bytes": "68f08a44000ad0c705a8794d000000803f8815a0764d00c705ac794d000000803fc705b0794d000000803fc705b4794d000000803fe8178e0100"
+          }
+        },
+        {
+          "function": "quest_select_hovered_stage_color_destroy",
+          "symbol": "_$E8",
+          "symbol_storage_class": 3,
+          "address": "0x448ae0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447f80",
+              "candidate_offset": "0x240",
+              "status": "ok",
+              "target_values": [
+                "0x448ae0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x447fb5",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447f80",
+            "end_exclusive": "0x447fba",
+            "bytes": "68e08a44000ad0c705e0764d000000803f8815a0764d00c705e4764d000000803fc705e8764d000000803fc705ec764d00cdcc4c3fe8cc8d0100"
+          }
+        },
+        {
+          "function": "quest_select_unused_orange_color_destroy",
+          "symbol": "_$E9",
+          "symbol_storage_class": 3,
+          "address": "0x448ad0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x447fcb",
+              "candidate_offset": "0x28b",
+              "status": "ok",
+              "target_values": [
+                "0x448ad0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x448000",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x447fcb",
+            "end_exclusive": "0x448005",
+            "bytes": "68d08a44000ad0c70590764d00c7c6463f8815a0764d00c70594764d00fdfcfc3ec70598764d0000000000c7059c764d000000803fe8818d0100"
+          }
+        },
+        {
+          "function": "quest_select_hardcore_checkbox_destroy",
+          "symbol": "_$E11",
+          "symbol_storage_class": 3,
+          "address": "0x448ac0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x448395",
+              "candidate_offset": "0x655",
+              "status": "ok",
+              "target_values": [
+                "0x448ac0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4483c2",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x448395",
+            "end_exclusive": "0x4483c7",
+            "bytes": "68c08a440080ca01c60500774d00008815d4794d00c60501774d0000c60502774d0000c70504774d0000000000e8bf890100"
+          }
+        },
+        {
+          "function": "quest_select_back_button_destroy",
+          "symbol": "_$E12",
+          "symbol_storage_class": 3,
+          "address": "0x448ab0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4487dd",
+              "candidate_offset": "0xa9d",
+              "status": "ok",
+              "target_values": [
+                "0x448ab0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x448827",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4487dd",
+            "end_exclusive": "0x44882c",
+            "bytes": "68b08a44008815d4794d00c6054e774d0001c6055d774d0000c6055c774d0000c70558774d000000803f893554774d00893548774d00c6054c774d0000c6054d774d0000893550774d00e85a850100"
+          }
+        }
+      ],
+      "config_sha256": "d605b3cc83d3a8937d8b4e01526237ffbf45a2b674e7d120825a1ba8f26f2e9c",
+      "object_sha256_normalized": "a3cbddeb7d0f3d6cc0554d1f3580c842f7cd5205598a5e8cc22dc628c6ed5f64",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 803,
+        "masked_mismatches": 0,
+        "masked_ok": 284,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 803,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 803
+      }
+    },
+    {
+      "owner": "statistics_menu_update",
+      "source_sha256": "f3f73538bd3f764e5a9a521876546b26b8f2b0b275a6e65d6c71b1030be29784",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "statistics_high_scores_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x440100",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f564",
+              "candidate_offset": "0x14",
+              "status": "ok",
+              "target_values": [
+                "0x440100"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f5ad",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f564",
+            "end_exclusive": "0x43f5b2",
+            "bytes": "680001440080ca01c6051ec94c00018815200f4d00881d2dc94c00881d2cc94c00c70528c94c000000803f891d24c94c00891d18c94c00881d1cc94c00881d1dc94c00891d20c94c00e8d4170200"
+          }
+        },
+        {
+          "function": "statistics_weapons_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x4400f0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f5ca",
+              "candidate_offset": "0x7a",
+              "status": "ok",
+              "target_values": [
+                "0x4400f0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f613",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f5ca",
+            "end_exclusive": "0x43f618",
+            "bytes": "68f000440080ca02c605460f4d00018815200f4d00881d550f4d00881d540f4d00c705500f4d000000803f891d4c0f4d00891d400f4d00881d440f4d00881d450f4d00891d480f4d00e86e170200"
+          }
+        },
+        {
+          "function": "statistics_perks_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x4400e0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f630",
+              "candidate_offset": "0xe0",
+              "status": "ok",
+              "target_values": [
+                "0x4400e0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f679",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f630",
+            "end_exclusive": "0x43f67e",
+            "bytes": "68e000440080ca04c605fec84c00018815200f4d00881d0dc94c00881d0cc94c00c70508c94c000000803f891d04c94c00891df8c84c00881dfcc84c00881dfdc84c00891d00c94c00e808170200"
+          }
+        },
+        {
+          "function": "statistics_credits_button_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x4400d0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f699",
+              "candidate_offset": "0x149",
+              "status": "ok",
+              "target_values": [
+                "0x4400d0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f6e1",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f699",
+            "end_exclusive": "0x43f6e6",
+            "bytes": "68d00044000ad0c605be0e4d00018815200f4d00881dcd0e4d00881dcc0e4d00c705c80e4d000000803f891dc40e4d00891db80e4d00881dbc0e4d00881dbd0e4d00891dc00e4d00e8a0160200"
+          }
+        },
+        {
+          "function": "statistics_typo_button_destroy",
+          "symbol": "_$E6",
+          "symbol_storage_class": 3,
+          "address": "0x4400c0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f6fe",
+              "candidate_offset": "0x1ae",
+              "status": "ok",
+              "target_values": [
+                "0x4400c0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f747",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f6fe",
+            "end_exclusive": "0x43f74c",
+            "bytes": "68c000440080ca10c605660f4d00018815200f4d00881d750f4d00881d740f4d00c705700f4d000000803f891d6c0f4d00891d600f4d00881d640f4d00881d650f4d00891d680f4d00e83a160200"
+          }
+        },
+        {
+          "function": "statistics_mods_button_destroy",
+          "symbol": "_$E7",
+          "symbol_storage_class": 3,
+          "address": "0x4400b0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f767",
+              "candidate_offset": "0x217",
+              "status": "ok",
+              "target_values": [
+                "0x4400b0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f7af",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f767",
+            "end_exclusive": "0x43f7b4",
+            "bytes": "68b00044000ad0c60556cd4c00018815200f4d00881d65cd4c00881d64cd4c00c70560cd4c000000803f891d5ccd4c00891d50cd4c00881d54cd4c00881d55cd4c00891d58cd4c00e8d2150200"
+          }
+        },
+        {
+          "function": "statistics_update_button_destroy",
+          "symbol": "_$E8",
+          "symbol_storage_class": 3,
+          "address": "0x4400a0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f7cf",
+              "candidate_offset": "0x27f",
+              "status": "ok",
+              "target_values": [
+                "0x4400a0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f817",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f7cf",
+            "end_exclusive": "0x43f81c",
+            "bytes": "68a00044000ad0c605ce114d00018815200f4d00881ddd114d00881ddc114d00c705d8114d000000803f891dd4114d00891dc8114d00881dcc114d00881dcd114d00891dd0114d00e86a150200"
+          }
+        },
+        {
+          "function": "statistics_back_button_destroy",
+          "symbol": "_$E9",
+          "symbol_storage_class": 3,
+          "address": "0x440090",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43f837",
+              "candidate_offset": "0x2e7",
+              "status": "ok",
+              "target_values": [
+                "0x440090"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43f87f",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43f837",
+            "end_exclusive": "0x43f884",
+            "bytes": "68900044000ad0c605c6cc4c00018815200f4d00881dd5cc4c00881dd4cc4c00c705d0cc4c000000803f891dcccc4c00891dc0cc4c00881dc4cc4c00881dc5cc4c00891dc8cc4c00e802150200"
+          }
+        }
+      ],
+      "config_sha256": "af0586b696d3c3f4fbb10dbe7495c27636dc9a972ad7b0d38dc8c7e612f0e331",
+      "object_sha256_normalized": "998c3d5405fec8b463820afe31226e190676c51ca6cf4a1c32df3a4fb9977fa8",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 676,
+        "masked_mismatches": 0,
+        "masked_ok": 279,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 676,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 676
+      }
+    },
+    {
+      "owner": "tutorial_prompt_dialog",
+      "source_sha256": "1554a1a403144d773258f28762f40176a798e47228aae01ee7bb5a1880020d7d",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "tutorial_repeat_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x408980",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4086e6",
+              "candidate_offset": "0x1b6",
+              "status": "ok",
+              "target_values": [
+                "0x408980"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40872f",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4086e6",
+            "end_exclusive": "0x408734",
+            "bytes": "688089400080ca01c6055602480001881548014800881d65024800881d64024800c705600248000000803f891d5c024800891d50024800881d54024800881d55024800891d58024800e852860500"
+          }
+        },
+        {
+          "function": "tutorial_primary_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x408970",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40874c",
+              "candidate_offset": "0x21c",
+              "status": "ok",
+              "target_values": [
+                "0x408970"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x408795",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40874c",
+            "end_exclusive": "0x40879a",
+            "bytes": "687089400080ca02c605d607480001881548014800881de5074800881de4074800c705e00748000000803f891ddc074800891dd0074800881dd4074800881dd5074800891dd8074800e8ec850500"
+          }
+        }
+      ],
+      "config_sha256": "de219e5985b74ae3701b6c62f35570e6a2132de83cc58e6f3c0b2e519fb1342f",
+      "object_sha256_normalized": "d69a516954ce77c609c9558f51fc423020cbde5966b0a948e7d1dad7d6c8e4f4",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 254,
+        "masked_mismatches": 0,
+        "masked_ok": 80,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 254,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 254
+      }
+    },
+    {
+      "owner": "typo_gameplay_update_and_render",
+      "source_sha256": "b5ef6069f9a52e06a8ab345adc030b716477efe2ef2f9dd186ba58a3149c949d",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "typo_target_world_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x445ff0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4457e7",
+              "candidate_offset": "0x27",
+              "status": "ok",
+              "target_values": [
+                "0x445ff0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x445807",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4457e7",
+            "end_exclusive": "0x44580c",
+            "bytes": "68f05f440080ca01d91d70754d00d905c8084900d91d74754d00881528154d00e87ab50100"
+          }
+        }
+      ],
+      "config_sha256": "28541008781abc4e2cf5a65f5ce8a998de77252cd2b33315c523ccbb3e94de78",
+      "object_sha256_normalized": "ef5d4e9f161cb85334e836b7583fb3a24517b2c493848b6ccfb8132f46638172",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 508,
+        "masked_mismatches": 0,
+        "masked_ok": 194,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 508,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 508
+      }
+    },
+    {
+      "owner": "ui_menu_item_update",
+      "source_sha256": "4c257a09c0f9768dba53e5b1d2852fef75f21a3360143fe527fffe715b8eb3a2",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "ui_menu_idle_color_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x43e820",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43e5ff",
+              "candidate_offset": "0x1f",
+              "status": "ok",
+              "target_values": [
+                "0x43e820"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43e635",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43e5ff",
+            "end_exclusive": "0x43e63a",
+            "bytes": "6820e8430080ca01c70540cd4c008d8c8c3e881510c94c00c70544cd4c00b5b4343fc70548cd4c00f1f0703fc7054ccd4c009a99193fe84c270200"
+          }
+        },
+        {
+          "function": "ui_menu_hover_color_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x43e810",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x43e64b",
+              "candidate_offset": "0x6b",
+              "status": "ok",
+              "target_values": [
+                "0x43e810"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x43e680",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x43e64b",
+            "end_exclusive": "0x43e685",
+            "bytes": "6810e843000ad0c705280e4d008d8c8c3e881510c94c00c7052c0e4d00b5b4343fc705300e4d00f1f0703fc705340e4d000000803fe801270200"
+          }
+        }
+      ],
+      "config_sha256": "6970d7eda840b7724c34c6246059b3b074a5a792c183042c0fd5961aa45c589a",
+      "object_sha256_normalized": "7c54b942e266d01d1c93f1c993b28886288890d292e6d0c90c8ff5c34c5a56c9",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 153,
+        "masked_mismatches": 0,
+        "masked_ok": 38,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 153,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 153
+      }
+    },
+    {
+      "owner": "ui_profile_menu_update",
+      "source_sha256": "416eed1f88a0a5ccc762e0cd30737e548be7db257b3c24af38c0052cee16425a",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "profile_name_input_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x444800",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4443d3",
+              "candidate_offset": "0x13",
+              "status": "ok",
+              "target_values": [
+                "0x444800"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44440f",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4443d3",
+            "end_exclusive": "0x444414",
+            "bytes": "680048440080ca01c705380f4d000000803f8815d8cc4c00c705280f4d0018cb4c00891d2c0f4d00c705300f4d001b000000c705340f4d0060000000e872c90100"
+          }
+        },
+        {
+          "function": "profile_add_button_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x4447f0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x444464",
+              "candidate_offset": "0xa4",
+              "status": "ok",
+              "target_values": [
+                "0x4447f0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4444ac",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x444464",
+            "end_exclusive": "0x4444b1",
+            "bytes": "68f04744000ad0c60596cc4c00018815d8cc4c00881da5cc4c00881da4cc4c00c705a0cc4c000000803f891d9ccc4c00891d90cc4c00881d94cc4c00881d95cc4c00891d98cc4c00e8d5c80100"
+          }
+        },
+        {
+          "function": "profile_delete_button_destroy",
+          "symbol": "_$E4",
+          "symbol_storage_class": 3,
+          "address": "0x4447e0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4444c9",
+              "candidate_offset": "0x109",
+              "status": "ok",
+              "target_values": [
+                "0x4447e0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x444512",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4444c9",
+            "end_exclusive": "0x444517",
+            "bytes": "68e047440080ca04c60506cb4c00018815d8cc4c00881d15cb4c00881d14cb4c00c70510cb4c000000803f891d0ccb4c00891d00cb4c00881d04cb4c00881d05cb4c00891d08cb4c00e86fc80100"
+          }
+        },
+        {
+          "function": "profile_name_list_destroy",
+          "symbol": "_$E5",
+          "symbol_storage_class": 3,
+          "address": "0x4447d0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x4446b7",
+              "candidate_offset": "0x2f7",
+              "status": "ok",
+              "target_values": [
+                "0x4447d0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x4446f0",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x4446b7",
+            "end_exclusive": "0x4446f5",
+            "bytes": "68d047440080ca08c605e80e4d00018815d8cc4c00891d000f4d00881dfc0e4d00891df00e4d00891dec0e4d00891df80e4d00891df40e4d00e891c60100"
+          }
+        }
+      ],
+      "config_sha256": "64d50474478a5078b7255dd0feec5b1774329d8b3d8964468012f607cb4efee7",
+      "object_sha256_normalized": "00607a41799dcd0a0f8e6463947d532f7baf6b4a03c3f2a00a85ef6efe6e9bfd",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 261,
+        "masked_mismatches": 0,
+        "masked_ok": 109,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 261,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 261
+      }
+    },
+    {
+      "owner": "ui_render_aim_indicators",
+      "source_sha256": "94cc0084ccff10ba46b017a4a77ae9cb1381525f9515980c823ec44666381e2e",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "ui_render_aim_screen_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x40aaa0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40a531",
+              "candidate_offset": "0x21",
+              "status": "ok",
+              "target_values": [
+                "0x40aaa0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40a53e",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40a531",
+            "end_exclusive": "0x40a543",
+            "bytes": "68a0aa40000ad0881540034800e843680500"
+          }
+        },
+        {
+          "function": "ui_render_aim_lifetime_destroy",
+          "symbol": "_$E3",
+          "symbol_storage_class": 3,
+          "address": "0x40aa90",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x40a556",
+              "candidate_offset": "0x46",
+              "status": "ok",
+              "target_values": [
+                "0x40aa90"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x40a563",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x40a556",
+            "end_exclusive": "0x40a568",
+            "bytes": "6890aa40000ad3881540034800e81e680500"
+          }
+        }
+      ],
+      "config_sha256": "5b2b0f7a61001e961fff1b36e8055b8712812572b125bcc4bea23c4a182e4972",
+      "object_sha256_normalized": "b26849097ed8ef63ab8811bda4ea641975fff976a6b8f644cb0b7d5f552891ec",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 343,
+        "masked_mismatches": 0,
+        "masked_ok": 105,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 343,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 343
+      }
+    },
+    {
+      "owner": "ui_render_hud",
+      "source_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+      "owner_body_byte_exact": false,
+      "members": [
+        {
+          "function": "ui_hud_progress_color_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x41ca80",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x41bcfd",
+              "candidate_offset": "0xe2d",
+              "status": "ok",
+              "target_values": [
+                "0x41ca80"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x41bd33",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x41bcfd",
+            "end_exclusive": "0x41bd38",
+            "bytes": "6880ca410080ca01c705a0714800cdcc4c3e881528f54800c705a4714800cdcc4c3fc705a87148009a99993ec705ac7148000000803fe84e500400"
+          }
+        }
+      ],
+      "config_sha256": "a9d011a5ecc747deaa23bde615a7f8457c36f2c7f5a8184be3f490c445513117",
+      "object_sha256_normalized": "4d49048a26c746b8a37317707bf1299f21525ec25d815b1594261e14f102b74b",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": false,
+        "candidate_instructions": 1824,
+        "masked_mismatches": 0,
+        "masked_ok": 393,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 42,
+        "ratio": 0.9221491228070176,
+        "state": "wip",
+        "target_instructions": 1824
+      }
+    },
+    {
+      "owner": "ui_update_notice_update",
+      "source_sha256": "e6fc590271a049e6453b24af1b9cd142ac7eb4a3f013d3b810c9a7662b291141",
+      "owner_body_byte_exact": true,
+      "members": [
+        {
+          "function": "ui_update_notice_button_destroy",
+          "symbol": "_$E2",
+          "symbol_storage_class": 3,
+          "address": "0x4423c0",
+          "body_byte_exact": true,
+          "baseline_body_byte_exact": true,
+          "error": null,
+          "target_instructions": 1,
+          "candidate_instructions": 1,
+          "references": [
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "instruction": "push ADDR",
+              "target_instruction": "0x442314",
+              "candidate_offset": "0x1c4",
+              "status": "ok",
+              "target_values": [
+                "0x4423c0"
+              ]
+            }
+          ],
+          "proven": true,
+          "registration_call": {
+            "address": "0x44235d",
+            "target": "0x460d86",
+            "names": [
+              "crt_atexit"
+            ]
+          },
+          "registration_sequence": {
+            "start": "0x442314",
+            "end_exclusive": "0x442362",
+            "bytes": "68c023440080ca01c605d60e4d0001881530c94c00881de50e4d00881de40e4d00c705e00e4d000000803f891ddc0e4d00891dd00e4d00881dd40e4d00881dd50e4d00891dd80e4d00e824ea0100"
+          }
+        }
+      ],
+      "config_sha256": "89809a5107cb97b77bb4b767da3cf2ff3c809db04025ef12cee5606fae26c215",
+      "object_sha256_normalized": "d26224eb4493e6561158ff8992cdafb0371a377ad21a78e0a24f0a5ff87f593f",
+      "compiler": "msvc6.5",
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "owner_match": {
+        "body_byte_exact": true,
+        "candidate_instructions": 156,
+        "masked_mismatches": 0,
+        "masked_ok": 47,
+        "masked_unresolved": 0,
+        "padding_bytes": {
+          "candidate": 0,
+          "target": 0
+        },
+        "prefix_instructions": 156,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 156
+      }
+    }
+  ]
+}
