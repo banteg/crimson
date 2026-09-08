@@ -553,11 +553,7 @@ tools/match/scratches/statistics_perks_button_destroy/build/msvc6.5/3baff6ace9c3
 tools/match/scratches/statistics_weapons_button_destroy/build/msvc6.5/da3d9939966a2f68/scratch.obj
 tools/match/scratches/statistics_high_scores_button_destroy/build/msvc6.5/0a25592150e9382f/scratch.obj
 tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/e8a122f89ecbfbc3/scratch.obj
-tools/match/scratches/unlocked_weapons_back_button_destroy/build/msvc6.5/08a868ea492265d8/scratch.obj
-tools/match/scratches/unlocked_weapons_scrollbar_destroy/build/msvc6.5/10e72daf3c31321e/scratch.obj
 tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/a9c89d7c9b32dfd4/scratch.obj
-tools/match/scratches/unlocked_perks_back_button_destroy/build/msvc6.5/7579a57f7876bb50/scratch.obj
-tools/match/scratches/unlocked_perks_scrollbar_destroy/build/msvc6.5/ec7e91e5b9a3a868/scratch.obj
 tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/435ddc667e0f909f/scratch.obj
 tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/fcaa20226072805a/scratch.obj
 tools/match/scratches/highscore_card_draw_horizontal_divider/build/msvc6.5/1669abf276e1d261/scratch.obj
@@ -567,15 +563,6 @@ tools/match/scratches/ui_text_input_render/build/msvc6.5/d0ec14789956908c/scratc
 tools/match/scratches/ui_update_notice_update/build/msvc6.5/d2b8c9edead5f5ad/scratch.obj
 tools/match/scratches/ui_update_notice_button_destroy/build/msvc6.5/7bc0a3b9723e9261/scratch.obj
 tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj
-tools/match/scratches/highscore_game_mode_list_destroy/build/msvc6.5/27c1c8a34497e35e/scratch.obj
-tools/match/scratches/highscore_player_count_list_destroy/build/msvc6.5/177a29e31d8fa590/scratch.obj
-tools/match/scratches/highscore_date_filter_list_destroy/build/msvc6.5/7da8f964f1814254/scratch.obj
-tools/match/scratches/highscore_online_scores_checkbox_destroy/build/msvc6.5/199ec6acbe68bec1/scratch.obj
-tools/match/scratches/highscore_back_button_destroy/build/msvc6.5/56e958f4743d7117/scratch.obj
-tools/match/scratches/highscore_play_button_destroy/build/msvc6.5/9ad3a227a39322fe/scratch.obj
-tools/match/scratches/highscore_update_button_destroy/build/msvc6.5/dafdeb14c06bb99e/scratch.obj
-tools/match/scratches/highscore_score_scrollbar_destroy/build/msvc6.5/5edf2752b8737f41/scratch.obj
-tools/match/scratches/highscore_hardcore_checkbox_destroy/build/msvc6.5/9f1fcf583641e203/scratch.obj
 tools/match/scratches/ui_profile_menu_update/build/msvc6.5/fb5be7541c835182/scratch.obj
 tools/match/scratches/profile_name_list_destroy/build/msvc6.5/2822d526fe72c91d/scratch.obj
 tools/match/scratches/profile_delete_button_destroy/build/msvc6.5/bea9af607add7aa5/scratch.obj

@@ -67,6 +67,88 @@
           "symbol": "_$E2"
         }
       ]
+    },
+    {
+      "name": "unlocked-weapons-database-lifecycle",
+      "scratch": "unlocked_weapons_database_update",
+      "members": [
+        {
+          "function": "unlocked_weapons_database_update",
+          "symbol": "unlocked_weapons_database_update"
+        },
+        {
+          "function": "unlocked_weapons_back_button_destroy",
+          "symbol": "_$E3"
+        },
+        {
+          "function": "unlocked_weapons_scrollbar_destroy",
+          "symbol": "_$E2"
+        }
+      ]
+    },
+    {
+      "name": "unlocked-perks-database-lifecycle",
+      "scratch": "unlocked_perks_database_update",
+      "members": [
+        {
+          "function": "unlocked_perks_database_update",
+          "symbol": "unlocked_perks_database_update"
+        },
+        {
+          "function": "unlocked_perks_back_button_destroy",
+          "symbol": "_$E3"
+        },
+        {
+          "function": "unlocked_perks_scrollbar_destroy",
+          "symbol": "_$E2"
+        }
+      ]
+    },
+    {
+      "name": "highscore-screen-lifecycle",
+      "scratch": "highscore_screen_update",
+      "members": [
+        {
+          "function": "highscore_screen_update",
+          "symbol": "highscore_screen_update"
+        },
+        {
+          "function": "highscore_game_mode_list_destroy",
+          "symbol": "_$E11"
+        },
+        {
+          "function": "highscore_player_count_list_destroy",
+          "symbol": "_$E9"
+        },
+        {
+          "function": "highscore_date_filter_list_destroy",
+          "symbol": "_$E8"
+        },
+        {
+          "function": "highscore_online_scores_checkbox_destroy",
+          "symbol": "_$E7"
+        },
+        {
+          "function": "highscore_back_button_destroy",
+          "symbol": "_$E6"
+        },
+        {
+          "function": "highscore_play_button_destroy",
+          "symbol": "_$E5"
+        },
+        {
+          "function": "highscore_update_button_destroy",
+          "symbol": "_$E4"
+        },
+        {
+          "function": "highscore_score_scrollbar_destroy",
+          "symbol": "_$E3"
+        },
+        {
+          "function": "highscore_hardcore_checkbox_destroy",
+          "symbol": "_$E2"
+        }
+      ]
     }
   ]
 }

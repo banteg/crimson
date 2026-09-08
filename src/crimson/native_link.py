@@ -1677,6 +1677,8 @@ def _validate_cluster_match(
             f"mismatched references {baseline.masked_mismatches} "
             f"-> {clustered.masked_mismatches}",
         )
+    if baseline.body_byte_exact is True and clustered.body_byte_exact is not True:
+        regressions.append("lost relocation-aware encoded-body identity")
     if regressions:
         raise ValueError(
             f"{translation_unit}:{baseline.config.function}: clustered object regresses "

@@ -1579,6 +1579,92 @@ def _local_switch_partition_key(indices: bytes, offsets: Collection[int]) -> str
     return f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:{partition.hex()}"
 
 
+def _vc6_sparse_switch_bounds(instructions: Collection[Any]) -> dict[tuple[int, int], int]:
+    """Prove byte-lookup extents from an adjacent unsigned guard and dispatch.
+
+    Keys are the instruction addresses of the lookup and indirect jump. Do
+    not infer a bound from table contents: zero padding and the next table's
+    address bytes can also be valid case indices.
+    """
+    import capstone
+
+    x86 = capstone.x86
+    code = tuple(instructions)
+    direct_targets = {
+        operand.imm
+        for insn in code
+        if capstone.CS_GRP_JUMP in insn.groups or capstone.CS_GRP_CALL in insn.groups
+        for operand in insn.operands
+        if operand.type == x86.X86_OP_IMM
+    }
+    bounds: dict[tuple[int, int], int] = {}
+    low_registers = {"al": "eax", "bl": "ebx", "cl": "ecx", "dl": "edx"}
+    for index in range(len(code) - 3):
+        compare, guard = code[index : index + 2]
+        if (
+            compare.mnemonic != "cmp"
+            or len(compare.operands) != 2
+            or compare.operands[0].type != x86.X86_OP_REG
+            or compare.operands[0].size != 4
+            or compare.operands[1].type != x86.X86_OP_IMM
+            or not 3 <= compare.operands[1].imm <= 255
+            or guard.mnemonic != "ja"
+            or len(guard.operands) != 1
+            or guard.operands[0].type != x86.X86_OP_IMM
+        ):
+            continue
+        cursor = index + 2
+        clear = code[cursor] if code[cursor].mnemonic == "xor" else None
+        cursor += clear is not None
+        if cursor + 1 >= len(code):
+            continue
+        lookup, jump = code[cursor : cursor + 2]
+        if (
+            lookup.mnemonic not in {"mov", "movzx"}
+            or len(lookup.operands) != 2
+            or lookup.operands[0].type != x86.X86_OP_REG
+            or lookup.operands[1].type != x86.X86_OP_MEM
+            or lookup.operands[1].size != 1
+            or lookup.disp_size != 4
+            or jump.mnemonic != "jmp"
+            or len(jump.operands) != 1
+            or jump.operands[0].type != x86.X86_OP_MEM
+            or jump.operands[0].size != 4
+            or jump.disp_size != 4
+        ):
+            continue
+        source, dispatch = lookup.operands[1].mem, jump.operands[0].mem
+        destination = lookup.reg_name(lookup.operands[0].reg)
+        if lookup.mnemonic == "mov":
+            destination = low_registers.get(destination, "")
+            if clear is None:
+                continue
+        elif lookup.operands[0].size != 4:
+            continue
+        if clear is not None and (
+            len(clear.operands) != 2
+            or any(op.type != x86.X86_OP_REG or op.size != 4 for op in clear.operands)
+            or clear.operands[0].reg != clear.operands[1].reg
+            or clear.reg_name(clear.operands[0].reg) != destination
+            or clear.operands[0].reg == compare.operands[0].reg
+        ):
+            continue
+        if (
+            source.base != compare.operands[0].reg
+            or source.index != 0
+            or source.segment != 0
+            or dispatch.base != 0
+            or dispatch.scale != 4
+            or dispatch.segment != 0
+            or jump.reg_name(dispatch.index) != destination
+            or guard.operands[0].imm < jump.address + jump.size
+            or any(compare.address < target <= jump.address for target in direct_targets)
+        ):
+            continue
+        bounds[lookup.address, jump.address] = compare.operands[1].imm + 1
+    return bounds
+
+
 def _coff_local_jump_table_offsets(
     obj: CoffObject,
     function: CoffSymbol,
@@ -1641,6 +1727,7 @@ def _coff_local_switch_partition_keys(
     section = obj.sections[function.section_number - 1]
     symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
     references: list[tuple[CoffSymbol, int]] = []
+    references_by_offset: dict[int, tuple[CoffSymbol, int]] = {}
     for relocation in section.relocations:
         if not (function.value <= relocation.virtual_address < end):
             continue
@@ -1649,6 +1736,35 @@ def _coff_local_switch_partition_keys(
             continue
         addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
         references.append((symbol, addend))
+        references_by_offset[relocation.virtual_address] = (symbol, addend)
+
+    if not any(
+        symbol.name.startswith("$L")
+        and symbol.section_number == function.section_number
+        and symbol.value + addend >= end
+        for symbol, addend in references
+    ):
+        return {}
+    import capstone
+
+    md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
+    instructions = tuple(md.disasm(section.data[function.value:end], function.value))
+    instructions_by_address = {insn.address: insn for insn in instructions}
+    bounded_pairs: dict[tuple[int, int], set[int]] = defaultdict(set)
+    guarded_offsets: set[int] = set()
+    for (lookup_address, jump_address), count in _vc6_sparse_switch_bounds(instructions).items():
+        lookup_insn = instructions_by_address[lookup_address]
+        jump_insn = instructions_by_address[jump_address]
+        lookup_ref = references_by_offset.get(lookup_address + lookup_insn.disp_offset)
+        jump_ref = references_by_offset.get(jump_address + jump_insn.disp_offset)
+        if (
+            lookup_ref is not None and jump_ref is not None
+            and lookup_ref[0].section_number == function.section_number
+            and jump_ref[0].section_number == function.section_number
+        ):
+            bounded_pairs[jump_ref[0].value + jump_ref[1], lookup_ref[0].value + lookup_ref[1]].add(count)
+            guarded_offsets.update((lookup_address + lookup_insn.disp_offset, jump_address + jump_insn.disp_offset))
 
     keys: dict[tuple[int, int], str] = {}
     for table, table_addend in references:
@@ -1679,7 +1795,18 @@ def _coff_local_switch_partition_keys(
             default=len(section.data),
         )
         available = section.data[lookup_start:lookup_end]
-        indices_end = next((index for index, value in enumerate(available) if value >= len(offsets)), len(available))
+        counts = bounded_pairs.get((table_start, lookup_start), set())
+        all_uses_guarded = all(
+            offset in guarded_offsets
+            for offset, (symbol, addend) in references_by_offset.items()
+            if symbol.section_number == function.section_number and symbol.value + addend in {table_start, lookup_start}
+        )
+        indices_end = next(iter(counts)) if len(counts) == 1 and all_uses_guarded else None
+        if indices_end is not None:
+            if len(available) < indices_end:
+                continue
+        else:
+            indices_end = next((index for index, value in enumerate(available) if value >= len(offsets)), len(available))
         indices = available[:indices_end]
         if partition_key := _local_switch_partition_key(indices, offsets):
             keys[(table.raw_index, table_addend)] = partition_key
@@ -1753,6 +1880,7 @@ def _image_local_switch_partition_key_from_table(
     function_start: int,
     function_end: int,
     reference_catalog: ReferenceCatalog | None = None,
+    lookup_count: int | None = None,
 ) -> str | None:
     """Describe a linked VC6 sparse switch whose byte lookup follows its jump table."""
 
@@ -1767,6 +1895,7 @@ def _image_local_switch_partition_key_from_table(
         lookup_address,
         offsets,
         reference_catalog=reference_catalog,
+        lookup_count=lookup_count,
     )
 
 
@@ -1776,6 +1905,7 @@ def _image_local_switch_partition_key_from_lookup(
     function_start: int,
     function_end: int,
     reference_catalog: ReferenceCatalog | None = None,
+    lookup_count: int | None = None,
 ) -> str | None:
     """Describe a linked VC6 sparse switch from a lookup table following absolute targets."""
 
@@ -1801,6 +1931,7 @@ def _image_local_switch_partition_key_from_lookup(
         lookup_address,
         offsets,
         reference_catalog=reference_catalog,
+        lookup_count=lookup_count,
     )
 
 
@@ -1810,12 +1941,16 @@ def _image_local_switch_partition_key(
     offsets: Collection[int],
     *,
     reference_catalog: ReferenceCatalog | None,
+    lookup_count: int | None = None,
 ) -> str | None:
     """Key a linked byte lookup, optionally bounded by the next known symbol."""
 
     lookup_offset = lookup_address - image.image_base
     if lookup_offset < 0 or lookup_offset >= len(image.mapped):
         return None
+    if lookup_count is not None:
+        raw = _image_bytes(image, lookup_address, lookup_count)
+        return _local_switch_partition_key(raw, offsets) if raw is not None else None
     lookup_limit = 256
     if reference_catalog is not None:
         next_address = min(
@@ -2336,6 +2471,44 @@ def disassemble_normalized_function(
     relocation_by_offset = {reference.offset: reference for reference in relocation_references}
     size = len(data)
     instructions = tuple(md.disasm(data, base_address))
+    switch_counts: dict[int, set[int | None]] = defaultdict(set)
+    guarded_uses: set[tuple[int, int]] = set()
+    switch_pairs: set[tuple[int, int]] = set()
+    if image is not None:
+        by_address = {insn.address: insn for insn in instructions}
+        for (lookup_address, jump_address), count in _vc6_sparse_switch_bounds(instructions).items():
+            lookup = by_address[lookup_address].operands[1].mem.disp
+            table = by_address[jump_address].operands[0].mem.disp
+            offsets = _image_local_jump_table_offsets(image, table, base_address, base_address + size)
+            if table + 4 * len(offsets) == lookup:
+                switch_counts[lookup].add(count)
+                switch_counts[table].add(count)
+                guarded_uses.update(((lookup, lookup_address), (table, jump_address)))
+                switch_pairs.add((lookup, table))
+        # A shared table may have other consumers with a larger or unproven
+        # domain. A bound at one dispatch must never truncate their evidence.
+        for insn in instructions:
+            for operand in insn.operands:
+                value = (
+                    operand.mem.disp if operand.type == capstone.x86.X86_OP_MEM
+                    else operand.imm if operand.type == capstone.x86.X86_OP_IMM else None
+                )
+                if value in switch_counts and (value, insn.address) not in guarded_uses:
+                    switch_counts[value].add(None)
+        invalid = {address for address, counts in switch_counts.items() if len(counts) != 1 or None in counts}
+        while True:
+            previous = len(invalid)
+            for lookup, table in switch_pairs:
+                if lookup in invalid or table in invalid or switch_counts[lookup] != switch_counts[table]:
+                    invalid.update((lookup, table))
+            if len(invalid) == previous:
+                break
+        for address in invalid:
+            switch_counts[address].add(None)
+    switch_lookup_counts = {
+        address: count for address, counts in switch_counts.items()
+        if len(counts) == 1 and (count := next(iter(counts))) is not None
+    }
     direct_branch_targets = (
         frozenset(
             int(operand.imm)
@@ -2465,12 +2638,14 @@ def disassemble_normalized_function(
                 base_address,
                 base_address + len(data),
                 switch_catalog,
+                switch_lookup_counts.get(value),
             ) or _image_local_switch_partition_key_from_lookup(
                 image,
                 value,
                 base_address,
                 base_address + len(data),
                 switch_catalog,
+                switch_lookup_counts.get(value),
             )
             if switch_partition_key:
                 keys.append(switch_partition_key)

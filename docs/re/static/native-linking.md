@@ -29,7 +29,7 @@ subsystem grouping from native-proven translation-unit ownership and is
 checked against all 171 source files and 180 source/config bindings in the
 native-link tests.
 
-The executable has three explicitly modeled exceptions in
+The executable has six explicitly modeled ownership groups in
 `tools/native/translation_units/crimsonland.exe.json`. VC6 generates each
 quest, bonus, or perk metadata array's initializer, registrar, and finalizer
 as four COFF-local functions in the translation unit that owns the global
@@ -43,6 +43,23 @@ function using the canonical scratch boundaries. The audit rejects a cluster
 that lowers the byte ratio or adds unresolved or mismatched references. This
 is source-provenance modeling, not a linker alias: the object retains the
 compiler-generated local symbols and local relocations.
+
+Three more groups bind the weapons database, perks database, and high-score
+screen callbacks to their own compiler-generated local-static destructor
+thunks. Native registration pushes identify all 13 thunks, and the canonical
+callback objects emit them as COFF-local `$E` functions. Selecting those
+members removes 13 redundant standalone objects while retaining every native
+function's independent comparison. The two database callbacks and all 13
+thunks retain encoded-body identity; the high-score callback preserves its
+existing non-exact result. The gate rejects loss of an already exact encoded
+body even when normalized instructions and references still agree.
+
+These are proven minimum co-resident groups, not complete original source
+files. The adjacent weapons and perks callbacks remain separate: shared
+widget types and native address order alone do not prove one original TU.
+The repository audit at `tools/match/REFERENCE-TU-AUDIT-2026-09-08.md` records
+registration addresses, symbol bindings, and all remaining reference
+classifications.
 
 The Grim configuration models four proven source islands: the slot-state
 accessors, line renderer and local vector destructor, monochrome text renderer,
@@ -298,8 +315,8 @@ The canonical structural link retains all 87 reference-backed dependencies.
 Its 121 output imports are all present in the reference table, including
 DSOUND ordinal 11 and OLEAUT32 ordinals 8 and 9. All ten configured
 link-only placeholders are discarded, so the CLI reports
-`placeholders=0/10 runnable=True`. The resulting PE file is 856,064 bytes with
-an 868,352-byte in-memory image, entry RVA `0x4f0de`, i386 machine type,
+`placeholders=0/10 runnable=True`. The current PE file is 839,680 bytes with
+an 872,448-byte in-memory image, entry RVA `0x4f4ae`, i386 machine type,
 Windows GUI subsystem, base `0x00400000`, and normalized zero timestamp. The
 checked record is
 `analysis/native/crimsonland.exe/link/link.json`; the PE, map, response, log,
@@ -321,12 +338,13 @@ headers preserve analysis layouts but are not a replacement SDK for native
 
 ## Data boundary
 
-`analysis/ghidra/maps/data_map.json` is a curated symbol map, not yet a
-linkable data-definition manifest. The first report preserves every mapped
-row and alias and joins its address to the exported reference sections, but it
-leaves size, alignment, and initializer bytes unknown unless explicitly
-proven. It does not infer extents from adjacent labels or infer zero
-initializers from `.data`.
+`analysis/ghidra/maps/data_map.json` supplies curated identities;
+`tools/native/data_definitions/<image>.json` supplies the proven sizes,
+alignments, and initializers used to emit linkable data objects. The current
+EXE audit has complete definitions for all 1,788 mapped entries; Grim still
+has partially specified rows. Neither count claims that every original data
+object is mapped. Unknown extents are not inferred from adjacent labels, and
+`.data` membership does not imply a zero initializer.
 
 Tracked artifacts and their exact field contract are described in
 `analysis/native/README.md`.

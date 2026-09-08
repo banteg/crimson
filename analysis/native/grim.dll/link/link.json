@@ -117,7 +117,7 @@
       }
     }
   ],
-  "audit_digest": "7f96848900808a8d7e0f73b7e9dffacd2d1a6cbac2563ce18323603b9c4b9e4b",
+  "audit_digest": "14b21b01453f0b1ae387d5e00285ccf1dd06ebb13b253892e360dd5ec3d04e31",
   "entry": {
     "symbol": "DllMain"
   },
@@ -988,7 +988,7 @@
           "note": "The archive proof records exact matches for the four public APIs and the internal D3DXComputeNormalMap body.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "1e4e392eaef892aac5ab79678ba6be022a5865d5612626caf82c20be8c92ca12"
+          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
         }
       ],
       "kind": "static-library",
@@ -1263,7 +1263,7 @@
           "note": "The one-byte boolean ABI, compiler profiles, archive hash, custom source reconstruction, and 18 exact reference functions are recorded here.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "1e4e392eaef892aac5ab79678ba6be022a5865d5612626caf82c20be8c92ca12"
+          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
         }
       ],
       "kind": "static-library",
@@ -1306,7 +1306,7 @@
           "note": "The stock uncompress entry is a 156-byte exact reference match; the archive contains 24 exact Grim functions.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "1e4e392eaef892aac5ab79678ba6be022a5865d5612626caf82c20be8c92ca12"
+          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
         }
       ],
       "kind": "static-library",
@@ -1330,7 +1330,7 @@
           "note": "VC6 SP6 atonexit.obj uniquely matches Grim's __onexit and _atexit functions byte-for-byte.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "1e4e392eaef892aac5ab79678ba6be022a5865d5612626caf82c20be8c92ca12"
+          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
         }
       ],
       "kind": "static-library",
@@ -1348,13 +1348,13 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "a5848bada29d6fcd3981bee8e1709e000e9569b37a6560b6ae65c7449946764d"
+          "sha256": "4460631b5411e49beabda53ea0105f26491539fd063c0b6229ae05107ee6aaa9"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "1e4e392eaef892aac5ab79678ba6be022a5865d5612626caf82c20be8c92ca12"
+          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
         }
       ],
       "kind": "toolchain",

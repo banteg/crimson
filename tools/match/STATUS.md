@@ -20,7 +20,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1269 | 97 |
+| crimsonland.exe | current | 671 | 650 | 6 | passed | yes | yes | no | 0 | 1269 | 97 |
 | grim.dll | current | 139 | 132 | 4 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
@@ -32,7 +32,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **17** non-exact scratch-backed functions hold **25818 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
 
-Current-baseline experiments cover **3 functions / 1102 gap bytes**; **14 / 24715** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25818** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -46,9 +46,9 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 6 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 7 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 8 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | current-active | 1/21 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
-| 10 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | current-active | 1/33 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
-| 11 | crimsonland.exe | highscore_sync_worker | 147 | semantic-complete | compiler | current-active | 1/15 | 1 | repeated-variants,metric-tradeoffs,variant-errors |
+| 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/21 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 10 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 11 | crimsonland.exe | highscore_sync_worker | 147 | semantic-complete | compiler | historical-only | 0/15 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 12 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 13 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 14 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
@@ -776,7 +776,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
 | match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
 | match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
-| wip | controls_menu_update | 0x00448cd0 | 21289 | 17398/21289 | 3891 | 5413/5421 | 81.72% | 172/5421 | 1559/0/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
+| wip | controls_menu_update | 0x00448cd0 | 21289 | 17398/21289 | 3891 | 5413/5421 | 81.72% | 172/5421 | 1564/0/4 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | controls_rebind_items_destroy | 0x0044ed10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-rebind-items-destroy |
 | match | controls_direction_arrow_checkbox_destroy | 0x0044ed20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-direction-arrow-checkbox-destroy |

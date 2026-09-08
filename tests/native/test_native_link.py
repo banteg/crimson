@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import struct
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,7 @@ from crimson.native_link import (
     _native_link_image_options,
     _normalized_coff_sha256,
     _select_unique_statuses,
+    _validate_cluster_match,
     _validate_loaded_configs,
     _vc6_linker_internal_name,
     data_manifest_payload,
@@ -490,6 +492,22 @@ def test_translation_unit_config_binds_unique_member_symbols(tmp_path: Path) -> 
         ("metadata_destroy", "_$E2"),
     ]
     assert len(config.sha256) == 64
+
+
+@pytest.mark.parametrize("clustered_body_exact", [False, None])
+def test_cluster_rejects_encoded_body_regression_at_equal_normalized_score(
+    tmp_path: Path, clustered_body_exact: bool | None,
+) -> None:
+    baseline = replace(_status(tmp_path, "probe", 0x401000), body_byte_exact=True)
+    clustered = replace(baseline, body_byte_exact=clustered_body_exact)
+    with pytest.raises(ValueError, match="lost relocation-aware encoded-body identity"):
+        _validate_cluster_match(baseline, clustered, translation_unit="probe-island")
+
+
+def test_cluster_preserves_an_existing_encoding_residual(tmp_path: Path) -> None:
+    baseline = replace(_status(tmp_path, "probe", 0x401000), body_byte_exact=False)
+    _validate_cluster_match(baseline, baseline, translation_unit="probe-island")
+    _validate_cluster_match(baseline, replace(baseline, body_byte_exact=True), translation_unit="probe-island")
 
 
 def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> None:

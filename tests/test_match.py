@@ -60,6 +60,7 @@ from crimson.match import (
     _region_hints,
     _scratch_build_key,
     _ScratchIncludeResolver,
+    _vc6_sparse_switch_bounds,
     address_in_matching_scope,
     align_basic_blocks,
     apply_naming_suggestions,
@@ -2381,6 +2382,127 @@ def test_match_function_audits_vc6_sparse_switch_destination_partition() -> None
 
     assert result.exact
     assert result.masked_operand_audit.ok_count == 2
+
+
+def _guarded_sparse_switch_object() -> CoffObject:
+    # cmp eax,3; ja default; xor ecx,ecx; mov cl,[eax+lookup]; jmp [ecx*4+table]
+    code = bytes.fromhex("83f803772e33c98a88") + b"\0" * 4 + bytes.fromhex("ff248d") + b"\0" * 4
+    return CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=(
+                    code + b"\x90" * (0x30 - len(code)) + b"\xc3" * 4 + b"\x90" * 12
+                    + b"\0" * 12 + bytes((0, 1, 2, 2)) + b"\0\0\0\x90"
+                ),
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(9, 2, 6),
+                    CoffRelocation(16, 1, 6),
+                    CoffRelocation(0x40, 3, 6),
+                    CoffRelocation(0x44, 4, 6),
+                    CoffRelocation(0x48, 5, 6),
+                ),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "$Ltable", 0x40, 1, 0, 6),
+            CoffSymbol(2, "$Llookup", 0x4C, 1, 0, 6),
+            CoffSymbol(3, "$Lcase0", 0x30, 1, 0, 6),
+            CoffSymbol(4, "$Lcase1", 0x31, 1, 0, 6),
+            CoffSymbol(5, "$Lcase2", 0x32, 1, 0, 6),
+        ),
+    )
+
+
+@pytest.mark.parametrize("last_index", [2, 1, 3])
+def test_sparse_switch_guard_excludes_padding_but_checks_every_case(last_index: int) -> None:
+    candidate = extract_object_function(_guarded_sparse_switch_object(), "_probe")
+    partition = f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:00010202"
+    assert candidate.relocation_references[0].key == partition
+    assert candidate.relocation_references[1].alternate_keys == (partition,)
+
+    function_address, table_address, lookup_address = 0x401000, 0x402000, 0x40200C
+    target = bytearray(candidate.data)
+    struct.pack_into("<I", target, 9, lookup_address)
+    struct.pack_into("<I", target, 16, table_address)
+    mapped = bytearray(0x3000)
+    mapped[0x2000:0x200C] = struct.pack("<III", *(function_address + n for n in (0x30, 0x31, 0x32)))
+    # Different valid-looking padding and neighboring data must not enlarge
+    # the 4-entry domain, while a changed or out-of-range live entry must fail.
+    mapped[0x200C:0x2014] = bytes((0, 1, 2, last_index, 0, 0, 1, 2))
+    result = match_function(
+        bytes(target), candidate, target_va=function_address,
+        image=LoadedImage(bytes(mapped), 0x400000, len(mapped)),
+    )
+    assert result.exact is (last_index == 2)
+    assert (result.masked_operand_audit.mismatch_count == 0) is (last_index == 2)
+
+
+@pytest.mark.parametrize(
+    "patch",
+    [
+        (1, b"\xfb"),  # Guard ECX while indexing with EAX.
+        (3, b"\x7f"),  # Signed JG does not exclude negative indices.
+        (4, b"\x02"),  # The supposedly excluded path enters the lookup.
+        (5, b"\x90\x90"),  # A byte load does not clear the high index bits.
+        (6, b"\xc0"),  # Clearing EAX destroys the checked lookup index.
+        (0x20, b"\xeb\xe5"),  # Another branch can enter at the lookup.
+    ],
+)
+def test_sparse_switch_extent_requires_an_intact_guard(patch: tuple[int, bytes]) -> None:
+    import capstone
+
+    data = bytearray(_guarded_sparse_switch_object().sections[0].data[:0x34])
+    offset, replacement = patch
+    data[offset : offset + len(replacement)] = replacement
+    md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
+    assert _vc6_sparse_switch_bounds(tuple(md.disasm(bytes(data), 0))) == {}
+
+
+def test_sparse_switch_extent_accepts_zero_extended_index() -> None:
+    import capstone
+
+    code = bytes.fromhex("83f803772e0fb68800000000ff248d00000000")
+    md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
+    assert _vc6_sparse_switch_bounds(tuple(md.disasm(code, 0))) == {(5, 12): 4}
+
+
+@pytest.mark.parametrize("guarded", [False, True])
+def test_sparse_switch_bound_requires_consistent_shared_consumers(guarded: bool) -> None:
+    obj = _guarded_sparse_switch_object()
+    section = obj.sections[0]
+    data = bytearray(section.data)
+    if guarded:
+        data[0x14:0x28] = data[:0x14]
+        data[0x16], data[0x18] = 4, 0x1A  # A second guard admits five entries.
+        extra = (CoffRelocation(0x1D, 2, 6), CoffRelocation(0x24, 1, 6))
+    else:
+        data[0x20:0x27] = bytes.fromhex("0fb69000000000")
+        extra = (CoffRelocation(0x23, 2, 6),)
+    section = replace(section, data=bytes(data), relocations=(*section.relocations, *extra))
+    candidate = extract_object_function(replace(obj, sections=(section,)), "_probe")
+    live_partition = f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:00010202"
+    assert candidate.relocation_references[0].key != live_partition
+
+    target = bytearray(candidate.data)
+    references = [(9, 0x40200C), (16, 0x402000)]
+    references.extend((reloc.virtual_address, 0x40200C if reloc.symbol_index == 2 else 0x402000) for reloc in extra)
+    for offset, address in references:
+        struct.pack_into("<I", target, offset, address)
+    mapped = bytearray(0x3000)
+    mapped[0x2000:0x200C] = struct.pack("<III", 0x401030, 0x401031, 0x401032)
+    mapped[0x200C:0x2014] = bytes((0, 1, 2, 2, 0, 0, 1, 2))
+    lines = disassemble_normalized_function(
+        bytes(target), base_address=0x401000, address_range=(0x400000, 0x403000),
+        image=LoadedImage(bytes(mapped), 0x400000, len(mapped)),
+    )
+    for line in lines:
+        for reference in line.masked_references:
+            assert live_partition not in reference.keys
 
 
 def test_match_function_audits_local_jump_table_destinations() -> None:

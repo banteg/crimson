@@ -839,3 +839,23 @@ listing diagnostics and defer exact-match work unless live native evidence
 appears in one of the 16 unmatched target blocks. If it is reopened, an edit
 must preserve the 172-instruction exact prefix, the `1559/0/9` reference audit,
 and the equal `0x74` frame.
+
+## Guard-bounded reference audit (2026-09-08)
+
+The full 46-reference frontier audit found that five of this callback's nine
+reported mismatches were table-extent errors in the matcher. Guards at
+`0x0044aa9e`, `0x0044b807`, and `0x0044c572` bound the three byte lookup
+maps to 237 entries. The old scanner consumed 240 candidate bytes and 241
+native bytes, including padding and one byte of each following jump table.
+
+Recognizing the guarded domain changes references from **1559/0/9** to
+**1564/0/4** without changing source, object bytes, **5413/5421 instructions**,
+the **172-instruction prefix**, or **81.7242016%** alignment. The callback
+remains non-exact. Two pointer-anchor differences, the outline-coordinate
+pairing, and the analog switch's real destination displacement remain visible.
+The earlier statement that all six table discrepancies were compiler layout
+residuals was too broad: five were tooling overreads.
+
+The shared-table, invalid-guard, changed-case, and padding controls are matcher
+tests, not source experiments. Full classification and TU evidence are in
+`tools/match/REFERENCE-TU-AUDIT-2026-09-08.md`.

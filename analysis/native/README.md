@@ -57,7 +57,8 @@ The audit is intentionally strict:
   `tools/native/translation_units/<image>.json` cluster binds compiler-local
   members emitted by one source translation unit;
 - every cluster member must preserve its canonical byte ratio and reference
-  audit, and each physical cluster object appears once in the link list;
+  audit and any proven encoded-body identity, and each physical cluster object
+  appears once in the link list;
 - symbol closure uses exact decorated COFF names;
 - the reference PE export must have an unambiguous `.def` mapping;
 - no unresolved symbol is hidden behind a generated stub.
@@ -113,6 +114,13 @@ functions. Co-location keeps the registrar-to-finalizer relocation COFF-local
 instead of inventing an external callback provider. `function_count`
 therefore remains the owned function count while `object_count` is the number
 of physical linker inputs.
+
+Three callback lifecycle groups extend the same model to the weapons database,
+perks database, and high-score screen. Their canonical objects own two, two,
+and nine compiler-local destructor thunks respectively. Native registration
+pushes establish each binding; the thunks no longer need standalone selected
+objects. These groups prove minimum co-residence, not complete original TU
+boundaries or shared ownership between neighboring callbacks.
 
 Grim's modeled source islands follow the same gate. In particular, the
 contiguous JAZ constructor, zlib-status helper, allocation method, and payload
