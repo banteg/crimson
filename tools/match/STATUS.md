@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **793/810** functions matched exactly (**97.9%**), **235746/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **316174/341992** code bytes (**92.5%**).
+Fuzzy-weighted alignment is **316178/341992** code bytes (**92.5%**).
 
-Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **25818 fuzzy-gap bytes**.
+Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **25814 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -20,7 +20,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 650 | 6 | passed | yes | yes | no | 0 | 1269 | 97 |
+| crimsonland.exe | stale | 671 | 650 | 6 | passed | yes | yes | no | 0 | 1269 | 97 |
 | grim.dll | current | 139 | 132 | 4 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
@@ -28,11 +28,14 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1788 | 1788 | 1788 | 1788 | 1788 |
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 352 | 352 | 352 |
 
+Artifact freshness issues:
+- `crimsonland.exe`: **stale** — 1 recorded file inputs changed or missing: tools/match/scratches/quest_build_spiders_inc/scratch.cpp
+
 ## Residual frontier
 
-**17** non-exact scratch-backed functions hold **25818 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
+**17** non-exact scratch-backed functions hold **25814 fuzzy-gap bytes**. The top 5 hold **79.3%** of that gap; the top 10 hold **98.0%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25818** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 13 gap bytes**; **16 / 25801** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -53,7 +56,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 13 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 14 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 15 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 16 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | historical-only | 0/24 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 16 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | current-active | 1/37 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 17 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
@@ -124,12 +127,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 295009/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 654/671 |
+| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 295013/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 654/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **295009/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
+**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **295013/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -599,7 +602,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 242/242 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
 | match | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 975/975 | 0 | 291/291 | 100.00% | 291/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | match | quest_build_the_end_of_all | 0x00438e10 | 692 | 692/692 | 0 | 174/174 | 100.00% | 174/174 | 18/0/0 |  | quest-the-end-of-all-append-count |
-| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 330/346 | 16 | 105/105 | 95.24% | 54/105 | 8/0/0 |  | quest-spiders-inc-staged-publication |
+| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 333/346 | 13 | 105/105 | 96.19% | 57/105 | 7/0/0 |  | quest-spiders-inc-staged-publication |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
 | match | quest_start_selected | 0x0043a790 | 434 | 434/434 | 0 | 116/116 | 100.00% | 116/116 | 49/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |

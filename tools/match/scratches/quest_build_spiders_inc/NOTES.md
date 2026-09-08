@@ -227,3 +227,97 @@ None improves 95.238095%, 105/105 instructions, prefix 54, and references
 8/0/0. The strongest helper forms reach 88.151659% with 106 instructions and
 prefix 17. Borrowing the metadata does not retain the native count register
 while delaying its field store; canonical source is unchanged.
+
+## Count scheduling and lifetime controls (2026-09-08)
+
+A fresh canonical compile remains **95.238095%**, **105/105 instructions**,
+**54-instruction prefix**, **8/0/0 references**, and `body_byte_exact=false`.
+The weighted byte gap is **16.476190**; this is not a count of mismatching
+instructions. Native computes the paired count before forming the first record
+pointer and publishes it after that record's coordinates, template, and trigger.
+The candidate forms the pointer and publishes the count before reading the
+bottom-edge width. The second record and loop tail already match.
+
+Eight source families were tested under the unchanged canonical VC6 profile:
+
+| Plan | Compiling controls | Hypothesis |
+| --- | ---: | --- |
+| `opening-count-interactions-2026-09-08.json` | 96 | Cross late count publication with every opening setter combination and opening coordinate temporaries. |
+| `wave-state-ownership-corrected-2026-09-08.json` | 80 | Move trigger, step, and shared count into local state members with constructor or assignment initialization. |
+| `paired-metadata-owner-2026-09-08.json` | 72 | Transfer the exact neighboring Lizquidation builder's metadata object pattern, varying argument order, copy ownership, and declaration position. |
+| `paired-helper-lifetimes-2026-09-08.json` | 58 | Borrow scalar counts and inline a complete paired-spawn helper across member/free-function and value/reference boundaries. |
+| `coordinate-count-lifetimes-2026-09-08.json` | 144 | Cross integer/float coordinate temporaries with count calculation and publication boundaries. |
+| `builder-count-ownership-valid-2026-09-08.json` | 96 | Vary local builder member order, initialization, count type, and pointer constness. |
+| `scalar-metadata-lifetimes-2026-09-08.json` | 70 | Materialize opening metadata scalars and vary shared-count signedness and const-reference ownership. |
+| `staged-count-conversion-2026-09-08.json` | 72 | Interleave half-step calculation, width conversion, count addition, and record-pointer construction. |
+
+These complete matrices cover **688 distinct compiling source overlays**.
+None improves the canonical candidate. Forms with late count publication still
+lose the native allocation or instruction schedule; metadata, helper, opening,
+and staged-count families peak at 89.099526%. Other families include controls
+that reproduce the unchanged baseline. No source/configuration change is retained.
+
+Two initial generated plans are preserved with digest-bound error audits:
+`wave-state-ownership-2026-09-08.json` accidentally qualified a record's
+`trigger_time_ms` field as a loop-state member (56 C2039 failures), while
+`builder-count-ownership-2026-09-08.json` included 24 const-pointer aggregate
+initializers rejected by VC6 with C2552. The corrected/valid plans above were
+replayed completely with zero errors. The original failures are excluded from
+the compiling-control count and are not evidence against matchability.
+
+Canonical source validation and strict target experiment validation pass.
+The full checkpoint passes with zero regression, scope, claim, evaluation,
+metadata, experiment, strict-experiment, or native errors; `git diff --check`
+also passes. The checkpoint reports zero changed functions.
+These results bound the listed source families; they do not establish that the
+remaining schedule is unavoidable.
+
+## Indexed count computation (2026-09-08)
+
+Computing the shared wave count through the indexed builder entry before
+forming the record pointer improves the canonical source from **95.2381% to
+96.1905%** (333/346 weighted bytes, gap 13.18), prefix **54 to 57**, with
+unchanged **105/105 instructions**:
+
+```c
+int wave_count = builder.spawns[builder.count].count = step_count / 2 + 3;
+quest_entry_original_t *wave_spawn = &builder.spawns[builder.count];
+```
+
+The pointer-cached form emitted the index/pointer `lea` pair before the
+step-division load; the indexed form emits the division first, matching three
+more native instructions (`mov`/`cdq`/`sub` at loop top). All other loop lines
+are unchanged.
+
+The reference count moves 8/8 to 7/8 with zero mismatches. This is a
+positional-audit artifact of the remaining instruction schedule shift, not a
+lost load: both objects carry identical `.text` relocations (8x DIR32 to
+`_terrain_render_target`, same vaddrs `0x2/0x27/0x4a/0x5d/0x85/0xd3/0xe6/0x112`;
+`terrain_texture_width` is `terrain_state.width`, i.e. render target + 4 =
+`0x48f534`). No distinct reference is lost on either side.
+
+## Remaining schedule (2026-09-08)
+
+Raw-target comparison (`bn disasm 0x004390d0`) confines the entire residual to
+four moved loop-top instructions with identical operation counts: native
+hoists `mov edx,[width]` between `sub` and `sar` and `add edx,0x40` before
+`lea ebp,[eax+3]`, sinks `lea edi,[ecx+eax*8]`
+to after `fild`, and sinks the first record's `mov [edi+0x14],ebp` to after its
+trigger store. The second record, loop tail, and all 8 static loads already
+match.
+
+About 75 session probes plus the recorded 14-variant
+`vg-neighborhood-2026-09-08.json` sweep bound the neighborhood: plain-locals
+(`int wave_count = step_count / 2 + 3`, split or late) always reallocate the
+loop to trigger/`ebp`, pointer/`ebx`, count/`edi` (prefix 17), so the early
+indexed cached store is load-bearing for the native `ebx` trigger / `ebp`
+count / `edi` pointer allocation. Width/trigger/count scalar temporaries fold
+loads (7 refs) or add moves; late cached computations add two instructions;
+mid-record increments, metadata-before-coordinates, trigger-early orders,
+induction respellings (`while`, `do`-`while`, swapped/postinc/`+=` updates),
+second-record direct/indexed spellings, and `6.5pp`/`7.0` profiles all tie or
+regress. Six sweep variants are byte-neutral ties (trigger/half temps,
+`3 + half` order, pos subobject, single reused pointer, `+=` update,
+`const` half); `unsigned` division bounds signedness at 88.46%; shared x
+temporaries bound factoring at 57.56%. None of the tested straight-line spellings reproduces the remaining schedule
+under `msvc6.5 /O2 /GB`; this does not establish a source-level ceiling.
