@@ -2350,10 +2350,10 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["summary"]["code_label_entries"] == 6
     assert payload["summary"]["entry_count"] == 478
     assert payload["summary"]["typed_entries"] == 433
-    assert payload["summary"]["explicit_size_entries"] == 352
-    assert payload["summary"]["explicit_alignment_entries"] == 352
-    assert payload["summary"]["explicit_initializer_entries"] == 352
-    assert payload["summary"]["fully_specified_entries"] == 352
+    assert payload["summary"]["explicit_size_entries"] == 384
+    assert payload["summary"]["explicit_alignment_entries"] == 384
+    assert payload["summary"]["explicit_initializer_entries"] == 384
+    assert payload["summary"]["fully_specified_entries"] == 384
     assert payload["summary"]["definition_group_entries"] == 218
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2371,7 +2371,11 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     )
     observed = {entry["name"]: entry for entry in payload["entries"]}
     assert observed["grim_jpeg_natural_order"]["type"] == "const int[80]"
-    assert observed["zlib_inflate_mask"]["type"] == "const unsigned int[17]"
+    assert observed["zlib_inflate_mask"]["type"] == "unsigned int[17]"
+    assert observed["zlib_fixed_literal_tree"]["type"] == "inflate_huft[512]"
+    assert observed["zlib_static_literal_tree"]["type"] == "const ct_data[288]"
+    assert observed["grim_jpeg_natural_order"]["size"] == 320
+    assert observed["zlib_fixed_literal_tree"]["size"] == 4096
     assert observed["d3dx_bmp_formats"]["type"] == "const int[6]"
     assert observed["grim_present_parameters"]["type"] == "D3DPRESENT_PARAMETERS"
     assert observed["grim_present_width"]["type"] == "UINT"
@@ -2447,10 +2451,10 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_zlib_fixed_literal_bits"]["type"] == "unsigned int"
     assert observed["d3dx_zlib_fixed_distance_bits"]["type"] == "unsigned int"
     assert observed["d3dx_zlib_fixed_literal_tree"]["type"] == (
-        "unsigned char[4096]"
+        "inflate_huft[512]"
     )
     assert observed["d3dx_zlib_fixed_distance_tree"]["type"] == (
-        "unsigned char[256]"
+        "inflate_huft[32]"
     )
     assert observed["d3dx_zlib_inflate_mask"]["type"] == "unsigned int[17]"
     assert observed["png_pass_start"]["type"] == "const int[7]"

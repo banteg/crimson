@@ -16504,7 +16504,7 @@
       "comment": "Plain-C zlib 1.1.3 fixed literal and length Huffman tree.",
       "name": "zlib_static_literal_tree",
       "program": "grim.dll",
-      "type": "unsigned int[288]"
+      "type": "const ct_data[288]"
     },
     {
       "address": "0x10050ff0",
@@ -16514,7 +16514,7 @@
       "comment": "Plain-C zlib 1.1.3 fixed distance Huffman tree.",
       "name": "zlib_static_distance_tree",
       "program": "grim.dll",
-      "type": "unsigned int[30]"
+      "type": "const ct_data[30]"
     },
     {
       "address": "0x100554e8",
@@ -16542,14 +16542,14 @@
       "comment": "Archive-confirmed zlib 1.1.3 fixed literal and length Huffman table.",
       "name": "d3dx_zlib_fixed_literal_tree",
       "program": "grim.dll",
-      "type": "unsigned char[4096]"
+      "type": "inflate_huft[512]"
     },
     {
       "address": "0x10056f20",
       "comment": "Archive-confirmed zlib 1.1.3 fixed distance Huffman table.",
       "name": "d3dx_zlib_fixed_distance_tree",
       "program": "grim.dll",
-      "type": "unsigned char[256]"
+      "type": "inflate_huft[32]"
     },
     {
       "address": "0x10057020",
@@ -17383,21 +17383,21 @@
       "comment": "Plain-C zlib 1.1.3 prebuilt fixed literal tree",
       "name": "zlib_fixed_literal_tree",
       "program": "grim.dll",
-      "type": "unsigned char[4096]"
+      "type": "inflate_huft[512]"
     },
     {
       "address": "0x10059418",
       "comment": "Plain-C zlib 1.1.3 prebuilt fixed distance tree",
       "name": "zlib_fixed_distance_tree",
       "program": "grim.dll",
-      "type": "unsigned char[256]"
+      "type": "inflate_huft[32]"
     },
     {
       "address": "0x10059608",
       "comment": "Plain-C zlib 1.1.3 low-bit masks used by the inflate decoders",
       "name": "zlib_inflate_mask",
       "program": "grim.dll",
-      "type": "const unsigned int[17]"
+      "type": "unsigned int[17]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."

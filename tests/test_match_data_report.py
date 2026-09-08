@@ -100,6 +100,42 @@ def test_coff_common_requires_a_definition_of_the_verified_size() -> None:
             data_report._check_storage(matchlib.CoffObject((), (_symbol(0, size),)), "pool", 16)
 
 
+def test_internal_data_requires_explicit_static_storage_and_real_section() -> None:
+    section = matchlib.CoffSection(".rdata", b"\x01\0\0\0", 0x40000040, (), index=1, logical_size=4)
+    static = replace(_symbol(1, 0), storage_class=matchlib.IMAGE_SYM_CLASS_STATIC)
+    obj = matchlib.CoffObject((section,), (static,))
+    assert data_report._check_storage(obj, "pool", 4, expected=section.data, linkage="internal") == "coff-data"
+    with pytest.raises(ValueError, match="exactly one"):
+        data_report._check_storage(obj, "pool", 4, expected=section.data)
+    external = replace(obj, symbols=(_symbol(1, 0),))
+    with pytest.raises(ValueError, match="exactly one"):
+        data_report._check_storage(external, "pool", 4, expected=section.data, linkage="internal")
+    with pytest.raises(ValueError, match="no storage"):
+        data_report._check_storage(replace(obj, symbols=(replace(static, section_number=0, value=4),)),
+                                   "pool", 4, linkage="internal")
+    with pytest.raises(ValueError, match="exactly one"):
+        data_report._check_storage(replace(obj, symbols=(static, static)), "pool", 4, linkage="internal")
+
+
+@pytest.mark.parametrize("internal,source", [(["missing"], "pool.c"), (["pool", "pool"], "pool.c"),
+                                           (["pool"], "pool.cpp"), ([], "pool.h")])
+def test_plan_rejects_ambiguous_internal_symbols_and_languages(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Any, internal: list[str], source: str,
+) -> None:
+    import json
+
+    manifest = tmp_path / "candidates.json"
+    manifest.write_text(json.dumps({"schema": 1, "sources": [{
+        "image": "grim.dll", "source": "tools/match/data/" + source,
+        "symbols": ["pool"], "internal_symbols": internal,
+    }]}))
+    monkeypatch.setattr(data_report, "MANIFEST", manifest)
+    monkeypatch.setattr(matchlib, "TRACKED_IMAGE_NAMES", ())
+    monkeypatch.setattr(data_report, "_reference_relocations", dict)
+    with pytest.raises(ValueError, match="internal data symbols|unsupported data source language"):
+        data_report._load_plan()
+
+
 def test_coff_storage_rejects_nonzero_bytes_relocations_and_code() -> None:
     section = matchlib.CoffSection(".data", bytes(16), 0xC0000040, (), index=1, logical_size=16)
     obj = matchlib.CoffObject((section,), (_symbol(1, 8),))
@@ -119,7 +155,7 @@ def test_coff_storage_rejects_nonzero_bytes_relocations_and_code() -> None:
 
 def test_saved_candidate_cannot_extend_beyond_the_data_denominator(monkeypatch: pytest.MonkeyPatch) -> None:
     row = {**_candidate(110, 20), "initializer_hex": "00" * 20,
-           "initializer_sha256": "a" * 64, "relocations": []}
+           "initializer_sha256": "a" * 64, "relocations": [], "linkage": "external"}
     sections = [{"image": "crimsonland.exe", "name": ".data", "address": 100, "size": 20}]
     monkeypatch.setattr(data_report, "section_inventory", lambda: sections)
     monkeypatch.setattr(data_report, "_load_plan", lambda: ("msvc6.5", [{"rows": [row]}]))

@@ -29207,6 +29207,454 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 268757184,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/ijg-libjpeg-6a/jutils.c: jpeg_natural_order[DCTSIZE2+16=80]; tools/match/data/d3dx_jpeg_utils.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_natural_order",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 320,
+      "type": "const int[80]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268758928,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/crc32.c: crc_table[256]; tools/match/data/d3dx_zlib_crc.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_crc_table",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 1024,
+      "type": "const unsigned long[256]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268760800,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/infblock.c: border 19 initialized uInt elements; tools/match/data/d3dx_zlib_infblock.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_inflate_border",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 76,
+      "type": "const unsigned int[19]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268761192,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cplens[31]; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cplens",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 124,
+      "type": "const unsigned int[31]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268761320,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cplext[31]; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cplext",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 124,
+      "type": "const unsigned int[31]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268761448,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cpdist[30]; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cpdist",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const unsigned int[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268761568,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cpdext[30]; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cpdext",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const unsigned int[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268764496,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/ijg-libjpeg-6a/jutils.c: jpeg_natural_order[DCTSIZE2+16=80]; tools/match/data/grim_jpeg_utils.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "grim_jpeg_natural_order",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 320,
+      "type": "const int[80]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268765732,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: extra_lbits[LENGTH_CODES=29]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_extra_literal_bits",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 116,
+      "type": "const int[29]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268765848,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: extra_dbits[D_CODES=30]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_extra_distance_bits",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const int[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268766044,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: bl_order[BL_CODES=19]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_bit_length_order",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 19,
+      "type": "const unsigned char[19]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268766064,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: trees.h static_ltree[L_CODES+2=288] ct_data records; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_static_literal_tree",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 1152,
+      "type": "const ct_data[288]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268767216,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: trees.h static_dtree[D_CODES=30] ct_data records; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_static_distance_tree",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const ct_data[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268767336,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: trees.h _dist_code[DIST_CODE_LEN=512]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_distance_code",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 512,
+      "type": "const unsigned char[512]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268767848,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: trees.h _length_code[MAX_MATCH-MIN_MATCH+1=256]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_length_code",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 256,
+      "type": "const unsigned char[256]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768104,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: trees.h base_length[LENGTH_CODES=29]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_base_length",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 116,
+      "type": "const int[29]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768220,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/trees.c: trees.h base_dist[D_CODES=30]; tools/match/data/zlib_trees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_base_distance",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const int[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768340,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/infblock.c: border 19 initialized uInt elements; tools/match/data/zlib_infblock.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_inflate_border",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 76,
+      "type": "const unsigned int[19]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768464,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cplens[31]; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_cplens",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 124,
+      "type": "const unsigned int[31]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768588,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cplext[31]; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_cplext",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 124,
+      "type": "const unsigned int[31]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768712,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cpdist[30]; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_cpdist",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const unsigned int[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268768832,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: cpdext[30]; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_cpdext",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 120,
+      "type": "const unsigned int[30]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268787480,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_bl scalar; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "unsigned int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268787484,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_bd scalar; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_distance_bits",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "unsigned int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268787488,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_tl 512 inflate_huft records; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_literal_tree",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 4096,
+      "type": "inflate_huft[512]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268791584,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_td 32 inflate_huft records; tools/match/data/d3dx_zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_distance_tree",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 256,
+      "type": "inflate_huft[32]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268791840,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/infutil.c: inflate_mask[17]; tools/match/data/d3dx_zlib_infutil.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "d3dx_zlib_inflate_mask",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 68,
+      "type": "unsigned int[17]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268796944,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_bl scalar; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_fixed_literal_bits",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "unsigned int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268796948,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_bd scalar; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_fixed_distance_bits",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 4,
+      "type": "unsigned int",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268796952,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_tl 512 inflate_huft records; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_fixed_literal_tree",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 4096,
+      "type": "inflate_huft[512]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268801048,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/inftrees.c: inffixed.h fixed_td 32 inflate_huft records; tools/match/data/zlib_inftrees.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_fixed_distance_tree",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 256,
+      "type": "inflate_huft[32]",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268801544,
+      "blocker": "matched",
+      "extent_evidence": "third_party/sources/zlib-1.1.3/infutil.c: inflate_mask[17]; tools/match/data/zlib_infutil.c: VC6 sizeof assertion",
+      "image": "grim.dll",
+      "name": "zlib_inflate_mask",
+      "owners": [
+        "libraries"
+      ],
+      "reason": null,
+      "size": 68,
+      "type": "unsigned int[17]",
+      "unmatched_bytes": 0
+    },
+    {
       "address": 268801896,
       "blocker": "matched",
       "extent_evidence": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
@@ -29955,12 +30403,12 @@
       "total_bytes": 347269
     },
     "libraries": {
-      "matched_bytes": 0,
-      "total_bytes": 27299
+      "matched_bytes": 14179,
+      "total_bytes": 41478
     },
     "unknown": {
       "matched_bytes": 0,
-      "total_bytes": 143170
+      "total_bytes": 128991
     }
   },
   "ownership_complete": false,
@@ -61415,7 +61863,55 @@
       "objects": [],
       "owner": "unknown",
       "section": ".rdata",
-      "size": 3088,
+      "size": 304,
+      "source": null
+    },
+    {
+      "address": 268757184,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_jpeg_natural_order",
+      "objects": [
+        "d3dx_jpeg_natural_order"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 320,
+      "source": "tools/match/data/d3dx_jpeg_utils.c"
+    },
+    {
+      "address": 268757504,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 1424,
+      "source": null
+    },
+    {
+      "address": 268758928,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_crc_table",
+      "objects": [
+        "d3dx_zlib_crc_table"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 1024,
+      "source": "tools/match/data/d3dx_zlib_crc.c"
+    },
+    {
+      "address": 268759952,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 16,
       "source": null
     },
     {
@@ -61439,7 +61935,116 @@
       "objects": [],
       "owner": "unknown",
       "section": ".rdata",
-      "size": 2764,
+      "size": 824,
+      "source": null
+    },
+    {
+      "address": 268760800,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_inflate_border",
+      "objects": [
+        "d3dx_zlib_inflate_border"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 76,
+      "source": "tools/match/data/d3dx_zlib_infblock.c"
+    },
+    {
+      "address": 268760876,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 316,
+      "source": null
+    },
+    {
+      "address": 268761192,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_cplens",
+      "objects": [
+        "d3dx_zlib_cplens"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 124,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268761316,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 4,
+      "source": null
+    },
+    {
+      "address": 268761320,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_cplext",
+      "objects": [
+        "d3dx_zlib_cplext"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 124,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268761444,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 4,
+      "source": null
+    },
+    {
+      "address": 268761448,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_cpdist",
+      "objects": [
+        "d3dx_zlib_cpdist"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268761568,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_cpdext",
+      "objects": [
+        "d3dx_zlib_cpdext"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268761688,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 1052,
       "source": null
     },
     {
@@ -61561,7 +62166,257 @@
       "objects": [],
       "owner": "unknown",
       "section": ".rdata",
-      "size": 8706,
+      "size": 500,
+      "source": null
+    },
+    {
+      "address": 268764496,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "grim_jpeg_natural_order",
+      "objects": [
+        "grim_jpeg_natural_order"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 320,
+      "source": "tools/match/data/grim_jpeg_utils.c"
+    },
+    {
+      "address": 268764816,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 916,
+      "source": null
+    },
+    {
+      "address": 268765732,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_extra_literal_bits",
+      "objects": [
+        "zlib_extra_literal_bits"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 116,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268765848,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_extra_distance_bits",
+      "objects": [
+        "zlib_extra_distance_bits"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268765968,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 76,
+      "source": null
+    },
+    {
+      "address": 268766044,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_bit_length_order",
+      "objects": [
+        "zlib_bit_length_order"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 19,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268766063,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 1,
+      "source": null
+    },
+    {
+      "address": 268766064,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_static_literal_tree",
+      "objects": [
+        "zlib_static_literal_tree"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 1152,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268767216,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_static_distance_tree",
+      "objects": [
+        "zlib_static_distance_tree"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268767336,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_distance_code",
+      "objects": [
+        "zlib_distance_code"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 512,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268767848,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_length_code",
+      "objects": [
+        "zlib_length_code"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 256,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268768104,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_base_length",
+      "objects": [
+        "zlib_base_length"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 116,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268768220,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_base_distance",
+      "objects": [
+        "zlib_base_distance"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/zlib_trees.c"
+    },
+    {
+      "address": 268768340,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_inflate_border",
+      "objects": [
+        "zlib_inflate_border"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 76,
+      "source": "tools/match/data/zlib_infblock.c"
+    },
+    {
+      "address": 268768416,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 48,
+      "source": null
+    },
+    {
+      "address": 268768464,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_cplens",
+      "objects": [
+        "zlib_cplens"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 124,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268768588,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_cplext",
+      "objects": [
+        "zlib_cplext"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 124,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268768712,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_cpdist",
+      "objects": [
+        "zlib_cpdist"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268768832,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_cpdext",
+      "objects": [
+        "zlib_cpdext"
+      ],
+      "owner": "libraries",
+      "section": ".rdata",
+      "size": 120,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268768952,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".rdata",
+      "size": 3750,
       "source": null
     },
     {
@@ -62183,7 +63038,170 @@
       "objects": [],
       "owner": "unknown",
       "section": ".data",
-      "size": 14792,
+      "size": 376,
+      "source": null
+    },
+    {
+      "address": 268787480,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "objects": [
+        "d3dx_zlib_fixed_literal_bits"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 4,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268787484,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_fixed_distance_bits",
+      "objects": [
+        "d3dx_zlib_fixed_distance_bits"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 4,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268787488,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_fixed_literal_tree",
+      "objects": [
+        "d3dx_zlib_fixed_literal_tree"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 4096,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268791584,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_fixed_distance_tree",
+      "objects": [
+        "d3dx_zlib_fixed_distance_tree"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 256,
+      "source": "tools/match/data/d3dx_zlib_inftrees.c"
+    },
+    {
+      "address": 268791840,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "d3dx_zlib_inflate_mask",
+      "objects": [
+        "d3dx_zlib_inflate_mask"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 68,
+      "source": "tools/match/data/d3dx_zlib_infutil.c"
+    },
+    {
+      "address": 268791908,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".data",
+      "size": 5036,
+      "source": null
+    },
+    {
+      "address": 268796944,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_fixed_literal_bits",
+      "objects": [
+        "zlib_fixed_literal_bits"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 4,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268796948,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_fixed_distance_bits",
+      "objects": [
+        "zlib_fixed_distance_bits"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 4,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268796952,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_fixed_literal_tree",
+      "objects": [
+        "zlib_fixed_literal_tree"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 4096,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268801048,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_fixed_distance_tree",
+      "objects": [
+        "zlib_fixed_distance_tree"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 256,
+      "source": "tools/match/data/zlib_inftrees.c"
+    },
+    {
+      "address": 268801304,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".data",
+      "size": 240,
+      "source": null
+    },
+    {
+      "address": 268801544,
+      "image": "grim.dll",
+      "matched": true,
+      "name": "zlib_inflate_mask",
+      "objects": [
+        "zlib_inflate_mask"
+      ],
+      "owner": "libraries",
+      "section": ".data",
+      "size": 68,
+      "source": "tools/match/data/zlib_infutil.c"
+    },
+    {
+      "address": 268801612,
+      "image": "grim.dll",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [],
+      "owner": "unknown",
+      "section": ".data",
+      "size": 284,
       "source": null
     },
     {
@@ -65605,10 +66623,10 @@
     }
   ],
   "totals": {
-    "matched_bytes": 312613,
+    "matched_bytes": 326792,
     "total_bytes": 517738,
-    "unmatched_bytes": 205125,
-    "unnamed_bytes": 114229
+    "unmatched_bytes": 190946,
+    "unnamed_bytes": 100050
   },
   "unbounded_objects": [
     {
@@ -65624,13 +66642,6 @@
       "image": "grim.dll",
       "name": "d3dx_jpeg_std_message_table",
       "type": "const char *[120]"
-    },
-    {
-      "address": 268757184,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_jpeg_natural_order",
-      "type": "const int[80]"
     },
     {
       "address": 268757504,
@@ -65680,13 +66691,6 @@
       "image": "grim.dll",
       "name": "png_IDAT",
       "type": "const png_byte[5]"
-    },
-    {
-      "address": 268758928,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_crc_table",
-      "type": "const unsigned long[256]"
     },
     {
       "address": 268759976,
@@ -65745,41 +66749,6 @@
       "type": "const int[3]"
     },
     {
-      "address": 268760800,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_inflate_border",
-      "type": "const unsigned int[19]"
-    },
-    {
-      "address": 268761192,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_cplens",
-      "type": "const unsigned int[31]"
-    },
-    {
-      "address": 268761320,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_cplext",
-      "type": "const unsigned int[31]"
-    },
-    {
-      "address": 268761448,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_cpdist",
-      "type": "const unsigned int[30]"
-    },
-    {
-      "address": 268761568,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_cpdext",
-      "type": "const unsigned int[30]"
-    },
-    {
       "address": 268763996,
       "blocker": "missing-extent",
       "image": "grim.dll",
@@ -65799,13 +66768,6 @@
       "image": "grim.dll",
       "name": "grim_jpeg_extra_pool_slop",
       "type": "const size_t[2]"
-    },
-    {
-      "address": 268764496,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "grim_jpeg_natural_order",
-      "type": "const int[80]"
     },
     {
       "address": 268764816,
@@ -65890,104 +66852,6 @@
       "image": "grim.dll",
       "name": "grim_jpeg_idct_float_factor_1_414213562",
       "type": "const float"
-    },
-    {
-      "address": 268765732,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_extra_literal_bits",
-      "type": "const int[29]"
-    },
-    {
-      "address": 268765848,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_extra_distance_bits",
-      "type": "const int[30]"
-    },
-    {
-      "address": 268766044,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_bit_length_order",
-      "type": "const unsigned char[19]"
-    },
-    {
-      "address": 268766064,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_static_literal_tree",
-      "type": "unsigned int[288]"
-    },
-    {
-      "address": 268767216,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_static_distance_tree",
-      "type": "unsigned int[30]"
-    },
-    {
-      "address": 268767336,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_distance_code",
-      "type": "const unsigned char[512]"
-    },
-    {
-      "address": 268767848,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_length_code",
-      "type": "const unsigned char[256]"
-    },
-    {
-      "address": 268768104,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_base_length",
-      "type": "const int[29]"
-    },
-    {
-      "address": 268768220,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_base_distance",
-      "type": "const int[30]"
-    },
-    {
-      "address": 268768340,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_inflate_border",
-      "type": "const unsigned int[19]"
-    },
-    {
-      "address": 268768464,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_cplens",
-      "type": "const unsigned int[31]"
-    },
-    {
-      "address": 268768588,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_cplext",
-      "type": "const unsigned int[31]"
-    },
-    {
-      "address": 268768712,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_cpdist",
-      "type": "const unsigned int[30]"
-    },
-    {
-      "address": 268768832,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_cpdext",
-      "type": "const unsigned int[30]"
     },
     {
       "address": 268768952,
@@ -66387,76 +67251,6 @@
       "image": "grim.dll",
       "name": "d3dx_x87_math_sin_max",
       "type": "uint32_t"
-    },
-    {
-      "address": 268787480,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_fixed_literal_bits",
-      "type": "unsigned int"
-    },
-    {
-      "address": 268787484,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_fixed_distance_bits",
-      "type": "unsigned int"
-    },
-    {
-      "address": 268787488,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_fixed_literal_tree",
-      "type": "unsigned char[4096]"
-    },
-    {
-      "address": 268791584,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_fixed_distance_tree",
-      "type": "unsigned char[256]"
-    },
-    {
-      "address": 268791840,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "d3dx_zlib_inflate_mask",
-      "type": "unsigned int[17]"
-    },
-    {
-      "address": 268796944,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_fixed_literal_bits",
-      "type": "unsigned int"
-    },
-    {
-      "address": 268796948,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_fixed_distance_bits",
-      "type": "unsigned int"
-    },
-    {
-      "address": 268796952,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_fixed_literal_tree",
-      "type": "unsigned char[4096]"
-    },
-    {
-      "address": 268801048,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_fixed_distance_tree",
-      "type": "unsigned char[256]"
-    },
-    {
-      "address": 268801544,
-      "blocker": "missing-extent",
-      "image": "grim.dll",
-      "name": "zlib_inflate_mask",
-      "type": "const unsigned int[17]"
     },
     {
       "address": 268819292,

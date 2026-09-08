@@ -3583,6 +3583,294 @@
         "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",
         "reason": "Recovered engine initialization and typed consumers establish this runtime storage."
       }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_jpeg_natural_order",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "ijg-libjpeg-6a/jutils.c: original jpeg_natural_order definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cpdext",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cpdext definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cpdist",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cpdist definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cplens",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cplens definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_cplext",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cplext definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_crc_table",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/crc32.c: original crc_table definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_distance_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_bd definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_distance_tree",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_td definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_bl definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_fixed_literal_tree",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_tl definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_inflate_border",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/infblock.c: original border definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "d3dx_zlib_inflate_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/infutil.c: original inflate_mask definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "grim_jpeg_natural_order",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "ijg-libjpeg-6a/jutils.c: original jpeg_natural_order definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_base_distance",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original base_dist definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_base_length",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original base_length definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_bit_length_order",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original bl_order definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_cpdext",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cpdext definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_cpdist",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cpdist definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_cplens",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cplens definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_cplext",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original cplext definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_distance_code",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original _dist_code definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_extra_distance_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original extra_dbits definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_extra_literal_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original extra_lbits definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_fixed_distance_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_bd definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_fixed_distance_tree",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_td definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_fixed_literal_bits",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_bl definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_fixed_literal_tree",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/inftrees.c: original fixed_tl definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_inflate_border",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/infblock.c: original border definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_inflate_mask",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/infutil.c: original inflate_mask definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_length_code",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original _length_code definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_static_distance_tree",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original static_dtree definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
+    },
+    {
+      "image": "grim.dll",
+      "name": "zlib_static_literal_tree",
+      "owner": "libraries",
+      "evidence": {
+        "path": "tools/match/CODEC-DATA-EVIDENCE-2026-09-08.md",
+        "reason": "zlib-1.1.3/trees.c: original static_ltree definition establishes the whole object; compiled bytes and PE relocation absence verified independently at this address."
+      }
     }
   ]
 }

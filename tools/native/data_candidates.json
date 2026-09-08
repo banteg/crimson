@@ -312,6 +312,136 @@
         "grim_subrect_table_1",
         "grim_subrect_table_2"
       ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/zlib_inftrees.c",
+      "symbols": [
+        "zlib_cplens",
+        "zlib_cplext",
+        "zlib_cpdist",
+        "zlib_cpdext",
+        "zlib_fixed_literal_bits",
+        "zlib_fixed_distance_bits",
+        "zlib_fixed_literal_tree",
+        "zlib_fixed_distance_tree"
+      ],
+      "internal_symbols": [
+        "zlib_cplens",
+        "zlib_cplext",
+        "zlib_cpdist",
+        "zlib_cpdext",
+        "zlib_fixed_literal_bits",
+        "zlib_fixed_distance_bits",
+        "zlib_fixed_literal_tree",
+        "zlib_fixed_distance_tree"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/zlib_infblock.c",
+      "symbols": [
+        "zlib_inflate_border"
+      ],
+      "internal_symbols": [
+        "zlib_inflate_border"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/zlib_infutil.c",
+      "symbols": [
+        "zlib_inflate_mask"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/d3dx_zlib_inftrees.c",
+      "symbols": [
+        "d3dx_zlib_cplens",
+        "d3dx_zlib_cplext",
+        "d3dx_zlib_cpdist",
+        "d3dx_zlib_cpdext",
+        "d3dx_zlib_fixed_literal_bits",
+        "d3dx_zlib_fixed_distance_bits",
+        "d3dx_zlib_fixed_literal_tree",
+        "d3dx_zlib_fixed_distance_tree"
+      ],
+      "internal_symbols": [
+        "d3dx_zlib_cplens",
+        "d3dx_zlib_cplext",
+        "d3dx_zlib_cpdist",
+        "d3dx_zlib_cpdext",
+        "d3dx_zlib_fixed_literal_bits",
+        "d3dx_zlib_fixed_distance_bits",
+        "d3dx_zlib_fixed_literal_tree",
+        "d3dx_zlib_fixed_distance_tree"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/d3dx_zlib_infblock.c",
+      "symbols": [
+        "d3dx_zlib_inflate_border"
+      ],
+      "internal_symbols": [
+        "d3dx_zlib_inflate_border"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/d3dx_zlib_infutil.c",
+      "symbols": [
+        "d3dx_zlib_inflate_mask"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/zlib_trees.c",
+      "symbols": [
+        "zlib_extra_literal_bits",
+        "zlib_extra_distance_bits",
+        "zlib_bit_length_order",
+        "zlib_static_literal_tree",
+        "zlib_static_distance_tree",
+        "zlib_distance_code",
+        "zlib_length_code",
+        "zlib_base_length",
+        "zlib_base_distance"
+      ],
+      "internal_symbols": [
+        "zlib_extra_literal_bits",
+        "zlib_extra_distance_bits",
+        "zlib_bit_length_order",
+        "zlib_static_literal_tree",
+        "zlib_static_distance_tree",
+        "zlib_base_length",
+        "zlib_base_distance"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/d3dx_zlib_crc.c",
+      "symbols": [
+        "d3dx_zlib_crc_table"
+      ],
+      "internal_symbols": [
+        "d3dx_zlib_crc_table"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/d3dx_jpeg_utils.c",
+      "symbols": [
+        "d3dx_jpeg_natural_order"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_jpeg_utils.c",
+      "symbols": [
+        "grim_jpeg_natural_order"
+      ]
     }
   ],
   "excluded": [

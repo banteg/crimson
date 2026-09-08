@@ -1,7 +1,7 @@
 """Source-built data evidence for the public matching report.
 
 Native definitions locate and describe reference objects; they do not themselves
-earn matching credit. C++ definitions are compiled by VC6 with sizeof assertions;
+earn matching credit. C and C++ definitions are compiled by VC6 with sizeof assertions;
 their COFF storage and symbolic pointer relocations are checked against the reference.
 """
 
@@ -67,6 +67,13 @@ def _load_plan() -> tuple[str, list[dict[str, Any]]]:
         path = Path(source["source"])
         if path.is_absolute() or ".." in path.parts or not path.is_relative_to("tools/match/data"):
             raise ValueError(f"invalid data source path: {path}")
+        if path.suffix not in {".c", ".cpp"}:
+            raise ValueError(f"unsupported data source language: {path}")
+        internal = source.get("internal_symbols", [])
+        if len(set(internal)) != len(internal) or not set(internal).issubset(source["symbols"]):
+            raise ValueError(f"invalid internal data symbols: {path}")
+        if internal and path.suffix != ".c":
+            raise ValueError(f"internal data symbols require C linkage: {path}")
         rows = []
         for name in source["symbols"]:
             if re.fullmatch(r"[A-Za-z_]\w*", name) is None or (image, name) in seen:
@@ -77,6 +84,7 @@ def _load_plan() -> tuple[str, list[dict[str, Any]]]:
                 raise ValueError(f"data candidate has no independently recorded extent: {name}")
             rows.append({
                 "image": image, "name": name, "source": path.as_posix(),
+                "linkage": "internal" if name in internal else "external",
                 "address": definition["address"], "size": definition["size"],
                 **_initializer_plan(definition, reference_relocations[image]),
             })
@@ -134,18 +142,22 @@ def _initializer_plan(definition: dict[str, Any], reference_relocations: list[tu
 def _check_storage(
     obj: matchlib.CoffObject, name: str, size: int, *,
     expected: bytes | None = None, relocations: list[dict[str, Any]] | None = None,
+    linkage: str = "external",
 ) -> str:
     expected = bytes(size) if expected is None else expected
     relocations = [] if relocations is None else relocations
     if size <= 0 or len(expected) != size:
         raise ValueError(f"invalid data object size: {name}")
+    if linkage not in {"external", "internal"}:
+        raise ValueError(f"invalid data linkage: {name}")
+    storage_class = matchlib.IMAGE_SYM_CLASS_STATIC if linkage == "internal" else matchlib.IMAGE_SYM_CLASS_EXTERNAL
     symbols = [symbol for symbol in obj.symbols
-               if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
-               and (symbol.name == f"_{name}" or symbol.name.startswith(f"?{name}@@3"))]
+               if symbol.storage_class == storage_class
+               and (symbol.name == f"_{name}" or (linkage == "external" and symbol.name.startswith(f"?{name}@@3")))]
     if len(symbols) != 1:
         raise ValueError(f"data object does not define exactly one {name}")
     symbol = symbols[0]
-    if symbol.section_number == 0 and symbol.value == size:
+    if linkage == "external" and symbol.section_number == 0 and symbol.value == size:
         if expected != bytes(size) or relocations:
             raise ValueError(f"common storage differs from reference initializer: {name}")
         return "coff-common"
@@ -206,9 +218,10 @@ def refresh_evidence(configs: list[matchlib.ScratchConfig]) -> dict[str, Any]:
         )
         with tempfile.TemporaryDirectory(prefix="crimson-data-") as temporary:
             directory = Path(temporary)
-            (directory / "verify.cpp").write_text(f'#include "{include}"\n{assertions}\n')
+            harness = "verify" + source_path.suffix
+            (directory / harness).write_text(f'#include "{include}"\n{assertions}\n')
             result = subprocess.run(
-                [str(matchlib.DEFAULT_MATCH_ROOT / "cl.sh"), "/c", "/O2", "/Zl", "/Fodata.obj", "verify.cpp"],
+                [str(matchlib.DEFAULT_MATCH_ROOT / "cl.sh"), "/c", "/O2", "/Zl", "/Fodata.obj", harness],
                 cwd=directory, env={**os.environ, "MSVC_VER": compiler},
                 capture_output=True, text=True, check=False,
             )
@@ -219,7 +232,8 @@ def refresh_evidence(configs: list[matchlib.ScratchConfig]) -> dict[str, Any]:
         digest = native_link._normalized_coff_sha256(object_bytes)
         for row in source["rows"]:
             storage = _check_storage(obj, row["name"], row["size"],
-                                     expected=bytes.fromhex(row["initializer_hex"]), relocations=row["relocations"])
+                                     expected=bytes.fromhex(row["initializer_hex"]), relocations=row["relocations"],
+                                     linkage=row["linkage"])
             candidates.append({**{key: value for key, value in row.items() if key != "initializer_hex"},
                                "storage": storage, "object_sha256": digest})
     from . import match_data_inventory
@@ -237,7 +251,7 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
     expected = [{key: value for key, value in row.items() if key != "initializer_hex"}
                 for source in sources for row in source["rows"]]
     actual = [
-        {key: row[key] for key in ("image", "name", "source", "address", "size", "initializer_sha256", "relocations")}
+        {key: row[key] for key in ("image", "name", "source", "linkage", "address", "size", "initializer_sha256", "relocations")}
         for row in evidence["candidates"]
     ]
     if actual != expected:
