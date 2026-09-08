@@ -1690,7 +1690,7 @@
           "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "b08e2a3d185d6be8834b382b33c27f2b8b6648b7dfe9e0a1681c390a5d3ad4c0"
+          "sha256": "cc8f079331e4d0f271c086ec917ae0718614adab303d2e18e8243be5ce39a16e"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",
