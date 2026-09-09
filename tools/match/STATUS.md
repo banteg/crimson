@@ -34,9 +34,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25730** are historical-only; **0 / 0** have no recorded experiments.
 
-Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
+Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
-| rank | image | function | fuzzy gap | recovery | residual | evidence | current/all | streak | flags |
+| rank | image | function | fuzzy gap | declared recovery | declared residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5845 | semantic-complete | compiler,references | historical-only | 0/70 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 2 | crimsonland.exe | projectile_render | 5122 | semantic-complete | compiler,references | historical-only | 0/69 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |

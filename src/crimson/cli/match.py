@@ -1787,7 +1787,7 @@ def cmd_match_shard(
     mode: Literal["auto", "recovery", "residual-audit"] = typer.Option(
         "auto",
         "--mode",
-        help="queue defaults: auto fallback, broad recovery, or semantic-complete residual audit",
+        help="queue defaults: all unfinished targets, declared incomplete recovery, or declared semantic-complete audit",
     ),
     scope: Literal["port", "all"] = typer.Option(
         matchlib.DEFAULT_MATCH_SCOPE,
@@ -1809,13 +1809,16 @@ def cmd_match_shard(
 ) -> None:
     """Create deterministic, disjoint target claims for a worker batch."""
     requested_mode = mode
-    effective_mode = "recovery" if mode == "auto" else mode
-    default_state = "wip,audit" if effective_mode == "residual-audit" else "missing,wip"
-    default_recovery = (
-        "semantic-complete"
-        if effective_mode == "residual-audit"
-        else "incomplete,unspecified"
-    )
+    effective_mode = mode
+    if mode == "auto":
+        default_state = "missing,wip,audit"
+        default_recovery = "incomplete,semantic-complete,unspecified"
+    elif mode == "residual-audit":
+        default_state = "wip,audit"
+        default_recovery = "semantic-complete"
+    else:
+        default_state = "missing,wip"
+        default_recovery = "incomplete,unspecified"
     states = _parse_csv(state or default_state) or set()
     unknown_states = states - {"match", "audit", "wip", "error", "missing"}
     if unknown_states:
@@ -1864,13 +1867,6 @@ def cmd_match_shard(
         ]
 
     rows = selected_rows()
-    auto_fallback = False
-    if not rows and requested_mode == "auto" and state is None and recovery is None:
-        effective_mode = "residual-audit"
-        states = {"audit", "wip"}
-        recoveries = {"semantic-complete"}
-        rows = selected_rows()
-        auto_fallback = bool(rows)
     rows = matchlib.sort_triage_rows(rows, sort_by="fuzzy-gap")
     if limit is not None:
         rows = rows[:limit]
@@ -1916,7 +1912,6 @@ def cmd_match_shard(
             "image": image,
             "mode": effective_mode,
             "requested_mode": requested_mode,
-            "auto_fallback": auto_fallback,
             "states": sorted(states),
             "recoveries": sorted(recoveries),
             "min_bytes": min_bytes,

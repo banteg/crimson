@@ -9699,12 +9699,14 @@ def render_residual_frontier_markdown(
             "Evidence labels are baseline-epoch aware. `current-stalled` means at least three "
             "complete, error-free, non-improving mutation sweeps against the current inputs. "
             "`historical-only` is not stalled and must not suppress a fresh source analysis. "
-            "Recovery and residual labels describe the present source assessment; they do not "
-            "prove that compiler search is exhausted."
+            "Recovery and residual labels are declarations from scratch.conf, not verified "
+            "semantic equivalence or proven compiler causes. `semantic-complete` does not "
+            "exclude a target from the default work queue. Recheck native behavior before "
+            "attributing a mismatch to the compiler; failed sweeps do not prove exhaustion."
         ),
         "",
         (
-            "| rank | image | function | fuzzy gap | recovery | residual | evidence | "
+            "| rank | image | function | fuzzy gap | declared recovery | declared residual | evidence | "
             "current/all | streak | flags |"
         ),
         "|---:|---|---|---:|---|---|---|---:|---:|---|",

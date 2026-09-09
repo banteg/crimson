@@ -4861,6 +4861,8 @@ def test_residual_frontier_distinguishes_current_and_historical_evidence() -> No
     assert "**1 / 250** are historical-only" in markdown
     assert "**1 / 50** have no recorded experiments" in markdown
     assert "| 2 | crimsonland.exe | historical | 250 |" in markdown
+    assert "| declared recovery | declared residual |" in markdown
+    assert "not verified semantic equivalence or proven compiler causes" in markdown
 
     collected = collect_residual_frontier_rows([current, historical, unexplored])
     assert [row.status.config.function for row in collected] == [
@@ -5480,9 +5482,11 @@ def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
     assert rendered[-4:-1] == ("2/4/10", "3", "stalled")
 
 
-def test_match_shard_excludes_semantic_complete_by_default(
+@pytest.mark.parametrize("semantic_state", ["wip", "audit"])
+def test_match_shard_includes_semantic_complete_alongside_unfinished_recovery(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    semantic_state: str,
 ) -> None:
     def make_status(function: str, recovery: str | None) -> ScratchStatus:
         return ScratchStatus(
@@ -5509,6 +5513,9 @@ def test_match_shard_excludes_semantic_complete_by_default(
 
     unspecified = make_status("unspecified_target", None)
     semantic_complete = make_status("semantic_complete_target", "semantic-complete")
+    if semantic_state == "audit":
+        semantic_complete = replace(semantic_complete, ratio=1.0, masked_mismatches=1)
+    assert semantic_complete.state == semantic_state
     rows = [
         TriageRow(
             image="crimsonland.exe",
@@ -5538,7 +5545,7 @@ def test_match_shard_excludes_semantic_complete_by_default(
             function=semantic_complete.config.function,
             address=0x401200,
             target_size=semantic_complete.target_size,
-            state="wip",
+            state=semantic_state,
             exact_bytes=0,
             fuzzy_weighted_bytes=semantic_complete.fuzzy_weighted_bytes,
             candidate_bytes=semantic_complete.target_size,
@@ -5573,11 +5580,12 @@ def test_match_shard_excludes_semantic_complete_by_default(
     assert {target["function"] for target in default_targets} == {
         "missing_target",
         "unspecified_target",
+        "semantic_complete_target",
     }
-    assert payload["filters"]["recoveries"] == ["incomplete", "unspecified"]
-    assert payload["filters"]["mode"] == "recovery"
+    assert payload["filters"]["recoveries"] == ["incomplete", "semantic-complete", "unspecified"]
+    assert payload["filters"]["states"] == ["audit", "missing", "wip"]
+    assert payload["filters"]["mode"] == "auto"
     assert payload["filters"]["requested_mode"] == "auto"
-    assert payload["filters"]["auto_fallback"] is False
 
     completed = CliRunner().invoke(
         match_app,
@@ -5631,7 +5639,7 @@ def test_match_shard_excludes_semantic_complete_by_default(
     assert payload["filters"]["recoveries"] == ["semantic-complete"]
 
 
-def test_match_shard_empty_recovery_queue_automatically_uses_residual_audit(
+def test_match_shard_semantic_complete_only_queue_and_explicit_recovery_filter(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -5686,9 +5694,8 @@ def test_match_shard_empty_recovery_queue_automatically_uses_residual_audit(
     payload = json.loads(completed.output)
     assert payload["target_count"] == 1
     assert payload["assignments"][0]["targets"][0]["function"] == "residual"
-    assert payload["filters"]["mode"] == "residual-audit"
+    assert payload["filters"]["mode"] == "auto"
     assert payload["filters"]["requested_mode"] == "auto"
-    assert payload["filters"]["auto_fallback"] is True
 
     recovery_only = CliRunner().invoke(
         match_app,

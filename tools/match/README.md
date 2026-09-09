@@ -402,8 +402,11 @@ canonical source file. Use it only when native disassembly proves that a helper
 survived as a call while neighboring helpers from the same translation unit
 were inlined. Archive scratches cannot use this setting.
 
-`RECOVERY` can be `incomplete` or `semantic-complete`. Use the latter when the
-port behavior is understood even though byte identity is blocked.
+`RECOVERY` can be `incomplete` or `semantic-complete`. These are author
+assessments, not verified semantic equivalence. Use the latter only with
+address-keyed evidence in the scratch notes describing the branches and edge
+cases reviewed and what remains unverified. It does not establish that a
+remaining mismatch is caused by the compiler or exclude further semantic bugs.
 `RESIDUAL` is a comma-separated set of `analysis`, `compiler`, and
 `references`. Use `analysis` when the behavior is recovered but a plausible
 source shape still needs to be found. These fields keep semantic recovery
@@ -447,10 +450,10 @@ uv run crimson match shard --workers 4 \
 Sharding requires a clean repository so pre-existing edits cannot be mistaken
 for worker output.
 
-By default, sharding first includes missing targets plus scratches whose
-recovery is `incomplete` or `unspecified`. If that recovery queue is empty, it
-automatically switches to semantic-complete residual work instead of emitting
-an empty plan. Use an explicit mode to pin either queue:
+By default, sharding includes missing, WIP, and reference-audit targets across
+all declared recovery assessments, ranked by remaining fuzzy gap. A
+`semantic-complete` declaration must not postpone review until other work is
+exhausted. Use an explicit mode to restrict the queue:
 
 ```sh
 uv run crimson match shard --mode recovery --workers 4 \
@@ -459,9 +462,10 @@ uv run crimson match shard --mode residual-audit --workers 4 \
   --min-bytes 32 --limit 24 --out "$batch_dir"
 ```
 
-Residual-audit mode defaults to `--state wip,audit` and
-`--recovery semantic-complete`. Explicit `--state` or `--recovery` values
-override either mode's defaults and disable the automatic fallback.
+Recovery mode defaults to `--state missing,wip` and
+`--recovery incomplete,unspecified`. Residual-audit mode defaults to
+`--state wip,audit` and `--recovery semantic-complete`. Explicit `--state` or
+`--recovery` values override the selected mode's defaults.
 
 `plan.json` pins the batch's starting commit. Each `worker-NN.json` assigns
 targets and their only permitted `scratches/<directory>` paths. Existing
@@ -588,8 +592,12 @@ bytes. Its experiment evidence is tied to the current scratch epoch:
 sweeps against the current inputs, while `historical-only` means the recorded
 search belongs to an older source, configuration, dependency, or binary
 baseline. Never treat a historical `stalled` flag as a reason to skip fresh
-source analysis. Recovery and residual labels describe the current assessment;
-they are not proof that every source shape or compiler lifetime has been tried.
+source analysis. Recovery and residual columns are explicitly declared
+assessments. Recheck native behavior before attributing a mismatch to the
+compiler. Neither semantic equivalence nor search exhaustion follows from
+those labels; `projectile_render` previously carried `semantic-complete` while
+its conventional trail endpoints were reversed (see the
+[correction evidence](scratches/projectile_render/CONVENTIONAL-ENDPOINT-EVIDENCE-2026-09-08.md)).
 
 Use address-keyed triage to rank both scratch-backed and still-uncovered native
 functions. Triage resolves scratch `FUNCTION` values through the manifest and
@@ -608,8 +616,8 @@ The `search` column is `experiment records/unique variants`; `streak` counts
 consecutive non-improving mutation sweeps, and `flags` carries experiment-log
 signals such as `stalled`, repeated variants, tradeoffs, or evaluation errors.
 `--sort unexplored` puts the least-tested targets first, then favors the larger
-remaining fuzzy gap, so residual work does not repeatedly reopen saturated
-compiler-scheduling boundaries.
+remaining fuzzy gap. This changes review order without declaring any target
+exhausted.
 
 All matcher `--json` modes keep the rendering stack lazy and write only the
 JSON document to stdout, so their output can be piped directly to tools such as
