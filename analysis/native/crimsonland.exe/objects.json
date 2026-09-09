@@ -59,7 +59,7 @@
     "source_sha256": "cafb0258d4cde1907a5dcc61fc9def3b927784ece080cae99b7a3f4e9f6819df",
     "status": "passed"
   },
-  "audit_digest": "73c216bd14d52ff3b82fd0e9048460e47ec07cb99e4306e95644b359add0c1f1",
+  "audit_digest": "b1fe48ca8ccbcdd38d5f141a7ca7e98b4785bdf5d6cecc596c5717bda7cd73ed",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -53718,7 +53718,7 @@
         {
           "path": "tools/match/scratches/projectile_render/scratch.conf",
           "repository_relative": true,
-          "sha256": "2c202d3fab92a7674dec0fa5257e0e2d1a5f95c1ba105847db0c0dc4bd1d66d9"
+          "sha256": "7bf670e79b086f5c8fad928b08be7720639d131b14e6a006a5ac67ad3d09f660"
         },
         {
           "path": "tools/match/cl.sh",
@@ -53758,7 +53758,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/projectile_render/scratch.conf",
-      "config_sha256": "2c202d3fab92a7674dec0fa5257e0e2d1a5f95c1ba105847db0c0dc4bd1d66d9",
+      "config_sha256": "7bf670e79b086f5c8fad928b08be7720639d131b14e6a006a5ac67ad3d09f660",
       "effective_end": 4349303,
       "end": 4349303,
       "function": "projectile_render",
@@ -53766,7 +53766,7 @@
         {
           "address": 4336752,
           "canonical_config": "tools/match/scratches/projectile_render/scratch.conf",
-          "canonical_config_sha256": "2c202d3fab92a7674dec0fa5257e0e2d1a5f95c1ba105847db0c0dc4bd1d66d9",
+          "canonical_config_sha256": "7bf670e79b086f5c8fad928b08be7720639d131b14e6a006a5ac67ad3d09f660",
           "canonical_scratch": "tools/match/scratches/projectile_render",
           "canonical_source": "tools/match/scratches/projectile_render/scratch.cpp",
           "canonical_source_sha256": "5043ceab80ce808557be531c16785e585fcd0681974a6d73fdae8f0088bcbc3e",

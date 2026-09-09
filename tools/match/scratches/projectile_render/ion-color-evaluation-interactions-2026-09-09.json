@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "live-branch-alpha",
+      "find": "                float alpha = (along - first) / span\n                    * transition_alpha;\n                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }",
+      "replacements": [
+        {
+          "name": "branch-local",
+          "text": "                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    float alpha = (along - first) / span\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    float alpha = (along - first) / span\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }"
+        },
+        {
+          "name": "call-expression",
+          "text": "                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, (along - first) / span\n                        * transition_alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, (along - first) / span\n                        * transition_alpha);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "fading-branch-alpha",
+      "find": "                float alpha = (along - first) / span\n                    * fade\n                    * transition_alpha;\n                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }",
+      "replacements": [
+        {
+          "name": "branch-local",
+          "text": "                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    float alpha = (along - first) / span\n                        * fade\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    float alpha = (along - first) / span\n                        * fade\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }"
+        },
+        {
+          "name": "call-expression",
+          "text": "                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, (along - first) / span\n                        * fade\n                        * transition_alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, (along - first) / span\n                        * fade\n                        * transition_alpha);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "fading-ion-head-boundary",
+      "find": "                32.0f,\n                32.0f);\n\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {",
+      "replacements": [
+        {
+          "name": "restore-post-draw-color",
+          "text": "                32.0f,\n                32.0f);\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, head_alpha);\n\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {"
+        }
+      ]
+    }
+  ]
+}

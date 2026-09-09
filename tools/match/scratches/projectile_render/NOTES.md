@@ -1196,3 +1196,22 @@ match, instruction, and reference metrics as corrected endpoints alone.
 Across the four plans, all **38 controls** compile and complete without
 errors; no width alias or extra output local is retained. These results bound
 the tested lifetimes, not other source owners or the remaining function.
+
+## Missing native head-color operation (2026-09-09)
+
+The [call-boundary audit](../../evidence/call-boundaries-2026-09-09/README.md)
+identifies an omitted second color publication at `0x00424b11`, after the
+fading-ion head quad and before arc processing. The checked Grim callees show
+that the quad and its batch helpers preserve the four color slots, so this is
+not evidence of changed pixels. It is nevertheless an absent native operation;
+`RECOVERY=incomplete` and `RESIDUAL=analysis,compiler,references` now expose it.
+
+All 24 controls across `fading-ion-head-boundary-2026-09-09.json`,
+`ion-color-evaluation-interactions-2026-09-09.json`, and
+`ion-head-alpha-owner-2026-09-09.json` compile and complete. The direct reset
+restores eight instructions but shifts stack homes outside the changed region,
+reducing 59.194040% to 58.200879% and worsening references from 456/0/10 to
+452/0/12. The call-expression/const-reference/existing-life controls tie; other
+combinations do not recover the loss. No scratch source or alias change is
+retained. The missing operation remains a concrete lifetime-recovery target,
+not a proven compiler limitation.

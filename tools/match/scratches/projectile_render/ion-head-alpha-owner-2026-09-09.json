@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "head-alpha-owner",
+      "find": "            float head_alpha = fade * transition_alpha;\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, head_alpha);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 16.0f,\n                camera_offset_y + projectile->pos.pos_y - 16.0f,\n                32.0f,\n                32.0f);\n\n",
+      "replacements": [
+        {
+          "name": "const-reference",
+          "text": "            const float &head_alpha = fade * transition_alpha;\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, head_alpha);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 16.0f,\n                camera_offset_y + projectile->pos.pos_y - 16.0f,\n                32.0f,\n                32.0f);\n\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, head_alpha);\n\n"
+        },
+        {
+          "name": "recomputed-expression",
+          "text": "            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, fade * transition_alpha);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 16.0f,\n                camera_offset_y + projectile->pos.pos_y - 16.0f,\n                32.0f,\n                32.0f);\n\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, fade * transition_alpha);\n\n"
+        },
+        {
+          "name": "reuse-fade",
+          "text": "            fade *= transition_alpha;\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, fade);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 16.0f,\n                camera_offset_y + projectile->pos.pos_y - 16.0f,\n                32.0f,\n                32.0f);\n\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, fade);\n\n"
+        },
+        {
+          "name": "reuse-life",
+          "text": "            life = fade * transition_alpha;\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, life);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 16.0f,\n                camera_offset_y + projectile->pos.pos_y - 16.0f,\n                32.0f,\n                32.0f);\n\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, life);\n\n"
+        }
+      ]
+    }
+  ]
+}

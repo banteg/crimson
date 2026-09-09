@@ -32,21 +32,21 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **17** non-exact scratch-backed functions hold **25645 fuzzy-gap bytes**. The top 5 hold **79.5%** of that gap; the top 10 hold **98.3%**.
 
-Current-baseline experiments cover **1 functions / 62 gap bytes**; **16 / 25582** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **3 functions / 5735 gap bytes**; **14 / 19910** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
 | rank | image | function | fuzzy gap | declared recovery | declared residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5845 | semantic-complete | compiler,references | historical-only | 0/70 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 2 | crimsonland.exe | projectile_render | 5122 | semantic-complete | compiler,references | historical-only | 0/69 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 2 | crimsonland.exe | projectile_render | 5122 | incomplete | analysis,compiler,references | current-stalled | 3/72 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
 | 3 | crimsonland.exe | controls_menu_update | 3891 | semantic-complete | compiler,references | historical-only | 0/63 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 6 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 7 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 8 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/21 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | current-active | 1/22 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
 | 10 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 11 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 12 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |

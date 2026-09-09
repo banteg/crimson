@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fading-ion-head-boundary",
+      "find": "                32.0f,\n                32.0f);\n\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {",
+      "replacements": [
+        {
+          "name": "restore-post-draw-color",
+          "text": "                32.0f,\n                32.0f);\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, head_alpha);\n\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {"
+        },
+        {
+          "name": "reload-post-draw-type",
+          "text": "                32.0f,\n                32.0f);\n\n            if (primary->vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {"
+        },
+        {
+          "name": "color-and-reload",
+          "text": "                32.0f,\n                32.0f);\n            grim_interface_ptr->grim_set_color(\n                0.5f, 0.6f, 1.0f, head_alpha);\n\n            if (primary->vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {"
+        }
+      ]
+    }
+  ]
+}

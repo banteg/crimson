@@ -1,0 +1,326 @@
+{
+  "schema": 1,
+  "verified": true,
+  "caveat": "Static calls in linear instruction order, not dynamic traces. Counts and direct callee identity do not prove argument, receiver, path, or side-effect equivalence. Indirect keys mask only the register name.",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "grim_image_sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
+  "verifier_sha256": "b9bf5cc7dc0c908cb8dcbaf07724f10e32805193b6e6e419d46ad0ebc7690bc6",
+  "functions": [
+    {
+      "function": "player_update",
+      "source_sha256": "61ce66d1d73dd0b7064b89019dd94d20c1b8e4dd1d133e118a630fa833a5a46b",
+      "candidate_body_sha256": "958d57660af432057202fcbece7abf5cc891173429d1e4a175f5170e9c4e011b",
+      "native_calls": 182,
+      "candidate_calls": 183,
+      "linear_call_keys_equal": false,
+      "native_only_counts": {},
+      "candidate_only_counts": {
+        "address:0x0041fbb0": 1
+      },
+      "counts": [
+        {
+          "address:0x00413430": 2,
+          "address:0x00413540": 4,
+          "address:0x00417640": 1,
+          "address:0x00417660": 2,
+          "address:0x0041e290": 3,
+          "address:0x0041e8d0": 1,
+          "address:0x0041e8f0": 1,
+          "address:0x0041fbb0": 25,
+          "address:0x00420130": 3,
+          "address:0x00420240": 1,
+          "address:0x00420360": 4,
+          "address:0x00420440": 33,
+          "address:0x00425e50": 1,
+          "address:0x0042e120": 1,
+          "address:0x0042eb10": 3,
+          "address:0x0042fcf0": 16,
+          "address:0x0043d260": 10,
+          "address:0x00446030": 1,
+          "address:0x00452f2a": 4,
+          "address:0x00461054": 3,
+          "address:0x00461746": 27,
+          "call dword [REG+0x44]": 4,
+          "call dword [REG+0x80]": 28,
+          "call dword [REG+0x84]": 4
+        },
+        {
+          "address:0x00413430": 2,
+          "address:0x00413540": 4,
+          "address:0x00417640": 1,
+          "address:0x00417660": 2,
+          "address:0x0041e290": 3,
+          "address:0x0041e8d0": 1,
+          "address:0x0041e8f0": 1,
+          "address:0x0041fbb0": 26,
+          "address:0x00420130": 3,
+          "address:0x00420240": 1,
+          "address:0x00420360": 4,
+          "address:0x00420440": 33,
+          "address:0x00425e50": 1,
+          "address:0x0042e120": 1,
+          "address:0x0042eb10": 3,
+          "address:0x0042fcf0": 16,
+          "address:0x0043d260": 10,
+          "address:0x00446030": 1,
+          "address:0x00452f2a": 4,
+          "address:0x00461054": 3,
+          "address:0x00461746": 27,
+          "call dword [REG+0x44]": 4,
+          "call dword [REG+0x80]": 28,
+          "call dword [REG+0x84]": 4
+        }
+      ]
+    },
+    {
+      "function": "projectile_update",
+      "source_sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1",
+      "candidate_body_sha256": "2adf5e8dd6443bb1d18e022a18b86c7277163a2c409696934349f70c2b2fb19b",
+      "native_calls": 125,
+      "candidate_calls": 125,
+      "linear_call_keys_equal": true,
+      "native_only_counts": {},
+      "candidate_only_counts": {},
+      "counts": [
+        {
+          "address:0x0041e270": 4,
+          "address:0x0041e400": 1,
+          "address:0x0041e840": 1,
+          "address:0x0041e910": 3,
+          "address:0x0041fbb0": 3,
+          "address:0x00420040": 2,
+          "address:0x00420440": 4,
+          "address:0x00420600": 1,
+          "address:0x004206a0": 3,
+          "address:0x00420730": 1,
+          "address:0x004207c0": 5,
+          "address:0x00427700": 16,
+          "address:0x0042eb10": 5,
+          "address:0x0042ec80": 6,
+          "address:0x0042f080": 1,
+          "address:0x0042f270": 3,
+          "address:0x0042f330": 2,
+          "address:0x0042f3f0": 1,
+          "address:0x0042f540": 3,
+          "address:0x0042f6c0": 1,
+          "address:0x0042fcf0": 6,
+          "address:0x0043d260": 6,
+          "address:0x0043d460": 2,
+          "address:0x00452f2a": 1,
+          "address:0x00461054": 2,
+          "address:0x00461746": 42
+        },
+        {
+          "address:0x0041e270": 4,
+          "address:0x0041e400": 1,
+          "address:0x0041e840": 1,
+          "address:0x0041e910": 3,
+          "address:0x0041fbb0": 3,
+          "address:0x00420040": 2,
+          "address:0x00420440": 4,
+          "address:0x00420600": 1,
+          "address:0x004206a0": 3,
+          "address:0x00420730": 1,
+          "address:0x004207c0": 5,
+          "address:0x00427700": 16,
+          "address:0x0042eb10": 5,
+          "address:0x0042ec80": 6,
+          "address:0x0042f080": 1,
+          "address:0x0042f270": 3,
+          "address:0x0042f330": 2,
+          "address:0x0042f3f0": 1,
+          "address:0x0042f540": 3,
+          "address:0x0042f6c0": 1,
+          "address:0x0042fcf0": 6,
+          "address:0x0043d260": 6,
+          "address:0x0043d460": 2,
+          "address:0x00452f2a": 1,
+          "address:0x00461054": 2,
+          "address:0x00461746": 42
+        }
+      ]
+    },
+    {
+      "function": "projectile_render",
+      "source_sha256": "5043ceab80ce808557be531c16785e585fcd0681974a6d73fdae8f0088bcbc3e",
+      "candidate_body_sha256": "897a03e22a4a4a68803837b4d5f851d2ccf9dc19027afdf0590e5c997429675f",
+      "native_calls": 180,
+      "candidate_calls": 178,
+      "linear_call_keys_equal": false,
+      "native_only_counts": {
+        "call dword [REG+0x114]": 2
+      },
+      "candidate_only_counts": {},
+      "counts": [
+        {
+          "address:0x004206a0": 2,
+          "address:0x0042e0a0": 4,
+          "address:0x0042fcf0": 1,
+          "address:0x00452f2a": 3,
+          "address:0x00461054": 10,
+          "call dword [REG+0x100]": 3,
+          "call dword [REG+0x104]": 10,
+          "call dword [REG+0x10c]": 4,
+          "call dword [REG+0x114]": 39,
+          "call dword [REG+0x118]": 8,
+          "call dword [REG+0x11c]": 33,
+          "call dword [REG+0x138]": 4,
+          "call dword [REG+0x20]": 20,
+          "call dword [REG+0xc4]": 8,
+          "call dword [REG+0xe8]": 10,
+          "call dword [REG+0xf0]": 11,
+          "call dword [REG+0xfc]": 10
+        },
+        {
+          "address:0x004206a0": 2,
+          "address:0x0042e0a0": 4,
+          "address:0x0042fcf0": 1,
+          "address:0x00452f2a": 3,
+          "address:0x00461054": 10,
+          "call dword [REG+0x100]": 3,
+          "call dword [REG+0x104]": 10,
+          "call dword [REG+0x10c]": 4,
+          "call dword [REG+0x114]": 37,
+          "call dword [REG+0x118]": 8,
+          "call dword [REG+0x11c]": 33,
+          "call dword [REG+0x138]": 4,
+          "call dword [REG+0x20]": 20,
+          "call dword [REG+0xc4]": 8,
+          "call dword [REG+0xe8]": 10,
+          "call dword [REG+0xf0]": 11,
+          "call dword [REG+0xfc]": 10
+        }
+      ],
+      "native_head_call_window": [
+        {
+          "address": 4344494,
+          "text": "call dword [eax+0x114]"
+        },
+        {
+          "address": 4344500,
+          "text": "mov esi, dword [esp+0x38]"
+        },
+        {
+          "address": 4344504,
+          "text": "mov ecx, dword [ADDR]"
+        },
+        {
+          "address": 4344510,
+          "text": "fld dword [ADDR]"
+        },
+        {
+          "address": 4344516,
+          "text": "fadd dword [esi+0xc]"
+        },
+        {
+          "address": 4344519,
+          "text": "push 0x42000000"
+        },
+        {
+          "address": 4344524,
+          "text": "push 0x42000000"
+        },
+        {
+          "address": 4344529,
+          "text": "push ecx"
+        },
+        {
+          "address": 4344530,
+          "text": "lea ebp, dword [esi+0x8]"
+        },
+        {
+          "address": 4344533,
+          "text": "fsub dword [ADDR]"
+        },
+        {
+          "address": 4344539,
+          "text": "mov edx, dword [ecx]"
+        },
+        {
+          "address": 4344541,
+          "text": "fstp dword [esp]"
+        },
+        {
+          "address": 4344544,
+          "text": "fld dword [ADDR]"
+        },
+        {
+          "address": 4344550,
+          "text": "fadd dword [ebp]"
+        },
+        {
+          "address": 4344553,
+          "text": "push ecx"
+        },
+        {
+          "address": 4344554,
+          "text": "fsub dword [ADDR]"
+        },
+        {
+          "address": 4344560,
+          "text": "fstp dword [esp]"
+        },
+        {
+          "address": 4344563,
+          "text": "call dword [edx+0x11c]"
+        },
+        {
+          "address": 4344569,
+          "text": "mov ecx, dword [ADDR]"
+        },
+        {
+          "address": 4344575,
+          "text": "push edi"
+        },
+        {
+          "address": 4344576,
+          "text": "push 0x3f800000"
+        },
+        {
+          "address": 4344581,
+          "text": "push 0x3f19999a"
+        },
+        {
+          "address": 4344586,
+          "text": "mov eax, dword [ecx]"
+        },
+        {
+          "address": 4344588,
+          "text": "push 0x3f000000"
+        },
+        {
+          "address": 4344593,
+          "text": "call dword [eax+0x114]"
+        }
+      ],
+      "candidate_head_color_calls": 1,
+      "native_head_color_calls": 2
+    }
+  ],
+  "reviewed_grim_callees": [
+    {
+      "function": "grim_set_color",
+      "source_sha256": "0fb01e6cb3a3f2282957c33d0174debc35b4f51c2134901debca8078ea465dce",
+      "exact": true,
+      "body_byte_exact": true
+    },
+    {
+      "function": "grim_draw_quad",
+      "source_sha256": "d4dd884bbe7ed74287461d0b262f0d7468212e1d1497bb057fa1d030ccc062d7",
+      "exact": true,
+      "body_byte_exact": true
+    },
+    {
+      "function": "grim_begin_batch",
+      "source_sha256": "6fb93ddbb3e6e76347552009d90e3db9193131214fbf846d65e6c691b7ee1a77",
+      "exact": true,
+      "body_byte_exact": true
+    },
+    {
+      "function": "grim_flush_batch",
+      "source_sha256": "de576f5600324bdbf81058ba41620d223cf991cdc447a3524cd3dad7e488b252",
+      "exact": true,
+      "body_byte_exact": true
+    }
+  ]
+}
