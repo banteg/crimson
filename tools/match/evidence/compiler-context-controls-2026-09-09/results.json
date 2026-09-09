@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "c82a11f9",
+  "sources": {
+    "statistics_update_check_worker": {
+      "source": "tools/match/scratches/statistics_update_check_worker/scratch.cpp",
+      "sha256": "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92"
+    },
+    "highscore_sync_worker": {
+      "source": "tools/match/scratches/highscore_sync_worker/scratch.cpp",
+      "sha256": "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f"
+    },
+    "creature_handle_death": {
+      "source": "tools/match/scratches/creature_handle_death/scratch.c",
+      "sha256": "9415ec3cdb1a74fb5236dbbd66d3d0083e10ca0c0d90c44fb4bc6be50a99c48b"
+    },
+    "quest_spawn_timeline_update": {
+      "source": "tools/match/scratches/quest_spawn_timeline_update/scratch.cpp",
+      "sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9"
+    },
+    "quest_build_spiders_inc": {
+      "source": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
+      "sha256": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338"
+    }
+  },
+  "compiler": {
+    "CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+    "C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+    "C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+    "C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a"
+  },
+  "fork": {
+    "commit": "08b7997500fc1bc3005edb6d2110c1a2a6c1909b",
+    "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+    "pr": "https://github.com/decompals/wibo/pull/146"
+  },
+  "pch_columns": [
+    "function",
+    "mode",
+    "object_sha256_ignoring_coff_timestamp",
+    "ratio",
+    "candidate_instructions",
+    "prefix_instructions",
+    "references_ok",
+    "references_problem",
+    "body_byte_exact"
+  ],
+  "pch_results": [
+    [
+      "statistics_update_check_worker",
+      "wine-plain",
+      "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "wine-pch-create",
+      "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "wine-pch-reuse",
+      "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "fork-plain",
+      "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "fork-pch-create",
+      "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "fork-pch-reuse",
+      "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "wine-plain",
+      "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "wine-pch-create",
+      "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "wine-pch-reuse",
+      "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "fork-plain",
+      "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "fork-pch-create",
+      "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "fork-pch-reuse",
+      "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ]
+  ],
+  "debug_columns": [
+    "function",
+    "mode",
+    "ratio",
+    "candidate_instructions",
+    "prefix_instructions",
+    "references_ok",
+    "references_problem",
+    "body_byte_exact"
+  ],
+  "debug_results": [
+    [
+      "statistics_update_check_worker",
+      "Zd",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "Zi",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "Zd",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "Zi",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "Zd",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "Zi",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "Zd",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "Zi",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "Zd",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "Zi",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ]
+  ],
+  "conclusion": "All PCH objects agree per function after normalizing only COFF timestamp bytes 4..7. Debug-information controls retain all baseline metrics. No new exact function or source change."
+}

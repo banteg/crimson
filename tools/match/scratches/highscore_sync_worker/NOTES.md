@@ -277,3 +277,12 @@ ceiling or exact match is claimed.
 The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.
+
+## PCH and debug-information controls (2026-09-09)
+
+The [compiler-context record](../../evidence/compiler-context-controls-2026-09-09/README.md)
+verifies identical full-function objects across Wine and the repaired wibo
+fork for plain compilation, PCH creation, and PCH reuse, normalizing only
+the COFF timestamp. `/Zd` and `/Zi` also retain the baseline metrics.
+The runner fixes restore PCH support but produce no matching gain; source
+and canonical compiler flags are unchanged.
