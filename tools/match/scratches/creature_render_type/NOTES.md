@@ -303,3 +303,19 @@ Across 36 current-baseline evaluations, no variant improves and no tradeoff is
 accepted. `scratch.cpp` remains unchanged. The complete 20-line experiment log
 now has SHA-256
 `a893846f4e7994d582262084a3a216c44b4336d4614237cb71af3e8cc03be302`.
+
+## Bounded native/candidate execution audit (2026-09-09)
+
+The [execution verifier](../../evidence/creature-render-execution-2026-09-09/README.md)
+compares the original x86 body with the relocated VC6 object under modeled Grim2D
+observers. All 130 scenarios agree on exact drawing argument bits, call order,
+and observed creature/spawn-slot writes, collectively executing all 765 native
+and 760 candidate instructions. Four temporary source defects are detected,
+covering float arguments, omitted pool entries, missing state writes, and a
+missing repeated draw. The original CRT float-to-integer conversion executes
+unchanged; fixture layout is checked by compiling the shared headers.
+
+This supports the recovered behavior only on those scenarios and observer
+contracts. Full instruction coverage is not all-path or all-input equivalence,
+and the GPU and actual perk lookup are modeled. No source or reference alias
+changes are retained; 79.74%, `139/0/5`, and both exactness flags remain unchanged.
