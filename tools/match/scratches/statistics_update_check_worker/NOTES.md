@@ -279,3 +279,29 @@ in a standalone backend process. Normal, captured, and replayed COFF objects
 agree completely except for the header timestamp. The matcher still reports
 99.182561%, 367/367 instructions, prefix 252, and 120 clean references; this
 adds a compiler diagnostic boundary without resolving the register permutation.
+
+## Exact receive-loop exit recovery (2026-09-09)
+
+Replacing the conditioned receive loop with `for (;;)`, followed by an
+explicit `if (!read_ok) break`, resolves the remaining compiler difference.
+The initial read still happens once; a failed read still enters the existing
+error-reporting path, while overflow and zero-byte completion retain their
+original continuations. No scanner, parser, ABI, compiler flag, or reference
+alias changes are involved.
+
+The complete three-control `receive-loop-exit-2026-09-09.json` plan records
+the old 99.182561% with prefix 252 baseline. Both explicit-break forms
+(`for (;;)` and `while (1)`) become exact; a conditioned `for (; read_ok;)`
+is neutral. The retained, formatted `for (;;)` source has 367/367 identical
+instructions, 120 clean references, zero mismatches or unresolved references,
+and relocation-aware `body_byte_exact=true`. Canonical direct matching and
+the independent frontend-capture/backend-replay proof both verify the result.
+
+For the statistics worker, an observer trace of VC6's forward register
+assignment pass explains the distant scanner improvement. The explicit exit
+places the receive-error address temporaries before parser temporaries in
+the pass's traversal. Its shared allocation cursor then assigns the scanner's
+three addresses to ECX, EDX, and EAX, matching native. The trace preserves the
+entire compiled object except its timestamp. This observation is specific to
+the statistics worker; highscore exactness is independently established by
+its complete instruction, reference, and encoded-body comparisons.

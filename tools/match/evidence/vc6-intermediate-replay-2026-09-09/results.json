@@ -24,7 +24,7 @@
   "functions": [
     {
       "function": "statistics_update_check_worker",
-      "source_sha256": "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92",
+      "source_sha256": "beef8b390caf3f9bbc41ff5eb68a4101d397a3a5b68701f21362b47e2eacc7c1",
       "normal_build_key": {
         "toolchain": {
           "compiler_trees": {
@@ -57,11 +57,11 @@
         "dependencies": [
           [
             "scratches/statistics_update_check_worker/scratch.cpp",
-            "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92"
+            "beef8b390caf3f9bbc41ff5eb68a4101d397a3a5b68701f21362b47e2eacc7c1"
           ],
           [
             "scratches/statistics_update_check_worker/scratch.conf",
-            "6586d8e09a1da885ae0c81de5042358bd4f108696cd09ca3b37053f949de294f"
+            "ddde30b9964eee584c3332fe326eded9ed61803f6fc8ce8833d638beeb8fd461"
           ],
           [
             "cl.sh",
@@ -80,20 +80,20 @@
       "cflags": "/O2 /GB /W3 /GR-",
       "captured_streams": {
         "ex": {
-          "size": 10398,
-          "sha256": "f8bdef1360d1d220c0594aa4238a02c2fdaf2000d46c8712387cb73903ee2ba6"
+          "size": 10433,
+          "sha256": "7ca2731fabb34b654150a51f7a32673baf267ad811d8f95e07176f481d3f98c9"
         },
         "in": {
           "size": 1378,
-          "sha256": "558a5fca843ffa71eb21d51328f2ff9876abc5bc3ddd580f1fc0333e76e95db3"
+          "sha256": "9969ed8e1a6d5f3b69712621680fa4ffff3d1040ee33b28a2076544703409c01"
         },
         "sy": {
-          "size": 1488,
-          "sha256": "7a289bd81f1cff1bbff003bd730006bf9c4396780712d9466f40d7ba744c4705"
+          "size": 1504,
+          "sha256": "b90780998631a981ea2f00b8675023527c651fd0320256307eba5e6a436b6d9e"
         },
         "gl": {
           "size": 8895,
-          "sha256": "3660e7e70c974dd2159bce4b531a85021d98be491358344e26abcd24ce13b398"
+          "sha256": "f9ec097123537a34c1d0d5b3654fb3bdcb0157d39629b129adcdcaa7460abd81"
         }
       },
       "replayed_backend_arguments": [
@@ -115,24 +115,24 @@
       ],
       "normal_wrapped_replayed_objects_equal_except_timestamp": true,
       "normalized_coff_size": 10656,
-      "normalized_coff_sha256": "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
+      "normalized_coff_sha256": "b94aeb854125eb00afed7d7a9425a5e2d45f677f3c5dddfe9aff9b0cb2c63f65",
       "streams_unchanged_after_replay": true,
       "missing_stream_replay_rejected": true,
       "missing_stream_exit_code": 50,
       "metrics": {
-        "ratio": 0.9918256130790191,
+        "ratio": 1.0,
         "target_instructions": 367,
         "candidate_instructions": 367,
-        "prefix_instructions": 252,
+        "prefix_instructions": 367,
         "references_ok": 120,
         "reference_problems": 0,
-        "exact": false,
-        "body_byte_exact": false
+        "exact": true,
+        "body_byte_exact": true
       }
     },
     {
       "function": "highscore_sync_worker",
-      "source_sha256": "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f",
+      "source_sha256": "062136364e8a45cdcaf71f2e169226b4aa5b168720c9fe253cd0e8b3bea6dd0c",
       "normal_build_key": {
         "toolchain": {
           "compiler_trees": {
@@ -165,11 +165,11 @@
         "dependencies": [
           [
             "scratches/highscore_sync_worker/scratch.cpp",
-            "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f"
+            "062136364e8a45cdcaf71f2e169226b4aa5b168720c9fe253cd0e8b3bea6dd0c"
           ],
           [
             "scratches/highscore_sync_worker/scratch.conf",
-            "ec98f1d78d475b0e20709cbe9dc4d7fc59c3f29489e809f414da221d94de7a37"
+            "5f19e55882e3587d4863f656f6f6a425e594b3e863507d6e036bc72b32eb8a5c"
           ],
           [
             "cl.sh",
@@ -200,20 +200,20 @@
       "cflags": "/O2 /GB /W3 /GR-",
       "captured_streams": {
         "ex": {
-          "size": 13481,
-          "sha256": "dd6678ac9e13341cfb4088a1f0195fcd48f739d6cd4f6f9be6d050b711022a4c"
+          "size": 13520,
+          "sha256": "74ec040626bf81b199fc1d2b9c7819ca13975c503620e425635814f93a864b5b"
         },
         "in": {
           "size": 1400,
-          "sha256": "2b14f567e8b1abdf52a0f5c8713d91bae3ec7617265172b98a2b76e3575030cc"
+          "sha256": "c300dcf9ba444dde358500ed7a4ba077f546fabd6c8d9a3aa67371e313a3feb2"
         },
         "sy": {
-          "size": 2146,
-          "sha256": "a43285391d5cce5144909f0cf30c1fe856f4f08a490a4ca17fa4111db91c0103"
+          "size": 2162,
+          "sha256": "5b4e88921b3d60b04585a9ad1eddd84560a43af45fcdaa63d183d989b863322f"
         },
         "gl": {
           "size": 9618,
-          "sha256": "8beafaed9e9e1e3bb6280b67958fbd82e4a6c55ca811895fdc506fcf82b83676"
+          "sha256": "e237658ca8d9e33cf83bc7fd7ae295806d4999f973a8e06bf5345bbab1ddec0f"
         }
       },
       "replayed_backend_arguments": [
@@ -235,19 +235,19 @@
       ],
       "normal_wrapped_replayed_objects_equal_except_timestamp": true,
       "normalized_coff_size": 11645,
-      "normalized_coff_sha256": "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      "normalized_coff_sha256": "ad818d5b997a1d50c8acf0e3262924825e8362133ea7fa302c2f0bd5880dc632",
       "streams_unchanged_after_replay": true,
       "missing_stream_replay_rejected": true,
       "missing_stream_exit_code": 50,
       "metrics": {
-        "ratio": 0.9686013320647003,
+        "ratio": 1.0,
         "target_instructions": 525,
-        "candidate_instructions": 526,
-        "prefix_instructions": 340,
+        "candidate_instructions": 525,
+        "prefix_instructions": 525,
         "references_ok": 126,
         "reference_problems": 0,
-        "exact": false,
-        "body_byte_exact": false
+        "exact": true,
+        "body_byte_exact": true
       }
     }
   ]

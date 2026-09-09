@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **791/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **793/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**793/810** functions matched exactly (**97.9%**), **235746/341992** code bytes (**68.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**795/810** functions matched exactly (**98.1%**), **239102/341992** code bytes (**69.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **316347/341992** code bytes (**92.5%**).
+Fuzzy-weighted alignment is **316421/341992** code bytes (**92.5%**).
 
-Remaining exact-match debt is **17 functions**, **106246 code bytes**, and **25645 fuzzy-gap bytes**.
+Remaining exact-match debt is **15 functions**, **102890 code bytes**, and **25571 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**17** non-exact scratch-backed functions hold **25645 fuzzy-gap bytes**. The top 5 hold **79.5%** of that gap; the top 10 hold **98.3%**.
+**15** non-exact scratch-backed functions hold **25571 fuzzy-gap bytes**. The top 5 hold **79.7%** of that gap; the top 10 hold **98.6%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **17 / 25645** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **15 / 25571** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -51,10 +51,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 11 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 12 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 13 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 14 | crimsonland.exe | highscore_sync_worker | 62 | semantic-complete | compiler | historical-only | 0/18 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 15 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 16 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 17 | crimsonland.exe | statistics_update_check_worker | 11 | semantic-complete | compiler | historical-only | 0/21 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 14 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
+| 15 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -124,12 +122,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 654/671 | 214581/320827 | 66.9% | 295182/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 654/671 |
+| crimsonland.exe | 656/671 | 217937/320827 | 67.9% | 295256/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 656/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**654/671** functions (**97.5%**), **214581/320827** bytes (**66.9%**), **295182/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **654/671** scratches verified.
+**656/671** functions (**97.8%**), **217937/320827** bytes (**67.9%**), **295256/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **656/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -507,8 +505,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 100/100 | 0 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | match | crimsonland_main | 0x0042c450 | 3214 | 3214/3214 | 0 | 832/832 | 100.00% | 832/832 | 395/0/0 |  | primary-game-bootstrap-and-shutdown |
-| wip | highscore_sync_worker | 0x0042d0e0 | 1981 | 1919/1981 | 62 | 526/525 | 96.86% | 340/525 | 126/0/0 |  | online-highscore-submit-receive-worker |
-| wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1364/1375 | 11 | 367/367 | 99.18% | 252/367 | 120/0/0 |  | statistics-version-update-check-worker |
+| match | highscore_sync_worker | 0x0042d0e0 | 1981 | 1981/1981 | 0 | 525/525 | 100.00% | 525/525 | 126/0/0 |  | online-highscore-submit-receive-worker |
+| match | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1375/1375 | 0 | 367/367 | 100.00% | 367/367 | 120/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
 | match | crimson_crt_empty_initializer_slot_48_thunk | 0x0042de40 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-48-thunk |

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "receive-loop-exit",
+      "find": "                while (read_ok) {",
+      "replacements": [
+        {
+          "name": "explicit-for-break",
+          "text": "                for (;;) {\n                    if (!read_ok) {\n                        break;\n                    }"
+        },
+        {
+          "name": "explicit-while-break",
+          "text": "                while (1) {\n                    if (!read_ok) {\n                        break;\n                    }"
+        },
+        {
+          "name": "conditioned-for",
+          "text": "                for (; read_ok;) {"
+        }
+      ]
+    }
+  ]
+}

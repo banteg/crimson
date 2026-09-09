@@ -17,12 +17,20 @@ the normal and replayed objects. It also withholds the expression stream and
 requires replay to fail without producing an object. Input hashes must remain
 unchanged after both controls.
 
-This provides a reproducible boundary for future frontend-versus-backend
-experiments. The serialized IR has not been decoded, and this tool does not
-trace optimizer passes. The statistics worker remains **99.182561%**, with
-367/367 instructions, prefix 252, and 120 clean references. The highscore worker
-remains **96.860133%**, with 526/525 instructions, prefix 340, and 126 clean
-references. Neither is a new exact function.
+This provides a reproducible boundary for frontend-versus-backend experiments.
+The verifier treats the serialized streams as opaque and does not trace
+optimizer passes. The refreshed results include the receive-loop exit recovery:
+both workers now match exactly, including their relocation-aware encoded bodies.
+Statistics has 367/367 instructions and 120 clean references; highscore has
+525/525 instructions and 126 clean references. Both have zero reference problems.
+
+The source change replaces `while (read_ok)` with an unconditional loop and an
+explicit failed-read break. The independently recorded three-control plans in
+each scratch verify that both explicit-break forms are exact, while the
+conditioned `for` form preserves the former partial result. See the
+[statistics notes](../../scratches/statistics_update_check_worker/NOTES.md) and
+[highscore notes](../../scratches/highscore_sync_worker/NOTES.md). Replay alone
+does not establish a new match; the complete matcher comparisons do.
 
 ## Run
 

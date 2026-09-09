@@ -100,7 +100,10 @@ extern "C" void statistics_update_check_worker(void *)
 
                 read_ok = InternetReadFile(request, data, 0x400, &bytes_read);
                 received = bytes_read;
-                while (read_ok) {
+                for (;;) {
+                    if (!read_ok) {
+                        break;
+                    }
                     if ((int)(received + 0x400) > 0x8000) {
                         goto receive_overflow;
                     }
