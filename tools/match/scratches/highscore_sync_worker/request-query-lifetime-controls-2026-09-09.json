@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "request-close",
+      "find": "    if (request) {\n        InternetCloseHandle(request);\n    }",
+      "replacements": [
+        {
+          "name": "condition-snapshot",
+          "text": "    if (HINTERNET closing_request = request) {\n        InternetCloseHandle(closing_request);\n    }"
+        },
+        {
+          "name": "block-snapshot",
+          "text": "    {\n        HINTERNET handle = request;\n        if (handle) {\n            InternetCloseHandle(handle);\n        }\n    }"
+        },
+        {
+          "name": "null-fallthrough",
+          "text": "    if (!request) {\n    } else {\n        InternetCloseHandle(request);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "response-query",
+      "find": "                    DWORD response_length = 0x8000;\n                    DWORD response_error;\n                    InternetGetLastResponseInfoA(&response_error, data, &response_length);",
+      "replacements": [
+        {
+          "name": "error-declared-first",
+          "text": "                    DWORD response_error;\n                    DWORD response_length = 0x8000;\n                    InternetGetLastResponseInfoA(&response_error, data, &response_length);"
+        },
+        {
+          "name": "split-length-initialization",
+          "text": "                    DWORD response_length;\n                    response_length = 0x8000;\n                    DWORD response_error;\n                    InternetGetLastResponseInfoA(&response_error, data, &response_length);"
+        },
+        {
+          "name": "reuse-read-length",
+          "text": "                    bytes_read = 0x8000;\n                    DWORD response_error;\n                    InternetGetLastResponseInfoA(&response_error, data, &bytes_read);"
+        },
+        {
+          "name": "reuse-read-error",
+          "text": "                    DWORD response_length = 0x8000;\n                    InternetGetLastResponseInfoA(&bytes_read, data, &response_length);"
+        },
+        {
+          "name": "retain-query-result",
+          "text": "                    DWORD response_length = 0x8000;\n                    DWORD response_error;\n                    read_ok = InternetGetLastResponseInfoA(&response_error, data, &response_length);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "kind": "highscore-flags-cursor-locality-proof",
+  "base_commit": "af9d5e1f5d320dbf2292ec6a0a0f11b4d12b8d67",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "36814310b9c9e5cb62ef267e363f2f584b1689be8673f46ce9f76b9fce4cf09c",
+  "source_sha256": [
+    "7c938ce13eca026e846ee7e9a8d43a78e79cf0008ffa3043395b9deae09a025b",
+    "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f"
+  ],
+  "body_sha256": [
+    "55ab40d0b8cab758f59b5efcf19b9bbcd8e7121dc9937dfae81cf0cfbc57ee14",
+    "4b2b3cab6632b1147468566ffc992d9f5bf86d22085b4b1313d6630d5f3d712e"
+  ],
+  "body_bytes": [
+    1981,
+    1983
+  ],
+  "instruction_counts": [
+    525,
+    526
+  ],
+  "changed_region": {
+    "start": 572,
+    "before_end": 726,
+    "after_end": 728
+  },
+  "outside_instructions": 480,
+  "outside_relocations": 119,
+  "adjusted_branches": [
+    {
+      "before_offset": 542,
+      "after_offset": 542,
+      "before_destination": 726,
+      "after_destination": 728
+    },
+    {
+      "before_offset": 563,
+      "after_offset": 563,
+      "before_destination": 726,
+      "after_destination": 728
+    }
+  ],
+  "native_prefix_instructions": [
+    130,
+    340
+  ],
+  "prefix_positional_references": 69,
+  "resolved_references": [
+    125,
+    126
+  ],
+  "body_byte_exact": [
+    false,
+    false
+  ],
+  "verified": true
+}

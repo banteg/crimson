@@ -110,9 +110,9 @@ extern "C" void highscore_sync_worker(void *)
         if (highscore_table_count > 0) {
             char *write_cursor = data + payload_length;
             do {
-                highscore_record_t *record = &highscore_table[index];
-                unsigned char flags = record->flags;
+                unsigned char &flags = highscore_table[index].flags;
                 if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {
+                    highscore_record_t *record = &highscore_table[index];
                     if (highscore_submit_full_version_guard(record)) {
                         highscore_record_pack_for_submit(
                             record,

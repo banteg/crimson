@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "submission-owner",
+      "find": "                unsigned char &flags = highscore_table[index].flags;\n                if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {\n                    highscore_record_t *record = &highscore_table[index];",
+      "replacements": [
+        {
+          "name": "whole-record-cursor",
+          "text": "                highscore_record_t *record = &highscore_table[index];\n                unsigned char flags = record->flags;\n                if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {"
+        }
+      ]
+    }
+  ]
+}

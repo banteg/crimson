@@ -243,3 +243,31 @@ registers at `0x0042d604` and the request close at `0x0042d7d9`. The retained
 source additionally has the submission cursor difference at `0x0042d31c`.
 These observations describe the remaining work; they do not establish a
 compiler limitation or a second exact match for the current campaign.
+
+## Native flags cursor and locality proof (2026-09-09)
+
+The previously rejected flags-reference source is now retained after a stronger
+instruction-level audit. It reaches **96.860133%**, prefix **340**, and
+**126/0/0** references. It still has **526/525 instructions** and is not
+encoded-body exact. The count warning remains visible in the recorded probe.
+
+Native `0x0042d31c..0x0042d3b8` walks the flags field in EDI and materializes
+the enclosing record in ESI only after the flags tests. The reference-bound
+flags local and arm-local record pointer recover that sequence. The old source
+omitted the native record-address `lea`; its 525/525 count was balanced by an
+unrelated extra cleanup instruction, rather than instruction identity.
+
+A raw COFF audit against `af9d5e1f5` proves all **480 instructions and 119
+relocations outside the loop** unchanged, allowing only two branch displacements
+to follow the relocated end of the loop. The extra cleanup `mov edx, eax`
+already exists in that baseline. The new source adds no outside instruction
+defect, and the first 340 native instructions have same-index reference proof.
+[The executable verifier and receipts](../../evidence/highscore-cursor-2026-09-09/README.md)
+explain this manual recovery without weakening automatic mutation acceptance.
+
+The one-variant cursor reversion reproduces 92.571429%, prefix 130, 525
+instructions, and 125 clean references. All **23** combinations of three
+request-close forms and five error-query lifetime forms compile and complete;
+none improves the retained source. The two remaining native regions are still
+the error-query output-register pairing and request-close copy. No compiler
+ceiling or exact match is claimed.
