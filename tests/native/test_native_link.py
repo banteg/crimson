@@ -2700,7 +2700,7 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["player_health"]["size"] == 4
     assert defined["player_reload_active"]["size"] == 1
     assert defined["player_alt_fire_key"]["size"] == 4
-    assert defined["creature_pool"]["size"] == 0xE400
+    assert defined["creature_pool"]["size"] == 0xE498
     assert defined["creature_health"]["size"] == 4
     assert defined["creature_target_player"]["size"] == 1
     assert defined["creature_orbit_radius"]["definition_group"] == (

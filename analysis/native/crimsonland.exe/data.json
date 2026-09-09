@@ -1,5 +1,5 @@
 {
-  "audit_digest": "12bcc1b682314572981e9982add72b1bed91d0587130a3ea182edc41986fb319",
+  "audit_digest": "7b4c606f378abfd552b6880eb83055ab8adfcae98bf3539b111a57840817f322",
   "entries": [
     {
       "address": 4211888,
@@ -25766,20 +25766,20 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_alignment_is_four",
-      "comment": "Creature pool base (0x180 entries, stride 0x98)",
+      "comment": "Creature storage: 0x180 gameplay entries plus one constructor-initialized sentinel; stride 0x98.",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0049bf38..0x004aa338",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at VA 0x0049bf38..0x004aa3d0, including the extra constructor-initialized sentinel",
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "creature_pool",
       "section": ".data",
       "section_offset": 175928,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": 58368,
-      "size_source": "third_party/headers/crimsonland_types.h: creature_t[384]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe400",
-      "type": "creature_t[384]"
+      "size": 58520,
+      "size_source": "Native creature_pool_global_init constructs 0x181 records; third_party/headers/crimsonland_types.h: creature_t[385]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe498",
+      "type": "creature_t[385]"
     },
     {
       "address": 4833084,
@@ -37780,9 +37780,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "c844c9bdad1aafa46adb78a1341bf333d9f7d329567c0f388a75d44c6b03528c",
+    "data_map_sha256": "930da7b86f25523e0a2b488ae214e5372d3b5d241dcf1ad9948f8f8479b158e0",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "e4533e2d2671925a178e8ed532d44e7c7a0bb0e30d476190c56c169c4549d8c9",
+    "definitions_sha256": "aa67a621050e3cc2dac3393e2950f56b39e4367809b4decef794b9c6c708b02e",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"

@@ -56,7 +56,7 @@ projectile_pool_t projectile_pool;
 particle_t particle_pool[128];
 secondary_projectile_pool_t secondary_projectile_pool;
 sprite_effect_t sprite_effect_pool[384];
-creature_t creature_pool[384];
+creature_t creature_pool[385];
 uv2f_t effect_uv16[256];
 int fx_queue_count;
 float player_reset_reserved_zero;

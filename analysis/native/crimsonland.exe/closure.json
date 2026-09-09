@@ -1,5 +1,5 @@
 {
-  "audit_digest": "12bcc1b682314572981e9982add72b1bed91d0587130a3ea182edc41986fb319",
+  "audit_digest": "7b4c606f378abfd552b6880eb83055ab8adfcae98bf3539b111a57840817f322",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -92577,7 +92577,7 @@
           "data_storage_name": "creature_max_health",
           "function": null,
           "kind": "section",
-          "logical_section_size": 58368,
+          "logical_section_size": 58520,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -92601,10 +92601,10 @@
           "data_storage_name": "creature_pool",
           "function": null,
           "kind": "section",
-          "logical_section_size": 58368,
+          "logical_section_size": 58520,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 58368,
+          "size": 58520,
           "weak": false
         }
       ],
@@ -131725,7 +131725,7 @@
           "data_storage_name": "creature_max_health",
           "function": null,
           "kind": "section",
-          "logical_section_size": 58368,
+          "logical_section_size": 58520,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -131756,10 +131756,10 @@
           "data_storage_name": "creature_pool",
           "function": null,
           "kind": "section",
-          "logical_section_size": 58368,
+          "logical_section_size": 58520,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 58368,
+          "size": 58520,
           "weak": false
         }
       ],
@@ -171857,7 +171857,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "c844c9bdad1aafa46adb78a1341bf333d9f7d329567c0f388a75d44c6b03528c"
+        "sha256": "930da7b86f25523e0a2b488ae214e5372d3b5d241dcf1ad9948f8f8479b158e0"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",

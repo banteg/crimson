@@ -317,8 +317,8 @@ CRIMSON_ABI_ASSERT(
 
 CRIMSON_ABI_ASSERT(creature_is_0x98, sizeof(creature_t) == 0x98);
 CRIMSON_ABI_ASSERT(
-    creature_pool_is_0xe400,
-    sizeof(creature_t[384]) == 0xe400);
+    creature_pool_is_0xe498,
+    sizeof(creature_t[385]) == 0xe498);
 CRIMSON_ABI_ASSERT(
     creature_alignment_is_four,
     offsetof(crimson_creature_alignment_probe_t, value) == 4);

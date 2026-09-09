@@ -491,7 +491,7 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["effect_uv16"] == "uv2f_t[256]"
     assert types_by_name["fx_queue"] == "fx_queue_entry_t[128]"
     assert types_by_name["particle_pool"] == "particle_t[128]"
-    assert types_by_name["creature_pool"] == "creature_t[384]"
+    assert types_by_name["creature_pool"] == "creature_t[385]"
     assert types_by_name["highscore_table"] == "highscore_record_t[100]"
     assert types_by_name["quest_selected_meta"] == "quest_meta_t[50]"
     assert (

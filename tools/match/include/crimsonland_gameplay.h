@@ -184,7 +184,8 @@ extern fx_queue_entry_t fx_queue[128];
 extern int fx_queue_count;
 extern particle_t particle_pool[128];
 extern sprite_effect_t sprite_effect_pool[384];
-extern creature_t creature_pool[384];
+// 384 gameplay slots plus the sentinel constructed by creature_pool_global_init.
+extern creature_t creature_pool[385];
 extern creature_spawn_slot_t creature_spawn_slot_table[32];
 extern bonus_pool_t bonus_pool;
 extern bonus_entry_t bonus_pool_sentinel;

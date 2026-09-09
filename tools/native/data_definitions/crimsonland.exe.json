@@ -5123,12 +5123,12 @@
     {
       "address": "0x0049bf38",
       "name": "creature_pool",
-      "size": 58368,
-      "size_source": "third_party/headers/crimsonland_types.h: creature_t[384]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe400",
+      "size": 58520,
+      "size_source": "Native creature_pool_global_init constructs 0x181 records; third_party/headers/crimsonland_types.h: creature_t[385]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe498",
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_alignment_is_four",
       "initializer_fill": "00",
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0049bf38..0x004aa338"
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at VA 0x0049bf38..0x004aa3d0, including the extra constructor-initialized sentinel"
     },
     {
       "address": "0x004aaf0c",

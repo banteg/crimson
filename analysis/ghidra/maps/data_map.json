@@ -9196,9 +9196,9 @@
     },
     {
       "address": "0x0049bf38",
-      "comment": "Creature pool base (0x180 entries, stride 0x98)",
+      "comment": "Creature storage: 0x180 gameplay entries plus one constructor-initialized sentinel; stride 0x98.",
       "name": "creature_pool",
-      "type": "creature_t[384]",
+      "type": "creature_t[385]",
       "program": "crimsonland.exe"
     },
     {

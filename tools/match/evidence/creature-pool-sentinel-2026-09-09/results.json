@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "constructor_address": 4318928,
+  "constructor_size": 60,
+  "constructor_sha256": "51e8922a5ab413af1931f113b1091cb4a6019c7bd2fa04fd0cf1edd96032c4f3",
+  "instructions_interpreted": 5009,
+  "constructor_exact": true,
+  "constructor_body_byte_exact": true,
+  "pool_address": 4833080,
+  "record_stride": 152,
+  "constructed_records": 385,
+  "required_storage_bytes": 58520,
+  "writes_per_record": 10,
+  "written_bytes_per_record": 31,
+  "record_byte_writes": [
+    [
+      0,
+      0
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      6,
+      0
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      9,
+      0
+    ],
+    [
+      12,
+      0
+    ],
+    [
+      13,
+      0
+    ],
+    [
+      14,
+      0
+    ],
+    [
+      15,
+      0
+    ],
+    [
+      56,
+      0
+    ],
+    [
+      57,
+      0
+    ],
+    [
+      58,
+      0
+    ],
+    [
+      59,
+      0
+    ],
+    [
+      116,
+      0
+    ],
+    [
+      117,
+      0
+    ],
+    [
+      118,
+      0
+    ],
+    [
+      119,
+      0
+    ],
+    [
+      120,
+      255
+    ],
+    [
+      121,
+      255
+    ],
+    [
+      122,
+      255
+    ],
+    [
+      123,
+      255
+    ],
+    [
+      144,
+      0
+    ],
+    [
+      145,
+      0
+    ],
+    [
+      146,
+      0
+    ],
+    [
+      147,
+      0
+    ],
+    [
+      148,
+      0
+    ],
+    [
+      149,
+      0
+    ],
+    [
+      150,
+      0
+    ],
+    [
+      151,
+      0
+    ]
+  ],
+  "sentinel_start": 4891448,
+  "storage_end_exclusive": 4891600,
+  "initial_storage_sha256": "1c8957e5d41426700eee171226a230bf32d825e8baa8a839245854a9e6fabd0e",
+  "verifier_sha256": "3ca3450c569ab5a892f55dcd361d44edc9bd83240c83f20fac84d4cc729d81c0"
+}

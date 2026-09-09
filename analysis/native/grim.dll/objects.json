@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "ec5792acfbbf5073eb48a6b24a5d3618c5955944217e457fcdf060ee897a4dbe",
+  "audit_digest": "2176df4c181cab1b29b92f272fc3c6b2789aa287a51bcd8922f17bd7ea55afd3",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -6792,7 +6792,7 @@
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
           "repository_relative": true,
-          "sha256": "8d5d1a803ad521430befac730ed8bf3f2bf97831852e27a4f386f634dcc9d71d"
+          "sha256": "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
         }
       ],
       "compiler": "msvc6.5",
@@ -6811,7 +6811,7 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "f9286e3bbfb006bf08d230290bf72d78e02a4cf73d80cbac777eeacae5b10b9a",
+          "experiment_epoch": "f554cb8afbb838e6107d069507cfd982f219777125f83b0023c432a15a75fc10",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,
