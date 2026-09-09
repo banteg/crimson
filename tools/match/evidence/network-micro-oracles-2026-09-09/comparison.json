@@ -1,0 +1,600 @@
+{
+  "schema": 1,
+  "verified": true,
+  "kind": "bounded-symbolic-call-input-witnesses",
+  "limitations": "Straight-line local windows only, with equal incoming symbolic states. Stack-call projection assumes EAX/ECX/EDX are volatile and not inputs. Does not establish full-function equivalence, source provenance, matching exactness, memory safety, or operating-system behavior.",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "5533f9f61e96b3668d1ca699b1fb1b4a5d6ff51e15cc58a643243d2ace4c71b7",
+  "oracle_sha256": "291f65298499c70176008fc516e6554101e6e046113d99705ad18d0a42af4b53",
+  "control_source_sha256": "1e3eaf500513e5e86df5bb91bbe6082cb765ff385f482995214f97582b9343b3",
+  "compiler_sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+  "sources": [
+    {
+      "function": "statistics_update_check_worker",
+      "source_sha256": "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92",
+      "candidate_body_sha256": "0541fb1ec23db4a6bfc99df92f46f1cb7a441637bd4d8ab7e566dd4818d5a547",
+      "body_byte_exact": false
+    },
+    {
+      "function": "highscore_sync_worker",
+      "source_sha256": "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f",
+      "candidate_body_sha256": "4b2b3cab6632b1147468566ffc992d9f5bf86d22085b4b1313d6630d5f3d712e",
+      "body_byte_exact": false
+    }
+  ],
+  "witnesses": [
+    {
+      "name": "version-output-arguments",
+      "same_projected_call_inputs": true,
+      "native": {
+        "start_offset": 948,
+        "instructions": [
+          "lea ecx, dword [esp+0x2c]",
+          "mov dword [@update_notice_url], eax",
+          "lea edx, dword [esp+0x28]",
+          "push ecx",
+          "lea eax, dword [esp+0x28]",
+          "push edx",
+          "push eax"
+        ],
+        "effects": {
+          "registers": {
+            "eax": {
+              "base": "entry:esp",
+              "offset": 36
+            },
+            "ecx": {
+              "base": "entry:esp",
+              "offset": 44
+            },
+            "edx": {
+              "base": "entry:esp",
+              "offset": 40
+            },
+            "ebx": {
+              "base": "entry:ebx",
+              "offset": 0
+            },
+            "esp": {
+              "base": "entry:esp",
+              "offset": 4294967284
+            },
+            "ebp": {
+              "base": "entry:ebp",
+              "offset": 0
+            },
+            "esi": {
+              "base": "entry:esi",
+              "offset": 0
+            },
+            "edi": {
+              "base": "entry:edi",
+              "offset": 0
+            }
+          },
+          "writes": [
+            [
+              {
+                "base": "@update_notice_url",
+                "offset": 0
+              },
+              {
+                "base": "entry:eax",
+                "offset": 0
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967292
+              },
+              {
+                "base": "entry:esp",
+                "offset": 44
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967288
+              },
+              {
+                "base": "entry:esp",
+                "offset": 40
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967284
+              },
+              {
+                "base": "entry:esp",
+                "offset": 36
+              }
+            ]
+          ]
+        }
+      },
+      "candidate": {
+        "start_offset": 948,
+        "instructions": [
+          "mov dword [@update_notice_url], eax",
+          "lea edx, dword [esp+0x2c]",
+          "lea eax, dword [esp+0x28]",
+          "push edx",
+          "lea ecx, dword [esp+0x28]",
+          "push eax",
+          "push ecx"
+        ],
+        "effects": {
+          "registers": {
+            "eax": {
+              "base": "entry:esp",
+              "offset": 40
+            },
+            "ecx": {
+              "base": "entry:esp",
+              "offset": 36
+            },
+            "edx": {
+              "base": "entry:esp",
+              "offset": 44
+            },
+            "ebx": {
+              "base": "entry:ebx",
+              "offset": 0
+            },
+            "esp": {
+              "base": "entry:esp",
+              "offset": 4294967284
+            },
+            "ebp": {
+              "base": "entry:ebp",
+              "offset": 0
+            },
+            "esi": {
+              "base": "entry:esi",
+              "offset": 0
+            },
+            "edi": {
+              "base": "entry:edi",
+              "offset": 0
+            }
+          },
+          "writes": [
+            [
+              {
+                "base": "@update_notice_url",
+                "offset": 0
+              },
+              {
+                "base": "entry:eax",
+                "offset": 0
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967292
+              },
+              {
+                "base": "entry:esp",
+                "offset": 44
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967288
+              },
+              {
+                "base": "entry:esp",
+                "offset": 40
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967284
+              },
+              {
+                "base": "entry:esp",
+                "offset": 36
+              }
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "name": "response-query-arguments",
+      "same_projected_call_inputs": true,
+      "native": {
+        "start_offset": 1316,
+        "instructions": [
+          "lea ecx, dword [esp+0x28]",
+          "lea edx, dword [esp+0x18]",
+          "mov dword [esp+0x28], 0x8000",
+          "push ecx",
+          "push ebp",
+          "push edx"
+        ],
+        "effects": {
+          "registers": {
+            "eax": {
+              "base": "entry:eax",
+              "offset": 0
+            },
+            "ecx": {
+              "base": "entry:esp",
+              "offset": 40
+            },
+            "edx": {
+              "base": "entry:esp",
+              "offset": 24
+            },
+            "ebx": {
+              "base": "entry:ebx",
+              "offset": 0
+            },
+            "esp": {
+              "base": "entry:esp",
+              "offset": 4294967284
+            },
+            "ebp": {
+              "base": "entry:ebp",
+              "offset": 0
+            },
+            "esi": {
+              "base": "entry:esi",
+              "offset": 0
+            },
+            "edi": {
+              "base": "entry:edi",
+              "offset": 0
+            }
+          },
+          "writes": [
+            [
+              {
+                "base": "entry:esp",
+                "offset": 40
+              },
+              {
+                "base": null,
+                "offset": 32768
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967292
+              },
+              {
+                "base": "entry:esp",
+                "offset": 40
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967288
+              },
+              {
+                "base": "entry:ebp",
+                "offset": 0
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967284
+              },
+              {
+                "base": "entry:esp",
+                "offset": 24
+              }
+            ]
+          ]
+        }
+      },
+      "candidate": {
+        "start_offset": 1316,
+        "instructions": [
+          "lea eax, dword [esp+0x28]",
+          "lea ecx, dword [esp+0x18]",
+          "mov dword [esp+0x28], 0x8000",
+          "push eax",
+          "push ebp",
+          "push ecx"
+        ],
+        "effects": {
+          "registers": {
+            "eax": {
+              "base": "entry:esp",
+              "offset": 40
+            },
+            "ecx": {
+              "base": "entry:esp",
+              "offset": 24
+            },
+            "edx": {
+              "base": "entry:edx",
+              "offset": 0
+            },
+            "ebx": {
+              "base": "entry:ebx",
+              "offset": 0
+            },
+            "esp": {
+              "base": "entry:esp",
+              "offset": 4294967284
+            },
+            "ebp": {
+              "base": "entry:ebp",
+              "offset": 0
+            },
+            "esi": {
+              "base": "entry:esi",
+              "offset": 0
+            },
+            "edi": {
+              "base": "entry:edi",
+              "offset": 0
+            }
+          },
+          "writes": [
+            [
+              {
+                "base": "entry:esp",
+                "offset": 40
+              },
+              {
+                "base": null,
+                "offset": 32768
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967292
+              },
+              {
+                "base": "entry:esp",
+                "offset": 40
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967288
+              },
+              {
+                "base": "entry:ebp",
+                "offset": 0
+              }
+            ],
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967284
+              },
+              {
+                "base": "entry:esp",
+                "offset": 24
+              }
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "name": "non-null-request-close-argument",
+      "same_projected_call_inputs": true,
+      "native": {
+        "start_offset": 1785,
+        "instructions": [
+          "push eax"
+        ],
+        "effects": {
+          "registers": {
+            "eax": {
+              "base": "entry:eax",
+              "offset": 0
+            },
+            "ecx": {
+              "base": "entry:ecx",
+              "offset": 0
+            },
+            "edx": {
+              "base": "entry:edx",
+              "offset": 0
+            },
+            "ebx": {
+              "base": "entry:ebx",
+              "offset": 0
+            },
+            "esp": {
+              "base": "entry:esp",
+              "offset": 4294967292
+            },
+            "ebp": {
+              "base": "entry:ebp",
+              "offset": 0
+            },
+            "esi": {
+              "base": "entry:esi",
+              "offset": 0
+            },
+            "edi": {
+              "base": "entry:edi",
+              "offset": 0
+            }
+          },
+          "writes": [
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967292
+              },
+              {
+                "base": "entry:eax",
+                "offset": 0
+              }
+            ]
+          ]
+        }
+      },
+      "candidate": {
+        "start_offset": 1785,
+        "instructions": [
+          "mov edx, eax",
+          "push edx"
+        ],
+        "effects": {
+          "registers": {
+            "eax": {
+              "base": "entry:eax",
+              "offset": 0
+            },
+            "ecx": {
+              "base": "entry:ecx",
+              "offset": 0
+            },
+            "edx": {
+              "base": "entry:eax",
+              "offset": 0
+            },
+            "ebx": {
+              "base": "entry:ebx",
+              "offset": 0
+            },
+            "esp": {
+              "base": "entry:esp",
+              "offset": 4294967292
+            },
+            "ebp": {
+              "base": "entry:ebp",
+              "offset": 0
+            },
+            "esi": {
+              "base": "entry:esi",
+              "offset": 0
+            },
+            "edi": {
+              "base": "entry:edi",
+              "offset": 0
+            }
+          },
+          "writes": [
+            [
+              {
+                "base": "entry:esp",
+                "offset": 4294967292
+              },
+              {
+                "base": "entry:eax",
+                "offset": 0
+              }
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "wrong_argument_order_rejected": true,
+  "compiler_controls": [
+    {
+      "function": "array_outputs",
+      "body_sha256": "935c0cb78ac552e9f50f8bd22a08464ab9e9a0645678806a4687f2f47187bedc",
+      "instructions": [
+        "mov eax, dword ptr [esp + 4]",
+        "sub esp, 0xc",
+        "push eax",
+        "call 0xd",
+        "add esp, 4",
+        "lea ecx, [esp + 8]",
+        "mov dword ptr [0], eax",
+        "lea edx, [esp + 4]",
+        "push ecx",
+        "mov ecx, dword ptr [esp + 0x18]",
+        "lea eax, [esp + 4]",
+        "push edx",
+        "push eax",
+        "push 0",
+        "push ecx",
+        "call 0x33",
+        "mov edx, dword ptr [esp + 0x1c]",
+        "mov eax, dword ptr [esp + 0x18]",
+        "mov ecx, dword ptr [esp + 0x14]",
+        "push edx",
+        "push eax",
+        "push ecx",
+        "call 0x47",
+        "add esp, 0x2c",
+        "ret "
+      ]
+    },
+    {
+      "function": "scalar_outputs",
+      "body_sha256": "8727d32303d702fb10322b7d2f002ae977dd3637998bf5363ec557bcb73eb06e",
+      "instructions": [
+        "mov eax, dword ptr [esp + 4]",
+        "sub esp, 8",
+        "push eax",
+        "call 0xd",
+        "add esp, 4",
+        "lea ecx, [esp + 0xc]",
+        "mov dword ptr [0], eax",
+        "lea edx, [esp]",
+        "push ecx",
+        "mov ecx, dword ptr [esp + 0x14]",
+        "lea eax, [esp + 8]",
+        "push edx",
+        "push eax",
+        "push 0",
+        "push ecx",
+        "call 0x33",
+        "mov edx, dword ptr [esp + 0x20]",
+        "mov eax, dword ptr [esp + 0x14]",
+        "mov ecx, dword ptr [esp + 0x18]",
+        "push edx",
+        "push eax",
+        "push ecx",
+        "call 0x47",
+        "add esp, 0x28",
+        "ret "
+      ]
+    },
+    {
+      "function": "close_local",
+      "body_sha256": "8b1c44306523cf1730b650a98d40c5e5de1d9e3ab3ca140a4bb9d4afe0d7f6ed",
+      "instructions": [
+        "call 5",
+        "test eax, eax",
+        "je 0xf",
+        "push eax",
+        "call 0xf",
+        "ret "
+      ]
+    },
+    {
+      "function": "query_outputs",
+      "body_sha256": "3deeb7dcd700f230e224884e85372c7bc00aced51382f13123a34540bab9aa4f",
+      "instructions": [
+        "push ecx",
+        "mov ecx, dword ptr [esp + 8]",
+        "lea eax, [esp]",
+        "push eax",
+        "lea edx, [esp + 0xc]",
+        "push ecx",
+        "push edx",
+        "mov dword ptr [esp + 0xc], 0x8000",
+        "call 0x1d",
+        "pop ecx",
+        "ret "
+      ]
+    }
+  ]
+}

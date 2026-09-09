@@ -1007,6 +1007,16 @@ remain visible. `--json` adds a `stack_residuals` field to the existing listing
 payload. Normal listing behavior and match acceptance remain unchanged; a
 successful diagnostic listing can still describe a non-exact match.
 
+For small argument-preparation residuals, `crimson.match_micro_oracle` can
+compare symbolic effects of straight-line MOV/LEA/PUSH windows. External
+addresses must be resolved before evaluation; unsupported instructions fail
+closed. The stack-call projection preserves ESP, ordered memory writes, and
+callee-saved registers. It requires a separately checked call boundary with no
+live or input EAX/ECX/EDX values. See the reproducible
+[network worker witnesses](evidence/network-micro-oracles-2026-09-09/README.md)
+and their independent VC6 controls. This does not relax any matching gate or
+establish whole-function equivalence.
+
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. Cache keys use content fingerprints for scratch source/config,
 compiler arguments, the complete compiler `Bin` and `Include` trees, Wibo,
