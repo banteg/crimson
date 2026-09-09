@@ -62,8 +62,7 @@ def import_inputs():
     for path in paths:
         if not path.is_file():
             raise FileNotFoundError(
-                "Run `crimson native link --image crimsonland.exe` first; "
-                f"missing diagnostic import input: {path}",
+                f"Run `crimson native link --image crimsonland.exe` first; missing diagnostic import input: {path}",
             )
     return paths
 
@@ -193,8 +192,7 @@ def verify_function(name, out, wrapper):
         "normal_build_key": json.loads((normal.parent / "scratch-build.json").read_text())["key"],
         "cflags": config.cflags,
         "captured_streams": {
-            suffix: {"size": path.stat().st_size, "sha256": hashes[suffix]}
-            for suffix, path in streams.items()
+            suffix: {"size": path.stat().st_size, "sha256": hashes[suffix]} for suffix, path in streams.items()
         },
         "replayed_backend_arguments": displayed_arguments,
         "normal_wrapped_replayed_objects_equal_except_timestamp": True,
@@ -210,7 +208,15 @@ def verify_function(name, out, wrapper):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    out = parser.parse_args().out.resolve()
+    parser.add_argument(
+        "--function",
+        action="append",
+        dest="functions",
+        help="Canonical VC6 scratch to verify; repeat to select several (default: both network workers)",
+    )
+    arguments = parser.parse_args()
+    functions = tuple(dict.fromkeys(arguments.functions or FUNCTIONS))
+    out = arguments.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     helper = out / "helper"
     helper.mkdir(exist_ok=True)
@@ -226,10 +232,15 @@ def main():
         compile_driver(helper, "capture.c", "capture.obj")
         link(helper, "capture.dll", "capture.obj", dll=True)
         rows = []
-        for name in FUNCTIONS:
+        for name in functions:
             rows.append(verify_function(name, out, helper / "capture.dll"))
-            print(f"{name}: normal, captured, and replayed COFF objects agree; missing-stream control rejected", flush=True)
-    compiler_paths = [COMPILER / "Bin" / name for name in ("CL.EXE", "C1XX.DLL", "C2.DLL", "MSPDB60.DLL", "LINK.EXE")]
+            print(
+                f"{name}: normal, captured, and replayed COFF objects agree; missing-stream control rejected",
+                flush=True,
+            )
+    compiler_paths = [
+        COMPILER / "Bin" / name for name in ("CL.EXE", "C1.DLL", "C1XX.DLL", "C2.DLL", "MSPDB60.DLL", "LINK.EXE")
+    ]
     record = {
         "schema_version": 1,
         "kind": "vc6-frontend-capture-and-backend-replay",
@@ -237,8 +248,7 @@ def main():
         "limitations": "Captures serialized frontend streams; does not decode their IR or trace optimizer passes. No new exact function is claimed.",
         "source_hashes": {name: sha((HERE / name).read_bytes()) for name in ("verify.py", "capture.c", "replay.c")},
         "toolchain_hashes": {
-            str(path.relative_to(ROOT)): sha(path.read_bytes())
-            for path in [WIBO, *compiler_paths, *import_inputs()]
+            str(path.relative_to(ROOT)): sha(path.read_bytes()) for path in [WIBO, *compiler_paths, *import_inputs()]
         },
         "functions": rows,
     }

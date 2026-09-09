@@ -34,6 +34,22 @@ UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
   --out /private/tmp/crimson-vc6-replay-proof
 ```
 
+Select other canonical VC6 scratches with repeated `--function` options. Both
+C and C++ inputs use their configured frontend; the recorded toolchain hashes
+include `C1.DLL` and `C1XX.DLL`:
+
+```sh
+UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
+  tools/match/evidence/vc6-intermediate-replay-2026-09-09/verify.py \
+  --function creature_handle_death --function plaguebearer_spread_infection \
+  --out /private/tmp/crimson-creature-replay-proof
+```
+
+[creature-results.json](creature-results.json) records that C/C++ control pair.
+The death handler remains partial; plague spread was already exact. Both
+preserve their complete objects and reject replay with the expression stream
+withheld. These controls do not claim a new match.
+
 The verifier uses the local `msvc6.5` compiler and wibo. Its small wrapper and
 replay executable reuse the generated Kernel32 import libraries from
 `crimson native link --image crimsonland.exe`; that command must have run first.

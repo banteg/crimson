@@ -23,8 +23,8 @@
   },
   "functions": [
     {
-      "function": "statistics_update_check_worker",
-      "source_sha256": "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92",
+      "function": "creature_handle_death",
+      "source_sha256": "9415ec3cdb1a74fb5236dbbd66d3d0083e10ca0c0d90c44fb4bc6be50a99c48b",
       "normal_build_key": {
         "toolchain": {
           "compiler_trees": {
@@ -51,125 +51,17 @@
           "/GB",
           "/W3",
           "/GR-",
-          "scratch.cpp"
+          "scratch.c"
         ],
         "auto_inline_off": [],
         "dependencies": [
           [
-            "scratches/statistics_update_check_worker/scratch.cpp",
-            "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92"
+            "scratches/creature_handle_death/scratch.c",
+            "9415ec3cdb1a74fb5236dbbd66d3d0083e10ca0c0d90c44fb4bc6be50a99c48b"
           ],
           [
-            "scratches/statistics_update_check_worker/scratch.conf",
-            "6586d8e09a1da885ae0c81de5042358bd4f108696cd09ca3b37053f949de294f"
-          ],
-          [
-            "cl.sh",
-            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
-          ],
-          [
-            "compilers/msvc6.5/Bin/CL.EXE",
-            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
-          ],
-          [
-            "include/crimsonland_console.h",
-            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
-          ]
-        ]
-      },
-      "cflags": "/O2 /GB /W3 /GR-",
-      "captured_streams": {
-        "ex": {
-          "size": 10398,
-          "sha256": "f8bdef1360d1d220c0594aa4238a02c2fdaf2000d46c8712387cb73903ee2ba6"
-        },
-        "in": {
-          "size": 1378,
-          "sha256": "558a5fca843ffa71eb21d51328f2ff9876abc5bc3ddd580f1fc0333e76e95db3"
-        },
-        "sy": {
-          "size": 1488,
-          "sha256": "7a289bd81f1cff1bbff003bd730006bf9c4396780712d9466f40d7ba744c4705"
-        },
-        "gl": {
-          "size": 8895,
-          "sha256": "3660e7e70c974dd2159bce4b531a85021d98be491358344e26abcd24ce13b398"
-        }
-      },
-      "replayed_backend_arguments": [
-        "{original-c2}",
-        "-il",
-        "{captured-prefix}",
-        "-f",
-        "scratch.cpp",
-        "-Gs4096",
-        "-dos",
-        "-Foreplay.obj",
-        "-ML",
-        "-Fdvc60.idb",
-        "-Gy",
-        "-G5",
-        "-W",
-        "3",
-        "-Bd"
-      ],
-      "normal_wrapped_replayed_objects_equal_except_timestamp": true,
-      "normalized_coff_size": 10656,
-      "normalized_coff_sha256": "5511e63b4d23e35b3826afdc0864557cf5af80c1cbf8d6b4f9eeb81f839d5822",
-      "streams_unchanged_after_replay": true,
-      "missing_stream_replay_rejected": true,
-      "missing_stream_exit_code": 50,
-      "metrics": {
-        "ratio": 0.9918256130790191,
-        "target_instructions": 367,
-        "candidate_instructions": 367,
-        "prefix_instructions": 252,
-        "references_ok": 120,
-        "reference_problems": 0,
-        "exact": false,
-        "body_byte_exact": false
-      }
-    },
-    {
-      "function": "highscore_sync_worker",
-      "source_sha256": "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f",
-      "normal_build_key": {
-        "toolchain": {
-          "compiler_trees": {
-            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
-            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
-          },
-          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
-          "runner_mode": 493,
-          "cl_environment": {
-            "CL": null,
-            "_CL_": null
-          }
-        },
-        "pipeline_sha256": [
-          "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
-          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
-          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
-        ],
-        "compiler": "msvc6.5",
-        "argv": [
-          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
-          "/c",
-          "/O2",
-          "/GB",
-          "/W3",
-          "/GR-",
-          "scratch.cpp"
-        ],
-        "auto_inline_off": [],
-        "dependencies": [
-          [
-            "scratches/highscore_sync_worker/scratch.cpp",
-            "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f"
-          ],
-          [
-            "scratches/highscore_sync_worker/scratch.conf",
-            "ec98f1d78d475b0e20709cbe9dc4d7fc59c3f29489e809f414da221d94de7a37"
+            "scratches/creature_handle_death/scratch.conf",
+            "93214331bee5687ffd19cf4f6ecfc2bb4c85adc1dccd74d0dd6dbbc83e8e301c"
           ],
           [
             "cl.sh",
@@ -184,36 +76,152 @@
             "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
           ],
           [
-            "include/crimsonland_config_owner.h",
-            "36894d70bfa536783e43099079cdef0f6b50d2cff80f2b111f5317bdf56ad689"
-          ],
-          [
             "include/crimsonland_console.h",
             "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
           ],
           [
-            "include/crimsonland_highscore.h",
-            "cd315fdc8166f0e5fbf61e1f28371dd744869c2613fcfbc6b344e376e3ceb6ee"
+            "include/crimsonland_game_state_owner.h",
+            "2ba8a1bfd36d86491a0487c52a00da3e963a13596f227d8e33fa8db020401c11"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
           ]
         ]
       },
       "cflags": "/O2 /GB /W3 /GR-",
       "captured_streams": {
         "ex": {
-          "size": 13481,
-          "sha256": "dd6678ac9e13341cfb4088a1f0195fcd48f739d6cd4f6f9be6d050b711022a4c"
+          "size": 4097,
+          "sha256": "aeceb8cb9e318680747ba9ad1c86df3e85e88ea158ec9483299a01a6cc616e55"
         },
         "in": {
-          "size": 1400,
-          "sha256": "2b14f567e8b1abdf52a0f5c8713d91bae3ec7617265172b98a2b76e3575030cc"
+          "size": 3,
+          "sha256": "1a1695e1b37a7e17eaca2668271856b8903746fe1815f75ef18e03bc0bb861fa"
         },
         "sy": {
-          "size": 2146,
-          "sha256": "a43285391d5cce5144909f0cf30c1fe856f4f08a490a4ca17fa4111db91c0103"
+          "size": 394,
+          "sha256": "80a572e672e75493635d3f126c3f2c07c77675530d16fae39d6f9e928024eed8"
         },
         "gl": {
-          "size": 9618,
-          "sha256": "8beafaed9e9e1e3bb6280b67958fbd82e4a6c55ca811895fdc506fcf82b83676"
+          "size": 1161,
+          "sha256": "e7095d8a27cbdc840908c78e3bc7ee7133ba944475bda7eed377a29d716d29f2"
+        }
+      },
+      "replayed_backend_arguments": [
+        "{original-c2}",
+        "-il",
+        "{captured-prefix}",
+        "-f",
+        "scratch.c",
+        "-Gs4096",
+        "-dos",
+        "-Foreplay.obj",
+        "-ML",
+        "-Fdvc60.idb",
+        "-Gy",
+        "-G5",
+        "-W",
+        "3",
+        "-Bd"
+      ],
+      "normal_wrapped_replayed_objects_equal_except_timestamp": true,
+      "normalized_coff_size": 4216,
+      "normalized_coff_sha256": "1be9d7635f868d6cd923d0a3e15c143c65b2e1698b9452c225e1a27b693f43aa",
+      "streams_unchanged_after_replay": true,
+      "missing_stream_replay_rejected": true,
+      "missing_stream_exit_code": 50,
+      "metrics": {
+        "ratio": 0.8948655256723717,
+        "target_instructions": 204,
+        "candidate_instructions": 205,
+        "prefix_instructions": 6,
+        "references_ok": 85,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "function": "plaguebearer_spread_infection",
+      "source_sha256": "2a9b3298ae44614f909381f0183f7e5f0a1640efaef95435e0756c458fb19e6f",
+      "normal_build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "scratches/plaguebearer_spread_infection/scratch.cpp",
+            "2a9b3298ae44614f909381f0183f7e5f0a1640efaef95435e0756c458fb19e6f"
+          ],
+          [
+            "scratches/plaguebearer_spread_infection/scratch.conf",
+            "96051cf8fc430fbc12516741d9ce2fd0acf197ededc18cdcaf8dda3527d00c9b"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ]
+        ]
+      },
+      "cflags": "/O2 /GB /W3 /GR-",
+      "captured_streams": {
+        "ex": {
+          "size": 6655,
+          "sha256": "2ec8e09e65890b2d40a9772c8ebff2c25204b8147bd56a8f0e5dee542cd9b9b4"
+        },
+        "in": {
+          "size": 141,
+          "sha256": "677a32688e8526719a98f3893959006f95046a37d1f394e24e0f5b93a11bad1c"
+        },
+        "sy": {
+          "size": 1944,
+          "sha256": "cfde85390d155a35ac4cbabc85c576852de5437659389fb87cb3b1d57986bb14"
+        },
+        "gl": {
+          "size": 624,
+          "sha256": "efb12e54aa22d78d1cdc00ee78b68fcc564e270ddba4d624471bfc439ebcb8df"
         }
       },
       "replayed_backend_arguments": [
@@ -234,20 +242,20 @@
         "-Bd"
       ],
       "normal_wrapped_replayed_objects_equal_except_timestamp": true,
-      "normalized_coff_size": 11645,
-      "normalized_coff_sha256": "63c1e80dea0c170253512f54b35a5271d3d34da71ae0d5cf42ad1e75527083f0",
+      "normalized_coff_size": 1084,
+      "normalized_coff_sha256": "ce13441f4755b8c7f7138cb86b0837bd478f28c841e86694017413d51f421095",
       "streams_unchanged_after_replay": true,
       "missing_stream_replay_rejected": true,
       "missing_stream_exit_code": 50,
       "metrics": {
-        "ratio": 0.9686013320647003,
-        "target_instructions": 525,
-        "candidate_instructions": 526,
-        "prefix_instructions": 340,
-        "references_ok": 126,
+        "ratio": 1.0,
+        "target_instructions": 64,
+        "candidate_instructions": 64,
+        "prefix_instructions": 64,
+        "references_ok": 14,
         "reference_problems": 0,
-        "exact": false,
-        "body_byte_exact": false
+        "exact": true,
+        "body_byte_exact": true
       }
     }
   ]
