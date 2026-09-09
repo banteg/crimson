@@ -718,11 +718,14 @@ experiments remain distinguishable from ordinary top-level-source sweeps.
 Every variant builds in an isolated temporary scratch and is ranked by the
 canonical match score, exact/reference-clean state, prefix, and instruction
 shape. `--time-budget` starts before the baseline build and passes one absolute
-deadline to every compiler invocation. Expiry kills the compiler/Wibo process
-group, including descendants, and records an evaluation error rather than
-negative matching evidence. Interrupted sweeps remain inconclusive. Individual
-compiler and listing invocations also have a 120-second ceiling without a
-sweep budget. Reports show evaluated/planned/possible coverage at each
+deadline to every compiler invocation. Expiry sends `SIGKILL` to the
+compiler/Wibo process group and allows one further second for cleanup. If a
+kernel-blocked process or an inherited output pipe prevents cleanup, the
+invocation reports that failure with its process-group ID instead of waiting
+indefinitely. Timeouts are evaluation errors rather than negative matching
+evidence; interrupted sweeps remain inconclusive. Individual compiler and
+listing invocations also have a 120-second execution ceiling without a sweep
+budget. Reports show evaluated/planned/possible coverage at each
 mutation depth and call out interaction combinations that were never
 evaluated. Ranked candidates also show movement of the first native mismatch
 byte offset. This ordering selects a safe canonical winner; it is not a search
