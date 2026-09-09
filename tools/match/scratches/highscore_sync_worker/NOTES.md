@@ -271,3 +271,9 @@ request-close forms and five error-query lifetime forms compile and complete;
 none improves the retained source. The two remaining native regions are still
 the error-query output-register pairing and request-close copy. No compiler
 ceiling or exact match is claimed.
+
+## Distinct VC6 build controls (2026-09-09)
+
+The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+compares the current source across five independently fingerprinted VC6 builds.
+None improves this candidate; canonical source and configuration are unchanged.

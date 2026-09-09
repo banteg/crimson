@@ -321,3 +321,9 @@ regress. Six sweep variants are byte-neutral ties (trigger/half temps,
 `const` half); `unsigned` division bounds signedness at 88.46%; shared x
 temporaries bound factoring at 57.56%. None of the tested straight-line spellings reproduces the remaining schedule
 under `msvc6.5 /O2 /GB`; this does not establish a source-level ceiling.
+
+## Distinct VC6 build controls (2026-09-09)
+
+The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+compares the current source across five independently fingerprinted VC6 builds.
+None improves this candidate; canonical source and configuration are unchanged.

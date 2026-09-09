@@ -155,3 +155,9 @@ to 44.255319%, 120/115 instructions, prefix 0, and `8/0/0` references.
 None produces the exact native 115-instruction body. Canonical source is unchanged. These controls bound the
 specified source boundaries, not the function's matchability; broader sources
 and results from this run remain in `/private/tmp/timeline-review`.
+
+## Distinct VC6 build controls (2026-09-09)
+
+The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+compares the current source across five independently fingerprinted VC6 builds.
+None improves this candidate; canonical source and configuration are unchanged.

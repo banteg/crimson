@@ -142,3 +142,9 @@ function's matchability.
 Twenty-six complete field-owner, predicate-bound pointer, real prelude-helper, child-record-copy, and child-scope controls leave the 89.486553%, 205/204-instruction, 85-clean-reference source as the strongest candidate. The native flag load avoids the candidate's extra shared-index shift. Lower-scoring forms that recover the instruction count introduce reference debt and are rejected.
 
 The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.
+
+## Distinct VC6 build controls (2026-09-09)
+
+The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+compares the current source across five independently fingerprinted VC6 builds.
+None improves this candidate; canonical source and configuration are unchanged.

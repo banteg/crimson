@@ -256,3 +256,9 @@ The isolated VC6 array and scalar controls naturally select native's first
 `lea ecx`; the full worker selects `lea edx`. This is evidence for an allocation
 context difference, not proof of the original variable layout or an exact
 encoded body. The full-function matching requirements remain unchanged.
+
+## Distinct VC6 build controls (2026-09-09)
+
+The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+compares the current source across five independently fingerprinted VC6 builds.
+None improves this candidate; canonical source and configuration are unchanged.

@@ -1,0 +1,422 @@
+{
+  "base_commit": "be804fa9f",
+  "columns": [
+    "function_or_control",
+    "compiler_or_function",
+    "match_ratio",
+    "candidate_instructions",
+    "prefix_instructions",
+    "clean_references",
+    "problem_references",
+    "body_byte_exact"
+  ],
+  "source_inputs": {
+    "statistics_update_check_worker": {
+      "scratch.cpp": "61a2fd9a1cb76c31eb5755284368125d86f1be527c58d6a41e72af3ef49edc92",
+      "scratch.conf": "6586d8e09a1da885ae0c81de5042358bd4f108696cd09ca3b37053f949de294f"
+    },
+    "highscore_sync_worker": {
+      "scratch.cpp": "e81e8572de186cb71242cf34c0742a622253990c5c9beab64078893382c5177f",
+      "scratch.conf": "ec98f1d78d475b0e20709cbe9dc4d7fc59c3f29489e809f414da221d94de7a37"
+    },
+    "creature_handle_death": {
+      "scratch.conf": "93214331bee5687ffd19cf4f6ecfc2bb4c85adc1dccd74d0dd6dbbc83e8e301c",
+      "scratch.c": "9415ec3cdb1a74fb5236dbbd66d3d0083e10ca0c0d90c44fb4bc6be50a99c48b"
+    },
+    "quest_spawn_timeline_update": {
+      "scratch.cpp": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "scratch.conf": "309f46e5f59c2639925d502620a95cb067b7f5d73065c99f34084f8c49e3f7cb"
+    },
+    "quest_build_spiders_inc": {
+      "scratch.cpp": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338",
+      "scratch.conf": "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240"
+    }
+  },
+  "compiler_inputs": {
+    "msvc6.0": {
+      "c1.dll": "28982efb9bfc6051a6b5163fedceccd56e17afe0df8296df3c25c89372d55123",
+      "c2.dll": "74c7ed7d01461785766e73812a4c3420ed728e2048ae3c9d525c2e347376c670",
+      "c1xx.dll": "71554a7688395ff592f5ac0f2e0413788d256bb869123e39e81b6da5e12c086e"
+    },
+    "msvc6.3": {
+      "c1.dll": "d1b25d84da1d3d0d460996ea298488cb183b857e1b90628147983114ac4ab55f",
+      "c2.dll": "a0cc45f83fd0ed009aa4f43df5598105a1049ad9675de0b1089be7cce7d3c153",
+      "c1xx.dll": "28c355499c2f8090910624734faff31fe719a69a8aac7dd44b2ce64addf96ee2"
+    },
+    "msvc6.4": {
+      "c1.dll": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+      "c2.dll": "5649bd68ed833fcf4396c4a0a834e94ab1ec162316b3cbc3d8a9beabdc54e517",
+      "c1xx.dll": "71718c2ba17a0e8c030ce4e29c7904661b513e3937dd701de79fc2af50a28a52"
+    },
+    "msvc6.5": {
+      "c1.dll": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+      "c2.dll": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+      "c1xx.dll": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6"
+    },
+    "msvc6.6": {
+      "c1.dll": "fc6771ed73524417877f1263604bf8b9b9cd403c8cfb72b2e25737bdc81d592e",
+      "c2.dll": "3f2b5f43e3172d38651886bd2599957298d9fa42d06684a752e381c17572b12f",
+      "c1xx.dll": "ab4610ad56f7278a9c89d055e4189bd8037c7340a21bac5434fe24c7d5a7526d"
+    }
+  },
+  "compiler_controls": [
+    [
+      "statistics_update_check_worker",
+      "msvc6.0",
+      0.8994565217391305,
+      369,
+      53,
+      119,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "msvc6.3",
+      0.8994565217391305,
+      369,
+      53,
+      119,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "msvc6.4",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "msvc6.5",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics_update_check_worker",
+      "msvc6.6",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "msvc6.0",
+      0.9315589353612167,
+      527,
+      198,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "msvc6.3",
+      0.9315589353612167,
+      527,
+      198,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "msvc6.4",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "msvc6.5",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore_sync_worker",
+      "msvc6.6",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "msvc6.0",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "msvc6.3",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "msvc6.4",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "msvc6.5",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "creature_handle_death",
+      "msvc6.6",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "msvc6.0",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "msvc6.3",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "msvc6.4",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "msvc6.5",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_spawn_timeline_update",
+      "msvc6.6",
+      0.9122807017543859,
+      113,
+      51,
+      13,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "msvc6.0",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "msvc6.3",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "msvc6.4",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "msvc6.5",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ],
+    [
+      "quest_build_spiders_inc",
+      "msvc6.6",
+      0.9619047619047619,
+      105,
+      57,
+      7,
+      0,
+      false
+    ]
+  ],
+  "translation_unit_controls": [
+    [
+      "statistics-highscore",
+      "statistics_update_check_worker",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "statistics-highscore",
+      "highscore_sync_worker",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ],
+    [
+      "highscore-statistics",
+      "statistics_update_check_worker",
+      0.9918256130790191,
+      367,
+      252,
+      120,
+      0,
+      false
+    ],
+    [
+      "highscore-statistics",
+      "highscore_sync_worker",
+      0.9686013320647003,
+      526,
+      340,
+      126,
+      0,
+      false
+    ]
+  ],
+  "record_union_columns": [
+    "control",
+    "match_ratio",
+    "candidate_instructions",
+    "prefix_instructions",
+    "clean_references",
+    "problem_references",
+    "body_byte_exact"
+  ],
+  "record_union_controls": [
+    [
+      "position",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "velocity",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "color",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "target_position",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "target_offset",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ],
+    [
+      "all",
+      0.8948655256723717,
+      205,
+      6,
+      85,
+      0,
+      false
+    ]
+  ],
+  "record_header_sha256": "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+}
