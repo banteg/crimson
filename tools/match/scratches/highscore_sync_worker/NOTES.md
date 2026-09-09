@@ -286,3 +286,11 @@ fork for plain compilation, PCH creation, and PCH reuse, normalizing only
 the COFF timestamp. `/Zd` and `/Zi` also retain the baseline metrics.
 The runner fixes restore PCH support but produce no matching gain; source
 and canonical compiler flags are unchanged.
+## Independent backend replay (2026-09-09)
+
+The [VC6 intermediate-stream proof](../../evidence/vc6-intermediate-replay-2026-09-09/README.md)
+captures this unchanged source between C1XX and C2, then replays its four streams
+in a standalone backend process. Normal, captured, and replayed COFF objects
+agree completely except for the header timestamp. The matcher still reports
+96.860133%, 526/525 instructions, prefix 340, and 126 clean references; the
+response-query and cleanup differences remain unresolved.

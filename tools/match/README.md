@@ -1038,6 +1038,13 @@ option was ignored. Older cached builds can lack this field; rebuild with
 `compile_scratch(..., force=True)` to capture it. Archive and structural import
 objects do not invoke the compiler and have no compiler output.
 
+The [VC6 intermediate replay diagnostic](evidence/vc6-intermediate-replay-2026-09-09/README.md)
+captures the frontend's four intermediate streams and replays them through the
+original backend in a standalone process. Its two network-worker controls
+require complete COFF equality apart from the header timestamp. This exposes
+a reproducible frontend/backend boundary; it does not decode the IR or change
+matching criteria.
+
 Compare another compiler profile without editing scratches:
 
 ```sh
