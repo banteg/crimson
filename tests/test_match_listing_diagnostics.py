@@ -187,6 +187,60 @@ def test_stack_locals_bounds_entries_and_deltas_but_preserves_totals() -> None:
     assert len(payload["locals"][0]["deltas"]) == 1
     assert payload["locals"][0]["omitted_deltas"] == 1
     assert payload["locals"][0]["observations"] == 2
+    assert payload["locals"][0]["omitted_accesses"] == 1
+    assert len(payload["locals"][0]["accesses"]) == 1
+    span = payload["locals"][0]["access_span"]
+    assert span["first"]["candidate"]["index"] == 0
+    assert span["last"]["candidate"]["index"] == 1
+
+
+def test_stack_locals_preserve_repeated_uses_with_changing_esp_and_reused_aliases() -> None:
+    result = _result(
+        (
+            "mov eax, dword [esp+0x14]",
+            "push edx",
+            "fld dword [esp+0x18]",
+            "add esp, 0x4",
+            "fstp dword [esp+0x1c]",
+            "mov ebx, dword [esp+0x14]",
+        ),
+        (
+            "mov eax, dword [esp+0x10]",
+            "push edx",
+            "fld dword [esp+0x14]",
+            "add esp, 0x4",
+            "fstp dword [esp+0x10]",
+            "mov ebx, dword [esp+0x10]",
+        ),
+    )
+    listing = _listing(
+        (
+            "mov eax, DWORD PTR _local$[esp+32]",
+            "push edx",
+            "fld DWORD PTR _local$[esp+36]",
+            "add esp, 4",
+            "fstp DWORD PTR _other$[esp+32]",
+            "mov ebx, DWORD PTR _local$[esp+32]",
+        ),
+        "_local$ = -16\n_other$ = -16",
+    )
+
+    payload = stack_local_observations_payload(result, listing, symbol="foo")
+
+    locals_by_name = {row["name"]: row for row in payload["locals"]}
+    local = locals_by_name["_local$"]
+    assert [sample["candidate"]["index"] for sample in local["accesses"]] == [0, 2, 5]
+    assert [sample["listing_bias"] for sample in local["accesses"]] == [32, 36, 32]
+    assert [sample["delta"] for sample in local["accesses"]] == [4, 4, 4]
+    assert [sample["source_lines"] for sample in local["accesses"]] == [[10], [12], [15]]
+    assert local["access_span"]["last"] == local["accesses"][-1]
+    assert local["omitted_accesses"] == 0
+    assert len(local["deltas"]) == 1
+    assert locals_by_name["_other$"]["accesses"][0]["candidate"]["index"] == 4
+    assert "not a live range" in payload["caveat"]
+    assert "observed-use-span: native=0x00401000..0x00401005 candidate=+0x0..+0x5" in (
+        render_stack_local_observations(payload)
+    )
 
 
 @pytest.mark.parametrize(

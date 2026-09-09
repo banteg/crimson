@@ -993,7 +993,16 @@ or frame offset. A shared declared offset never merges distinct named aliases.
 These observations do not establish native variable identity, stack-pointer
 adjustments, object fields, or lifetimes.
 
-`--max-stack-entries` bounds each section and its delta samples; omitted counts
+Each entry also includes its first and last observed access. The JSON retains
+the individual `accesses` in candidate instruction order, including repeated
+uses with the same delta, source lines, and listing expressions. Use these to
+follow a local through calls and branches instead of extrapolating from the
+first delta sample. An observed use span is not a live range: it includes no
+proof of definitions, kills, or path-sensitive liveness. Different aliases
+sharing one offset remain separate, even when their spans overlap.
+
+`--max-stack-entries` bounds each section, its delta samples, and its access
+sequences; omitted counts
 remain visible. `--json` adds a `stack_residuals` field to the existing listing
 payload. Normal listing behavior and match acceptance remain unchanged; a
 successful diagnostic listing can still describe a non-exact match.

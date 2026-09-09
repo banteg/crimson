@@ -223,6 +223,7 @@ def stack_local_observations_payload(
 
     sections: dict[str, list[dict[str, Any]]] = {"locals": [], "unnamed_frame_accesses": [], "unannotated_accesses": []}
     for (kind, name, declared, base, raw_offset), samples in groups.items():
+        samples.sort(key=lambda sample: sample["candidate"]["index"])
         deltas: dict[int, list[dict[str, Any]]] = defaultdict(list)
         for sample in samples:
             deltas[sample["delta"]].append(sample)
@@ -244,6 +245,9 @@ def stack_local_observations_payload(
                 "conflicting_deltas": len(deltas) > 1,
                 "deltas": delta_rows[:limit],
                 "omitted_deltas": max(0, len(delta_rows) - limit),
+                "access_span": {"first": samples[0], "last": samples[-1]},
+                "accesses": samples[:limit],
+                "omitted_accesses": max(0, len(samples) - limit),
             },
         )
     for entries in sections.values():
@@ -255,7 +259,8 @@ def stack_local_observations_payload(
             "Pairing uses monotonic instruction-shape alignment; repeated matching runs are excluded. "
             "Deltas compare paired instruction displacements, not proven native variable homes. "
             "ESP movement, object fields, and lifetime reuse are not inferred; multiple observed deltas "
-            "remain conflicts. Bare stack accesses are not assigned a local name or a frame offset."
+            "remain conflicts. Accesses are in instruction order; first/last observations bound a use span, "
+            "not a live range. Bare stack accesses are not assigned a local name or a frame offset."
         ),
         "match": {
             "exact": result.exact,
@@ -371,6 +376,12 @@ def render_stack_local_observations(payload: dict[str, Any]) -> str:
                 f"  {name} ({row['kind']}) {frame} "
                 f"observations={row['observations']} changed={row['changed_observations']}"
                 f"{' CONFLICTING DELTAS' if row['conflicting_deltas'] else ''}",
+            )
+            first, last = row["access_span"]["first"], row["access_span"]["last"]
+            lines.append(
+                f"    observed-use-span: native=0x{first['target']['address']:08x}"
+                f"..0x{last['target']['address']:08x} "
+                f"candidate=+0x{first['candidate']['offset']:x}..+0x{last['candidate']['offset']:x}",
             )
             for delta in row["deltas"]:
                 sample = delta["sample"]
