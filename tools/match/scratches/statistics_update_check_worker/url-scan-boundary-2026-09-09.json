@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "url-scan-boundary",
+      "find": "                                    update_notice_url = strdup_malloc(link);\n\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0],\n                                        &version[1], &version[2]);",
+      "replacements": [
+        {
+          "name": "local-url",
+          "text": "                                    char *notice = strdup_malloc(link);\n                                    update_notice_url = notice;\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0], &version[1], &version[2]);"
+        },
+        {
+          "name": "patch-between-result-publication",
+          "text": "                                    char *notice = strdup_malloc(link);\n                                    int *patch = &version[2];\n                                    update_notice_url = notice;\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0], &version[1], patch);"
+        },
+        {
+          "name": "components-between-result-publication",
+          "text": "                                    char *notice = strdup_malloc(link);\n                                    int *major = &version[0];\n                                    int *minor = &version[1];\n                                    int *patch = &version[2];\n                                    update_notice_url = notice;\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", major, minor, patch);"
+        },
+        {
+          "name": "url-reference",
+          "text": "                                    char *&notice = update_notice_url;\n                                    notice = strdup_malloc(link);\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0], &version[1], &version[2]);"
+        },
+        {
+          "name": "comma-statement",
+          "text": "                                    update_notice_url = strdup_malloc(link),\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0], &version[1], &version[2]);"
+        },
+        {
+          "name": "scan-result-local",
+          "text": "                                    update_notice_url = strdup_malloc(link);\n                                    int fields = sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0], &version[1], &version[2]);"
+        },
+        {
+          "name": "reverse-component-pointers",
+          "text": "                                    char *notice = strdup_malloc(link);\n                                    int *patch = &version[2];\n                                    int *minor = &version[1];\n                                    int *major = &version[0];\n                                    update_notice_url = notice;\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", major, minor, patch);"
+        }
+      ]
+    }
+  ]
+}

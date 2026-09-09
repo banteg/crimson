@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "parsed-store-lifetime",
+      "find": "                                    *cursor = '\\0';\n                                    parsed = true;\n                                    update_notice_url = strdup_malloc(link);\n\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0],\n                                        &version[1], &version[2]);",
+      "replacements": [
+        {
+          "name": "before-terminator",
+          "text": "                                    parsed = true;\n                                    *cursor = '\\0';\n                                    update_notice_url = strdup_malloc(link);\n\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0],\n                                        &version[1], &version[2]);"
+        },
+        {
+          "name": "after-url",
+          "text": "                                    *cursor = '\\0';\n                                    update_notice_url = strdup_malloc(link);\n                                    parsed = true;\n\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0],\n                                        &version[1], &version[2]);"
+        },
+        {
+          "name": "after-scan",
+          "text": "                                    *cursor = '\\0';\n                                    update_notice_url = strdup_malloc(link);\n\n                                    sscanf(newest, \"Crimsonland %d.%d.%d<\", &version[0],\n                                        &version[1], &version[2]);\n                                    parsed = true;"
+        }
+      ]
+    },
+    {
+      "name": "parsed-byte-type",
+      "find": "    bool parsed = false;",
+      "replacements": [
+        {
+          "name": "unsigned-char",
+          "text": "    unsigned char parsed = false;"
+        },
+        {
+          "name": "char",
+          "text": "    char parsed = false;"
+        }
+      ]
+    }
+  ]
+}

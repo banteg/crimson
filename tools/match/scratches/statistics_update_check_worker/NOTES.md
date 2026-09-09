@@ -234,3 +234,25 @@ Four additional `version-parser-ownership-2026-09-08.json` controls move the
 scanner into an inline helper receiving an array pointer, array reference,
 component pointers, or component references. All four are byte-neutral with
 120 clean references. The total for this follow-up is 20 compiling controls.
+
+## URL publication and parser flag controls (2026-09-09)
+
+Two further complete plans contain 18 compiling controls. The seven
+`url-scan-boundary-2026-09-09.json` forms stage the returned URL or component
+pointers, borrow the URL by reference, use a comma expression, or name the
+unused scanner result. They are byte-neutral at 99.182561%, 367/367
+instructions, prefix 252, and 120 clean references.
+
+`parsed-store-lifetime-2026-09-09.json` crosses byte flag types with the flag's
+publication point. All eleven planned controls compile. Signed/unsigned byte
+spellings are neutral; moving the successful-parse flag across the terminator,
+URL duplication, or scanner call regresses. Neither plan changes canonical
+source or claims that the remaining schedule is unavoidable.
+
+The [network micro oracles](../../evidence/network-micro-oracles-2026-09-09/README.md)
+now check the differing instruction window independently. Given equal entry
+states, both publish the same URL and push the same three output addresses.
+The isolated VC6 array and scalar controls naturally select native's first
+`lea ecx`; the full worker selects `lea edx`. This is evidence for an allocation
+context difference, not proof of the original variable layout or an exact
+encoded body. The full-function matching requirements remain unchanged.
