@@ -26,8 +26,9 @@ Statistics has 367/367 instructions and 120 clean references; highscore has
 
 The source change replaces `while (read_ok)` with an unconditional loop and an
 explicit failed-read break. The independently recorded three-control plans in
-each scratch verify that both explicit-break forms are exact, while the
-conditioned `for` form preserves the former partial result. See the
+each scratch verify that `for (;;)` with an explicit break is exact. The
+conditioned `for` form preserves the former partial result, and `while (1)`
+with an explicit break regresses. See the
 [statistics notes](../../scratches/statistics_update_check_worker/NOTES.md) and
 [highscore notes](../../scratches/highscore_sync_worker/NOTES.md). Replay alone
 does not establish a new match; the complete matcher comparisons do.

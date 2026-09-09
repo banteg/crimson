@@ -290,9 +290,10 @@ original continuations. No scanner, parser, ABI, compiler flag, or reference
 alias changes are involved.
 
 The complete three-control `receive-loop-exit-2026-09-09.json` plan records
-the old 99.182561% with prefix 252 baseline. Both explicit-break forms
-(`for (;;)` and `while (1)`) become exact; a conditioned `for (; read_ok;)`
-is neutral. The retained, formatted `for (;;)` source has 367/367 identical
+the old 99.182561% with prefix 252 baseline. The explicit-break `for (;;)` form
+becomes exact; a conditioned `for (; read_ok;)` is neutral. The `while (1)`
+form with an explicit break regresses, so the result depends on the loop form
+as well as the explicit exit. The retained, formatted `for (;;)` source has 367/367 identical
 instructions, 120 clean references, zero mismatches or unresolved references,
 and relocation-aware `body_byte_exact=true`. Canonical direct matching and
 the independent frontend-capture/backend-replay proof both verify the result.
