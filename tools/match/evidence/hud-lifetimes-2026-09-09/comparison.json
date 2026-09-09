@@ -1,0 +1,3954 @@
+{
+  "schema": 1,
+  "kind": "hud-observed-stack-use-map",
+  "verified": true,
+  "caveat": "Candidate names label paired accesses, not original variables. Saved BN ESP facts are analyzer evidence. Observed use spans are not CFG live ranges; shared slots do not prove shared source objects. Micro examples demonstrate this compiler only, not original HUD source or general program equivalence.",
+  "verifier_sha256": "734c2a28a3bac9340d40107cc46130a0cf5ff3c3032972f3b8f1f897a149e37c",
+  "native_stack_sha256": "d959c883d602abbda8e1890077c2f0418b9389591b8b3e348e8a69af07fe4339",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "f8e1f4fb4a2234bf775f7516b358591e5f3f9bf97b7cc4bf4e86eb52b0e5c99a",
+  "source_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+  "control_source_sha256": "eb27703865c5da12145930b0a403933cb7754d48af8d0f4c0042aea44a3b3e90",
+  "compiler_sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+  "match": {
+    "exact": false,
+    "body_byte_exact": false,
+    "ratio": 0.9221491228070176,
+    "prefix_instructions": 42,
+    "target_instructions": 1824,
+    "candidate_instructions": 1824,
+    "references": {
+      "ok": 393,
+      "unresolved": 0,
+      "mismatch": 0
+    }
+  },
+  "paired_stack_instructions": 263,
+  "locals": [
+    {
+      "candidate_name": "_health_ratio$5000",
+      "kind": "named",
+      "candidate_listing_declaration": -52,
+      "native_entry_slots": [
+        -44
+      ],
+      "accesses": [
+        {
+          "native_offset": 1677,
+          "candidate_offset": 1677,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            244,
+            245,
+            246,
+            247
+          ]
+        },
+        {
+          "native_offset": 1694,
+          "candidate_offset": 1694,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            249
+          ]
+        },
+        {
+          "native_offset": 1704,
+          "candidate_offset": 1704,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            250
+          ]
+        },
+        {
+          "native_offset": 1721,
+          "candidate_offset": 1721,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            251
+          ]
+        },
+        {
+          "native_offset": 1765,
+          "candidate_offset": 1765,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            256,
+            257
+          ]
+        },
+        {
+          "native_offset": 1787,
+          "candidate_offset": 1787,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            258,
+            259,
+            260,
+            261,
+            262,
+            263
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_pulse_speed$4962",
+      "kind": "named",
+      "candidate_listing_declaration": -52,
+      "native_entry_slots": [
+        -44
+      ],
+      "accesses": [
+        {
+          "native_offset": 622,
+          "candidate_offset": 622,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            126,
+            127,
+            128,
+            129,
+            130
+          ]
+        },
+        {
+          "native_offset": 641,
+          "candidate_offset": 641,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            131
+          ]
+        },
+        {
+          "native_offset": 655,
+          "candidate_offset": 655,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            132,
+            133,
+            134
+          ]
+        },
+        {
+          "native_offset": 726,
+          "candidate_offset": 726,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            144
+          ]
+        },
+        {
+          "native_offset": 740,
+          "candidate_offset": 740,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            145,
+            146,
+            147
+          ]
+        },
+        {
+          "native_offset": 856,
+          "candidate_offset": 856,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            156,
+            157,
+            158,
+            159,
+            160
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_hud_y$",
+      "kind": "named",
+      "candidate_listing_declaration": -40,
+      "native_entry_slots": [
+        -44
+      ],
+      "accesses": [
+        {
+          "native_offset": 2697,
+          "candidate_offset": 2697,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            372,
+            373,
+            374
+          ]
+        },
+        {
+          "native_offset": 3832,
+          "candidate_offset": 3832,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            471,
+            472,
+            473,
+            474
+          ]
+        },
+        {
+          "native_offset": 5954,
+          "candidate_offset": 5954,
+          "native_entry_esp": -72,
+          "native_displacement": 28,
+          "native_entry_slot": -44,
+          "source_lines": [
+            707,
+            708
+          ]
+        },
+        {
+          "native_offset": 6319,
+          "candidate_offset": 6319,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            756
+          ]
+        },
+        {
+          "native_offset": 6347,
+          "candidate_offset": 6347,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            760
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_panel_alpha$",
+      "kind": "named",
+      "candidate_listing_declaration": -44,
+      "native_entry_slots": [
+        -40
+      ],
+      "accesses": [
+        {
+          "native_offset": 143,
+          "candidate_offset": 143,
+          "native_entry_esp": -68,
+          "native_displacement": 28,
+          "native_entry_slot": -40,
+          "source_lines": [
+            94,
+            95
+          ]
+        },
+        {
+          "native_offset": 147,
+          "candidate_offset": 147,
+          "native_entry_esp": -68,
+          "native_displacement": 28,
+          "native_entry_slot": -40,
+          "source_lines": [
+            94,
+            95
+          ]
+        },
+        {
+          "native_offset": 2429,
+          "candidate_offset": 2429,
+          "native_entry_esp": -68,
+          "native_displacement": 28,
+          "native_entry_slot": -40,
+          "source_lines": [
+            354,
+            355
+          ]
+        },
+        {
+          "native_offset": 2603,
+          "candidate_offset": 2603,
+          "native_entry_esp": -68,
+          "native_displacement": 28,
+          "native_entry_slot": -40,
+          "source_lines": [
+            364,
+            365,
+            366,
+            367,
+            368,
+            369
+          ]
+        },
+        {
+          "native_offset": 6169,
+          "candidate_offset": 6169,
+          "native_entry_esp": -68,
+          "native_displacement": 28,
+          "native_entry_slot": -40,
+          "source_lines": [
+            734,
+            735,
+            736
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_slide_x$5053",
+      "kind": "named",
+      "candidate_listing_declaration": -48,
+      "native_entry_slots": [
+        -44
+      ],
+      "accesses": [
+        {
+          "native_offset": 2846,
+          "candidate_offset": 2846,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            382,
+            383,
+            384
+          ]
+        },
+        {
+          "native_offset": 2882,
+          "candidate_offset": 2882,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            385,
+            386
+          ]
+        },
+        {
+          "native_offset": 2886,
+          "candidate_offset": 2886,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            387,
+            388,
+            389
+          ]
+        },
+        {
+          "native_offset": 3134,
+          "candidate_offset": 3134,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            403
+          ]
+        },
+        {
+          "native_offset": 3533,
+          "candidate_offset": 3533,
+          "native_entry_esp": -80,
+          "native_displacement": 36,
+          "native_entry_slot": -44,
+          "source_lines": [
+            432,
+            433,
+            434,
+            435,
+            436,
+            437
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "$T5246",
+      "kind": "generated",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -20,
+        -16
+      ],
+      "accesses": [
+        {
+          "native_offset": 386,
+          "candidate_offset": 386,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            113
+          ]
+        },
+        {
+          "native_offset": 394,
+          "candidate_offset": 394,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            113
+          ]
+        },
+        {
+          "native_offset": 398,
+          "candidate_offset": 398,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            113
+          ]
+        },
+        {
+          "native_offset": 406,
+          "candidate_offset": 406,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            113
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "$T5247",
+      "kind": "generated",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -20,
+        -16
+      ],
+      "accesses": [
+        {
+          "native_offset": 420,
+          "candidate_offset": 420,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            115
+          ]
+        },
+        {
+          "native_offset": 428,
+          "candidate_offset": 428,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            115
+          ]
+        },
+        {
+          "native_offset": 432,
+          "candidate_offset": 432,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            115
+          ]
+        },
+        {
+          "native_offset": 440,
+          "candidate_offset": 440,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            115
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "$T5252",
+      "kind": "generated",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -8,
+        -4
+      ],
+      "accesses": [
+        {
+          "native_offset": 1431,
+          "candidate_offset": 1431,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            225
+          ]
+        },
+        {
+          "native_offset": 1439,
+          "candidate_offset": 1439,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            225
+          ]
+        },
+        {
+          "native_offset": 1443,
+          "candidate_offset": 1443,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            225
+          ]
+        },
+        {
+          "native_offset": 1451,
+          "candidate_offset": 1451,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            225
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "$T5253",
+      "kind": "generated",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -8,
+        -4
+      ],
+      "accesses": [
+        {
+          "native_offset": 1461,
+          "candidate_offset": 1461,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            227
+          ]
+        },
+        {
+          "native_offset": 1469,
+          "candidate_offset": 1469,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            227
+          ]
+        },
+        {
+          "native_offset": 1473,
+          "candidate_offset": 1473,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            227
+          ]
+        },
+        {
+          "native_offset": 1481,
+          "candidate_offset": 1481,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            227
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "$T5255",
+      "kind": "generated",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -20,
+        -16
+      ],
+      "accesses": [
+        {
+          "native_offset": 1952,
+          "candidate_offset": 1952,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            276
+          ]
+        },
+        {
+          "native_offset": 1960,
+          "candidate_offset": 1960,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            276
+          ]
+        },
+        {
+          "native_offset": 1964,
+          "candidate_offset": 1964,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            276
+          ]
+        },
+        {
+          "native_offset": 1972,
+          "candidate_offset": 1972,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            276
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "$T5256",
+      "kind": "generated",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -20,
+        -16
+      ],
+      "accesses": [
+        {
+          "native_offset": 1982,
+          "candidate_offset": 1982,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            278
+          ]
+        },
+        {
+          "native_offset": 1990,
+          "candidate_offset": 1990,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            278
+          ]
+        },
+        {
+          "native_offset": 1994,
+          "candidate_offset": 1994,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            278
+          ]
+        },
+        {
+          "native_offset": 2002,
+          "candidate_offset": 2002,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            278
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_bar_position$4988",
+      "kind": "named",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -4
+      ],
+      "accesses": [
+        {
+          "native_offset": 1455,
+          "candidate_offset": 1455,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            225
+          ]
+        },
+        {
+          "native_offset": 1485,
+          "candidate_offset": 1485,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            227
+          ]
+        },
+        {
+          "native_offset": 1637,
+          "candidate_offset": 1637,
+          "native_entry_esp": -80,
+          "native_displacement": 76,
+          "native_entry_slot": -4,
+          "source_lines": [
+            238,
+            239,
+            240,
+            241,
+            242,
+            243
+          ]
+        },
+        {
+          "native_offset": 1832,
+          "candidate_offset": 1832,
+          "native_entry_esp": -80,
+          "native_displacement": 76,
+          "native_entry_slot": -4,
+          "source_lines": [
+            258,
+            259,
+            260,
+            261,
+            262,
+            263
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_bar_x$5035",
+      "kind": "named",
+      "candidate_listing_declaration": -40,
+      "native_entry_slots": [
+        -44
+      ],
+      "accesses": [
+        {
+          "native_offset": 2261,
+          "candidate_offset": 2261,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            328
+          ]
+        },
+        {
+          "native_offset": 2369,
+          "candidate_offset": 2369,
+          "native_entry_esp": -80,
+          "native_displacement": 36,
+          "native_entry_slot": -44,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2387,
+          "candidate_offset": 2387,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            347,
+            348
+          ]
+        },
+        {
+          "native_offset": 2397,
+          "candidate_offset": 2397,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            349
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_bonus_y$",
+      "kind": "named",
+      "candidate_listing_declaration": -20,
+      "native_entry_slots": [
+        -12
+      ],
+      "accesses": [
+        {
+          "native_offset": 6357,
+          "candidate_offset": 6357,
+          "native_entry_esp": -68,
+          "native_displacement": 56,
+          "native_entry_slot": -12,
+          "source_lines": [
+            761
+          ]
+        },
+        {
+          "native_offset": 6362,
+          "candidate_offset": 6362,
+          "native_entry_esp": -72,
+          "native_displacement": 60,
+          "native_entry_slot": -12,
+          "source_lines": [
+            762,
+            763,
+            764
+          ]
+        },
+        {
+          "native_offset": 6382,
+          "candidate_offset": 6382,
+          "native_entry_esp": -68,
+          "native_displacement": 56,
+          "native_entry_slot": -12,
+          "source_lines": [
+            767,
+            768
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_name_x$5107",
+      "kind": "named",
+      "candidate_listing_declaration": -52,
+      "native_entry_slots": [
+        -20
+      ],
+      "accesses": [
+        {
+          "native_offset": 4137,
+          "candidate_offset": 4137,
+          "native_entry_esp": -76,
+          "native_displacement": 56,
+          "native_entry_slot": -20,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4148,
+          "candidate_offset": 4148,
+          "native_entry_esp": -76,
+          "native_displacement": 56,
+          "native_entry_slot": -20,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4402,
+          "candidate_offset": 4402,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            846
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_popup_fade$5205",
+      "kind": "named",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -20
+      ],
+      "accesses": [
+        {
+          "native_offset": 6557,
+          "candidate_offset": 6557,
+          "native_entry_esp": -72,
+          "native_displacement": 52,
+          "native_entry_slot": -20,
+          "source_lines": [
+            790,
+            791,
+            792,
+            793,
+            794,
+            795
+          ]
+        },
+        {
+          "native_offset": 6561,
+          "candidate_offset": 6561,
+          "native_entry_esp": -72,
+          "native_displacement": 52,
+          "native_entry_slot": -20,
+          "source_lines": [
+            790,
+            791,
+            792,
+            793,
+            794,
+            795
+          ]
+        },
+        {
+          "native_offset": 6903,
+          "candidate_offset": 6903,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            829,
+            830
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_progress_position$5181",
+      "kind": "named",
+      "candidate_listing_declaration": -8,
+      "native_entry_slots": [
+        -20,
+        -16
+      ],
+      "accesses": [
+        {
+          "native_offset": 6208,
+          "candidate_offset": 6208,
+          "native_entry_esp": -68,
+          "native_displacement": 52,
+          "native_entry_slot": -16,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6248,
+          "candidate_offset": 6248,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6285,
+          "candidate_offset": 6285,
+          "native_entry_esp": -76,
+          "native_displacement": 56,
+          "native_entry_slot": -20,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_text_y$",
+      "kind": "named",
+      "candidate_listing_declaration": -40,
+      "native_entry_slots": [
+        -44
+      ],
+      "accesses": [
+        {
+          "native_offset": 6403,
+          "candidate_offset": 6403,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            769,
+            770
+          ]
+        },
+        {
+          "native_offset": 6948,
+          "candidate_offset": 6948,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            831,
+            832,
+            833,
+            834,
+            835,
+            836,
+            837
+          ]
+        },
+        {
+          "native_offset": 7011,
+          "candidate_offset": 7011,
+          "native_entry_esp": -68,
+          "native_displacement": 24,
+          "native_entry_slot": -44,
+          "source_lines": [
+            838,
+            839
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_clock_alpha$5056",
+      "kind": "named",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -48
+      ],
+      "accesses": [
+        {
+          "native_offset": 3023,
+          "candidate_offset": 3023,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            396,
+            397
+          ]
+        },
+        {
+          "native_offset": 3027,
+          "candidate_offset": 3027,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            396,
+            397
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_clock_alpha$5141",
+      "kind": "named",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -48
+      ],
+      "accesses": [
+        {
+          "native_offset": 4996,
+          "candidate_offset": 4996,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            612,
+            613
+          ]
+        },
+        {
+          "native_offset": 5000,
+          "candidate_offset": 5000,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            612,
+            613
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_clock_x$5058",
+      "kind": "named",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -20
+      ],
+      "accesses": [
+        {
+          "native_offset": 3167,
+          "candidate_offset": 3167,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            404,
+            405
+          ]
+        },
+        {
+          "native_offset": 3171,
+          "candidate_offset": 3171,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            404,
+            405
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_fill_alpha$4995",
+      "kind": "named",
+      "candidate_listing_declaration": -40,
+      "native_entry_slots": [
+        -20
+      ],
+      "accesses": [
+        {
+          "native_offset": 1535,
+          "candidate_offset": 1535,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            232
+          ]
+        },
+        {
+          "native_offset": 1539,
+          "candidate_offset": 1539,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            232
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_quest_name_length$5104",
+      "kind": "named",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -8
+      ],
+      "accesses": [
+        {
+          "native_offset": 4014,
+          "candidate_offset": 4014,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            505
+          ]
+        },
+        {
+          "native_offset": 4087,
+          "candidate_offset": 4087,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_background_alpha$4994",
+      "kind": "named",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -36
+      ],
+      "accesses": [
+        {
+          "native_offset": 1517,
+          "candidate_offset": 1517,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            231
+          ]
+        },
+        {
+          "native_offset": 1531,
+          "candidate_offset": 1531,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            232
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_banner_alpha$5101",
+      "kind": "named",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -36
+      ],
+      "accesses": [
+        {
+          "native_offset": 3904,
+          "candidate_offset": 3904,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            495,
+            496
+          ]
+        },
+        {
+          "native_offset": 3908,
+          "candidate_offset": 3908,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            495,
+            496
+          ]
+        },
+        {
+          "native_offset": 4200,
+          "candidate_offset": 4200,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            530,
+            531
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_banner_fade$5089",
+      "kind": "named",
+      "candidate_listing_declaration": -52,
+      "native_entry_slots": [
+        -52
+      ],
+      "accesses": [
+        {
+          "native_offset": 3859,
+          "candidate_offset": 3859,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            480,
+            481,
+            482,
+            483,
+            484
+          ]
+        },
+        {
+          "native_offset": 3863,
+          "candidate_offset": 3863,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            488,
+            489,
+            490
+          ]
+        },
+        {
+          "native_offset": 3880,
+          "candidate_offset": 3880,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            491
+          ]
+        },
+        {
+          "native_offset": 3888,
+          "candidate_offset": 3888,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            492,
+            493,
+            494
+          ]
+        },
+        {
+          "native_offset": 3934,
+          "candidate_offset": 3934,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            497
+          ]
+        },
+        {
+          "native_offset": 4526,
+          "candidate_offset": 4526,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            486
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_complete_fade$5121",
+      "kind": "named",
+      "candidate_listing_declaration": -52,
+      "native_entry_slots": [
+        -52
+      ],
+      "accesses": [
+        {
+          "native_offset": 4546,
+          "candidate_offset": 4546,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            566
+          ]
+        },
+        {
+          "native_offset": 4590,
+          "candidate_offset": 4590,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            568,
+            569,
+            570,
+            571,
+            572
+          ]
+        },
+        {
+          "native_offset": 4594,
+          "candidate_offset": 4594,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            573,
+            574,
+            575,
+            576
+          ]
+        },
+        {
+          "native_offset": 4611,
+          "candidate_offset": 4611,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            577
+          ]
+        },
+        {
+          "native_offset": 4621,
+          "candidate_offset": 4621,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            578
+          ]
+        },
+        {
+          "native_offset": 4638,
+          "candidate_offset": 4638,
+          "native_entry_esp": -68,
+          "native_displacement": 16,
+          "native_entry_slot": -52,
+          "source_lines": [
+            579
+          ]
+        },
+        {
+          "native_offset": 4707,
+          "candidate_offset": 4707,
+          "native_entry_esp": -72,
+          "native_displacement": 20,
+          "native_entry_slot": -52,
+          "source_lines": [
+            588,
+            589,
+            590,
+            591,
+            592
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_complete_scale$5134",
+      "kind": "named",
+      "candidate_listing_declaration": -48,
+      "native_entry_slots": [
+        -48
+      ],
+      "accesses": [
+        {
+          "native_offset": 4703,
+          "candidate_offset": 4703,
+          "native_entry_esp": -72,
+          "native_displacement": 24,
+          "native_entry_slot": -48,
+          "source_lines": [
+            588,
+            589,
+            590,
+            591,
+            592
+          ]
+        },
+        {
+          "native_offset": 4789,
+          "candidate_offset": 4789,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4817,
+          "candidate_offset": 4817,
+          "native_entry_esp": -72,
+          "native_displacement": 24,
+          "native_entry_slot": -48,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4848,
+          "candidate_offset": 4848,
+          "native_entry_esp": -76,
+          "native_displacement": 28,
+          "native_entry_slot": -48,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4878,
+          "candidate_offset": 4878,
+          "native_entry_esp": -84,
+          "native_displacement": 36,
+          "native_entry_slot": -48,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_name_scale$5103",
+      "kind": "named",
+      "candidate_listing_declaration": -48,
+      "native_entry_slots": [
+        -48
+      ],
+      "accesses": [
+        {
+          "native_offset": 3966,
+          "candidate_offset": 3966,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            498,
+            499,
+            500,
+            501,
+            502,
+            503,
+            504
+          ]
+        },
+        {
+          "native_offset": 4020,
+          "candidate_offset": 4020,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            506
+          ]
+        },
+        {
+          "native_offset": 4028,
+          "candidate_offset": 4028,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            507,
+            508,
+            509
+          ]
+        },
+        {
+          "native_offset": 4096,
+          "candidate_offset": 4096,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4166,
+          "candidate_offset": 4166,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            526,
+            527
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_position$4953",
+      "kind": "named",
+      "candidate_listing_declaration": -8,
+      "native_entry_slots": [
+        -8,
+        -4
+      ],
+      "accesses": [
+        {
+          "native_offset": 410,
+          "candidate_offset": 410,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            113
+          ]
+        },
+        {
+          "native_offset": 414,
+          "candidate_offset": 414,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            113
+          ]
+        },
+        {
+          "native_offset": 444,
+          "candidate_offset": 444,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            115
+          ]
+        },
+        {
+          "native_offset": 448,
+          "candidate_offset": 448,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            115
+          ]
+        },
+        {
+          "native_offset": 708,
+          "candidate_offset": 708,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            137,
+            138,
+            139,
+            140,
+            141
+          ]
+        },
+        {
+          "native_offset": 799,
+          "candidate_offset": 799,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        },
+        {
+          "native_offset": 811,
+          "candidate_offset": 811,
+          "native_entry_esp": -80,
+          "native_displacement": 72,
+          "native_entry_slot": -8,
+          "source_lines": [
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        },
+        {
+          "native_offset": 931,
+          "candidate_offset": 931,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            166,
+            167,
+            168,
+            169,
+            170
+          ]
+        },
+        {
+          "native_offset": 953,
+          "candidate_offset": 953,
+          "native_entry_esp": -80,
+          "native_displacement": 72,
+          "native_entry_slot": -8,
+          "source_lines": [
+            166,
+            167,
+            168,
+            169,
+            170
+          ]
+        },
+        {
+          "native_offset": 1976,
+          "candidate_offset": 1976,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            276
+          ]
+        },
+        {
+          "native_offset": 2006,
+          "candidate_offset": 2006,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            278
+          ]
+        },
+        {
+          "native_offset": 2010,
+          "candidate_offset": 2010,
+          "native_entry_esp": -68,
+          "native_displacement": 64,
+          "native_entry_slot": -4,
+          "source_lines": [
+            278
+          ]
+        },
+        {
+          "native_offset": 2362,
+          "candidate_offset": 2362,
+          "native_entry_esp": -80,
+          "native_displacement": 76,
+          "native_entry_slot": -4,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2374,
+          "candidate_offset": 2374,
+          "native_entry_esp": -84,
+          "native_displacement": 76,
+          "native_entry_slot": -8,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2537,
+          "candidate_offset": 2537,
+          "native_entry_esp": -80,
+          "native_displacement": 76,
+          "native_entry_slot": -4,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2555,
+          "candidate_offset": 2555,
+          "native_entry_esp": -84,
+          "native_displacement": 76,
+          "native_entry_slot": -8,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 3763,
+          "candidate_offset": 3763,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470
+          ]
+        },
+        {
+          "native_offset": 3771,
+          "candidate_offset": 3771,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470
+          ]
+        },
+        {
+          "native_offset": 3783,
+          "candidate_offset": 3783,
+          "native_entry_esp": -72,
+          "native_displacement": 68,
+          "native_entry_slot": -4,
+          "source_lines": [
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_progress_color$5179",
+      "kind": "named",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -36,
+        -32,
+        -28,
+        -24
+      ],
+      "accesses": [
+        {
+          "native_offset": 6180,
+          "candidate_offset": 6180,
+          "native_entry_esp": -68,
+          "native_displacement": 44,
+          "native_entry_slot": -24,
+          "source_lines": [
+            737,
+            738
+          ]
+        },
+        {
+          "native_offset": 6194,
+          "candidate_offset": 6194,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6200,
+          "candidate_offset": 6200,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6216,
+          "candidate_offset": 6216,
+          "native_entry_esp": -68,
+          "native_displacement": 36,
+          "native_entry_slot": -32,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6240,
+          "candidate_offset": 6240,
+          "native_entry_esp": -68,
+          "native_displacement": 40,
+          "native_entry_slot": -28,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_stage_scale$5112",
+      "kind": "named",
+      "candidate_listing_declaration": -48,
+      "native_entry_slots": [
+        -48
+      ],
+      "accesses": [
+        {
+          "native_offset": 4183,
+          "candidate_offset": 4183,
+          "native_entry_esp": -88,
+          "native_displacement": 40,
+          "native_entry_slot": -48,
+          "source_lines": [
+            528,
+            529
+          ]
+        },
+        {
+          "native_offset": 4334,
+          "candidate_offset": 4334,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4359,
+          "candidate_offset": 4359,
+          "native_entry_esp": -76,
+          "native_displacement": 28,
+          "native_entry_slot": -48,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4392,
+          "candidate_offset": 4392,
+          "native_entry_esp": -80,
+          "native_displacement": 32,
+          "native_entry_slot": -48,
+          "source_lines": [
+            846
+          ]
+        },
+        {
+          "native_offset": 4406,
+          "candidate_offset": 4406,
+          "native_entry_esp": -80,
+          "native_displacement": 32,
+          "native_entry_slot": -48,
+          "source_lines": [
+            846
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": "_transition_alpha$",
+      "kind": "named",
+      "candidate_listing_declaration": 8,
+      "native_entry_slots": [
+        4
+      ],
+      "accesses": [
+        {
+          "native_offset": 45,
+          "candidate_offset": 45,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            87
+          ]
+        },
+        {
+          "native_offset": 52,
+          "candidate_offset": 52,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            87
+          ]
+        },
+        {
+          "native_offset": 125,
+          "candidate_offset": 125,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            93
+          ]
+        },
+        {
+          "native_offset": 452,
+          "candidate_offset": 452,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            116,
+            117,
+            118,
+            119
+          ]
+        },
+        {
+          "native_offset": 1018,
+          "candidate_offset": 1018,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            177,
+            178
+          ]
+        },
+        {
+          "native_offset": 1507,
+          "candidate_offset": 1507,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            231
+          ]
+        },
+        {
+          "native_offset": 1521,
+          "candidate_offset": 1521,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            232
+          ]
+        },
+        {
+          "native_offset": 2277,
+          "candidate_offset": 2277,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            329,
+            330,
+            331,
+            332
+          ]
+        },
+        {
+          "native_offset": 2284,
+          "candidate_offset": 2284,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            334,
+            335,
+            336,
+            337,
+            338
+          ]
+        },
+        {
+          "native_offset": 3005,
+          "candidate_offset": 3005,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            395
+          ]
+        },
+        {
+          "native_offset": 3691,
+          "candidate_offset": 3691,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            445
+          ]
+        },
+        {
+          "native_offset": 3892,
+          "candidate_offset": 3892,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            492,
+            493,
+            494
+          ]
+        },
+        {
+          "native_offset": 4711,
+          "candidate_offset": 4711,
+          "native_entry_esp": -72,
+          "native_displacement": 76,
+          "native_entry_slot": 4,
+          "source_lines": [
+            588,
+            589,
+            590,
+            591,
+            592
+          ]
+        },
+        {
+          "native_offset": 4978,
+          "candidate_offset": 4978,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            611
+          ]
+        },
+        {
+          "native_offset": 5877,
+          "candidate_offset": 5877,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            700,
+            701,
+            702,
+            703,
+            704,
+            705
+          ]
+        },
+        {
+          "native_offset": 6025,
+          "candidate_offset": 6025,
+          "native_entry_esp": -88,
+          "native_displacement": 92,
+          "native_entry_slot": 4,
+          "source_lines": [
+            714,
+            715
+          ]
+        },
+        {
+          "native_offset": 6351,
+          "candidate_offset": 6351,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            761
+          ]
+        },
+        {
+          "native_offset": 6544,
+          "candidate_offset": 6544,
+          "native_entry_esp": -68,
+          "native_displacement": 72,
+          "native_entry_slot": 4,
+          "source_lines": [
+            788,
+            789
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": null,
+      "kind": "unnamed_frame",
+      "candidate_listing_declaration": -36,
+      "native_entry_slots": [
+        -36,
+        -32,
+        -20
+      ],
+      "accesses": [
+        {
+          "native_offset": 661,
+          "candidate_offset": 661,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            135,
+            136
+          ]
+        },
+        {
+          "native_offset": 746,
+          "candidate_offset": 746,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            148,
+            149,
+            150
+          ]
+        },
+        {
+          "native_offset": 876,
+          "candidate_offset": 876,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            163,
+            164,
+            165
+          ]
+        },
+        {
+          "native_offset": 882,
+          "candidate_offset": 882,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            163,
+            164,
+            165
+          ]
+        },
+        {
+          "native_offset": 1616,
+          "candidate_offset": 1616,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            238,
+            239,
+            240,
+            241,
+            242,
+            243
+          ]
+        },
+        {
+          "native_offset": 1622,
+          "candidate_offset": 1622,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            238,
+            239,
+            240,
+            241,
+            242,
+            243
+          ]
+        },
+        {
+          "native_offset": 1818,
+          "candidate_offset": 1818,
+          "native_entry_esp": -76,
+          "native_displacement": 56,
+          "native_entry_slot": -20,
+          "source_lines": [
+            258,
+            259,
+            260,
+            261,
+            262,
+            263
+          ]
+        },
+        {
+          "native_offset": 1827,
+          "candidate_offset": 1827,
+          "native_entry_esp": -76,
+          "native_displacement": 56,
+          "native_entry_slot": -20,
+          "source_lines": [
+            258,
+            259,
+            260,
+            261,
+            262,
+            263
+          ]
+        },
+        {
+          "native_offset": 2354,
+          "candidate_offset": 2354,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2358,
+          "candidate_offset": 2358,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2518,
+          "candidate_offset": 2518,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2525,
+          "candidate_offset": 2525,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2531,
+          "candidate_offset": 2531,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2550,
+          "candidate_offset": 2550,
+          "native_entry_esp": -80,
+          "native_displacement": 60,
+          "native_entry_slot": -20,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2868,
+          "candidate_offset": 2868,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            385,
+            386
+          ]
+        },
+        {
+          "native_offset": 2872,
+          "candidate_offset": 2872,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            385,
+            386
+          ]
+        },
+        {
+          "native_offset": 3345,
+          "candidate_offset": 3345,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            415,
+            416,
+            417
+          ]
+        },
+        {
+          "native_offset": 3350,
+          "candidate_offset": 3350,
+          "native_entry_esp": -72,
+          "native_displacement": 52,
+          "native_entry_slot": -20,
+          "source_lines": [
+            415,
+            416,
+            417
+          ]
+        },
+        {
+          "native_offset": 3767,
+          "candidate_offset": 3767,
+          "native_entry_esp": -72,
+          "native_displacement": 52,
+          "native_entry_slot": -20,
+          "source_lines": [
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470
+          ]
+        },
+        {
+          "native_offset": 3779,
+          "candidate_offset": 3779,
+          "native_entry_esp": -72,
+          "native_displacement": 52,
+          "native_entry_slot": -20,
+          "source_lines": [
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470
+          ]
+        },
+        {
+          "native_offset": 3845,
+          "candidate_offset": 3845,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            475,
+            476
+          ]
+        },
+        {
+          "native_offset": 3849,
+          "candidate_offset": 3849,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            475,
+            476
+          ]
+        },
+        {
+          "native_offset": 4379,
+          "candidate_offset": 4379,
+          "native_entry_esp": -76,
+          "native_displacement": 44,
+          "native_entry_slot": -32,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4383,
+          "candidate_offset": 4383,
+          "native_entry_esp": -76,
+          "native_displacement": 40,
+          "native_entry_slot": -36,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4388,
+          "candidate_offset": 4388,
+          "native_entry_esp": -80,
+          "native_displacement": 44,
+          "native_entry_slot": -36,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4496,
+          "candidate_offset": 4496,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            480,
+            481,
+            482,
+            483,
+            484
+          ]
+        },
+        {
+          "native_offset": 4500,
+          "candidate_offset": 4500,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            480,
+            481,
+            482,
+            483,
+            484
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": null,
+      "kind": "unnamed_frame",
+      "candidate_listing_declaration": -16,
+      "native_entry_slots": [
+        -8
+      ],
+      "accesses": [
+        {
+          "native_offset": 4144,
+          "candidate_offset": 4144,
+          "native_entry_esp": -76,
+          "native_displacement": 68,
+          "native_entry_slot": -8,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4152,
+          "candidate_offset": 4152,
+          "native_entry_esp": -76,
+          "native_displacement": 68,
+          "native_entry_slot": -8,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4321,
+          "candidate_offset": 4321,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4330,
+          "candidate_offset": 4330,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4570,
+          "candidate_offset": 4570,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            568,
+            569,
+            570,
+            571,
+            572
+          ]
+        },
+        {
+          "native_offset": 4574,
+          "candidate_offset": 4574,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            568,
+            569,
+            570,
+            571,
+            572
+          ]
+        },
+        {
+          "native_offset": 4832,
+          "candidate_offset": 4832,
+          "native_entry_esp": -76,
+          "native_displacement": 68,
+          "native_entry_slot": -8,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4844,
+          "candidate_offset": 4844,
+          "native_entry_esp": -76,
+          "native_displacement": 68,
+          "native_entry_slot": -8,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4869,
+          "candidate_offset": 4869,
+          "native_entry_esp": -80,
+          "native_displacement": 72,
+          "native_entry_slot": -8,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4874,
+          "candidate_offset": 4874,
+          "native_entry_esp": -84,
+          "native_displacement": 76,
+          "native_entry_slot": -8,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 5304,
+          "candidate_offset": 5304,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            630,
+            631,
+            632
+          ]
+        },
+        {
+          "native_offset": 5309,
+          "candidate_offset": 5309,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            630,
+            631,
+            632
+          ]
+        },
+        {
+          "native_offset": 5648,
+          "candidate_offset": 5648,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            655,
+            656,
+            657,
+            658,
+            659
+          ]
+        },
+        {
+          "native_offset": 5652,
+          "candidate_offset": 5652,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            655,
+            656,
+            657,
+            658,
+            659
+          ]
+        },
+        {
+          "native_offset": 5996,
+          "candidate_offset": 5996,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            709,
+            710,
+            711,
+            712,
+            713
+          ]
+        },
+        {
+          "native_offset": 6000,
+          "candidate_offset": 6000,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            709,
+            710,
+            711,
+            712,
+            713
+          ]
+        },
+        {
+          "native_offset": 6074,
+          "candidate_offset": 6074,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            717,
+            718,
+            719,
+            720,
+            721
+          ]
+        },
+        {
+          "native_offset": 6078,
+          "candidate_offset": 6078,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            717,
+            718,
+            719,
+            720,
+            721
+          ]
+        },
+        {
+          "native_offset": 6125,
+          "candidate_offset": 6125,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            722,
+            723,
+            724,
+            725,
+            726,
+            727,
+            728,
+            729,
+            730,
+            731
+          ]
+        },
+        {
+          "native_offset": 6129,
+          "candidate_offset": 6129,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            722,
+            723,
+            724,
+            725,
+            726,
+            727,
+            728,
+            729,
+            730,
+            731
+          ]
+        },
+        {
+          "native_offset": 6176,
+          "candidate_offset": 6176,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            737,
+            738
+          ]
+        },
+        {
+          "native_offset": 6184,
+          "candidate_offset": 6184,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            737,
+            738
+          ]
+        },
+        {
+          "native_offset": 6212,
+          "candidate_offset": 6212,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6224,
+          "candidate_offset": 6224,
+          "native_entry_esp": -68,
+          "native_displacement": 60,
+          "native_entry_slot": -8,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6262,
+          "candidate_offset": 6262,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6291,
+          "candidate_offset": 6291,
+          "native_entry_esp": -76,
+          "native_displacement": 68,
+          "native_entry_slot": -8,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6295,
+          "candidate_offset": 6295,
+          "native_entry_esp": -76,
+          "native_displacement": 68,
+          "native_entry_slot": -8,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6690,
+          "candidate_offset": 6690,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            802,
+            803,
+            804,
+            805,
+            806
+          ]
+        },
+        {
+          "native_offset": 6694,
+          "candidate_offset": 6694,
+          "native_entry_esp": -72,
+          "native_displacement": 64,
+          "native_entry_slot": -8,
+          "source_lines": [
+            802,
+            803,
+            804,
+            805,
+            806
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": null,
+      "kind": "unnamed_frame",
+      "candidate_listing_declaration": -44,
+      "native_entry_slots": [
+        -36
+      ],
+      "accesses": [
+        {
+          "native_offset": 6422,
+          "candidate_offset": 6422,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            769,
+            770
+          ]
+        },
+        {
+          "native_offset": 6839,
+          "candidate_offset": 6839,
+          "native_entry_esp": -72,
+          "native_displacement": 36,
+          "native_entry_slot": -36,
+          "source_lines": [
+            821,
+            822,
+            823,
+            824,
+            825
+          ]
+        },
+        {
+          "native_offset": 7015,
+          "candidate_offset": 7015,
+          "native_entry_esp": -68,
+          "native_displacement": 32,
+          "native_entry_slot": -36,
+          "source_lines": [
+            838,
+            839
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": null,
+      "kind": "unnamed_frame",
+      "candidate_listing_declaration": -52,
+      "native_entry_slots": [
+        -20
+      ],
+      "accesses": [
+        {
+          "native_offset": 4074,
+          "candidate_offset": 4074,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4083,
+          "candidate_offset": 4083,
+          "native_entry_esp": -68,
+          "native_displacement": 48,
+          "native_entry_slot": -20,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": null,
+      "kind": "unnamed_frame",
+      "candidate_listing_declaration": -48,
+      "native_entry_slots": [
+        -48
+      ],
+      "accesses": [
+        {
+          "native_offset": 700,
+          "candidate_offset": 700,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            137,
+            138,
+            139,
+            140,
+            141
+          ]
+        },
+        {
+          "native_offset": 704,
+          "candidate_offset": 704,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            137,
+            138,
+            139,
+            140,
+            141
+          ]
+        },
+        {
+          "native_offset": 791,
+          "candidate_offset": 791,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        },
+        {
+          "native_offset": 795,
+          "candidate_offset": 795,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        },
+        {
+          "native_offset": 927,
+          "candidate_offset": 927,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            166,
+            167,
+            168,
+            169,
+            170
+          ]
+        },
+        {
+          "native_offset": 935,
+          "candidate_offset": 935,
+          "native_entry_esp": -68,
+          "native_displacement": 20,
+          "native_entry_slot": -48,
+          "source_lines": [
+            166,
+            167,
+            168,
+            169,
+            170
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_name": null,
+      "kind": "unannotated",
+      "candidate_listing_declaration": null,
+      "native_entry_slots": [
+        -88,
+        -84,
+        -80,
+        -76,
+        -72
+      ],
+      "accesses": [
+        {
+          "native_offset": 471,
+          "candidate_offset": 471,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            116,
+            117,
+            118,
+            119
+          ]
+        },
+        {
+          "native_offset": 808,
+          "candidate_offset": 808,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        },
+        {
+          "native_offset": 818,
+          "candidate_offset": 818,
+          "native_entry_esp": -84,
+          "native_displacement": 0,
+          "native_entry_slot": -84,
+          "source_lines": [
+            151,
+            152,
+            153,
+            154,
+            155
+          ]
+        },
+        {
+          "native_offset": 950,
+          "candidate_offset": 950,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            166,
+            167,
+            168,
+            169,
+            170
+          ]
+        },
+        {
+          "native_offset": 960,
+          "candidate_offset": 960,
+          "native_entry_esp": -84,
+          "native_displacement": 0,
+          "native_entry_slot": -84,
+          "source_lines": [
+            166,
+            167,
+            168,
+            169,
+            170
+          ]
+        },
+        {
+          "native_offset": 1037,
+          "candidate_offset": 1037,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            177,
+            178
+          ]
+        },
+        {
+          "native_offset": 1641,
+          "candidate_offset": 1641,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            238,
+            239,
+            240,
+            241,
+            242,
+            243
+          ]
+        },
+        {
+          "native_offset": 1824,
+          "candidate_offset": 1824,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            258,
+            259,
+            260,
+            261,
+            262,
+            263
+          ]
+        },
+        {
+          "native_offset": 1836,
+          "candidate_offset": 1836,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            258,
+            259,
+            260,
+            261,
+            262,
+            263
+          ]
+        },
+        {
+          "native_offset": 2295,
+          "candidate_offset": 2295,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            334,
+            335,
+            336,
+            337,
+            338
+          ]
+        },
+        {
+          "native_offset": 2366,
+          "candidate_offset": 2366,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2378,
+          "candidate_offset": 2378,
+          "native_entry_esp": -84,
+          "native_displacement": 0,
+          "native_entry_slot": -84,
+          "source_lines": [
+            339,
+            340,
+            341,
+            342,
+            343,
+            344,
+            345,
+            346
+          ]
+        },
+        {
+          "native_offset": 2547,
+          "candidate_offset": 2547,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2565,
+          "candidate_offset": 2565,
+          "native_entry_esp": -84,
+          "native_displacement": 0,
+          "native_entry_slot": -84,
+          "source_lines": [
+            357,
+            358,
+            359,
+            360,
+            361,
+            362,
+            363
+          ]
+        },
+        {
+          "native_offset": 2920,
+          "candidate_offset": 2920,
+          "native_entry_esp": -84,
+          "native_displacement": 0,
+          "native_entry_slot": -84,
+          "source_lines": [
+            387,
+            388,
+            389
+          ]
+        },
+        {
+          "native_offset": 3360,
+          "candidate_offset": 3360,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            415,
+            416,
+            417
+          ]
+        },
+        {
+          "native_offset": 3549,
+          "candidate_offset": 3549,
+          "native_entry_esp": -88,
+          "native_displacement": 0,
+          "native_entry_slot": -88,
+          "source_lines": [
+            432,
+            433,
+            434,
+            435,
+            436,
+            437
+          ]
+        },
+        {
+          "native_offset": 4156,
+          "candidate_offset": 4156,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            516,
+            517,
+            518,
+            519,
+            520,
+            521,
+            522,
+            523,
+            524,
+            525
+          ]
+        },
+        {
+          "native_offset": 4219,
+          "candidate_offset": 4219,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            530,
+            531
+          ]
+        },
+        {
+          "native_offset": 4373,
+          "candidate_offset": 4373,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            550,
+            551,
+            552,
+            553,
+            554,
+            555,
+            556,
+            557
+          ]
+        },
+        {
+          "native_offset": 4424,
+          "candidate_offset": 4424,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            846
+          ]
+        },
+        {
+          "native_offset": 4715,
+          "candidate_offset": 4715,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            588,
+            589,
+            590,
+            591,
+            592
+          ]
+        },
+        {
+          "native_offset": 4814,
+          "candidate_offset": 4814,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4841,
+          "candidate_offset": 4841,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4866,
+          "candidate_offset": 4866,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 4890,
+          "candidate_offset": 4890,
+          "native_entry_esp": -84,
+          "native_displacement": 0,
+          "native_entry_slot": -84,
+          "source_lines": [
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603
+          ]
+        },
+        {
+          "native_offset": 5319,
+          "candidate_offset": 5319,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            630,
+            631,
+            632
+          ]
+        },
+        {
+          "native_offset": 5664,
+          "candidate_offset": 5664,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            655,
+            656,
+            657,
+            658,
+            659
+          ]
+        },
+        {
+          "native_offset": 5896,
+          "candidate_offset": 5896,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            700,
+            701,
+            702,
+            703,
+            704,
+            705
+          ]
+        },
+        {
+          "native_offset": 5961,
+          "candidate_offset": 5961,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            707,
+            708
+          ]
+        },
+        {
+          "native_offset": 6010,
+          "candidate_offset": 6010,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            709,
+            710,
+            711,
+            712,
+            713
+          ]
+        },
+        {
+          "native_offset": 6088,
+          "candidate_offset": 6088,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            717,
+            718,
+            719,
+            720,
+            721
+          ]
+        },
+        {
+          "native_offset": 6299,
+          "candidate_offset": 6299,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            751,
+            752,
+            753,
+            754,
+            755
+          ]
+        },
+        {
+          "native_offset": 6571,
+          "candidate_offset": 6571,
+          "native_entry_esp": -72,
+          "native_displacement": 0,
+          "native_entry_slot": -72,
+          "source_lines": [
+            790,
+            791,
+            792,
+            793,
+            794,
+            795
+          ]
+        },
+        {
+          "native_offset": 6706,
+          "candidate_offset": 6706,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            802,
+            803,
+            804,
+            805,
+            806
+          ]
+        },
+        {
+          "native_offset": 6851,
+          "candidate_offset": 6851,
+          "native_entry_esp": -80,
+          "native_displacement": 0,
+          "native_entry_slot": -80,
+          "source_lines": [
+            821,
+            822,
+            823,
+            824,
+            825
+          ]
+        },
+        {
+          "native_offset": 6985,
+          "candidate_offset": 6985,
+          "native_entry_esp": -76,
+          "native_displacement": 0,
+          "native_entry_slot": -76,
+          "source_lines": [
+            831,
+            832,
+            833,
+            834,
+            835,
+            836,
+            837
+          ]
+        }
+      ]
+    }
+  ],
+  "micro_controls": [
+    {
+      "function": "outer",
+      "frame_bytes": 24,
+      "body_bytes": 99,
+      "instructions": 25,
+      "body_sha256": "a74fe38674a2bcafe35f5d45a5f7c3d2c07db6fa54d00a38cd7c8eb9f8adf0d4",
+      "compiler_declarations": {
+        "_y$": 8,
+        "_position$": -24,
+        "_bar$": -8,
+        "$T310": -16
+      }
+    },
+    {
+      "function": "split",
+      "frame_bytes": 8,
+      "body_bytes": 85,
+      "instructions": 21,
+      "body_sha256": "633797cc20d8bd977c5d632adcd760d4c731aba5fc75c0863af0c8aeb096ab97",
+      "compiler_declarations": {
+        "_y$": 8,
+        "_position$294": -8,
+        "_bar$295": -8,
+        "_position$296": -8
+      }
+    },
+    {
+      "function": "shared",
+      "frame_bytes": 16,
+      "body_bytes": 113,
+      "instructions": 29,
+      "body_sha256": "3a7e13f2bc8b319270958773f49be8a015b1fae56aee25289dec7b78da4c8788",
+      "compiler_declarations": {
+        "_y$": 8,
+        "_position$": -16,
+        "$T340": -8,
+        "$T341": -8
+      }
+    }
+  ]
+}

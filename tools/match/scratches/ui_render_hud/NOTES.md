@@ -321,3 +321,22 @@ The diagnostic alignment pairs all 1,824 instructions without ambiguity. All
 operations, registers, constants, branches, and references now agree; the
 remaining 142 paired differences are stack displacements. This diagnostic
 classification does not make the function exact or relax its acceptance rules.
+
+## Entry-relative stack-use map (2026-09-09)
+
+The [reproducible lifetime evidence](../../evidence/hud-lifetimes-2026-09-09/README.md)
+joins all 263 checked stack instructions to concrete native ESP facts. It retains
+every access and source-line association, including branch-local reuse of -44,
+the heart/ammo/quest pair at -8/-4, and the later XP pair at -20/-16. Observed
+use spans are not live ranges or original source-variable identities.
+
+Three small VC6 controls demonstrate the distinction: outer position plus bar,
+three separate lexical scopes, and one repeatedly assigned position allocate
+24, 8, and 16 bytes respectively. Repeated construction assignment can preserve
+compiler temporaries even when there is only one named source position.
+
+The complete seven-control `observed-stack-controls-2026-09-09.json` family
+retains no source change. SDK union/constructor spellings, bar default-then-
+assignment, and const panel alpha are neutral; sharing the bar position and
+moving XP position initialization earlier regress. Current 92.214912%,
+1,824/1,824 instructions, and 393 clean references remain unchanged.
