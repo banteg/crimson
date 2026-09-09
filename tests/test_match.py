@@ -5811,13 +5811,14 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     )
     commands: list[list[str]] = []
     environments: list[dict[str, str]] = []
+    compiler_warning = "Command line warning D4002 : ignoring unknown option '/example'\n"
 
     def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         commands.append(command)
         environments.append(cast(dict[str, str], kwargs["env"]))
         cwd = Path(str(kwargs["cwd"]))
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
-        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+        return subprocess.CompletedProcess(command, 0, stdout="scratch.c\n", stderr=compiler_warning)
 
     monkeypatch.setattr("crimson.match.run_compiler", fake_run)
     monkeypatch.chdir(tmp_path)
@@ -5830,6 +5831,11 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     )
     unoptimized = compile_scratch(replace(config, cflags="/Od"), Path("match"))
     cached = compile_scratch(replace(config, include_overlay=overlay), Path("match"))
+    cached_metadata = json.loads((cached.parent / "scratch-build.json").read_text())
+    assert cached_metadata["compiler_output"] == {
+        "stdout": "scratch.c\n",
+        "stderr": compiler_warning,
+    }
     forced = compile_scratch(
         replace(config, include_overlay=overlay),
         Path("match"),
@@ -5846,6 +5852,9 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
     assert environments[0]["CRIMSON_MATCH_INCLUDE_OVERLAY"] == str(overlay)
     assert "CRIMSON_MATCH_INCLUDE_OVERLAY" not in environments[1]
+    assert json.loads((forced.parent / "scratch-build.json").read_text())["compiler_output"] == (
+        cached_metadata["compiler_output"]
+    )
 
 
 def test_parse_compiler_listing_spans_tracks_source_schedule() -> None:

@@ -5432,7 +5432,15 @@ def compile_scratch(
         os.replace(temp_obj, obj_path)
     _write_text_atomic(
         build_dir / "scratch-build.json",
-        json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
+        json.dumps(
+            {
+                "key": _scratch_build_key(config, match_root, include_resolver=include_resolver),
+                "compiler_output": {
+                    "stdout": completed.stdout,
+                    "stderr": completed.stderr,
+                },
+            },
+        ),
     )
     return obj_path
 
@@ -5623,6 +5631,10 @@ def generate_compiler_listing(
         "compiler": config.compiler,
         "cflags": config.cflags,
         "listing_flags": ["/FAsc"],
+        "compiler_output": {
+            "stdout": completed.stdout,
+            "stderr": completed.stderr,
+        },
         "listing_sha256": hashlib.sha256(listing_data).hexdigest(),
         "canonical_object": str(canonical_path.resolve()),
         "canonical_object_sha256": hashlib.sha256(canonical_object_data).hexdigest(),

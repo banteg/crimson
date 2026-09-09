@@ -1028,6 +1028,12 @@ cheap without allowing stale objects or scores to survive an input change.
 Compiler/CFLAGS profiles use separate digest-named build directories, and
 objects plus cache metadata are published atomically, so concurrent profile
 comparisons cannot overwrite the canonical build.
+Successful compiler stdout and stderr are retained in `compiler_output` in
+each build directory's `scratch-build.json`, and in listing metadata. Inspect
+these diagnostics when comparing flags: a successful compile may warn that an
+option was ignored. Older cached builds can lack this field; rebuild with
+`compile_scratch(..., force=True)` to capture it. Archive and structural import
+objects do not invoke the compiler and have no compiler output.
 
 Compare another compiler profile without editing scratches:
 
