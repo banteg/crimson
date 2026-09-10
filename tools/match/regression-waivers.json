@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "base_commit": "2657152300ddeb5e00baffbdd8ec23a7e01497c1",
+  "base_commit": "0acb990a825ca35b5c70feb8c8dedd1c2cf224e8",
   "waivers": [
     {
       "image": "crimsonland.exe",
       "address": 4336752,
       "check": "mismatches-increased",
-      "reason": "Restore the native post-head grim_set_color call at 0x00424b11, verified by tools/match/evidence/call-boundaries-2026-09-09/verify_head_color.py and head-color.json. The current WIP layout changes positional reference mismatches from 10 to 12; both additional pairings compare native 10.0 strip multipliers at 0x00424c71/0x00424c7e against candidate 4.0 widening multipliers. All 12 remain reported; no alias, exactness, or encoded-body acceptance is relaxed. This exception applies only to this native-operation correction against the named baseline."
+      "reason": "Correct the native 16px Plasma Minigun, Spider Plasma, and Shrinkifier head alpha from 0.45 to 0.5, proven by tools/match/evidence/plasma-head-alpha-2026-09-10/verify.py and results.json: 200 native/candidate draw traces agree, and three compiled wrong-alpha controls fail. This WIP source correction changes positional mismatches from 12 to 14. The new pairings compare native camera Y with candidate camera X at 0x00422e22 and native Sharpshooter perk id with candidate Grim receiver at 0x00422e90. All prior mismatch addresses persist, and all 14 remain reported. No alias, exactness, or encoded-body acceptance is relaxed. This exception applies only against the named base commit."
     }
   ]
 }

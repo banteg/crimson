@@ -8,7 +8,7 @@ This inventory is not a dynamic trace or a semantic-equivalence proof.
 | --- | ---: | ---: | --- |
 | `projectile_update` | 125 | 125 | Every direct call identity agrees in linear instruction order. Arguments and paths still require separate evidence. |
 | `player_update` | 182 | 183 | One extra `fx_spawn_sprite`; no missing callee. Native shares the second Shrinkifier/Pistol smoke tail. |
-| `projectile_render` | 180 | 179 | The native post-head color reset is restored. One fewer color-call site remains in aggregate; call counts alone do not locate a missing operation. |
+| `projectile_render` | 180 | 180 | The candidate has one fewer color site and one extra quad site; static counts alone do not identify dynamic differences. |
 
 Direct call keys use resolved native addresses, not printed analyzer names.
 Indirect keys preserve displacement while masking only the register name; they
@@ -40,7 +40,7 @@ shipped renderer's ordinary synchronous operation, the second publication
 therefore appears redundant. No changed pixels or port rendering correction
 are established by this evidence.
 
-The correction restores eight instructions but moves stack homes throughout
+At the September 9 baseline, the correction restored eight instructions but moved stack homes throughout
 the function: **59.194040% becomes 58.200879%**, **2885 becomes 2893** of 3021
 instructions, and references **456/0/10 become 452/0/12**. Both normalized and
 encoded-body exactness remain false. The two added reference mismatches pair
@@ -48,12 +48,14 @@ native 10.0 strip multipliers at `0x00424c71`/`0x00424c7e` with candidate 4.0
 widening multipliers; the existing ten mismatches persist. The source retains
 both widths and the matcher continues to report the disagreements.
 
-The regression gate rejects the mismatch increase without an exception.
-[`regression-waivers.json`](../../regression-waivers.json) permits only this
-correction against base `2657152300ddeb5e00baffbdd8ec23a7e01497c1`. It changes
-neither reference resolution nor exact-match acceptance. The known native
-operation is retained despite the lower fuzzy score; `RECOVERY=incomplete`
-and the analysis/compiler/reference residuals remain.
+The September 9 correction's regression exception was scoped to its original
+base. The subsequent [small-plasma alpha correction](../plasma-head-alpha-2026-09-10/README.md)
+updates the current candidate and regression receipt. The head-color verifier
+continues to require the same machine window and reject all three source
+defects. Its whole-function reference comparison now reports added and removed
+pairings instead of requiring the unrelated historical 10/12 mismatch counts.
+The regenerated receipts describe current inputs; the preceding score change
+is historical.
 
 The earlier 24 head-call/alpha controls and the further 99 combinations of
 side/start/end strip-copy boundaries do not remove the regression. Four

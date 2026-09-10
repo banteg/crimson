@@ -198,3 +198,37 @@ def test_bullet_trail_packs_alpha_after_applying_transition(mocker, life, transi
     )
     _, colors, _ = _capture_projectile_trail(mocker, projectile, transition_alpha=transition)
     assert colors == [(127, 127, 127, 0)] * 2 + [(127, 127, 127, expected_alpha)] * 2
+
+
+@pytest.mark.parametrize(
+    ("type_id", "head_size", "expected_alpha"),
+    [
+        (ProjectileTemplateId.PLASMA_MINIGUN, 16.0, 89),
+        (ProjectileTemplateId.SPIDER_PLASMA, 16.0, 89),
+        (ProjectileTemplateId.SHRINKIFIER, 16.0, 89),
+        (ProjectileTemplateId.PLASMA_RIFLE, 56.0, 80),
+        (ProjectileTemplateId.PLASMA_CANNON, 84.0, 80),
+    ],
+)
+def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_size, expected_alpha) -> None:
+    # Native small heads reuse the initial 0.5*transition value at
+    # 0x423ac8, 0x423e37, and 0x423fc1; Rifle/Cannon retain 0.45.
+    texture = mocker.Mock(id=1, width=256, height=256)
+    mocker.patch.object(
+        _RuntimeResourcesStub,
+        "texture",
+        side_effect=lambda texture_id: texture if texture_id == TextureId.PARTICLES else None,
+    )
+    mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
+    mocker.patch.object(world_projectiles.rl, "end_blend_mode")
+    draws = mocker.patch.object(world_projectiles.rl, "draw_texture_pro")
+    frame = _WorldStub().build_render_frame()
+    ctx = WorldRenderCtx(
+        frame=frame,
+        view=view_transform(world_size=frame.world_size, config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
+    )
+    projectile = Projectile(type_id=type_id, origin=Vec2(50, 90), pos=Vec2(110, 210), life_timer=0.4, speed_scale=2.0)
+    world_projectiles.draw_projectile(ctx, projectile, alpha=0.7)
+    heads = [call.args for call in draws.call_args_list if call.args[2].width == head_size]
+    assert len(heads) == 1
+    assert heads[0][-1].a == expected_alpha

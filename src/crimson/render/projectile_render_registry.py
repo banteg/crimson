@@ -23,7 +23,7 @@ _DEFAULT_PLASMA_RENDER_CONFIG = PlasmaProjectileRenderConfig(
     seg_limit=3,
     tail_size=12.0,
     head_size=16.0,
-    head_alpha_mul=0.45,
+    head_alpha_mul=0.5,
     aura_rgb=(1.0, 1.0, 1.0),
     aura_size=120.0,
     aura_alpha_mul=0.15,
@@ -106,4 +106,3 @@ KNOWN_PROJ_RGB_BY_TYPE_ID: dict[int, tuple[int, int, int]] = {
 
 def known_proj_rgb(type_id: int) -> tuple[int, int, int]:
     return KNOWN_PROJ_RGB_BY_TYPE_ID.get(int(type_id), (240, 220, 160))
-

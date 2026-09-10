@@ -91,7 +91,7 @@ def main():
     assert not rows[0]["native_only_counts"]
     assert rows[1]["linear_call_keys_equal"] and rows[1]["native_calls"] == 125
     assert rows[2]["native_only_counts"] == {"call dword [REG+0x114]": 1}
-    assert not rows[2]["candidate_only_counts"]
+    assert rows[2]["candidate_only_counts"] == {"call dword [REG+0x11c]": 1}
     callees = []
     for name in ("grim_set_color", "grim_draw_quad", "grim_begin_batch", "grim_flush_batch"):
         config = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches" / name)
@@ -104,12 +104,14 @@ def main():
             symbol_name=config.symbol,
         )
         assert result.exact and result.body_byte_exact and result.masked_operand_audit.problem_count == 0
-        callees.append({
-            "function": name,
-            "source_sha256": sha((config.directory / config.source).read_bytes()),
-            "exact": result.exact,
-            "body_byte_exact": result.body_byte_exact,
-        })
+        callees.append(
+            {
+                "function": name,
+                "source_sha256": sha((config.directory / config.source).read_bytes()),
+                "exact": result.exact,
+                "body_byte_exact": result.body_byte_exact,
+            },
+        )
     payload = {
         "schema": 1,
         "verified": True,

@@ -4,7 +4,7 @@
   "caveat": "Static calls in linear instruction order, not dynamic traces. Counts and direct callee identity do not prove argument, receiver, path, or side-effect equivalence. Indirect keys mask only the register name.",
   "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
   "grim_image_sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
-  "verifier_sha256": "af7f70084d2d1b331daa1fcbcf5097bcfc29fdd18f42024ea29923dbd80465bd",
+  "verifier_sha256": "0553451c461615b3540739ee2cc1bfe207df8fd379ea0d83a5ff1ee5508fd1c9",
   "functions": [
     {
       "function": "player_update",
@@ -142,15 +142,17 @@
     },
     {
       "function": "projectile_render",
-      "source_sha256": "6dca4a01d049d243dc72dc1fc15faa7146134e7cb9f36f347cfba4a22af64e84",
-      "candidate_body_sha256": "24cb9525b2c4520e347a32d288e85c66b669f9ec714aaec824c174cbd50f056c",
+      "source_sha256": "9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6",
+      "candidate_body_sha256": "213a11ebfa6ec03854ae7636a0c15e6fccf8a0613271fca4d1871633a4ba7c09",
       "native_calls": 180,
-      "candidate_calls": 179,
+      "candidate_calls": 180,
       "linear_call_keys_equal": false,
       "native_only_counts": {
         "call dword [REG+0x114]": 1
       },
-      "candidate_only_counts": {},
+      "candidate_only_counts": {
+        "call dword [REG+0x11c]": 1
+      },
       "counts": [
         {
           "address:0x004206a0": 2,
@@ -182,7 +184,7 @@
           "call dword [REG+0x10c]": 4,
           "call dword [REG+0x114]": 38,
           "call dword [REG+0x118]": 8,
-          "call dword [REG+0x11c]": 33,
+          "call dword [REG+0x11c]": 34,
           "call dword [REG+0x138]": 4,
           "call dword [REG+0x20]": 20,
           "call dword [REG+0xc4]": 8,

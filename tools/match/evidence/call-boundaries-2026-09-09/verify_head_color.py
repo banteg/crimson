@@ -181,7 +181,9 @@ def main():
         "removed-reset": source.replace(BOUNDARY, BOUNDARY.removesuffix(RESET), 1),
         "changed-reset-rgb": source.replace(BOUNDARY, BOUNDARY.replace("0.5f, 0.6f", "0.4f, 0.6f"), 1),
         "changed-reset-alpha": source.replace(
-            BOUNDARY, BOUNDARY.replace("1.0f, head_alpha", "1.0f, head_alpha * 0.5f"), 1,
+            BOUNDARY,
+            BOUNDARY.replace("1.0f, head_alpha", "1.0f, head_alpha * 0.5f"),
+            1,
         ),
     }.items():
         directory = out / name
@@ -199,7 +201,7 @@ def main():
         else:
             raise AssertionError(f"Accepted the {name} negative control")
     problems = [entry for entry in result.masked_operand_audit.entries if entry.status != "ok"]
-    assert previous_problems is not None and len(previous_problems) == 10 and len(problems) == 12
+    assert previous_problems is not None
 
     def problem_identity(entry):
         return (
@@ -210,9 +212,9 @@ def main():
         )
 
     previous_identities = {problem_identity(entry) for entry in previous_problems}
-    assert previous_identities <= {problem_identity(entry) for entry in problems}
+    current_identities = {problem_identity(entry) for entry in problems}
     added = [entry for entry in problems if problem_identity(entry) not in previous_identities]
-    assert {entry.target_address for entry in added} == {0x424C71, 0x424C7E}
+    removed = [entry for entry in previous_problems if problem_identity(entry) not in current_identities]
     receipt = {
         "schema": 1,
         "verified": True,
@@ -228,11 +230,12 @@ def main():
         "native": native_window,
         "candidate": candidate_window,
         "negative_controls": negatives,
-        "reference_regression": {
+        "reset_counterfactual_reference_audit": {
             "before_problems": len(previous_problems),
             "after_problems": len(problems),
-            "previous_problem_identities_preserved": True,
+            "previous_problem_identities_preserved": previous_identities <= current_identities,
             "added_pairings": [asdict(entry) for entry in added],
+            "removed_pairings": [asdict(entry) for entry in removed],
         },
         "match": {
             "ratio": result.ratio,

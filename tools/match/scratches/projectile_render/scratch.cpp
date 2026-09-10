@@ -437,7 +437,7 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 grim_interface_ptr->grim_set_color(
-                    1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.5f);
                 grim_interface_ptr->grim_draw_quad(
                     camera_offset_x + projectile->pos_x - 8.0f,
                     camera_offset_y + projectile->pos.pos_y - 8.0f,
@@ -537,7 +537,7 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 grim_interface_ptr->grim_set_color(
-                    0.3f, 1.0f, 0.3f, transition_alpha * 0.45f);
+                    0.3f, 1.0f, 0.3f, transition_alpha * 0.5f);
                 grim_interface_ptr->grim_draw_quad(
                     camera_offset_x + projectile->pos_x - 8.0f,
                     camera_offset_y + projectile->pos.pos_y - 8.0f,
@@ -587,7 +587,7 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 grim_interface_ptr->grim_set_color(
-                    0.3f, 0.3f, 1.0f, transition_alpha * 0.45f);
+                    0.3f, 0.3f, 1.0f, transition_alpha * 0.5f);
                 grim_interface_ptr->grim_draw_quad(
                     camera_offset_x + projectile->pos_x - 8.0f,
                     camera_offset_y + projectile->pos.pos_y - 8.0f,

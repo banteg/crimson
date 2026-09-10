@@ -86,7 +86,7 @@ const default_plasma_render_config: PlasmaRenderConfig = .{
     .seg_limit = 3,
     .tail_size = 12.0,
     .head_size = 16.0,
-    .head_alpha_mul = 0.45,
+    .head_alpha_mul = 0.5,
     .aura_rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
     .aura_size = 120.0,
     .aura_alpha_mul = 0.15,

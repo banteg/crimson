@@ -1220,3 +1220,22 @@ remove the reference increase. No strip-layout variant or alias is retained.
 `RECOVERY=incomplete`, `RESIDUAL=analysis,compiler,references`, and
 `body_byte_exact=false` still describe the remaining work. The source SHA-256
 is `6dca4a01d049d243dc72dc1fc15faa7146134e7cb9f36f347cfba4a22af64e84`.
+
+## Native small-plasma head alpha (2026-09-10)
+
+The [bounded machine comparison](../../evidence/plasma-head-alpha-2026-09-10/README.md)
+found a real color-argument mismatch: the 16px Minigun, Spider Plasma, and
+Shrinkifier heads reuse the initial `transition_alpha * 0.5f` value, whereas
+the scratch used 0.45. The three literals and both ports' shared small-plasma
+configuration are corrected. Rifle/Cannon retain 0.45. All 200 plasma fixtures
+now agree at the recording draw boundary; three compiled wrong-alpha controls
+are rejected. Python's actual head draw tests and the Zig suite pass.
+
+The correction is retained despite lower alignment: **57.104195%**,
+**2891/3021** instructions, prefix **0**, references **444/0/14**, and both
+exactness flags false. The full receipt reports the prior and current mismatch
+pairings. The additional mismatches are at `0x00422e22` and `0x00422e90`; none
+is hidden or aliased away. Six shared-alpha lifetime controls are bounded
+negatives. `RECOVERY=incomplete` and the analysis/compiler/reference residuals
+remain. Current source SHA-256:
+`9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6`.
