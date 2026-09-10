@@ -27,8 +27,8 @@ Python and Zig ports previously generalized those checks across every active
 player; the corresponding parity fix keeps the native slot rules explicit.
 
 The remaining mismatch is confined to control-flow layout in the quest-specific
-exclusions. Native outlines the final major-5 Nuke check after the retry and
-success blocks, while VC6 keeps the same clean nested check beside the major-4
+exclusions. Native places the final major-5 Nuke check after the retry backedge
+and before both return tails, while VC6 keeps the same clean nested check beside the major-4
 case. The displaced block changes downstream branch-target tokens even though
 the instruction count, conditions, and references agree. Retain this natural
 source unless stronger evidence explains that cold-block placement; do not
@@ -64,7 +64,7 @@ rejected. Stock 6.5 and 6.6 with `/GB` or `/G5` are identical, `/G6` regresses,
 and the Processor Pack also regresses. The residual remains compiler block
 placement, with the clean reference-complete source retained.
 
-## Switch-layout falsification
+## Switch-layout controls
 
 `quest-stage-switch-mutations.json` tests five natural switch reconstructions
 of the major-4/major-5 quest exclusions. Putting either case in the switch
@@ -72,9 +72,10 @@ default is byte-for-byte neutral at 75.93%, 162/162 instructions, and audit
 `20/0/0`. The two nested switch forms lose 2.99 weighted bytes, and the full
 stage switch loses 14.94; none produces the native outlined major-5 block.
 
-Together with the earlier six predicate-layout variants, this falsifies a
-source `switch` as the missing shape. The residual is supported VC6 cold-block
-placement, not unrecovered behavior. Recorded spec SHA:
+Together with the earlier six predicate-layout variants, these results show
+that the tested switch forms do not recover the native layout. They do not
+exclude other switch forms or establish why the original compiler placed the
+block there. Recorded spec SHA:
 `cdeec7b18eb188a4c8fe299d1759d1a876a50a798c42f65c34ccd3b3d1d94351`.
 
 ## Exact-neighbor house-style follow-up (2026-08-09)
@@ -112,9 +113,9 @@ same current baseline. Every reference-complete candidate remains neutral or
 regresses. The only fuzzy-score increase is the already-rejected combined major
 guard (`+3.43` weighted bytes), which has 159 rather than 162 instructions and
 only 18 rather than 20 mapped references because it merges two native Nuke
-comparisons. Across 16 current compile-valid variants, no tradeoff-free source
-improvement exists; retain the 162-instruction, `20/0/0` reconstruction and
-treat the displaced cold edge as a bounded compiler-layout residual.
+comparisons. None of these 16 compile-valid variants improves the retained
+162-instruction, `20/0/0` reconstruction without a tradeoff. The displaced
+cold edge remains unresolved.
 
 ## Batch 01 focused value boundaries (2026-09-05)
 
@@ -132,3 +133,17 @@ function's matchability.
 The 16 retry-budget and exit-ownership controls retain the original 101-attempt fallback policy while crossing loop form with the retry scalar lifetime. The shared retry label ties the original 75.925926%, 162/162 instructions, prefix 55, and 20 clean references; all other forms regress. The native cold quest-stage edge remains unresolved.
 
 The checked-in mutation plans and recorded complete results bound these source forms; they do not establish that the function is unmatchable. Canonical source and configuration remain unchanged.
+
+## Cold-edge source replay (2026-09-11)
+
+[The replay package](../../evidence/bonus-pick-cold-edge-2026-09-11/README.md)
+records 166 compiling source and compiler-option controls with reconstructible
+edits and a verifier. They include acceptance and retry ownership, stage/bonus
+predicates, assigned rejection flags, helper return forms, named constants,
+declaration placement, and duplicated common filters. None is normalized or
+encoded exact; the canonical source and configuration remain unchanged.
+
+The 80.745342% Freeze-first shared-predicate candidate has only 160 instructions
+and merges a comparison retained in native code. Duplicated filter paths can
+move quest checks after the retry backedge but add instructions. Neither result
+recovers the original sequence. The stage-5 tail placement remains open.
