@@ -217,3 +217,21 @@ early-cursor and reference-lifetime controls; it does not explain how the native
 home store arose. The compiler was not patched for these source experiments.
 The previously recorded preserving observer remains the dynamic evidence for
 where the canonical pointer is removed. These controls leave the target open.
+
+## Dxdiag pass comparison (2026-09-11)
+
+The [preserving two-function trace](../../evidence/vc6-store-pass-comparison-2026-09-11/README.md)
+locates dxdiag's intrinsic expansion in `C2+0x29511`. Its four zeroing stores
+have memory operands; the following assignments to the same field symbols
+temporarily have register/temporary operands until `C2+0x26d75`. All eight
+writes survive the later pointer-folding pass. The timeline's pointer instead
+reaches `C2+0x306c1` as a temporary definition, and its `LEA`/`COPY` identities
+are removed. Both observed whole objects equal their stock builds except for
+the COFF timestamp.
+
+Twelve implicit pointer-wrapper copy/assignment/return controls motivated by
+this distinction compile cleanly but retain the same 91.228070%, 113/115,
+prefix-51 candidate with 13 clean references and a non-exact body. Their
+reproducible generator and full results are adjacent to the trace. This
+explains the difference between these candidates' compiler paths; the native
+timeline pointer home store remains unexplained.
