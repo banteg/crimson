@@ -26003,15 +26003,15 @@
     {
       "address": 4833080,
       "blocker": "matched",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: creature_t[384]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe400",
+      "extent_evidence": "Native creature_pool_global_init constructs 0x181 records; third_party/headers/crimsonland_types.h: creature_t[385]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe498",
       "image": "crimsonland.exe",
       "name": "creature_pool",
       "owners": [
         "game"
       ],
       "reason": null,
-      "size": 58368,
-      "type": "creature_t[384]",
+      "size": 58520,
+      "type": "creature_t[385]",
       "unmatched_bytes": 0
     },
     {
@@ -30399,8 +30399,8 @@
   ],
   "ownership": {
     "game": {
-      "matched_bytes": 312613,
-      "total_bytes": 347269
+      "matched_bytes": 312765,
+      "total_bytes": 347421
     },
     "libraries": {
       "matched_bytes": 14179,
@@ -30408,7 +30408,7 @@
     },
     "unknown": {
       "matched_bytes": 0,
-      "total_bytes": 128991
+      "total_bytes": 128839
     }
   },
   "ownership_complete": false,
@@ -51787,18 +51787,18 @@
       ],
       "owner": "game",
       "section": ".data",
-      "size": 58216,
+      "size": 58368,
       "source": "tools/match/data/crimsonland_gameplay.cpp"
     },
     {
-      "address": 4891448,
+      "address": 4891600,
       "image": "crimsonland.exe",
       "matched": false,
       "name": "unmatched",
       "objects": [],
       "owner": "unknown",
       "section": ".data",
-      "size": 408,
+      "size": 256,
       "source": null
     },
     {
@@ -66623,10 +66623,10 @@
     }
   ],
   "totals": {
-    "matched_bytes": 326792,
+    "matched_bytes": 326944,
     "total_bytes": 517738,
-    "unmatched_bytes": 190946,
-    "unnamed_bytes": 100050
+    "unmatched_bytes": 190794,
+    "unnamed_bytes": 99898
   },
   "unbounded_objects": [
     {
