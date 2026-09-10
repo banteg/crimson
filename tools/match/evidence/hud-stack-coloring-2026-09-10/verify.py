@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 import struct
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -38,7 +39,9 @@ def decode(data):
         blocks = [words(3) for _ in range(row[38])]
         conflicts = [start + bit for start, _, mask in blocks for bit in range(32) if mask & (1 << bit)]
         assert all(0 <= conflict < n for conflict in conflicts)
-        symbols.append({"index": index, "pointer": row[0], "before": row[1:22], "descriptor": row[22:38], "conflicts": conflicts})
+        symbols.append(
+            {"index": index, "pointer": row[0], "before": row[1:22], "descriptor": row[22:38], "conflicts": conflicts},
+        )
     assert words(2) == (1, n)
     for symbol in symbols:
         row = words(38)
@@ -61,10 +64,15 @@ def reproduce(symbols, order):
     # VC6 4b617 first seeds parameter buckets, then 4bae6 searches local
     # buckets backwards. Both directed conflict tests are necessary.
     assert [s["before"][1] & 255 for s in symbols].count(5) == 1
-    parameter = symbols[order[0]]
-    assert parameter["before"][1] & 255 == 5
-    groups = [{"size": parameter["before"][8], "members": [parameter["index"]], "conflicts": set(parameter["conflicts"])}]
-    for index in order[1:]:
+    # 4b658 scans the entire ordered list for parameters. A sufficiently
+    # frequent local can precede the parameter; 4b6a1 skips it on the local pass.
+    parameter = next(symbols[index] for index in order if symbols[index]["before"][1] & 255 == 5)
+    groups = [
+        {"size": parameter["before"][8], "members": [parameter["index"]], "conflicts": set(parameter["conflicts"])},
+    ]
+    for index in order:
+        if index == parameter["index"]:
+            continue
         symbol = symbols[index]
         size = symbol["before"][8]
         conflicts = set(symbol["conflicts"])
@@ -102,6 +110,9 @@ def reproduce(symbols, order):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument(
+        "--source", type=Path, help="Observe a HUD source control using the canonical compiler configuration",
+    )
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -118,7 +129,15 @@ def main():
         shutil.copyfile(REPLAY / "capture.c", helper / "capture.c")
         replay.compile_driver(helper, "capture.c", "capture.obj")
         replay.link(helper, "capture.dll", "capture.obj", dll=True)
-        capture = replay.verify_function("ui_render_hud", out, helper / "capture.dll")
+        if args.source:
+            config = replay.match.load_scratch_config(replay.match.DEFAULT_MATCH_ROOT / "scratches/ui_render_hud")
+            source_dir = out / "source"
+            source_dir.mkdir(exist_ok=True)
+            (source_dir / config.source).write_bytes(args.source.read_bytes())
+            with patch.object(replay.match, "load_scratch_config", return_value=replace(config, directory=source_dir)):
+                capture = replay.verify_function("ui_render_hud", out, helper / "capture.dll")
+        else:
+            capture = replay.verify_function("ui_render_hud", out, helper / "capture.dll")
         baseline = out / "ui_render_hud/replay"
         observer = out / "observer"
         observer.mkdir(exist_ok=True)

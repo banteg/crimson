@@ -1,0 +1,570 @@
+{
+  "schema_version": 1,
+  "baseline_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+  "normal_build_key": {
+    "toolchain": {
+      "compiler_trees": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      },
+      "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+      "runner_mode": 493,
+      "cl_environment": {
+        "CL": null,
+        "_CL_": null
+      }
+    },
+    "pipeline_sha256": [
+      "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
+      "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+      "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+    ],
+    "compiler": "msvc6.5",
+    "argv": [
+      "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+      "/c",
+      "/O2",
+      "/GB",
+      "/W3",
+      "/GR-",
+      "scratch.cpp"
+    ],
+    "auto_inline_off": [],
+    "dependencies": [
+      [
+        "scratches/ui_render_hud/scratch.cpp",
+        "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5"
+      ],
+      [
+        "scratches/ui_render_hud/scratch.conf",
+        "a9d011a5ecc747deaa23bde615a7f8457c36f2c7f5a8184be3f490c445513117"
+      ],
+      [
+        "cl.sh",
+        "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+      ],
+      [
+        "compilers/msvc6.5/Bin/CL.EXE",
+        "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+      ],
+      [
+        "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+        "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+      ],
+      [
+        "include/crimsonland_console.h",
+        "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+      ],
+      [
+        "include/crimsonland_gameplay.h",
+        "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+      ],
+      [
+        "include/crimsonland_textures_owner.h",
+        "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5"
+      ],
+      [
+        "include/grim2d_cpp.h",
+        "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+      ]
+    ]
+  },
+  "controls_sha256": "31e03d7eb080ed4dd7b0e3ed985772df889033c2b41ef072b88dca96caf0696b",
+  "verifier_sha256": "efd15b57474036c15e243a943f9c80f33b1e28fa5a47dd4b7ba9fc7b4f49eb57",
+  "verified_controls": [
+    {
+      "name": "display-state/hud_y-panel_alpha",
+      "source_sha256": "c1dea42fc70d1917c63b5b3aa2289d830028db3dbbaaddd5007bd98b7416bcba",
+      "observed": {
+        "ratio": 0.9040570175438597,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/panel_alpha-hud_y",
+      "source_sha256": "fcd45a8a82f48944502d6669ea79e2fd5012648dd0dca19eb8bf5eda4d3e9cf3",
+      "observed": {
+        "ratio": 0.9040570175438597,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/hud_y-panel_alpha-bonus_y",
+      "source_sha256": "fdee1e06496dd0eaf11a91d04055d7e542afcf56946b52b1da569c66dcb6a9b7",
+      "observed": {
+        "ratio": 0.7139726027397261,
+        "ins": 1826,
+        "prefix": 1,
+        "refs": 362,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/bonus_y-panel_alpha-hud_y",
+      "source_sha256": "5c0938791782fe70a44a63ec02df7728e44b83180d22b89116aeb9e55736e07a",
+      "observed": {
+        "ratio": 0.7139726027397261,
+        "ins": 1826,
+        "prefix": 1,
+        "refs": 362,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/panel_alpha-background_alpha-fill_alpha",
+      "source_sha256": "86320585e3f73429129f1c194514f85404d478ceb67a42450ade99a78195aef8",
+      "observed": {
+        "ratio": 0.9095394736842105,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/fill_alpha-background_alpha-panel_alpha",
+      "source_sha256": "a7924b5bf44de3c4498080df3ec870622690a829791183a70f354d83a0493fd8",
+      "observed": {
+        "ratio": 0.9095394736842105,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/pulse_speed-pulse",
+      "source_sha256": "79e6de4576dd9ed33d92525bb1f4811a8b55625f4f2815e7051953962811b889",
+      "observed": {
+        "ratio": 0.9051535087719298,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/pulse-pulse_speed",
+      "source_sha256": "1040a59a7acf992a5333243ead11bc364c3b1f4ee927919365d2a7fbceda4a39",
+      "observed": {
+        "ratio": 0.9051535087719298,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/name_scale-stage_scale-complete_scale",
+      "source_sha256": "7be7531dce017236b0cf7410902a34f52ede87b8eb2dfaee3aa17556833108c0",
+      "observed": {
+        "ratio": 0.887609649122807,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "display-state/complete_scale-stage_scale-name_scale",
+      "source_sha256": "5b07ead283eaa8027c0e01c6f3243e7a54cfdc1d93f2d21bfc05cd3939212165",
+      "observed": {
+        "ratio": 0.887609649122807,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/pulse_speed-health_ratio",
+      "source_sha256": "c14fedb7e9def8f0fa884863f8ee38242297f904a613093bb7b1e1e5607afdab",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/pulse_speed-health_ratio-slide_x",
+      "source_sha256": "4c6d911fce48cda3870490ad74129e23d85ff9c596b4e8d95cb92eb3d5e82a76",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/banner_fade-complete_fade",
+      "source_sha256": "6612fbac15d832342f26a48e13d7d65b37bfdf27b037076feade439f9ed6615d",
+      "observed": {
+        "ratio": 0.9166666666666666,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/slide_x-name_scale-stage_scale-complete_scale",
+      "source_sha256": "fb28ed15f9a68b6e7acb8eba02ebc484dc601f63b720994a45b69d34c8b2a84d",
+      "observed": {
+        "ratio": 0.9035087719298246,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/background_alpha-banner_alpha-popup_fade",
+      "source_sha256": "3cb422eaf9bb0df3c6d61f2ad35bc7d101940fa2259fc2fdfe26f3c6a62523d5",
+      "observed": {
+        "ratio": 0.9051535087719298,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/health_ratio-slide_x",
+      "source_sha256": "0b1ba7758d1e125e011039cf4023bef6262d719911e19ea98f037613a7d44fa2",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/bar_x-hud_y-text_y",
+      "source_sha256": "5d52204b77c8d4038919d3622e0ba223f6b0541ab86ed2c8fb454ffe43402c4e",
+      "observed": {
+        "ratio": 0.9007675438596491,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-reuse-graph/all",
+      "source_sha256": "4e368630a597b566b0f96d7148c3262b200b7514e95e95a1fa6642ff9eb2ae7b",
+      "observed": {
+        "ratio": 0.9133771929824561,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/free-value-inline",
+      "source_sha256": "f86e6eabc9bfd194d87beb0661c754c55cc2b56d1e63f25fdaafe4d2607c6536",
+      "observed": {
+        "ratio": 0.0032804811372334607,
+        "ins": 5,
+        "prefix": 0,
+        "refs": 0,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/free-value-force",
+      "source_sha256": "20d0f478da6c2203a02caf7c1fe073c2d4be7c6283a48ac930f49a125d8eecc2",
+      "observed": {
+        "ratio": 0.8312328767123288,
+        "ins": 1826,
+        "prefix": 0,
+        "refs": 391,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/free-reference-inline",
+      "source_sha256": "090256478da05e932e2313478e5c5f3154773725a69040b880324d052c692115",
+      "observed": {
+        "ratio": 0.0032804811372334607,
+        "ins": 5,
+        "prefix": 0,
+        "refs": 0,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/free-reference-force",
+      "source_sha256": "9d6f42501ee1eb900d53c1dcdd8977a377aec6805d3880294a2f34a99f6c2bcb",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/member-value-inline",
+      "source_sha256": "4481bb219abf6fc6f42705b84f73d1b240da233654851667ad57b29a349dd2d9",
+      "observed": {
+        "ratio": 0.0032804811372334607,
+        "ins": 5,
+        "prefix": 0,
+        "refs": 0,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/member-value-force",
+      "source_sha256": "a2665160451f1a15fda2a232e1a64e8171c30b230e5cbb09f24133a14d55f334",
+      "observed": {
+        "ratio": 0.8312328767123288,
+        "ins": 1826,
+        "prefix": 0,
+        "refs": 388,
+        "problems": 3,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/member-alpha-inline",
+      "source_sha256": "5f8b0bc6fbc63b681e41534003ca718f2980a76560c1e18217b8559eb913cc38",
+      "observed": {
+        "ratio": 0.0,
+        "ins": 4,
+        "prefix": 0,
+        "refs": 0,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "whole-body-boundary/member-alpha-force",
+      "source_sha256": "320b2501472d3c707c49e6ab6d0c53241e13340bcc794bf3a094803836d357fd",
+      "observed": {
+        "ratio": 0.8312328767123288,
+        "ins": 1826,
+        "prefix": 0,
+        "refs": 388,
+        "problems": 3,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/heart",
+      "source_sha256": "39c99a852da34db2f6915c0be237e5c1e264dd9ab1866a892c0b970e04006402",
+      "observed": {
+        "ratio": 0.9172149122807017,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/ammo",
+      "source_sha256": "a4d9ac97a6fcfd696d6f63fa5836c5b9e62576bcf6845563eeb8553768c0b95f",
+      "observed": {
+        "ratio": 0.9183114035087719,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/heart-ammo",
+      "source_sha256": "d8a7c9e78b4d6d848ab68b070838386e2dfb8a8cd3af77a7bf8deca6749cecb6",
+      "observed": {
+        "ratio": 0.9133771929824561,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/quest",
+      "source_sha256": "3eedce618488dead155b0b8918e4c85e2bdbadc51eb2d09aeda9936b772dc90c",
+      "observed": {
+        "ratio": 0.8963815789473685,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/heart-quest",
+      "source_sha256": "c5855266194209d7816bf77ee7214100a06b99304a944d0ff8802923c2801092",
+      "observed": {
+        "ratio": 0.9133771929824561,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/ammo-quest",
+      "source_sha256": "a91dcac2f8f4601686b00e9d600c78af864d8358c93411372ff00d8a123014c6",
+      "observed": {
+        "ratio": 0.9133771929824561,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "position-scope-graph/heart-ammo-quest",
+      "source_sha256": "84e5354e6f4f11e7836fd3cda3ee822b637d267e6654cefd7548ef2f70c89780",
+      "observed": {
+        "ratio": 0.9133771929824561,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "clamp-boundary/value-return",
+      "source_sha256": "66f15f189de9bc4356a50198b23374ca9457dc271550ed1f3b07333db91caaea",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "clamp-boundary/value-assign",
+      "source_sha256": "2f4777ef6eccd9f2103f45ba9d3cff6d2d6c1f42c3e78c25a529562580b28bd1",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "clamp-boundary/ref-assign",
+      "source_sha256": "7e3c24e29f0ca99d6d097a8d66328ee4a32b193fab6c152bfda69e2aecc25053",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "clamp-boundary/generic-return",
+      "source_sha256": "7502b3471cafe02d6a7aa9a1be191e80f93731f90df7cbc412774b7e455af498",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "clamp-boundary/generic-assign",
+      "source_sha256": "9d9a7bd1cbcad64cd6b2cb6665cfe9ede08dfe1212f78a414e90e753b29a7af2",
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    }
+  ]
+}

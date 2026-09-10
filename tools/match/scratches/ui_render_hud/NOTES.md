@@ -357,3 +357,20 @@ them at -44 and -40. Their source declaration order is insufficient to explain
 this. The trace supports further lifetime and expression-boundary recovery;
 it does not establish original source identity or an unavoidable residual.
 Source and matching metrics remain unchanged.
+
+## Parameter ordering and reproducible source controls (2026-09-10)
+
+The stack observer now handles a local sorted before the parameter, following
+C2's separate parameter scan at RVA `4b658` and local pass at `4b6a1`. Reusing
+one float for pulse speed, health ratio, and slide X raises its counted uses to
+19 (parameter: 18), yet leaves matching metrics unchanged. The fresh trace has
+64 symbols and verifies all 30 local offsets; canonical validation still checks
+66 symbols and 32 offsets. Both observed objects equal their ordinary compiled
+objects except for the COFF timestamp.
+
+The [observer package](../../evidence/hud-stack-coloring-2026-09-10/README.md#parameter-scan-and-source-controls)
+also preserves 38 reconstructed, hash-checked source controls covering aggregates,
+scalar reuse, whole-body helper boundaries, position scopes, and clamp helpers.
+All were recompiled and remain non-exact; helper controls that do not inline
+retain their failed reference audits. The source and compiler configuration
+remain unchanged, and these controls do not establish a compiler ceiling.

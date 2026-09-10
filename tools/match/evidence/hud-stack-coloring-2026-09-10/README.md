@@ -53,7 +53,8 @@ groups, in allocation order, occupy 52 bytes:
 | -8 | 8 | main position, XP progress position |
 
 Groups share storage only where the compiler's interference sets allow it.
-The model follows this observed allocation path: seed the parameter group;
+The model follows this observed allocation path: scan the entire ordered list
+to seed the parameter group;
 visit the ordered locals; scan prior local groups backwards; reject conflicts
 in either direction; permit at most a doubling in group size. Its offsets are
 computed from the group sizes and checked against the captured descriptors.
@@ -80,3 +81,47 @@ interference sets, group membership, compiler/source hashes, and the full
 capture verification receipt. Raw process pointers stay in the temporary
 trace. The model deliberately asserts the observed single-parameter HUD path;
 it is not a general VC6 stack allocator implementation.
+
+## Parameter scan and source controls
+
+The scalar-reuse control exposes a restriction in the initial model: the
+parameter need not be the first sorted symbol. Sharing one float between
+pulse speed, health ratio, and clock slide X creates a local with 19 counted
+uses, ahead of the parameter with 18. C2 RVA `4b658` scans the whole list for
+kind-5 parameters; its second pass at `4b6a1` skips those parameters while
+processing locals. The model now follows these two passes.
+
+The new observation verifies 64 symbols, nine groups, and all 30 local offsets,
+with unchanged matching metrics. The shared float occupies -52, as did the
+original pulse-speed and health-ratio locals. This source reuse changes the
+compiler graph but does not recover the native stack layout.
+`scalar-reuse-results.json` retains its capture and observation receipt.
+Both it and the refreshed canonical receipt pass whole-object identity
+checks excluding the COFF timestamp, and reject corrupted offsets, truncated
+traces, and a missing frontend stream.
+
+`source-controls.json` stores 38 exact source transformations and their measured
+results: 10 local aggregates, eight scalar-reuse combinations, eight whole-body
+helper boundaries, seven position-scope combinations, and five clamp helpers.
+`verify_controls.py` checks the canonical source hash, applies checked line
+edits, checks each reconstructed source hash, forces recompilation, and compares
+instruction count, similarity, prefix, reference audit, and both exactness flags.
+All 38 remain non-exact. Some whole-body helpers do not inline; those controls
+also retain their reference-audit failures. These are bounded observations,
+not semantic-equivalence proofs or evidence that other source forms cannot match.
+
+```sh
+UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
+  tools/match/evidence/hud-stack-coloring-2026-09-10/verify_controls.py \
+  --out /private/tmp/hud-source-controls
+
+UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
+  tools/match/evidence/hud-stack-coloring-2026-09-10/verify.py \
+  --source /private/tmp/hud-source-controls/scalar-reuse-graph/pulse_speed-health_ratio-slide_x/scratch.cpp \
+  --out /private/tmp/hud-scalar-reuse
+```
+
+Use repeatable `--control FAMILY/NAME` arguments to reproduce selected controls.
+The observer's optional `--source` uses the canonical HUD configuration and
+records the alternate source in the capture receipt. `source-control-results.json`
+retains the full 38-control verification receipt and compiler dependency hashes.
