@@ -100,13 +100,14 @@ Both it and the refreshed canonical receipt pass whole-object identity
 checks excluding the COFF timestamp, and reject corrupted offsets, truncated
 traces, and a missing frontend stream.
 
-`source-controls.json` stores 38 exact source transformations and their measured
-results: 10 local aggregates, eight scalar-reuse combinations, eight whole-body
-helper boundaries, seven position-scope combinations, and five clamp helpers.
+`source-controls.json` stores 81 exact source transformations and their measured
+results. The initial 38 cover 10 local aggregates, eight scalar-reuse combinations,
+eight whole-body helper boundaries, seven position-scope combinations, and five
+clamp helpers. The additional 43 cover the coordinate and cursor controls below.
 `verify_controls.py` checks the canonical source hash, applies checked line
 edits, checks each reconstructed source hash, forces recompilation, and compares
 instruction count, similarity, prefix, reference audit, and both exactness flags.
-All 38 remain non-exact. Some whole-body helpers do not inline; those controls
+All 81 remain non-exact. Some whole-body helpers do not inline; those controls
 also retain their reference-audit failures. These are bounded observations,
 not semantic-equivalence proofs or evidence that other source forms cannot match.
 
@@ -124,4 +125,26 @@ UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
 Use repeatable `--control FAMILY/NAME` arguments to reproduce selected controls.
 The observer's optional `--source` uses the canonical HUD configuration and
 records the alternate source in the capture receipt. `source-control-results.json`
-retains the full 38-control verification receipt and compiler dependency hashes.
+retains the full 81-control verification receipt and compiler dependency hashes.
+
+## Coordinate construction and bonus-cursor controls
+
+These additional controls test source owners without changing the compiler,
+reference aliases, or canonical scratch:
+
+| Family | Controls | Observed result |
+| --- | ---: | --- |
+| Plain coordinate owners | 14 | Arrays and plain structs agree. Replacing the main position's construction/assignment removes 16 instructions; replacing the bar's removes nine; replacing both removes 25. Changing only the XP position is neutral. |
+| Bonus cursor boundaries | 8 | Reference parameters, a reference local, and a one-field cursor struct are neutral. Enclosing the cursor and its uses in a smaller scope preserves 1,824 instructions and 393 clean references but lowers alignment to 91.008772%. |
+| Shared bar field updates | 14 | Replacing selected constructor assignments with field stores, with current or extended position scope, produces 1,818–1,831 instructions. None improves the canonical result; two forms per scope restore the instruction count but lose alignment and mapped references. |
+| Constructor argument owners | 7 | Borrowing the vector/color constructor's scalar arguments preserves instruction and reference counts. Results are neutral or lose one paired instruction's agreement. |
+
+All 43 saved transformations reconstruct and compile successfully. No failed
+compilation is counted as a source-recovery negative.
+
+The plain-owner results distinguish the construction temporaries from the
+coordinate storage: removing those temporaries also removes native operations,
+while changing the XP storage alone leaves the mismatch intact. This narrows
+these tested replacements. It does not prove the original source types or rule
+out other lifetime boundaries. The canonical HUD remains 92.214912%, with
+1,824/1,824 instructions, 393 clean references, and both exactness flags false.

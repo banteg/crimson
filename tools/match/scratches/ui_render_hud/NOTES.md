@@ -374,3 +374,16 @@ scalar reuse, whole-body helper boundaries, position scopes, and clamp helpers.
 All were recompiled and remain non-exact; helper controls that do not inline
 retain their failed reference audits. The source and compiler configuration
 remain unchanged, and these controls do not establish a compiler ceiling.
+
+## Coordinate and cursor ownership follow-up (2026-09-10)
+
+The observer package now preserves and recompiles 81 controls, including 43
+additional coordinate, bonus-cursor, shared-bar, and constructor-argument forms.
+Replacing vector construction/assignment with plain array or struct stores
+removes 9–25 instructions that the native sequence contains. Changing only XP
+coordinate storage is neutral. Narrowing bonus-cursor scope preserves all
+1,824 instructions and 393 clean references but lowers alignment; shared-bar
+field updates and borrowed constructor arguments also fail to improve the
+canonical result. The source remains unchanged. See the
+[measured families](../../evidence/hud-stack-coloring-2026-09-10/README.md#coordinate-construction-and-bonus-cursor-controls)
+for the reproducible transformations and their limits.
