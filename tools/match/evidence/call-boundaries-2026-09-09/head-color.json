@@ -3,10 +3,10 @@
   "verified": true,
   "limitations": "One straight-line call window: same saved alpha bits and RGB constants before and after a 32px quad, with resolved receiver loads. Assumes x86 thiscall callee-saved registers. Does not prove head position, upstream alpha derivation, full renderer behavior, or whole-function exactness.",
   "verifier_sha256": "8b8dd69ff02cd3d826601dd09bd43e08dece7e7f13b10df45fedaf40f34a619d",
-  "source_sha256": "9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6",
+  "source_sha256": "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5",
   "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
-  "candidate_body_sha256": "213a11ebfa6ec03854ae7636a0c15e6fccf8a0613271fca4d1871633a4ba7c09",
-  "candidate_object_sha256": "b097c322e9fe7832fea3c00d39bbb3bcdd80de2eabb72ddb18a5bf9e1374c10b",
+  "candidate_body_sha256": "89ba5782e23a3f05f9b26e64400df5363f995e93a102dd9d735f34864fe5a6b6",
+  "candidate_object_sha256": "3b3df3d285634cf5e755a95e359cbf052b22244140ac24091c7863ee6ce0446e",
   "build_key": {
     "toolchain": {
       "compiler_trees": {
@@ -39,7 +39,7 @@
     "dependencies": [
       [
         "scratches/projectile_render/scratch.cpp",
-        "9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6"
+        "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5"
       ],
       [
         "scratches/projectile_render/scratch.conf",
@@ -388,17 +388,17 @@
   "negative_controls": [
     {
       "name": "removed-reset",
-      "source_sha256": "9b3ffc71e495f56df0bd925ac3018f2a29b04041100d74aedaf6bebf78d02027",
+      "source_sha256": "28ed3d690f19641c5688dda9c59ebe5910c5c2150a8cbf9d083fe579651508be",
       "rejected": true
     },
     {
       "name": "changed-reset-rgb",
-      "source_sha256": "bdc1be7626d7f2ddae0a32704989656da502e2520ce6ae2e15515d60b5828311",
+      "source_sha256": "aaf65d9652cfe015ca9195c172de6ae5fc9e40d3c8f2f2e7a8d68ed16c27cf05",
       "rejected": true
     },
     {
       "name": "changed-reset-alpha",
-      "source_sha256": "6600c5f2ae80575bce0cce6ae3054117e611a2d33388f6810c8f994191a11309",
+      "source_sha256": "70b82a7b211298ba1c12e38a8b3f30a16800a6421f67f394df7ee47b2f840f4e",
       "rejected": true
     }
   ],

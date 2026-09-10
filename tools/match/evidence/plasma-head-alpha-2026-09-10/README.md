@@ -76,3 +76,10 @@ The checkpoint initially rejects the 12-to-14 mismatch increase. The
 `0acb990a825ca35b5c70feb8c8dedd1c2cf224e8` and this native alpha correction.
 It permits retaining verified behavior while preserving the reported debt;
 it does not grant matching credit.
+
+The current receipt is refreshed after the independent
+[beam direction/origin correction](../beam-direction-2026-09-10/README.md).
+The wrong-alpha control restores only the three defective alpha literals in
+that current source; its source hash therefore differs from the historical
+pre-alpha-fix source. The shared runner also exposes optional beam stubs and
+geometry inputs, which the plasma fixtures do not enable.

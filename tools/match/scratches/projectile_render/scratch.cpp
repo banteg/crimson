@@ -735,8 +735,8 @@ extern "C" void projectile_render(float transition_alpha)
 
             grim_interface_ptr->grim_set_atlas_frame(2, 2);
             projectile_render_vec2_t direction_result(
-                projectile->pos.origin_x - projectile->pos_x,
-                primary->origin_y - projectile->pos.pos_y);
+                projectile->pos_x - projectile->pos.origin_x,
+                projectile->pos.pos_y - primary->origin_y);
             vec2f_t direction = *(vec2f_t *)&direction_result;
             float distance = direction_result.length();
             D3DXVec2Normalize(&direction, &direction);
@@ -751,9 +751,9 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_set_atlas_frame(4, 2);
 
             float half_size = effect_scale * 16.0f;
-            float base_x = camera_offset_x + projectile->pos_x
+            float base_x = camera_offset_x + projectile->pos.origin_x
                 - half_size;
-            float base_y = camera_offset_y + projectile->pos.pos_y
+            float base_y = camera_offset_y + primary->origin_y
                 - half_size;
             float span = distance;
             float along = 0.0f;
@@ -799,8 +799,8 @@ extern "C" void projectile_render(float transition_alpha)
             float fade = projectile_render_clamp(life * 2.5f);
 
             projectile_render_vec2_t direction_result(
-                projectile->pos.origin_x - projectile->pos_x,
-                primary->origin_y - projectile->pos.pos_y);
+                projectile->pos_x - projectile->pos.origin_x,
+                projectile->pos.pos_y - primary->origin_y);
             vec2f_t direction;
             direction.x = direction_result.x;
             direction.y = direction_result.y;
@@ -821,9 +821,9 @@ extern "C" void projectile_render(float transition_alpha)
 
             grim_interface_ptr->grim_set_atlas_frame(4, 2);
             float half_size = effect_scale * 16.0f;
-            float base_x = camera_offset_x + projectile->pos_x
+            float base_x = camera_offset_x + projectile->pos.origin_x
                 - half_size;
-            float base_y = camera_offset_y + projectile->pos.pos_y
+            float base_y = camera_offset_y + primary->origin_y
                 - half_size;
             float span = distance;
             float along = 0.0f;

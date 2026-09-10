@@ -7,6 +7,7 @@ whole-function exactness or prove rendering equivalence outside these fixtures.
 import argparse
 import hashlib
 import json
+import math
 import re
 import struct
 from dataclasses import asdict, replace
@@ -114,10 +115,23 @@ class Program:
         return addresses[0]
 
 
-def run(p, native, type_id, life, alpha, glow):
+def run(
+    p,
+    native,
+    type_id,
+    life,
+    alpha,
+    glow,
+    *,
+    position=(111.25, 208.5),
+    origin=(50.125, 91.75),
+    beam_stubs=False,
+):
     slots = {STUB + (slot // 4) * 16: value for slot, value in SLOTS.items()}
     effect = p.address("effect_select_texture")
     perk = p.address("perk_count_get")
+    normalize = p.address("D3DXVec2Normalize")
+    find = p.address("creature_find_in_radius")
     ftol_start = p.address("crt_ftol")
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     ftol_pcs = set()
@@ -160,7 +174,7 @@ def run(p, native, type_id, life, alpha, glow):
     if type_id is not None:
         b = bytearray(0x40)
         b[0] = 1
-        struct.pack_into("<7f", b, 4, 0.3, 111.25, 208.5, 50.125, 91.75, 0.6, -0.8)
+        struct.pack_into("<7f", b, 4, 0.3, *position, *origin, 0.6, -0.8)
         struct.pack_into("<if", b, 32, type_id, life)
         struct.pack_into("<f", b, 44, 2.0)
         mu.mem_write(p.address("projectile_pool"), bytes(b))
@@ -201,6 +215,34 @@ def run(p, native, type_id, life, alpha, glow):
             uc.reg_write(x86.UC_X86_REG_EAX, 0)
             uc.reg_write(x86.UC_X86_REG_ECX, 0xDEAD1000)
             uc.reg_write(x86.UC_X86_REG_EDX, 0xDEAD2000)
+            return
+        if beam_stubs and a == normalize:
+            ret, dst, src = struct.unpack("<3I", uc.mem_read(e, 12))
+            assert STACK <= dst <= STACK + 0x10000 - 8
+            assert STACK <= src <= STACK + 0x10000 - 8
+            raw = bytes(uc.mem_read(src, 8))
+            x, y = struct.unpack("<ff", raw)
+            calls.append(["D3DXVec2Normalize", list(struct.unpack("<2I", raw))])
+            call_sites.append(ret)
+            length = math.sqrt(x * x + y * y)
+            # Shared deterministic model, not execution of the external D3DX DLL.
+            uc.mem_write(dst, struct.pack("<ff", x / length if length else 0.0, y / length if length else 0.0))
+            uc.reg_write(x86.UC_X86_REG_EAX, dst)
+            uc.reg_write(x86.UC_X86_REG_ECX, 0xDEAD1000)
+            uc.reg_write(x86.UC_X86_REG_EDX, 0xDEAD2000)
+            uc.reg_write(x86.UC_X86_REG_ESP, e + 12)
+            uc.reg_write(x86.UC_X86_REG_EIP, ret)
+            return
+        if beam_stubs and a == find:
+            ret, pos, radius, index = struct.unpack("<4I", uc.mem_read(e, 16))
+            assert p.address("projectile_pool") <= pos <= p.address("projectile_pool") + 0x40 * 96 - 8
+            calls.append(["creature_find_in_radius", [*struct.unpack("<2I", uc.mem_read(pos, 8)), radius, index]])
+            call_sites.append(ret)
+            uc.reg_write(x86.UC_X86_REG_EAX, 0xFFFFFFFF)
+            uc.reg_write(x86.UC_X86_REG_ECX, 0xDEAD1000)
+            uc.reg_write(x86.UC_X86_REG_EDX, 0xDEAD2000)
+            uc.reg_write(x86.UC_X86_REG_ESP, e + 4)
+            uc.reg_write(x86.UC_X86_REG_EIP, ret)
             return
         if a in (effect, perk):
             calls.append(
@@ -329,7 +371,7 @@ def main():
         )
     result = current.result
     assert not result.exact and not result.body_byte_exact
-    assert sha(defect_source.encode()) == "6dca4a01d049d243dc72dc1fc15faa7146134e7cb9f36f347cfba4a22af64e84"
+    assert sha(defect_source.encode()) == "2fe754773dd7ba2df528d4cbecf6806897fbf7d8ee7993816bd19dd3266ae459"
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     md.detail = True
     multiply = next(md.disasm(current.image.function_bytes(0x422C9D, 0x422CA3), 0x422C9D))

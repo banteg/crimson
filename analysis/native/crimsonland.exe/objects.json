@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "9250bc0c8122c649ba45db7dbefb1cc29d836cfb1f2132963118f82ab691a188",
+  "audit_digest": "9ccf4b75295c2dfb25adcfac42b3e9af2192e4080a0a13a67e47e10177eb2979",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -53713,7 +53713,7 @@
         {
           "path": "tools/match/scratches/projectile_render/scratch.cpp",
           "repository_relative": true,
-          "sha256": "9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6"
+          "sha256": "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5"
         },
         {
           "path": "tools/match/scratches/projectile_render/scratch.conf",
@@ -53769,10 +53769,10 @@
           "canonical_config_sha256": "7bf670e79b086f5c8fad928b08be7720639d131b14e6a006a5ac67ad3d09f660",
           "canonical_scratch": "tools/match/scratches/projectile_render",
           "canonical_source": "tools/match/scratches/projectile_render/scratch.cpp",
-          "canonical_source_sha256": "9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6",
+          "canonical_source_sha256": "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5",
           "effective_end": 4349303,
           "end": 4349303,
-          "experiment_epoch": "cc37b445762806eaa70e995e69f97f747fb0683433fdbe8a79c49abb5812fa92",
+          "experiment_epoch": "433169db6b31b8478a1fcd2ee83ebcebac87717026b35d21c4b2e11488e91b6e",
           "function": "projectile_render",
           "match": {
             "body_byte_exact": false,
@@ -53810,10 +53810,10 @@
       },
       "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
       "object_function_symbol": "_projectile_render",
-      "object_sha256": "fdce63f07c288b50ff999312060a47409c2aca469a5ab4d4a6ab86ff6c3f3d6b",
+      "object_sha256": "1e3520fab77204767206a50351a92fe6a7e2a33da1da3883d69240cfbb588505",
       "scratch": "tools/match/scratches/projectile_render",
       "source": "tools/match/scratches/projectile_render/scratch.cpp",
-      "source_sha256": "9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6",
+      "source_sha256": "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5",
       "target_size": 12551,
       "translation_unit": {
         "kind": "isolated",

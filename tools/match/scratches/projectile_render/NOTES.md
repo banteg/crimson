@@ -1239,3 +1239,21 @@ is hidden or aliased away. Six shared-alpha lifetime controls are bounded
 negatives. `RECOVERY=incomplete` and the analysis/compiler/reference residuals
 remain. Current source SHA-256:
 `9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6`.
+
+## Beam direction and origin recovery (2026-09-10)
+
+The ion/Fire Bullets body had two reversed vector subtractions and two
+head-anchored streak bases across its live/fading branches. Native uses
+`head - origin` and anchors the streak at `camera + origin - half_size`.
+Python and Zig already implement this direction and anchor.
+
+The [beam evidence package](../../evidence/beam-direction-2026-09-10/README.md)
+checks the native producer instructions, 480 complete caller-boundary machine
+fixtures, and 24 compiled wrong-direction/anchor controls. All corrected
+fixtures agree, including long and zero-length segments. Normalization is a
+shared explicit model; empty creature-search stubs exclude chain arcs.
+
+This source recovery leaves the matching metrics unchanged at 57.104195%,
+2891/3021 instructions, and 444/0/14 references. Both exactness flags remain
+false. The plasma/head-color and static call-boundary receipts are refreshed
+against this source; no new reference waiver is required.
