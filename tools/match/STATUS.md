@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **795/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **796/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**797/810** functions matched exactly (**98.4%**), **260791/341992** code bytes (**76.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**798/810** functions matched exactly (**98.5%**), **261625/341992** code bytes (**76.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **320568/341992** code bytes (**93.7%**).
+Fuzzy-weighted alignment is **320656/341992** code bytes (**93.8%**).
 
-Remaining exact-match debt is **13 functions**, **81201 code bytes**, and **21424 fuzzy-gap bytes**.
+Remaining exact-match debt is **12 functions**, **80367 code bytes**, and **21336 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**13** non-exact scratch-backed functions hold **21424 fuzzy-gap bytes**. The top 5 hold **84.8%** of that gap; the top 10 hold **99.4%**.
+**12** non-exact scratch-backed functions hold **21336 fuzzy-gap bytes**. The top 5 hold **85.2%** of that gap; the top 10 hold **99.8%**.
 
-Current-baseline experiments cover **1 functions / 574 gap bytes**; **12 / 20850** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 574 gap bytes**; **11 / 20762** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -48,9 +48,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 8 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 9 | crimsonland.exe | player_render_overlays | 319 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 10 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 11 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 12 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 13 | crimsonland.exe | quest_build_spiders_inc | 8 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 11 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
+| 12 | crimsonland.exe | quest_build_spiders_inc | 8 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -120,12 +119,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 658/671 | 239626/320827 | 74.7% | 299403/320827 | 93.3% | 671/671 | 320827/320827 | 100.0% | 658/671 |
+| crimsonland.exe | 659/671 | 240460/320827 | 75.0% | 299491/320827 | 93.3% | 671/671 | 320827/320827 | 100.0% | 659/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**658/671** functions (**98.1%**), **239626/320827** bytes (**74.7%**), **299403/320827** fuzzy-weighted bytes (**93.3%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **658/671** scratches verified.
+**659/671** functions (**98.2%**), **240460/320827** bytes (**75.0%**), **299491/320827** fuzzy-weighted bytes (**93.3%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **659/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -444,7 +443,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | fx_queue_add | 0x0041e840 | 140 | 140/140 | 0 | 39/39 | 100.00% | 39/39 | 10/0/0 |  | gameplay-fx-queue |
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 32/32 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 32/32 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
-| wip | creature_handle_death | 0x0041e910 | 834 | 746/834 | 88 | 205/204 | 89.49% | 6/204 | 85/0/0 |  | creature-death-side-effects |
+| match | creature_handle_death | 0x0041e910 | 834 | 834/834 | 0 | 204/204 | 100.00% | 204/204 | 87/0/0 |  | creature-death-side-effects |
 | match | config_sync_from_grim | 0x0041ec60 | 1225 | 1225/1225 | 0 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 112/112 | 0 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
 | match | config_load_presets | 0x0041f1a0 | 653 | 653/653 | 0 | 178/178 | 100.00% | 178/178 | 53/0/0 |  | config-file-load-and-runtime-sync |

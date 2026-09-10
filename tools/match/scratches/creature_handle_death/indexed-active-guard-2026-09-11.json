@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-pointer-member",
+      "find": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[creature_id];",
+      "replacements": [
+        {
+          "name": "pointer-first",
+          "text": "    creature_t *creature = &creature_pool[creature_id];\n    int creature_flags = creature->flags;"
+        }
+      ]
+    },
+    {
+      "name": "active-guard",
+      "find": "    if (!creature->active) {",
+      "replacements": [
+        {
+          "name": "indexed-slot",
+          "text": "    if (!creature_pool[creature_id].active) {"
+        }
+      ]
+    }
+  ]
+}

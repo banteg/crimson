@@ -2,8 +2,30 @@
 
 Native target: `crimsonland.exe` at `0x0041e910` (834 bytes).
 
-Current honest VC6.5 result: 89.49% normalized match, 6/204-instruction exact
-prefix, 205/204 candidate instructions, and 85/0/0 reference audit.
+Current VC6.5 result: **100% exact**, 204/204 positional instructions,
+87/0/0 references, and relocation-aware encoded-body identity across all
+834 native bytes.
+
+## Exact source recovery (2026-09-11)
+
+Read the initial flags through the already-bound `creature` pointer, then
+spell the post-prelude active guard as `creature_pool[creature_id].active`.
+The pointer still denotes that same fixed array element; neither the bonus
+call nor the recent-death bookkeeping changes the local ID or pointer. The
+source therefore keeps every read, call, and mutation in its original order.
+The indexed guard preserves an actual later use of the creature index and
+makes the unmodified compiler emit the native opening LEAs and flag load.
+No compiler override, register constraint, or synthetic operation is used.
+
+`indexed-active-guard-2026-09-11.json` records both individual changes and
+their interaction against the prior source. The indexed guard alone stays at
+89.486553%; the pointer/member opening alone gives 79.411765%; together they
+produce the complete exact body with 87 clean references. The earlier
+allocation counterfactual established sufficiency but received no credit;
+this ordinary source compile now establishes the match.
+
+The remaining sections retain the historical recovery and experiment record.
+Their residual assessments and scores describe earlier candidates.
 
 Binary Ninja and the MSVC candidate establish:
 
