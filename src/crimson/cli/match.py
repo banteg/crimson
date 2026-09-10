@@ -15,6 +15,7 @@ from .. import (
     match_data_inventory,
     match_diagnostics,
     match_experiments,
+    match_flow_graph,
     match_listing_diagnostics,
     match_mutation,
     match_regressions,
@@ -227,7 +228,9 @@ def _finish_diff(
     max_regions: int | None,
     as_json: bool,
     residual_summary: bool = False,
+    flow_graph: bool = False,
 ) -> None:
+    graph = match_flow_graph.flow_graph_payload(result) if flow_graph else None
     residual = (
         match_diagnostics.residual_summary_payload(result, context=region_context, limit=max_regions or 8)
         if residual_summary
@@ -237,6 +240,8 @@ def _finish_diff(
         payload = matchlib.match_result_payload(result, region_context=region_context, max_regions=max_regions)
         if residual is not None:
             payload["residual_summary"] = residual
+        if graph is not None:
+            payload["flow_graph"] = graph
         typer.echo(
             json.dumps(
                 payload,
@@ -251,6 +256,8 @@ def _finish_diff(
     _echo_result(result)
     if residual is not None:
         typer.echo("\n" + match_diagnostics.render_residual_summary(residual))
+    if graph is not None:
+        typer.echo("\n" + match_flow_graph.render_flow_graph(graph))
     if regions and result.ratio != 1.0:
         for index, region in enumerate(
             matchlib.diff_regions(result, context=region_context, max_regions=max_regions),
@@ -272,7 +279,7 @@ def _finish_diff(
             for line in region.candidate_lines:
                 typer.echo(f"+ {line}")
     if result.ratio != 1.0:
-        if not residual_summary or full:
+        if not (residual_summary or flow_graph) or full:
             for line in result.diff_lines(full=full):
                 typer.echo(line)
         raise typer.Exit(code=1)
@@ -313,6 +320,9 @@ def cmd_match_diff(
     residual_summary: bool = typer.Option(
         False, "--residual-summary", help="bounded heuristic residual report instead of diff (--full prints both)",
     ),
+    flow_graph: bool = typer.Option(
+        False, "--flow-graph", help="strict instruction-graph diagnostic instead of diff (--full prints both)",
+    ),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for mismatch and residual reports"),
     max_regions: int | None = typer.Option(
@@ -346,6 +356,7 @@ def cmd_match_diff(
         max_regions=max_regions,
         as_json=as_json,
         residual_summary=residual_summary,
+        flow_graph=flow_graph,
     )
 
 
@@ -356,6 +367,9 @@ def cmd_match_scratch(
     full: bool = typer.Option(False, "--full", help="print the full normalized unified diff"),
     residual_summary: bool = typer.Option(
         False, "--residual-summary", help="bounded heuristic residual report instead of diff (--full prints both)",
+    ),
+    flow_graph: bool = typer.Option(
+        False, "--flow-graph", help="strict instruction-graph diagnostic instead of diff (--full prints both)",
     ),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for mismatch and residual reports"),
@@ -399,6 +413,7 @@ def cmd_match_scratch(
         max_regions=max_regions,
         as_json=as_json,
         residual_summary=residual_summary,
+        flow_graph=flow_graph,
     )
 
 

@@ -1,0 +1,1224 @@
+{
+  "schema_version": 1,
+  "kind": "vc6-timeline-consumer-rewrite",
+  "canonical_source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+  "compiler_decisions_modified": false,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "source_hashes": {
+    "trace.py": "cc89a2c6c4c96f29f5eb0ae7cf9ac7d5dc285140bbdcb212181679da70aa975c",
+    "analysis.py": "c4b7ce744bd4be368dbbe744a3b86e835f8fdb2f9c7d9f49e1f09231415a64c8",
+    "probes.py": "0c6f4f24272e0deef42a5ed578605bccc727a471f472b52f9f3ca99e3490e486",
+    "observer.c": "3e920d4e78ab68b982a46504db8880f758424fc40b2842072fb99c44de8cacc0",
+    "decision_observer.c": "7c36de3aaa07efa37f516aac5e983000b3190250c3dd9877d15b16b1dec4b126"
+  },
+  "replay_source_hashes": {
+    "verify.py": "5b46741ac7c3f96b0890b477dbeb01a0b9dbbfcc62790b2aceca1f7cc6f57a65",
+    "capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+    "replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64"
+  },
+  "compiler_hashes": {
+    "CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+    "C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+    "C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+    "C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+    "LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc"
+  },
+  "results": [
+    {
+      "label": "baseline",
+      "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "observed_whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "stream_hashes": {
+        "ex": "39e2c4696c9d2e8578927ba0581a713e8f438eeda729fc73130ab3a039e0a9e6",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "baace62ef7ccccf34bbc88bc257bae8ce1c140692d13cd08fbbf343144932930",
+        "gl": "a0b3f648be71dea242bb838bcd6776c21631e1663eab6756db42a40d6cc8bacd"
+      },
+      "node_counts": [
+        154,
+        147,
+        146,
+        155,
+        140,
+        158,
+        153,
+        172,
+        172,
+        170,
+        165,
+        155
+      ],
+      "consumer_findings": {
+        "finding": "both loads rebased to entry during 306c1, alongside pointer definition removal",
+        "heading_and_id_load_node_identities_preserved_after_29511": true,
+        "copy_probe": null,
+        "phases": [
+          {
+            "phase": "before_130cb",
+            "node_count": 154,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "after_130cb",
+            "node_count": 147,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "before_281cd",
+            "node_count": 146,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "before_2930f",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_29511",
+            "node_count": 140,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_29511",
+            "node_count": 158,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_26d75",
+            "node_count": 153,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_26d75",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_30308",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_306c1",
+            "node_count": 170,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_306c1",
+            "node_count": 165,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "before_336f4",
+            "node_count": 155,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          }
+        ]
+      },
+      "decision_findings": {
+        "observed_whole_coff_equal_except_timestamp": true,
+        "preserving_call_and_return_observation": true,
+        "eligibility_predicate_rva": "0x309bb",
+        "input_definition_opcode": "0x12",
+        "input_source_operand_kind": 5,
+        "eligibility_return": 1,
+        "intervening_definition_check_rva": "0x31a50",
+        "intervening_definition_check_reached_for_pointer": true,
+        "intervening_definition_check_returns": [
+          0
+        ],
+        "total_observed_predicate_calls": 26,
+        "total_observed_intervening_definition_calls": 4
+      }
+    },
+    {
+      "label": "relative-heading",
+      "source_sha256": "225c0b89bb3d5039daa644a089811014ac3ee946d7e3ed544ddc658970ca0152",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "observed_whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "stream_hashes": {
+        "ex": "7f714aea37a7f2a9b687a62b5236ef1af39f2f0286e715ec157e1c17c5e3caa5",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "1feb2d9eff1783b87b186b74bf358fabc1ba868f6c1cd0701c703f81bbbdce8a",
+        "gl": "58b3e3463b81b3ecde66553f367f492497f7f9954fa9f842771e484650b25b90"
+      },
+      "node_counts": [
+        154,
+        147,
+        146,
+        155,
+        140,
+        158,
+        153,
+        172,
+        172,
+        169,
+        165,
+        155
+      ],
+      "consumer_findings": {
+        "finding": "30308 forwards pointer COPY to auxiliary base; 306c1 rebases both loads to entry",
+        "heading_and_id_load_node_identities_preserved_after_29511": true,
+        "copy_probe": null,
+        "phases": [
+          {
+            "phase": "before_130cb",
+            "node_count": 154,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "after_130cb",
+            "node_count": 147,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              2
+            ]
+          },
+          {
+            "phase": "before_281cd",
+            "node_count": 146,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              2
+            ]
+          },
+          {
+            "phase": "before_2930f",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_29511",
+            "node_count": 140,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_29511",
+            "node_count": 158,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_26d75",
+            "node_count": 153,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_26d75",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_30308",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_306c1",
+            "node_count": 169,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "derived auxiliary",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "after_306c1",
+            "node_count": 165,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "before_336f4",
+            "node_count": 155,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          }
+        ]
+      }
+    },
+    {
+      "label": "assignment-entry",
+      "source_sha256": "03e98ffeda4fc4bac58603c6c85406e2004ba1cb56874b50a68026b90bba0464",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "observed_whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "stream_hashes": {
+        "ex": "331114cade034c4e2fd908d8db7d275acb184f1a59bf8ed65c6122db2782fdf2",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "57d3c6b4df69b8e1aa25d47faf877c921494c2f30d3f25017de6e5b885ea8a5e",
+        "gl": "ee015ea47f94fbbc57924b81dfc50d3a5ae03c9afb939b5869b25297ffff294d"
+      },
+      "node_counts": [
+        155,
+        147,
+        146,
+        155,
+        140,
+        158,
+        153,
+        172,
+        172,
+        170,
+        165,
+        155
+      ],
+      "consumer_findings": {
+        "finding": "both loads rebased to entry during 306c1, alongside pointer definition removal",
+        "heading_and_id_load_node_identities_preserved_after_29511": true,
+        "copy_probe": null,
+        "phases": [
+          {
+            "phase": "before_130cb",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "phase": "after_130cb",
+            "node_count": 147,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "before_281cd",
+            "node_count": 146,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "before_2930f",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_29511",
+            "node_count": 140,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_29511",
+            "node_count": 158,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_26d75",
+            "node_count": 153,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_26d75",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_30308",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_306c1",
+            "node_count": 170,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_306c1",
+            "node_count": 165,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "before_336f4",
+            "node_count": 155,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          }
+        ]
+      }
+    },
+    {
+      "label": "memcpy-entry",
+      "source_sha256": "134bb57cc798ab6ec3bd878851be5e6506f0b161168c5bf0c53a43cce2295261",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "observed_whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "stream_hashes": {
+        "ex": "90091c85c5cb654ea98303a9aebf5d083521dea2040666cc17a4f619e3db09a1",
+        "in": "a277a9d046384e8537829a96708cbc64844eb2cfb83d9b3727d7417282e6525e",
+        "sy": "bc34034929220bf6489aab72f8fe505fdb7d8a83a032b9dbf83d2505939fdf31",
+        "gl": "fd909d2f7b0895815a493439c53d3a04f8490f86be5c3170bd7378b508d293ca"
+      },
+      "node_counts": [
+        155,
+        147,
+        146,
+        155,
+        140,
+        158,
+        153,
+        172,
+        172,
+        170,
+        165,
+        155
+      ],
+      "consumer_findings": {
+        "finding": "both loads rebased to entry during 306c1, alongside pointer definition removal",
+        "heading_and_id_load_node_identities_preserved_after_29511": true,
+        "copy_probe": {
+          "initial_opcode": "0x16b",
+          "initial_source_kind": 2,
+          "initial_destination_kind": 2,
+          "block_copy_absent_after_130cb": true,
+          "pointer_definitions_have_only_kind_1_destinations_after_29511": true,
+          "late_nonzero_memory_store_mechanism_exercised": false
+        },
+        "phases": [
+          {
+            "phase": "before_130cb",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b",
+              "0x16b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "phase": "after_130cb",
+            "node_count": 147,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "before_281cd",
+            "node_count": 146,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "before_2930f",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_29511",
+            "node_count": 140,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_29511",
+            "node_count": 158,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_26d75",
+            "node_count": 153,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_26d75",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_30308",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "before_306c1",
+            "node_count": 170,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x12",
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              1
+            ]
+          },
+          {
+            "phase": "after_306c1",
+            "node_count": 165,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "before_336f4",
+            "node_count": 155,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          }
+        ]
+      }
+    },
+    {
+      "label": "memcpy-relative",
+      "source_sha256": "b027cd69b7ed70bbc2fb4eac0f8e8ce654b06427daebc46a84ceea2d0b94d94c",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "observed_whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "stream_hashes": {
+        "ex": "cea41124bfc75f62a23c3c3d17c1c8e7a54d698dc05925eeb00d613c4d2446fc",
+        "in": "a277a9d046384e8537829a96708cbc64844eb2cfb83d9b3727d7417282e6525e",
+        "sy": "8f6df1972449fc33e25f77b1d2db46d96533a702e8fdb0b8f3ef22bf5be3791c",
+        "gl": "25cd6eb9e34ed187aa6e43b0ade4effab2cdf43463378f4f22ff1c50477e259d"
+      },
+      "node_counts": [
+        155,
+        147,
+        146,
+        155,
+        140,
+        158,
+        153,
+        172,
+        172,
+        169,
+        165,
+        155
+      ],
+      "consumer_findings": {
+        "finding": "30308 forwards pointer COPY to auxiliary base; 306c1 rebases both loads to entry",
+        "heading_and_id_load_node_identities_preserved_after_29511": true,
+        "copy_probe": {
+          "initial_opcode": "0x16b",
+          "initial_source_kind": 2,
+          "initial_destination_kind": 2,
+          "block_copy_absent_after_130cb": true,
+          "pointer_definitions_have_only_kind_1_destinations_after_29511": true,
+          "late_nonzero_memory_store_mechanism_exercised": false
+        },
+        "phases": [
+          {
+            "phase": "before_130cb",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b",
+              "0x16b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "phase": "after_130cb",
+            "node_count": 147,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              2
+            ]
+          },
+          {
+            "phase": "before_281cd",
+            "node_count": 146,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              2
+            ]
+          },
+          {
+            "phase": "before_2930f",
+            "node_count": 155,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_29511",
+            "node_count": 140,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_29511",
+            "node_count": 158,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_26d75",
+            "node_count": 153,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_26d75",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_30308",
+            "node_count": 172,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_306c1",
+            "node_count": 169,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "derived auxiliary",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "after_306c1",
+            "node_count": 165,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          },
+          {
+            "phase": "before_336f4",
+            "node_count": 155,
+            "heading_load_base": "entry",
+            "id_load_base": "entry",
+            "pointer_definition_opcodes": [],
+            "pointer_definition_destination_kinds": []
+          }
+        ]
+      }
+    },
+    {
+      "label": "advance-after-pointer-template-relative",
+      "source_sha256": "b418b27e9efcafa1cc8ebecedb5b0447a651c759c2f715df84b21c738bb2ae53",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "3a4ce43e62911cc946c4bf41c85d2910af7f6203848cd49da422abc2d972b1b0",
+      "instruction_text_sha256": "41b01d3340dc18196fe1ffdedd4a0cf10556208f33f9cd57ba3916f33212c48c",
+      "ratio": 0.2743682310469314,
+      "instructions": 162,
+      "prefix": 1,
+      "references_ok": 5,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "observed_whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "stream_hashes": {
+        "ex": "eae5cda38bcb2017c168e43af7657dbb5476fbfb96503a34d5cfa839909fb7f0",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "1eb435208c00100e209b5c478791c284eb8228abd004f8843190b8da942cb041",
+        "gl": "27126eafb7f33f2c7a14b390c47e695626dcbc28e43fffeff8a6be46dd33d2ba"
+      },
+      "node_counts": [
+        163,
+        189,
+        188,
+        197,
+        171,
+        191,
+        187,
+        204,
+        204,
+        202,
+        194,
+        205
+      ],
+      "consumer_findings": {
+        "finding": "template COPY survives; heading load rebased to template inside 306c1",
+        "heading_and_id_load_node_identities_preserved_after_29511": true,
+        "copy_probe": null,
+        "phases": [
+          {
+            "phase": "before_130cb",
+            "node_count": 163,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x16d",
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1,
+              2
+            ]
+          },
+          {
+            "phase": "after_130cb",
+            "node_count": 189,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              2
+            ]
+          },
+          {
+            "phase": "before_281cd",
+            "node_count": 188,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              2
+            ]
+          },
+          {
+            "phase": "before_2930f",
+            "node_count": 197,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_29511",
+            "node_count": 171,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x15b"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_29511",
+            "node_count": 191,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_26d75",
+            "node_count": 187,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_26d75",
+            "node_count": 204,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_30308",
+            "node_count": 204,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_306c1",
+            "node_count": 202,
+            "heading_load_base": "derived auxiliary",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "after_306c1",
+            "node_count": 194,
+            "heading_load_base": "template",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          },
+          {
+            "phase": "before_336f4",
+            "node_count": 205,
+            "heading_load_base": "template",
+            "id_load_base": "template",
+            "pointer_definition_opcodes": [
+              "0x1"
+            ],
+            "pointer_definition_destination_kinds": [
+              1
+            ]
+          }
+        ]
+      },
+      "decision_findings": {
+        "observed_whole_coff_equal_except_timestamp": true,
+        "preserving_call_and_return_observation": true,
+        "eligibility_predicate_rva": "0x309bb",
+        "input_definition_opcode": "0x1",
+        "input_source_operand_kind": 1,
+        "eligibility_return": 0,
+        "intervening_definition_check_rva": "0x31a50",
+        "intervening_definition_check_reached_for_pointer": false,
+        "intervening_definition_check_returns": [],
+        "total_observed_predicate_calls": 38,
+        "total_observed_intervening_definition_calls": 1
+      }
+    }
+  ],
+  "new_source_matches": 0
+}

@@ -1,5 +1,23 @@
 # bonus_pick_random_type WIP
 
+## Instruction-graph proof (2026-09-11)
+
+The independently replayable comparison in
+`tools/match/evidence/bonus-pick-flow-graph-2026-09-11/` maps all 156
+non-jump instructions one-to-one, preserves the taken and fall-through edges
+of every conditional, covers all six unconditional jumps on each side, and
+verifies all 20 reference instructions at their graph-mapped positions.
+Deliberately changed conditions, destinations, and reference owners are rejected.
+This strengthens the layout diagnosis without granting normalized or encoded
+exactness; the original source spelling remains unrecovered.
+
+An encoded-exact `dsound_restore_buffer` control demonstrates that the same
+compiler can place a loop condition after a backward jump. Eight nested-retry
+controls and 21 size-option controls on duplicated filters do not recover the
+bonus selector. The latter merge code under size optimization but lose the
+desired layout; the speed preference retains extra instructions. The package
+records these bounded results and their reconstruction recipes.
+
 Current best local score:
 
 ```txt

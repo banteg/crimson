@@ -35259,7 +35259,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 162,
-        "candidate_object_sha256": "c4e9b4a9a0081312f0f3be8c4900b2464d852fb61a8a944928870cd96a3a4827",
+        "candidate_object_sha256": "93720508b6927df3a87c8f7b40d4aaf588e09e8ce682d42795258adec87fabd9",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -36721,7 +36721,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 190,
-        "candidate_object_sha256": "96f43be4232be5eb857b9cfa2f18c5b34ad0fbc0af6f29af6bfc6ff617363561",
+        "candidate_object_sha256": "8f2b206786aeefaaf37084b8466154507c3a56ae37a50cb5e455628962d2d2a8",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -40155,7 +40155,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2913,
-        "candidate_object_sha256": "b1e3576d7d404af0f8cbfa4686fdc221587d8e3381fb7963c4662d5d1bca2a1c",
+        "candidate_object_sha256": "ae5971d169d65d3a5996c8d5116c48be8d9233b71d36c8b6542aa23e1fcfd834",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -42705,7 +42705,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 113,
-        "candidate_object_sha256": "2bb1f65f70dfd68b093470f31b22321928cbfb4a14033542e123e2fc778696f0",
+        "candidate_object_sha256": "978700284ccea3becf5e44e5478499bae4d9abaed5c2334a49a14ab1ad622e5d",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -45629,7 +45629,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 34,
-        "candidate_object_sha256": "5a7bdb4a51611d575fa65de029c18f4770f63b4319f822051a7730bdfcd52c1d",
+        "candidate_object_sha256": "a3a4b9f56f2c6bdefd170f6a6f50caf1da1f8a9808c927b72b5836d4a34f1ff3",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -110923,7 +110923,7 @@
   "identities": {
     "inventory": "d3f5b7c0b16f8b76988f540dabba711baa52f189b80aa03fa96c66428b575e02",
     "inventory_policy": "curated-functions-v1; executable-gaps-unresolved-v1",
-    "scoring": "c8d8d759bb239c7c41c2622b15e02a8060cadd9acc24c42921c0e0158bcf044d",
+    "scoring": "b67ca35e3ddb27a515ea111982fbf8506c71fa0efa8e498be068b8157c3c73b2",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1",
     "target": {
       "game_bins/crimsonland/1.9.93-gog/crimsonland.exe": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
@@ -110943,7 +110943,7 @@
     "analysis/library_provenance.json": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d",
     "analysis/matching_scope.json": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086",
     "pyproject.toml": "9ba3eb8fb6b2e485c9e125f57ab36e700f8e2544c2ed63a797f5f0d01fad82e7",
-    "src/crimson/cli/match.py": "8eccf543dacfb8689dae2076b3844d4b53b885f7012cf8c9eb780bf72c5213e8",
+    "src/crimson/cli/match.py": "a5499742077ea846ec1fee11dd4a4ac494638d24588933dde37f15da5a615b7e",
     "src/crimson/library_match.py": "3795cc7cfb69a6476962db22fad8d3de0a915ddebc44837bb0142f13aa610ec0",
     "src/crimson/library_provenance.py": "a9759fe0a737a3de06a507996011239d7f2a2542e52c0a9ee1cb98f95fc99676",
     "src/crimson/match.py": "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
@@ -110951,6 +110951,7 @@
     "src/crimson/match_data_report.py": "24185a2194e7b3bcbb1eff96176a04eb36b0bd92e9730f8456cc6b811b06c688",
     "src/crimson/match_diagnostics.py": "513036fcfc9d06adfaeba86fe339eb461323db61e9224191ba9b040d2e6cc5ec",
     "src/crimson/match_experiments.py": "ed99dc75182ada935dbb8c87e94c44d003f03c21b475fa9a39e3beea3c133502",
+    "src/crimson/match_flow_graph.py": "03b785513d18e202f6b22932505cb60aaa0b33847da76b3aa38ee7947208c784",
     "src/crimson/match_listing_diagnostics.py": "918481ee923aada4f84a04f67753f9111f0eeb1973200448bdbf804e6ad86d26",
     "src/crimson/match_micro_oracle.py": "291f65298499c70176008fc516e6554101e6e046113d99705ad18d0a42af4b53",
     "src/crimson/match_mutation.py": "870fbe5ea48eff5e7c244adc2b536c1bb72c4271b5674a60827b73e5f4f47f61",
@@ -111093,6 +111094,9 @@
     "tools/match/data/zlib_infutil.c": "d1dbc55c775705dcf91829e67317ea9f007847494e34c3a302dd25b87fd800b4",
     "tools/match/data/zlib_trees.c": "a17bcc20f32b6e24546dfe5f150d60a959aa420311a391402ca939d28b12149e",
     "tools/match/evidence/beam-direction-2026-09-10/verify.py": "4cae3c9c80eda5804a346fd32bb78ec392a60005d66a95482e867fe55c86f1d6",
+    "tools/match/evidence/bonus-pick-cold-edge-2026-09-11/verify_controls.py": "40f3b00922e98ca1a7a6863d9685a7a1ae7803cd3c8f4ae5f312f91e3e8d3c92",
+    "tools/match/evidence/bonus-pick-flow-graph-2026-09-11/verify.py": "c7f6f44d399666794830de4fca7ae815712ec6ccceeda47b0ea680f4a906a2fc",
+    "tools/match/evidence/bonus-pick-flow-graph-2026-09-11/verify_controls.py": "40f3b00922e98ca1a7a6863d9685a7a1ae7803cd3c8f4ae5f312f91e3e8d3c92",
     "tools/match/evidence/call-boundaries-2026-09-09/verify.py": "0553451c461615b3540739ee2cc1bfe207df8fd379ea0d83a5ff1ee5508fd1c9",
     "tools/match/evidence/call-boundaries-2026-09-09/verify_head_color.py": "8b8dd69ff02cd3d826601dd09bd43e08dece7e7f13b10df45fedaf40f34a619d",
     "tools/match/evidence/creature-pool-sentinel-2026-09-09/verify.py": "3ca3450c569ab5a892f55dcd361d44edc9bd83240c83f20fac84d4cc729d81c0",
@@ -111118,7 +111122,7 @@
     "tools/match/evidence/vc6-intermediate-replay-2026-09-09/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
     "tools/match/evidence/vc6-intermediate-replay-2026-09-09/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
     "tools/match/evidence/vc6-intermediate-replay-2026-09-09/verify.py": "5b46741ac7c3f96b0890b477dbeb01a0b9dbbfcc62790b2aceca1f7cc6f57a65",
-    "tools/match/evidence/vc6-redundant-stores-2026-09-11/probe.py": "c3946309f62902978f74ba2b39412c00a510c1dddbb6c2a45a20d8ee32f134d9",
+    "tools/match/evidence/vc6-redundant-stores-2026-09-11/probe.py": "13e13e36d33f21bd465b79db377de1a3b6d0c30eb2bbaadb43b84b184f2b918c",
     "tools/match/evidence/vc6-spiders-count-2026-09-10/delayed-count.cpp": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
     "tools/match/evidence/vc6-spiders-count-2026-09-10/early-field.cpp": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338",
     "tools/match/evidence/vc6-spiders-count-2026-09-10/observer.c": "d3560cf95cb91c861d802bf46d1f35da888a2bcec27c71a96f7e9b1b864b557d",
@@ -111126,8 +111130,17 @@
     "tools/match/evidence/vc6-spiders-count-2026-09-10/verify.py": "fc6087c73788f0970061851925b9afffc5242d888652815df3c1e1d986d649b4",
     "tools/match/evidence/vc6-spiders-count-2026-09-10/verify_half.py": "f52bb4fdcad3dd8761d8ac5776c386380bfd71fd8ef399c322768673dfd31612",
     "tools/match/evidence/vc6-spiders-count-2026-09-10/verify_publication.py": "846581d5030cf18da16cf41fdb1c60803f05e934875e93594d846438630b3adf",
+    "tools/match/evidence/vc6-store-pass-comparison-2026-09-11/observer.c": "5a2725d88e411dadb343e1b63adc524c3c6a8f4504a5b9c4bd85df21d4830fff",
+    "tools/match/evidence/vc6-store-pass-comparison-2026-09-11/source_controls.py": "003d708f838d560f5cc01efc64d5e54b14a0f68dae7845855ddc7690c0cd89c0",
+    "tools/match/evidence/vc6-store-pass-comparison-2026-09-11/verify.py": "ff95695468d34aefe2fc017db852b98804aee4444a9e5f91b1aaf0c04325bffc",
     "tools/match/evidence/vc6-timeline-address-2026-09-10/observer.c": "783dd192d1d4832b730cb73491a78763e699da98e9a7a0de8ee06c960e39c386",
     "tools/match/evidence/vc6-timeline-address-2026-09-10/verify.py": "e190d22cd663eda145facfe4487d8bc4aaff098bc5563da3fdc2a3689623573f",
+    "tools/match/evidence/vc6-timeline-consumers-2026-09-11/analysis.py": "c4b7ce744bd4be368dbbe744a3b86e835f8fdb2f9c7d9f49e1f09231415a64c8",
+    "tools/match/evidence/vc6-timeline-consumers-2026-09-11/decision_observer.c": "7c36de3aaa07efa37f516aac5e983000b3190250c3dd9877d15b16b1dec4b126",
+    "tools/match/evidence/vc6-timeline-consumers-2026-09-11/mine.py": "c55e6a28043cacd552cf994240d2bc9d8acc3b2855ac31b12d9c6c4d314d9726",
+    "tools/match/evidence/vc6-timeline-consumers-2026-09-11/observer.c": "3e920d4e78ab68b982a46504db8880f758424fc40b2842072fb99c44de8cacc0",
+    "tools/match/evidence/vc6-timeline-consumers-2026-09-11/probes.py": "0c6f4f24272e0deef42a5ed578605bccc727a471f472b52f9f3ca99e3490e486",
+    "tools/match/evidence/vc6-timeline-consumers-2026-09-11/trace.py": "cc89a2c6c4c96f29f5eb0ae7cf9ac7d5dc285140bbdcb212181679da70aa975c",
     "tools/match/evidence/vector-return-contract-2026-09-08/callers.cpp": "c9463a3677727acd16c33f4eca5d2d2bac20757d68946faf81b1cb038dad927d",
     "tools/match/evidence/vector-return-contract-2026-09-08/helpers.cpp": "8dc3cd1462943620cc6d2813ef44befe42f6fd0b21c47a7f970088c4a10249ce",
     "tools/match/evidence/vector-return-contract-2026-09-08/vectors.h": "b520ca4122395c433ace205c1ab56382be4678f96386d70b238861432d35e846",

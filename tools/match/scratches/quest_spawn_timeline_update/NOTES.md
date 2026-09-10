@@ -235,3 +235,32 @@ prefix-51 candidate with 13 clean references and a non-exact body. Their
 reproducible generator and full results are adjacent to the trace. This
 explains the difference between these candidates' compiler paths; the native
 timeline pointer home store remains unexplained.
+
+## GPT Pro hypothesis tests (2026-09-11)
+
+The [consumer and predicate traces](../../evidence/vc6-timeline-consumers-2026-09-11/README.md)
+test the consultation's proposed mechanisms. The canonical heading/ID load
+nodes still use derived bases before `C2+0x306c1`; both are rebased to entry
+inside that routine. The earlier-rewrite/later-definition-cleanup explanation
+therefore does not describe this candidate. Pointer-relative heading has a
+different COPY-forwarding history through `0x30308`, despite identical final
+normalized instructions.
+
+Rebuilding the 98 recorded sources recovers a useful partial positive:
+`advance-after-pointer-template-relative` retains both field loads through its
+template pointer. Its watched definition reaches `0x309bb` as COPY and is
+rejected; the canonical definition reaches the predicate as LEA and is accepted.
+Actual return values are observed with unchanged whole COFF output. This
+explains the address-retention distinction, but the partial source regresses to
+162 instructions/27.436823%, has reference debt, and produces no dead pointer
+home. It is not retained as a matching source.
+
+Ten additional source/profile controls test a scoped assignment, a pointer-object
+`memcpy` with/without intrinsics, a generic const-reference helper against a
+by-value control, and an actual embedded ID object. Ordinary four-byte `memcpy`
+is scalarized during `0x130cb` and does not enter the late memory-store path.
+The embedded accessor returns the baseline instructions; the two generic
+helper forms produce identical regressed instructions. The native immediately
+overwritten pointer-valued write remains unexplained. Canonical source, flags,
+113/115 instruction count, 91.228070% score, 13 clean references, and non-exact
+encoded body are unchanged.

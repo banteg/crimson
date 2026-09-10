@@ -1,0 +1,2120 @@
+{
+  "schema_version": 1,
+  "source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+  "verifier_sha256": "c7f6f44d399666794830de4fca7ae815712ec6ccceeda47b0ea680f4a906a2fc",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "object_sha256": "93720508b6927df3a87c8f7b40d4aaf588e09e8ce682d42795258adec87fabd9",
+  "build_key": {
+    "toolchain": {
+      "compiler_trees": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      },
+      "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+      "runner_mode": 493,
+      "cl_environment": {
+        "CL": null,
+        "_CL_": null
+      }
+    },
+    "pipeline_sha256": [
+      "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
+      "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+      "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+    ],
+    "compiler": "msvc6.5",
+    "argv": [
+      "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+      "/c",
+      "/O2",
+      "/GB",
+      "/W3",
+      "/GR-",
+      "scratch.cpp"
+    ],
+    "auto_inline_off": [],
+    "dependencies": [
+      [
+        "scratches/bonus_pick_random_type/scratch.cpp",
+        "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42"
+      ],
+      [
+        "scratches/bonus_pick_random_type/scratch.conf",
+        "48e9ea5aa3ad85ca39805fecc2078eee7dcf623f175aa8499b48362df3b91891"
+      ],
+      [
+        "cl.sh",
+        "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+      ],
+      [
+        "compilers/msvc6.5/Bin/CL.EXE",
+        "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+      ],
+      [
+        "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+        "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+      ],
+      [
+        "include/crimsonland_console.h",
+        "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+      ],
+      [
+        "include/crimsonland_gameplay.h",
+        "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+      ]
+    ]
+  },
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "ratio": 0.7592592592592593,
+  "normalized_exact": false,
+  "body_byte_exact": false,
+  "instructions": [
+    162,
+    162
+  ],
+  "negative_controls_rejected": [
+    "condition",
+    "edge",
+    "reference"
+  ],
+  "cli_diagnostic_agrees": true,
+  "diagnostic_sha256": "03b785513d18e202f6b22932505cb60aaa0b33847da76b3aa38ee7947208c784",
+  "sound_loop_positive_control": {
+    "function": "dsound_restore_buffer",
+    "source_sha256": "04228aeb68470efd02bcf5e6d86604ef7dba50c907758d238f0f6d39c802e414",
+    "build_key": {
+      "toolchain": {
+        "compiler_trees": {
+          "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+          "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+        },
+        "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "runner_mode": 493,
+        "cl_environment": {
+          "CL": null,
+          "_CL_": null
+        }
+      },
+      "pipeline_sha256": [
+        "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
+        "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+        "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+      ],
+      "compiler": "msvc6.5",
+      "argv": [
+        "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+        "/c",
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-",
+        "scratch.cpp"
+      ],
+      "auto_inline_off": [],
+      "dependencies": [
+        [
+          "scratches/dsound_restore_buffer/scratch.cpp",
+          "04228aeb68470efd02bcf5e6d86604ef7dba50c907758d238f0f6d39c802e414"
+        ],
+        [
+          "scratches/dsound_restore_buffer/scratch.conf",
+          "96c36a9d7098e91d0b6554cb9a732beb39966b16bbfb152ea2d42a57e9ffebf2"
+        ],
+        [
+          "cl.sh",
+          "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+        ],
+        [
+          "compilers/msvc6.5/Bin/CL.EXE",
+          "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+        ],
+        [
+          "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+          "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+        ],
+        [
+          "include/crimsonland_audio.h",
+          "cc26490c0f5a77b289328a81281573dbd8037d9a9cbd9862ea300b0991fc4197"
+        ],
+        [
+          "include/crimsonland_console.h",
+          "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+        ]
+      ]
+    },
+    "normalized_exact": true,
+    "body_byte_exact": true,
+    "outlined_loop_condition": [
+      {
+        "jump_offset": 55,
+        "condition_offset": 57
+      }
+    ]
+  },
+  "graph": {
+    "mapped_non_jump_instructions": 156,
+    "transparent_jumps": [
+      [
+        39,
+        49,
+        69,
+        84,
+        142,
+        149
+      ],
+      [
+        39,
+        49,
+        69,
+        84,
+        93,
+        149
+      ]
+    ],
+    "reference_instructions": 20,
+    "all_instructions_covered": true,
+    "edge_order": "taken_then_fallthrough",
+    "mapping": [
+      {
+        "target_index": 0,
+        "candidate_index": 0,
+        "target_offset": 0,
+        "candidate_offset": 0,
+        "target_instruction": "push ecx",
+        "candidate_instruction": "push ecx"
+      },
+      {
+        "target_index": 1,
+        "candidate_index": 1,
+        "target_offset": 1,
+        "candidate_offset": 1,
+        "target_instruction": "push ebx",
+        "candidate_instruction": "push ebx"
+      },
+      {
+        "target_index": 2,
+        "candidate_index": 2,
+        "target_offset": 2,
+        "candidate_offset": 2,
+        "target_instruction": "push esi",
+        "candidate_instruction": "push esi"
+      },
+      {
+        "target_index": 3,
+        "candidate_index": 3,
+        "target_offset": 3,
+        "candidate_offset": 3,
+        "target_instruction": "push edi",
+        "candidate_instruction": "push edi"
+      },
+      {
+        "target_index": 4,
+        "candidate_index": 4,
+        "target_offset": 4,
+        "candidate_offset": 4,
+        "target_instruction": "mov dword [esp+0xc], 0x0",
+        "candidate_instruction": "mov dword [esp+0xc], 0x0"
+      },
+      {
+        "target_index": 5,
+        "candidate_index": 5,
+        "target_offset": 12,
+        "candidate_offset": 12,
+        "target_instruction": "xor bl, bl",
+        "candidate_instruction": "xor bl, bl"
+      },
+      {
+        "target_index": 6,
+        "candidate_index": 6,
+        "target_offset": 14,
+        "candidate_offset": 14,
+        "target_instruction": "mov eax, ADDR",
+        "candidate_instruction": "mov eax, ADDR"
+      },
+      {
+        "target_index": 7,
+        "candidate_index": 7,
+        "target_offset": 19,
+        "candidate_offset": 19,
+        "target_instruction": "mov ecx, 0xe",
+        "candidate_instruction": "mov ecx, 0xe"
+      },
+      {
+        "target_index": 8,
+        "candidate_index": 8,
+        "target_offset": 24,
+        "candidate_offset": 24,
+        "target_instruction": "cmp dword [eax+-0x4], ecx",
+        "candidate_instruction": "cmp dword [eax+-0x4], ecx"
+      },
+      {
+        "target_index": 9,
+        "candidate_index": 9,
+        "target_offset": 27,
+        "candidate_offset": 27,
+        "target_instruction": "jne L24",
+        "candidate_instruction": "jne L24"
+      },
+      {
+        "target_index": 10,
+        "candidate_index": 10,
+        "target_offset": 29,
+        "candidate_offset": 29,
+        "target_instruction": "cmp byte [eax], 0x0",
+        "candidate_instruction": "cmp byte [eax], 0x0"
+      },
+      {
+        "target_index": 11,
+        "candidate_index": 11,
+        "target_offset": 32,
+        "candidate_offset": 32,
+        "target_instruction": "jne L24",
+        "candidate_instruction": "jne L24"
+      },
+      {
+        "target_index": 12,
+        "candidate_index": 12,
+        "target_offset": 34,
+        "candidate_offset": 34,
+        "target_instruction": "mov bl, 0x1",
+        "candidate_instruction": "mov bl, 0x1"
+      },
+      {
+        "target_index": 13,
+        "candidate_index": 13,
+        "target_offset": 36,
+        "candidate_offset": 36,
+        "target_instruction": "add eax, 0x1c",
+        "candidate_instruction": "add eax, 0x1c"
+      },
+      {
+        "target_index": 14,
+        "candidate_index": 14,
+        "target_offset": 39,
+        "candidate_offset": 39,
+        "target_instruction": "cmp eax, ADDR",
+        "candidate_instruction": "cmp eax, ADDR"
+      },
+      {
+        "target_index": 15,
+        "candidate_index": 15,
+        "target_offset": 44,
+        "candidate_offset": 44,
+        "target_instruction": "jl L18",
+        "candidate_instruction": "jl L18"
+      },
+      {
+        "target_index": 16,
+        "candidate_index": 16,
+        "target_offset": 46,
+        "candidate_offset": 46,
+        "target_instruction": "xor edi, edi",
+        "candidate_instruction": "xor edi, edi"
+      },
+      {
+        "target_index": 17,
+        "candidate_index": 17,
+        "target_offset": 48,
+        "candidate_offset": 48,
+        "target_instruction": "call ADDR",
+        "candidate_instruction": "call ADDR"
+      },
+      {
+        "target_index": 18,
+        "candidate_index": 18,
+        "target_offset": 53,
+        "candidate_offset": 53,
+        "target_instruction": "cdq",
+        "candidate_instruction": "cdq"
+      },
+      {
+        "target_index": 19,
+        "candidate_index": 19,
+        "target_offset": 54,
+        "candidate_offset": 54,
+        "target_instruction": "mov ecx, 0xa2",
+        "candidate_instruction": "mov ecx, 0xa2"
+      },
+      {
+        "target_index": 20,
+        "candidate_index": 20,
+        "target_offset": 59,
+        "candidate_offset": 59,
+        "target_instruction": "idiv ecx",
+        "candidate_instruction": "idiv ecx"
+      },
+      {
+        "target_index": 21,
+        "candidate_index": 21,
+        "target_offset": 61,
+        "candidate_offset": 61,
+        "target_instruction": "mov esi, edx",
+        "candidate_instruction": "mov esi, edx"
+      },
+      {
+        "target_index": 22,
+        "candidate_index": 22,
+        "target_offset": 63,
+        "candidate_offset": 63,
+        "target_instruction": "inc esi",
+        "candidate_instruction": "inc esi"
+      },
+      {
+        "target_index": 23,
+        "candidate_index": 23,
+        "target_offset": 64,
+        "candidate_offset": 64,
+        "target_instruction": "cmp esi, 0xd",
+        "candidate_instruction": "cmp esi, 0xd"
+      },
+      {
+        "target_index": 24,
+        "candidate_index": 24,
+        "target_offset": 67,
+        "candidate_offset": 67,
+        "target_instruction": "jg L4a",
+        "candidate_instruction": "jg L4a"
+      },
+      {
+        "target_index": 25,
+        "candidate_index": 25,
+        "target_offset": 69,
+        "candidate_offset": 69,
+        "target_instruction": "mov edi, 0x1",
+        "candidate_instruction": "mov edi, 0x1"
+      },
+      {
+        "target_index": 26,
+        "candidate_index": 26,
+        "target_offset": 74,
+        "candidate_offset": 74,
+        "target_instruction": "sub esi, 0xd",
+        "candidate_instruction": "sub esi, 0xd"
+      },
+      {
+        "target_index": 27,
+        "candidate_index": 27,
+        "target_offset": 77,
+        "candidate_offset": 77,
+        "target_instruction": "test edi, edi",
+        "candidate_instruction": "test edi, edi"
+      },
+      {
+        "target_index": 28,
+        "candidate_index": 28,
+        "target_offset": 79,
+        "candidate_offset": 79,
+        "target_instruction": "jne L5b",
+        "candidate_instruction": "jne L5b"
+      },
+      {
+        "target_index": 29,
+        "candidate_index": 29,
+        "target_offset": 81,
+        "candidate_offset": 81,
+        "target_instruction": "cmp esi, 0x1",
+        "candidate_instruction": "cmp esi, 0x1"
+      },
+      {
+        "target_index": 30,
+        "candidate_index": 30,
+        "target_offset": 84,
+        "candidate_offset": 84,
+        "target_instruction": "jg L5b",
+        "candidate_instruction": "jg L5b"
+      },
+      {
+        "target_index": 31,
+        "candidate_index": 31,
+        "target_offset": 86,
+        "candidate_offset": 86,
+        "target_instruction": "mov edi, 0x2",
+        "candidate_instruction": "mov edi, 0x2"
+      },
+      {
+        "target_index": 32,
+        "candidate_index": 32,
+        "target_offset": 91,
+        "candidate_offset": 91,
+        "target_instruction": "dec esi",
+        "candidate_instruction": "dec esi"
+      },
+      {
+        "target_index": 33,
+        "candidate_index": 33,
+        "target_offset": 92,
+        "candidate_offset": 92,
+        "target_instruction": "cmp edi, 0x2",
+        "candidate_instruction": "cmp edi, 0x2"
+      },
+      {
+        "target_index": 34,
+        "candidate_index": 34,
+        "target_offset": 95,
+        "candidate_offset": 95,
+        "target_instruction": "jne L6e",
+        "candidate_instruction": "jne L6e"
+      },
+      {
+        "target_index": 35,
+        "candidate_index": 35,
+        "target_offset": 97,
+        "candidate_offset": 97,
+        "target_instruction": "call ADDR",
+        "candidate_instruction": "call ADDR"
+      },
+      {
+        "target_index": 36,
+        "candidate_index": 36,
+        "target_offset": 102,
+        "candidate_offset": 102,
+        "target_instruction": "test al, 0x3f",
+        "candidate_instruction": "test al, 0x3f"
+      },
+      {
+        "target_index": 37,
+        "candidate_index": 37,
+        "target_offset": 104,
+        "candidate_offset": 104,
+        "target_instruction": "je L89",
+        "candidate_instruction": "je L89"
+      },
+      {
+        "target_index": 38,
+        "candidate_index": 38,
+        "target_offset": 106,
+        "candidate_offset": 106,
+        "target_instruction": "xor edi, edi",
+        "candidate_instruction": "xor edi, edi"
+      },
+      {
+        "target_index": 40,
+        "candidate_index": 40,
+        "target_offset": 110,
+        "candidate_offset": 110,
+        "target_instruction": "test edi, edi",
+        "candidate_instruction": "test edi, edi"
+      },
+      {
+        "target_index": 41,
+        "candidate_index": 41,
+        "target_offset": 112,
+        "candidate_offset": 112,
+        "target_instruction": "jne L89",
+        "candidate_instruction": "jne L89"
+      },
+      {
+        "target_index": 42,
+        "candidate_index": 42,
+        "target_offset": 114,
+        "candidate_offset": 114,
+        "target_instruction": "mov eax, 0x3",
+        "candidate_instruction": "mov eax, 0x3"
+      },
+      {
+        "target_index": 43,
+        "candidate_index": 43,
+        "target_offset": 119,
+        "candidate_offset": 119,
+        "target_instruction": "cmp esi, 0xa",
+        "candidate_instruction": "cmp esi, 0xa"
+      },
+      {
+        "target_index": 44,
+        "candidate_index": 44,
+        "target_offset": 122,
+        "candidate_offset": 122,
+        "target_instruction": "jle L87",
+        "candidate_instruction": "jle L87"
+      },
+      {
+        "target_index": 45,
+        "candidate_index": 45,
+        "target_offset": 124,
+        "candidate_offset": 124,
+        "target_instruction": "sub esi, 0xa",
+        "candidate_instruction": "sub esi, 0xa"
+      },
+      {
+        "target_index": 46,
+        "candidate_index": 46,
+        "target_offset": 127,
+        "candidate_offset": 127,
+        "target_instruction": "inc eax",
+        "candidate_instruction": "inc eax"
+      },
+      {
+        "target_index": 47,
+        "candidate_index": 47,
+        "target_offset": 128,
+        "candidate_offset": 128,
+        "target_instruction": "cmp eax, 0xf",
+        "candidate_instruction": "cmp eax, 0xf"
+      },
+      {
+        "target_index": 48,
+        "candidate_index": 48,
+        "target_offset": 131,
+        "candidate_offset": 131,
+        "target_instruction": "jl L77",
+        "candidate_instruction": "jl L77"
+      },
+      {
+        "target_index": 50,
+        "candidate_index": 50,
+        "target_offset": 135,
+        "candidate_offset": 135,
+        "target_instruction": "mov edi, eax",
+        "candidate_instruction": "mov edi, eax"
+      },
+      {
+        "target_index": 51,
+        "candidate_index": 51,
+        "target_offset": 137,
+        "candidate_offset": 137,
+        "target_instruction": "mov eax, dword [ADDR]",
+        "candidate_instruction": "mov eax, dword [ADDR]"
+      },
+      {
+        "target_index": 52,
+        "candidate_index": 52,
+        "target_offset": 142,
+        "candidate_offset": 142,
+        "target_instruction": "test eax, eax",
+        "candidate_instruction": "test eax, eax"
+      },
+      {
+        "target_index": 53,
+        "candidate_index": 53,
+        "target_offset": 144,
+        "candidate_offset": 144,
+        "target_instruction": "jle L9b",
+        "candidate_instruction": "jle L9b"
+      },
+      {
+        "target_index": 54,
+        "candidate_index": 54,
+        "target_offset": 146,
+        "candidate_offset": 146,
+        "target_instruction": "cmp edi, 0x7",
+        "candidate_instruction": "cmp edi, 0x7"
+      },
+      {
+        "target_index": 55,
+        "candidate_index": 55,
+        "target_offset": 149,
+        "candidate_offset": 149,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 56,
+        "candidate_index": 56,
+        "target_offset": 155,
+        "candidate_offset": 155,
+        "target_instruction": "cmp dword [ADDR], 0x3",
+        "candidate_instruction": "cmp dword [ADDR], 0x3"
+      },
+      {
+        "target_index": 57,
+        "candidate_index": 57,
+        "target_offset": 162,
+        "candidate_offset": 162,
+        "target_instruction": "jne L11a",
+        "candidate_instruction": "jne L12e"
+      },
+      {
+        "target_index": 58,
+        "candidate_index": 58,
+        "target_offset": 164,
+        "candidate_offset": 168,
+        "target_instruction": "mov dl, byte [ADDR]",
+        "candidate_instruction": "mov dl, byte [ADDR]"
+      },
+      {
+        "target_index": 59,
+        "candidate_index": 59,
+        "target_offset": 170,
+        "candidate_offset": 174,
+        "target_instruction": "mov ecx, dword [ADDR]",
+        "candidate_instruction": "mov ecx, dword [ADDR]"
+      },
+      {
+        "target_index": 60,
+        "candidate_index": 60,
+        "target_offset": 176,
+        "candidate_offset": 180,
+        "target_instruction": "mov eax, dword [ADDR]",
+        "candidate_instruction": "mov eax, dword [ADDR]"
+      },
+      {
+        "target_index": 61,
+        "candidate_index": 61,
+        "target_offset": 181,
+        "candidate_offset": 185,
+        "target_instruction": "test dl, dl",
+        "candidate_instruction": "test dl, dl"
+      },
+      {
+        "target_index": 62,
+        "candidate_index": 62,
+        "target_offset": 183,
+        "candidate_offset": 187,
+        "target_instruction": "je Lce",
+        "candidate_instruction": "je Ld2"
+      },
+      {
+        "target_index": 63,
+        "candidate_index": 63,
+        "target_offset": 185,
+        "candidate_offset": 189,
+        "target_instruction": "cmp eax, 0x3",
+        "candidate_instruction": "cmp eax, 0x3"
+      },
+      {
+        "target_index": 64,
+        "candidate_index": 64,
+        "target_offset": 188,
+        "candidate_offset": 192,
+        "target_instruction": "jne Lce",
+        "candidate_instruction": "jne Ld2"
+      },
+      {
+        "target_index": 65,
+        "candidate_index": 65,
+        "target_offset": 190,
+        "candidate_offset": 194,
+        "target_instruction": "cmp ecx, 0xa",
+        "candidate_instruction": "cmp ecx, 0xa"
+      },
+      {
+        "target_index": 66,
+        "candidate_index": 66,
+        "target_offset": 193,
+        "candidate_offset": 197,
+        "target_instruction": "jne Le1",
+        "candidate_instruction": "jne Le5"
+      },
+      {
+        "target_index": 67,
+        "candidate_index": 67,
+        "target_offset": 195,
+        "candidate_offset": 199,
+        "target_instruction": "cmp edi, 0x5",
+        "candidate_instruction": "cmp edi, 0x5"
+      },
+      {
+        "target_index": 68,
+        "candidate_index": 68,
+        "target_offset": 198,
+        "candidate_offset": 202,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 70,
+        "candidate_index": 70,
+        "target_offset": 206,
+        "candidate_offset": 210,
+        "target_instruction": "cmp eax, 0x2",
+        "candidate_instruction": "cmp eax, 0x2"
+      },
+      {
+        "target_index": 71,
+        "candidate_index": 71,
+        "target_offset": 209,
+        "candidate_offset": 213,
+        "target_instruction": "jne Le1",
+        "candidate_instruction": "jne Le5"
+      },
+      {
+        "target_index": 72,
+        "candidate_index": 72,
+        "target_offset": 211,
+        "candidate_offset": 215,
+        "target_instruction": "cmp ecx, 0xa",
+        "candidate_instruction": "cmp ecx, 0xa"
+      },
+      {
+        "target_index": 73,
+        "candidate_index": 73,
+        "target_offset": 214,
+        "candidate_offset": 218,
+        "target_instruction": "jne Le1",
+        "candidate_instruction": "jne Le5"
+      },
+      {
+        "target_index": 74,
+        "candidate_index": 74,
+        "target_offset": 216,
+        "candidate_offset": 220,
+        "target_instruction": "cmp edi, 0x5",
+        "candidate_instruction": "cmp edi, 0x5"
+      },
+      {
+        "target_index": 75,
+        "candidate_index": 75,
+        "target_offset": 219,
+        "candidate_offset": 223,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 76,
+        "candidate_index": 76,
+        "target_offset": 225,
+        "candidate_offset": 229,
+        "target_instruction": "test dl, dl",
+        "candidate_instruction": "test dl, dl"
+      },
+      {
+        "target_index": 77,
+        "candidate_index": 77,
+        "target_offset": 227,
+        "candidate_offset": 231,
+        "target_instruction": "je Lfa",
+        "candidate_instruction": "je Lfe"
+      },
+      {
+        "target_index": 78,
+        "candidate_index": 78,
+        "target_offset": 229,
+        "candidate_offset": 233,
+        "target_instruction": "cmp eax, 0x2",
+        "candidate_instruction": "cmp eax, 0x2"
+      },
+      {
+        "target_index": 79,
+        "candidate_index": 79,
+        "target_offset": 232,
+        "candidate_offset": 236,
+        "target_instruction": "jne Lfa",
+        "candidate_instruction": "jne Lfe"
+      },
+      {
+        "target_index": 80,
+        "candidate_index": 80,
+        "target_offset": 234,
+        "candidate_offset": 238,
+        "target_instruction": "cmp ecx, 0xa",
+        "candidate_instruction": "cmp ecx, 0xa"
+      },
+      {
+        "target_index": 81,
+        "candidate_index": 81,
+        "target_offset": 237,
+        "candidate_offset": 241,
+        "target_instruction": "jne L11a",
+        "candidate_instruction": "jne L12e"
+      },
+      {
+        "target_index": 82,
+        "candidate_index": 82,
+        "target_offset": 239,
+        "candidate_offset": 243,
+        "target_instruction": "cmp edi, 0xb",
+        "candidate_instruction": "cmp edi, 0xb"
+      },
+      {
+        "target_index": 83,
+        "candidate_index": 83,
+        "target_offset": 242,
+        "candidate_offset": 246,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 85,
+        "candidate_index": 85,
+        "target_offset": 250,
+        "candidate_offset": 254,
+        "target_instruction": "cmp eax, 0x4",
+        "candidate_instruction": "cmp eax, 0x4"
+      },
+      {
+        "target_index": 86,
+        "candidate_index": 86,
+        "target_offset": 253,
+        "candidate_offset": 257,
+        "target_instruction": "jne L1b8",
+        "candidate_instruction": "jne L11c"
+      },
+      {
+        "target_index": 87,
+        "candidate_index": 87,
+        "target_offset": 259,
+        "candidate_offset": 259,
+        "target_instruction": "cmp ecx, 0xa",
+        "candidate_instruction": "cmp ecx, 0xa"
+      },
+      {
+        "target_index": 88,
+        "candidate_index": 88,
+        "target_offset": 262,
+        "candidate_offset": 262,
+        "target_instruction": "jne L11a",
+        "candidate_instruction": "jne L12e"
+      },
+      {
+        "target_index": 89,
+        "candidate_index": 89,
+        "target_offset": 264,
+        "candidate_offset": 264,
+        "target_instruction": "cmp edi, 0x5",
+        "candidate_instruction": "cmp edi, 0x5"
+      },
+      {
+        "target_index": 90,
+        "candidate_index": 90,
+        "target_offset": 267,
+        "candidate_offset": 267,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 91,
+        "candidate_index": 91,
+        "target_offset": 273,
+        "candidate_offset": 273,
+        "target_instruction": "cmp edi, 0xb",
+        "candidate_instruction": "cmp edi, 0xb"
+      },
+      {
+        "target_index": 92,
+        "candidate_index": 92,
+        "target_offset": 276,
+        "candidate_offset": 276,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 93,
+        "candidate_index": 100,
+        "target_offset": 282,
+        "candidate_offset": 302,
+        "target_instruction": "fld dword [ADDR]",
+        "candidate_instruction": "fld dword [ADDR]"
+      },
+      {
+        "target_index": 94,
+        "candidate_index": 101,
+        "target_offset": 288,
+        "candidate_offset": 308,
+        "target_instruction": "fcomp dword [ADDR]",
+        "candidate_instruction": "fcomp dword [ADDR]"
+      },
+      {
+        "target_index": 95,
+        "candidate_index": 102,
+        "target_offset": 294,
+        "candidate_offset": 314,
+        "target_instruction": "fnstsw ax",
+        "candidate_instruction": "fnstsw ax"
+      },
+      {
+        "target_index": 96,
+        "candidate_index": 103,
+        "target_offset": 296,
+        "candidate_offset": 316,
+        "target_instruction": "test ah, 0x41",
+        "candidate_instruction": "test ah, 0x41"
+      },
+      {
+        "target_index": 97,
+        "candidate_index": 104,
+        "target_offset": 299,
+        "candidate_offset": 319,
+        "target_instruction": "jne L132",
+        "candidate_instruction": "jne L146"
+      },
+      {
+        "target_index": 98,
+        "candidate_index": 105,
+        "target_offset": 301,
+        "candidate_offset": 321,
+        "target_instruction": "cmp edi, 0xb",
+        "candidate_instruction": "cmp edi, 0xb"
+      },
+      {
+        "target_index": 99,
+        "candidate_index": 106,
+        "target_offset": 304,
+        "candidate_offset": 324,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 100,
+        "candidate_index": 107,
+        "target_offset": 306,
+        "candidate_offset": 326,
+        "target_instruction": "fld dword [ADDR]",
+        "candidate_instruction": "fld dword [ADDR]"
+      },
+      {
+        "target_index": 101,
+        "candidate_index": 108,
+        "target_offset": 312,
+        "candidate_offset": 332,
+        "target_instruction": "fcomp dword [ADDR]",
+        "candidate_instruction": "fcomp dword [ADDR]"
+      },
+      {
+        "target_index": 102,
+        "candidate_index": 109,
+        "target_offset": 318,
+        "candidate_offset": 338,
+        "target_instruction": "fnstsw ax",
+        "candidate_instruction": "fnstsw ax"
+      },
+      {
+        "target_index": 103,
+        "candidate_index": 110,
+        "target_offset": 320,
+        "candidate_offset": 340,
+        "target_instruction": "test ah, 0x41",
+        "candidate_instruction": "test ah, 0x41"
+      },
+      {
+        "target_index": 104,
+        "candidate_index": 111,
+        "target_offset": 323,
+        "candidate_offset": 343,
+        "target_instruction": "je L158",
+        "candidate_instruction": "je L16c"
+      },
+      {
+        "target_index": 105,
+        "candidate_index": 112,
+        "target_offset": 325,
+        "candidate_offset": 345,
+        "target_instruction": "fld dword [ADDR]",
+        "candidate_instruction": "fld dword [ADDR]"
+      },
+      {
+        "target_index": 106,
+        "candidate_index": 113,
+        "target_offset": 331,
+        "candidate_offset": 351,
+        "target_instruction": "fcomp dword [ADDR]",
+        "candidate_instruction": "fcomp dword [ADDR]"
+      },
+      {
+        "target_index": 107,
+        "candidate_index": 114,
+        "target_offset": 337,
+        "candidate_offset": 357,
+        "target_instruction": "fnstsw ax",
+        "candidate_instruction": "fnstsw ax"
+      },
+      {
+        "target_index": 108,
+        "candidate_index": 115,
+        "target_offset": 339,
+        "candidate_offset": 359,
+        "target_instruction": "test ah, 0x41",
+        "candidate_instruction": "test ah, 0x41"
+      },
+      {
+        "target_index": 109,
+        "candidate_index": 116,
+        "target_offset": 342,
+        "candidate_offset": 362,
+        "target_instruction": "jne L15d",
+        "candidate_instruction": "jne L171"
+      },
+      {
+        "target_index": 110,
+        "candidate_index": 117,
+        "target_offset": 344,
+        "candidate_offset": 364,
+        "target_instruction": "cmp edi, 0xa",
+        "candidate_instruction": "cmp edi, 0xa"
+      },
+      {
+        "target_index": 111,
+        "candidate_index": 118,
+        "target_offset": 347,
+        "candidate_offset": 367,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 112,
+        "candidate_index": 119,
+        "target_offset": 349,
+        "candidate_offset": 369,
+        "target_instruction": "mov edx, dword [ADDR]",
+        "candidate_instruction": "mov edx, dword [ADDR]"
+      },
+      {
+        "target_index": 113,
+        "candidate_index": 120,
+        "target_offset": 355,
+        "candidate_offset": 375,
+        "target_instruction": "push edx",
+        "candidate_instruction": "push edx"
+      },
+      {
+        "target_index": 114,
+        "candidate_index": 121,
+        "target_offset": 356,
+        "candidate_offset": 376,
+        "target_instruction": "call ADDR",
+        "candidate_instruction": "call ADDR"
+      },
+      {
+        "target_index": 115,
+        "candidate_index": 122,
+        "target_offset": 361,
+        "candidate_offset": 381,
+        "target_instruction": "add esp, 0x4",
+        "candidate_instruction": "add esp, 0x4"
+      },
+      {
+        "target_index": 116,
+        "candidate_index": 123,
+        "target_offset": 364,
+        "candidate_offset": 384,
+        "target_instruction": "test eax, eax",
+        "candidate_instruction": "test eax, eax"
+      },
+      {
+        "target_index": 117,
+        "candidate_index": 124,
+        "target_offset": 366,
+        "candidate_offset": 386,
+        "target_instruction": "je L175",
+        "candidate_instruction": "je L189"
+      },
+      {
+        "target_index": 118,
+        "candidate_index": 125,
+        "target_offset": 368,
+        "candidate_offset": 388,
+        "target_instruction": "cmp edi, 0x3",
+        "candidate_instruction": "cmp edi, 0x3"
+      },
+      {
+        "target_index": 119,
+        "candidate_index": 126,
+        "target_offset": 371,
+        "candidate_offset": 391,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 120,
+        "candidate_index": 127,
+        "target_offset": 373,
+        "candidate_offset": 393,
+        "target_instruction": "mov eax, dword [ADDR]",
+        "candidate_instruction": "mov eax, dword [ADDR]"
+      },
+      {
+        "target_index": 121,
+        "candidate_index": 128,
+        "target_offset": 378,
+        "candidate_offset": 398,
+        "target_instruction": "push eax",
+        "candidate_instruction": "push eax"
+      },
+      {
+        "target_index": 122,
+        "candidate_index": 129,
+        "target_offset": 379,
+        "candidate_offset": 399,
+        "target_instruction": "call ADDR",
+        "candidate_instruction": "call ADDR"
+      },
+      {
+        "target_index": 123,
+        "candidate_index": 130,
+        "target_offset": 384,
+        "candidate_offset": 404,
+        "target_instruction": "add esp, 0x4",
+        "candidate_instruction": "add esp, 0x4"
+      },
+      {
+        "target_index": 124,
+        "candidate_index": 131,
+        "target_offset": 387,
+        "candidate_offset": 407,
+        "target_instruction": "test eax, eax",
+        "candidate_instruction": "test eax, eax"
+      },
+      {
+        "target_index": 125,
+        "candidate_index": 132,
+        "target_offset": 389,
+        "candidate_offset": 409,
+        "target_instruction": "je L18c",
+        "candidate_instruction": "je L1a0"
+      },
+      {
+        "target_index": 126,
+        "candidate_index": 133,
+        "target_offset": 391,
+        "candidate_offset": 411,
+        "target_instruction": "cmp edi, 0xc",
+        "candidate_instruction": "cmp edi, 0xc"
+      },
+      {
+        "target_index": 127,
+        "candidate_index": 134,
+        "target_offset": 394,
+        "candidate_offset": 414,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 128,
+        "candidate_index": 135,
+        "target_offset": 396,
+        "candidate_offset": 416,
+        "target_instruction": "cmp edi, 0x3",
+        "candidate_instruction": "cmp edi, 0x3"
+      },
+      {
+        "target_index": 129,
+        "candidate_index": 136,
+        "target_offset": 399,
+        "candidate_offset": 419,
+        "target_instruction": "jne L195",
+        "candidate_instruction": "jne L1a9"
+      },
+      {
+        "target_index": 130,
+        "candidate_index": 137,
+        "target_offset": 401,
+        "candidate_offset": 421,
+        "target_instruction": "test bl, bl",
+        "candidate_instruction": "test bl, bl"
+      },
+      {
+        "target_index": 131,
+        "candidate_index": 138,
+        "target_offset": 403,
+        "candidate_offset": 423,
+        "target_instruction": "jne L1a3",
+        "candidate_instruction": "jne L1b7"
+      },
+      {
+        "target_index": 132,
+        "candidate_index": 139,
+        "target_offset": 405,
+        "candidate_offset": 425,
+        "target_instruction": "lea ecx, dword [edi+edi*4]",
+        "candidate_instruction": "lea ecx, dword [edi+edi*4]"
+      },
+      {
+        "target_index": 133,
+        "candidate_index": 140,
+        "target_offset": 408,
+        "candidate_offset": 428,
+        "target_instruction": "mov al, byte [ecx*4+ADDR]",
+        "candidate_instruction": "mov al, byte [ecx*4+ADDR]"
+      },
+      {
+        "target_index": 134,
+        "candidate_index": 141,
+        "target_offset": 415,
+        "candidate_offset": 435,
+        "target_instruction": "test al, al",
+        "candidate_instruction": "test al, al"
+      },
+      {
+        "target_index": 135,
+        "candidate_index": 142,
+        "target_offset": 417,
+        "candidate_offset": 437,
+        "target_instruction": "jne L1d3",
+        "candidate_instruction": "jne L1cc"
+      },
+      {
+        "target_index": 136,
+        "candidate_index": 143,
+        "target_offset": 419,
+        "candidate_offset": 439,
+        "target_instruction": "mov eax, dword [esp+0xc]",
+        "candidate_instruction": "mov eax, dword [esp+0xc]"
+      },
+      {
+        "target_index": 137,
+        "candidate_index": 144,
+        "target_offset": 423,
+        "candidate_offset": 443,
+        "target_instruction": "mov edx, eax",
+        "candidate_instruction": "mov edx, eax"
+      },
+      {
+        "target_index": 138,
+        "candidate_index": 145,
+        "target_offset": 425,
+        "candidate_offset": 445,
+        "target_instruction": "inc eax",
+        "candidate_instruction": "inc eax"
+      },
+      {
+        "target_index": 139,
+        "candidate_index": 146,
+        "target_offset": 426,
+        "candidate_offset": 446,
+        "target_instruction": "cmp edx, 0x64",
+        "candidate_instruction": "cmp edx, 0x64"
+      },
+      {
+        "target_index": 140,
+        "candidate_index": 147,
+        "target_offset": 429,
+        "candidate_offset": 449,
+        "target_instruction": "mov dword [esp+0xc], eax",
+        "candidate_instruction": "mov dword [esp+0xc], eax"
+      },
+      {
+        "target_index": 141,
+        "candidate_index": 148,
+        "target_offset": 433,
+        "candidate_offset": 453,
+        "target_instruction": "jge L1da",
+        "candidate_instruction": "jge L1d3"
+      },
+      {
+        "target_index": 143,
+        "candidate_index": 94,
+        "target_offset": 440,
+        "candidate_offset": 284,
+        "target_instruction": "cmp eax, 0x5",
+        "candidate_instruction": "cmp eax, 0x5"
+      },
+      {
+        "target_index": 144,
+        "candidate_index": 95,
+        "target_offset": 443,
+        "candidate_offset": 287,
+        "target_instruction": "jne L11a",
+        "candidate_instruction": "jne L12e"
+      },
+      {
+        "target_index": 145,
+        "candidate_index": 96,
+        "target_offset": 449,
+        "candidate_offset": 289,
+        "target_instruction": "cmp ecx, 0xa",
+        "candidate_instruction": "cmp ecx, 0xa"
+      },
+      {
+        "target_index": 146,
+        "candidate_index": 97,
+        "target_offset": 452,
+        "candidate_offset": 292,
+        "target_instruction": "jne L11a",
+        "candidate_instruction": "jne L12e"
+      },
+      {
+        "target_index": 147,
+        "candidate_index": 98,
+        "target_offset": 458,
+        "candidate_offset": 294,
+        "target_instruction": "cmp edi, eax",
+        "candidate_instruction": "cmp edi, eax"
+      },
+      {
+        "target_index": 148,
+        "candidate_index": 99,
+        "target_offset": 460,
+        "candidate_offset": 296,
+        "target_instruction": "je L1a3",
+        "candidate_instruction": "je L1b7"
+      },
+      {
+        "target_index": 150,
+        "candidate_index": 150,
+        "target_offset": 467,
+        "candidate_offset": 460,
+        "target_instruction": "mov eax, edi",
+        "candidate_instruction": "mov eax, edi"
+      },
+      {
+        "target_index": 151,
+        "candidate_index": 151,
+        "target_offset": 469,
+        "candidate_offset": 462,
+        "target_instruction": "pop edi",
+        "candidate_instruction": "pop edi"
+      },
+      {
+        "target_index": 152,
+        "candidate_index": 152,
+        "target_offset": 470,
+        "candidate_offset": 463,
+        "target_instruction": "pop esi",
+        "candidate_instruction": "pop esi"
+      },
+      {
+        "target_index": 153,
+        "candidate_index": 153,
+        "target_offset": 471,
+        "candidate_offset": 464,
+        "target_instruction": "pop ebx",
+        "candidate_instruction": "pop ebx"
+      },
+      {
+        "target_index": 154,
+        "candidate_index": 154,
+        "target_offset": 472,
+        "candidate_offset": 465,
+        "target_instruction": "pop ecx",
+        "candidate_instruction": "pop ecx"
+      },
+      {
+        "target_index": 155,
+        "candidate_index": 155,
+        "target_offset": 473,
+        "candidate_offset": 466,
+        "target_instruction": "ret",
+        "candidate_instruction": "ret"
+      },
+      {
+        "target_index": 156,
+        "candidate_index": 156,
+        "target_offset": 474,
+        "candidate_offset": 467,
+        "target_instruction": "pop edi",
+        "candidate_instruction": "pop edi"
+      },
+      {
+        "target_index": 157,
+        "candidate_index": 157,
+        "target_offset": 475,
+        "candidate_offset": 468,
+        "target_instruction": "pop esi",
+        "candidate_instruction": "pop esi"
+      },
+      {
+        "target_index": 158,
+        "candidate_index": 158,
+        "target_offset": 476,
+        "candidate_offset": 469,
+        "target_instruction": "mov eax, 0x1",
+        "candidate_instruction": "mov eax, 0x1"
+      },
+      {
+        "target_index": 159,
+        "candidate_index": 159,
+        "target_offset": 481,
+        "candidate_offset": 474,
+        "target_instruction": "pop ebx",
+        "candidate_instruction": "pop ebx"
+      },
+      {
+        "target_index": 160,
+        "candidate_index": 160,
+        "target_offset": 482,
+        "candidate_offset": 475,
+        "target_instruction": "pop ecx",
+        "candidate_instruction": "pop ecx"
+      },
+      {
+        "target_index": 161,
+        "candidate_index": 161,
+        "target_offset": 483,
+        "candidate_offset": 476,
+        "target_instruction": "ret",
+        "candidate_instruction": "ret"
+      }
+    ],
+    "references": [
+      {
+        "target_index": 6,
+        "candidate_index": 6,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "imm",
+            "source": "image",
+            "value": 4729164,
+            "text": "bonus_state",
+            "keys": [
+              "address:0x0048294c",
+              "name:bonus_state",
+              "local:+0x704dc"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "imm",
+            "source": "reloc",
+            "value": null,
+            "text": "_bonus_pool",
+            "keys": [
+              "name:bonus_pool+0x4",
+              "address:0x0048294c"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 14,
+        "candidate_index": 14,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "imm",
+            "source": "image",
+            "value": 4729612,
+            "text": "0x00482b0c",
+            "keys": [
+              "address:0x00482b0c",
+              "local:+0x7069c"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "imm",
+            "source": "reloc",
+            "value": null,
+            "text": "_bonus_pool",
+            "keys": [
+              "name:bonus_pool+0x1c4",
+              "address:0x00482b0c"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 17,
+        "candidate_index": 17,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "image",
+            "value": 4593478,
+            "text": "crt_rand|rand",
+            "keys": [
+              "address:0x00461746",
+              "name:crt_rand",
+              "name:rand",
+              "local:+0x4f2d6"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "reloc",
+            "value": null,
+            "text": "_crt_rand",
+            "keys": [
+              "name:crt_rand",
+              "address:0x00461746"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 35,
+        "candidate_index": 35,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "image",
+            "value": 4593478,
+            "text": "crt_rand|rand",
+            "keys": [
+              "address:0x00461746",
+              "name:crt_rand",
+              "name:rand",
+              "local:+0x4f2d6"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "reloc",
+            "value": null,
+            "text": "_crt_rand",
+            "keys": [
+              "name:crt_rand",
+              "address:0x00461746"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 51,
+        "candidate_index": 51,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4747196,
+            "text": "shock_chain_links_left",
+            "keys": [
+              "address:0x00486fbc",
+              "name:shock_chain_links_left",
+              "local:+0x74b4c",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_shock_chain_links_left",
+            "keys": [
+              "name:shock_chain_links_left",
+              "address:0x00486fbc"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 56,
+        "candidate_index": 56,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4719456,
+            "text": "config_game_mode",
+            "keys": [
+              "address:0x00480360",
+              "name:config_game_mode",
+              "local:+0x6def0",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_config_blob",
+            "keys": [
+              "name:config_blob+0x18",
+              "address:0x00480360"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 58,
+        "candidate_index": 58,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4720528,
+            "text": "config_hardcore",
+            "keys": [
+              "address:0x00480790",
+              "name:config_hardcore",
+              "local:+0x6e320",
+              "bytes1:00"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_config_blob",
+            "keys": [
+              "name:config_blob+0x448",
+              "address:0x00480790"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 59,
+        "candidate_index": 59,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4747272,
+            "text": "quest_stage_minor",
+            "keys": [
+              "address:0x00487008",
+              "name:quest_stage_minor",
+              "local:+0x74b98",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_quest_stage_minor",
+            "keys": [
+              "name:quest_stage_minor",
+              "address:0x00487008"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 60,
+        "candidate_index": 60,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4747268,
+            "text": "quest_stage_major",
+            "keys": [
+              "address:0x00487004",
+              "name:quest_stage_major",
+              "local:+0x74b94",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_quest_stage_major",
+            "keys": [
+              "name:quest_stage_major",
+              "address:0x00487004"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 93,
+        "candidate_index": 100,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4747288,
+            "text": "bonus_freeze_timer",
+            "keys": [
+              "address:0x00487018",
+              "name:bonus_freeze_timer",
+              "local:+0x74ba8",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_bonus_freeze_timer",
+            "keys": [
+              "name:bonus_freeze_timer",
+              "address:0x00487018"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 94,
+        "candidate_index": 101,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4649512,
+            "text": "0x0046f228",
+            "keys": [
+              "address:0x0046f228",
+              "local:+0x5cdb8",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "__real@4@00000000000000000000",
+            "keys": [
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 100,
+        "candidate_index": 107,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4787144,
+            "text": "player_shield_timer",
+            "keys": [
+              "address:0x00490bc8",
+              "name:player_shield_timer",
+              "local:+0x7e758",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_player_state_table",
+            "keys": [
+              "name:player_state_table+0x318",
+              "address:0x00490bc8"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 101,
+        "candidate_index": 108,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4649512,
+            "text": "0x0046f228",
+            "keys": [
+              "address:0x0046f228",
+              "local:+0x5cdb8",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "__real@4@00000000000000000000",
+            "keys": [
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 105,
+        "candidate_index": 112,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4788008,
+            "text": "player2_shield_timer",
+            "keys": [
+              "address:0x00490f28",
+              "name:player2_shield_timer",
+              "local:+0x7eab8",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_player_state_table",
+            "keys": [
+              "name:player_state_table+0x678",
+              "address:0x00490f28"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 106,
+        "candidate_index": 113,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4649512,
+            "text": "0x0046f228",
+            "keys": [
+              "address:0x0046f228",
+              "local:+0x5cdb8",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "__real@4@00000000000000000000",
+            "keys": [
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 112,
+        "candidate_index": 119,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4992024,
+            "text": "perk_id_my_favourite_weapon",
+            "keys": [
+              "address:0x004c2c18",
+              "name:perk_id_my_favourite_weapon",
+              "local:+0xb07a8",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_perk_id_my_favourite_weapon",
+            "keys": [
+              "name:perk_id_my_favourite_weapon",
+              "address:0x004c2c18"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 114,
+        "candidate_index": 121,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "image",
+            "value": 4390128,
+            "text": "perk_count_get",
+            "keys": [
+              "address:0x0042fcf0",
+              "name:perk_count_get",
+              "local:+0x1d880"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "reloc",
+            "value": null,
+            "text": "_perk_count_get",
+            "keys": [
+              "name:perk_count_get",
+              "address:0x0042fcf0"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 120,
+        "candidate_index": 127,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4992020,
+            "text": "perk_id_death_clock",
+            "keys": [
+              "address:0x004c2c14",
+              "name:perk_id_death_clock",
+              "local:+0xb07a4",
+              "bytes4:00000000"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_perk_id_death_clock",
+            "keys": [
+              "name:perk_id_death_clock",
+              "address:0x004c2c14"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 122,
+        "candidate_index": 129,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "image",
+            "value": 4390128,
+            "text": "perk_count_get",
+            "keys": [
+              "address:0x0042fcf0",
+              "name:perk_count_get",
+              "local:+0x1d880"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 0,
+            "kind": "imm",
+            "source": "reloc",
+            "value": null,
+            "text": "_perk_count_get",
+            "keys": [
+              "name:perk_count_get",
+              "address:0x0042fcf0"
+            ],
+            "explained": true
+          }
+        ]
+      },
+      {
+        "target_index": 133,
+        "candidate_index": 140,
+        "status": "ok",
+        "target": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "image",
+            "value": 4740060,
+            "text": "bonus_meta_enabled",
+            "keys": [
+              "address:0x004853dc",
+              "name:bonus_meta_enabled",
+              "local:+0x72f6c",
+              "bytes1:00"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate": [
+          {
+            "operand_index": 1,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "_bonus_meta_table",
+            "keys": [
+              "name:bonus_meta_table+0xc",
+              "address:0x004853dc"
+            ],
+            "explained": true
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,5443 @@
+{
+  "canonical_source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+  "controls": 98,
+  "script_sha256": "c55e6a28043cacd552cf994240d2bc9d8acc3b2855ac31b12d9c6c4d314d9726",
+  "probe_builder_sha256": "0c6f4f24272e0deef42a5ed578605bccc727a471f472b52f9f3ca99e3490e486",
+  "source_generator_sha256": "f9ebba8af8bd1508670727a48a4ad2462dc4861a66914acb226b4198040fdd12",
+  "native_positive_screen": {
+    "same_block_stack_overwrites": [
+      {
+        "first_index": 53,
+        "second_index": 54,
+        "context": [
+          "mov dword [esp+0x10], edi",
+          "mov dword [esp+0x10], ebx"
+        ]
+      }
+    ],
+    "computed_addresses": [
+      {
+        "instruction_index": 41,
+        "instruction": "lea eax, dword [ebp+ebp*2]"
+      },
+      {
+        "instruction_index": 44,
+        "instruction": "lea esi, dword [eax*8+ADDR]"
+      },
+      {
+        "instruction_index": 52,
+        "instruction": "lea edi, dword [esi+0xc]"
+      },
+      {
+        "instruction_index": 84,
+        "instruction": "lea ecx, dword [esp+0x24]"
+      },
+      {
+        "instruction_index": 102,
+        "instruction": "lea eax, dword [edi+-0x1]"
+      }
+    ],
+    "register_stack_stores": [
+      {
+        "instruction_index": 49,
+        "instruction": "mov dword [esp+0x14], ecx"
+      },
+      {
+        "instruction_index": 50,
+        "instruction": "mov dword [esp+0x18], edx"
+      },
+      {
+        "instruction_index": 53,
+        "instruction": "mov dword [esp+0x10], edi"
+      },
+      {
+        "instruction_index": 54,
+        "instruction": "mov dword [esp+0x10], ebx"
+      },
+      {
+        "instruction_index": 99,
+        "instruction": "mov dword [esp+0x10], ecx"
+      }
+    ]
+  },
+  "results": [
+    {
+      "label": "indexed-template",
+      "source_sha256": "98e132b7f5ecca04646564d3a0b6670396b64620ab114d9452dd659f64e76758",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "7c7c31e220ebdd447ce141c15412c7f96ee43acede440a84264867cad46bc40e",
+      "instruction_text_sha256": "141ebfa87bb704bba06b97cd4b9f1d9b2424cffc7dcf7309d30a364b00a19cd2",
+      "ratio": 0.4322033898305085,
+      "instructions": 121,
+      "prefix": 0,
+      "references_ok": 8,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [edx+edx*2]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea esi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 88,
+          "instruction": "lea eax, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 107,
+          "instruction": "lea eax, dword [ebp+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x18], eax"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 118,
+          "instruction": "mov dword [esp+0x10], edx"
+        }
+      ]
+    },
+    {
+      "label": "indexed-heading",
+      "source_sha256": "a5ad30ad8101f12536668cf720d731e87cc71419e515c7029f3cc9ca1c79b339",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "a1a114436217b4df1384757ac523d62a32e7ec3f0856acf3877d680c2b1a452b",
+      "instruction_text_sha256": "817b8344f7e340c1e0c0fd730e47349eef04f6ba1c1c8a644b4a9c1b07109bb8",
+      "ratio": 0.4406779661016949,
+      "instructions": 121,
+      "prefix": 0,
+      "references_ok": 8,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [edx+edx*2]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea esi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 88,
+          "instruction": "lea eax, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 107,
+          "instruction": "lea eax, dword [ebp+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x18], eax"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 118,
+          "instruction": "mov dword [esp+0x10], edx"
+        }
+      ]
+    },
+    {
+      "label": "indexed-both",
+      "source_sha256": "4903e05292a576542cc8fdded444907c0ce40c7f253cdaf833de6f4358183906",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "ac601ec5cb30835b714f213b8a3bc17146ad651f981eadd4dbb803e5a4d71954",
+      "instruction_text_sha256": "4a7ba03b870857d4c07bdbd5f8852880f832126b3283ae3cd72d425f7e216ae2",
+      "ratio": 0.4406779661016949,
+      "instructions": 121,
+      "prefix": 0,
+      "references_ok": 8,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [edx+edx*2]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea esi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 88,
+          "instruction": "lea eax, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 107,
+          "instruction": "lea eax, dword [ebp+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x18], eax"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 118,
+          "instruction": "mov dword [esp+0x10], edx"
+        }
+      ]
+    },
+    {
+      "label": "indexed-all",
+      "source_sha256": "43ccc30aeaabf81ce79a95f17750e20768f4ef14e6cde5c6c7d27fea8244895a",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "8d4fcf8905c30a9d1863eb4beb1b83f5f279edf4cf8727b7c8758f525a65bd40",
+      "instruction_text_sha256": "d09550428a36b28246cfe42f32a1023b5aae77c9c4e97670511d30e92e67ea87",
+      "ratio": 0.5617021276595745,
+      "instructions": 120,
+      "prefix": 1,
+      "references_ok": 10,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea eax, dword [esi+0x10]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x2c]"
+        },
+        {
+          "instruction_index": 105,
+          "instruction": "lea ecx, dword [ebp+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 46,
+          "instruction": "mov dword [esp+0x14], eax"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x20], edx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x18], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 118,
+          "instruction": "mov dword [esp+0x14], eax"
+        }
+      ]
+    },
+    {
+      "label": "indexed-position",
+      "source_sha256": "518055fe6ede94ddb95fb02d1ebe9a4a43c80d36f1948e2a5987faa3b9ea3bf0",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "77ed0aecb6636fbc1504cea5f8711fe98805eb84140b5ee35539bb1dbbc0fdd5",
+      "instruction_text_sha256": "e8b33551895c20518811c2958227ba0b2af4bfbe901ad7b28f707918f70de834",
+      "ratio": 0.5150214592274678,
+      "instructions": 118,
+      "prefix": 0,
+      "references_ok": 7,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea edi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [edi+0x14]"
+        },
+        {
+          "instruction_index": 87,
+          "instruction": "lea eax, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 105,
+          "instruction": "lea eax, dword [edx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 48,
+          "instruction": "mov dword [esp+0x18], eax"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x14], edi"
+        },
+        {
+          "instruction_index": 64,
+          "instruction": "mov dword [esp+0x14], edi"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "indexed-count",
+      "source_sha256": "954f66649e4eced8a346d65a2b5c2a97842b66ad0cbdae8c4de4f688db679b96",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "1f121a19246b4fc8d08942ef724d74b5e613a8160cba59c756f21f45068adee1",
+      "instruction_text_sha256": "a9f702d008e98c165de4aed49da8195070023f8c1e0be1776c0a32f11b7b05ec",
+      "ratio": 0.4152542372881356,
+      "instructions": 121,
+      "prefix": 0,
+      "references_ok": 8,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [edx+edx*2]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea esi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edi, dword [eax+ADDR]"
+        },
+        {
+          "instruction_index": 88,
+          "instruction": "lea eax, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 107,
+          "instruction": "lea eax, dword [ebp+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x18], eax"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 118,
+          "instruction": "mov dword [esp+0x10], edx"
+        }
+      ]
+    },
+    {
+      "label": "loop-while",
+      "source_sha256": "9a9e3b841b2b0a201cf4d7c055276522741513fc4e3892cb3e6cfe7dc537a6d8",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "loop-for",
+      "source_sha256": "800d687fa05c8a9b96b679338b69867148094dac16ecc061e5191511bf3d9228",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "loop-for-multiply",
+      "source_sha256": "0f4ee5a39acff4f1ba2c38e187236bc049783fa156580a1821e59228fca02ac3",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "loop-do-multiply",
+      "source_sha256": "1ddbdf9c77c896803b4e5385dbab9a25d40e91a51aad895e502b206e319dcfc3",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "reference-template",
+      "source_sha256": "9bf5287a6acc5816a9a6197be337a983994212137307aa7977e412dd50446154",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "fully-indexed",
+      "source_sha256": "f80de4ea2a6ad7705602a860441a56682e2229762902bfee3fada33ac6153525",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "195d3f2e6ecbc795eabcca405cc6c6e5c859a6c0646e12d506aff28712c53a6b",
+      "instruction_text_sha256": "71a40f6dae9c405868eab72f45d839cf23162cbe46282cd1d9f28a1567ffe375",
+      "ratio": 0.7304347826086957,
+      "instructions": 115,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 61,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "indexed-scan-direct",
+      "source_sha256": "26542a958190d34192e604622a13998926f256db037fb098ec2075f079c2f124",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "195d3f2e6ecbc795eabcca405cc6c6e5c859a6c0646e12d506aff28712c53a6b",
+      "instruction_text_sha256": "71a40f6dae9c405868eab72f45d839cf23162cbe46282cd1d9f28a1567ffe375",
+      "ratio": 0.7304347826086957,
+      "instructions": 115,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 61,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "indexed-scan-entry-pointer",
+      "source_sha256": "bbcb5697929d7c0751d668baecbdeb81218b448abe559f126797e7c0707c5061",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "195d3f2e6ecbc795eabcca405cc6c6e5c859a6c0646e12d506aff28712c53a6b",
+      "instruction_text_sha256": "71a40f6dae9c405868eab72f45d839cf23162cbe46282cd1d9f28a1567ffe375",
+      "ratio": 0.7304347826086957,
+      "instructions": 115,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 61,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "pointer-scan-direct",
+      "source_sha256": "1e905e082bebea7dd2e70bec2d984b921b366021c1cec1350bb03980d553308e",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "pointer-scan-entry-pointer",
+      "source_sha256": "e24e148cce17a70abd6e634039ac3320de87101e6b15eda229a2222d91065892",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "fully-indexed-outer-for",
+      "source_sha256": "e8111ab6344384a26e2b1de02df8164afc16c49fdcfa5fc2e5ee745c8d02ac6d",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bb85f9598cc9e3576273e057a1ccf9317a51e469f2da62ef876807a52fa0ead2",
+      "instruction_text_sha256": "896482f23f08cd19548ef66985f7f62f76fa6c31e2564e6dccd4a33d1b74f7c5",
+      "ratio": 0.38493723849372385,
+      "instructions": 124,
+      "prefix": 1,
+      "references_ok": 4,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 46,
+          "instruction": "lea ecx, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 47,
+          "instruction": "lea esi, dword [ecx*8+ADDR]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 104,
+          "instruction": "lea ecx, dword [eax+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x1c], ebp"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "fully-indexed-outer-while",
+      "source_sha256": "7af59ee88b2d6a85dbf365d93e5faf94f3e4ef9241db05fa2e090921c4ed78cf",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bb85f9598cc9e3576273e057a1ccf9317a51e469f2da62ef876807a52fa0ead2",
+      "instruction_text_sha256": "896482f23f08cd19548ef66985f7f62f76fa6c31e2564e6dccd4a33d1b74f7c5",
+      "ratio": 0.38493723849372385,
+      "instructions": 124,
+      "prefix": 1,
+      "references_ok": 4,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 46,
+          "instruction": "lea ecx, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 47,
+          "instruction": "lea esi, dword [ecx*8+ADDR]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 104,
+          "instruction": "lea ecx, dword [eax+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x1c], ebp"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "fully-indexed-outer-end-test",
+      "source_sha256": "5f7cabb3f720542cc941fe326e4a369779abd4e21ddee7f4a34f1f4415ecc6a2",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "fe02c3c5bf203bcab9c9390e3ba6cf418f262ad95fe9477e88a953e6d15084b6",
+      "instruction_text_sha256": "693eb67bc73d5b0efd1d037e67320891e5067c6394b2cb078f46f55632a9f2c0",
+      "ratio": 0.4472573839662447,
+      "instructions": 122,
+      "prefix": 1,
+      "references_ok": 6,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea eax, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x1c], ebp"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 61,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "fully-indexed-inner-for-no-guard",
+      "source_sha256": "4864adcffa0be7826b360a4e38f981f22e3c57012335ac293cfaf5f0e3a69f9c",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "401c1e7d77e3b28d9ef266eac67c6af4f22d8f3fc6e6674bfc1487cc6068867b",
+      "instruction_text_sha256": "5279ee76f885cf64985a554b1c2db24c6a8cb5c14a7acaf5d5ae8b104368b57e",
+      "ratio": 0.7186147186147186,
+      "instructions": 116,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 85,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 62,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "pointer-outer-for",
+      "source_sha256": "998c88d0c5b622252d1cdad4569f99bcc8a4242024d8d80e662d851338d68b72",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "141a69e60fa6f5d8577de125f6fb16bc8e0ea72e45a19cbf4c405008dfcaa8dc",
+      "instruction_text_sha256": "dd51b7b52018d1a820855823e2837e1ccc5708a320a70a2a977f5e441baeefae",
+      "ratio": 0.5147679324894515,
+      "instructions": 122,
+      "prefix": 8,
+      "references_ok": 5,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea ecx, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [ecx*8+ADDR]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea ecx, dword [eax+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "pointer-outer-while",
+      "source_sha256": "39a9863d65aa3590f01fe2453d06bba1c5cc8487a756e28daccbdbe570e2a4fd",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "c3bd28ac810d91631b0f7f105e53d0fb488ee232be466fcc3a67f8aef561687b",
+      "instruction_text_sha256": "cab66243c54e817dd0ccee716a444bf6a4de6eae315a34ed8c28d1028241f534",
+      "ratio": 0.5147679324894515,
+      "instructions": 122,
+      "prefix": 8,
+      "references_ok": 5,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea ecx, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [ecx*8+ADDR]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea ecx, dword [eax+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "pointer-outer-end-test",
+      "source_sha256": "9442ef129699e6bd9b6bcd00d0c13f94454ebcc02c129456b8eadd2ba3966dcc",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "fd8b89a986638b326497e5713adf2abe4dab27513b26e79f53ed826759f0cc9f",
+      "instruction_text_sha256": "bee3a217b9f85f6172fd09e64cb530376a40f9977811d157940f49403c299e6b",
+      "ratio": 0.5702127659574469,
+      "instructions": 120,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "pointer-inner-for-no-guard",
+      "source_sha256": "aa2b3b766ca37e144ee0455bf8c22e07c12319c5d98563e36fb14b4fccda2533",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "9ad58a9511854452d040844164a30750fab64e43503ae5a3172cd90e6cfcb9f7",
+      "instruction_text_sha256": "0f811b15b328252ddfca2c8d88ac5a2a150ff176c57fb5e5940a714f722c8daf",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-pointer-ref-entry",
+      "source_sha256": "952b6b5e15a04d197c66107c4dd0c5050c59dd3b1daaedd98bd8f92fe9b99d70",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-pointer-ref-reference",
+      "source_sha256": "bc1298455087b5e5bf0bc294dc1b1d4294cd8c4b7026fd9dbc1aa0ac72cc486b",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-pointer-value-entry",
+      "source_sha256": "e9167cc5c75f1a58b0d713c4eba573537d187c3f203502b6a0fb3cc9a2c3fe2d",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22b1ff5cca24c8f0bbf5f0f8c14d32857dd4b315e36c068feba02f129d8156dd",
+      "instruction_text_sha256": "f603025a07ef6f2a2570ca2ed4a0ce304952506997aba6dd3990810b8954bdd8",
+      "ratio": 0.6255506607929515,
+      "instructions": 112,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea eax, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "lea edx, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 96,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-pointer-value-reference",
+      "source_sha256": "22d0c9627c1e61fb76685cb742863b4f1127998fb4202b96d0bdb6b7b13c9a23",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22b1ff5cca24c8f0bbf5f0f8c14d32857dd4b315e36c068feba02f129d8156dd",
+      "instruction_text_sha256": "f603025a07ef6f2a2570ca2ed4a0ce304952506997aba6dd3990810b8954bdd8",
+      "ratio": 0.6255506607929515,
+      "instructions": 112,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea eax, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "lea edx, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 96,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-reference-ref-entry",
+      "source_sha256": "e49d933bf908f7a0cb63fd3bb1a8cbe70071982084bf0d7091ca4604fd8753ae",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-reference-ref-reference",
+      "source_sha256": "afc538cbc4fc66eecb0c6690fc0bdfa82af905d8572d192ff5e526f31de6e256",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-reference-value-entry",
+      "source_sha256": "521e55d59e5073995d37ca29af9c93ad56b683c66969ae01acbe146af548b309",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22b1ff5cca24c8f0bbf5f0f8c14d32857dd4b315e36c068feba02f129d8156dd",
+      "instruction_text_sha256": "f603025a07ef6f2a2570ca2ed4a0ce304952506997aba6dd3990810b8954bdd8",
+      "ratio": 0.6255506607929515,
+      "instructions": 112,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea eax, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "lea edx, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 96,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-reference-value-reference",
+      "source_sha256": "7e5f919816af3121d90e4d2a6afbc5108a1bcea16aeaaaef620d8d35fdf200f2",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22b1ff5cca24c8f0bbf5f0f8c14d32857dd4b315e36c068feba02f129d8156dd",
+      "instruction_text_sha256": "f603025a07ef6f2a2570ca2ed4a0ce304952506997aba6dd3990810b8954bdd8",
+      "ratio": 0.6255506607929515,
+      "instructions": 112,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea eax, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "lea edx, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 96,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-indirect-ref-entry",
+      "source_sha256": "277c8a470acb5d5a50b49d4de7ee4d5416d3528352cb6db432498611f2ad78d7",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-indirect-ref-reference",
+      "source_sha256": "307e5c29470e3ec694e8ad10bc1c8fd9555602e66a075f1c0ef81c183f93fe7e",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-indirect-value-entry",
+      "source_sha256": "462d4d5a03af9f3feefe23fc4653a81b5a5ca28b71d4587544b3bb1c47d0dd75",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22b1ff5cca24c8f0bbf5f0f8c14d32857dd4b315e36c068feba02f129d8156dd",
+      "instruction_text_sha256": "f603025a07ef6f2a2570ca2ed4a0ce304952506997aba6dd3990810b8954bdd8",
+      "ratio": 0.6255506607929515,
+      "instructions": 112,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea eax, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "lea edx, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 96,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "positive-helper-indirect-value-reference",
+      "source_sha256": "fe5ca860324c34f7d8cb0a087288728fc3bca0e2a7dec97de7863f44dafb859b",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22b1ff5cca24c8f0bbf5f0f8c14d32857dd4b315e36c068feba02f129d8156dd",
+      "instruction_text_sha256": "f603025a07ef6f2a2570ca2ed4a0ce304952506997aba6dd3990810b8954bdd8",
+      "ratio": 0.6255506607929515,
+      "instructions": 112,
+      "prefix": 8,
+      "references_ok": 7,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [edi+edi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea eax, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "lea edx, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x18], ebp"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 96,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-copy-False",
+      "source_sha256": "8877d5345f1cc35c9e35e43dba4c8d9d0e6ea1bb77ce63bf9bf3df416cc43266",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-copy-True",
+      "source_sha256": "1c8ee95a186b652df85cf89b41efbd937c348839e3efe92e17da542c3b9eeeb2",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-assign-False",
+      "source_sha256": "e5bf15f0030c031a69fae8db9a1a633488adff9aef2dd203dbf2d7f296857f2c",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-assign-True",
+      "source_sha256": "8535b29609d822ec7b8f5d85f22d85229bd86ee2c41610d07351d9d0779e3b96",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-copy-dtor-False",
+      "source_sha256": "ff41d0ae330630061da40682eac68803d8156fa89e14cf4effe918c962a52e79",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-copy-dtor-True",
+      "source_sha256": "290927491023f434ad8977cc74cb856a04d8c8928b7c645ed9d2700b9a5189f0",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-assign-dtor-False",
+      "source_sha256": "bbc89e9dd9bce3e45cc8158ff1dd5305e4b69cc68ec13a745a72642d64434ec7",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "copy-object-assign-dtor-True",
+      "source_sha256": "8fa08d9c58e05c7a7ec4792901e10e652b707174d8c3d8611560e2524a01aed5",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "advance-before-offset-entry",
+      "source_sha256": "1b798d1419b839320f500bd589a3b3a8d3749771f0bbb762500f27ecf869bc86",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bed530690f7df58f742dae2ea42021c7cd50333457971de5a05531e423951927",
+      "instruction_text_sha256": "6b919df3e15493545d036805af6cdc470c151667c91d541c013bf27b142c2ee6",
+      "ratio": 0.6926406926406926,
+      "instructions": 116,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 104,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "advance-before-offset-template-relative",
+      "source_sha256": "78b89e07b2f4ca3e7b406235644e1ee34eb58128cb940eb074dd96d9880609c9",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bed530690f7df58f742dae2ea42021c7cd50333457971de5a05531e423951927",
+      "instruction_text_sha256": "6b919df3e15493545d036805af6cdc470c151667c91d541c013bf27b142c2ee6",
+      "ratio": 0.6926406926406926,
+      "instructions": 116,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 104,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "advance-before-guard-entry",
+      "source_sha256": "d322b6f0f339514ed36743f245cba49ff840d11a12c3a586cd26b8da0fdb3c39",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bed530690f7df58f742dae2ea42021c7cd50333457971de5a05531e423951927",
+      "instruction_text_sha256": "6b919df3e15493545d036805af6cdc470c151667c91d541c013bf27b142c2ee6",
+      "ratio": 0.6926406926406926,
+      "instructions": 116,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 104,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "advance-before-guard-template-relative",
+      "source_sha256": "2cc876afc49df8a5460b838bf72dd76d535f47bdb96468e35b0d45efe1d84ff9",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bed530690f7df58f742dae2ea42021c7cd50333457971de5a05531e423951927",
+      "instruction_text_sha256": "6b919df3e15493545d036805af6cdc470c151667c91d541c013bf27b142c2ee6",
+      "ratio": 0.6926406926406926,
+      "instructions": 116,
+      "prefix": 1,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 86,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 104,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x14], esi"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "advance-after-pointer-entry",
+      "source_sha256": "2c90870162fcf9e447a03ad6a9c70f2ab7d6f383df14f9cc32a53caddb27a624",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "c602436e7b45606212cb2fdbb705b3dc94632639fe3bcd4b1812bdf3f30233a5",
+      "instruction_text_sha256": "6f350b9f3c34cc05cb2b385580ce8ad0d916976a42293a34f45be268d1759b90",
+      "ratio": 0.2277580071174377,
+      "instructions": 166,
+      "prefix": 1,
+      "references_ok": 3,
+      "reference_problems": 2,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 44,
+          "instruction": "lea eax, dword [eax+eax*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea eax, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea ecx, dword [eax+-0x8]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edx, dword [eax+0x10]"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "lea esi, dword [eax+-0x4]"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "lea edx, dword [eax+-0x18]"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "lea ebp, dword [eax+-0x10]"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "lea edi, dword [eax+-0x14]"
+        },
+        {
+          "instruction_index": 56,
+          "instruction": "lea ecx, dword [eax+0xc]"
+        },
+        {
+          "instruction_index": 117,
+          "instruction": "lea edx, dword [esp+0x48]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], eax"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], eax"
+        },
+        {
+          "instruction_index": 43,
+          "instruction": "mov dword [esp+0x10], eax"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], eax"
+        },
+        {
+          "instruction_index": 61,
+          "instruction": "mov dword [esp+0x34], eax"
+        },
+        {
+          "instruction_index": 63,
+          "instruction": "mov dword [esp+0x38], eax"
+        },
+        {
+          "instruction_index": 68,
+          "instruction": "mov dword [esp+0x28], ecx"
+        },
+        {
+          "instruction_index": 69,
+          "instruction": "mov dword [esp+0x14], eax"
+        },
+        {
+          "instruction_index": 73,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        },
+        {
+          "instruction_index": 77,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "mov dword [esp+0x24], edx"
+        },
+        {
+          "instruction_index": 83,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "mov dword [esp+0x20], ebx"
+        },
+        {
+          "instruction_index": 93,
+          "instruction": "mov dword [esp+0x30], edx"
+        },
+        {
+          "instruction_index": 133,
+          "instruction": "mov dword [esp+0x20], ecx"
+        },
+        {
+          "instruction_index": 141,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 145,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 151,
+          "instruction": "mov dword [esp+0x18], ebx"
+        }
+      ]
+    },
+    {
+      "label": "advance-after-pointer-template-relative",
+      "source_sha256": "b418b27e9efcafa1cc8ebecedb5b0447a651c759c2f715df84b21c738bb2ae53",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "3a4ce43e62911cc946c4bf41c85d2910af7f6203848cd49da422abc2d972b1b0",
+      "instruction_text_sha256": "41b01d3340dc18196fe1ffdedd4a0cf10556208f33f9cd57ba3916f33212c48c",
+      "ratio": 0.2743682310469314,
+      "instructions": 162,
+      "prefix": 1,
+      "references_ok": 5,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [esi+esi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea eax, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea ecx, dword [eax+-0x8]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edx, dword [eax+0x10]"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "lea edi, dword [eax+-0x4]"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "lea edx, dword [eax+-0x18]"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "lea ebp, dword [eax+-0x14]"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "lea ecx, dword [eax+0xc]"
+        },
+        {
+          "instruction_index": 114,
+          "instruction": "lea ecx, dword [esp+0x40]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], esi"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], esi"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], esi"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x30], ebx"
+        },
+        {
+          "instruction_index": 60,
+          "instruction": "mov dword [esp+0x34], ebx"
+        },
+        {
+          "instruction_index": 66,
+          "instruction": "mov dword [esp+0x24], eax"
+        },
+        {
+          "instruction_index": 70,
+          "instruction": "mov dword [esp+0x28], ecx"
+        },
+        {
+          "instruction_index": 74,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 78,
+          "instruction": "mov dword [esp+0x20], edx"
+        },
+        {
+          "instruction_index": 79,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 91,
+          "instruction": "mov dword [esp+0x2c], edx"
+        },
+        {
+          "instruction_index": 129,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 140,
+          "instruction": "mov dword [esp+0x18], ebx"
+        },
+        {
+          "instruction_index": 146,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 160,
+          "instruction": "mov dword [esp+0x10], esi"
+        }
+      ]
+    },
+    {
+      "label": "advance-after-spawn-entry",
+      "source_sha256": "a2f9576cafec2c48d03d8fc0a861fc27c8ee1f678d101ab3e294097b0d70b2e9",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "dd7d6d3b490f4d03e27dd1c993e3a28bf046eaed07486f68fdc238c511ca2ba9",
+      "instruction_text_sha256": "bf297f7fa1e2ed8ce7f2ba52cdb83c21a0d800c83ad90b4ba6609bea903450d9",
+      "ratio": 0.7017543859649122,
+      "instructions": 113,
+      "prefix": 8,
+      "references_ok": 8,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "lea eax, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edi"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "advance-after-spawn-template-relative",
+      "source_sha256": "1b82623020b3b80d2a91e93944da502aaefe9f1b2f3c3a635d0f3b52a411b325",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "dd7d6d3b490f4d03e27dd1c993e3a28bf046eaed07486f68fdc238c511ca2ba9",
+      "instruction_text_sha256": "bf297f7fa1e2ed8ce7f2ba52cdb83c21a0d800c83ad90b4ba6609bea903450d9",
+      "ratio": 0.7017543859649122,
+      "instructions": 113,
+      "prefix": 8,
+      "references_ok": 8,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "lea eax, dword [ecx+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edi"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "next-cursor-before-offset",
+      "source_sha256": "5f105d109e394b8c71e62f26c9c752afc2a27b3586286c5c80959113ee4cbb0b",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "d8ad77de112f8dcc3543f7cc1ff7ccbecbd9ba0b22fbb094b7ed0ff05b32bbdb",
+      "instruction_text_sha256": "e19217a47a6d4408c6c57648a0d760965b89c4406efc88095a2cf01865a8acef",
+      "ratio": 0.41025641025641024,
+      "instructions": 119,
+      "prefix": 0,
+      "references_ok": 10,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [edx+edx*2]"
+        },
+        {
+          "instruction_index": 47,
+          "instruction": "lea ebp, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 88,
+          "instruction": "lea edx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 107,
+          "instruction": "lea ecx, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x1c], eax"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 117,
+          "instruction": "mov dword [esp+0x10], edx"
+        }
+      ]
+    },
+    {
+      "label": "next-cursor-after-offset",
+      "source_sha256": "cc1b4091d6cfdb26f9de8c4d2a113fce393b560c5a5c05d10512b8072af13cc0",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "d8ad77de112f8dcc3543f7cc1ff7ccbecbd9ba0b22fbb094b7ed0ff05b32bbdb",
+      "instruction_text_sha256": "e19217a47a6d4408c6c57648a0d760965b89c4406efc88095a2cf01865a8acef",
+      "ratio": 0.41025641025641024,
+      "instructions": 119,
+      "prefix": 0,
+      "references_ok": 10,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [edx+edx*2]"
+        },
+        {
+          "instruction_index": 47,
+          "instruction": "lea ebp, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 88,
+          "instruction": "lea edx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 107,
+          "instruction": "lea ecx, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], edx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x1c], eax"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 103,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 117,
+          "instruction": "mov dword [esp+0x10], edx"
+        }
+      ]
+    },
+    {
+      "label": "next-cursor-after-guard",
+      "source_sha256": "06fdfa1820620c3752fbf8a6d73f343aeff3595490ad913379d1bbd760c3427d",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "7f552503c0d35ea65047b9fcf0d4a46cf22db3a3b12ac0a5e3bb57296c4aaf65",
+      "instruction_text_sha256": "91a88dc17e3d2fab54dea72e7218673aa0994c84e2978c310738834e91a9917d",
+      "ratio": 0.325,
+      "instructions": 125,
+      "prefix": 1,
+      "references_ok": 5,
+      "reference_problems": 1,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [ecx+ecx*2]"
+        },
+        {
+          "instruction_index": 47,
+          "instruction": "lea eax, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edi, dword [eax+0x14]"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "lea ebp, dword [eax+0xc]"
+        },
+        {
+          "instruction_index": 91,
+          "instruction": "lea ecx, dword [esp+0x2c]"
+        },
+        {
+          "instruction_index": 113,
+          "instruction": "lea edx, dword [ebp+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x1c], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x20], edx"
+        },
+        {
+          "instruction_index": 60,
+          "instruction": "mov dword [esp+0x18], eax"
+        },
+        {
+          "instruction_index": 61,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 106,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 123,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-loop-top-entry",
+      "source_sha256": "123ca784b8ee91c9771e810ccd6e09f77f344b8305f5ba8853dd65def09a04dc",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-loop-top-relative",
+      "source_sha256": "abee293f46cbbe0d72922d7c94ea8c0a2028809a69ac0ad7db5296cf53b85cb2",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-before-vector-entry",
+      "source_sha256": "c7555d53278879c75b512d5e4000177160cf576a5f117d76383af4c38cc90df4",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-before-vector-relative",
+      "source_sha256": "81e6df9180e97e9bf28e57b15d4588c7499a8d0fb7a374479c91ac9c5436921f",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-before-call-entry",
+      "source_sha256": "4d972945dea97ef80c01e23fbba52cbfb6531e6956b0226ac9accde43554ae20",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-before-call-relative",
+      "source_sha256": "bd440dec8f88701973bddcf68f54a6673b3a15f7e190e8945a5e779b5001bd92",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-conditional-arms-entry",
+      "source_sha256": "db58f9c009c038a52e9a47d6f1f3fb9490d6a0bea62f84cffcbe44daa9fc2484",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-conditional-arms-relative",
+      "source_sha256": "260c55a6c09d3a199fcdb6503995a1134463a84c3e87be7af15ce5a5c4608544",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-call-accessor-entry",
+      "source_sha256": "9e1e8be826541d7c050fdca47aa703ba3febb622489bbc6b40221f973ce089f2",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "inner-pointer-call-accessor-relative",
+      "source_sha256": "974a2888d57340ab65e58859b2323222a213783ef34599dc55e49cba24f4d874",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "whole-inline-__inline",
+      "source_sha256": "bc906c8bd3577a6e607773c43e1995a15aebd3cc6b6e97c985df2c016076e159",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "whole-inline-__forceinline",
+      "source_sha256": "a69900f79bb217e9266874e167a4429d3704713f84b56ff795caccc7a410cfac",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "group-inline-countFalse-indexFalse",
+      "source_sha256": "3d3206dee133eb6faeb5de1774ad7605e53c54b0ba564b82200014ae89ea71f4",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "8c564933f8b151171a97f373d58fe8b7cdb3133b1b40d227d104b3a8735d2438",
+      "instruction_text_sha256": "9d8c828a57c991bc1017bdce9afd1e25ec954b9fe9cc7bbaf7516e749d06f7d4",
+      "ratio": 0.7685589519650655,
+      "instructions": 114,
+      "prefix": 8,
+      "references_ok": 9,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 42,
+          "instruction": "lea eax, dword [eax+eax*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 83,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 98,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "group-inline-countFalse-indexTrue",
+      "source_sha256": "28c40c712c7e35d2790b9de6283bcd57da4d3e8d2cb03b77d2e7fa4dcc225f0d",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "group-inline-countTrue-indexFalse",
+      "source_sha256": "af23a7fc7243496a0bdf803835ebc6cd8d0ee8f9bf723b9f85f2835dd1983acc",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "8c564933f8b151171a97f373d58fe8b7cdb3133b1b40d227d104b3a8735d2438",
+      "instruction_text_sha256": "9d8c828a57c991bc1017bdce9afd1e25ec954b9fe9cc7bbaf7516e749d06f7d4",
+      "ratio": 0.7685589519650655,
+      "instructions": 114,
+      "prefix": 8,
+      "references_ok": 9,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 42,
+          "instruction": "lea eax, dword [eax+eax*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 83,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 98,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "group-inline-countTrue-indexTrue",
+      "source_sha256": "e16378f07e5062b9d6420797abff9be87bf4e69a092a363e91b56404c901e571",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "types-unsigned-template",
+      "source_sha256": "a406811760909a39eca61eaf44f315f094a021b144452196822f6c11e631edce",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "types-enum-template",
+      "source_sha256": "6d3996cb759081027d089d89cdf6fb39f000b564fc8b237d187f339353ef8843",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "types-unsigned-index",
+      "source_sha256": "1587287959d11c7118a1276df2e8ef630c3cd875665969d5e978edb8fa738591",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "types-long-spread",
+      "source_sha256": "2a03e831e4c7a59c0163cd948f6b02e82e85c6a0debc501966af010520bcc63d",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "types-unsigned-spread",
+      "source_sha256": "7965566b53fff08e873e21d8e48046c73b593cb7f2f26c6268bd553a8c4a0c72",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-pod-False",
+      "source_sha256": "9e4ae6a60e174f01dceea7f097e3249117f95ed62fd64cd99458c1271c8fa3ac",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "d02e48bf27f17281a8cd97ee788acca2e3f80390144456f44b47b2d7713a2185",
+      "instruction_text_sha256": "1c790c15a0463d3712ca47ac41a109c27786e0541800d44f4cc402faa9773762",
+      "ratio": 0.7105263157894737,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-pod-True",
+      "source_sha256": "bef14b58c0ab3ad40b595f301446608b232841dc5f44e507380d30b5bf686495",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "d02e48bf27f17281a8cd97ee788acca2e3f80390144456f44b47b2d7713a2185",
+      "instruction_text_sha256": "1c790c15a0463d3712ca47ac41a109c27786e0541800d44f4cc402faa9773762",
+      "ratio": 0.7105263157894737,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-constructor-False",
+      "source_sha256": "cf511c0f9ecb6f50aefe3f7b3bced741b3d704198be4dcec7b02b35bf6d421db",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "8505e39922a064d78c6316fd0cf7409f8a7f9de1af122d197c9addedff0c7c6b",
+      "instruction_text_sha256": "4d0f59f01ea89ef571e9bf210446d417d5e1da22d1fa94b2de9494d686eb48ca",
+      "ratio": 0.7192982456140351,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-constructor-True",
+      "source_sha256": "a707c0599bd939f3c85d1c7bcd9ddf648da19cc561b31e3eae4cb0eb735bd1b2",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "22049649fa9a946079f045deb7b32a362f946e69ae94b6a2ae1cc2af74644397",
+      "instruction_text_sha256": "c9373900b1273d9d30b59af4ecad1e70fe1b936358c9c28fbe60a6b3362f5e95",
+      "ratio": 0.7105263157894737,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "lea ecx, dword [esp+0x28]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-index-pod-False",
+      "source_sha256": "4ea0586ca38eb2aeff0447f3e3d2d525750f83192a2c84e29719961bd6a8f065",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-index-pod-True",
+      "source_sha256": "381b5ff330921caa1bd608a227b02cedf7316759c8d5d2d93095b6ba10ad6fce",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-index-constructor-False",
+      "source_sha256": "4b442c5e80e23c66206325dbbd0f18a7668d34db6700dd9cfe1064da8ee413f6",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "f9d41f4898387187a58d927610000dd59c503783cb7e3ef7433d9ff9caa2a0a3",
+      "instruction_text_sha256": "5937a230c9efb26c98d34e752bf9349da162d6abd426268b035c337b779e16de",
+      "ratio": 0.8771929824561403,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-index-constructor-True",
+      "source_sha256": "1a2a9ec3b276bdf55dc32b4b6ba79b9e1d0665106b7e1c5baf5f2477b513a5ff",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "8689a9b4b2b4d49a86e02ac9bb612aa034f2bfa935426440b9d2dc51b6897a62",
+      "instruction_text_sha256": "fec21ea5d1e1de3c839544a803b4efdece941d73a51aeffd8f0efb85345f46d2",
+      "ratio": 0.8771929824561403,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-index-pod-False",
+      "source_sha256": "58ad001261c119301a206cf6a3a7a18a6ad4368ae7119ccedb6f403c106c79dc",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "906961ad1f1b2368c22b2a3911fc035c5e63067a847d9a43078d5bc41e664174",
+      "instruction_text_sha256": "e16189d3a61173d44808651788e2d60903d0d373a91c1f0cc1b975d0da9748b6",
+      "ratio": 0.7105263157894737,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x20]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x2c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-index-pod-True",
+      "source_sha256": "d98d059e57ea8565c018c4fc53560023c2fdec54b73c0c6a44de2f6a24c455aa",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "906961ad1f1b2368c22b2a3911fc035c5e63067a847d9a43078d5bc41e664174",
+      "instruction_text_sha256": "e16189d3a61173d44808651788e2d60903d0d373a91c1f0cc1b975d0da9748b6",
+      "ratio": 0.7105263157894737,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x20]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x2c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-index-constructor-False",
+      "source_sha256": "e37c63208907c6e36fc5092fcb07f1b7021f6d3d8dcce6cb691e7731a9a0e646",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "5602712b8eafd9466ff578d28fb8bd3fc031c62a22ba2cccf86b662f610a0768",
+      "instruction_text_sha256": "fdd53fba3d5877d496a88b89403384620262dc0331c3753b27cd6bd3312a623c",
+      "ratio": 0.7280701754385965,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea ecx, dword [esp+0x20]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x2c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-spread-index-constructor-True",
+      "source_sha256": "bbba7cf75b92a3f00456570a53b3d2fd0cb2a64a6b999ef434659b20f0f8c098",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "e54add6a573263e30db95669b51209d8075c6f0002485cf17ade6d8db3e5e5e3",
+      "instruction_text_sha256": "5be9601336648fad7a7033345931d00421cca71e67c9ed9c259b1725d2e2bfdb",
+      "ratio": 0.7105263157894737,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "lea ecx, dword [esp+0x20]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x2c], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x10], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x14], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-offset-constructor-False",
+      "source_sha256": "5befe424be8b51d489b550cacb7cf5577115cadb839ea3a2e850c4b6443ee6a9",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "5b78ee102207248d4d5855feab1afb492e663c3e111792afc1264e0e1c90cf80",
+      "instruction_text_sha256": "13f264e4ef55f55bc9c1de8829957b510fc43638a87f4ed20151fc0b2e9c5943",
+      "ratio": 0.7368421052631579,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea ecx, dword [esp+0x1c]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x28], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x2c], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-pointer-offset-constructor-True",
+      "source_sha256": "5f81eefc0952c6ce83f0b1b3ded59c1de0e0675e36676e0dae1cf1a40b296e28",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "659a29ff0540ff4fe3d0b50dae52f2959d3bf083691979dd0e81dd3cc18b53fa",
+      "instruction_text_sha256": "4cddfce44b0c24d76ed0af22c21a201cf87fbe21bf84dc37cb05f2ce74d181ab",
+      "ratio": 0.7368421052631579,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "lea ecx, dword [esp+0x1c]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x28], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x2c], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-all-constructor-False",
+      "source_sha256": "198279a4876cc61febf68f86485448c2be5475a48e9bfc80fa18cc1a9e2cfedd",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "bcc184cb677b88885440e50efd7a5ad120abd6ef2ec83477434a4586b2ebd543",
+      "instruction_text_sha256": "d51c150a10d9d3a334550c3420df75a526c81cca946907d6ba97d943a8546252",
+      "ratio": 0.6929824561403509,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 81,
+          "instruction": "lea ecx, dword [esp+0x18]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x24], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x30], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x24], ecx"
+        }
+      ]
+    },
+    {
+      "label": "state-all-constructor-True",
+      "source_sha256": "7ed97278b0ed160692e614385ff5178e678d0ec80bbd78e9d3750a39aeae756e",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "d6757fdf42fc6396b44f8a2079da3d3393f0aa58ec3855ca1b815f1bfdaa4f58",
+      "instruction_text_sha256": "53ee4eb60d56c77150c4853191fb8224ce6753037cf2120e1597b0051390df23",
+      "ratio": 0.6842105263157895,
+      "instructions": 113,
+      "prefix": 1,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "lea ecx, dword [esp+0x18]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x24], ebx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x2c], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x30], edx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x24], ecx"
+        }
+      ]
+    },
+    {
+      "label": "return-ref",
+      "source_sha256": "11553d882b08b09e8e871f80e39357541f37bba6bcb1b58635bef0db191d3005",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "return-const-ref",
+      "source_sha256": "3b06595819fb5e16042d2d77cc096b72678e6bb491512d50d04f8d51fc25f74c",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "return-ptr-ref",
+      "source_sha256": "053ff4674c2b59e1195c0dbae251e36c944eaee66eab54c5521109cd6eff0b58",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "return-ptr-ptr",
+      "source_sha256": "65ba152859cb3e051b3eef38dcd016b999fda302cfba519496cc9e4b77038257",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "return-member-ref",
+      "source_sha256": "7cbefd2adbc7a528c7b161716e841e25ff1e31a1a44784fd6103223f389df828",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    },
+    {
+      "label": "return-member-ptr-ref",
+      "source_sha256": "b1eed04646c721deb91329611668b3641c224e420c6c9c5a14f035ee46c3bd32",
+      "header_sha256": null,
+      "cflags": "/O2 /GB /W3 /GR-",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "instruction_text_sha256": "73091f140b89669931e65dbe98508f39e34cd9a84f010a90f96c16372b432206",
+      "ratio": 0.9122807017543859,
+      "instructions": 113,
+      "prefix": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "body_byte_exact": false,
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    }
+  ]
+}

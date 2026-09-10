@@ -935,6 +935,33 @@ match payload. `match diff` supports the same options. The summary never changes
 normalization, scoring, masked-reference audits, encoded-body identity, acceptance,
 or exit status. The ordinary reports remain unchanged without the flag.
 
+For a suspected block-placement difference, use the stricter instruction-graph
+diagnostic:
+
+```sh
+uv run crimson match scratch tools/match/scratches/bonus_pick_random_type --flow-graph
+```
+
+This follows both graphs from entry, traverses direct unconditional jumps, and
+requires a one-to-one mapping of all other instructions. Conditional edges stay
+ordered as taken and fallthrough. Registers, stack operands, and constants must
+agree, and every masked reference is checked at its graph-mapped position using
+the existing owner rules. Every instruction, including the traversed jumps, must
+be covered. The bonus selector currently maps 156 operations, six jumps per side,
+and 20 reference instructions while remaining non-exact.
+
+The result is `matched`, `different`, or `unsupported`. Indirect/external jumps,
+local calls, jump-only cycles, missing evidence, and uncovered instructions are
+unsupported; they never receive a successful graph result. Calls are modeled as
+opaque operations with fallthrough. This compares decoded instruction graphs,
+not C++ or runtime equivalence. A `matched` graph does not grant normalized or
+encoded exactness, resolve the ordinary positional reference audit, or change
+the command's exit status. Stack displacements are preserved in this diagnostic.
+
+`--json` includes the complete mapping and reference evidence in `flow_graph`;
+`--full` also prints the ordinary diff. `match diff` supports the same flag, and
+it can be combined with `--residual-summary`.
+
 CFG edge consistency is evaluated only through unique exact block anchors.
 Predecessor counts never turn otherwise duplicate instruction blocks into
 unique anchors: that can cross-pair repeated loop latches merely because their

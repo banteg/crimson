@@ -1,0 +1,1131 @@
+{
+  "schema_version": 1,
+  "function": "bonus_pick_random_type",
+  "baseline_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+  "baseline_cflags": "/O2 /GB /W3 /GR-",
+  "baseline_compiler": "msvc6.5",
+  "controls": [
+    {
+      "name": "nested-retry/flag-do-post",
+      "source_sha256": "0a52d201bfc88a0f34546a6a3e5c32e9ee5357249d0dc8dcb1a4bd03ca0c8f5f",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        bool rejected;\n        do {\n            rejected = true;\n            do {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            break;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                break;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "                rejected = false;\n            } while (false);\n            if (rejected && retries++ >= 100) return BONUS_ID_POINTS;\n        } while (rejected);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5240963855421686,
+        "ins": 170,
+        "prefix": 2,
+        "refs": 15,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/flag-do-pre",
+      "source_sha256": "540675c00acced84af8abd065cc9eceadc3afbb4d4dcae7f35386f3518d7c3a8",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        bool rejected;\n        do {\n            rejected = true;\n            do {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            break;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                break;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "                rejected = false;\n            } while (false);\n            if (rejected && ++retries > 100) return BONUS_ID_POINTS;\n        } while (rejected);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5740181268882175,
+        "ins": 169,
+        "prefix": 2,
+        "refs": 19,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/flag-while-post",
+      "source_sha256": "7b078fdc121cb4df6547419266272f3777229e62317dfa73f837909186026d60",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        bool rejected;\n        for (;;) {\n            rejected = true;\n            do {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            break;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                break;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "                rejected = false;\n            } while (false);\n            if (!rejected) break;\n            if (retries++ >= 100) return BONUS_ID_POINTS;\n        }\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5240963855421686,
+        "ins": 170,
+        "prefix": 2,
+        "refs": 15,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/flag-while-pre",
+      "source_sha256": "79e301416a30a502b2dfa6ec3ac8f6fed0a6a7c71dc63e0cfab1515d07c3bc9b",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        bool rejected;\n        for (;;) {\n            rejected = true;\n            do {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            break;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                break;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        break;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    break;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "                rejected = false;\n            } while (false);\n            if (!rejected) break;\n            if (++retries > 100) return BONUS_ID_POINTS;\n        }\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5740181268882175,
+        "ins": 169,
+        "prefix": 2,
+        "refs": 19,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/goto-do-post",
+      "source_sha256": "3128fe05d42abd31db84c9f39bd6fbd762b852fe3d2b7e9bcc1d435454d21edf",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        do {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            goto quest_retry;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                goto quest_retry;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "            break;\nquest_retry:\n            if (retries++ >= 100) return BONUS_ID_POINTS;\n        } while (true);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5240963855421686,
+        "ins": 170,
+        "prefix": 2,
+        "refs": 15,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/goto-do-pre",
+      "source_sha256": "1d32270d49199a731b3ffb66b1ba73cdb806970aaa2d8c11ec70909dacf81858",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        do {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            goto quest_retry;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                goto quest_retry;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "            break;\nquest_retry:\n            if (++retries > 100) return BONUS_ID_POINTS;\n        } while (true);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5740181268882175,
+        "ins": 169,
+        "prefix": 2,
+        "refs": 19,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/goto-for-post",
+      "source_sha256": "22df60aab22a6e3e872add2780a4873c44f2b068eaccc61b9da148fe933b57ea",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        for (;;) {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            goto quest_retry;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                goto quest_retry;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "            break;\nquest_retry:\n            if (retries++ >= 100) return BONUS_ID_POINTS;\n        }\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5240963855421686,
+        "ins": 170,
+        "prefix": 2,
+        "refs": 15,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "nested-retry/goto-for-pre",
+      "source_sha256": "7a1818e6abc9de3741138904ce582ee077fbb1895288e9549a8e4fe309c93320",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "        for (;;) {\n"
+        },
+        {
+          "start": 50,
+          "stop": 51,
+          "old": "            continue;\n",
+          "new": "            goto quest_retry;\n"
+        },
+        {
+          "start": 56,
+          "stop": 57,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 61,
+          "stop": 62,
+          "old": "                continue;\n",
+          "new": "                goto quest_retry;\n"
+        },
+        {
+          "start": 66,
+          "stop": 67,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 71,
+          "stop": 72,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 74,
+          "stop": 75,
+          "old": "                        continue;\n",
+          "new": "                        goto quest_retry;\n"
+        },
+        {
+          "start": 79,
+          "stop": 80,
+          "old": "                    continue;\n",
+          "new": "                    goto quest_retry;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "            break;\nquest_retry:\n            if (++retries > 100) return BONUS_ID_POINTS;\n        }\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5740181268882175,
+        "ins": 169,
+        "prefix": 2,
+        "refs": 19,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "tailmerge-size/stage-five-only-Os",
+      "source_sha256": "f4b6a01429448ccd7afc4fd73e73f99a64e125915843758d6bee8268172eb067",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/stage-five-only-O1",
+      "source_sha256": "f4b6a01429448ccd7afc4fd73e73f99a64e125915843758d6bee8268172eb067",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/stage-five-only-O1Ot",
+      "source_sha256": "f4b6a01429448ccd7afc4fd73e73f99a64e125915843758d6bee8268172eb067",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.547945205479452,
+        "ins": 203,
+        "prefix": 16,
+        "refs": 20,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    },
+    {
+      "name": "tailmerge-size/stage-four-five-Os",
+      "source_sha256": "3f7aeb7b7da3d7e59c271f4a640a16f211f74533ee8ef09dfcf6f8f4b6238b29",
+      "edits": [
+        {
+          "start": 77,
+          "stop": 77,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        },
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/stage-four-five-O1",
+      "source_sha256": "3f7aeb7b7da3d7e59c271f4a640a16f211f74533ee8ef09dfcf6f8f4b6238b29",
+      "edits": [
+        {
+          "start": 77,
+          "stop": 77,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        },
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/stage-four-five-O1Ot",
+      "source_sha256": "3f7aeb7b7da3d7e59c271f4a640a16f211f74533ee8ef09dfcf6f8f4b6238b29",
+      "edits": [
+        {
+          "start": 77,
+          "stop": 77,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        },
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\n        if (bonus_meta_table[bonus_id].enabled) {\n            return bonus_id;\n        }\n        continue;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.4878048780487805,
+        "ins": 248,
+        "prefix": 16,
+        "refs": 20,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    },
+    {
+      "name": "tailmerge-size/five-1-Os",
+      "source_sha256": "204828355bb5565d0cdf98e2f95b20abb2014ec68f14a689edfabb1a9a9bc681",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 87,
+          "stop": 87,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.2484076433121019,
+        "ins": 152,
+        "prefix": 0,
+        "refs": 14,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/five-1-O1",
+      "source_sha256": "204828355bb5565d0cdf98e2f95b20abb2014ec68f14a689edfabb1a9a9bc681",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 87,
+          "stop": 87,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.2484076433121019,
+        "ins": 152,
+        "prefix": 0,
+        "refs": 14,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/five-1-O1Ot",
+      "source_sha256": "204828355bb5565d0cdf98e2f95b20abb2014ec68f14a689edfabb1a9a9bc681",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 87,
+          "stop": 87,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.7781155015197568,
+        "ins": 167,
+        "prefix": 55,
+        "refs": 20,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    },
+    {
+      "name": "tailmerge-size/five-2-Os",
+      "source_sha256": "4d6c81572c6b851f141b63eebfe5e39b686259634b29a3f11a8258970def4f0a",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 93,
+          "stop": 93,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.2484076433121019,
+        "ins": 152,
+        "prefix": 0,
+        "refs": 14,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/five-2-O1",
+      "source_sha256": "4d6c81572c6b851f141b63eebfe5e39b686259634b29a3f11a8258970def4f0a",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 93,
+          "stop": 93,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.2484076433121019,
+        "ins": 152,
+        "prefix": 0,
+        "refs": 14,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/five-2-O1Ot",
+      "source_sha256": "4d6c81572c6b851f141b63eebfe5e39b686259634b29a3f11a8258970def4f0a",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 93,
+          "stop": 93,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.750733137829912,
+        "ins": 179,
+        "prefix": 55,
+        "refs": 20,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    },
+    {
+      "name": "tailmerge-size/five-3-Os",
+      "source_sha256": "a20b6775103b4ea310e0c88dbec4bb669c6f2fb12a7029ee9430257571b912ef",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 96,
+          "stop": 96,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/five-3-O1",
+      "source_sha256": "a20b6775103b4ea310e0c88dbec4bb669c6f2fb12a7029ee9430257571b912ef",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 96,
+          "stop": 96,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/five-3-O1Ot",
+      "source_sha256": "a20b6775103b4ea310e0c88dbec4bb669c6f2fb12a7029ee9430257571b912ef",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 96,
+          "stop": 96,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6189111747851003,
+        "ins": 187,
+        "prefix": 55,
+        "refs": 17,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    },
+    {
+      "name": "tailmerge-size/five-4-Os",
+      "source_sha256": "a310238fd76f8e37fbc9f16f4b34625f8160679b01917ed358a70f6ffa131a24",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 99,
+          "stop": 99,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/five-4-O1",
+      "source_sha256": "a310238fd76f8e37fbc9f16f4b34625f8160679b01917ed358a70f6ffa131a24",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 99,
+          "stop": 99,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/five-4-O1Ot",
+      "source_sha256": "a310238fd76f8e37fbc9f16f4b34625f8160679b01917ed358a70f6ffa131a24",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 99,
+          "stop": 99,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6386554621848739,
+        "ins": 195,
+        "prefix": 55,
+        "refs": 18,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    },
+    {
+      "name": "tailmerge-size/five-5-Os",
+      "source_sha256": "ea9064a5cd1324e9d2dd8f722f1f82436055e7af87c334c9efa472f106935a8d",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 102,
+          "stop": 102,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /Os"
+    },
+    {
+      "name": "tailmerge-size/five-5-O1",
+      "source_sha256": "ea9064a5cd1324e9d2dd8f722f1f82436055e7af87c334c9efa472f106935a8d",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 102,
+          "stop": 102,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.25316455696202533,
+        "ins": 154,
+        "prefix": 1,
+        "refs": 13,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1"
+    },
+    {
+      "name": "tailmerge-size/five-5-O1Ot",
+      "source_sha256": "ea9064a5cd1324e9d2dd8f722f1f82436055e7af87c334c9efa472f106935a8d",
+      "edits": [
+        {
+          "start": 81,
+          "stop": 81,
+          "old": "",
+          "new": "        if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {\n            continue;\n        }\n        if (\n            (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)\n            && bonus_id == BONUS_ID_SHIELD\n        ) {\n            continue;\n        }\n        if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {\n            continue;\n        }\n        if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {\n            continue;\n        }\n        if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {\n            continue;\n        }\ngoto remaining_filters;\n"
+        },
+        {
+          "start": 102,
+          "stop": 102,
+          "old": "",
+          "new": "remaining_filters:\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.4986149584487535,
+        "ins": 199,
+        "prefix": 16,
+        "refs": 18,
+        "problems": 1,
+        "exact": false,
+        "body": false
+      },
+      "cflags": "/O2 /GB /W3 /GR- /O1 /Ot"
+    }
+  ]
+}
