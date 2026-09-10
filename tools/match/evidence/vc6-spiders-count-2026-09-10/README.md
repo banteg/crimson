@@ -37,6 +37,25 @@ addition reaches C2+0x2ba97 with opcode `0x16d`, then C2+0x2bac1 with opcode
 as well as unchanged whole-COFF output. This identifies a narrower compiler
 decision; it does not supply a source reconstruction that matches native.
 
+The earlier C2+0x130cb pass explains how those states arise. Both additions
+enter it with kind-1 destinations and definition links to themselves. Inside
+the pass, C2+0x11209 converts both destinations to kind 2. The later
+C2+0x5b30 traversal restores only the scalar destination to a temporary with
+a definition link.
+
+At C2+0x5bf5, the verifier follows the arithmetic result's direct consumers
+in both backward traversals. The scalar result has one: its copy to
+`wave_count`. The canonical result also feeds the first entry's count store.
+C2 remembers the local copy, then clears that record when visiting the extra
+field store. It therefore reaches the canonical addition without the remembered
+use needed for the temporary rewrite. The scalar's remembered copy survives.
+Both executions pass the same whole-COFF equality checks; none of these
+observers changes an operand or an optimization decision.
+
+This makes the next source question more specific: how to preserve the native
+separate arithmetic result while publishing the count at the native position.
+It does not establish that another local declaration or helper will do so.
+
 Run from the repository root:
 
 ```sh
@@ -50,8 +69,8 @@ whole-COFF equality with only the COFF timestamp excluded. It also requires the
 missing-stream negative control to fail and the observed match metrics to equal
 the normal build. The observer preserves registers and flags, validates each
 hook's original call target, and reads the instruction list and operands.
-The phase snapshots and decision records are written separately to `phases.bin`
-and `decisions.bin`.
+The phase snapshots, address-folding decisions, and count-use records are written
+separately to `phases.bin`, `decisions.bin`, and `uses.bin`.
 
 The recorded canonical result is 96.1905%, 105/105 instructions, with seven
 clean aligned references. The scalar control is 75.8294%, 106/105 instructions,

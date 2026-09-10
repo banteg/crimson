@@ -8,8 +8,8 @@
     "body_sha256": "35cf113305044a5b188173b0599728bde4429a55040a41299025a2bc1e060154"
   },
   "source_hashes": {
-    "verify.py": "361e12513550b45ca973126f4fd53c6465d3887d68f86926288386852a2b3c0c",
-    "observer.c": "bae10d26c5850b0c30b673d28589a9f587eed6a55218183a122c26d2f101bd4a"
+    "verify.py": "c1e96225ad1191cb0e31356547c3b4cc63ef470712308821b3f76beb5fd5d4a0",
+    "observer.c": "d3560cf95cb91c861d802bf46d1f35da888a2bcec27c71a96f7e9b1b864b557d"
   },
   "replay_source_hashes": {
     "verify.py": "5b46741ac7c3f96b0890b477dbeb01a0b9dbbfcc62790b2aceca1f7cc6f57a65",
@@ -189,7 +189,41 @@
           "destination_and_base_have_distinct_symbols": true,
           "addend": 3
         }
-      ]
+      ],
+      "count_uses": [
+        {
+          "pass": 1,
+          "observed_consumer_destination_kinds": [
+            2,
+            6
+          ],
+          "copy_is_remembered_before_field_store": true,
+          "copy_is_remembered_at_addition": false,
+          "addition_has_definition_link_before_rewrite": false
+        },
+        {
+          "pass": 2,
+          "observed_consumer_destination_kinds": [
+            2,
+            6
+          ],
+          "copy_is_remembered_before_field_store": true,
+          "copy_is_remembered_at_addition": false,
+          "addition_has_definition_link_before_rewrite": false
+        }
+      ],
+      "before_global_optimization": {
+        "destination_kind": 1,
+        "definition_is_addition": true
+      },
+      "after_temporary_conversion": {
+        "destination_kind": 2,
+        "has_definition_link": false
+      },
+      "after_global_optimization": {
+        "destination_kind": 2,
+        "definition_is_addition": false
+      }
     },
     "late": {
       "baseline": {
@@ -226,11 +260,11 @@
           "auto_inline_off": [],
           "dependencies": [
             [
-              "/private/tmp/c2spiders-count-decision-final/late-source/scratch.cpp",
+              "/private/tmp/c2spiders-count-uses-complete/late-source/scratch.cpp",
               "5304d14ebf22fa8734982c2de37fa9f31780840389d104ac766477b81ee723f4"
             ],
             [
-              "/private/tmp/c2spiders-count-decision-final/late-source/scratch.conf",
+              "/private/tmp/c2spiders-count-uses-complete/late-source/scratch.conf",
               null
             ],
             [
@@ -370,7 +404,39 @@
           "destination_and_base_have_distinct_symbols": true,
           "addend": 3
         }
-      ]
+      ],
+      "count_uses": [
+        {
+          "pass": 1,
+          "observed_consumer_destination_kinds": [
+            2
+          ],
+          "copy_is_remembered_before_field_store": null,
+          "copy_is_remembered_at_addition": true,
+          "addition_has_definition_link_before_rewrite": false
+        },
+        {
+          "pass": 2,
+          "observed_consumer_destination_kinds": [
+            2
+          ],
+          "copy_is_remembered_before_field_store": null,
+          "copy_is_remembered_at_addition": true,
+          "addition_has_definition_link_before_rewrite": false
+        }
+      ],
+      "before_global_optimization": {
+        "destination_kind": 1,
+        "definition_is_addition": true
+      },
+      "after_temporary_conversion": {
+        "destination_kind": 2,
+        "has_definition_link": false
+      },
+      "after_global_optimization": {
+        "destination_kind": 1,
+        "definition_is_addition": true
+      }
     }
   },
   "new_source_matches": 0

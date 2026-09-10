@@ -28,12 +28,13 @@ def read_trace(path, *, late):
     while offset < len(data):
         phase, count = struct.unpack_from("<2I", data, offset)
         offset += 8
-        nodes = [struct.unpack_from("<9I", data, offset + i * 36) for i in range(count)]
-        offset += count * 36
+        nodes = [struct.unpack_from("<10I", data, offset + i * 40) for i in range(count)]
+        offset += count * 40
         snapshots.append((phase, nodes))
     assert offset == len(data)
-    assert [phase for phase, _ in snapshots] == list(range(4))
-    initial = snapshots[0][1]
+    assert [phase for phase, _ in snapshots] == [7, 11, 12, 8, 0, 1, 2, 3]
+    by_phase = dict(snapshots)
+    initial = by_phase[0]
     additions = [node for node in initial if node[1:3] == (0x16D, 35)]
     divisions = [node for node in initial if node[1:3] == (0x175, 35)]
     # The canonical chained assignment has further address additions on line 35.
@@ -42,8 +43,18 @@ def read_trace(path, *, late):
     addition, division = pairs[0]
     assert addition[5] == (1 if late else 2)
     expected_additions = (0x16D, 0x16D, 0x2D, 0x2D) if late else (0x16D, 0x16D, 0x12, 0x12)
+    before_global = next(node for node in by_phase[7] if node[0] == addition[0])
+    after_global = next(node for node in by_phase[8] if node[0] == addition[0])
+    before_conversion = next(node for node in by_phase[11] if node[0] == addition[0])
+    after_conversion = next(node for node in by_phase[12] if node[0] == addition[0])
+    assert before_global[5] == before_conversion[5] == 1
+    assert before_global[9] == before_conversion[9] == addition[0]
+    assert after_conversion[5] == 2 and after_conversion[9] == 0
+    assert after_global[5] == (1 if late else 2)
+    assert after_global[9] == (addition[0] if late else 0)
     result = []
-    for phase, nodes in snapshots:
+    for phase in range(4):
+        nodes = by_phase[phase]
         by_pointer = {node[0]: node for node in nodes}
         add, div = by_pointer[addition[0]], by_pointer[division[0]]
         assert add[1] == expected_additions[phase]
@@ -91,6 +102,34 @@ def read_decisions(path, *, late):
                 "base_has_distinct_definition_link": True,
                 "destination_and_base_have_distinct_symbols": True,
                 "addend": addend,
+            },
+        )
+    return result
+
+
+def read_uses(path, *, late):
+    data = path.read_bytes()
+    assert len(data) == (4 if late else 6) * 48
+    records = list(struct.iter_unpack("<12I", data))
+    assert [row[0] for row in records] == ([1, 1, 2, 2] if late else [1, 1, 1, 2, 2, 2])
+    result = []
+    for pass_number in (1, 2):
+        rows = [row for row in records if row[0] == pass_number]
+        copy, producer = rows[0], rows[-1]
+        assert copy[2:5] == (0x15B, 35, 2)
+        assert copy[5:9] == (1, 0, 0, 0)
+        assert producer[2:9] == (0x16D, 35, 2, 0, 1, 0, copy[1] if late else 0)
+        assert len({row[11] for row in rows}) == 1
+        if not late:
+            field_store = rows[1]
+            assert field_store[2:9] == (0x15B, 35, 6, 1, 0, 0, copy[1])
+        result.append(
+            {
+                "pass": pass_number,
+                "observed_consumer_destination_kinds": [row[4] for row in rows[:-1]],
+                "copy_is_remembered_before_field_store": None if late else True,
+                "copy_is_remembered_at_addition": late,
+                "addition_has_definition_link_before_rewrite": False,
             },
         )
     return result
@@ -148,7 +187,7 @@ def main():
             shutil.copyfile(HERE / "observer.c", observed / "observer.c")
             replay.compile_driver(observed, "observer.c", "observer.obj")
             replay.link(observed, "observer.exe", "observer.obj")
-            for filename in ("replay.obj", "phases.bin", "decisions.bin"):
+            for filename in ("replay.obj", "phases.bin", "decisions.bin", "uses.bin"):
                 (observed / filename).unlink(missing_ok=True)
             replay.run([replay.WIBO, "observer.exe"], observed)
             assert replay.normalized_coff(directory / "replay.obj") == replay.normalized_coff(observed / "replay.obj")
@@ -162,6 +201,13 @@ def main():
                 "observed_whole_coff_equal_except_timestamp": True,
                 "snapshots": read_trace(observed / "phases.bin", late=name == "late"),
                 "address_fold_decisions": read_decisions(observed / "decisions.bin", late=name == "late"),
+                "count_uses": read_uses(observed / "uses.bin", late=name == "late"),
+                "before_global_optimization": {"destination_kind": 1, "definition_is_addition": True},
+                "after_temporary_conversion": {"destination_kind": 2, "has_definition_link": False},
+                "after_global_optimization": {
+                    "destination_kind": 1 if name == "late" else 2,
+                    "definition_is_addition": name == "late",
+                },
             }
     manifest = match.load_function_manifest()
     _, start, end = match.resolve_function(manifest, FUNCTION)
