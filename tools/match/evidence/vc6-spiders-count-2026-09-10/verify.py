@@ -64,6 +64,38 @@ def read_trace(path, *, late):
     return result
 
 
+def read_decisions(path, *, late):
+    data = path.read_bytes()
+    assert len(data) == (96 if late else 48)
+    records = list(struct.iter_unpack("<12I", data))
+    assert [row[0] for row in records] == ([5, 6] if late else [4])
+    assert len({row[1] for row in records}) == 1
+    result = []
+    for row in records:
+        phase, node, opcode, destination_kind, destination_symbol, destination_definition = row[:6]
+        base_kind, base_symbol, base_definition, base_owner, same_symbol, addend = row[6:]
+        assert opcode == {4: 0x12, 5: 0x16D, 6: 0x2D}[phase]
+        assert destination_kind == base_kind == 1
+        assert destination_symbol and base_symbol and base_definition
+        assert destination_definition == (node if late else 0)
+        assert base_definition != node and base_owner == base_symbol
+        assert not same_symbol and addend == 3
+        result.append(
+            {
+                "callsite": {4: "C2+0x2ba57", 5: "C2+0x2ba97", 6: "C2+0x2bac1"}[phase],
+                "addition_opcode": hex(opcode),
+                "destination_operand_kind": destination_kind,
+                "base_operand_kind": base_kind,
+                "destination_has_definition_link": bool(destination_definition),
+                "destination_definition_is_addition": destination_definition == node,
+                "base_has_distinct_definition_link": True,
+                "destination_and_base_have_distinct_symbols": True,
+                "addend": addend,
+            },
+        )
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
@@ -116,7 +148,7 @@ def main():
             shutil.copyfile(HERE / "observer.c", observed / "observer.c")
             replay.compile_driver(observed, "observer.c", "observer.obj")
             replay.link(observed, "observer.exe", "observer.obj")
-            for filename in ("replay.obj", "phases.bin"):
+            for filename in ("replay.obj", "phases.bin", "decisions.bin"):
                 (observed / filename).unlink(missing_ok=True)
             replay.run([replay.WIBO, "observer.exe"], observed)
             assert replay.normalized_coff(directory / "replay.obj") == replay.normalized_coff(observed / "replay.obj")
@@ -129,6 +161,7 @@ def main():
                 "baseline": baseline,
                 "observed_whole_coff_equal_except_timestamp": True,
                 "snapshots": read_trace(observed / "phases.bin", late=name == "late"),
+                "address_fold_decisions": read_decisions(observed / "decisions.bin", late=name == "late"),
             }
     manifest = match.load_function_manifest()
     _, start, end = match.resolve_function(manifest, FUNCTION)

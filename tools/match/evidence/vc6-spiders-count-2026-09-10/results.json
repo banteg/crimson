@@ -8,8 +8,8 @@
     "body_sha256": "35cf113305044a5b188173b0599728bde4429a55040a41299025a2bc1e060154"
   },
   "source_hashes": {
-    "verify.py": "89cdecd7f3dd97cce2f6c1b0dc509c68f6c284a500e8aad6e7c8c4738bb7458c",
-    "observer.c": "5f178265a130162032d120a9a95ca2f19e76ad9d8160e1f366e66f49c88c6ced"
+    "verify.py": "361e12513550b45ca973126f4fd53c6465d3887d68f86926288386852a2b3c0c",
+    "observer.c": "bae10d26c5850b0c30b673d28589a9f587eed6a55218183a122c26d2f101bd4a"
   },
   "replay_source_hashes": {
     "verify.py": "5b46741ac7c3f96b0890b477dbeb01a0b9dbbfcc62790b2aceca1f7cc6f57a65",
@@ -176,6 +176,19 @@
           "addition_destination_operand_kind": 1,
           "division_and_addition_share_destination_storage_owner": false
         }
+      ],
+      "address_fold_decisions": [
+        {
+          "callsite": "C2+0x2ba57",
+          "addition_opcode": "0x12",
+          "destination_operand_kind": 1,
+          "base_operand_kind": 1,
+          "destination_has_definition_link": false,
+          "destination_definition_is_addition": false,
+          "base_has_distinct_definition_link": true,
+          "destination_and_base_have_distinct_symbols": true,
+          "addend": 3
+        }
       ]
     },
     "late": {
@@ -213,11 +226,11 @@
           "auto_inline_off": [],
           "dependencies": [
             [
-              "/private/tmp/c2spiders-count-proof/late-source/scratch.cpp",
+              "/private/tmp/c2spiders-count-decision-final/late-source/scratch.cpp",
               "5304d14ebf22fa8734982c2de37fa9f31780840389d104ac766477b81ee723f4"
             ],
             [
-              "/private/tmp/c2spiders-count-proof/late-source/scratch.conf",
+              "/private/tmp/c2spiders-count-decision-final/late-source/scratch.conf",
               null
             ],
             [
@@ -332,6 +345,30 @@
           "division_opcode": "0x29",
           "addition_destination_operand_kind": 1,
           "division_and_addition_share_destination_storage_owner": true
+        }
+      ],
+      "address_fold_decisions": [
+        {
+          "callsite": "C2+0x2ba97",
+          "addition_opcode": "0x16d",
+          "destination_operand_kind": 1,
+          "base_operand_kind": 1,
+          "destination_has_definition_link": true,
+          "destination_definition_is_addition": true,
+          "base_has_distinct_definition_link": true,
+          "destination_and_base_have_distinct_symbols": true,
+          "addend": 3
+        },
+        {
+          "callsite": "C2+0x2bac1",
+          "addition_opcode": "0x2d",
+          "destination_operand_kind": 1,
+          "base_operand_kind": 1,
+          "destination_has_definition_link": true,
+          "destination_definition_is_addition": true,
+          "base_has_distinct_definition_link": true,
+          "destination_and_base_have_distinct_symbols": true,
+          "addend": 3
         }
       ]
     }
