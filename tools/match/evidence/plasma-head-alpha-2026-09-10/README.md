@@ -58,7 +58,7 @@ Unicorn requires local JIT permission.
 
 ## Matching debt
 
-The native-correct literal change lowers the normalized score from
+At initial retention, the native-correct literal change lowered the normalized score from
 **58.200879% to 57.104195%**, changes **2893 to 2891** candidate instructions
 against **3021**, and changes aligned references from **452/0/12 to 444/0/14**.
 The two additional reported pairings are native camera Y versus candidate
@@ -83,3 +83,5 @@ The wrong-alpha control restores only the three defective alpha literals in
 that current source; its source hash therefore differs from the historical
 pre-alpha-fix source. The shared runner also exposes optional beam stubs and
 geometry inputs, which the plasma fixtures do not enable.
+
+The receipt is also refreshed after the [ion-chain product correction](../ion-chain-product-2026-09-10/README.md). Current renderer metrics are 57.427414%, 2903/3021 instructions, and 456/0/11 references; the preceding matching-debt discussion records the historical alpha correction. The plasma fixtures keep native creature search disabled and the perk stub at zero.

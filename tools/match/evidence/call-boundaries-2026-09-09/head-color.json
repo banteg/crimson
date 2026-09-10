@@ -3,10 +3,10 @@
   "verified": true,
   "limitations": "One straight-line call window: same saved alpha bits and RGB constants before and after a 32px quad, with resolved receiver loads. Assumes x86 thiscall callee-saved registers. Does not prove head position, upstream alpha derivation, full renderer behavior, or whole-function exactness.",
   "verifier_sha256": "8b8dd69ff02cd3d826601dd09bd43e08dece7e7f13b10df45fedaf40f34a619d",
-  "source_sha256": "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5",
+  "source_sha256": "45282781bf6a17603dba64ad58dbfddd925c391bfcc5c694c96bb85450d6472e",
   "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
-  "candidate_body_sha256": "89ba5782e23a3f05f9b26e64400df5363f995e93a102dd9d735f34864fe5a6b6",
-  "candidate_object_sha256": "3b3df3d285634cf5e755a95e359cbf052b22244140ac24091c7863ee6ce0446e",
+  "candidate_body_sha256": "ed25903ab7cb6d63ac70906dffdec329b0d6d085e0faf09792b074a6dcafb48d",
+  "candidate_object_sha256": "e3b03a00bda435023672f60c1f35d94ffb087ba2a446405709519adf07e878fb",
   "build_key": {
     "toolchain": {
       "compiler_trees": {
@@ -39,7 +39,7 @@
     "dependencies": [
       [
         "scratches/projectile_render/scratch.cpp",
-        "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5"
+        "45282781bf6a17603dba64ad58dbfddd925c391bfcc5c694c96bb85450d6472e"
       ],
       [
         "scratches/projectile_render/scratch.conf",
@@ -234,14 +234,14 @@
   },
   "candidate": {
     "call_addresses": [
-      7420,
-      7485,
-      7515
+      7417,
+      7482,
+      7512
     ],
     "call_offsets": [
-      7420,
-      7485,
-      7515
+      7417,
+      7482,
+      7512
     ],
     "alpha_register": "esi",
     "rgb_bits": [
@@ -255,132 +255,132 @@
     ],
     "receivers": [
       {
-        "load_offset": 7382,
-        "vtable_offset": 7388,
+        "load_offset": 7379,
+        "vtable_offset": 7385,
         "global": "0x0048083c"
       },
       {
-        "load_offset": 7435,
-        "vtable_offset": 7461,
+        "load_offset": 7432,
+        "vtable_offset": 7458,
         "global": "0x0048083c"
       },
       {
-        "load_offset": 7491,
-        "vtable_offset": 7508,
+        "load_offset": 7488,
+        "vtable_offset": 7505,
         "global": "0x0048083c"
       }
     ],
     "instructions": [
       {
-        "offset": 7404,
+        "offset": 7401,
         "text": "push esi"
       },
       {
-        "offset": 7405,
+        "offset": 7402,
         "text": "push 0x3f800000"
       },
       {
-        "offset": 7410,
+        "offset": 7407,
         "text": "push 0x3f19999a"
       },
       {
-        "offset": 7415,
+        "offset": 7412,
         "text": "push 0x3f000000"
       },
       {
-        "offset": 7420,
+        "offset": 7417,
         "text": "call dword [eax+0x114]"
       },
       {
-        "offset": 7426,
+        "offset": 7423,
         "text": "fld dword [ADDR]"
       },
       {
-        "offset": 7432,
+        "offset": 7429,
         "text": "fadd dword [edi+-0x14]"
       },
       {
-        "offset": 7435,
+        "offset": 7432,
         "text": "mov ecx, dword [ADDR]"
       },
       {
-        "offset": 7441,
+        "offset": 7438,
         "text": "push 0x42000000"
       },
       {
-        "offset": 7446,
+        "offset": 7443,
         "text": "push 0x42000000"
       },
       {
-        "offset": 7451,
+        "offset": 7448,
         "text": "push ecx"
       },
       {
-        "offset": 7452,
+        "offset": 7449,
         "text": "fsub dword [ADDR]"
       },
       {
-        "offset": 7458,
+        "offset": 7455,
         "text": "lea ebp, dword [edi+-0x18]"
       },
       {
-        "offset": 7461,
+        "offset": 7458,
         "text": "mov edx, dword [ecx]"
       },
       {
-        "offset": 7463,
+        "offset": 7460,
         "text": "fstp dword [esp]"
       },
       {
-        "offset": 7466,
+        "offset": 7463,
         "text": "fld dword [ADDR]"
       },
       {
-        "offset": 7472,
+        "offset": 7469,
         "text": "fadd dword [ebp]"
       },
       {
-        "offset": 7475,
+        "offset": 7472,
         "text": "push ecx"
       },
       {
-        "offset": 7476,
+        "offset": 7473,
         "text": "fsub dword [ADDR]"
       },
       {
-        "offset": 7482,
+        "offset": 7479,
         "text": "fstp dword [esp]"
       },
       {
-        "offset": 7485,
+        "offset": 7482,
         "text": "call dword [edx+0x11c]"
       },
       {
-        "offset": 7491,
+        "offset": 7488,
         "text": "mov ecx, dword [ADDR]"
       },
       {
-        "offset": 7497,
+        "offset": 7494,
         "text": "push esi"
       },
       {
-        "offset": 7498,
+        "offset": 7495,
         "text": "push 0x3f800000"
       },
       {
-        "offset": 7503,
+        "offset": 7500,
         "text": "push 0x3f19999a"
       },
       {
-        "offset": 7508,
+        "offset": 7505,
         "text": "mov eax, dword [ecx]"
       },
       {
-        "offset": 7510,
+        "offset": 7507,
         "text": "push 0x3f000000"
       },
       {
-        "offset": 7515,
+        "offset": 7512,
         "text": "call dword [eax+0x114]"
       }
     ]
@@ -388,113 +388,36 @@
   "negative_controls": [
     {
       "name": "removed-reset",
-      "source_sha256": "28ed3d690f19641c5688dda9c59ebe5910c5c2150a8cbf9d083fe579651508be",
+      "source_sha256": "908e8578427dfbf126a255bae1d003d35223e595e225b2b650476c287c3e5f38",
       "rejected": true
     },
     {
       "name": "changed-reset-rgb",
-      "source_sha256": "aaf65d9652cfe015ca9195c172de6ae5fc9e40d3c8f2f2e7a8d68ed16c27cf05",
+      "source_sha256": "798e76e6eeb77a3a177a39d3e48d151c59f4d7907eabdfd296971be7739b910a",
       "rejected": true
     },
     {
       "name": "changed-reset-alpha",
-      "source_sha256": "70b82a7b211298ba1c12e38a8b3f30a16800a6421f67f394df7ee47b2f840f4e",
+      "source_sha256": "fa837d50c5e3f6c479e2711773743e9d972cb894a044454ef28010ff2799c903",
       "rejected": true
     }
   ],
   "reset_counterfactual_reference_audit": {
-    "before_problems": 12,
-    "after_problems": 14,
+    "before_problems": 11,
+    "after_problems": 11,
     "previous_problem_identities_preserved": true,
-    "added_pairings": [
-      {
-        "target_index": 2003,
-        "candidate_index": 1992,
-        "target_offset": 8193,
-        "candidate_offset": 8151,
-        "target_address": 4344945,
-        "candidate_address": 8151,
-        "instruction": "fmul dword [ADDR]",
-        "target_references": [
-          {
-            "operand_index": 0,
-            "kind": "disp",
-            "source": "image",
-            "value": 4649568,
-            "text": "0x0046f260",
-            "keys": [
-              "address:0x0046f260",
-              "local:+0x4c5f0",
-              "bytes4:00002041"
-            ],
-            "explained": true
-          }
-        ],
-        "candidate_references": [
-          {
-            "operand_index": 0,
-            "kind": "disp",
-            "source": "reloc",
-            "value": null,
-            "text": "__real@4@40018000000000000000",
-            "keys": [
-              "bytes4:00008040"
-            ],
-            "explained": true
-          }
-        ],
-        "status": "mismatch"
-      },
-      {
-        "target_index": 2005,
-        "candidate_index": 1994,
-        "target_offset": 8206,
-        "candidate_offset": 8164,
-        "target_address": 4344958,
-        "candidate_address": 8164,
-        "instruction": "fmul dword [ADDR]",
-        "target_references": [
-          {
-            "operand_index": 0,
-            "kind": "disp",
-            "source": "image",
-            "value": 4649568,
-            "text": "0x0046f260",
-            "keys": [
-              "address:0x0046f260",
-              "local:+0x4c5f0",
-              "bytes4:00002041"
-            ],
-            "explained": true
-          }
-        ],
-        "candidate_references": [
-          {
-            "operand_index": 0,
-            "kind": "disp",
-            "source": "reloc",
-            "value": null,
-            "text": "__real@4@40018000000000000000",
-            "keys": [
-              "bytes4:00008040"
-            ],
-            "explained": true
-          }
-        ],
-        "status": "mismatch"
-      }
-    ],
+    "added_pairings": [],
     "removed_pairings": []
   },
   "match": {
-    "ratio": 0.571041948579161,
+    "ratio": 0.574274139095206,
     "instructions": [
       3021,
-      2891
+      2903
     ],
     "references": {
-      "ok": 444,
-      "problems": 14
+      "ok": 456,
+      "problems": 11
     },
     "exact": false,
     "body_byte_exact": false

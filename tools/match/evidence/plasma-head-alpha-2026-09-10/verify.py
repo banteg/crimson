@@ -126,6 +126,9 @@ def run(
     position=(111.25, 208.5),
     origin=(50.125, 91.75),
     beam_stubs=False,
+    native_creature_search=False,
+    creature_rows=(),
+    perk_count=0,
 ):
     slots = {STUB + (slot // 4) * 16: value for slot, value in SLOTS.items()}
     effect = p.address("effect_select_texture")
@@ -134,6 +137,21 @@ def run(
     find = p.address("creature_find_in_radius")
     ftol_start = p.address("crt_ftol")
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    find_pcs, find_returns = set(), set()
+    find_data = b""
+    if native_creature_search:
+        assert beam_stubs
+        _, find_start, find_end = match.resolve_function(
+            match.load_function_manifest(scope="all"),
+            "creature_find_in_radius",
+        )
+        assert find_start == find
+        find_data = p.image.function_bytes(find_start, find_end)
+        for instruction in md.disasm(find_data, find_start):
+            find_pcs.add(instruction.address)
+            if instruction.mnemonic == "ret":
+                find_returns.add(instruction.address)
+        assert len(find_returns) == 2
     ftol_pcs = set()
     for ins in md.disasm(
         p.image.mapped[ftol_start - p.image.image_base : ftol_start - p.image.image_base + 128],
@@ -171,6 +189,17 @@ def run(
     mu.mem_write(p.address("secondary_projectile_pool"), bytes(0x2C * 64))
     mu.mem_write(p.address("camera_offset"), struct.pack("<ff", 13.125, -21.75))
     w("quest_spawn_timeline", 1234)
+    if native_creature_search:
+        mu.mem_write(p.address("creature_pool"), bytes(0x98 * 384))
+        indices = set()
+        for index, x, y, active, lifecycle, size in creature_rows:
+            assert 0 <= index < 384 and index not in indices
+            indices.add(index)
+            creature = bytearray(0x98)
+            creature[0] = active
+            struct.pack_into("<3f", creature, 0x10, lifecycle, x, y)
+            struct.pack_into("<f", creature, 0x34, size)
+            mu.mem_write(p.address("creature_pool") + 0x98 * index, bytes(creature))
     if type_id is not None:
         b = bytearray(0x40)
         b[0] = 1
@@ -194,12 +223,19 @@ def run(
     coverage = set()
     call_sites = []
     writes = []
+    search_results = []
+    search_coverage = set()
     start = p.native_start if native else p.candidate_start
     expected = {start + i.offset for i in (p.result.target_disassembly if native else p.result.candidate_disassembly)}
 
     def hook(uc, a, size, data):
         if a in expected:
             coverage.add(a)
+            return
+        if a in find_pcs and a != find:
+            search_coverage.add(a)
+            if a in find_returns:
+                search_results.append(uc.reg_read(x86.UC_X86_REG_EAX))
             return
         if a in ftol_pcs:
             return
@@ -238,6 +274,9 @@ def run(
             assert p.address("projectile_pool") <= pos <= p.address("projectile_pool") + 0x40 * 96 - 8
             calls.append(["creature_find_in_radius", [*struct.unpack("<2I", uc.mem_read(pos, 8)), radius, index]])
             call_sites.append(ret)
+            if native_creature_search:
+                search_coverage.add(a)
+                return
             uc.reg_write(x86.UC_X86_REG_EAX, 0xFFFFFFFF)
             uc.reg_write(x86.UC_X86_REG_ECX, 0xDEAD1000)
             uc.reg_write(x86.UC_X86_REG_EDX, 0xDEAD2000)
@@ -255,7 +294,7 @@ def run(
             ret = struct.unpack("<I", uc.mem_read(e, 4))[0]
             uc.reg_write(x86.UC_X86_REG_ESP, e + 4)
             uc.reg_write(x86.UC_X86_REG_EIP, ret)
-            uc.reg_write(x86.UC_X86_REG_EAX, 0)
+            uc.reg_write(x86.UC_X86_REG_EAX, perk_count if a == perk else 0)
             return
         raise AssertionError(("unhandled", hex(a), hex(e)))
 
@@ -285,6 +324,10 @@ def run(
         "state_sha256": sha(state),
         "coverage": len(coverage),
         "ftol_sha256": sha(ftol_data),
+        "creature_state_sha256": sha(bytes(mu.mem_read(p.address("creature_pool"), 0x98 * 384))),
+        "search_results": search_results,
+        "search_instructions_exercised": len(search_coverage),
+        "native_search_sha256": sha(find_data) if find_data else None,
     }
 
 
@@ -371,7 +414,7 @@ def main():
         )
     result = current.result
     assert not result.exact and not result.body_byte_exact
-    assert sha(defect_source.encode()) == "2fe754773dd7ba2df528d4cbecf6806897fbf7d8ee7993816bd19dd3266ae459"
+    assert sha(defect_source.encode()) == "3ca787a3df8518128c1dd02158471d97a2bd292b9d7b075ecddea72a8c17a8d2"
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     md.detail = True
     multiply = next(md.disasm(current.image.function_bytes(0x422C9D, 0x422CA3), 0x422C9D))

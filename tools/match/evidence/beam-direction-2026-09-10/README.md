@@ -41,8 +41,12 @@ checks the normalization input bits against head minus origin. Stack balance,
 callee-saved registers, allowed execution addresses, and absence of non-stack
 writes are checked. Three separately compiled defects restore the reversed
 direction, the wrong anchor, or both; all **24** type/lifetime negative cases
-are rejected. The combined defect recreates the preceding source exactly,
+are rejected. At initial retention, the combined defect recreated the preceding source
 SHA-256 `9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6`.
+The refreshed receipt restores those same direction/anchor defects in the
+current source while preserving the subsequent ion-chain expression fix.
+Its `previous` control label refers to these restored expressions; its
+recorded source hash differs from that historical full source.
 
 These are caller-boundary fixtures. Grim methods record calls; texture
 selection is a no-op and the perk count is zero. Normalization records input
@@ -66,7 +70,10 @@ key, relocations, fixtures, negative controls, and example call traces.
 
 ## Matching status
 
-The correction leaves **57.104195%**, **2891/3021 instructions**, and
-**444/0/14 references** unchanged. Both exactness flags remain false; no
-additional exception or matching credit is introduced. Unchanged aggregate
-metrics do not establish semantic equality, as these fixtures demonstrate.
+At initial retention, the beam correction left **57.104195%**,
+**2891/3021 instructions**, and **444/0/14 references** unchanged. The current
+receipt follows the independent [ion-chain product correction](../ion-chain-product-2026-09-10/README.md),
+which improves those figures to **57.427414%**, **2903/3021**, and **456/0/11**.
+The direction/anchor controls remain metric-neutral within this current
+source. Both exactness flags remain false. Aggregate metrics alone do not
+establish semantic equality, as these fixtures demonstrate.

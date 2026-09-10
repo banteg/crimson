@@ -1257,3 +1257,23 @@ This source recovery leaves the matching metrics unchanged at 57.104195%,
 2891/3021 instructions, and 444/0/14 references. Both exactness flags remain
 false. The plasma/head-color and static call-boundary receipts are refreshed
 against this source; no new reference waiver is required.
+
+## Ion-chain x87 product lifetime (2026-09-10)
+
+Native creature-search execution exposed a one-bit X-coordinate difference
+for the first Ion Cannon chain arc. Sharing `side = arc * effect_scale`
+rounded the X product early. Evaluating `arc * effect_scale * 10.0f` at each
+corner retains the native x87 lifetime. The native instruction window and an
+independent arithmetic oracle distinguish `0x42ba23dd` from the preceding
+`0x42ba23de` result.
+
+The [ion-chain evidence](../../evidence/ion-chain-product-2026-09-10/README.md)
+verifies 384 fixtures with real native creature search, selected-index and
+quad-count oracles, and six compiled defect controls. Normalization remains
+an explicit external-call model. Other source controls that preserved the
+rounding error or regressed alignment are not retained.
+
+Alignment improves from 57.104195% to 57.427414%, instructions from 2891 to
+2903 against 3021, and references from 444/0/14 to 456/0/11. Both exactness
+flags remain false. Supporting caller-boundary receipts are refreshed;
+there is no new reference regression or exception.

@@ -142,8 +142,8 @@
     },
     {
       "function": "projectile_render",
-      "source_sha256": "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5",
-      "candidate_body_sha256": "89ba5782e23a3f05f9b26e64400df5363f995e93a102dd9d735f34864fe5a6b6",
+      "source_sha256": "45282781bf6a17603dba64ad58dbfddd925c391bfcc5c694c96bb85450d6472e",
+      "candidate_body_sha256": "ed25903ab7cb6d63ac70906dffdec329b0d6d085e0faf09792b074a6dcafb48d",
       "native_calls": 180,
       "candidate_calls": 180,
       "linear_call_keys_equal": false,
