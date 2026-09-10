@@ -62,7 +62,7 @@ def main():
             "counts": [dict(sorted(count.items())) for count in counts],
         }
         if name == "projectile_render":
-            # Three consecutive native calls bracket the missing color publication.
+            # Three consecutive native calls bracket the recovered color publication.
             native_window = [
                 instruction for instruction in result.target_disassembly if 0x424AAE <= instruction.address <= 0x424B11
             ]
@@ -83,14 +83,14 @@ def main():
             begin = source.index("            float head_alpha = fade * transition_alpha;")
             end = source.index("            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS)", begin)
             window = source[begin:end]
-            assert window.count("grim_set_color(") == window.count("grim_draw_quad(") == 1
-            row["candidate_head_color_calls"] = 1
+            assert window.count("grim_set_color(") == 2 and window.count("grim_draw_quad(") == 1
+            row["candidate_head_color_calls"] = 2
             row["native_head_color_calls"] = 2
         rows.append(row)
     assert rows[0]["candidate_only_counts"] == {"address:0x0041fbb0": 1}
     assert not rows[0]["native_only_counts"]
     assert rows[1]["linear_call_keys_equal"] and rows[1]["native_calls"] == 125
-    assert rows[2]["native_only_counts"] == {"call dword [REG+0x114]": 2}
+    assert rows[2]["native_only_counts"] == {"call dword [REG+0x114]": 1}
     assert not rows[2]["candidate_only_counts"]
     callees = []
     for name in ("grim_set_color", "grim_draw_quad", "grim_begin_batch", "grim_flush_batch"):

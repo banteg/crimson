@@ -8,43 +8,58 @@ This inventory is not a dynamic trace or a semantic-equivalence proof.
 | --- | ---: | ---: | --- |
 | `projectile_update` | 125 | 125 | Every direct call identity agrees in linear instruction order. Arguments and paths still require separate evidence. |
 | `player_update` | 182 | 183 | One extra `fx_spawn_sprite`; no missing callee. Native shares the second Shrinkifier/Pistol smoke tail. |
-| `projectile_render` | 180 | 178 | Two fewer color-call sites in aggregate. Branch merging contributes; a specific native head-color reset is also absent from source. |
+| `projectile_render` | 180 | 179 | The native post-head color reset is restored. One fewer color-call site remains in aggregate; call counts alone do not locate a missing operation. |
 
 Direct call keys use resolved native addresses, not printed analyzer names.
 Indirect keys preserve displacement while masking only the register name; they
 are operand shapes, not proof of receiver or vtable identity. The full count
 tables and native head-call window are in `comparison.json`.
 
-## Renderer: omitted post-head color reset
+## Renderer: recovered post-head color reset
 
 Native executes `grim_set_color` at `0x00424aae`, `grim_draw_quad` at
 `0x00424af3`, and the same color publication again at `0x00424b11`. The latter
 pushes the saved head alpha from EDI, then 1.0, 0.6, and 0.5, through vtable
-offset `0x114`. Only then does it test projectile type and query arc targets.
-The current fading-ion source has the first color call and head draw, followed
-directly by the type gate. The second color call is absent.
+offset `0x114`. The source now includes that second publication before the
+projectile-type gate and arc processing.
 
-This is a native-operation recovery gap, not evidence of a visible rendering
-bug. The exact, encoded-body-verified Grim implementations show that set-color
+[`verify_head_color.py`](verify_head_color.py) checks the unique straight-line
+window in both machine bodies. It verifies identical RGB bits and the same
+callee-saved alpha register across the two publications, the 32px quad size,
+resolved Grim receiver loads, and the absence of intervening register writes
+or branch entries. The [receipt](head-color.json) records the source, verifier,
+image, object, body, and build identities. Removing the reset, changing its
+RGB, and changing its alpha each compile and are rejected by the verifier.
+This is local operation proof; head position, upstream alpha computation,
+whole-renderer behavior, and full-function exactness remain outside it.
+
+The exact, encoded-body-verified Grim implementations show that set-color
 publishes all four color slots, while draw-quad consumes those slots without
 changing them. Its begin/flush helpers also do not reset those slots. Under the
 shipped renderer's ordinary synchronous operation, the second publication
-therefore appears redundant. No port gameplay/render change is justified by
-this finding alone.
+therefore appears redundant. No changed pixels or port rendering correction
+are established by this evidence.
 
-The complete 3-control head-call/type-reload family, 17-control live/fading
-alpha interaction family, and 4-control head-alpha ownership family all compile.
-Restoring the call adds eight instructions but moves stack homes throughout the
-function: 59.194040% becomes 58.200879%, with references 456/0/10 becoming
-452/0/12. Const-reference, repeated-expression, and existing-life ownership tie
-that result; reusing fade is worse. Branch-local and call-expression loop alpha
-controls recover separate static calls but do not improve the whole candidate.
-No source or alias change is retained. These 24 controls do not establish that
-the native call cannot be recovered without regression.
+The correction restores eight instructions but moves stack homes throughout
+the function: **59.194040% becomes 58.200879%**, **2885 becomes 2893** of 3021
+instructions, and references **456/0/10 become 452/0/12**. Both normalized and
+encoded-body exactness remain false. The two added reference mismatches pair
+native 10.0 strip multipliers at `0x00424c71`/`0x00424c7e` with candidate 4.0
+widening multipliers; the existing ten mismatches persist. The source retains
+both widths and the matcher continues to report the disagreements.
 
-The scratch is marked incomplete with an analysis residual because a known
-native operation is absent. Compiler-only source recovery is no longer an
-adequate description, even though no changed pixels have been demonstrated.
+The regression gate rejects the mismatch increase without an exception.
+[`regression-waivers.json`](../../regression-waivers.json) permits only this
+correction against base `2657152300ddeb5e00baffbdd8ec23a7e01497c1`. It changes
+neither reference resolution nor exact-match acceptance. The known native
+operation is retained despite the lower fuzzy score; `RECOVERY=incomplete`
+and the analysis/compiler/reference residuals remain.
+
+The earlier 24 head-call/alpha controls and the further 99 combinations of
+side/start/end strip-copy boundaries do not remove the regression. Four
+initial combinations redeclared `width`; renaming the end-strip local made
+all 99 compile, with at least 11 mismatches each. No strip variant is retained.
+These finite controls bound the tested source forms, not future recovery.
 
 ## Player and projectile update boundaries
 
@@ -73,6 +88,9 @@ contract. No helper signature or global vector layout is changed.
 UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
   tools/match/evidence/call-boundaries-2026-09-09/verify.py \
   --out /private/tmp/crimson-call-boundaries
+UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
+  tools/match/evidence/call-boundaries-2026-09-09/verify_head_color.py \
+  --out /private/tmp/crimson-head-color
 ```
 
 This checks the current source and bodies, verifies the native call window,

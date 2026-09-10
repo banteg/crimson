@@ -1,0 +1,501 @@
+{
+  "schema": 1,
+  "verified": true,
+  "limitations": "One straight-line call window: same saved alpha bits and RGB constants before and after a 32px quad, with resolved receiver loads. Assumes x86 thiscall callee-saved registers. Does not prove head position, upstream alpha derivation, full renderer behavior, or whole-function exactness.",
+  "verifier_sha256": "e0774965a7bbf9d5d61f20a6b288b1f262cfb6d80e286042cc5ae72d3e45a84e",
+  "source_sha256": "6dca4a01d049d243dc72dc1fc15faa7146134e7cb9f36f347cfba4a22af64e84",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "candidate_body_sha256": "24cb9525b2c4520e347a32d288e85c66b669f9ec714aaec824c174cbd50f056c",
+  "candidate_object_sha256": "be78c37a023e926982032fcdcfa3a1ba693967422b8497bdb1bfaee3ec97fb37",
+  "build_key": {
+    "toolchain": {
+      "compiler_trees": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      },
+      "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+      "runner_mode": 493,
+      "cl_environment": {
+        "CL": null,
+        "_CL_": null
+      }
+    },
+    "pipeline_sha256": [
+      "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
+      "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+      "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+    ],
+    "compiler": "msvc6.5",
+    "argv": [
+      "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+      "/c",
+      "/O2",
+      "/GB",
+      "/W3",
+      "/GR-",
+      "scratch.cpp"
+    ],
+    "auto_inline_off": [],
+    "dependencies": [
+      [
+        "scratches/projectile_render/scratch.cpp",
+        "6dca4a01d049d243dc72dc1fc15faa7146134e7cb9f36f347cfba4a22af64e84"
+      ],
+      [
+        "scratches/projectile_render/scratch.conf",
+        "7bf670e79b086f5c8fad928b08be7720639d131b14e6a006a5ac67ad3d09f660"
+      ],
+      [
+        "cl.sh",
+        "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+      ],
+      [
+        "compilers/msvc6.5/Bin/CL.EXE",
+        "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+      ],
+      [
+        "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+        "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+      ],
+      [
+        "include/crimsonland_console.h",
+        "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+      ],
+      [
+        "include/crimsonland_gameplay.h",
+        "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+      ],
+      [
+        "include/crimsonland_textures_owner.h",
+        "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5"
+      ],
+      [
+        "include/grim2d_cpp.h",
+        "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+      ]
+    ]
+  },
+  "native": {
+    "call_addresses": [
+      4344494,
+      4344563,
+      4344593
+    ],
+    "call_offsets": [
+      7742,
+      7811,
+      7841
+    ],
+    "alpha_register": "edi",
+    "rgb_bits": [
+      "3f000000",
+      "3f19999a",
+      "3f800000"
+    ],
+    "quad_size_bits": [
+      "42000000",
+      "42000000"
+    ],
+    "receivers": [
+      {
+        "load_offset": 7710,
+        "vtable_offset": 7716,
+        "global": "0x0048083c"
+      },
+      {
+        "load_offset": 7752,
+        "vtable_offset": 7787,
+        "global": "0x0048083c"
+      },
+      {
+        "load_offset": 7817,
+        "vtable_offset": 7834,
+        "global": "0x0048083c"
+      }
+    ],
+    "instructions": [
+      {
+        "offset": 7726,
+        "text": "push edi"
+      },
+      {
+        "offset": 7727,
+        "text": "push 0x3f800000"
+      },
+      {
+        "offset": 7732,
+        "text": "push 0x3f19999a"
+      },
+      {
+        "offset": 7737,
+        "text": "push 0x3f000000"
+      },
+      {
+        "offset": 7742,
+        "text": "call dword [eax+0x114]"
+      },
+      {
+        "offset": 7748,
+        "text": "mov esi, dword [esp+0x38]"
+      },
+      {
+        "offset": 7752,
+        "text": "mov ecx, dword [ADDR]"
+      },
+      {
+        "offset": 7758,
+        "text": "fld dword [ADDR]"
+      },
+      {
+        "offset": 7764,
+        "text": "fadd dword [esi+0xc]"
+      },
+      {
+        "offset": 7767,
+        "text": "push 0x42000000"
+      },
+      {
+        "offset": 7772,
+        "text": "push 0x42000000"
+      },
+      {
+        "offset": 7777,
+        "text": "push ecx"
+      },
+      {
+        "offset": 7778,
+        "text": "lea ebp, dword [esi+0x8]"
+      },
+      {
+        "offset": 7781,
+        "text": "fsub dword [ADDR]"
+      },
+      {
+        "offset": 7787,
+        "text": "mov edx, dword [ecx]"
+      },
+      {
+        "offset": 7789,
+        "text": "fstp dword [esp]"
+      },
+      {
+        "offset": 7792,
+        "text": "fld dword [ADDR]"
+      },
+      {
+        "offset": 7798,
+        "text": "fadd dword [ebp]"
+      },
+      {
+        "offset": 7801,
+        "text": "push ecx"
+      },
+      {
+        "offset": 7802,
+        "text": "fsub dword [ADDR]"
+      },
+      {
+        "offset": 7808,
+        "text": "fstp dword [esp]"
+      },
+      {
+        "offset": 7811,
+        "text": "call dword [edx+0x11c]"
+      },
+      {
+        "offset": 7817,
+        "text": "mov ecx, dword [ADDR]"
+      },
+      {
+        "offset": 7823,
+        "text": "push edi"
+      },
+      {
+        "offset": 7824,
+        "text": "push 0x3f800000"
+      },
+      {
+        "offset": 7829,
+        "text": "push 0x3f19999a"
+      },
+      {
+        "offset": 7834,
+        "text": "mov eax, dword [ecx]"
+      },
+      {
+        "offset": 7836,
+        "text": "push 0x3f000000"
+      },
+      {
+        "offset": 7841,
+        "text": "call dword [eax+0x114]"
+      }
+    ]
+  },
+  "candidate": {
+    "call_addresses": [
+      7434,
+      7499,
+      7529
+    ],
+    "call_offsets": [
+      7434,
+      7499,
+      7529
+    ],
+    "alpha_register": "esi",
+    "rgb_bits": [
+      "3f000000",
+      "3f19999a",
+      "3f800000"
+    ],
+    "quad_size_bits": [
+      "42000000",
+      "42000000"
+    ],
+    "receivers": [
+      {
+        "load_offset": 7396,
+        "vtable_offset": 7402,
+        "global": "0x0048083c"
+      },
+      {
+        "load_offset": 7449,
+        "vtable_offset": 7475,
+        "global": "0x0048083c"
+      },
+      {
+        "load_offset": 7505,
+        "vtable_offset": 7522,
+        "global": "0x0048083c"
+      }
+    ],
+    "instructions": [
+      {
+        "offset": 7418,
+        "text": "push esi"
+      },
+      {
+        "offset": 7419,
+        "text": "push 0x3f800000"
+      },
+      {
+        "offset": 7424,
+        "text": "push 0x3f19999a"
+      },
+      {
+        "offset": 7429,
+        "text": "push 0x3f000000"
+      },
+      {
+        "offset": 7434,
+        "text": "call dword [eax+0x114]"
+      },
+      {
+        "offset": 7440,
+        "text": "fld dword [ADDR]"
+      },
+      {
+        "offset": 7446,
+        "text": "fadd dword [edi+-0x14]"
+      },
+      {
+        "offset": 7449,
+        "text": "mov ecx, dword [ADDR]"
+      },
+      {
+        "offset": 7455,
+        "text": "push 0x42000000"
+      },
+      {
+        "offset": 7460,
+        "text": "push 0x42000000"
+      },
+      {
+        "offset": 7465,
+        "text": "push ecx"
+      },
+      {
+        "offset": 7466,
+        "text": "fsub dword [ADDR]"
+      },
+      {
+        "offset": 7472,
+        "text": "lea ebp, dword [edi+-0x18]"
+      },
+      {
+        "offset": 7475,
+        "text": "mov edx, dword [ecx]"
+      },
+      {
+        "offset": 7477,
+        "text": "fstp dword [esp]"
+      },
+      {
+        "offset": 7480,
+        "text": "fld dword [ADDR]"
+      },
+      {
+        "offset": 7486,
+        "text": "fadd dword [ebp]"
+      },
+      {
+        "offset": 7489,
+        "text": "push ecx"
+      },
+      {
+        "offset": 7490,
+        "text": "fsub dword [ADDR]"
+      },
+      {
+        "offset": 7496,
+        "text": "fstp dword [esp]"
+      },
+      {
+        "offset": 7499,
+        "text": "call dword [edx+0x11c]"
+      },
+      {
+        "offset": 7505,
+        "text": "mov ecx, dword [ADDR]"
+      },
+      {
+        "offset": 7511,
+        "text": "push esi"
+      },
+      {
+        "offset": 7512,
+        "text": "push 0x3f800000"
+      },
+      {
+        "offset": 7517,
+        "text": "push 0x3f19999a"
+      },
+      {
+        "offset": 7522,
+        "text": "mov eax, dword [ecx]"
+      },
+      {
+        "offset": 7524,
+        "text": "push 0x3f000000"
+      },
+      {
+        "offset": 7529,
+        "text": "call dword [eax+0x114]"
+      }
+    ]
+  },
+  "negative_controls": [
+    {
+      "name": "removed-reset",
+      "source_sha256": "5043ceab80ce808557be531c16785e585fcd0681974a6d73fdae8f0088bcbc3e",
+      "rejected": true
+    },
+    {
+      "name": "changed-reset-rgb",
+      "source_sha256": "d591e4945e9d86a0201ea035f45360f3c29136ae8d92b90109871b587cca72ed",
+      "rejected": true
+    },
+    {
+      "name": "changed-reset-alpha",
+      "source_sha256": "433a37965b8f4ded126951cf7d97a2b557695c3a852117cac73ac39b9b2da56e",
+      "rejected": true
+    }
+  ],
+  "reference_regression": {
+    "before_problems": 10,
+    "after_problems": 12,
+    "previous_problem_identities_preserved": true,
+    "added_pairings": [
+      {
+        "target_index": 2003,
+        "candidate_index": 1994,
+        "target_offset": 8193,
+        "candidate_offset": 8159,
+        "target_address": 4344945,
+        "candidate_address": 8159,
+        "instruction": "fmul dword [ADDR]",
+        "target_references": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4649568,
+            "text": "0x0046f260",
+            "keys": [
+              "address:0x0046f260",
+              "local:+0x4c5f0",
+              "bytes4:00002041"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate_references": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "__real@4@40018000000000000000",
+            "keys": [
+              "bytes4:00008040"
+            ],
+            "explained": true
+          }
+        ],
+        "status": "mismatch"
+      },
+      {
+        "target_index": 2005,
+        "candidate_index": 1996,
+        "target_offset": 8206,
+        "candidate_offset": 8172,
+        "target_address": 4344958,
+        "candidate_address": 8172,
+        "instruction": "fmul dword [ADDR]",
+        "target_references": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "image",
+            "value": 4649568,
+            "text": "0x0046f260",
+            "keys": [
+              "address:0x0046f260",
+              "local:+0x4c5f0",
+              "bytes4:00002041"
+            ],
+            "explained": true
+          }
+        ],
+        "candidate_references": [
+          {
+            "operand_index": 0,
+            "kind": "disp",
+            "source": "reloc",
+            "value": null,
+            "text": "__real@4@40018000000000000000",
+            "keys": [
+              "bytes4:00008040"
+            ],
+            "explained": true
+          }
+        ],
+        "status": "mismatch"
+      }
+    ]
+  },
+  "match": {
+    "ratio": 0.5820087926952993,
+    "instructions": [
+      3021,
+      2893
+    ],
+    "references": {
+      "ok": 452,
+      "problems": 12
+    },
+    "exact": false,
+    "body_byte_exact": false
+  }
+}

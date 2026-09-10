@@ -865,6 +865,8 @@ extern "C" void projectile_render(float transition_alpha)
                 camera_offset_y + projectile->pos.pos_y - 16.0f,
                 32.0f,
                 32.0f);
+            grim_interface_ptr->grim_set_color(
+                0.5f, 0.6f, 1.0f, head_alpha);
 
             if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
                 float radius = effect_scale * ion_scale * 40.0f;

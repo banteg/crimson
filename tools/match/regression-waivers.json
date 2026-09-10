@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "base_commit": "2657152300ddeb5e00baffbdd8ec23a7e01497c1",
+  "waivers": [
+    {
+      "image": "crimsonland.exe",
+      "address": 4336752,
+      "check": "mismatches-increased",
+      "reason": "Restore the native post-head grim_set_color call at 0x00424b11, verified by tools/match/evidence/call-boundaries-2026-09-09/verify_head_color.py and head-color.json. The current WIP layout changes positional reference mismatches from 10 to 12; both additional pairings compare native 10.0 strip multipliers at 0x00424c71/0x00424c7e against candidate 4.0 widening multipliers. All 12 remain reported; no alias, exactness, or encoded-body acceptance is relaxed. This exception applies only to this native-operation correction against the named baseline."
+    }
+  ]
+}
