@@ -1,3 +1,4 @@
+#include <string.h>
 #include "crimsonland_gameplay.h"
 
 extern "C" float cos(float angle);
@@ -26,6 +27,7 @@ extern "C" int projectile_spawn(
             )
         ) {
             type_id = PROJECTILE_TYPE_FIRE_BULLETS;
+            default_damage = 1.0f;
         }
     }
 
@@ -58,12 +60,12 @@ initialize:
 
     if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
         spawned->fields.hit_radius = 3.0f;
-        spawned->fields.damage_pool = default_damage;
+        memcpy(&spawned->fields.damage_pool, &default_damage, sizeof(default_damage));
         return result;
     }
     if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
         spawned->fields.hit_radius = 5.0f;
-        spawned->fields.damage_pool = default_damage;
+        memcpy(&spawned->fields.damage_pool, &default_damage, sizeof(default_damage));
         return result;
     }
     if (type_id == PROJECTILE_TYPE_ION_CANNON || type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
@@ -83,6 +85,6 @@ initialize:
             return result;
         }
     }
-    spawned->fields.damage_pool = default_damage;
+    memcpy(&spawned->fields.damage_pool, &default_damage, sizeof(default_damage));
     return result;
 }

@@ -6,11 +6,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**796/810** functions matched exactly (**98.3%**), **260391/341992** code bytes (**76.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**796/810** functions matched exactly (**98.3%**), **239502/341992** code bytes (**70.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **320311/341992** code bytes (**93.7%**).
+Fuzzy-weighted alignment is **316534/341992** code bytes (**92.6%**).
 
-Remaining exact-match debt is **14 functions**, **81601 code bytes**, and **21681 fuzzy-gap bytes**.
+Remaining exact-match debt is **14 functions**, **102490 code bytes**, and **25458 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**14** non-exact scratch-backed functions hold **21681 fuzzy-gap bytes**. The top 5 hold **84.0%** of that gap; the top 10 hold **98.9%**.
+**14** non-exact scratch-backed functions hold **25458 fuzzy-gap bytes**. The top 5 hold **80.1%** of that gap; the top 10 hold **99.0%**.
 
-Current-baseline experiments cover **1 functions / 574 gap bytes**; **14 / 24997** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 574 gap bytes**; **13 / 24884** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -49,10 +49,9 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 10 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 11 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 12 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 13 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 14 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 15 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 12 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 13 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
+| 14 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -122,12 +121,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 657/671 | 239226/320827 | 74.6% | 299146/320827 | 93.2% | 671/671 | 320827/320827 | 100.0% | 657/671 |
+| crimsonland.exe | 657/671 | 218337/320827 | 68.1% | 295369/320827 | 92.1% | 671/671 | 320827/320827 | 100.0% | 657/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**657/671** functions (**97.9%**), **239226/320827** bytes (**74.6%**), **299146/320827** fuzzy-weighted bytes (**93.2%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **657/671** scratches verified.
+**657/671** functions (**97.9%**), **218337/320827** bytes (**68.1%**), **295369/320827** fuzzy-weighted bytes (**92.1%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **657/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -465,7 +464,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | fx_spawn_particle | 0x00420130 | 264 | 264/264 | 0 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 274/274 | 0 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_secondary_projectile | 0x00420360 | 218 | 218/218 | 0 | 65/65 | 100.00% | 65/65 | 13/0/0 |  | gameplay-secondary-projectile |
-| wip | projectile_spawn | 0x00420440 | 400 | 287/400 | 113 | 114/126 | 71.67% | 0/126 | 13/0/0 |  | gameplay-projectile |
+| match | projectile_spawn | 0x00420440 | 400 | 400/400 | 0 | 126/126 | 100.00% | 126/126 | 13/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 37/37 | 0 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
 | match | creatures_apply_radius_damage | 0x00420600 | 159 | 159/159 | 0 | 57/57 | 100.00% | 57/57 | 6/0/0 |  | gameplay-radius-damage |
 | match | creature_find_in_radius | 0x004206a0 | 133 | 133/133 | 0 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |

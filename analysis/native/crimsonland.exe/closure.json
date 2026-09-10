@@ -1,5 +1,5 @@
 {
-  "audit_digest": "73bd030d17ac14154db85f003c7d63a56106903d3fa4928921d70d2f09a57dd9",
+  "audit_digest": "efd491c1b5b06143b2a2fef1e734382bbd8b7cc3fd1a414f394b911af322f45e",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -103522,7 +103522,7 @@
           "comdat_selection": 1,
           "function": "projectile_spawn",
           "kind": "section",
-          "logical_section_size": 368,
+          "logical_section_size": 400,
           "object": "tools/match/scratches/projectile_spawn/build/msvc6.5/d4b825096a2efeab/scratch.obj",
           "section": ".text",
           "size": null,
@@ -151731,7 +151731,7 @@
           "comdat_selection": 1,
           "function": "projectile_spawn",
           "kind": "section",
-          "logical_section_size": 368,
+          "logical_section_size": 400,
           "object": "tools/match/scratches/projectile_spawn/build/msvc6.5/d4b825096a2efeab/scratch.obj",
           "section": ".text",
           "size": null,

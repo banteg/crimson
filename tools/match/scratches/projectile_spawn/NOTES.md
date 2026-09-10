@@ -1,6 +1,45 @@
 # `projectile_spawn`
 
-The current MSVC 6.5 `/O2 /GB` candidate recovers the full projectile
+## Exact default-damage value lifetime (2026-09-10)
+
+The current unmodified MSVC 6.5 `/O2 /GB` build matches **126/126** native
+instructions, including the full prefix, with **13/0/0** positional references
+and relocation-aware **`body_byte_exact=true`**.
+
+Two source boundaries restore the native default-damage lifetime. The Fire
+Bullets backedge assigns the replacement type and then resets the local to
+`1.0f`, matching the native stores at `0x004204a1` and `0x004204a6`. The three
+default-damage publications copy that float's representation with ordinary
+`memcpy`, matching native's integer loads and stores of the local value. These
+copies consume the value; there is no unused address escape, volatile object,
+invented alias, inline assembly, or compiler-state modification. This is a
+reconstruction of the observed value copies, not a claim that the unavailable
+original source used the same library spelling.
+
+The two changes matter together. Four complete controls are recorded in
+[`default-damage-copy-reset-2026-09-10.json`](default-damage-copy-reset-2026-09-10.json)
+and the experiment ledger:
+
+| Source boundary | Match | Instructions | Exact prefix | Encoded body |
+| --- | ---: | ---: | ---: | --- |
+| Value copies alone | 88.446215% | 125/126 | 7 | No |
+| Backedge reset alone | 69.918699% | 120/126 | 0 | No |
+| Copies, reset before type override | 99.206349% | 126/126 | 30 | No |
+| Copies, reset after type override | 100% | 126/126 | 126 | Yes |
+
+All four controls compile with 13 clean references. The reset-before control
+retains the opposite order of the two native backedge stores. The accepted
+source SHA-256 is
+`bc04ddcaaf5cdc57f9ea6438dcee25a50a025b6ee3b8de9f0f9007ad117fe4c4`;
+the recorded spec SHA-256 is
+`1c746b4b81e0f551943e4c494f9db41914f7cf507d58c3364e64629a2a36c81b`.
+
+The notes below describe the earlier partial candidate and bounded controls.
+Their unresolved-lifetime statements are superseded by this exact result.
+
+## Earlier source recovery
+
+The earlier MSVC 6.5 `/O2 /GB` candidate recovers the full projectile
 allocation and initialization semantics at `0x00420440`. It produces 114
 instructions against 126 native instructions, scores 71.67%, and resolves all
 13 candidate references without a mismatch.
