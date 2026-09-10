@@ -119,3 +119,36 @@ uv run --no-sync --with unicorn==2.1.4 python \
 Unicorn needs JIT execution permission. The count-lowering observer above
 remains separately reproducible from its saved historical source and continues
 to check unchanged observed COFF objects.
+
+## Current candidate: division-copy lifecycle
+
+[`verify_half.py`](verify_half.py) observes the current source independently of
+the historical comparison above. The [receipt](half.json) follows instruction
+identity through eight backend snapshots. It compares the wave quotient with
+the first generated row's terrain midpoint, both ordinary signed divisions by
+two in the same function.
+
+At `C2+0x29511`, each division becomes the signed-halving sequence and gains a
+copy from EAX to its result temporary before `SAR`. This happens before global
+register allocation. Across `C2+0x2fb58`, the wave quotient is assigned EBP;
+across `C2+0x336f4`, the midpoint quotient is assigned EAX. Both copies remain
+present immediately before `C2+0x3536c`. Across that call, the midpoint's
+`EAX -> EAX` copy disappears, while the wave's `EAX -> EBP` copy survives. The
+latter still exists after instruction scheduling at `C2+0x374aa`.
+
+Thus the extra wave copy is introduced during division lowering and survives
+allocation and cleanup; it is not first inserted by the final scheduler. This
+observation narrows the compiler mechanism without identifying original source
+that would recover native `SAR EAX` followed by `LEA EBP, [EAX+3]`.
+
+The verifier requires normal, captured, replayed, and observed whole objects to
+agree except for the COFF timestamp, and includes the missing-stream negative
+control. It pins the current source, compiler, observer, and replay helpers;
+all eight references remain clean. No compiler decision is modified, and both
+exactness flags remain false. No new source match is claimed.
+
+```sh
+UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
+  tools/match/evidence/vc6-spiders-count-2026-09-10/verify_half.py \
+  --out /private/tmp/c2spiders-half-proof
+```
