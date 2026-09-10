@@ -1,4 +1,4 @@
-"""Observe creation, allocation, and removal of signed-division copies in current Spiders."""
+"""Observe signed-division copies in the pinned historical delayed-count source."""
 
 import argparse
 import importlib.util
@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import struct
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -88,7 +89,13 @@ def main():
     out = parser.parse_args().out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     config = replay.match.load_scratch_config(replay.match.DEFAULT_MATCH_ROOT / "scratches" / evidence.FUNCTION)
-    assert replay.sha((config.directory / config.source).read_bytes()) == SOURCE_SHA
+    canonical_directory = config.directory
+    source = (HERE / "delayed-count.cpp").read_bytes()
+    assert replay.sha(source) == SOURCE_SHA
+    source_directory = out / "delayed-source"
+    source_directory.mkdir(exist_ok=True)
+    (source_directory / config.source).write_bytes(source)
+    config = replace(config, directory=source_directory)
     assert replay.sha((replay.COMPILER / "Bin/C2.DLL").read_bytes()) == evidence.C2_SHA
     assert config.compiler == "msvc6.5" and config.cflags == "/O2 /GB /W3 /GR-"
     helper = out / "helper"
@@ -104,7 +111,13 @@ def main():
         shutil.copyfile(evidence.REPLAY / "capture.c", helper / "capture.c")
         replay.compile_driver(helper, "capture.c", "capture.obj")
         replay.link(helper, "capture.dll", "capture.obj", dll=True)
-        baseline = replay.verify_function(evidence.FUNCTION, out / "current", helper / "capture.dll")
+        load_config = replay.match.load_scratch_config
+        with patch.object(
+            replay.match,
+            "load_scratch_config",
+            lambda path: config if Path(path) == canonical_directory else load_config(path),
+        ):
+            baseline = replay.verify_function(evidence.FUNCTION, out / "current", helper / "capture.dll")
         directory = out / "current" / evidence.FUNCTION / "replay"
         observed = out / "observed"
         observed.mkdir(exist_ok=True)

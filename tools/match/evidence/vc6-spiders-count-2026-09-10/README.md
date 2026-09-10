@@ -1,5 +1,26 @@
 # Spiders Inc. count lowering
 
+## Exact source recovery (2026-09-11)
+
+The current scratch is **105/105 instructions, 8/0/0 references, normalized exact,
+and relocation-aware body-byte exact**. It constructs metadata before the first
+record pointer, publishes it through explicit fieldwise assignment, and repeats
+`step_count / 2 + 3` in the second record's setter. This follows the exact
+Lizquidation builder pattern. The compiler shares the arithmetic and emits the
+native `SAR EAX` / `LEA EBP, [EAX+3]` sequence and store schedule.
+
+The [72-control source matrix](../../scratches/quest_build_spiders_inc/metadata-recomputed-count-2026-09-11.json)
+contains 12 exact forms. The [one-change cache control](../../scratches/quest_build_spiders_inc/exact-count-cache-control-2026-09-11.json)
+replaces only the second count expression with `wave.count` and regresses to
+75.829384%, 106 instructions, and prefix 17. The earlier metadata matrix reused
+`wave.count`; it did not test the successful combination.
+
+The compiler traces below concern the pinned historical candidates, not this
+exact source. They identify mechanisms behind those earlier failures without
+claiming original-source uniqueness.
+
+## Historical early-field versus scalar count
+
 The historical early-field source and a scalar-count control diverge before
 local register allocation. This observer identifies that boundary without changing compiler
 decisions. Neither source is an exact match.
@@ -79,14 +100,14 @@ clean aligned references. The scalar control is 75.8294%, 106/105 instructions,
 also with seven clean aligned references. Both normalized exactness and
 relocation-aware encoded-body exactness are false. New source matches: **0**.
 
-## Current candidate: delayed count publication
+## Historical candidate: delayed count publication
 
-The current scratch computes `wave_increase = step_count / 2` once and adds the
+The pinned `delayed-count.cpp` computes `wave_increase = step_count / 2` once and adds the
 base count at each row's count store. Each row now publishes coordinates,
 template, trigger time, and count in the native order. The prior early-field
 candidate published the first row's count before its coordinates.
 
-The retained result improves **96.190476% to 97.630332%**, prefix **57 to 58**,
+That historical result improved **96.190476% to 97.630332%**, prefix **57 to 58**,
 and clean aligned references **7 to 8**. It has **106 instructions against 105**
 native instructions, whereas the previous candidate had 105. This instruction
 count tradeoff is explicit: normalized and encoded-body exactness remain false.
@@ -94,8 +115,11 @@ The remaining arithmetic lowering includes an extra `MOV` and an in-place
 `SAR`/`ADD` where native uses `SAR` followed by `LEA`; its scheduling still differs.
 No compiler decision, alias, or exact-match acceptance rule is changed.
 
-[`verify_publication.py`](verify_publication.py) links the real COFF relocations
-and executes both machine bodies with Unicorn 2.1.4. For each of 15 signed,
+## Current exact candidate: publication verification
+
+[`verify_publication.py`](verify_publication.py) requires both exactness checks,
+links the real COFF relocations, and executes both machine bodies with Unicorn
+2.1.4. For each of 15 signed,
 zero, odd, even, and representative terrain widths, it checks all 33 records
 against an independent field-level oracle, including untouched heading words
 and surrounding sentinel bytes. It compares the full sequence of 166 output
@@ -108,7 +132,8 @@ The [publication receipt](publication.json) pins the source, verifier, image,
 native body, candidate object/body, compiler inputs, and relocation resolution.
 These are bounded executions with disjoint output, count, and global storage
 and x87 control word `0x037f`; they do not establish equivalence for every input
-or alias arrangement, nor do they grant whole-function exactness.
+or alias arrangement. Whole-function exactness is checked separately by the
+matcher in the same run.
 
 ```sh
 uv run --no-sync --with unicorn==2.1.4 python \
@@ -120,9 +145,9 @@ Unicorn needs JIT execution permission. The count-lowering observer above
 remains separately reproducible from its saved historical source and continues
 to check unchanged observed COFF objects.
 
-## Current candidate: division-copy lifecycle
+## Historical candidate: division-copy lifecycle
 
-[`verify_half.py`](verify_half.py) observes the current source independently of
+[`verify_half.py`](verify_half.py) observes the pinned `delayed-count.cpp` independently of
 the historical comparison above. The [receipt](half.json) follows instruction
 identity through eight backend snapshots. It compares the wave quotient with
 the first generated row's terrain midpoint, both ordinary signed divisions by
@@ -143,7 +168,7 @@ that would recover native `SAR EAX` followed by `LEA EBP, [EAX+3]`.
 
 The verifier requires normal, captured, replayed, and observed whole objects to
 agree except for the COFF timestamp, and includes the missing-stream negative
-control. It pins the current source, compiler, observer, and replay helpers;
+control. It pins the historical source, compiler, observer, and replay helpers;
 all eight references remain clean. No compiler decision is modified, and both
 exactness flags remain false. No new source match is claimed.
 

@@ -2,8 +2,8 @@
   "schema": 1,
   "verified": true,
   "limitations": "15 concrete widths, disjoint output/count/global storage, x87 control word 0x037f. Checks every executed body instruction, output bytes and non-stack write order. Not universal semantic equivalence or normalized/encoded-body exactness.",
-  "verifier_sha256": "6d3d9ddd32846e826886178331b6227dc8f15708319b5965d52f271b97398d1b",
-  "source_sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
+  "verifier_sha256": "846581d5030cf18da16cf41fdb1c60803f05e934875e93594d846438630b3adf",
+  "source_sha256": "0b2eb85261e818cd116cebcb2b4a5e6bfa1212ddeeb3904ac9c7bdeccfed6316",
   "historical_early_source_sha256": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338",
   "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
   "native_target": {
@@ -13,8 +13,8 @@
     "body_sha256": "35cf113305044a5b188173b0599728bde4429a55040a41299025a2bc1e060154"
   },
   "unicorn_version": "2.1.4",
-  "candidate_body_sha256": "9eed2794806087db0230b8244905dfceda868eb5628eb1a17f557a12c7242037",
-  "candidate_object_sha256": "3369f15b14675f7873ae007e94b8a2e74d03dd2fdcc1c4a01fca6f5b5a9b420f",
+  "candidate_body_sha256": "91553c9231b5fa5227c137cf6c699e4d9b4754e48c3212af116e4c7118990270",
+  "candidate_object_sha256": "4fc119407498af4673877c38c365eda3d670d328624ada034cb55af515d5d20a",
   "relocations": [
     [
       2,
@@ -66,7 +66,7 @@
     ],
     [
       2,
-      226,
+      227,
       6,
       "_terrain_render_target",
       4781360,
@@ -74,7 +74,7 @@
     ],
     [
       2,
-      276,
+      274,
       6,
       "_terrain_render_target",
       4781360,
@@ -113,11 +113,11 @@
     "dependencies": [
       [
         "scratches/quest_build_spiders_inc/scratch.cpp",
-        "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be"
+        "0b2eb85261e818cd116cebcb2b4a5e6bfa1212ddeeb3904ac9c7bdeccfed6316"
       ],
       [
         "scratches/quest_build_spiders_inc/scratch.conf",
-        "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240"
+        "ea41032acb5b66377ea245842773b16095b9a0ac5d6d22504c638499079bf0c1"
       ],
       [
         "cl.sh",
@@ -146,18 +146,18 @@
     ]
   },
   "match": {
-    "ratio": 0.976303317535545,
+    "ratio": 1.0,
     "instructions": [
       105,
-      106
+      105
     ],
     "references": [
       8,
       0,
       0
     ],
-    "exact": false,
-    "body_byte_exact": false
+    "exact": true,
+    "body_byte_exact": true
   },
   "cases": [
     {
@@ -167,7 +167,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -179,7 +179,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -191,7 +191,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -203,7 +203,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -215,7 +215,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -227,7 +227,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -239,7 +239,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -251,7 +251,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -263,7 +263,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -275,7 +275,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -287,7 +287,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -299,7 +299,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -311,7 +311,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -323,7 +323,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15
@@ -335,7 +335,7 @@
       "publication_writes": 166,
       "covered_instructions": [
         105,
-        106,
+        105,
         105
       ],
       "early_publication_first_difference": 15

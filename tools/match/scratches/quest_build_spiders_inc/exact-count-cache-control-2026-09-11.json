@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-wave-count",
+      "find": "            step_count / 2 + 3);",
+      "replacements": [
+        {
+          "name": "reuse-metadata-count",
+          "text": "            wave.count);"
+        }
+      ]
+    }
+  ]
+}

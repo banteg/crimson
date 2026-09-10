@@ -1,8 +1,51 @@
 # `quest_build_spiders_inc`
 
-## Current count-publication recovery (2026-09-10)
+## Exact metadata/count recovery (2026-09-11)
 
-The retained source computes the signed half-step increment once and publishes
+The current source is **100% normalized and relocation-aware body-byte exact**:
+**105/105 instructions**, prefix **105**, all **8/0/0 references**, and zero
+padding on either side. It improves the previous 97.630332%, 106-instruction
+candidate without changing the compiler profile or reference aliases.
+
+The source follows the exact `quest_build_the_lizquidation` builder pattern:
+construct a local metadata object before the first row pointer, publish its
+three fields through an explicit assignment operator after the coordinates,
+and recompute `step_count / 2 + 3` for the second row's setter. VC6 shares the
+arithmetic and emits native `SAR EAX` followed by `LEA EBP, [EAX+3]`, with the
+native register allocation and output-store schedule. This is a source match,
+not a compiler patch or forced-register construction.
+
+`metadata-recomputed-count-2026-09-11.json` records all 72 compiling controls.
+Twelve are body-byte exact: all six metadata constructor argument orders,
+with either repeated signed division or a shared half-step local. Each uses
+explicit metadata assignment and declares metadata before the record pointer.
+For the retained argument order, direct field publication reaches 97.142857%,
+implicit structure assignment 94.339623%, and declaring metadata after the
+pointer 96.190476% (recomputed form). These controls identify an interaction
+between value reuse, publication boundary, and pointer lifetime.
+
+`exact-count-cache-control-2026-09-11.json` changes only the second setter's
+count argument from `step_count / 2 + 3` to `wave.count`. It regresses the exact
+source to **75.829384%**, 106 instructions, prefix 17, and seven clean aligned
+references. Previous metadata controls used this cached form. Thus the prior
+negative results did not cover the successful neighboring-builder pattern.
+
+The earlier compiler observers explain why apparently equivalent count source
+forms can select different arithmetic and storage owners; their pinned
+historical sources remain replayable. They are not traces of this exact source.
+The updated publication verifier independently checks all 33 output records,
+166 writes in native order, and full instruction coverage at 15 widths, while
+rejecting the historical early-store candidate's publication order.
+
+Validation: direct matching, source validation, strict target experiment audit,
+publication execution, historical division-copy replay, and verifier lint pass.
+The refreshed native audit passes ABI and game-owned closure checks. The final
+full checkpoint reports zero regression, scope, claim, evaluation, metadata,
+experiment, strict-experiment, or native errors; `git diff --check` passes.
+
+## Historical count-publication recovery (2026-09-10)
+
+The then-retained source computes the signed half-step increment once and publishes
 `wave_increase + 3` after each row's coordinates, template, and trigger time.
 This restores the native output-store order. Alignment improves from
 **96.190476% to 97.630332%**, prefix **57 to 58**, and clean references **7 to 8**.

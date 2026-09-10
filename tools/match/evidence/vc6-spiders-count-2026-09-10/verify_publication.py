@@ -176,9 +176,9 @@ def main():
     (directory / config.source).write_bytes(early_source)
     early = Program(replace(config, directory=directory))
     result = current.result
-    assert len(result.target_lines) == 105 and len(result.candidate_lines) == 106
+    assert len(result.target_lines) == len(result.candidate_lines) == 105
     assert result.masked_operand_audit.ok_count == 8 and result.masked_operand_audit.problem_count == 0
-    assert not result.exact and not result.body_byte_exact
+    assert result.exact and result.body_byte_exact
     rows = []
     example = None
     for width in (-3, -2, -1, 0, 1, 2, 3, 511, 512, 1023, 1024, 1025, 2048, 4096, 8192):
@@ -226,7 +226,7 @@ def main():
         "build_key": match._scratch_build_key(config, match.DEFAULT_MATCH_ROOT),
         "match": {
             "ratio": result.ratio,
-            "instructions": [105, 106],
+            "instructions": [len(result.target_lines), len(result.candidate_lines)],
             "references": [8, 0, 0],
             "exact": result.exact,
             "body_byte_exact": result.body_byte_exact,

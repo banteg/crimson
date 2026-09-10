@@ -4,7 +4,7 @@
   "canonical_source_sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
   "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
   "source_hashes": {
-    "verify_half.py": "a5523a7e35a4e4ba64b6befd9997a0f43b42d4b049cce97462425c8d4142fe46",
+    "verify_half.py": "f52bb4fdcad3dd8761d8ac5776c386380bfd71fd8ef399c322768673dfd31612",
     "observer_half.c": "39d8d17780dd6e98109fde97c5c181f35abe0d5d3ccc594b0d9d63f99e9e5c8c",
     "verify.py": "fc6087c73788f0970061851925b9afffc5242d888652815df3c1e1d986d649b4"
   },
@@ -47,12 +47,12 @@
       "auto_inline_off": [],
       "dependencies": [
         [
-          "scratches/quest_build_spiders_inc/scratch.cpp",
+          "/private/tmp/spiders-historical-half-2026-09-11/delayed-source/scratch.cpp",
           "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be"
         ],
         [
-          "scratches/quest_build_spiders_inc/scratch.conf",
-          "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240"
+          "/private/tmp/spiders-historical-half-2026-09-11/delayed-source/scratch.conf",
+          null
         ],
         [
           "cl.sh",

@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "a4bdbd0a2314c2bea036e418dcec1676558648c777738a3db328cc94ee39829a",
+  "audit_digest": "f1348b7a184d9782bbe2f91b865b6666e5feb95fb0e8c026a74a284caa2fc14d",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -68105,12 +68105,12 @@
         {
           "path": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
           "repository_relative": true,
-          "sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be"
+          "sha256": "0b2eb85261e818cd116cebcb2b4a5e6bfa1212ddeeb3904ac9c7bdeccfed6316"
         },
         {
           "path": "tools/match/scratches/quest_build_spiders_inc/scratch.conf",
           "repository_relative": true,
-          "sha256": "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240"
+          "sha256": "ea41032acb5b66377ea245842773b16095b9a0ac5d6d22504c638499079bf0c1"
         },
         {
           "path": "tools/match/cl.sh",
@@ -68145,7 +68145,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_spiders_inc/scratch.conf",
-      "config_sha256": "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240",
+      "config_sha256": "ea41032acb5b66377ea245842773b16095b9a0ac5d6d22504c638499079bf0c1",
       "effective_end": 4428330,
       "end": 4428330,
       "function": "quest_build_spiders_inc",
@@ -68153,17 +68153,17 @@
         {
           "address": 4427984,
           "canonical_config": "tools/match/scratches/quest_build_spiders_inc/scratch.conf",
-          "canonical_config_sha256": "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240",
+          "canonical_config_sha256": "ea41032acb5b66377ea245842773b16095b9a0ac5d6d22504c638499079bf0c1",
           "canonical_scratch": "tools/match/scratches/quest_build_spiders_inc",
           "canonical_source": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
-          "canonical_source_sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
+          "canonical_source_sha256": "0b2eb85261e818cd116cebcb2b4a5e6bfa1212ddeeb3904ac9c7bdeccfed6316",
           "effective_end": 4428330,
           "end": 4428330,
-          "experiment_epoch": "b05b4a9d5ef88f5fe902f03e4b8ae967a7c40e50c79399db3f2fd43357d749fa",
+          "experiment_epoch": "6abc802e36bb146a9d5b6c93b08f7871afec15d1ea4f3dadfe5d8ffdbed1ff23",
           "function": "quest_build_spiders_inc",
           "match": {
-            "body_byte_exact": false,
-            "candidate_instructions": 106,
+            "body_byte_exact": true,
+            "candidate_instructions": 105,
             "masked_mismatches": 0,
             "masked_ok": 8,
             "masked_unresolved": 0,
@@ -68171,9 +68171,9 @@
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 58,
-            "ratio": 0.976303317535545,
-            "state": "wip",
+            "prefix_instructions": 105,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 105
           },
           "object_function_symbol": "_quest_build_spiders_inc",
@@ -68181,8 +68181,8 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
-        "candidate_instructions": 106,
+        "body_byte_exact": true,
+        "candidate_instructions": 105,
         "masked_mismatches": 0,
         "masked_ok": 8,
         "masked_unresolved": 0,
@@ -68190,17 +68190,17 @@
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 58,
-        "ratio": 0.976303317535545,
-        "state": "wip",
+        "prefix_instructions": 105,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 105
       },
       "object": "tools/match/scratches/quest_build_spiders_inc/build/msvc6.5/bd55372c027ed2cb/scratch.obj",
       "object_function_symbol": "_quest_build_spiders_inc",
-      "object_sha256": "4d69d296bd44815c3ea3d0c2d43f38038aae628fe57545fb8ab858ebd164f8cb",
+      "object_sha256": "4e7ab3d1357cb00aa0b9a123ebc300a9548742e9f485ed3a58a85dcd8aaa1840",
       "scratch": "tools/match/scratches/quest_build_spiders_inc",
       "source": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
-      "source_sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
+      "source_sha256": "0b2eb85261e818cd116cebcb2b4a5e6bfa1212ddeeb3904ac9c7bdeccfed6316",
       "target_size": 346,
       "translation_unit": {
         "kind": "isolated",
@@ -87547,8 +87547,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 659,
-    "wip": 12
+    "match": 660,
+    "wip": 11
   },
   "translation_units": {
     "cluster_count": 28,
