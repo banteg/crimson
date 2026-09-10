@@ -3,7 +3,7 @@
   "kind": "native-plasma-head-alpha",
   "unicorn_version": "2.1.4",
   "source_sha256": "3b5c5cb097ebcf0cf298758ccefbf370202dcc41068f5808e99c9db503afb986",
-  "verifier_sha256": "80ca0a0be5607620113bc4870b36b13a8bb40d76aa1c6d8cee5c502bd071527e",
+  "verifier_sha256": "269535ddfe45445a516c737929075d10702b0d52971647bdd51faead684533f5",
   "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
   "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
   "native_half_alpha": {
@@ -18,7 +18,7 @@
       "0x00423fc1"
     ]
   },
-  "candidate_object_sha256": "a7b8887d5db1b14343ee25498f8c22c8608020eee242679aff92a78f6528e1e4",
+  "candidate_object_sha256": "52a0023784914b5c2255a70d710609d667ce22e5caf6db44f729ffcece1a57b0",
   "candidate_body_sha256": "653afc39c6b48aace346a792ceaa2ac48d958e20864d8a832ef0e5f5dbf6f6c6",
   "build_key": {
     "toolchain": {

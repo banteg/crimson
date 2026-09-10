@@ -374,3 +374,35 @@ call-boundary controls, and alternate local scalar lifetimes do not improve
 the retained form. The residual includes tint-alpha register ownership and
 stack publications; no artificial address escapes, dummy stores, or register
 constraints were introduced to reproduce them.
+
+## Native trail rounding and tint payload copy (2026-09-11)
+
+Machine execution found a concrete defect in the length-before-copy order
+described above: native rounds delta Y to float32 before multiplying it by
+itself, while the preceding source retained the extended subtraction for
+one operand. At nine pinned distances near multiples of eight, that one-bit
+length difference changes the number of auto-target trail segments. Moving
+`normalized = render_delta` before the length calculation reproduces native
+distance bits and segment counts in all nine cases. This supersedes the
+earlier inference about the source order, without identifying a unique
+original C++ spelling.
+
+The alive tint now stores alpha by byte copy through a by-value constructor
+parameter. This recovers the 40-byte native instruction window at
+`0x428c66..0x428c8e`, including alpha's integer-register ownership. Ordinary
+float assignment is an independently compiled control: it loses this local
+encoded window but preserves the tested calls. Thus the tint change is
+instruction recovery, not a claimed runtime color defect.
+
+The [durable proof](../../evidence/overlay-tint-trail-2026-09-11/README.md)
+records 239 complete native/candidate caller traces, independent distance
+and count checks, 18 rejected distance-order/preceding-source cases, and the
+local encoded-window control. It retains the exact preceding source and
+pins all machine, source, object, relocation, and verifier identities.
+The caller models, x87 mode, fixture coverage, and external-DLL/graphics
+limitations are explicit there.
+
+Alignment improves from `91.1867365%` to `93.0313589%`; candidate instructions
+increase from `1,144` to `1,148` against `1,148`. Prefix remains 9 and all
+`331/0/0` references remain clean. Both whole-function exactness flags remain
+false. No matching rules, aliases, waivers, Python, or Zig code changed.

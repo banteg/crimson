@@ -67,14 +67,14 @@ class Program:
         self.body = match.extract_object_function(self.object, config.symbol)
         self.result = match.run_match(
             obj_path=self.object_path,
-            function=FUNCTION,
+            function=config.function,
             symbol_name=config.symbol,
             reference_aliases=config.reference_aliases,
         )
         manifest = match.load_function_manifest(scope="all")
         self.catalog = match.load_reference_catalog(manifest).with_object_aliases(config.reference_aliases)
         self.image = match.load_image(match.default_image_path())
-        self.native_start, self.native_end = match.resolve_function(manifest, FUNCTION)[1:]
+        self.native_start, self.native_end = match.resolve_function(manifest, config.function)[1:]
         sections = {}
         cursor = CODE
         for number, section in enumerate(self.object.sections, 1):
@@ -106,7 +106,7 @@ class Program:
                 struct.pack_into("<I", data, offset, value & 0xFFFFFFFF)
                 self.relocations.append([number, offset, relocation.relocation_type, symbol.name, destination, addend])
             self.patched_sections[sections[number]] = bytes(data)
-        entry = next(symbol for symbol in self.object.symbols if symbol.name == "_projectile_render")
+        entry = next(symbol for symbol in self.object.symbols if symbol.name == f"_{config.symbol}")
         self.candidate_start = sections[entry.section_number] + entry.value
 
     def address(self, name):
