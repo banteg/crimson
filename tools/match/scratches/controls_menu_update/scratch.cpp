@@ -150,17 +150,20 @@ static __forceinline int activate_list(
 
 static __forceinline float abs_float(float value)
 {
-    *(unsigned int *)&value &= 0x7fffffff;
-    return value;
+    int bits = (*(int *)&value) & 0x7fffffff;
+    return *(float *)&bits;
 }
 
 static __forceinline void update_axis_peak(float &peak, int axis)
 {
     float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));
+    float result;
     if (peak > value) {
-        value = peak;
+        result = peak;
+    } else {
+        result = value;
     }
-    peak = value;
+    peak = result;
 }
 
 static __forceinline void draw_rebind_heading(
@@ -315,23 +318,26 @@ extern "C" void controls_menu_update(void)
         controls_move_method_list.item_count = 4;
     }
 
-    controls_vec2_t left_base =
-        *(controls_vec2_t *)&ui_element_slot_14.pos_x
-        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;
-
     char *player_items[4];
-    controls_player_profile_list.items = player_items;
-    player_items[0] = "Player 1";
-    player_items[1] = "Player 2";
-    player_items[2] = "Player 3";
-    player_items[3] = "Player 4";
-    controls_player_profile_list.item_count = 2;
+    controls_vec2_t draw_position;
+    {
+        controls_vec2_t left_position =
+            *(controls_vec2_t *)&ui_element_slot_14.pos_x
+            + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;
 
-    left_base = left_base + controls_vec2_t(300.0f, 40.0f);
-    left_base.x =
+        controls_player_profile_list.items = player_items;
+        player_items[0] = "Player 1";
+        player_items[1] = "Player 2";
+        player_items[2] = "Player 3";
+        player_items[3] = "Player 4";
+        controls_player_profile_list.item_count = 2;
+
+        draw_position = left_position + controls_vec2_t(300.0f, 40.0f);
+    }
+    draw_position.x =
         ui_element_slot_14.render_offset_x - 32.0f - 64.0f
-        + left_base.x;
-    controls_vec2_t draw_position = left_base;
+        + draw_position.x;
+    controls_vec2_t left_base = draw_position;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     ui_draw_textured_quad(
@@ -377,39 +383,47 @@ extern "C" void controls_menu_update(void)
     config_direction_arrow_flags[controls_rebind_player_index] =
         controls_direction_arrow_checkbox.checked;
 
-    controls_vec2_t right_position =
+    draw_position =
         *(controls_vec2_t *)&ui_element_slot_40.pos_x
         + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x
         + controls_vec2_t(50.0f, 40.0f);
-    controls_vec2_t right_base = right_position;
-    right_base.x =
+    draw_position.x =
         ui_element_slot_40.render_offset_x - 64.0f
-        + right_position.x;
-    right_base.y += 32.0f;
-    right_base.x += 64.0f;
+        + draw_position.x;
+    draw_position.y += 32.0f;
+    draw_position.x += 64.0f;
 
-    int *binding_axis_move_x_cursor =
-        &config_blob.input_config[0].axis_move_x;
-    int *runtime_move_forward =
-        &player_state_table[0].input.move_key_forward;
-    do {
-        runtime_move_forward[0] = binding_axis_move_x_cursor[-12];
-        runtime_move_forward[1] = binding_axis_move_x_cursor[-11];
-        runtime_move_forward[2] = binding_axis_move_x_cursor[-10];
-        runtime_move_forward[3] = binding_axis_move_x_cursor[-9];
-        runtime_move_forward[4] = binding_axis_move_x_cursor[-8];
-        runtime_move_forward[5] = binding_axis_move_x_cursor[-7];
-        runtime_move_forward[6] = binding_axis_move_x_cursor[-6];
-        runtime_move_forward[7] = binding_axis_move_x_cursor[-5];
-        runtime_move_forward[8] = binding_axis_move_x_cursor[-4];
-        runtime_move_forward[10] = binding_axis_move_x_cursor[-3];
-        runtime_move_forward[9] = binding_axis_move_x_cursor[-2];
-        runtime_move_forward[12] = binding_axis_move_x_cursor[-1];
-        runtime_move_forward[11] = binding_axis_move_x_cursor[0];
-        binding_axis_move_x_cursor += 16;
-        runtime_move_forward += sizeof(player_state_t) / sizeof(int);
-    } while ((int)binding_axis_move_x_cursor
-        < (int)(config_p1_move_forward + 44));
+    for (int player_index = 0; player_index < 2; ++player_index) {
+        player_input_config_t *bindings =
+            &config_blob.input_config[player_index];
+        int *binding_cursor = &bindings->axis_move_x;
+        player_state_table[player_index].input.move_key_forward =
+            binding_cursor[-12];
+        player_state_table[player_index].input.move_key_backward =
+            bindings->move_key_backward;
+        player_state_table[player_index].input.turn_key_left =
+            bindings->turn_key_left;
+        player_state_table[player_index].input.turn_key_right =
+            bindings->turn_key_right;
+        player_state_table[player_index].input.fire_key =
+            bindings->fire_key;
+        player_state_table[player_index].input.key_reserved_0 =
+            bindings->key_reserved_0;
+        player_state_table[player_index].input.key_reserved_1 =
+            bindings->key_reserved_1;
+        player_state_table[player_index].input.aim_key_left =
+            bindings->aim_key_left;
+        player_state_table[player_index].input.aim_key_right =
+            bindings->aim_key_right;
+        player_state_table[player_index].input.axis_aim_y =
+            bindings->axis_aim_y;
+        player_state_table[player_index].input.axis_aim_x =
+            bindings->axis_aim_x;
+        player_state_table[player_index].input.axis_move_y =
+            bindings->axis_move_y;
+        player_state_table[player_index].input.axis_move_x =
+            binding_cursor[0];
+    }
 
     grim_interface_ptr->grim_set_color(
         1.0f,
@@ -417,26 +431,29 @@ extern "C" void controls_menu_update(void)
         1.0f,
         controls_redefine_button.hover_anim * 0.000900000043f);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);
-    float right_y_before_subtract = right_base.y + 4.0f;
-    right_base.x += 16.0f;
+    draw_position.y += 4.0f;
+    draw_position.x += 16.0f;
+    draw_position.y -= 38.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-    right_base.y = right_y_before_subtract - 38.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
-        right_base.x + 54.0f,
-        right_base.y,
+        draw_position.x + 54.0f,
+        draw_position.y,
         "Configured controls");
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);
 
-    draw_position.x = right_base.x + 54.0f;
-    draw_position.y = right_base.y + 13.0f;
-    grim_interface_ptr->grim_draw_rect_outline(
-        (float *)&draw_position,
-        (float)grim_interface_ptr->grim_measure_text_width(
-            "Configured controls"),
-        1.0f);
+    {
+        controls_vec2_t outline_position;
+        outline_position.x = draw_position.x + 54.0f;
+        outline_position.y = draw_position.y + 13.0f;
+        grim_interface_ptr->grim_draw_rect_outline(
+            (float *)&outline_position,
+            (float)grim_interface_ptr->grim_measure_text_width(
+                "Configured controls"),
+            1.0f);
+    }
 
-    draw_position.y = right_base.y + 26.0f;
-    draw_position.x = right_base.x - 8.0f;
+    draw_position.y = draw_position.y + 26.0f;
+    draw_position.x = draw_position.x - 8.0f;
 
     if (!(controls_menu_init_flags & 0x40)) {
         controls_menu_init_flags |= 0x40;
@@ -460,7 +477,8 @@ extern "C" void controls_menu_update(void)
             item->enabled = 1;
             item->activated = 0;
             ++item;
-        } while (item < controls_rebind_items + 15);
+        } while ((int)&item->activated
+            < (int)&controls_rebind_items[15].activated);
     }
 
     {
@@ -481,10 +499,10 @@ extern "C" void controls_menu_update(void)
         controls_rebind_items[i].label =
             strdup_malloc(controls_key_name(
                 config_p1_move_forward[binding_base]));
-        if (controls_rebind_items[i].label) {
-            crt_free(controls_rebind_items[i].label);
+        if (controls_rebind_items[13].label) {
+            crt_free(controls_rebind_items[13].label);
         }
-        controls_rebind_items[i].label =
+        controls_rebind_items[13].label =
             strdup_malloc(controls_key_name(config_key_pick_perk));
         if (controls_rebind_items[14].label) {
             crt_free(controls_rebind_items[14].label);
@@ -676,10 +694,10 @@ extern "C" void controls_menu_update(void)
                 update_axis_peak(controls_rebind_axis_peak_abs_153, 0x153);
                 update_axis_peak(controls_rebind_axis_peak_abs_154, 0x154);
                 update_axis_peak(controls_rebind_axis_peak_abs_155, 0x155);
-                float *peaks = &controls_rebind_axis_peak_abs_13f;
                 int axis_index = 0;
+                float *peaks = &controls_rebind_axis_peak_abs_13f;
                 while (
-                    peaks < &controls_rebind_axis_peak_abs_13f + 7) {
+                    (int)peaks < (int)(&controls_rebind_axis_peak_abs_13f + 7)) {
                     if (*peaks > 0.5f) {
                         int binding =
                             controls_rebind_player_index * 16
@@ -687,29 +705,25 @@ extern "C" void controls_menu_update(void)
                         switch (axis_index) {
                         case 0:
                             config_p1_move_forward[binding] = 0x13f;
-                            grim_interface_ptr->grim_flush_input();
                             break;
                         case 1:
                             config_p1_move_forward[binding] = 0x140;
-                            grim_interface_ptr->grim_flush_input();
                             break;
                         case 2:
                             config_p1_move_forward[binding] = 0x141;
-                            grim_interface_ptr->grim_flush_input();
                             break;
                         case 3:
                             config_p1_move_forward[binding] = 0x153;
-                            grim_interface_ptr->grim_flush_input();
                             break;
                         case 4:
                             config_p1_move_forward[binding] = 0x154;
-                            grim_interface_ptr->grim_flush_input();
                             break;
                         case 5:
                             config_p1_move_forward[binding] = 0x155;
                         default:
-                            grim_interface_ptr->grim_flush_input();
+                            break;
                         }
+                        grim_interface_ptr->grim_flush_input();
                         controls_rebind_slot_index = -1;
                         controls_rebind_capture_armed = 0;
                         break;

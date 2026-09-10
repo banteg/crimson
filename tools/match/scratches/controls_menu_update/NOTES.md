@@ -1,5 +1,28 @@
 # `controls_menu_update`
 
+## Exact match
+
+MSVC 6.5 with `/O2 /GB /W3 /GR-` reproduces all 21,289 native bytes under
+reference-proven relocation normalization: `exact=true`,
+`body_byte_exact=true`, 5,421/5,421 instructions, and 1,579 verified references
+with zero unresolved or mismatched operands. The stack allocation is 0x74
+bytes on both sides.
+
+The final source recovers the lifetimes of the left-panel and underline
+temporaries, shares the working draw position, and preserves the native
+heading arithmetic. Axis-peak selection uses a separate result variable;
+the analog switch has one input-flush call after its cases. The binding-copy
+expression comes from the already matched `config_load_presets` and
+`crimsonland_main` bodies, recovering the native interior source cursor.
+
+Reproduce with:
+
+```sh
+uv run crimson match scratch tools/match/scratches/controls_menu_update --json
+```
+
+## Historical investigation
+
 Native target: `crimsonland.exe` at `0x00448cd0` (21,289 bytes).
 
 Live Binary Ninja disassembly and the Ghidra export recover the complete
