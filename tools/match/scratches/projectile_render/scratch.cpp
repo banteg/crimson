@@ -150,8 +150,8 @@ extern "C" void projectile_render(float transition_alpha)
                     (float)cos(player->aim_heading),
                     (float)sin(player->aim_heading))
                 * 1.1f;
-            projectile_render_vec2_t start_screen =
-                camera_offset + start_pos;
+            projectile_render_vec2_t start_screen = start_pos;
+            start_screen += camera_offset;
             projectile_render_vec2_t point0 = start_screen - half_width;
             projectile_render_vec2_t point1 = start_screen + half_width;
             projectile_render_vec2_t end_screen_result =
@@ -162,7 +162,7 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t point2 = end_screen + half_width;
             projectile_render_vec2_t point3 = end_screen - half_width;
 
-            if (player->perk_counts[perk_id_sharpshooter] > 0) {
+            if (player_state_table[0].perk_counts[perk_id_sharpshooter] > 0) {
                 grim_interface_ptr->grim_set_config_var(0x14, 2u);
                 grim_interface_ptr->grim_begin_batch();
                 grim_interface_ptr->grim_draw_quad_points(

@@ -61,7 +61,7 @@ def main():
         "                    projectile_render_vec2_t strip0 =",
         "                    projectile_render_vec2_t side = arc * effect_scale;\n                    projectile_render_vec2_t strip0 =",
     )
-    assert probe.sha(previous_source.encode()) == "6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5"
+    assert probe.sha(previous_source.encode()) == "12ffadcf927fc64d5d516bc17efcc4f3337fe6c6bf1bf88f83d7afc947cfd74d"
     current = probe.Program(config)
     previous_dir = out / "previous"
     previous_dir.mkdir(exist_ok=True)
@@ -199,7 +199,7 @@ def main():
     r, before = current.result, previous.result
     assert not r.exact and not r.body_byte_exact
     assert r.ratio > before.ratio
-    assert r.masked_operand_audit.problem_count == 11 < before.masked_operand_audit.problem_count == 14
+    assert r.masked_operand_audit.problem_count == 10 < before.masked_operand_audit.problem_count == 11
     record = {
         "schema_version": 1,
         "kind": "native-ion-chain-product-lifetime",

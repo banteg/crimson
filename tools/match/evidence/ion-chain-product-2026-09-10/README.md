@@ -48,7 +48,7 @@ non-stack writes remain checked.
 
 Recompiling the preceding shared-vector source reproduces the one-bit failure;
 a separate wrong-width control is also rejected. All **six compiled negative
-cases** fail at arc quad arguments. The preceding source is pinned exactly by
+cases** fail at arc quad arguments. At initial retention, the preceding source was pinned exactly by
 SHA-256 `6c41659dc52bbbd401e5f09b0d88390f00a2d83262cd89ad345555b6a520d1a5`.
 
 D3DX normalization remains a shared deterministic sqrt/divide model with
@@ -71,10 +71,9 @@ fixture, reference-debt, and negative-control identities.
 
 ## Matching progress
 
-The source change improves alignment from **57.104195% to 57.427414%**, moves
+At initial retention, the source change improved alignment from **57.104195% to 57.427414%**, moved
 **2891 to 2903** candidate instructions toward **3021** native instructions,
-and changes references from **444/0/14 to 456/0/11**. All 11 remaining
-mismatches are reported. Both exactness flags remain false; this is a verified
+and changed references from **444/0/14 to 456/0/11**. All 11 mismatches were reported at that retention. Both exactness flags remain false; this is a verified
 partial, with no new whole-function matching credit or regression exception.
 
 The beam, plasma-alpha, head-color, and static call-boundary receipts are
@@ -82,3 +81,5 @@ refreshed against this source. Three additional source controls were tested
 for the concrete rounding failure: component assignment to the shared vector
 is unchanged, scalar-side locals and compound strip updates still fail the
 fixture and lower alignment. No such control is retained.
+
+The current receipt includes the [laser owner/rounding recovery](../laser-owner-rounding-2026-09-10/README.md). Its shared-side control restores only that expression in the current source, with SHA-256 `12ffadcf927fc64d5d516bc17efcc4f3337fe6c6bf1bf88f83d7afc947cfd74d`; it is not the historical whole source above. Current metrics are 59.622514%, 2913/3021, and 464/0/10; restoring shared-side gives 59.236744%, 2901/3021, and 453/0/11. The same six negative cases still reproduce the caller-argument defect.

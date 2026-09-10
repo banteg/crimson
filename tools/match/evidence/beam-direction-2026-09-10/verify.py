@@ -90,7 +90,7 @@ def main():
             {"address": hex(address), "bytes": bytes(ins.bytes).hex(), "instruction": f"{mnemonic} {operands}"},
         )
     previous_source = defect_source(source, DIRECTION | ANCHOR)
-    assert probe.sha(previous_source.encode()) == "52f67505883446b91934c6e9af420ba7626cdc8c75e82a16b6cdfa5c23e21f33"
+    assert probe.sha(previous_source.encode()) == "6c058fbed2eb817f0d3bd951bcd915d86cea99e4ccfdf9de4a38e4923f825220"
     defects = {}
     for name, changes in (("direction", DIRECTION), ("anchor", ANCHOR), ("previous", DIRECTION | ANCHOR)):
         directory = out / name
@@ -159,9 +159,9 @@ def main():
     previous = defects["previous"].result
     assert not result.exact and not result.body_byte_exact
     assert result.ratio == previous.ratio
-    assert len(result.candidate_lines) == len(previous.candidate_lines) == 2903
-    assert result.masked_operand_audit.ok_count == previous.masked_operand_audit.ok_count == 456
-    assert result.masked_operand_audit.problem_count == previous.masked_operand_audit.problem_count == 11
+    assert len(result.candidate_lines) == len(previous.candidate_lines) == 2913
+    assert result.masked_operand_audit.ok_count == previous.masked_operand_audit.ok_count == 464
+    assert result.masked_operand_audit.problem_count == previous.masked_operand_audit.problem_count == 10
     record = {
         "schema_version": 1,
         "kind": "native-beam-direction-and-anchor",
@@ -191,10 +191,10 @@ def main():
         "examples": examples,
         "metrics": {
             "ratio": result.ratio,
-            "candidate_instructions": 2903,
+            "candidate_instructions": 2913,
             "target_instructions": 3021,
-            "references_ok": 456,
-            "reference_problems": 11,
+            "references_ok": 464,
+            "reference_problems": 10,
             "exact": False,
             "body_byte_exact": False,
         },

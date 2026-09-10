@@ -110,7 +110,9 @@ def draw_sharpshooter_laser_sight(
     for player in players:
         if float(player.health) <= 0.0:
             continue
-        if not perk_active(player, PerkId.SHARPSHOOTER):
+        # Native 0x422ea8 reads player zero even when drawing another player.
+        perk_owner = players[0] if render_ctx.frame.state.preserve_bugs else player
+        if not perk_active(perk_owner, PerkId.SHARPSHOOTER):
             continue
         player_pos = player.pos
 

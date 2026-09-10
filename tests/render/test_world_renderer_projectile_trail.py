@@ -3,13 +3,17 @@ from __future__ import annotations
 from typing import Any, cast
 
 import pytest
+from msgspec import structs
 
 import crimson.render.world.projectiles as world_projectiles
+from crimson.perks import PerkId
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world.context import WorldRenderCtx, draw_bullet_trail_quad
 from crimson.render.world.viewport import view_transform
+from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.state_types import PlayerState
 from grim.assets import TextureId
 from grim.geom import Vec2
 
@@ -232,3 +236,64 @@ def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_si
     heads = [call.args for call in draws.call_args_list if call.args[2].width == head_size]
     assert len(heads) == 1
     assert heads[0][-1].a == expected_alpha
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "perk_counts", "health", "expected_centers"),
+    [
+        (True, (1, 0), (100.0, 100.0), [100.0, 220.0]),
+        (True, (0, 1), (100.0, 100.0), []),
+        (False, (1, 0), (100.0, 100.0), [100.0]),
+        (False, (0, 1), (100.0, 100.0), [220.0]),
+        (True, (1, 0), (0.0, 100.0), [220.0]),
+        (False, (1, 0), (0.0, 100.0), []),
+        (True, (1, 0), (100.0, 0.0), [100.0]),
+        (True, (1, 1), (0.0, 0.0), []),
+        (True, (0, 0), (100.0, 100.0), []),
+        (False, (1, 1), (100.0, 100.0), [100.0, 220.0]),
+    ],
+)
+def test_sharpshooter_laser_preserves_native_player_zero_owner(
+    mocker,
+    preserve_bugs,
+    perk_counts,
+    health,
+    expected_centers,
+) -> None:
+    for name in (
+        "begin_blend_mode",
+        "rl_set_texture",
+        "rl_begin",
+        "rl_color4ub",
+        "rl_tex_coord2f",
+        "rl_end",
+        "end_blend_mode",
+    ):
+        mocker.patch.object(world_projectiles.rl, name)
+    vertices = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
+    players = [
+        PlayerState(index=0, pos=Vec2(100.0, 150.0), health=health[0]),
+        PlayerState(index=1, pos=Vec2(220.0, 210.0), health=health[1]),
+    ]
+    for player, count in zip(players, perk_counts, strict=True):
+        player.perk_counts[int(PerkId.SHARPSHOOTER)] = count
+    frame = structs.replace(
+        _WorldStub().build_render_frame(),
+        state=GameplayState(preserve_bugs=preserve_bugs),
+        players=players,
+    )
+    ctx = WorldRenderCtx(
+        frame=frame,
+        view=view_transform(world_size=frame.world_size, config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
+    )
+    world_projectiles.draw_sharpshooter_laser_sight(
+        ctx,
+        camera=Vec2(),
+        view_scale=Vec2(1.0, 1.0),
+        scale=1.0,
+        alpha=0.7,
+    )
+    points = [call.args for call in vertices.call_args_list]
+    assert len(points) == 4 * len(expected_centers)
+    centers = [(points[i][0] + points[i + 1][0]) * 0.5 for i in range(0, len(points), 4)]
+    assert centers == pytest.approx(expected_centers)

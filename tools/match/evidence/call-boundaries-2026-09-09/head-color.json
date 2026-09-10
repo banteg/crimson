@@ -3,10 +3,10 @@
   "verified": true,
   "limitations": "One straight-line call window: same saved alpha bits and RGB constants before and after a 32px quad, with resolved receiver loads. Assumes x86 thiscall callee-saved registers. Does not prove head position, upstream alpha derivation, full renderer behavior, or whole-function exactness.",
   "verifier_sha256": "8b8dd69ff02cd3d826601dd09bd43e08dece7e7f13b10df45fedaf40f34a619d",
-  "source_sha256": "45282781bf6a17603dba64ad58dbfddd925c391bfcc5c694c96bb85450d6472e",
+  "source_sha256": "3b5c5cb097ebcf0cf298758ccefbf370202dcc41068f5808e99c9db503afb986",
   "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
-  "candidate_body_sha256": "ed25903ab7cb6d63ac70906dffdec329b0d6d085e0faf09792b074a6dcafb48d",
-  "candidate_object_sha256": "e3b03a00bda435023672f60c1f35d94ffb087ba2a446405709519adf07e878fb",
+  "candidate_body_sha256": "653afc39c6b48aace346a792ceaa2ac48d958e20864d8a832ef0e5f5dbf6f6c6",
+  "candidate_object_sha256": "2a4c4c024d332b2401c1f2c9f4847d269292e96150ffba9fd1b2b9c60d2490da",
   "build_key": {
     "toolchain": {
       "compiler_trees": {
@@ -39,7 +39,7 @@
     "dependencies": [
       [
         "scratches/projectile_render/scratch.cpp",
-        "45282781bf6a17603dba64ad58dbfddd925c391bfcc5c694c96bb85450d6472e"
+        "3b5c5cb097ebcf0cf298758ccefbf370202dcc41068f5808e99c9db503afb986"
       ],
       [
         "scratches/projectile_render/scratch.conf",
@@ -234,14 +234,14 @@
   },
   "candidate": {
     "call_addresses": [
-      7417,
-      7482,
-      7512
+      7493,
+      7558,
+      7588
     ],
     "call_offsets": [
-      7417,
-      7482,
-      7512
+      7493,
+      7558,
+      7588
     ],
     "alpha_register": "esi",
     "rgb_bits": [
@@ -255,132 +255,132 @@
     ],
     "receivers": [
       {
-        "load_offset": 7379,
-        "vtable_offset": 7385,
+        "load_offset": 7455,
+        "vtable_offset": 7461,
         "global": "0x0048083c"
       },
       {
-        "load_offset": 7432,
-        "vtable_offset": 7458,
+        "load_offset": 7508,
+        "vtable_offset": 7534,
         "global": "0x0048083c"
       },
       {
-        "load_offset": 7488,
-        "vtable_offset": 7505,
+        "load_offset": 7564,
+        "vtable_offset": 7581,
         "global": "0x0048083c"
       }
     ],
     "instructions": [
       {
-        "offset": 7401,
+        "offset": 7477,
         "text": "push esi"
       },
       {
-        "offset": 7402,
+        "offset": 7478,
         "text": "push 0x3f800000"
       },
       {
-        "offset": 7407,
+        "offset": 7483,
         "text": "push 0x3f19999a"
-      },
-      {
-        "offset": 7412,
-        "text": "push 0x3f000000"
-      },
-      {
-        "offset": 7417,
-        "text": "call dword [eax+0x114]"
-      },
-      {
-        "offset": 7423,
-        "text": "fld dword [ADDR]"
-      },
-      {
-        "offset": 7429,
-        "text": "fadd dword [edi+-0x14]"
-      },
-      {
-        "offset": 7432,
-        "text": "mov ecx, dword [ADDR]"
-      },
-      {
-        "offset": 7438,
-        "text": "push 0x42000000"
-      },
-      {
-        "offset": 7443,
-        "text": "push 0x42000000"
-      },
-      {
-        "offset": 7448,
-        "text": "push ecx"
-      },
-      {
-        "offset": 7449,
-        "text": "fsub dword [ADDR]"
-      },
-      {
-        "offset": 7455,
-        "text": "lea ebp, dword [edi+-0x18]"
-      },
-      {
-        "offset": 7458,
-        "text": "mov edx, dword [ecx]"
-      },
-      {
-        "offset": 7460,
-        "text": "fstp dword [esp]"
-      },
-      {
-        "offset": 7463,
-        "text": "fld dword [ADDR]"
-      },
-      {
-        "offset": 7469,
-        "text": "fadd dword [ebp]"
-      },
-      {
-        "offset": 7472,
-        "text": "push ecx"
-      },
-      {
-        "offset": 7473,
-        "text": "fsub dword [ADDR]"
-      },
-      {
-        "offset": 7479,
-        "text": "fstp dword [esp]"
-      },
-      {
-        "offset": 7482,
-        "text": "call dword [edx+0x11c]"
       },
       {
         "offset": 7488,
-        "text": "mov ecx, dword [ADDR]"
-      },
-      {
-        "offset": 7494,
-        "text": "push esi"
-      },
-      {
-        "offset": 7495,
-        "text": "push 0x3f800000"
-      },
-      {
-        "offset": 7500,
-        "text": "push 0x3f19999a"
-      },
-      {
-        "offset": 7505,
-        "text": "mov eax, dword [ecx]"
-      },
-      {
-        "offset": 7507,
         "text": "push 0x3f000000"
       },
       {
-        "offset": 7512,
+        "offset": 7493,
+        "text": "call dword [eax+0x114]"
+      },
+      {
+        "offset": 7499,
+        "text": "fld dword [ADDR]"
+      },
+      {
+        "offset": 7505,
+        "text": "fadd dword [edi+-0x14]"
+      },
+      {
+        "offset": 7508,
+        "text": "mov ecx, dword [ADDR]"
+      },
+      {
+        "offset": 7514,
+        "text": "push 0x42000000"
+      },
+      {
+        "offset": 7519,
+        "text": "push 0x42000000"
+      },
+      {
+        "offset": 7524,
+        "text": "push ecx"
+      },
+      {
+        "offset": 7525,
+        "text": "fsub dword [ADDR]"
+      },
+      {
+        "offset": 7531,
+        "text": "lea ebp, dword [edi+-0x18]"
+      },
+      {
+        "offset": 7534,
+        "text": "mov edx, dword [ecx]"
+      },
+      {
+        "offset": 7536,
+        "text": "fstp dword [esp]"
+      },
+      {
+        "offset": 7539,
+        "text": "fld dword [ADDR]"
+      },
+      {
+        "offset": 7545,
+        "text": "fadd dword [ebp]"
+      },
+      {
+        "offset": 7548,
+        "text": "push ecx"
+      },
+      {
+        "offset": 7549,
+        "text": "fsub dword [ADDR]"
+      },
+      {
+        "offset": 7555,
+        "text": "fstp dword [esp]"
+      },
+      {
+        "offset": 7558,
+        "text": "call dword [edx+0x11c]"
+      },
+      {
+        "offset": 7564,
+        "text": "mov ecx, dword [ADDR]"
+      },
+      {
+        "offset": 7570,
+        "text": "push esi"
+      },
+      {
+        "offset": 7571,
+        "text": "push 0x3f800000"
+      },
+      {
+        "offset": 7576,
+        "text": "push 0x3f19999a"
+      },
+      {
+        "offset": 7581,
+        "text": "mov eax, dword [ecx]"
+      },
+      {
+        "offset": 7583,
+        "text": "push 0x3f000000"
+      },
+      {
+        "offset": 7588,
         "text": "call dword [eax+0x114]"
       }
     ]
@@ -388,36 +388,36 @@
   "negative_controls": [
     {
       "name": "removed-reset",
-      "source_sha256": "908e8578427dfbf126a255bae1d003d35223e595e225b2b650476c287c3e5f38",
+      "source_sha256": "f66c8c04f36d309a0a8c8bae9e6c716925e11a6a4dc3c6ccf8b906c1cd94414a",
       "rejected": true
     },
     {
       "name": "changed-reset-rgb",
-      "source_sha256": "798e76e6eeb77a3a177a39d3e48d151c59f4d7907eabdfd296971be7739b910a",
+      "source_sha256": "6bfd66a29add3e1defb9adf8e6da97799d3ff7e5ae5d67163eef524d2f692a2b",
       "rejected": true
     },
     {
       "name": "changed-reset-alpha",
-      "source_sha256": "fa837d50c5e3f6c479e2711773743e9d972cb894a044454ef28010ff2799c903",
+      "source_sha256": "579f8ae09159d6a2a5032f9874d41fa2f1454eb1c3642cb291fea2a9d03d6c10",
       "rejected": true
     }
   ],
   "reset_counterfactual_reference_audit": {
-    "before_problems": 11,
-    "after_problems": 11,
+    "before_problems": 10,
+    "after_problems": 10,
     "previous_problem_identities_preserved": true,
     "added_pairings": [],
     "removed_pairings": []
   },
   "match": {
-    "ratio": 0.574274139095206,
+    "ratio": 0.5962251432423323,
     "instructions": [
       3021,
-      2903
+      2913
     ],
     "references": {
-      "ok": 456,
-      "problems": 11
+      "ok": 464,
+      "problems": 10
     },
     "exact": false,
     "body_byte_exact": false

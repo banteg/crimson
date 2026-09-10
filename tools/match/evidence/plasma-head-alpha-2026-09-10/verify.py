@@ -129,6 +129,8 @@ def run(
     native_creature_search=False,
     creature_rows=(),
     perk_count=0,
+    player_count=0,
+    player_rows=(),
 ):
     slots = {STUB + (slot // 4) * 16: value for slot, value in SLOTS.items()}
     effect = p.address("effect_select_texture")
@@ -181,7 +183,8 @@ def run(
         mu.mem_write(p.address(name), struct.pack(fmt, value))
 
     w("grim_interface_ptr", THIS)
-    mu.mem_write(p.address("config_blob") + 20, struct.pack("<i", 0))
+    assert 0 <= player_count <= 2
+    mu.mem_write(p.address("config_blob") + 20, struct.pack("<i", player_count))
     mu.mem_write(p.address("config_blob") + 16, bytes([glow]))
     w("render_overlay_player_index", 0)
     mu.mem_write(p.address("player_state_table"), bytes(0x360 * 2))
@@ -189,6 +192,17 @@ def run(
     mu.mem_write(p.address("secondary_projectile_pool"), bytes(0x2C * 64))
     mu.mem_write(p.address("camera_offset"), struct.pack("<ff", 13.125, -21.75))
     w("quest_spawn_timeline", 1234)
+    if player_rows:
+        w("perk_id_sharpshooter", 2)
+        indices = set()
+        for index, x, y, health, heading, sharpshooter in player_rows:
+            assert 0 <= index < 2 and index not in indices
+            indices.add(index)
+            address = p.address("player_state_table") + 0x360 * index
+            mu.mem_write(address + 0x14, struct.pack("<ff", x, y))
+            mu.mem_write(address + 0x24, struct.pack("<f", health))
+            mu.mem_write(address + 0x300, struct.pack("<f", heading))
+            mu.mem_write(address + 0xB8 + 4 * 2, struct.pack("<i", sharpshooter))
     if native_creature_search:
         mu.mem_write(p.address("creature_pool"), bytes(0x98 * 384))
         indices = set()
@@ -325,6 +339,7 @@ def run(
         "coverage": len(coverage),
         "ftol_sha256": sha(ftol_data),
         "creature_state_sha256": sha(bytes(mu.mem_read(p.address("creature_pool"), 0x98 * 384))),
+        "player_state_sha256": sha(bytes(mu.mem_read(p.address("player_state_table"), 0x360 * 2))),
         "search_results": search_results,
         "search_instructions_exercised": len(search_coverage),
         "native_search_sha256": sha(find_data) if find_data else None,
@@ -414,7 +429,7 @@ def main():
         )
     result = current.result
     assert not result.exact and not result.body_byte_exact
-    assert sha(defect_source.encode()) == "3ca787a3df8518128c1dd02158471d97a2bd292b9d7b075ecddea72a8c17a8d2"
+    assert sha(defect_source.encode()) == "733f0ce6b5465a111a5144754ba608e5ef89fec0446c6ca2e584cc133d48a492"
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     md.detail = True
     multiply = next(md.disasm(current.image.function_bytes(0x422C9D, 0x422CA3), 0x422C9D))

@@ -1277,3 +1277,24 @@ Alignment improves from 57.104195% to 57.427414%, instructions from 2891 to
 2903 against 3021, and references from 444/0/14 to 456/0/11. Both exactness
 flags remain false. Supporting caller-boundary receipts are refreshed;
 there is no new reference regression or exception.
+
+## Sharpshooter laser ownership and start-coordinate lifetime (2026-09-10)
+
+Native `0x422ea8` reads player zero's Sharpshooter count for every living
+player. The scratch now uses that fixed owner. Python follows this behavior
+in `preserve_bugs` mode and retains per-player ownership otherwise; ten
+renderer regression cases cover both modes, including a dead first owner.
+
+Native stores laser start Y before adding camera Y. Copying `start_pos` and
+then applying `+= camera_offset` preserves that store boundary; the previous
+binary addition produced `0x42e22ec1` where native publishes `0x42e22ec0`.
+The [laser evidence package](../../evidence/laser-owner-rounding-2026-09-10/README.md)
+checks the native operations, 438 full caller traces, an independent rounding
+oracle, and seven compiled defect cases. Another 1,064 plasma/beam/chain
+fixtures are replayed against this source. External Grim calls remain modeled.
+
+Alignment improves from 57.427414% to 59.622514%, instructions from 2903 to
+2913 against 3021, and references from 456/0/11 to 464/0/10. Both exactness
+flags remain false. No new waiver or whole-function credit is introduced.
+Current source SHA-256:
+`3b5c5cb097ebcf0cf298758ccefbf370202dcc41068f5808e99c9db503afb986`.

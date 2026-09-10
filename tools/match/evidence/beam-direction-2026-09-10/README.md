@@ -44,7 +44,7 @@ direction, the wrong anchor, or both; all **24** type/lifetime negative cases
 are rejected. At initial retention, the combined defect recreated the preceding source
 SHA-256 `9290f2f0e57a4cc24b1ff5acec6f34e35afa7ebc39203f56dd265a6853ba8cb6`.
 The refreshed receipt restores those same direction/anchor defects in the
-current source while preserving the subsequent ion-chain expression fix.
+current source while preserving the subsequent ion-chain expression and laser fixes.
 Its `previous` control label refers to these restored expressions; its
 recorded source hash differs from that historical full source.
 
@@ -71,9 +71,9 @@ key, relocations, fixtures, negative controls, and example call traces.
 ## Matching status
 
 At initial retention, the beam correction left **57.104195%**,
-**2891/3021 instructions**, and **444/0/14 references** unchanged. The current
-receipt follows the independent [ion-chain product correction](../ion-chain-product-2026-09-10/README.md),
-which improves those figures to **57.427414%**, **2903/3021**, and **456/0/11**.
-The direction/anchor controls remain metric-neutral within this current
-source. Both exactness flags remain false. Aggregate metrics alone do not
+**2891/3021 instructions**, and **444/0/14 references** unchanged. The subsequent
+receipt followed the independent [ion-chain product correction](../ion-chain-product-2026-09-10/README.md),
+which improved those figures to **57.427414%**, **2903/3021**, and **456/0/11**.
+The current receipt includes the [laser owner/rounding recovery](../laser-owner-rounding-2026-09-10/README.md), reaching **59.622514%**, **2913/3021**, and **464/0/10**.
+The direction/anchor controls remain metric-neutral within this current source. Both exactness flags remain false. Aggregate metrics alone do not
 establish semantic equality, as these fixtures demonstrate.

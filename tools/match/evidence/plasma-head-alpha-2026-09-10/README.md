@@ -84,4 +84,6 @@ that current source; its source hash therefore differs from the historical
 pre-alpha-fix source. The shared runner also exposes optional beam stubs and
 geometry inputs, which the plasma fixtures do not enable.
 
-The receipt is also refreshed after the [ion-chain product correction](../ion-chain-product-2026-09-10/README.md). Current renderer metrics are 57.427414%, 2903/3021 instructions, and 456/0/11 references; the preceding matching-debt discussion records the historical alpha correction. The plasma fixtures keep native creature search disabled and the perk stub at zero.
+The receipt is also refreshed after the [ion-chain product correction](../ion-chain-product-2026-09-10/README.md). At that retention, renderer metrics were 57.427414%, 2903/3021 instructions, and 456/0/11 references; the preceding matching-debt discussion records the historical alpha correction. The plasma fixtures keep native creature search disabled and the perk stub at zero.
+
+The current receipt includes the [laser owner/rounding recovery](../laser-owner-rounding-2026-09-10/README.md): 59.622514%, 2913/3021 instructions, and 464/0/10 references. Its wrong-alpha source retains the other corrections. The shared runner now accepts explicit player records; these plasma fixtures retain zero players.
