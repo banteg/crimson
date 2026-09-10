@@ -80,3 +80,36 @@ instruction coverage; relocated object references; per-scenario observation
 hashes; and negative-control outcomes. The generated `cases.json` in the output
 directory contains every concrete scenario. The Unicorn Python API follows the
 [upstream tutorial](https://www.unicorn-engine.org/docs/tutorial.html).
+
+## Cursor experiment correction (2026-09-10)
+
+Two historical mutation plans replaced indexed `for` loops with pointer `do`
+loops but left rejection-path `continue` statements above the cursor advance.
+Inactive entries then prevent the loop from advancing. These variants were
+never retained as canonical source. Their earlier compilation and match scores
+do not provide valid evidence against correctly advancing cursor loops.
+
+[verify_cursors.py](verify_cursors.py) applies both historical plans to temporary
+copies and executes them against the original body. With only the last pool
+slot active, native returns and each historical candidate reaches the execution
+limit. It then applies the
+[corrected plan](../../scratches/creature_render_type/safe-native-cursors-2026-09-10.json),
+which gates each accepted body and advances unconditionally. The combined
+candidate agrees with all 130 existing fixtures and executes all 765 native and
+762 candidate instructions. The finite coverage limitations above still apply.
+
+All seven nonempty combinations of the three corrected cursor replacements
+were compiled and measured in the scratch's experiment ledger. None improves
+the retained source; the combined candidate reaches 77.013752% with 139/0/3
+references and fails both exactness checks. The execution verifier tests that
+combined candidate, not every combination. No new function match is claimed.
+
+```sh
+uv run --no-sync --with unicorn==2.1.4 python \
+  tools/match/evidence/creature-render-execution-2026-09-09/verify_cursors.py \
+  --out /private/tmp/crimson-creature-render-cursor-audit
+```
+
+[cursor-results.json](cursor-results.json) records input and compiler hashes,
+compiled fixture layout, historical failures, and corrected-candidate execution
+and matching results. The generated `cases.json` contains the concrete fixtures.

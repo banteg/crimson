@@ -32,7 +32,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **14** non-exact scratch-backed functions hold **21681 fuzzy-gap bytes**. The top 5 hold **84.0%** of that gap; the top 10 hold **98.9%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **14 / 21681** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 574 gap bytes**; **14 / 24997** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -40,18 +40,19 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5845 | semantic-complete | compiler,references | historical-only | 0/70 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 2 | crimsonland.exe | projectile_render | 5122 | incomplete | analysis,compiler,references | historical-only | 0/72 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 3 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 4 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 5 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 6 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 7 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/26 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 8 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 9 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 10 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 11 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 12 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 13 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 14 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 3 | crimsonland.exe | controls_menu_update | 3891 | semantic-complete | compiler,references | historical-only | 0/63 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 4 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 5 | crimsonland.exe | creature_update_all | 2403 | semantic-complete | compiler,references | historical-only | 0/24 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 6 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 7 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 8 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | current-active | 1/27 | 1 | repeated-variants,repeated-specs,variant-errors |
+| 9 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 10 | crimsonland.exe | player_render_overlays | 404 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 11 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
+| 12 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | historical-only | 0/10 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 13 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 14 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
+| 15 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 

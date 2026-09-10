@@ -1,5 +1,30 @@
 # `creature_render_type`
 
+## Cursor experiment correction (2026-09-10)
+
+The historical `main-animation-cursor-mutations.json` and
+`flash-lifecycle-cursor-mutations.json` header/tail pairs leave `continue`
+inside a `do` loop whose cursor advances only at the bottom of its body.
+Inactive or rejected entries therefore skip the advance. The earlier notes'
+description of these pairs as valid native cursor controls refers only to
+compilation; their execution does not preserve the original loop behavior.
+Those results must not rule out correctly advancing cursor loops.
+
+The [cursor execution verifier](../../evidence/creature-render-execution-2026-09-09/verify_cursors.py)
+reproduces both failures with a fixture whose only active entry is the last pool
+slot. Native returns; both historical candidates reach the instruction/time
+limit. The corrected combination advances unconditionally and agrees with
+native drawing arguments, call order, and observed writes in all 130 existing
+scenarios, executing all 765 native and 762 candidate instructions.
+
+`safe-native-cursors-2026-09-10.json` records all seven single, paired, and
+triple combinations of the corrected shadow, normal, and flash cursors.
+All seven compile and are evaluated, but none improves the retained source. The combined
+form reaches 77.013752%, 762/765 instructions, and 139/0/3 references, versus
+the canonical 79.737705%, 760/765, and 139/0/5. These bounded results replace
+the invalid cursor inference; they do not establish a compiler limit.
+Canonical source and aliases remain unchanged.
+
 Native target: `crimsonland.exe` at `0x00418b60` (2834 bytes).
 
 Live Binary Ninja evidence recovers the complete per-type creature sprite

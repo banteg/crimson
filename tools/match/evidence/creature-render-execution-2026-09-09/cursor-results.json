@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "function": "creature_render_type",
+  "unicorn": "2.1.4",
+  "source_sha256": "64c270c898ac14e21ab7ad932cc0cf83a5bdc7d97b397461b102ff93276f7086",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "d6c3ad416ffd7e03988a3104bbcbb792cac5eeba34634e62cdfb6a4bbd3584ca",
+  "execution_verifier_sha256": "34bd1380f39c3b49aa2d9876dc62444e18d93720311ceef7e2aa169d4cd4f9db",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "compiler_files_sha256": {
+    "CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+    "C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+    "C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+    "C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a"
+  },
+  "layout": {
+    "sizeof(creature_t)": 152,
+    "sizeof(creature_spawn_slot_t)": 24,
+    "sizeof(creature_type_t)": 68,
+    "offsetof(creature_t, active)": 0,
+    "offsetof(creature_t, lifecycle_stage)": 16,
+    "offsetof(creature_t, pos_x)": 20,
+    "offsetof(creature_t, pos_y)": 24,
+    "offsetof(creature_t, max_health)": 40,
+    "offsetof(creature_t, heading)": 44,
+    "offsetof(creature_t, size)": 52,
+    "offsetof(creature_t, hit_flash_timer)": 56,
+    "offsetof(creature_t, tint_r)": 60,
+    "offsetof(creature_t, tint_g)": 64,
+    "offsetof(creature_t, tint_b)": 68,
+    "offsetof(creature_t, tint_a)": 72,
+    "offsetof(creature_t, type_id)": 108,
+    "offsetof(creature_t, link_index)": 120,
+    "offsetof(creature_t, flags)": 140,
+    "offsetof(creature_t, anim_phase)": 148,
+    "offsetof(creature_type_t, base_frame)": 56,
+    "offsetof(creature_type_t, anim_flags)": 64
+  },
+  "variants": {
+    "historical-main": {
+      "source_sha256": "75e9bb132115ccb63457ea69346989e8a8dc46d30b6cd04617780951f9c12dfa",
+      "plan_sha256": "06808304757a8d5f08b5e6de3b90663c1b91ec41ed5c17bdb4dec269633fe508",
+      "object_sha256": "7f2ff4242b91a118fb645c2c9d84aaf936823e5142c8a1f2e1033b15b1df08c1",
+      "candidate_body_sha256": "159bc75929d9894c1877cea04c34e5d5011eff882bf1f08cc7ccf92886366820",
+      "case": {
+        "shadows": 0,
+        "flash": 0,
+        "energizer": 0.0,
+        "creatures": [
+          {
+            "index": 383
+          }
+        ]
+      },
+      "native_returned": true,
+      "native_calls": 10,
+      "candidate_failure": "Instruction/time limit reached before return"
+    },
+    "historical-flash": {
+      "source_sha256": "b78ccc074e6176bfc465992c278bc69ef0544d90b0401022eb988a7c264f1e8a",
+      "plan_sha256": "5eca737aa1f0ce32555eb9537188e3df9f48115e0962c88579a1bfa4b34b1f6d",
+      "object_sha256": "8988c8276473701aec188786c3f82f9c1958a40766cf8445196da788042f9692",
+      "candidate_body_sha256": "b1dc6941c7bdd3d9ddd6a1e517a8d68084feb886ecf327a6f258ed7e8d5d33c6",
+      "case": {
+        "shadows": 0,
+        "flash": 1,
+        "energizer": 0.0,
+        "creatures": [
+          {
+            "index": 383
+          }
+        ]
+      },
+      "native_returned": true,
+      "native_calls": 19,
+      "candidate_failure": "Instruction/time limit reached before return"
+    },
+    "corrected": {
+      "source_sha256": "add92ba38902484b47781b5be31b624fa21e4fbd6fc67826d15dcf76105027c8",
+      "plan_sha256": "6f6c7cac1f9a9e430c8509973019bde0880e70b42ab1df6a4d20374e74cfec4c",
+      "object_sha256": "bc737810b240497077c8e1dbee184e24395801898bcef1da5619526feecefd3a",
+      "candidate_body_sha256": "af5cce0bf8dbfe980a9d8e2ff648cf332247cc4410606e92adc8b0d417528f5d",
+      "scenarios": 130,
+      "calls_equal": true,
+      "writes_equal": true,
+      "cases_sha256": "541bab9a87f16f95aaae521e9125371d26248bd1d06eafa2ad26fdd4f42f46f8",
+      "all_native_instructions_executed": 765,
+      "all_candidate_instructions_executed": 762,
+      "match": {
+        "exact": false,
+        "body_byte_exact": false,
+        "match_ratio": 0.7701375245579568,
+        "prefix_instructions": 25,
+        "target_instructions": 765,
+        "candidate_instructions": 762,
+        "references": {
+          "ok": 139,
+          "unresolved": 0,
+          "mismatch": 3
+        }
+      }
+    }
+  },
+  "new_source_matches": 0
+}
