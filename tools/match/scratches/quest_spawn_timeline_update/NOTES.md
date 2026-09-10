@@ -78,14 +78,13 @@ adds its aligned-frame prologue. `/Og-` broadly deoptimizes the function. No
 volatile pointer, artificial union, dummy access, or other register-forcing
 construct is retained.
 
-Two recorded sweeps exhaust 14 honest source-level lifetime variants around
-the template field and its interior pointer. All are byte-neutral, confirming
-that VC6 folds the recovered pointer regardless of declaration position,
-scope, constness, alias, or explicit initialization form. A separate ten-profile
-compiler matrix is also closed: base, `/Ob1`, `/Ot`, `/Oa`, `/Ow`, `/Oi-`, and
-`/G5` are neutral, while `/G6`, `/Op`, and `/Oy-` regress. This bounds the
-remaining two instructions as a compiler-local lifetime artifact rather than
-an untried optimizer flag.
+Two recorded sweeps tested 14 source-level lifetime variants around the
+template field and its interior pointer. All were byte-neutral for the tested
+declaration positions, scopes, qualifiers, aliases, and initialization forms.
+A separate ten-profile compiler matrix found base, `/Ob1`, `/Ot`, `/Oa`, `/Ow`,
+`/Oi-`, and `/G5` neutral, while `/G6`, `/Op`, and `/Oy-` regressed. These are
+bounded source and profile observations; they do not establish the original
+source shape, compiler causation, or a limit on future recovery.
 
 ## Port parity
 
@@ -175,3 +174,46 @@ explain the native pointer home store or establish that keeping those nodes
 alone would make the function exact. The source remains unchanged at
 113/115 instructions, prefix 51, 13 clean references, and non-exact encoded
 body; no new source match is claimed.
+
+## Redundant-store research (2026-09-11)
+
+The [web research and stock-VC6 positive control](../../evidence/vc6-redundant-stores-2026-09-11/README.md)
+identify three adjacent overwritten stack stores in the byte-exact
+`dx_get_version_from_dxdiag` reconstruction. They arise from intrinsic zeroing
+followed by field assignments; explicit `memset` remains exact. This supplies a
+reproducible analogue for compiler-pass investigation, but does not yet explain
+the timeline's derived-pointer home store or improve its candidate.
+
+## Source-boundary follow-up (2026-09-11)
+
+The canonical build remains **91.228070%**, 113/115 instructions, prefix 51,
+`13/0/0` references, and `body_byte_exact: false`. This follow-up adds **zero
+matches** and retains no candidate source or compiler-configuration change.
+
+The recorded sweep evaluates 98 complete controls with zero compilation errors:
+table indexing and scan ownership, loop placement, positive-count and whole-group
+inlining, explicit object copies, early entry-cursor advancement, pointer
+definitions inside the spawn loop, scalar types, aggregate spawn state, and
+reference-returning accessors. Of these controls, 49 retain the baseline score;
+the others regress. None restores the native template-pointer setup and dead
+home store. The full result set is in `experiments.jsonl`.
+
+The adjacent [source generator](source-boundary-controls-2026-09-11.py) pins the
+canonical source hash and reproduces all 98 tested sources byte for byte. Its
+generated mutation-plan SHA-256 is
+`4ed2622a03304b4f58577a953297d1509b4a520bd26d8b3c68e475bcba2ac98a`.
+Replay from the repository root:
+
+```sh
+python3 tools/match/scratches/quest_spawn_timeline_update/source-boundary-controls-2026-09-11.py \
+  /private/tmp/quest-timeline-source-boundaries.json
+.venv/bin/crimson match mutate tools/match/scratches/quest_spawn_timeline_update \
+  --spec /private/tmp/quest-timeline-source-boundaries.json --jobs 6
+```
+
+Read-only inspection of the stock C2 pass at RVA `0x306c1` showed its derived
+address/copy eligibility and intervening-definition checks. This motivated the
+early-cursor and reference-lifetime controls; it does not explain how the native
+home store arose. The compiler was not patched for these source experiments.
+The previously recorded preserving observer remains the dynamic evidence for
+where the canonical pointer is removed. These controls leave the target open.

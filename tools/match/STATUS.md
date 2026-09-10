@@ -32,7 +32,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **11** non-exact scratch-backed functions hold **21328 fuzzy-gap bytes**. The top 5 hold **85.2%** of that gap; the top 10 hold **99.8%**.
 
-Current-baseline experiments cover **1 functions / 574 gap bytes**; **10 / 20754** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **2 functions / 607 gap bytes**; **9 / 20722** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -48,7 +48,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 8 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 9 | crimsonland.exe | player_render_overlays | 319 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 10 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 11 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
+| 11 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/9 | 1 | variant-errors |
 
 ## Function dispositions
 

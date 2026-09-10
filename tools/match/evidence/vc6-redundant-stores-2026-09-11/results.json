@@ -1,0 +1,210 @@
+{
+  "baseline_source_sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713",
+  "controls": [
+    {
+      "name": "baseline",
+      "source_sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713",
+      "result": {
+        "state": "match",
+        "image": "crimsonland.exe",
+        "function": "dx_get_version_from_dxdiag",
+        "address": 4312496,
+        "body_byte_exact": true,
+        "padding_bytes": {
+          "target": 0,
+          "candidate": 0
+        },
+        "target_bytes": 556,
+        "fuzzy_weighted_bytes": 556.0,
+        "fuzzy_gap_bytes": 0.0,
+        "target_instructions": 190,
+        "candidate_instructions": 190,
+        "match_ratio": 1.0,
+        "prefix_instructions": 190,
+        "first_mismatch": {
+          "target_offset": null,
+          "candidate_offset": null
+        },
+        "references": {
+          "ok": 12,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "compiler": "msvc6.5",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "import_thunk": null,
+        "recovery": "exact",
+        "residuals": [],
+        "note": "directx-dxdiag-com-version-probe",
+        "error": null
+      }
+    },
+    {
+      "name": "aggregate-init",
+      "source_sha256": "ad490f3507d15bea7fafc86b0b526c0d39783004aac78ec553ed1ff8b1490b0d",
+      "result": {
+        "state": "wip",
+        "image": "crimsonland.exe",
+        "function": "dx_get_version_from_dxdiag",
+        "address": 4312496,
+        "body_byte_exact": false,
+        "padding_bytes": {
+          "target": 0,
+          "candidate": 0
+        },
+        "target_bytes": 556,
+        "fuzzy_weighted_bytes": 481.1820580474934,
+        "fuzzy_gap_bytes": 74.8179419525066,
+        "target_instructions": 190,
+        "candidate_instructions": 189,
+        "match_ratio": 0.8654353562005277,
+        "prefix_instructions": 21,
+        "first_mismatch": {
+          "target_offset": 66,
+          "candidate_offset": 66
+        },
+        "references": {
+          "ok": 12,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "compiler": "msvc6.5",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "import_thunk": null,
+        "recovery": "unspecified",
+        "residuals": [],
+        "note": "directx-dxdiag-com-version-probe",
+        "error": null
+      }
+    },
+    {
+      "name": "field-init",
+      "source_sha256": "e28eb2650ae5216ee713bc8dfb04e4e4c228c9b9282eb5a730438bcc5c6825e4",
+      "result": {
+        "state": "wip",
+        "image": "crimsonland.exe",
+        "function": "dx_get_version_from_dxdiag",
+        "address": 4312496,
+        "body_byte_exact": false,
+        "padding_bytes": {
+          "target": 0,
+          "candidate": 0
+        },
+        "target_bytes": 556,
+        "fuzzy_weighted_bytes": 444.8,
+        "fuzzy_gap_bytes": 111.19999999999999,
+        "target_instructions": 190,
+        "candidate_instructions": 185,
+        "match_ratio": 0.8,
+        "prefix_instructions": 21,
+        "first_mismatch": {
+          "target_offset": 66,
+          "candidate_offset": 66
+        },
+        "references": {
+          "ok": 12,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "compiler": "msvc6.5",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "import_thunk": null,
+        "recovery": "unspecified",
+        "residuals": [],
+        "note": "directx-dxdiag-com-version-probe",
+        "error": null
+      }
+    },
+    {
+      "name": "explicit-memset",
+      "source_sha256": "5bd956adabc7c21559649ac1a02d14eac9c502795775e2a84cf6d97f2d4d48a7",
+      "result": {
+        "state": "match",
+        "image": "crimsonland.exe",
+        "function": "dx_get_version_from_dxdiag",
+        "address": 4312496,
+        "body_byte_exact": true,
+        "padding_bytes": {
+          "target": 0,
+          "candidate": 0
+        },
+        "target_bytes": 556,
+        "fuzzy_weighted_bytes": 556.0,
+        "fuzzy_gap_bytes": 0.0,
+        "target_instructions": 190,
+        "candidate_instructions": 190,
+        "match_ratio": 1.0,
+        "prefix_instructions": 190,
+        "first_mismatch": {
+          "target_offset": null,
+          "candidate_offset": null
+        },
+        "references": {
+          "ok": 12,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "compiler": "msvc6.5",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "import_thunk": null,
+        "recovery": "exact",
+        "residuals": [],
+        "note": "directx-dxdiag-com-version-probe",
+        "error": null
+      }
+    },
+    {
+      "name": "intrinsics-off",
+      "source_sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713",
+      "result": {
+        "state": "wip",
+        "image": "crimsonland.exe",
+        "function": "dx_get_version_from_dxdiag",
+        "address": 4312496,
+        "body_byte_exact": false,
+        "padding_bytes": {
+          "target": 0,
+          "candidate": 0
+        },
+        "target_bytes": 556,
+        "fuzzy_weighted_bytes": 472.8188976377953,
+        "fuzzy_gap_bytes": 83.18110236220468,
+        "target_instructions": 190,
+        "candidate_instructions": 191,
+        "match_ratio": 0.8503937007874016,
+        "prefix_instructions": 21,
+        "first_mismatch": {
+          "target_offset": 66,
+          "candidate_offset": 66
+        },
+        "references": {
+          "ok": 12,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "compiler": "msvc6.5",
+        "cflags": "/O2 /GB /W3 /GR- /Oi-",
+        "archive": null,
+        "archive_member": null,
+        "archive_sha256": null,
+        "import_thunk": null,
+        "recovery": "unspecified",
+        "residuals": [],
+        "note": "directx-dxdiag-com-version-probe",
+        "error": null
+      }
+    }
+  ]
+}
