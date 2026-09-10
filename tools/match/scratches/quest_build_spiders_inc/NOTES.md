@@ -1,5 +1,17 @@
 # `quest_build_spiders_inc`
 
+## Count-lowering observation (2026-09-10)
+
+The [replayable count observer](../../evidence/vc6-spiders-count-2026-09-10/README.md)
+compares the retained early field assignment with a scalar count stored after
+the first entry's trigger time. C2+0x2930f turns their additions into LEA and
+ADD respectively; before local allocation, the scalar control's division and
+addition also share a destination storage owner. Each observer preserves its
+normal whole COFF object except the timestamp, and both missing-stream controls
+fail as expected. Neither source matches exactly, and the canonical scratch is
+unchanged. The evidence narrows the compiler boundary without proving an
+original source form or an unavoidable residual.
+
 Native target: `crimsonland.exe` at `0x004390d0` (346 bytes).
 
 Live Binary Ninja evidence recovers three opening spider entries at 500 ms.
