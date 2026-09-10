@@ -1,16 +1,30 @@
 # `quest_build_spiders_inc`
 
-## Count-lowering observation (2026-09-10)
+## Current count-publication recovery (2026-09-10)
 
-The [replayable count observer](../../evidence/vc6-spiders-count-2026-09-10/README.md)
-compares the retained early field assignment with a scalar count stored after
-the first entry's trigger time. C2+0x2930f turns their additions into LEA and
-ADD respectively; before local allocation, the scalar control's division and
-addition also share a destination storage owner. Each observer preserves its
-normal whole COFF object except the timestamp, and both missing-stream controls
-fail as expected. Neither source matches exactly, and the canonical scratch is
-unchanged. The evidence narrows the compiler boundary without proving an
-original source form or an unavoidable residual.
+The retained source computes the signed half-step increment once and publishes
+`wave_increase + 3` after each row's coordinates, template, and trigger time.
+This restores the native output-store order. Alignment improves from
+**96.190476% to 97.630332%**, prefix **57 to 58**, and clean references **7 to 8**.
+The explicit tradeoff is **106 candidate instructions versus 105 native**, up
+from 105. Both normalized and encoded-body exactness remain false.
+
+The [publication verifier](../../evidence/vc6-spiders-count-2026-09-10/README.md#current-candidate-delayed-count-publication)
+executes native, current, and historical early-field bodies for 15 widths.
+Every body instruction is covered; all 33 output records match an independent
+oracle, and the current body's 166 output writes match native order exactly.
+The historical early-field body produces identical output bytes but fails that
+order check in every case. This is bounded execution evidence, not proof over
+all inputs or alias arrangements. The remaining `MOV`/`SAR`/`ADD` lowering and
+schedule still differ from native `SAR`/`LEA`.
+
+The prior [count-lowering observer](../../evidence/vc6-spiders-count-2026-09-10/README.md)
+remains replayable from its saved `early-field.cpp`. Its `canonical` label
+identifies that historical baseline. The following earlier measurements are
+historical; the current source hash is
+`a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be`.
+
+## Historical recovery record
 
 Native target: `crimsonland.exe` at `0x004390d0` (346 bytes).
 

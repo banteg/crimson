@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "kind": "vc6-spiders-count-representation",
+  "baseline_kind": "historical-early-field",
   "target": {
     "function": "quest_build_spiders_inc",
     "start": "0x4390d0",
@@ -8,8 +9,9 @@
     "body_sha256": "35cf113305044a5b188173b0599728bde4429a55040a41299025a2bc1e060154"
   },
   "source_hashes": {
-    "verify.py": "c1e96225ad1191cb0e31356547c3b4cc63ef470712308821b3f76beb5fd5d4a0",
-    "observer.c": "d3560cf95cb91c861d802bf46d1f35da888a2bcec27c71a96f7e9b1b864b557d"
+    "verify.py": "fc6087c73788f0970061851925b9afffc5242d888652815df3c1e1d986d649b4",
+    "observer.c": "d3560cf95cb91c861d802bf46d1f35da888a2bcec27c71a96f7e9b1b864b557d",
+    "early-field.cpp": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338"
   },
   "replay_source_hashes": {
     "verify.py": "5b46741ac7c3f96b0890b477dbeb01a0b9dbbfcc62790b2aceca1f7cc6f57a65",
@@ -56,12 +58,12 @@
           "auto_inline_off": [],
           "dependencies": [
             [
-              "scratches/quest_build_spiders_inc/scratch.cpp",
+              "/private/tmp/crimson-spiders-historical-count/early-source/scratch.cpp",
               "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338"
             ],
             [
-              "scratches/quest_build_spiders_inc/scratch.conf",
-              "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240"
+              "/private/tmp/crimson-spiders-historical-count/early-source/scratch.conf",
+              null
             ],
             [
               "cl.sh",
@@ -260,11 +262,11 @@
           "auto_inline_off": [],
           "dependencies": [
             [
-              "/private/tmp/c2spiders-count-uses-complete/late-source/scratch.cpp",
+              "/private/tmp/crimson-spiders-historical-count/late-source/scratch.cpp",
               "5304d14ebf22fa8734982c2de37fa9f31780840389d104ac766477b81ee723f4"
             ],
             [
-              "/private/tmp/c2spiders-count-uses-complete/late-source/scratch.conf",
+              "/private/tmp/crimson-spiders-historical-count/late-source/scratch.conf",
               null
             ],
             [

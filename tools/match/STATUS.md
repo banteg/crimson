@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **796/810** functions matched exactly (**98.3%**), **239502/341992** code bytes (**70.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **316409/341992** code bytes (**92.5%**).
+Fuzzy-weighted alignment is **316414/341992** code bytes (**92.5%**).
 
-Remaining exact-match debt is **14 functions**, **102490 code bytes**, and **25583 fuzzy-gap bytes**.
+Remaining exact-match debt is **14 functions**, **102490 code bytes**, and **25578 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**14** non-exact scratch-backed functions hold **25583 fuzzy-gap bytes**. The top 5 hold **80.2%** of that gap; the top 10 hold **99.0%**.
+**14** non-exact scratch-backed functions hold **25578 fuzzy-gap bytes**. The top 5 hold **80.2%** of that gap; the top 10 hold **99.0%**.
 
-Current-baseline experiments cover **1 functions / 574 gap bytes**; **13 / 25008** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 574 gap bytes**; **13 / 25003** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -51,7 +51,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 11 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 12 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 13 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/8 | 0 | variant-errors,historical-only |
-| 14 | crimsonland.exe | quest_build_spiders_inc | 13 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 14 | crimsonland.exe | quest_build_spiders_inc | 8 | semantic-complete | compiler | historical-only | 0/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -121,12 +121,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 657/671 | 218337/320827 | 68.1% | 295244/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 657/671 |
+| crimsonland.exe | 657/671 | 218337/320827 | 68.1% | 295249/320827 | 92.0% | 671/671 | 320827/320827 | 100.0% | 657/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**657/671** functions (**97.9%**), **218337/320827** bytes (**68.1%**), **295244/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **657/671** scratches verified.
+**657/671** functions (**97.9%**), **218337/320827** bytes (**68.1%**), **295249/320827** fuzzy-weighted bytes (**92.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **657/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -596,7 +596,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 242/242 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
 | match | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 975/975 | 0 | 291/291 | 100.00% | 291/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | match | quest_build_the_end_of_all | 0x00438e10 | 692 | 692/692 | 0 | 174/174 | 100.00% | 174/174 | 18/0/0 |  | quest-the-end-of-all-append-count |
-| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 333/346 | 13 | 105/105 | 96.19% | 57/105 | 7/0/0 |  | quest-spiders-inc-staged-publication |
+| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 338/346 | 8 | 106/105 | 97.63% | 58/105 | 8/0/0 |  | quest-spiders-inc-staged-publication |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
 | match | quest_start_selected | 0x0043a790 | 434 | 434/434 | 0 | 116/116 | 100.00% | 116/116 | 49/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |

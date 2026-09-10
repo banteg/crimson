@@ -1,13 +1,15 @@
 # Spiders Inc. count lowering
 
-The retained source and a scalar-count control diverge before local register
-allocation. This observer identifies that boundary without changing compiler
+The historical early-field source and a scalar-count control diverge before
+local register allocation. This observer identifies that boundary without changing compiler
 decisions. Neither source is an exact match.
 
-The canonical source initializes `wave_count` through the first entry's count
+The pinned `early-field.cpp` source initializes `wave_count` through the first entry's count
 field. The control computes the scalar at the same source position, then stores
 it after that entry's trigger time. The verifier generates this control from the
-pinned canonical source; it does not install it as the scratch.
+pinned historical source; it does not install either control as the scratch.
+The existing `canonical` label in the trace and receipt refers to that saved
+early-field baseline, not the current scratch.
 
 Four snapshots follow the original division and addition node identities:
 
@@ -72,7 +74,48 @@ hook's original call target, and reads the instruction list and operands.
 The phase snapshots, address-folding decisions, and count-use records are written
 separately to `phases.bin`, `decisions.bin`, and `uses.bin`.
 
-The recorded canonical result is 96.1905%, 105/105 instructions, with seven
+The recorded historical early-field result is 96.1905%, 105/105 instructions, with seven
 clean aligned references. The scalar control is 75.8294%, 106/105 instructions,
 also with seven clean aligned references. Both normalized exactness and
 relocation-aware encoded-body exactness are false. New source matches: **0**.
+
+## Current candidate: delayed count publication
+
+The current scratch computes `wave_increase = step_count / 2` once and adds the
+base count at each row's count store. Each row now publishes coordinates,
+template, trigger time, and count in the native order. The prior early-field
+candidate published the first row's count before its coordinates.
+
+The retained result improves **96.190476% to 97.630332%**, prefix **57 to 58**,
+and clean aligned references **7 to 8**. It has **106 instructions against 105**
+native instructions, whereas the previous candidate had 105. This instruction
+count tradeoff is explicit: normalized and encoded-body exactness remain false.
+The remaining arithmetic lowering includes an extra `MOV` and an in-place
+`SAR`/`ADD` where native uses `SAR` followed by `LEA`; its scheduling still differs.
+No compiler decision, alias, or exact-match acceptance rule is changed.
+
+[`verify_publication.py`](verify_publication.py) links the real COFF relocations
+and executes both machine bodies with Unicorn 2.1.4. For each of 15 signed,
+zero, odd, even, and representative terrain widths, it checks all 33 records
+against an independent field-level oracle, including untouched heading words
+and surrounding sentinel bytes. It compares the full sequence of 166 output
+writes, checks stack balance and callee-saved registers, and requires every
+instruction in each body to execute. The historical early-field source gives
+the same output bytes but fails the native publication-order comparison in all
+15 cases, beginning at the first generated wave's count store.
+
+The [publication receipt](publication.json) pins the source, verifier, image,
+native body, candidate object/body, compiler inputs, and relocation resolution.
+These are bounded executions with disjoint output, count, and global storage
+and x87 control word `0x037f`; they do not establish equivalence for every input
+or alias arrangement, nor do they grant whole-function exactness.
+
+```sh
+uv run --no-sync --with unicorn==2.1.4 python \
+  tools/match/evidence/vc6-spiders-count-2026-09-10/verify_publication.py \
+  --out /private/tmp/spiders-publication
+```
+
+Unicorn needs JIT execution permission. The count-lowering observer above
+remains separately reproducible from its saved historical source and continues
+to check unchanged observed COFF objects.

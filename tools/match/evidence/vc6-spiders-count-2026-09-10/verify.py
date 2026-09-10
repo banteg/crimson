@@ -1,4 +1,4 @@
-"""Observe the two Spiders count representations without modifying compiler decisions."""
+"""Observe two historical Spiders count representations without modifying compiler decisions."""
 
 import argparse
 import importlib.util
@@ -142,10 +142,15 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     match = replay.match
     config = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches" / FUNCTION)
-    source = (config.directory / config.source).read_bytes()
+    canonical_directory = config.directory
+    source = (HERE / "early-field.cpp").read_bytes()
     assert replay.sha(source) == SOURCE_SHA
     assert replay.sha((replay.COMPILER / "Bin/C2.DLL").read_bytes()) == C2_SHA
     assert config.compiler == "msvc6.5" and config.cflags == "/O2 /GB /W3 /GR-"
+    early_directory = out / "early-source"
+    early_directory.mkdir(exist_ok=True)
+    (early_directory / config.source).write_bytes(source)
+    config = replace(config, directory=early_directory)
     early_count = "int wave_count = builder.spawns[builder.count].count = step_count / 2 + 3;"
     late_site = "        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;"
     text = source.decode()
@@ -177,7 +182,7 @@ def main():
             with patch.object(
                 match,
                 "load_scratch_config",
-                lambda path, selected=selected: selected if Path(path) == config.directory else load_config(path),
+                lambda path, selected=selected: selected if Path(path) == canonical_directory else load_config(path),
             ):
                 baseline = replay.verify_function(FUNCTION, out / name, helper / "capture.dll")
             directory = out / name / FUNCTION / "replay"
@@ -215,13 +220,16 @@ def main():
     record = {
         "schema_version": 1,
         "kind": "vc6-spiders-count-representation",
+        "baseline_kind": "historical-early-field",
         "target": {
             "function": FUNCTION,
             "start": hex(start),
             "size": end - start,
             "body_sha256": replay.sha(image.mapped[start - image.image_base : end - image.image_base]),
         },
-        "source_hashes": {name: replay.sha((HERE / name).read_bytes()) for name in ("verify.py", "observer.c")},
+        "source_hashes": {
+            name: replay.sha((HERE / name).read_bytes()) for name in ("verify.py", "observer.c", "early-field.cpp")
+        },
         "replay_source_hashes": {
             name: replay.sha((REPLAY / name).read_bytes()) for name in ("verify.py", "capture.c", "replay.c")
         },

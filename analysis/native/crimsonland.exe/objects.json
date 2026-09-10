@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "6333d25955d03b27e6c2eb65bb2a7a2707c9fcbe016156a195d4995502b5064b",
+  "audit_digest": "5b86916aa3c8096ad6f7968d93a87f85aab1672fe28caccd22a0615134f5d345",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -68105,7 +68105,7 @@
         {
           "path": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
           "repository_relative": true,
-          "sha256": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338"
+          "sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be"
         },
         {
           "path": "tools/match/scratches/quest_build_spiders_inc/scratch.conf",
@@ -68156,23 +68156,23 @@
           "canonical_config_sha256": "2e5d63ced4a83611913912b63da70f01e0811c1389abe25ae3b4c02a419cb240",
           "canonical_scratch": "tools/match/scratches/quest_build_spiders_inc",
           "canonical_source": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
-          "canonical_source_sha256": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338",
+          "canonical_source_sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
           "effective_end": 4428330,
           "end": 4428330,
-          "experiment_epoch": "2cff452a4b8bdb0b41af454a2faf5f1c0e2dce5143a62a2053a5d37dd95ec982",
+          "experiment_epoch": "b05b4a9d5ef88f5fe902f03e4b8ae967a7c40e50c79399db3f2fd43357d749fa",
           "function": "quest_build_spiders_inc",
           "match": {
             "body_byte_exact": false,
-            "candidate_instructions": 105,
+            "candidate_instructions": 106,
             "masked_mismatches": 0,
-            "masked_ok": 7,
+            "masked_ok": 8,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 57,
-            "ratio": 0.9619047619047619,
+            "prefix_instructions": 58,
+            "ratio": 0.976303317535545,
             "state": "wip",
             "target_instructions": 105
           },
@@ -68182,25 +68182,25 @@
       ],
       "match": {
         "body_byte_exact": false,
-        "candidate_instructions": 105,
+        "candidate_instructions": 106,
         "masked_mismatches": 0,
-        "masked_ok": 7,
+        "masked_ok": 8,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 57,
-        "ratio": 0.9619047619047619,
+        "prefix_instructions": 58,
+        "ratio": 0.976303317535545,
         "state": "wip",
         "target_instructions": 105
       },
       "object": "tools/match/scratches/quest_build_spiders_inc/build/msvc6.5/bd55372c027ed2cb/scratch.obj",
       "object_function_symbol": "_quest_build_spiders_inc",
-      "object_sha256": "d95176f761c84030aa3b424adc2a677d3340b6a11918b3e3a50c0e0d5d2f6d55",
+      "object_sha256": "4d69d296bd44815c3ea3d0c2d43f38038aae628fe57545fb8ab858ebd164f8cb",
       "scratch": "tools/match/scratches/quest_build_spiders_inc",
       "source": "tools/match/scratches/quest_build_spiders_inc/scratch.cpp",
-      "source_sha256": "36596b7961beb2da9bb0cedab291af0e5eb4b56a5c398b46d3d11f38cf658338",
+      "source_sha256": "a7f6f8080ee2c0f2fd2a9766f405d1549a499ea650f0895d9fc46a91f93d81be",
       "target_size": 346,
       "translation_unit": {
         "kind": "isolated",
