@@ -340,3 +340,20 @@ retains no source change. SDK union/constructor spellings, bar default-then-
 assignment, and const panel alpha are neutral; sharing the bar position and
 moving XP position initialization earlier regress. Current 92.214912%,
 1,824/1,824 instructions, and 393 clean references remain unchanged.
+
+## Direct stack-allocation trace (2026-09-10)
+
+The [stack-coloring observer](../../evidence/hud-stack-coloring-2026-09-10/README.md)
+now records the canonical compiler's 66 symbols and interference sets before
+allocation, then checks all 32 local descriptor offsets afterward. A
+scoped greedy model reproduces all nine groups, including the parameter;
+ordinary, captured, replayed, and observed COFF objects agree except for the
+timestamp. The first mismatched `panel_alpha` offset resides at byte `0x0c` of
+its source descriptor and changes during the pass at C2 RVA `33b7b`.
+
+The canonical `panel_alpha` and `hud_y` each have five counted uses. Native
+stack accesses place them at -40 and -44 respectively; the candidate places
+them at -44 and -40. Their source declaration order is insufficient to explain
+this. The trace supports further lifetime and expression-boundary recovery;
+it does not establish original source identity or an unavoidable residual.
+Source and matching metrics remain unchanged.
