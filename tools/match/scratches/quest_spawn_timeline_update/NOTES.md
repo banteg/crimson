@@ -161,3 +161,17 @@ and results from this run remain in `/private/tmp/timeline-review`.
 The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.
+
+## Template-pointer removal trace (2026-09-10)
+
+The [verified C2 trace](../../evidence/vc6-timeline-address-2026-09-10/README.md)
+locates removal of the local template-pointer `LEA` and `COPY` inside
+`C2+0x306c1`, before global allocation finishes. The preserving observer emits
+the same whole COFF object as normal compilation, except for the timestamp.
+The original nodes disappear rather than receiving new source-line labels.
+
+This identifies a concrete transformation in the candidate. It does not
+explain the native pointer home store or establish that keeping those nodes
+alone would make the function exact. The source remains unchanged at
+113/115 instructions, prefix 51, 13 clean references, and non-exact encoded
+body; no new source match is claimed.
