@@ -1436,3 +1436,33 @@ normal-mode G on/off have identical gameplay state/RNG channels.
 See `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/` for pinned
 receipts, shared native witnesses, and reproduction commands. CRD/CDT payload
 versions are 19 and Frida raw is 27 under the current-only format contract.
+
+### Point-click frame-delta lifetime and expanded native proof (2026-09-11)
+
+The native point-click moving/coasting paths each duplicate one `frame_dt`
+load before multiplying stored X/Y velocity. Two branch-local snapshots
+recover the shared frame value in VC6's merged tail. A complete 8/8 interaction
+sweep (spec SHA `81d271c26d9a431598949bc92dd1eee7362523deed4a4e72dd369dfa9e2dd7ae`)
+shows that either isolated snapshot regresses to 63.6528466095% with 4,067
+instructions and 796 clean references; all four paired scope choices reach
+64.0454875393%, 4,060 instructions, and 805 clean references. The two mismatched
+references and seven-instruction prefix remain unchanged.
+
+The retained branch scopes reduce the body from 15,867 to 15,863 bytes and add
+3.933462375999 weighted matching bytes. Candidate object offset `0x0a98` now
+duplicates the loaded frame value; the second global load is removed. The
+native Y-before-X arithmetic and stack layout still differ. New source SHA is
+`a178f826e48456c76972fa8ebe96cee53edadbe2d22e52200a3b73228320ab4a` and body SHA is
+`8f868400f17db480997a20f7aa931a5a2fd80062862f082543c9c67a41da4a82`.
+
+The isolated native/before/current execution matrix now has 3,827 cases, all
+with equal final state and ordered modeled calls. Expanded ordinary controls
+reach 4,198/4,206 native instructions and 4,053/4,060 instructions in each
+candidate. The eight native instructions not visited are listed in the
+receipt: six negative CRT-remainder adjustments and two point-click sentinel
+stack pops. This is bounded coverage, not a claim of universal unreachability.
+
+See `tools/match/evidence/player-point-frame-2026-09-11/` for the exact source
+transformation, generated inputs, pinned hashes, coverage, and reproduction
+command. The existing aim negative control remains different in 46/3,738
+cases; current aim and shortcut receipts are refreshed to this body.

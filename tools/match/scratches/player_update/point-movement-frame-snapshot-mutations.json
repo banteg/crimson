@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "point-moving-dt",
+      "find": "                        movement_input.x = frame_dt * player->move_dx;\n                        movement_input.y = frame_dt * player->move_dy;",
+      "replacements": [
+        {
+          "name": "block-snapshot",
+          "text": "                        {\n                            const float movement_dt = frame_dt;\n                            movement_input.x = movement_dt * player->move_dx;\n                            movement_input.y = movement_dt * player->move_dy;\n                        }"
+        },
+        {
+          "name": "branch-snapshot",
+          "text": "                        const float movement_dt = frame_dt;\n                        movement_input.x = movement_dt * player->move_dx;\n                        movement_input.y = movement_dt * player->move_dy;"
+        }
+      ]
+    },
+    {
+      "name": "point-coasting-dt",
+      "find": "                movement_input.x = frame_dt * player->move_dx;\n                movement_input.y = frame_dt * player->move_dy;",
+      "replacements": [
+        {
+          "name": "block-snapshot",
+          "text": "                {\n                    const float movement_dt = frame_dt;\n                    movement_input.x = movement_dt * player->move_dx;\n                    movement_input.y = movement_dt * player->move_dy;\n                }"
+        },
+        {
+          "name": "branch-snapshot",
+          "text": "                const float movement_dt = frame_dt;\n                movement_input.x = movement_dt * player->move_dx;\n                movement_input.y = movement_dt * player->move_dy;"
+        }
+      ]
+    }
+  ]
+}

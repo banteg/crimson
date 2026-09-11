@@ -57,7 +57,18 @@ def corrected_source(before):
     old_use = "scratch_pos.x = move_delta.x * 60.0f + player_position->x;"
     new_use = "scratch_pos.x = aim_direction_x * 60.0f + player_position->x;"
     assert before.count(old_x) == before.count(old_use) == 3
-    return before.replace(old_x, new_x).replace(old_use, new_use)
+    source = before.replace(old_x, new_x).replace(old_use, new_use)
+    # Follow-up point movement recovery snapshots the same frame delta for
+    # both stored velocity components. Its isolated proof lives next door.
+    for indent in (" " * 24, " " * 16):
+        old = (f"{indent}movement_input.x = frame_dt * player->move_dx;\n"
+               f"{indent}movement_input.y = frame_dt * player->move_dy;")
+        new = (f"{indent}const float movement_dt = frame_dt;\n"
+               f"{indent}movement_input.x = movement_dt * player->move_dx;\n"
+               f"{indent}movement_input.y = movement_dt * player->move_dy;")
+        assert source.count(old) == 1
+        source = source.replace(old, new)
+    return source
 
 
 def main():

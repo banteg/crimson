@@ -51,11 +51,18 @@ stored float32 coordinates; Python's wider intermediate values are reported
 separately. Host trig implementations are tested on these witnesses, not
 claimed universally identical to x87 transcendental instructions.
 
-The fuzzy matcher tradeoff is explicit: 64.0473887814% -> 64.0212920397%,
+The initial aim-only fuzzy matcher tradeoff was explicit: 64.0473887814% -> 64.0212920397%,
 4,066 -> 4,060 candidate instructions, seven-instruction prefix unchanged,
 805 clean / zero unresolved / two mismatched references unchanged. Weighted
-matching bytes decrease by 4.2425473064. Neither source is exact or byte-exact.
+matching bytes decreased by 4.2425473064. Neither source is exact or byte-exact.
 `before.cpp` is the pinned negative control, not an accepted alternative.
+
+The current receipt also includes the independently verified
+[point-movement frame snapshots](../player-point-frame-2026-09-11/README.md).
+Those two local lifetimes recover 3.9334623760 weighted bytes, bringing the
+current ratio to 64.0454875393% with the same instruction/reference counts.
+`verify.py` checks that explicit combined source transformation; the original
+aim negative control and its 46 runtime mismatches remain unchanged.
 
 ## Reproduce
 

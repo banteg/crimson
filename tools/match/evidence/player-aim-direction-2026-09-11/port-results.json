@@ -4258,9 +4258,9 @@
   "current_files": {
     "src/crimson/math_parity.py": "b1df63903f58d9bee07e5fc0eb2f228c5a0d6a715509fca15652533eeb5f14b9",
     "src/crimson/gameplay.py": "6510258b046a1902d5a16d08f1b7a5c468603913855f725cae1acd45f17983e5",
-    "src/crimson/local_input.py": "9b406cef4c96ba37d5e587983f68919b060b457c91c19bf6c4fe3593a5e7a709",
+    "src/crimson/local_input.py": "3fbefbfa5716aa8eda9fa1e9b21d367a0851d35dba7be929d3eb5d447dc2606d",
     "crimson-zig/src/runtime/native_math.zig": "cb9fa2c0a19a0142b42186d0e415c79065d8a20fe449ccafd1c44d52d0930df8",
-    "crimson-zig/src/local_input.zig": "77674c89aa6459b53a2ccf267233736c619d63e50998dc42f4f82e4c15939198",
+    "crimson-zig/src/local_input.zig": "bb7a3a822d638a8e292af42053ae8e4b01c28b2d364283f632d0296f7eaf4aab",
     "crimson-zig/src/root.zig": "195c670d881c4212df7d8063b5b722f6cf8357efaded6d4124cf7a575d180e57",
     "tests/gameplay/test_player_aim_native.py": "c0ceb4b3e41fc2e0cca7d8da549f135471049f6c55dd4414c834f2ad018cd4bc",
     "tests/input/test_local_input.py": "adbc8ac050825cb08d57db2eac8d0b07e3eeaf870fc612fc5659aed9de566e0a"

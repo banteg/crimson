@@ -460,9 +460,8 @@ extern "C" void player_update(void)
                             (float)sin(player->heading - 1.5707964f)
                             * player->move_speed * movement_heading
                             * scalar * 7.957747f;
-                        const float movement_dt = frame_dt;
-                        movement_input.x = movement_dt * player->move_dx;
-                        movement_input.y = movement_dt * player->move_dy;
+                        movement_input.x = frame_dt * player->move_dx;
+                        movement_input.y = frame_dt * player->move_dy;
                         moving_to_target = true;
                     }
                 }
@@ -476,9 +475,8 @@ extern "C" void player_update(void)
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
-                const float movement_dt = frame_dt;
-                movement_input.x = movement_dt * player->move_dx;
-                movement_input.y = movement_dt * player->move_dy;
+                movement_input.x = frame_dt * player->move_dx;
+                movement_input.y = frame_dt * player->move_dy;
             }
 
             player_apply_move_with_spawn_avoidance(

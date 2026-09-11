@@ -82,8 +82,8 @@
     "offsetof(weapon_stats_t, pellet_count)": 116
   },
   "candidate": {
-    "ratio": 0.6402129203968062,
-    "fuzzy_weighted_bytes": 10407.941446890878,
+    "ratio": 0.6404548753931769,
+    "fuzzy_weighted_bytes": 10411.874909266877,
     "candidate_instructions": 4060,
     "target_instructions": 4206,
     "prefix": 7,
@@ -94,10 +94,10 @@
     },
     "exact": false,
     "body_byte_exact": false,
-    "source_sha256": "6ec9615d136a330bf87ec2ab7088471124507379b1a6532580eccb31f0476c5e",
-    "object_sha256": "e8c1cf75e1b6563b0982dbfd11a609d0394ed02ba15a6b2ff499916c599f349f",
-    "body_sha256": "cca096670eab32fc7cf1d11885eff0da559b9150a5947b8ff604a60e7e3d74c2",
-    "body_bytes": 15867
+    "source_sha256": "a178f826e48456c76972fa8ebe96cee53edadbe2d22e52200a3b73228320ab4a",
+    "object_sha256": "a041f9d41f781a8855ec836919f8ae0284ad5296bfbb8f19079972904f6c8fea",
+    "body_sha256": "8f868400f17db480997a20f7aa931a5a2fd80062862f082543c9c67a41da4a82",
+    "body_bytes": 15863
   },
   "cases": [
     {
