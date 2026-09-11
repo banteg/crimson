@@ -15,7 +15,7 @@ from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import EffectPool
-from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32, x87_pc24_mul, x87_pc24_sub
+from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
@@ -287,7 +287,10 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
 
 def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    creature.pos = creature.pos + hit.move * 3.0
+    creature.pos = Vec2(
+        x87_pc24_add(creature.pos.x, x87_pc24_mul(hit.move.x, 3.0)),
+        x87_pc24_add(creature.pos.y, x87_pc24_mul(hit.move.y, 3.0)),
+    )
     # Native re-scans the pool per query, so later projectiles this tick see
     # the pushed creature at its new position; resync the spatial hash.
     if ctx.sync_creature_index is not None:

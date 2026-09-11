@@ -507,9 +507,14 @@ pub const EffectPool = struct {
         const base = narrowF32(angle + std.math.pi);
         const rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation) % 100)) * 0.01 + base;
         const half = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_half) % 5 + 7));
-        const velocity = state_mod.Vec2.fromAngle(base).mul(114.0);
+        const velocity: state_mod.Vec2 = .{
+            .x = native_math.pc24Mul(@cos(@as(f64, base)), @as(f32, 114.0)),
+            .y = native_math.pc24Mul(@sin(@as(f64, base)), @as(f32, 114.0)),
+        };
         const rotation_step = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_rotation_step) % 20)) * 0.1 - 1.0) * 4.0;
-        const scale_step = -@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step) & 0xF)) * 0.1;
+        const scale_draw: i32 = @intCast(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_scale_step) & 0xF);
+        // Native negates the integer, so a zero draw remains positive zero.
+        const scale_step = @as(f32, @floatFromInt(-scale_draw)) * 0.1;
         const effect_id = @as(i32, @intCast(state.rng.randTagged(rng_callers.effect_spawn_freeze_shard_effect_id) % 3)) + 8;
         _ = self.spawn(
             effect_id,

@@ -159,7 +159,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
         )
 
     def finalize_projectile_hit_presentation(self, hit: ProjectileHit, post_ctx: object) -> None:
-        decal_post_ctx = cast("ProjectileDecalPostCtx", post_ctx)
+        decal_post_ctx = msgspec.structs.replace(cast("ProjectileDecalPostCtx", post_ctx), hit=hit)
         self.world._finalize_projectile_hit_presentation(
             post_ctx=decal_post_ctx,
             fx_queue=self.fx_queue,

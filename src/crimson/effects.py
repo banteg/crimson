@@ -1009,18 +1009,32 @@ class EffectPool:
     ) -> None:
         """Port of `effect_spawn_freeze_shard` (0x0042ec80)."""
 
-        lifetime = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME) & 0xF) * 0.01 + 0.2
-        base = float(angle) + math.pi
+        lifetime = x87_pc24_add(
+            x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME) & 0xF), f32(0.01)),
+            f32(0.2),
+        )
+        base = x87_pc24_add(f32(angle), NATIVE_PI)
 
-        rotation = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION) % 100) * 0.01 + base
+        rotation = x87_pc24_add(
+            x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION) % 100), f32(0.01)),
+            base,
+        )
         half = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF) % 5 + 7)
 
-        velocity = Vec2.from_angle(base) * 114.0
+        velocity = Vec2(x87_pc24_cos_mul(base, 114.0), x87_pc24_sin_mul(base, 114.0))
 
-        rotation_step = (
-            float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP) % 20) * 0.1 - 1.0
-        ) * 4.0
-        scale_step = -float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP) & 0xF) * 0.1
+        rotation_step = x87_pc24_mul(
+            x87_pc24_sub(
+                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP) % 20), f32(0.1)),
+                1.0,
+            ),
+            4.0,
+        )
+        # Native negates the integer before conversion, preserving positive zero.
+        scale_step = x87_pc24_mul(
+            float(-(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP) & 0xF)),
+            f32(0.1),
+        )
 
         effect_id = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID) % 3 + 8
         self.spawn(

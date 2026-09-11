@@ -1333,3 +1333,23 @@ scale-one store is pinned; other shared-template histories, audio arguments,
 PC64 ports, freeze/large streaks, lethal handling, and effect allocation are
 outside this proof. C++ source and all normalized/encoded matching counts are
 unchanged.
+
+## Post-hit position and freeze-shard parity
+
+`tools/match/evidence/primary-post-hit-position-2026-09-11/` extends the prior
+matrix to 480 Pistol/Pulse Gun impacts with Freeze off/on, executing the actual
+native freeze-shard helper. C++ matches all recorded state, globals, calls,
+RNG, and ordered writes in this matrix. Python now uses live post-jitter and
+post-damage positions for post-hit effects/audio, retains PC24 Pulse displacement
+and freeze-shard arithmetic, and preserves integer-negation positive zero.
+Zig's shard velocity and signed-zero boundaries are corrected as well.
+
+Python checked failures decrease from 447/480 to zero, including 358 sound
+argument differences, 238 spawned-effect differences, and six creature-position
+differences. Zig Debug and ReleaseFast pass all 480 represented-state/effect/RNG
+comparisons; audio/private helper arguments are not included in Zig's test.
+The shared regression selection contains all 48 input combinations. This is
+PC24, high-health, scale-one template evidence with final allocation/FX/audio
+recording boundaries. Other projectile branches, lethal handling, PC64 ports,
+and whole-function completeness remain open. C++ source and matching credit
+are unchanged.

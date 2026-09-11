@@ -40121,7 +40121,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2190,
-        "candidate_object_sha256": "2c8285b93de15cd3d8b3deeba846413d63b224a7d29bce86fe573428fa51af0c",
+        "candidate_object_sha256": "8a0a71df16e9c7cad76988166d25a7d8341d73a7b75031dd19b4d1bcb8b8b951",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -111139,6 +111139,9 @@
     "tools/match/evidence/primary-microstep-threshold-2026-09-11/fixtures.py": "71815caf946c52fdbdc7fd5ad526a3b6a8fedd42782f65df1e9761c0ba3015d8",
     "tools/match/evidence/primary-microstep-threshold-2026-09-11/verify.py": "5b57484288b0d8118c30ce8a2c6e5d0b3e90fae1a924787ef830cfeed57a0b59",
     "tools/match/evidence/primary-microstep-threshold-2026-09-11/verify_ports.py": "7292a1e0f03ffc96a20f4ea550ed0bf7a4f1b7c0274234a766243bd70b914b39",
+    "tools/match/evidence/primary-post-hit-position-2026-09-11/export_regressions.py": "aa7d21b69865c63556dc2ae386663b4b26be4404b721963da557db72295f06c5",
+    "tools/match/evidence/primary-post-hit-position-2026-09-11/verify.py": "d5a3271552db3c6c0cdde5a4ac32d01e30f0df58c86db0613f69668a557f444b",
+    "tools/match/evidence/primary-post-hit-position-2026-09-11/verify_ports.py": "810549fdafaa7895686612e5117124380ce1c07938af7dfb634b9960db952787",
     "tools/match/evidence/projectile-particle-impact-2026-09-11/before.cpp": "eaa8170a3090ebbfa1e7ae61fec4a9d63f49be48ad692247b988d36d3b569a93",
     "tools/match/evidence/projectile-particle-impact-2026-09-11/execute.py": "35fc21b4040b22edd999ca6d37e01203386ee04618e183075879f81ac36d355a",
     "tools/match/evidence/projectile-particle-impact-2026-09-11/export_regressions.py": "f3beabd7feab5d083654ac9a43c5c01f754022b96e132910a3d3fa0944f0d2ba",

@@ -519,18 +519,21 @@ class ProjectilePool:
                         if life_before != 0.25:
                             proj.life_timer = 0.25
 
+                    # Pre-hit splatter uses the collision point. Native post-hit
+                    # effects/audio read the live positions after jitter and damage.
+                    post_hit = msgspec.structs.replace(hit, hit=proj.pos, target=creatures[hit_idx].pos)
                     if proj.life_timer == 0.25 and rule.stop_on_hit:
                         if hit_presentation is not None:
-                            hit_runtime.finish_hit_presentation(hit, hit_presentation)
+                            hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
                         break
 
                     if proj.damage_pool <= 0.0:
                         if hit_presentation is not None:
-                            hit_runtime.finish_hit_presentation(hit, hit_presentation)
+                            hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
                         break
 
                     if hit_presentation is not None:
-                        hit_runtime.finish_hit_presentation(hit, hit_presentation)
+                        hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
 
                 step += 3
 

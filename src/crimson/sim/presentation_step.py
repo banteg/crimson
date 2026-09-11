@@ -335,12 +335,12 @@ def queue_projectile_decals_post_hit(
         # after the burn draw, instead of the streak decal loop.
         runtime = post_ctx.large_hit_decal_runtime
         if runtime is not None:
-            shard_angle = (
-                base_angle
-                + float(
-                    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100,
-                )
-                * 0.01
+            shard_angle = x87_pc24_add(
+                base_angle,
+                x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100),
+                    f32(0.01),
+                ),
             )
             runtime.spawn_freeze_shard(hit.hit, float(shard_angle))
         return

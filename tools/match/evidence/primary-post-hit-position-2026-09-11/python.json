@@ -1,0 +1,15 @@
+{
+  "cases": 480,
+  "witnesses_sha256": "4c1436533d63c320860cc7e4e5a1c2d6cf5c307046c56fddad990e093cb7efec",
+  "source_sha256": {
+    "crimson.effects": "423044f0d20daf531da769dccdd32771ab0c3a2ab15049782ac25d035cf0de01",
+    "crimson.projectiles.runtime.behaviors": "eb7bbc29fd54aeed627199f979cb9d57a8f4eb10e7fa495f843c970ea76878b3",
+    "crimson.projectiles.runtime.projectile_pool": "12d30b59630fe1b09f2de12d3aac3cdec69c4f5d0a554501e80283fedc0db136",
+    "crimson.projectiles.types": "421b4577209112aeee2066e026aef80f18e19b6637924d8a252f15a26edd9e69",
+    "crimson.sim.presentation_step": "edd1712b1ba914f2e51daeca68631e52fc06d8ec109833d965e541cbea1f7504",
+    "crimson.sim.world_state": "d4a1c6f82a2edf27f77ba064bc4ddc605790a43372b6447d414a29cb7ed0f1b8"
+  },
+  "failing_cases": 0,
+  "difference_counts": {},
+  "failures": []
+}

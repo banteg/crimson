@@ -23,6 +23,7 @@ def bits(x):
 def observe(case):
     world = WorldState.build(world_size=1024.0, demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
     state = world.state
+    state.bonuses.freeze = case.get("freeze", 0.0)
     rng = RecordingCrand(Crand(case["rng_seed"]))
     state.rng = rng
     world.players.append(PlayerState(index=0, pos=Vec2()))
@@ -188,6 +189,14 @@ def observe(case):
         "rng_state": rng.state,
         "draws": [r.value for r in rng.records],
         "rng_callers": [r.caller for r in rng.records],
+        "audio": [
+            {
+                "sfx_id": request.sfx_id.value,
+                "position": [bits(request.position.x), bits(request.position.y)] if request.position is not None else None,
+                "gain": bits(request.gain),
+            }
+            for request in runtime.hit_sfx
+        ],
     }
 
 
@@ -211,6 +220,8 @@ def differences(witness, actual):
     ):
         if actual[key] != expected[key]:
             result.append({"field": key, "native": expected[key], "python": actual[key]})
+    if "audio" in expected and actual["audio"] != expected["audio"]:
+        result.append({"field": "audio", "native": expected["audio"], "python": actual["audio"]})
     return result
 
 

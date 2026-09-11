@@ -2243,6 +2243,11 @@ test "primary movement threshold preserves native position and player damage" {
 }
 
 test "primary impacts match native damage, splatters, decals and RNG" {
+    try expectNativePrimaryImpacts(@embedFile("testdata/primary-impact-presentation.json"), 120);
+    try expectNativePrimaryImpacts(@embedFile("testdata/primary-post-hit-position.json"), 48);
+}
+
+fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
     const Sample = struct {
         index: usize = 0,
         active: u8 = 1,
@@ -2288,6 +2293,7 @@ test "primary impacts match native damage, splatters, decals and RNG" {
             dt: f32,
             rng_seed: u32,
             violence_disabled: i32,
+            freeze: f32 = 0,
             template_scale: f32,
             damage_scale: f32,
             primary: []Sample,
@@ -2334,17 +2340,17 @@ test "primary impacts match native damage, splatters, decals and RNG" {
     const parsed = try std.json.parseFromSlice(
         []Witness,
         std.testing.allocator,
-        @embedFile("testdata/primary-impact-presentation.json"),
+        data,
         .{ .ignore_unknown_fields = true },
     );
     defer parsed.deinit();
-    // The checked-in selection has 120 cases; the evidence replay can supply
-    // the complete generated matrix through the same fixture file.
-    try std.testing.expect(parsed.value.len >= 120);
+    // The evidence replay can supply the full matrix through the same file.
+    try std.testing.expect(parsed.value.len >= minimum_count);
     for (parsed.value) |witness| {
         errdefer std.debug.print("native primary impact witness {d}\n", .{witness.index});
         var state = state_mod.GameplayState.init(witness.input.rng_seed);
         state.gore_disabled = witness.input.violence_disabled;
+        state.bonuses.freeze = witness.input.freeze;
         state.game_tune_started = true;
         var trace: Checks = .{};
         state.rng.setTraceSink(&trace, Checks.record, true);
