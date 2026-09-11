@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "cee7df03c92e9b6e17b320d1bd8977e1a3ec8a815dce73f6d82dbfc505aa36f8",
+  "audit_digest": "c6bd2d1499099dcc90da365e404e72872c59092ab669fdf8a459cade611a6441",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -55124,7 +55124,7 @@
         {
           "path": "tools/match/scratches/player_render_overlays/scratch.cpp",
           "repository_relative": true,
-          "sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b"
+          "sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98"
         },
         {
           "path": "tools/match/scratches/player_render_overlays/scratch.conf",
@@ -55170,23 +55170,23 @@
           "canonical_config_sha256": "3b8f56e51dfea0059a038ba21899fda22c41f9f71140c8be7957fd2b8ee3ef05",
           "canonical_scratch": "tools/match/scratches/player_render_overlays",
           "canonical_source": "tools/match/scratches/player_render_overlays/scratch.cpp",
-          "canonical_source_sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b",
+          "canonical_source_sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98",
           "effective_end": 4363638,
           "end": 4363638,
-          "experiment_epoch": "72aaf2fec4e48f5349806fd9172a03f322c08537edede569ac4cddc6a11cfbbd",
+          "experiment_epoch": "d99c63d75ab4706cf003a45945fbc9bdedf85ddc85d35ba37c7ce1f143464171",
           "function": "player_render_overlays",
           "match": {
             "body_byte_exact": false,
-            "candidate_instructions": 1148,
+            "candidate_instructions": 1149,
             "masked_mismatches": 0,
-            "masked_ok": 331,
+            "masked_ok": 333,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
             "prefix_instructions": 9,
-            "ratio": 0.9494773519163763,
+            "ratio": 0.9743143230300392,
             "state": "wip",
             "target_instructions": 1148
           },
@@ -55196,25 +55196,25 @@
       ],
       "match": {
         "body_byte_exact": false,
-        "candidate_instructions": 1148,
+        "candidate_instructions": 1149,
         "masked_mismatches": 0,
-        "masked_ok": 331,
+        "masked_ok": 333,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
         "prefix_instructions": 9,
-        "ratio": 0.9494773519163763,
+        "ratio": 0.9743143230300392,
         "state": "wip",
         "target_instructions": 1148
       },
       "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
       "object_function_symbol": "_player_render_overlays",
-      "object_sha256": "79755511ac21044a216f0207ca5874dcf2c119cda03374438a34f4a683ebfba8",
+      "object_sha256": "d775188650891fede208b4fd65e0b65fa28ab480e3dd0ab1d7c6fb40feb493e0",
       "scratch": "tools/match/scratches/player_render_overlays",
       "source": "tools/match/scratches/player_render_overlays/scratch.cpp",
-      "source_sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b",
+      "source_sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98",
       "target_size": 4582,
       "translation_unit": {
         "kind": "isolated",

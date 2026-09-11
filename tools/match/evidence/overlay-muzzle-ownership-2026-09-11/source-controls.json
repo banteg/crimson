@@ -1,0 +1,452 @@
+{
+  "before_sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b",
+  "controls": [
+    {
+      "family": "components",
+      "name": "effect_offset-xy",
+      "source_sha256": "1adf96ee2194ce5d2b040c2d0e7000fc6bfbca995902c260a646f61e9777682d",
+      "ratio": 0.9494773519163763,
+      "instructions": 1148,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        effect_offset.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n",
+            "        effect_offset.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "components",
+      "name": "effect_offset-yx",
+      "source_sha256": "5cb29f1ee028c3360bd57d902c8486682aca45408afaa1c442a77deaf2153bd8",
+      "ratio": 0.9477351916376306,
+      "instructions": 1148,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        effect_offset.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n",
+            "        effect_offset.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "components",
+      "name": "render_delta-xy",
+      "source_sha256": "183b295d530494f4ec0f65d7d815fe3f7590abcc99b7923118d8a8fd67808c21",
+      "ratio": 0.9651567944250871,
+      "instructions": 1148,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        render_delta.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n",
+            "        render_delta.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n"
+          ]
+        },
+        {
+          "start": 467,
+          "end": 468,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 486,
+          "end": 487,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "components",
+      "name": "render_delta-yx",
+      "source_sha256": "7c10b4df283a82dc241635274e54556061afd135d5f40bc39a3c68d2db785faf",
+      "ratio": 0.9616724738675958,
+      "instructions": 1148,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        render_delta.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n",
+            "        render_delta.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n"
+          ]
+        },
+        {
+          "start": 467,
+          "end": 468,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 486,
+          "end": 487,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "small-size",
+      "name": "fresh-vector",
+      "source_sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98",
+      "ratio": 0.9743143230300392,
+      "instructions": 1149,
+      "refs_ok": 333,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        render_delta.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n",
+            "        render_delta.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n"
+          ]
+        },
+        {
+          "start": 460,
+          "end": 461,
+          "old": [
+            "            half_size = sprite_size * 0.25f;\n"
+          ],
+          "new": [
+            "            player_render_vec2_t small_muzzle_size(\n",
+            "                sprite_size * 0.25f, sprite_size * 0.25f);\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 468,
+          "old": [
+            "                - half_size\n",
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                - small_muzzle_size\n",
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 486,
+          "end": 487,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "small-size",
+      "name": "effect-offset-xy",
+      "source_sha256": "fdd89221914e56b8311378767c49d8e2a00fba6ed55df92ef5cb6525eb73e0d6",
+      "ratio": 0.9743143230300392,
+      "instructions": 1149,
+      "refs_ok": 333,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        render_delta.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n",
+            "        render_delta.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n"
+          ]
+        },
+        {
+          "start": 460,
+          "end": 461,
+          "old": [
+            "            half_size = sprite_size * 0.25f;\n"
+          ],
+          "new": [
+            "            effect_offset.x = sprite_size * 0.25f;\n",
+            "            effect_offset.y = sprite_size * 0.25f;\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 468,
+          "old": [
+            "                - half_size\n",
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                - effect_offset\n",
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 486,
+          "end": 487,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "small-size",
+      "name": "effect-offset-vector",
+      "source_sha256": "17708bab4c63d3a41089b35ca8f814251924b0c431a3747e201926b207bedc37",
+      "ratio": 0.9743143230300392,
+      "instructions": 1149,
+      "refs_ok": 333,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n",
+            "            (float)cos(effect_heading)\n"
+          ],
+          "new": [
+            "        render_delta.x = (float)cos(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 429,
+          "end": 431,
+          "old": [
+            "                - (float)cos(effect_heading) * 21.0f,\n",
+            "            (float)sin(effect_heading)\n"
+          ],
+          "new": [
+            "                - (float)cos(effect_heading) * 21.0f;\n",
+            "        render_delta.y = (float)sin(effect_heading)\n"
+          ]
+        },
+        {
+          "start": 434,
+          "end": 435,
+          "old": [
+            "                - (float)sin(effect_heading) * 21.0f);\n"
+          ],
+          "new": [
+            "                - (float)sin(effect_heading) * 21.0f;\n"
+          ]
+        },
+        {
+          "start": 460,
+          "end": 461,
+          "old": [
+            "            half_size = sprite_size * 0.25f;\n"
+          ],
+          "new": [
+            "            effect_offset = player_render_vec2_t(\n",
+            "                sprite_size * 0.25f, sprite_size * 0.25f);\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 468,
+          "old": [
+            "                - half_size\n",
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                - effect_offset\n",
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 486,
+          "end": 487,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    }
+  ]
+}

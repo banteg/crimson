@@ -422,16 +422,17 @@ extern "C" void player_render_overlays(void)
         float effect_heading =
             player_state_table[render_overlay_player_index].aim_heading
             + 1.5707964f;
-        render_delta.x = (float)cos(effect_heading)
+        effect_offset = player_render_vec2_t(
+            (float)cos(effect_heading)
                     * player_state_table[render_overlay_player_index]
                           .muzzle_flash_alpha
                     * 12.0f
-                - (float)cos(effect_heading) * 21.0f;
-        render_delta.y = (float)sin(effect_heading)
+                - (float)cos(effect_heading) * 21.0f,
+            (float)sin(effect_heading)
                     * player_state_table[render_overlay_player_index]
                           .muzzle_flash_alpha
                     * 12.0f
-                - (float)sin(effect_heading) * 21.0f;
+                - (float)sin(effect_heading) * 21.0f);
 
         grim_interface_ptr->grim_bind_texture(muzzle_flash_texture, 0);
         grim_interface_ptr->grim_set_config_var(0x13, 2u);
@@ -457,15 +458,14 @@ extern "C" void player_render_overlays(void)
                  .flags
              & 4)
             != 0) {
-            player_render_vec2_t small_muzzle_size(
-                sprite_size * 0.25f, sprite_size * 0.25f);
+            half_size = sprite_size * 0.25f;
             render_scratch_f0 =
                 camera_offset
                 + *(player_render_vec2_t *)&player_state_table
                       [render_overlay_player_index]
                           .pos_x
-                - small_muzzle_size
-                + render_delta;
+                - half_size
+                + effect_offset;
             float small_flash_size =
                 player_state_table[render_overlay_player_index].size * 0.5f;
             grim_interface_ptr->grim_draw_quad(
@@ -484,7 +484,7 @@ extern "C" void player_render_overlays(void)
                       [render_overlay_player_index]
                           .pos_x
                 - muzzle_size
-                + render_delta;
+                + effect_offset;
             grim_interface_ptr->grim_draw_quad(
                 render_scratch_f0.x,
                 render_scratch_f0.y,

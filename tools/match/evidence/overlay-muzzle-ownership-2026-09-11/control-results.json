@@ -1,0 +1,106 @@
+{
+  "script_sha256": "116e7191ebab69aebfe448f58618b66f94e76c01f36bac4cb0da8f5b021d9c0d",
+  "parent_verifier_sha256": "086cad7a4fb0b3cfe2c41360c547fc1ece53c4b51abc263f2e1478544f3c70c0",
+  "before_sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b",
+  "controls_sha256": "87319d694eb4e4e2ee204646be6ebdbd3c65a97e39a8e1f07f555535ebc6a34a",
+  "verified_controls": [
+    {
+      "family": "components",
+      "name": "effect_offset-xy",
+      "source_sha256": "1adf96ee2194ce5d2b040c2d0e7000fc6bfbca995902c260a646f61e9777682d",
+      "observed": {
+        "ratio": 0.9494773519163763,
+        "instructions": 1148,
+        "refs_ok": 331,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "family": "components",
+      "name": "effect_offset-yx",
+      "source_sha256": "5cb29f1ee028c3360bd57d902c8486682aca45408afaa1c442a77deaf2153bd8",
+      "observed": {
+        "ratio": 0.9477351916376306,
+        "instructions": 1148,
+        "refs_ok": 331,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "family": "components",
+      "name": "render_delta-xy",
+      "source_sha256": "183b295d530494f4ec0f65d7d815fe3f7590abcc99b7923118d8a8fd67808c21",
+      "observed": {
+        "ratio": 0.9651567944250871,
+        "instructions": 1148,
+        "refs_ok": 332,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "family": "components",
+      "name": "render_delta-yx",
+      "source_sha256": "7c10b4df283a82dc241635274e54556061afd135d5f40bc39a3c68d2db785faf",
+      "observed": {
+        "ratio": 0.9616724738675958,
+        "instructions": 1148,
+        "refs_ok": 332,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "family": "small-size",
+      "name": "fresh-vector",
+      "source_sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98",
+      "observed": {
+        "ratio": 0.9743143230300392,
+        "instructions": 1149,
+        "refs_ok": 333,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "family": "small-size",
+      "name": "effect-offset-xy",
+      "source_sha256": "fdd89221914e56b8311378767c49d8e2a00fba6ed55df92ef5cb6525eb73e0d6",
+      "observed": {
+        "ratio": 0.9743143230300392,
+        "instructions": 1149,
+        "refs_ok": 333,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "family": "small-size",
+      "name": "effect-offset-vector",
+      "source_sha256": "17708bab4c63d3a41089b35ca8f814251924b0c431a3747e201926b207bedc37",
+      "observed": {
+        "ratio": 0.9743143230300392,
+        "instructions": 1149,
+        "refs_ok": 333,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    }
+  ]
+}

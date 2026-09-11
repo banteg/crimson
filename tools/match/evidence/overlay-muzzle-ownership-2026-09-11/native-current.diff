@@ -1,0 +1,173 @@
+--- target
++++ candidate
+@@ -7,22 +7,22 @@
+ push esi
+ test al, al
+ push edi
+-jne L11de
++jne L11dd
+ fld dword [esp+0x10]
+ fcomp dword [ADDR]
+ fnstsw ax
+ test ah, 0x41
+-jne L11de
++jne L11dd
+ mov eax, dword [ADDR]
+ cmp eax, 0x14
+-je L11de
++je L11dd
+ cmp eax, 0x16
+-je L11de
++je L11dd
+ mov eax, dword [ADDR]
+ cmp eax, 0x14
+-je L11de
++je L11dd
+ cmp eax, 0x16
+-je L11de
++je L11dd
+ mov ecx, dword [ADDR]
+ push ecx
+ call ADDR
+@@ -529,9 +529,9 @@
+ fld dword [eax+ADDR]
+ fmul dword [ADDR]
+ mov ecx, dword [eax+ADDR]
+-mov dword [esp+0x18], ecx
+-mov ecx, dword [ADDR]
+-mov esi, dword [esp+0x18]
++mov dword [esp+0x14], ecx
++mov ecx, dword [ADDR]
++mov esi, dword [esp+0x14]
+ fst dword [esp+0x34]
+ fld dword [ADDR]
+ fadd dword [eax+ADDR]
+@@ -620,9 +620,9 @@
+ fld dword [eax+ADDR]
+ fmul dword [ADDR]
+ mov ecx, dword [eax+ADDR]
+-mov dword [esp+0x18], ecx
+-mov ecx, dword [ADDR]
+-mov esi, dword [esp+0x18]
++mov dword [esp+0x14], ecx
++mov ecx, dword [ADDR]
++mov esi, dword [esp+0x14]
+ fst dword [esp+0x34]
+ fld dword [ADDR]
+ fadd dword [eax+ADDR]
+@@ -782,11 +782,11 @@
+ fld dword [ADDR]
+ fmul dword [ADDR]
+ fsin
+-mov ecx, dword [ADDR]
+-push ecx
+-mov eax, dword [ecx]
+-fmul dword [ADDR]
+-fadd dword [ADDR]
++fmul dword [ADDR]
++fadd dword [ADDR]
++mov ecx, dword [ADDR]
++push ecx
++mov eax, dword [ecx]
+ fstp dword [esp+0x18]
+ fld dword [ADDR]
+ fmul dword [ADDR]
+@@ -922,8 +922,8 @@
+ shl eax, 0x5
+ mov ecx, dword [eax+ADDR]
+ mov edx, ecx
++fld dword [eax+ADDR]
+ shl edx, 0x5
+-fld dword [eax+ADDR]
+ sub edx, ecx
+ test byte [edx*4+ADDR], 0x4
+ je Lf0a
+@@ -994,7 +994,7 @@
+ call ADDR
+ add esp, 0x4
+ test eax, eax
+-je L11ae
++je L11ad
+ sub esp, 0x10
+ mov eax, esp
+ push 0x13
+@@ -1026,20 +1026,21 @@
+ mov eax, dword [ADDR]
+ xor edi, edi
+ test eax, eax
+-jle L11a0
++jle L119f
+ mov ebx, dword [esp+0x10]
+ mov esi, ADDR
+ fld dword [esi+-0x288]
+ fcomp dword [ADDR]
+ fnstsw ax
+ test ah, 0x41
+-jne L118c
++jne L118b
+ mov eax, dword [esi]
+ lea ecx, dword [eax+eax*8]
+ lea ecx, dword [eax+ecx*2]
+-fld dword [ecx*8+ADDR]
++shl ecx, 0x3
++fld dword [ecx+ADDR]
+ fsub dword [esi+-0x30c]
+-fld dword [ecx*8+ADDR]
++fld dword [ecx+ADDR]
+ fsub dword [esi+-0x308]
+ fld st(0)
+ fmul st(1)
+@@ -1052,24 +1053,24 @@
+ fcomp dword [ADDR]
+ fnstsw ax
+ test ah, 0x41
+-je L118c
+-fld dword [ecx*8+ADDR]
++je L118b
++fld dword [ecx+ADDR]
+ fsub dword [esi+-0x30c]
+ fstp dword [esp+0x2c]
+-fld dword [ecx*8+ADDR]
++fld dword [ecx+ADDR]
+ fsub dword [esi+-0x308]
+ mov edx, dword [esp+0x2c]
+ lea ecx, dword [esp+0x34]
+ mov dword [esp+0x34], edx
+ lea edx, dword [esp+0x34]
+-fstp dword [esp+0x30]
+-fld dword [esp+0x30]
+-fmul dword [esp+0x30]
+-fld dword [esp+0x2c]
+-fmul dword [esp+0x2c]
+-mov eax, dword [esp+0x30]
+-push ecx
+-push edx
++push ecx
++push edx
++fstp dword [esp+0x38]
++fld dword [esp+0x38]
++fmul dword [esp+0x38]
++fld dword [esp+0x34]
++fmul dword [esp+0x34]
++mov eax, dword [esp+0x38]
+ mov dword [esp+0x40], eax
+ faddp st(1)
+ fsqrt
+@@ -1095,7 +1096,7 @@
+ mov dword [esp+0x18], 0x0
+ fnstsw ax
+ test ah, 0x1
+-je L118c
++je L118b
+ fld dword [esp+0x38]
+ fmul dword [esp+0x18]
+ mov ecx, dword [ADDR]
+@@ -1117,7 +1118,7 @@
+ fcomp dword [esp+0x24]
+ fnstsw ax
+ test ah, 0x1
+-jne L113b
++jne L113a
+ mov eax, dword [ADDR]
+ inc edi
+ add esi, 0x360
