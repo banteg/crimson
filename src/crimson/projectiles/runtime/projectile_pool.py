@@ -20,6 +20,7 @@ from ...math_parity import (
     f32,
     x87_pc24_add,
     x87_pc24_cos_mul,
+    x87_pc24_hypot,
     x87_pc24_mul,
     x87_pc24_sin_mul,
     x87_pc24_sub,
@@ -340,7 +341,8 @@ class ProjectilePool:
                     x87_pc24_add(acc.y, step_y),
                 )
 
-                if acc.length() >= 4.0 or steps <= step + 3:
+                # PC24 length rounding controls when movement and collision checks run.
+                if x87_pc24_hypot(acc.x, acc.y) >= 4.0 or steps <= step + 3:
                     move = acc
                     proj.pos = Vec2(
                         float(f32(float(proj.pos.x) + float(move.x))),

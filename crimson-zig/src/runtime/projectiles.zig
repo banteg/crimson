@@ -2111,3 +2111,120 @@ test "ranged projectile can damage creature before player collision" {
     try std.testing.expect(creatures.entries[1].hp < 100.0);
     try expectFloatClose(100.0, players[0].health);
 }
+
+test "primary movement threshold preserves native position and player damage" {
+    const Sample = struct {
+        active: u8,
+        angle: f32,
+        x: f32,
+        y: f32,
+        origin_x: f32,
+        origin_y: f32,
+        vx: f32,
+        vy: f32,
+        type: i32,
+        life: f32,
+        speed: f32,
+        damage: f32,
+        radius: f32,
+        travel: f32,
+        owner: i32,
+    };
+    const PlayerSample = struct { x: f32, y: f32, health: f32, size: f32, shield: f32 };
+    const Witness = struct {
+        input: struct {
+            dt: f32,
+            rng_seed: u32,
+            shock_id: i32 = -1,
+            primary: []const struct {
+                index: usize,
+                angle: f32,
+                x: f32,
+                y: f32,
+                type: i32,
+                life: f32,
+                speed: f32,
+                radius: f32,
+                travel: f32,
+                owner: i32,
+            },
+            players: []const PlayerSample = &.{},
+        },
+        primary: Sample,
+        players: []const PlayerSample,
+        rng_state: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        []Witness,
+        std.testing.allocator,
+        @embedFile("testdata/primary-microstep-threshold.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 156), parsed.value.len);
+    for (parsed.value) |witness| {
+        var state = state_mod.GameplayState.init(witness.input.rng_seed);
+        state.shock_chain_projectile_id = witness.input.shock_id;
+        var players = [_]state_mod.PlayerState{ .{ .index = 0, .pos = .{} }, .{ .index = 1, .pos = .{} } };
+        for (witness.input.players, 0..) |item, j| players[j] = .{
+            .index = @intCast(j),
+            .pos = .{ .x = item.x, .y = item.y },
+            .health = item.health,
+            .size = item.size,
+            .shield_timer = item.shield,
+        };
+        var creatures: creatures_mod.CreaturePool = .{};
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var pool: ProjectilePool = .{};
+        const item = witness.input.primary[0];
+        pool.entries[item.index] = .{
+            .active = true,
+            .angle = item.angle,
+            .pos = .{ .x = item.x, .y = item.y },
+            .type_id = item.type,
+            .life_timer = item.life,
+            .speed_scale = item.speed,
+            .damage_pool = 0,
+            .hit_radius = item.radius,
+            .travel_budget = item.travel,
+            .owner = owner_ref.OwnerRef.fromLegacy(item.owner),
+            .hits_players = item.owner != -100,
+        };
+        const stats = pool.update(&state, players[0..witness.input.players.len], &creatures, &bonuses, witness.input.dt, 1024.0);
+        try std.testing.expectEqual(@as(i32, 0), stats.hit_count);
+        const projectile = pool.entries[item.index];
+        const actual: Sample = .{
+            .active = @intFromBool(projectile.active),
+            .angle = projectile.angle,
+            .x = projectile.pos.x,
+            .y = projectile.pos.y,
+            .origin_x = projectile.origin.x,
+            .origin_y = projectile.origin.y,
+            .vx = projectile.vel.x,
+            .vy = projectile.vel.y,
+            .type = projectile.type_id,
+            .life = projectile.life_timer,
+            .speed = projectile.speed_scale,
+            .damage = projectile.damage_pool,
+            .radius = projectile.hit_radius,
+            .travel = projectile.travel_budget,
+            .owner = projectile.owner.toLegacy(),
+        };
+        inline for (std.meta.fields(Sample)) |field| {
+            if (field.type == f32) {
+                try std.testing.expectEqual(@as(u32, @bitCast(@field(witness.primary, field.name))), @as(u32, @bitCast(@field(actual, field.name))));
+            } else {
+                try std.testing.expectEqual(@field(witness.primary, field.name), @field(actual, field.name));
+            }
+        }
+        for (witness.players, 0..) |expected, j| {
+            try std.testing.expectEqual(expected.health, players[j].health);
+            try std.testing.expectEqual(expected.x, players[j].pos.x);
+            try std.testing.expectEqual(expected.y, players[j].pos.y);
+            try std.testing.expectEqual(expected.size, players[j].size);
+            try std.testing.expectEqual(expected.shield, players[j].shield_timer);
+        }
+        try std.testing.expectEqual(witness.rng_state, state.rng.state);
+        try std.testing.expectEqual(@as(usize, 0), state.sfx_queue.len);
+    }
+}

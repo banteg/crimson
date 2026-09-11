@@ -1260,3 +1260,22 @@ the active-only SFX and owner updates. The 112 exported PC24 native witnesses
 cover both dispatch and real callee behavior; the existing active-corpse test
 continues to check sound/RNG order. Forced bonuses and active death side effects
 are outside the new native matrix. C++ and static matching counts are unchanged.
+
+## Primary four-unit movement threshold
+
+The native/C++ microstep length branch agrees in 605 focused PC24 executions in
+`tools/match/evidence/primary-microstep-threshold-2026-09-11/`. Python's previous
+`acc.length()` kept double precision, delaying movement/collision checks when
+native PC24 length rounded to four. Case 22 has delta
+`(-0.7636322975158691, -3.926431655883789)`: double length is
+`3.99999997926696`, native length is `4.0`. An unshielded player near the first
+native check receives three hits in native execution but only two in old Python.
+
+The 500 movement seeds expose 21 wrong query cadences, only 17 of which also
+change final position bits. Each affected seed gets five actual-native-player
+controls covering damage, shield, death, owner exclusion, and shock-chain
+exclusion. Native/C++ full pool/global/call/write/RNG comparisons all pass.
+Corrected Python uses its existing PC24 hypot helper and matches all 605;
+a replayable old-arithmetic control fails 126 cadence cases and 21 health
+results. The 156 shared witnesses also pass unchanged Zig movement logic.
+Static matching counts and the C++ source remain unchanged.

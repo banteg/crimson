@@ -1,0 +1,8 @@
+{
+  "cases": 605,
+  "matches": 605,
+  "witnesses_sha256": "4921f90c3c2da65fa3349f349b042cb0e6531fcdbdbb9c3f66598b807fd81806",
+  "failures": [],
+  "legacy_threshold": false,
+  "python_source_sha256": "58f5ce1fe1dec6a044ca1be19ac836cab8ababcc1e5c0016551ed16af38a9b60"
+}
