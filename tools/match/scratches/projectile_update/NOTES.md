@@ -1279,3 +1279,37 @@ Corrected Python uses its existing PC24 hypot helper and matches all 605;
 a replayable old-arithmetic control fails 126 cadence cases and 21 health
 results. The 156 shared witnesses also pass unchanged Zig movement logic.
 Static matching counts and the C++ source remain unchanged.
+
+## Primary effect template and 1.5× decal vector value
+
+`tools/match/evidence/primary-impact-template-2026-09-11/` restores two native
+boundaries. Assigning `effect_template.flags` before the color copy lets VC6
+schedule the flags store between the G/B color stores, as native does, without
+manually interleaving component assignments. Constructing the 1.5× decal offset
+as a vector before position addition restores the native PC64 product boundary.
+The retained source is SHA-256
+`d14bf9bff5dc43497c64fd56fcac0a63447d53b9e63007f3e1d46fc85f1fe28f`.
+
+The function improves from `5557.4853/8409` to `5574.0970/8409` fuzzy-weighted
+bytes (`66.089729%` to `66.287275%`), with `2188 -> 2190` instructions against
+2,203 native and `430/0/10 -> 435/0/10` references. Exactness flags remain false.
+The full scaled-vector alternate has no observed argument residual in this
+matrix but increases reference problems to 13 and is preserved separately.
+
+The proof runs 1,000 reachable Pistol impacts in each of two modes: recorded
+damage/FX boundaries and real native damage/randomized-FX execution. All variants
+agree in complete observed state, globals, and RNG. Promoted ordered writes
+agree with native in all 2,000 executions, versus a template store-order
+residual in every baseline execution. Argument-failing cases decrease from
+112 to 70 in the first mode and 107 to 61 in the second. Every retained failure
+is confined to the 2.5× decal position under PC64; no PC24 failure or newly
+failing argument is accepted. Final FX enqueue/audio are recording callbacks,
+and these high-health fixtures exclude lethal handling and blood effects.
+
+The recovery also preserves all 7,539 prior fixture results: particle trajectories,
+particle impacts with and without real native damage/FX helpers, primary
+microsteps/player controls, and inactive-target bubble expiries. Trajectory,
+primary, and bubble suites additionally agree directly with native. Particle
+impact replay preserves its previous documented PC64 residuals rather than
+claiming new native equality. This is a bounded recovery and does not close the
+whole-function semantic or encoded-body debt.

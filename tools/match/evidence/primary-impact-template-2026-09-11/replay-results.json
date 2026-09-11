@@ -1,0 +1,29 @@
+{
+  "suites": {
+    "particle-no-hit": {
+      "cases": 4817,
+      "before_recovered_matches": 4817,
+      "native_exact_checked": true
+    },
+    "particle-impact": {
+      "cases": 1230,
+      "before_recovered_matches": 1230,
+      "native_exact_checked": false
+    },
+    "particle-integrated-impact": {
+      "cases": 663,
+      "before_recovered_matches": 663,
+      "native_exact_checked": false
+    },
+    "primary-microsteps": {
+      "cases": 605,
+      "before_recovered_matches": 605,
+      "native_exact_checked": true
+    },
+    "inactive-bubble-expiry": {
+      "cases": 224,
+      "before_recovered_matches": 224,
+      "native_exact_checked": true
+    }
+  }
+}

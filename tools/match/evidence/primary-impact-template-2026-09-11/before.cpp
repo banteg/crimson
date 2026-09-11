@@ -315,8 +315,8 @@ extern "C" void projectile_update(void)
                                         1.0f,
                                         1.0f,
                                     };
-                                    effect_template.flags = 0x59;
                                     effect_template.color = effect_color;
+                                    effect_template.flags = 0x59;
                                     effect_template.lifetime = 0.35f;
                                     effect_template.age = 0.0f;
                                     effect_template.half_extent.x = 4.0f;
@@ -747,13 +747,11 @@ extern "C" void projectile_update(void)
                                                 &creature_pool[hit_id].position;
                                             fx_queue_add_random(creature_pos);
 
-                                            vec2f_t decal_offset_1 = {
-                                                offset_x * 1.5f,
-                                                offset_y * 1.5f,
-                                            };
                                             vec2f_t decal_pos_1 = {
-                                                creature_pos->x + decal_offset_1.x,
-                                                creature_pos->y + decal_offset_1.y,
+                                                creature_pos->x
+                                                    + offset_x * 1.5f,
+                                                creature_pos->y
+                                                    + offset_y * 1.5f,
                                             };
                                             fx_queue_add_random(&decal_pos_1);
 
