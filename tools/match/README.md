@@ -1253,6 +1253,19 @@ Assembler-local constants are compared by exact operand-width bytes only when
 the COFF symbol is static and lives in a non-writable `.rdata` section. This
 proves archive objects that name private SIMD/MMX constant pools without
 treating mutable data with coincidentally equal initial contents as equivalent.
+The native operand must also lie wholly within a readable, non-writable PE
+section. Base-relocation fields, import-address slots, section boundaries, and
+truncated mapped data cannot supply scalar byte-content evidence. Compiler
+floating constants use this same native-side check. Named mutable references
+continue to require their exact symbol/address owner.
+
+Compiler CString references retain a separate full NUL-terminated-content
+pooling rule; VC6 also emits these literals in writable `.data`. This rule
+describes literal contents, not immutable storage or whole-program pointer
+identity. It covers both literal addresses and loads from compiler-designated
+literal symbols, and excludes loader-written bytes. It does not supply scalar
+byte-content evidence for ordinary constants. String pooling, scalar matching,
+data ownership, and runtime equivalence are distinct claims.
 
 A scratch is `match` only when its normalized instruction score is 100% and
 all aligned masked references are proven equal. A 100% instruction score with

@@ -1842,7 +1842,10 @@ def test_match_function_audits_compiler_string_by_content(literal: bytes) -> Non
     result = match_function(
         bytes.fromhex("6800204000c3"),
         candidate,
-        image=LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped)),
+        image=LoadedImage(
+            mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped),
+            read_only_ranges=((0x402000, 0x402000 + len(literal)),),
+        ),
         target_va=0x401000,
         reference_catalog=ReferenceCatalog({}),
     )
@@ -1870,7 +1873,10 @@ def test_match_function_audits_compiler_float_by_content() -> None:
     result = match_function(
         bytes.fromhex("d90500204000c3"),
         candidate,
-        image=LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped)),
+        image=LoadedImage(
+            mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped),
+            read_only_ranges=((0x402000, 0x402004),),
+        ),
         target_va=0x401000,
         reference_catalog=ReferenceCatalog({}),
     )
@@ -1912,7 +1918,10 @@ def test_match_function_audits_compiler_constant_addend(
     result = match_function(
         opcode + struct.pack("<I", 0x402000 + target_offset) + b"\xc3",
         extract_object_function(obj, "foo"),
-        image=LoadedImage(bytes(mapped), 0x400000, len(mapped)),
+        image=LoadedImage(
+            bytes(mapped), 0x400000, len(mapped),
+            read_only_ranges=((0x402000, 0x402000 + len(literal)),),
+        ),
         target_va=0x401000,
         reference_catalog=ReferenceCatalog({}),
     )
@@ -1942,7 +1951,10 @@ def test_match_function_audits_read_only_local_data_by_content() -> None:
         relocation_references=(reference,),
     )
     target = bytes.fromhex("d90500204000c3")
-    image = LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped))
+    image = LoadedImage(
+        mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped),
+        read_only_ranges=((0x402000, 0x402004),),
+    )
 
     result = match_function(
         target,

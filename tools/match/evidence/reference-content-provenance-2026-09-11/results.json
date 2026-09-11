@@ -1,0 +1,692 @@
+{
+  "schema_version": 1,
+  "legacy_revision": "dd9e4122083ab82d99dc383b066426bcfc8f5835",
+  "legacy_match_sha256": "d4fc358f748d20b18ae003d4df25eb55e15360866c002dcb7d3f5bf2f62454ef",
+  "current_match_sha256": "37d9cc8cd12c7e730fa9f07cc0dbf06db18661cfeded2edd1d8323960fd48fb4",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "3c1cd4b0114a2f7bf7162ff51b90659a5eac4f3477973d14dd29ffd8960bd559",
+  "scope": "Synthetic x86 load/address callers referencing real PE data; not an execution proof of a game function.",
+  "cases": [
+    {
+      "name": "mutable-global-versus-read-only-bytes",
+      "native_address": 4747288,
+      "before": {
+        "target_bytes": "d90518704800c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "_frozen_constant",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "00000000",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4747288,
+                  "text": "bonus_freeze_timer",
+                  "keys": [
+                    "address:0x00487018",
+                    "name:bonus_freeze_timer",
+                    "local:+0x86018",
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "_frozen_constant",
+                  "keys": [
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      },
+      "after": {
+        "target_bytes": "d90518704800c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "_frozen_constant",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "00000000",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": false,
+        "body_byte_exact": false,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4747288,
+                  "text": "bonus_freeze_timer",
+                  "keys": [
+                    "address:0x00487018",
+                    "name:bonus_freeze_timer",
+                    "local:+0x86018"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "_frozen_constant",
+                  "keys": [
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "mismatch"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "mutable-global-versus-compiler-float",
+      "native_address": 4747288,
+      "before": {
+        "target_bytes": "d90518704800c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "__real@constant",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "00000000",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4747288,
+                  "text": "bonus_freeze_timer",
+                  "keys": [
+                    "address:0x00487018",
+                    "name:bonus_freeze_timer",
+                    "local:+0x86018",
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "__real@constant",
+                  "keys": [
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      },
+      "after": {
+        "target_bytes": "d90518704800c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "__real@constant",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "00000000",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": false,
+        "body_byte_exact": false,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4747288,
+                  "text": "bonus_freeze_timer",
+                  "keys": [
+                    "address:0x00487018",
+                    "name:bonus_freeze_timer",
+                    "local:+0x86018"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "__real@constant",
+                  "keys": [
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "mismatch"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "named-global-owner",
+      "native_address": 4747288,
+      "before": {
+        "target_bytes": "d90518704800c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "_bonus_freeze_timer",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "00000000",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4747288,
+                  "text": "bonus_freeze_timer",
+                  "keys": [
+                    "address:0x00487018",
+                    "name:bonus_freeze_timer",
+                    "local:+0x86018",
+                    "bytes4:00000000"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "_bonus_freeze_timer",
+                  "keys": [
+                    "name:bonus_freeze_timer",
+                    "address:0x00487018"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      },
+      "after": {
+        "target_bytes": "d90518704800c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "_bonus_freeze_timer",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "00000000",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4747288,
+                  "text": "bonus_freeze_timer",
+                  "keys": [
+                    "address:0x00487018",
+                    "name:bonus_freeze_timer",
+                    "local:+0x86018"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "_bonus_freeze_timer",
+                  "keys": [
+                    "name:bonus_freeze_timer",
+                    "address:0x00487018"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "read-only-float-pool",
+      "native_address": 4649508,
+      "before": {
+        "target_bytes": "d90524f24600c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "__real@constant",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "0000803f",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4649508,
+                  "text": "0x0046f224",
+                  "keys": [
+                    "address:0x0046f224",
+                    "local:+0x6e224",
+                    "bytes4:0000803f"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "__real@constant",
+                  "keys": [
+                    "bytes4:0000803f"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      },
+      "after": {
+        "target_bytes": "d90524f24600c3",
+        "candidate_bytes": "d90500000000c3",
+        "candidate_reference": {
+          "offset": 2,
+          "symbol_name": "__real@constant",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "0000803f",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "fld dword [ADDR]",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "image",
+                  "value": 4649508,
+                  "text": "0x0046f224",
+                  "keys": [
+                    "address:0x0046f224",
+                    "local:+0x6e224",
+                    "bytes4:0000803f"
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "disp",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "__real@constant",
+                  "keys": [
+                    "bytes4:0000803f"
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "compiler-cstring-address-policy",
+      "native_address": 4685548,
+      "before": {
+        "target_bytes": "68ec7e4700c3",
+        "candidate_bytes": "6800000000c3",
+        "candidate_reference": {
+          "offset": 1,
+          "symbol_name": "??_C@literal",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "6d757369632e70617100",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "push ADDR",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "imm",
+                  "source": "image",
+                  "value": 4685548,
+                  "text": "0x00477eec",
+                  "keys": [
+                    "address:0x00477eec",
+                    "local:+0x76eec",
+                    "string:\"music.paq\""
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "imm",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "??_C@literal",
+                  "keys": [
+                    "string:\"music.paq\""
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      },
+      "after": {
+        "target_bytes": "68ec7e4700c3",
+        "candidate_bytes": "6800000000c3",
+        "candidate_reference": {
+          "offset": 1,
+          "symbol_name": "??_C@literal",
+          "key": null,
+          "explained": false,
+          "addend": null,
+          "symbol_data": "6d757369632e70617100",
+          "read_only_data": true,
+          "local_target_offset": null,
+          "alternate_keys": [],
+          "relocation_type": 6
+        },
+        "ratio": 1.0,
+        "exact": true,
+        "body_byte_exact": true,
+        "audit": {
+          "entries": [
+            {
+              "target_index": 0,
+              "candidate_index": 0,
+              "target_offset": 0,
+              "candidate_offset": 0,
+              "target_address": 4198400,
+              "candidate_address": 0,
+              "instruction": "push ADDR",
+              "target_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "imm",
+                  "source": "image",
+                  "value": 4685548,
+                  "text": "0x00477eec",
+                  "keys": [
+                    "address:0x00477eec",
+                    "local:+0x76eec",
+                    "string:\"music.paq\""
+                  ],
+                  "explained": true
+                }
+              ],
+              "candidate_references": [
+                {
+                  "operand_index": 0,
+                  "kind": "imm",
+                  "source": "reloc",
+                  "value": null,
+                  "text": "??_C@literal",
+                  "keys": [
+                    "string:\"music.paq\""
+                  ],
+                  "explained": true
+                }
+              ],
+              "status": "ok"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "stock_zlib_literal_load_control": {
+    "function": "zlib_inflate_init2",
+    "image_sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
+    "source_sha256": "fac42b9bfdcd2ff4751e642a518dff921ae5a79a22f7eeda73845c803a89a623",
+    "object_sha256": "2ea65d5e5c918109bb85db33e28821cf7205c7ddbdfc80c1857886879ae86fc2",
+    "ratio": 1.0,
+    "body_byte_exact": true,
+    "literal_reference": {
+      "target_index": 7,
+      "candidate_index": 7,
+      "target_offset": 18,
+      "candidate_offset": 18,
+      "target_address": 268727378,
+      "candidate_address": 18,
+      "instruction": "mov cl, byte [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "disp",
+          "source": "image",
+          "value": 268796428,
+          "text": "0x1005820c",
+          "keys": [
+            "address:0x1005820c",
+            "local:+0x10dcc",
+            "string:\"1.1.3\""
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "??_C@_05NLJN@1?41?43?$AA@",
+          "keys": [
+            "string:\"1.1.3\""
+          ],
+          "explained": true
+        }
+      ],
+      "status": "ok"
+    }
+  }
+}

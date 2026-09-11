@@ -825,6 +825,8 @@ class LoadedImage:
     mapped: bytes
     image_base: int
     size_of_image: int
+    read_only_ranges: tuple[tuple[int, int], ...] = ()
+    content_exclusions: tuple[tuple[int, int], ...] = ()
 
     def function_bytes(self, start_va: int, end_va: int) -> bytes:
         data = self.mapped[start_va - self.image_base : end_va - self.image_base]
@@ -2310,10 +2312,45 @@ def load_image(path: Path, image_base: int | None = None) -> LoadedImage:
 
     pe = pefile.PE(data=Path(path).read_bytes(), fast_load=True)
     resolved_base = int(image_base if image_base is not None else pe.OPTIONAL_HEADER.ImageBase)
+    pe.parse_data_directories(directories=[
+        pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_BASERELOC"],
+        pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"],
+        pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT"],
+    ])
+    read_only_ranges = []
+    content_exclusions = []
+    for raw_section in pe.sections:
+        section = cast(Any, raw_section)
+        start = resolved_base + int(section.VirtualAddress)
+        end = start + max(int(section.Misc_VirtualSize), int(section.SizeOfRawData))
+        if section.Characteristics & 0x40000000 and not section.Characteristics & 0x80000000:
+            read_only_ranges.append((start, end))
+    # A read-only section can still contain loader-written addresses. Their
+    # file bytes are not evidence for substituting a candidate literal.
+    for block in getattr(pe, "DIRECTORY_ENTRY_BASERELOC", ()):
+        for entry in block.entries:
+            if entry.type:
+                start = resolved_base + int(entry.rva)
+                width = {1: 2, 2: 2, 3: 4, 4: 2, 10: 8}.get(entry.type, 8)
+                content_exclusions.append((start, start + width))
+    pointer_size = 8 if pe.OPTIONAL_HEADER.Magic == 0x20B else 4
+    for directory_name in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT"):
+        for descriptor in getattr(pe, directory_name, ()):
+            for symbol in descriptor.imports:
+                start = resolved_base + int(symbol.address) - int(pe.OPTIONAL_HEADER.ImageBase)
+                content_exclusions.append((start, start + pointer_size))
+    iat_index = pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IAT"]
+    if iat_index < len(pe.OPTIONAL_HEADER.DATA_DIRECTORY):
+        directory = pe.OPTIONAL_HEADER.DATA_DIRECTORY[iat_index]
+        if directory.VirtualAddress and directory.Size:
+            start = resolved_base + int(directory.VirtualAddress)
+            content_exclusions.append((start, start + int(directory.Size)))
     return LoadedImage(
         mapped=pe.get_memory_mapped_image(ImageBase=resolved_base),
         image_base=resolved_base,
         size_of_image=int(pe.OPTIONAL_HEADER.SizeOfImage),
+        read_only_ranges=tuple(read_only_ranges),
+        content_exclusions=tuple(sorted(set(content_exclusions))),
     )
 
 
@@ -2338,6 +2375,18 @@ def _image_bytes(image: LoadedImage | None, address: int, byte_count: int) -> by
     if offset < 0 or offset + byte_count > len(image.mapped):
         return None
     return image.mapped[offset : offset + byte_count]
+
+
+def _image_read_only_data(image: LoadedImage, address: int, limit: int) -> bytes:
+    """Return a bounded prefix whose bytes have read-only, non-loader provenance."""
+    end = next((end for start, end in image.read_only_ranges if start <= address < end), address)
+    end = min(end, address + limit, image.image_base + len(image.mapped))
+    if end <= address:
+        return b""
+    for excluded_start, excluded_end in image.content_exclusions:
+        if excluded_start < end and address < excluded_end:
+            end = max(address, excluded_start)
+    return _image_bytes(image, address, max(0, end - address)) or b""
 
 
 def _image_vc6_single_delete_unwind_key(
@@ -2609,11 +2658,21 @@ def disassemble_normalized_function(
         keys = list(reference_catalog.keys_for_address(value) if reference_catalog is not None else ())
         keys.append(f"local:{value - base_address:+#x}")
         if image is not None:
-            available = image.mapped[value - image.image_base :] if image.image_base <= value else b""
-            if string_key := _printable_string_key(available):
-                keys.append(string_key)
-            if byte_count is not None and (raw := _image_bytes(image, value, byte_count)) is not None:
-                keys.append(f"bytes{byte_count}:{raw.hex()}")
+            # Compiler CString references retain their separate, complete-string
+            # pooling rule. VC6 puts these literals in writable .data as well as
+            # .rdata. This rule identifies literal contents, not immutable data
+            # or arbitrary loads from a mutable native object.
+            if image.image_base <= value:
+                offset = value - image.image_base
+                available = image.mapped[offset : offset + _MAX_AUDITED_STRING_BYTES + 1]
+                if string_key := _printable_string_key(available):
+                    string_end = value + available.index(b"\0") + 1
+                    if not any(start < string_end and value < end for start, end in image.content_exclusions):
+                        keys.append(string_key)
+            if byte_count is not None:
+                raw = _image_read_only_data(image, value, byte_count)
+                if len(raw) == byte_count:
+                    keys.append(f"bytes{byte_count}:{raw.hex()}")
         if compiler_key := _image_vc6_unwind_only_key(
             image,
             reference_catalog,

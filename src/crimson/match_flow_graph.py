@@ -20,8 +20,9 @@ _UNSUPPORTED_TRANSFERS = frozenset({
 })
 _CAVEAT = (
     "Diagnostic only: compares decoded instruction graphs with direct local jumps transparent. "
-    "Registers, stack operands, constants, ordered conditional edges, and mapped reference owners "
-    "must agree; every instruction must be covered. Calls are opaque operations with fallthrough. "
+    "Registers, stack operands, constants, ordered conditional edges, and reference evidence under "
+    "the existing symbol/literal rules must agree; every instruction must be covered. "
+    "Calls are opaque operations with fallthrough. "
     "This is not a runtime or C++ equivalence proof. Scoring, reference audits, encoded-body identity, "
     "and acceptance are unchanged. Unsupported control flow or incomplete coverage is not a match."
 )
