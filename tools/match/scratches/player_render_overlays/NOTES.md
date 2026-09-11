@@ -434,3 +434,24 @@ split matrix; their results do not establish exhaustion. The retained source
 SHA-256 is `893863b7f9421b1aef6bd0e72818a4f024c49d4190543f0534e5fa84427dd484`.
 No compiler setting, matching rule, reference alias, waiver, Python, or Zig
 source changes accompany this recovery.
+
+## Dead-body size owner (2026-09-11)
+
+Reloading the dead-player body dimensions into the existing `sprite_size`
+restores its native -36 stack home for the store/load at `0x4287d7` and
+`0x4287e1`. Only those two candidate ESP displacements change; instruction
+sizes, operations, registers and other operands remain identical. Observed
+paired stack mismatches fall from 28 to 26 with no newly displaced access.
+The other four body-argument accesses remain at -40 instead of native -36.
+
+The [dead-body proof](../../evidence/overlay-dead-body-size-2026-09-11/README.md)
+retains 851 matching native/before/current executions, all 199 unambiguous
+paired stack accesses, 23 reconstructible compiler controls and fresh
+stock-C2 traces. All 43 local descriptors are predicted in each source build;
+the frame stays 44 bytes. The sprite-size use count rises from six to eight,
+and the unnamed body-size temporary falls from six to four uses.
+
+Alignment rises from `94.7735192%` to `94.9477352%`, gaining `7.982578`
+fuzzy-weighted bytes. Instructions remain `1148/1148`, prefix nine, references
+`331/0/0`, and both whole-function exactness flags remain false. Source SHA-256
+is `df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b`.

@@ -220,12 +220,11 @@ extern "C" void player_render_overlays(void)
         grim_interface_ptr->grim_set_config_var(0x14, 6u);
         player_render_set_tint(transition_alpha);
         grim_interface_ptr->grim_begin_batch();
-        sprite_size = player_state_table[render_overlay_player_index].size;
         grim_interface_ptr->grim_draw_quad(
             render_scratch_f0.x,
             render_scratch_f0.y,
-            sprite_size,
-            sprite_size);
+            player_state_table[render_overlay_player_index].size,
+            player_state_table[render_overlay_player_index].size);
         grim_interface_ptr->grim_end_batch();
         return;
     }

@@ -1,0 +1,1371 @@
+{
+  "before_sha256": "893863b7f9421b1aef6bd0e72818a4f024c49d4190543f0534e5fa84427dd484",
+  "controls": [
+    {
+      "family": "body-owner",
+      "name": "sites-0",
+      "source_sha256": "893863b7f9421b1aef6bd0e72818a4f024c49d4190543f0534e5fa84427dd484",
+      "ratio": 0.9477351916376306,
+      "instructions": 1148,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": []
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-1",
+      "source_sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b",
+      "ratio": 0.9494773519163763,
+      "instructions": 1148,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-2",
+      "source_sha256": "25059e328a7a369d4caf8705223e1a29f509a82c65661da44c7eb375f00f51c3",
+      "ratio": 0.936411149825784,
+      "instructions": 1148,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 310,
+          "end": 310,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 313,
+          "end": 315,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-3",
+      "source_sha256": "e684606e61d9588cfce82528f0778bdd0e6e032abb1fcb15de0962b7762e55ca",
+      "ratio": 0.9198606271777003,
+      "instructions": 1148,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 310,
+          "end": 310,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 313,
+          "end": 315,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-4",
+      "source_sha256": "802578cead0dfa112383111dd364c8a173375aa5d4cdce93ef3a108b4501a2b5",
+      "ratio": 0.9390243902439024,
+      "instructions": 1148,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 343,
+          "end": 343,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 346,
+          "end": 348,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-5",
+      "source_sha256": "6bf1e1f9c4bede01e114f496eb27f57ee2f69159252909ac85a780e41ffb95f9",
+      "ratio": 0.9224738675958188,
+      "instructions": 1148,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 343,
+          "end": 343,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 346,
+          "end": 348,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-6",
+      "source_sha256": "3d1ccd0efd4cfb3c22f2267c05447e984f9e9bbe1d228a5f5235cb430adf177b",
+      "ratio": 0.9163763066202091,
+      "instructions": 1148,
+      "refs_ok": 327,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 310,
+          "end": 310,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 313,
+          "end": 315,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        },
+        {
+          "start": 343,
+          "end": 343,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 346,
+          "end": 348,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "body-owner",
+      "name": "sites-7",
+      "source_sha256": "a448f4e29bf7a411654c3aca33c7be0bd425dc79182d2cdb77cdfe6216bd0ea8",
+      "ratio": 0.9172473867595818,
+      "instructions": 1148,
+      "refs_ok": 327,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 310,
+          "end": 310,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 313,
+          "end": 315,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        },
+        {
+          "start": 343,
+          "end": 343,
+          "old": [],
+          "new": [
+            "    sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 346,
+          "end": 348,
+          "old": [
+            "        player_state_table[render_overlay_player_index].size,\n",
+            "        player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "        sprite_size,\n",
+            "        sprite_size);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-owner",
+      "name": "current-1",
+      "source_sha256": "3b423a98cb4d935ae28996759fade954593d6c01dd3c4f24d7fa4b1e4f1b2807",
+      "ratio": 0.9139130434782609,
+      "instructions": 1152,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 380,
+          "end": 381,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        },
+        {
+          "start": 406,
+          "end": 408,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-owner",
+      "name": "current-2",
+      "source_sha256": "f3d87ff908c34781be8b0a9d5bcba6c0505ed672909a7e7aee30e6af3b5383a0",
+      "ratio": 0.9417391304347826,
+      "instructions": 1152,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 423,
+          "end": 424,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 467,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 485,
+          "end": 486,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-owner",
+      "name": "current-3",
+      "source_sha256": "0002acae669cc301a6e761999e2d4b7a4cdd9db9013b64afc9d886075204780b",
+      "ratio": 0.9001736111111112,
+      "instructions": 1156,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 131,
+          "end": 132,
+          "old": [
+            "    player_render_vec2_t effect_offset;\n"
+          ],
+          "new": []
+        },
+        {
+          "start": 380,
+          "end": 381,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        },
+        {
+          "start": 406,
+          "end": 408,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        },
+        {
+          "start": 423,
+          "end": 424,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 467,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 485,
+          "end": 486,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-owner",
+      "name": "dead-body-owner-1",
+      "source_sha256": "462d0969cf90268c42e532f26e5af8c4086d54e6416ee807c5e8872c39aab776",
+      "ratio": 0.9156521739130434,
+      "instructions": 1152,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 380,
+          "end": 381,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        },
+        {
+          "start": 406,
+          "end": 408,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-owner",
+      "name": "dead-body-owner-2",
+      "source_sha256": "a760e7737fb4a6d47656bef82e785944c5928afd07f3b13402931bae0e13ca00",
+      "ratio": 0.9434782608695652,
+      "instructions": 1152,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 423,
+          "end": 424,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 467,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 485,
+          "end": 486,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-owner",
+      "name": "dead-body-owner-3",
+      "source_sha256": "7c2a4d1c67cd1dab15c14974bef28c0da42a003aa457680264789116c20a1d37",
+      "ratio": 0.9019097222222222,
+      "instructions": 1156,
+      "refs_ok": 329,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 131,
+          "end": 132,
+          "old": [
+            "    player_render_vec2_t effect_offset;\n"
+          ],
+          "new": []
+        },
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 380,
+          "end": 381,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        },
+        {
+          "start": 406,
+          "end": 408,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + render_delta.x,\n",
+            "            render_delta.y\n"
+          ]
+        },
+        {
+          "start": 423,
+          "end": 424,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        render_delta = player_render_vec2_t(\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 467,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        },
+        {
+          "start": 485,
+          "end": 486,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + render_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "line-owner",
+      "name": "current-perk-scope",
+      "source_sha256": "a91f6275f1fb85ec4dbbfc2f1ae27022a80ded57855a69a1f4daae8a9f3fbaff",
+      "ratio": 0.8624891209747607,
+      "instructions": 1150,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 502,
+          "end": 502,
+          "old": [],
+          "new": [
+            "        player_render_vec2_t line_delta;\n"
+          ]
+        },
+        {
+          "start": 513,
+          "end": 514,
+          "old": [
+            "                    render_delta.x =\n"
+          ],
+          "new": [
+            "                    line_delta.x =\n"
+          ]
+        },
+        {
+          "start": 516,
+          "end": 517,
+          "old": [
+            "                    render_delta.y =\n"
+          ],
+          "new": [
+            "                    line_delta.y =\n"
+          ]
+        },
+        {
+          "start": 519,
+          "end": 520,
+          "old": [
+            "                    player_render_vec2_t normalized = render_delta;\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t normalized = line_delta;\n"
+          ]
+        },
+        {
+          "start": 521,
+          "end": 523,
+          "old": [
+            "                        render_delta.y * render_delta.y\n",
+            "                        + render_delta.x * render_delta.x);\n"
+          ],
+          "new": [
+            "                        line_delta.y * line_delta.y\n",
+            "                        + line_delta.x * line_delta.x);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "line-owner",
+      "name": "current-player-scope",
+      "source_sha256": "3496206484cf20d4bcf25eb4688eadfe1f75daf8d7bd288594a76f5e126b2d72",
+      "ratio": 0.8624891209747607,
+      "instructions": 1150,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 506,
+          "end": 506,
+          "old": [],
+          "new": [
+            "            player_render_vec2_t line_delta;\n"
+          ]
+        },
+        {
+          "start": 513,
+          "end": 514,
+          "old": [
+            "                    render_delta.x =\n"
+          ],
+          "new": [
+            "                    line_delta.x =\n"
+          ]
+        },
+        {
+          "start": 516,
+          "end": 517,
+          "old": [
+            "                    render_delta.y =\n"
+          ],
+          "new": [
+            "                    line_delta.y =\n"
+          ]
+        },
+        {
+          "start": 519,
+          "end": 520,
+          "old": [
+            "                    player_render_vec2_t normalized = render_delta;\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t normalized = line_delta;\n"
+          ]
+        },
+        {
+          "start": 521,
+          "end": 523,
+          "old": [
+            "                        render_delta.y * render_delta.y\n",
+            "                        + render_delta.x * render_delta.x);\n"
+          ],
+          "new": [
+            "                        line_delta.y * line_delta.y\n",
+            "                        + line_delta.x * line_delta.x);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "line-owner",
+      "name": "current-draw-scope",
+      "source_sha256": "e7b1e1e9855c865dc90a167a1ac72242bad04db22b050f05f4b105d2843744de",
+      "ratio": 0.8624891209747607,
+      "instructions": 1150,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 513,
+          "end": 514,
+          "old": [
+            "                    render_delta.x =\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t line_delta;\n",
+            "                    line_delta.x =\n"
+          ]
+        },
+        {
+          "start": 516,
+          "end": 517,
+          "old": [
+            "                    render_delta.y =\n"
+          ],
+          "new": [
+            "                    line_delta.y =\n"
+          ]
+        },
+        {
+          "start": 519,
+          "end": 520,
+          "old": [
+            "                    player_render_vec2_t normalized = render_delta;\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t normalized = line_delta;\n"
+          ]
+        },
+        {
+          "start": 521,
+          "end": 523,
+          "old": [
+            "                        render_delta.y * render_delta.y\n",
+            "                        + render_delta.x * render_delta.x);\n"
+          ],
+          "new": [
+            "                        line_delta.y * line_delta.y\n",
+            "                        + line_delta.x * line_delta.x);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "line-owner",
+      "name": "dead-body-owner-perk-scope",
+      "source_sha256": "a0960305566706d1d8029fc1f1166bf409f541de38f0cc47d54ac3180a32cd1f",
+      "ratio": 0.8624891209747607,
+      "instructions": 1150,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 502,
+          "end": 502,
+          "old": [],
+          "new": [
+            "        player_render_vec2_t line_delta;\n"
+          ]
+        },
+        {
+          "start": 513,
+          "end": 514,
+          "old": [
+            "                    render_delta.x =\n"
+          ],
+          "new": [
+            "                    line_delta.x =\n"
+          ]
+        },
+        {
+          "start": 516,
+          "end": 517,
+          "old": [
+            "                    render_delta.y =\n"
+          ],
+          "new": [
+            "                    line_delta.y =\n"
+          ]
+        },
+        {
+          "start": 519,
+          "end": 520,
+          "old": [
+            "                    player_render_vec2_t normalized = render_delta;\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t normalized = line_delta;\n"
+          ]
+        },
+        {
+          "start": 521,
+          "end": 523,
+          "old": [
+            "                        render_delta.y * render_delta.y\n",
+            "                        + render_delta.x * render_delta.x);\n"
+          ],
+          "new": [
+            "                        line_delta.y * line_delta.y\n",
+            "                        + line_delta.x * line_delta.x);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "line-owner",
+      "name": "dead-body-owner-player-scope",
+      "source_sha256": "cc37531f4dfef76d0268cc71d548bcd06437be9d9ad7b31f7cc303fcf5145545",
+      "ratio": 0.8624891209747607,
+      "instructions": 1150,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 506,
+          "end": 506,
+          "old": [],
+          "new": [
+            "            player_render_vec2_t line_delta;\n"
+          ]
+        },
+        {
+          "start": 513,
+          "end": 514,
+          "old": [
+            "                    render_delta.x =\n"
+          ],
+          "new": [
+            "                    line_delta.x =\n"
+          ]
+        },
+        {
+          "start": 516,
+          "end": 517,
+          "old": [
+            "                    render_delta.y =\n"
+          ],
+          "new": [
+            "                    line_delta.y =\n"
+          ]
+        },
+        {
+          "start": 519,
+          "end": 520,
+          "old": [
+            "                    player_render_vec2_t normalized = render_delta;\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t normalized = line_delta;\n"
+          ]
+        },
+        {
+          "start": 521,
+          "end": 523,
+          "old": [
+            "                        render_delta.y * render_delta.y\n",
+            "                        + render_delta.x * render_delta.x);\n"
+          ],
+          "new": [
+            "                        line_delta.y * line_delta.y\n",
+            "                        + line_delta.x * line_delta.x);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "line-owner",
+      "name": "dead-body-owner-draw-scope",
+      "source_sha256": "2f99907f1a3b0d6d75b1b01226d9ae0e0f15fbd7737a03ad4874307392f88b21",
+      "ratio": 0.8624891209747607,
+      "instructions": 1150,
+      "refs_ok": 332,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 513,
+          "end": 514,
+          "old": [
+            "                    render_delta.x =\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t line_delta;\n",
+            "                    line_delta.x =\n"
+          ]
+        },
+        {
+          "start": 516,
+          "end": 517,
+          "old": [
+            "                    render_delta.y =\n"
+          ],
+          "new": [
+            "                    line_delta.y =\n"
+          ]
+        },
+        {
+          "start": 519,
+          "end": 520,
+          "old": [
+            "                    player_render_vec2_t normalized = render_delta;\n"
+          ],
+          "new": [
+            "                    player_render_vec2_t normalized = line_delta;\n"
+          ]
+        },
+        {
+          "start": 521,
+          "end": 523,
+          "old": [
+            "                        render_delta.y * render_delta.y\n",
+            "                        + render_delta.x * render_delta.x);\n"
+          ],
+          "new": [
+            "                        line_delta.y * line_delta.y\n",
+            "                        + line_delta.x * line_delta.x);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-construction",
+      "name": "scopes-1",
+      "source_sha256": "d68aded3ddf11a78cd06e6533bae7ff99184ab1cc4f831971aa42d2973ca583d",
+      "ratio": 0.9494773519163763,
+      "instructions": 1148,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 380,
+          "end": 381,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        player_render_vec2_t shield_offset(\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + shield_offset.x,\n",
+            "            shield_offset.y\n"
+          ]
+        },
+        {
+          "start": 406,
+          "end": 408,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + shield_offset.x,\n",
+            "            shield_offset.y\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-construction",
+      "name": "scopes-2",
+      "source_sha256": "60f1907b3189ff16c6060b3d37e0d8301c94f1bd79f24abc62dd5da5d619221e",
+      "ratio": 0.9486510008703221,
+      "instructions": 1150,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 423,
+          "end": 424,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        player_render_vec2_t flash_offset(\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 467,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + flash_offset;\n"
+          ]
+        },
+        {
+          "start": 485,
+          "end": 486,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + flash_offset;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "offset-construction",
+      "name": "scopes-3",
+      "source_sha256": "964f7a05dfc882e2d4c17f30d9c6e71272a7f8915dd38d4f1050d18c43e4f5cc",
+      "ratio": 0.9486510008703221,
+      "instructions": 1150,
+      "refs_ok": 331,
+      "refs_problems": 0,
+      "edits": [
+        {
+          "start": 131,
+          "end": 132,
+          "old": [
+            "    player_render_vec2_t effect_offset;\n"
+          ],
+          "new": []
+        },
+        {
+          "start": 222,
+          "end": 222,
+          "old": [],
+          "new": [
+            "        sprite_size = player_state_table[render_overlay_player_index].size;\n"
+          ]
+        },
+        {
+          "start": 225,
+          "end": 227,
+          "old": [
+            "            player_state_table[render_overlay_player_index].size,\n",
+            "            player_state_table[render_overlay_player_index].size);\n"
+          ],
+          "new": [
+            "            sprite_size,\n",
+            "            sprite_size);\n"
+          ]
+        },
+        {
+          "start": 380,
+          "end": 381,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        player_render_vec2_t shield_offset(\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + shield_offset.x,\n",
+            "            shield_offset.y\n"
+          ]
+        },
+        {
+          "start": 406,
+          "end": 408,
+          "old": [
+            "                - half_size + effect_offset.x,\n",
+            "            effect_offset.y\n"
+          ],
+          "new": [
+            "                - half_size + shield_offset.x,\n",
+            "            shield_offset.y\n"
+          ]
+        },
+        {
+          "start": 423,
+          "end": 424,
+          "old": [
+            "        effect_offset = player_render_vec2_t(\n"
+          ],
+          "new": [
+            "        player_render_vec2_t flash_offset(\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 467,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + flash_offset;\n"
+          ]
+        },
+        {
+          "start": 485,
+          "end": 486,
+          "old": [
+            "                + effect_offset;\n"
+          ],
+          "new": [
+            "                + flash_offset;\n"
+          ]
+        }
+      ]
+    }
+  ]
+}

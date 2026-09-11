@@ -1,0 +1,975 @@
+{
+  "schema_version": 1,
+  "kind": "vc6-overlay-stack-coloring-observer",
+  "verified": true,
+  "limitations": "Observes this source and compiler only; the greedy model is scoped to the observed overlay allocation path. No original-source identity, semantic equivalence, or additional exact function is claimed.",
+  "source_hashes": {
+    "verify_stack.py": "b42341f10171f48e16d9a0e573395c245100f77d8b5172fbb0498fd26baf4844",
+    "observer.c": "05b539f2d2c44b58e0f63d28a965f01620206b56a0ab32adcd49c45c3ca7658e"
+  },
+  "backend_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "capture": {
+    "function": "player_render_overlays",
+    "source_sha256": "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b",
+    "normal_build_key": {
+      "toolchain": {
+        "compiler_trees": {
+          "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+          "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+        },
+        "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "runner_mode": 493,
+        "cl_environment": {
+          "CL": null,
+          "_CL_": null
+        }
+      },
+      "pipeline_sha256": [
+        "37d9cc8cd12c7e730fa9f07cc0dbf06db18661cfeded2edd1d8323960fd48fb4",
+        "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+        "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+      ],
+      "compiler": "msvc6.5",
+      "argv": [
+        "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+        "/c",
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-",
+        "scratch.cpp"
+      ],
+      "auto_inline_off": [],
+      "dependencies": [
+        [
+          "/private/tmp/crimson-overlay-body-owner-stack/source/scratch.cpp",
+          "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b"
+        ],
+        [
+          "/private/tmp/crimson-overlay-body-owner-stack/source/scratch.conf",
+          null
+        ],
+        [
+          "cl.sh",
+          "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+        ],
+        [
+          "compilers/msvc6.5/Bin/CL.EXE",
+          "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+        ],
+        [
+          "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+          "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+        ],
+        [
+          "include/crimsonland_textures_owner.h",
+          "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5"
+        ],
+        [
+          "include/grim2d_cpp.h",
+          "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+        ]
+      ]
+    },
+    "cflags": "/O2 /GB /W3 /GR-",
+    "captured_streams": {
+      "ex": {
+        "size": 23012,
+        "sha256": "4b8b9d9e72673a7f5de4f0aace64d7cd70c9b44e885c80f73a3a293d8128fb64"
+      },
+      "in": {
+        "size": 183,
+        "sha256": "4d56fe1046109ad8f32be072de0f6e7cbe9c4447e60c48d92258ea585f201681"
+      },
+      "sy": {
+        "size": 3648,
+        "sha256": "fbd049677ce247920329258bbd7d50e87b2cc421133222f54c4493f36b7e1bef"
+      },
+      "gl": {
+        "size": 2024,
+        "sha256": "5ba0ca79082510efb77c5f87880c086a4768da96ef89616cc648246bc6894686"
+      }
+    },
+    "replayed_backend_arguments": [
+      "{original-c2}",
+      "-il",
+      "{captured-prefix}",
+      "-f",
+      "scratch.cpp",
+      "-Gs4096",
+      "-dos",
+      "-Foreplay.obj",
+      "-ML",
+      "-Fdvc60.idb",
+      "-Gy",
+      "-G5",
+      "-W",
+      "3",
+      "-Bd"
+    ],
+    "normal_wrapped_replayed_objects_equal_except_timestamp": true,
+    "normalized_coff_size": 13055,
+    "normalized_coff_sha256": "79755511ac21044a216f0207ca5874dcf2c119cda03374438a34f4a683ebfba8",
+    "streams_unchanged_after_replay": true,
+    "missing_stream_replay_rejected": true,
+    "missing_stream_exit_code": 50,
+    "metrics": {
+      "ratio": 0.9494773519163763,
+      "target_instructions": 1148,
+      "candidate_instructions": 1148,
+      "prefix_instructions": 9,
+      "references_ok": 331,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  "observed_coff_equal_except_timestamp": true,
+  "observed_coff_sha256": "79755511ac21044a216f0207ca5874dcf2c119cda03374438a34f4a683ebfba8",
+  "trace_sha256": "a2fdcba2c0226a39355a85bfc4a91fdd25b04c590ff1e8fd9244b0b42a2b98b0",
+  "symbol_count": 45,
+  "descriptor_offsets_checked": 43,
+  "changed_offset_rejected": true,
+  "truncated_trace_rejected": true,
+  "allocation_order": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44
+  ],
+  "groups": [
+    {
+      "size": 4,
+      "members": [
+        0
+      ],
+      "index": 0,
+      "offset": -44
+    },
+    {
+      "size": 4,
+      "members": [
+        1,
+        4
+      ],
+      "index": 1,
+      "offset": -40
+    },
+    {
+      "size": 4,
+      "members": [
+        2,
+        3
+      ],
+      "index": 2,
+      "offset": -36
+    },
+    {
+      "size": 8,
+      "members": [
+        5,
+        13,
+        27,
+        41,
+        43
+      ],
+      "index": 3,
+      "offset": -32
+    },
+    {
+      "size": 8,
+      "members": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        14,
+        25,
+        26,
+        29,
+        31,
+        33,
+        36,
+        38,
+        40,
+        42,
+        44
+      ],
+      "index": 4,
+      "offset": -24
+    },
+    {
+      "size": 8,
+      "members": [
+        11,
+        12
+      ],
+      "index": 5,
+      "offset": -16
+    },
+    {
+      "size": 8,
+      "members": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        28,
+        30,
+        32,
+        34,
+        35,
+        37,
+        39
+      ],
+      "index": 6,
+      "offset": -8
+    }
+  ],
+  "symbols": [
+    {
+      "index": 0,
+      "kind": 4,
+      "size": 4,
+      "use_count": 13,
+      "frontend_id": 4069,
+      "initial_offset": -4,
+      "final_offset": -44,
+      "conflicts": [
+        0
+      ]
+    },
+    {
+      "index": 1,
+      "kind": 4,
+      "size": 4,
+      "use_count": 8,
+      "frontend_id": 4070,
+      "initial_offset": -52,
+      "final_offset": -40,
+      "conflicts": [
+        0,
+        1,
+        2,
+        6,
+        11,
+        15
+      ]
+    },
+    {
+      "index": 2,
+      "kind": 4,
+      "size": 4,
+      "use_count": 8,
+      "frontend_id": 4071,
+      "initial_offset": -48,
+      "final_offset": -36,
+      "conflicts": [
+        0,
+        2,
+        11,
+        12,
+        14,
+        16,
+        42
+      ]
+    },
+    {
+      "index": 3,
+      "kind": 4,
+      "size": 4,
+      "use_count": 6,
+      "frontend_id": 4188,
+      "initial_offset": -136,
+      "final_offset": -36,
+      "conflicts": [
+        3,
+        7,
+        11,
+        17,
+        27
+      ]
+    },
+    {
+      "index": 4,
+      "kind": 3,
+      "size": 4,
+      "use_count": 4,
+      "frontend_id": null,
+      "initial_offset": null,
+      "final_offset": null,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        35,
+        37
+      ]
+    },
+    {
+      "index": 5,
+      "kind": 3,
+      "size": 4,
+      "use_count": 4,
+      "frontend_id": null,
+      "initial_offset": null,
+      "final_offset": null,
+      "conflicts": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        11,
+        15
+      ]
+    },
+    {
+      "index": 6,
+      "kind": 4,
+      "size": 4,
+      "use_count": 3,
+      "frontend_id": 4134,
+      "initial_offset": -80,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        6,
+        11
+      ]
+    },
+    {
+      "index": 7,
+      "kind": 4,
+      "size": 4,
+      "use_count": 3,
+      "frontend_id": 4183,
+      "initial_offset": -116,
+      "final_offset": -24,
+      "conflicts": [
+        3,
+        7,
+        11,
+        17,
+        27
+      ]
+    },
+    {
+      "index": 8,
+      "kind": 4,
+      "size": 4,
+      "use_count": 2,
+      "frontend_id": 4109,
+      "initial_offset": -8,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        8,
+        11,
+        13
+      ]
+    },
+    {
+      "index": 9,
+      "kind": 4,
+      "size": 4,
+      "use_count": 2,
+      "frontend_id": 4521,
+      "initial_offset": -672,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        4,
+        9,
+        11
+      ]
+    },
+    {
+      "index": 10,
+      "kind": 4,
+      "size": 4,
+      "use_count": 2,
+      "frontend_id": 4162,
+      "initial_offset": -96,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        10,
+        11
+      ]
+    },
+    {
+      "index": 11,
+      "kind": 4,
+      "size": 8,
+      "use_count": 14,
+      "frontend_id": 4104,
+      "initial_offset": -32,
+      "final_offset": -16,
+      "conflicts": [
+        0,
+        3,
+        11,
+        17,
+        27
+      ]
+    },
+    {
+      "index": 12,
+      "kind": 4,
+      "size": 8,
+      "use_count": 6,
+      "frontend_id": 4214,
+      "initial_offset": -176,
+      "final_offset": -16,
+      "conflicts": [
+        0,
+        12,
+        29
+      ]
+    },
+    {
+      "index": 13,
+      "kind": 4,
+      "size": 8,
+      "use_count": 6,
+      "frontend_id": 4218,
+      "initial_offset": -200,
+      "final_offset": -32,
+      "conflicts": [
+        0,
+        11,
+        13,
+        31
+      ]
+    },
+    {
+      "index": 14,
+      "kind": 4,
+      "size": 8,
+      "use_count": 6,
+      "frontend_id": 4222,
+      "initial_offset": -232,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        11,
+        14
+      ]
+    },
+    {
+      "index": 15,
+      "kind": 4,
+      "size": 8,
+      "use_count": 6,
+      "frontend_id": 4234,
+      "initial_offset": -312,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        1,
+        2,
+        6,
+        11,
+        15
+      ]
+    },
+    {
+      "index": 16,
+      "kind": 4,
+      "size": 8,
+      "use_count": 6,
+      "frontend_id": 4236,
+      "initial_offset": -324,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        11,
+        16
+      ]
+    },
+    {
+      "index": 17,
+      "kind": 4,
+      "size": 8,
+      "use_count": 6,
+      "frontend_id": 4182,
+      "initial_offset": -132,
+      "final_offset": -8,
+      "conflicts": [
+        3,
+        7,
+        11,
+        17,
+        27
+      ]
+    },
+    {
+      "index": 18,
+      "kind": 4,
+      "size": 8,
+      "use_count": 5,
+      "frontend_id": 4360,
+      "initial_offset": -500,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        11,
+        18
+      ]
+    },
+    {
+      "index": 19,
+      "kind": 4,
+      "size": 8,
+      "use_count": 5,
+      "frontend_id": 4413,
+      "initial_offset": -556,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        11,
+        19
+      ]
+    },
+    {
+      "index": 20,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4287,
+      "initial_offset": -428,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        20
+      ]
+    },
+    {
+      "index": 21,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4484,
+      "initial_offset": -628,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        11,
+        21
+      ]
+    },
+    {
+      "index": 22,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4227,
+      "initial_offset": -264,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        22,
+        36
+      ]
+    },
+    {
+      "index": 23,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4541,
+      "initial_offset": -688,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        23
+      ]
+    },
+    {
+      "index": 24,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4231,
+      "initial_offset": -296,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        24
+      ]
+    },
+    {
+      "index": 25,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4241,
+      "initial_offset": -356,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        11,
+        16,
+        25
+      ]
+    },
+    {
+      "index": 26,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4244,
+      "initial_offset": -380,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        11,
+        16,
+        26
+      ]
+    },
+    {
+      "index": 27,
+      "kind": 4,
+      "size": 8,
+      "use_count": 4,
+      "frontend_id": 4187,
+      "initial_offset": -124,
+      "final_offset": -32,
+      "conflicts": [
+        3,
+        7,
+        11,
+        17,
+        27
+      ]
+    },
+    {
+      "index": 28,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4213,
+      "initial_offset": -168,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        28
+      ]
+    },
+    {
+      "index": 29,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4212,
+      "initial_offset": -160,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        28,
+        29
+      ]
+    },
+    {
+      "index": 30,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4105,
+      "initial_offset": -40,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        11,
+        30
+      ]
+    },
+    {
+      "index": 31,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4217,
+      "initial_offset": -192,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        11,
+        30,
+        31
+      ]
+    },
+    {
+      "index": 32,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4220,
+      "initial_offset": -216,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        11,
+        32
+      ]
+    },
+    {
+      "index": 33,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4219,
+      "initial_offset": -208,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        11,
+        32,
+        33
+      ]
+    },
+    {
+      "index": 34,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4221,
+      "initial_offset": -224,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        11,
+        33,
+        34
+      ]
+    },
+    {
+      "index": 35,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4226,
+      "initial_offset": -256,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        11,
+        35
+      ]
+    },
+    {
+      "index": 36,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4225,
+      "initial_offset": -248,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        35,
+        36
+      ]
+    },
+    {
+      "index": 37,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4229,
+      "initial_offset": -280,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        37
+      ]
+    },
+    {
+      "index": 38,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4228,
+      "initial_offset": -272,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        37,
+        38
+      ]
+    },
+    {
+      "index": 39,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4230,
+      "initial_offset": -288,
+      "final_offset": -8,
+      "conflicts": [
+        0,
+        2,
+        4,
+        11,
+        38,
+        39
+      ]
+    },
+    {
+      "index": 40,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4239,
+      "initial_offset": -340,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        11,
+        16,
+        40
+      ]
+    },
+    {
+      "index": 41,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4240,
+      "initial_offset": -348,
+      "final_offset": -32,
+      "conflicts": [
+        0,
+        11,
+        16,
+        40,
+        41
+      ]
+    },
+    {
+      "index": 42,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4164,
+      "initial_offset": -104,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        11,
+        16,
+        42
+      ]
+    },
+    {
+      "index": 43,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4242,
+      "initial_offset": -364,
+      "final_offset": -32,
+      "conflicts": [
+        0,
+        2,
+        11,
+        16,
+        42,
+        43
+      ]
+    },
+    {
+      "index": 44,
+      "kind": 4,
+      "size": 8,
+      "use_count": 2,
+      "frontend_id": 4243,
+      "initial_offset": -372,
+      "final_offset": -24,
+      "conflicts": [
+        0,
+        2,
+        11,
+        16,
+        43,
+        44
+      ]
+    }
+  ]
+}
