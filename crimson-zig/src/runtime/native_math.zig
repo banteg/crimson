@@ -57,6 +57,15 @@ pub inline fn normalizeVec2Safe(x: f32, y: f32) [2]f32 {
     };
 }
 
+pub inline fn aimPointFromHeading(player_x: f32, player_y: f32, aim_heading: f32, radius: f32) [2]f32 {
+    const radians = pc24Sub(aim_heading, native_half_pi);
+    // Native keeps FCOS wide and stores FSIN to float32 before scaling.
+    return .{
+        pc24Add(player_x, pc24Mul(@cos(@as(f64, radians)), radius)),
+        pc24Add(player_y, pc24Mul(sinNative(radians), radius)),
+    };
+}
+
 pub inline fn fireMuzzlePos(player_x: f32, player_y: f32, aim_heading: f32) [2]f32 {
     const radians = pc24Sub(pc24Sub(aim_heading, native_half_pi), native_fire_muzzle_rotation);
     return .{

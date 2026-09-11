@@ -73,4 +73,5 @@ test {
     _ = quest_spawn_logic_full;
     _ = weapons;
     _ = window_atlas;
+    _ = local_input;
 }

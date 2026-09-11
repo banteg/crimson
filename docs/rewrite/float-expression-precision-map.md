@@ -65,6 +65,13 @@ Historical IDA whole-view scan:
 | `E11` | Float-int conversion hotspots (`__ftol` family) | `X87_INTERMEDIATE_THEN_F32` (int boundary) | explicit `__ftol()` calls in movement/effects code | Route through native-compatible helper; treat conversion semantics as parity-sensitive | `projectile_update` @ `0x00420b90` |
 | `E12` | Formatting/vararg conversion | `F64_BOUNDARY_ONLY` | `crt_sprintf(..., (double)f32_value)` | `double` here is boundary formatting ABI, not simulation precision policy | `mods_menu_update` @ `0x0040e9a0` |
 | `E13` | Creature atlas frame selection | `F32_STORE` (int boundary) | `__ftol(phase + 0.5f)` or `__ftol((float)(base + 15) - lifecycle)` | Round the add/subtract at PC24 before truncating; select the lifecycle branch directly | `creature_render_type` @ `0x00418b60` |
+| `E14` | Heading-derived 60-unit aim point | `X87_INTERMEDIATE_THEN_F32` | Native keeps cosine wide through scaling but stores sine first | Subtract native half-pi at PC24; multiply wide cosine and stored sine at PC24; round each position add | `player_update` @ `0x004136b0` |
+
+`E14` is an exception to treating both direction components as stored floats.
+The original-image witnesses in
+`tools/match/evidence/player-aim-direction-2026-09-11/results.json` pin the
+asymmetry and held-turn ordering. Python and Zig share 1,050 point and 240
+turn witnesses; see that evidence package for modeled boundaries and limits.
 
 ## Binary Ninja cross-check pattern
 

@@ -1395,3 +1395,24 @@ after the swap at `0x0041590e..0x00415918`. The recovered scratch already
 preserves both lifetimes. The corresponding port correction and validation
 are documented in the
 [player/projectile boundary evidence](../../PLAYER-PROJECTILE-BOUNDARIES-2026-09-08.md).
+
+## Native aim-point execution correction (2026-09-11)
+
+The three heading-derived 60-unit aim points now give the cosine a separate
+local lifetime, preserving its wide x87 result through the PC=24 multiply.
+Native stores sine before scaling but does not store cosine there. The old
+shared `move_delta.x` store produced observable aim differences.
+
+`tools/match/evidence/player-aim-direction-2026-09-11/` contains the original
+image/C++ runner, pinned before source, 3,738-case results, and shared port
+witnesses. Current ordered calls and observed final state agree in every case;
+the old C++ source differs in 46. Python gameplay/input and Zig input also
+now preserve native heading conversion, asymmetric trig stores, and held-turn
+rounding/order. The evidence README describes modeled callees and bounded
+coverage; this does not establish whole-game equivalence.
+
+This correctness fix reduces fuzzy score from 64.0473887814% to
+64.0212920397% and candidate instructions from 4,066 to 4,060. The seven-
+instruction prefix and 805/0/2 references are unchanged. The 4.2425473064
+weighted-byte reduction is retained transparently because the previous source
+fails native execution. No exactness or ownership credit is added.

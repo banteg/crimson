@@ -529,7 +529,8 @@ def test_local_input_joystick_aim_turns_with_pov_input(
         creatures=[],
     )
 
-    expected = player.pos + Vec2.from_heading(0.4) * 60.0
+    # Original player_update: POV right, dt=0.1, heading=0, position=(100, 100).
+    expected = Vec2(123.36509704589844, 44.73633575439453)
     assert_float_close(float(out.aim.x), float(expected.x))
     assert_float_close(float(out.aim.y), float(expected.y))
 
@@ -565,7 +566,8 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
         creatures=[],
     )
 
-    expected = player.pos + Vec2.from_heading(0.4) * 60.0
+    # Original player_update: POV right, dt=0.1, heading=0, position=(100, 100).
+    expected = Vec2(123.36509704589844, 44.73633575439453)
     assert_float_close(float(out.aim.x), float(expected.x))
     assert_float_close(float(out.aim.y), float(expected.y))
 
@@ -602,7 +604,8 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
         creatures=[],
     )
 
-    expected = player.pos + Vec2.from_heading(0.4) * 60.0
+    # Original player_update: POV right, dt=0.1, heading=0, position=(100, 100).
+    expected = Vec2(123.36509704589844, 44.73633575439453)
     assert_float_close(float(out.aim.x), float(expected.x))
     assert_float_close(float(out.aim.y), float(expected.y))
 

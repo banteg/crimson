@@ -17,6 +17,7 @@ from .input_codes import (
     input_code_is_down,
     input_code_is_pressed,
 )
+from .math_parity import f32, native_aim_point_from_heading, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from .movement_controls import MovementControlType
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
@@ -67,7 +68,7 @@ def _clamp_unit(v: float) -> float:
 
 
 def _aim_point_from_heading(pos: Vec2, heading: float, *, radius: float = _AIM_RADIUS_KEYBOARD) -> Vec2:
-    return pos + Vec2.from_heading(float(heading)) * float(radius)
+    return native_aim_point_from_heading(pos, heading, radius=radius)
 
 
 def _resolve_static_move_vector(
@@ -402,9 +403,9 @@ class LocalInputInterpreter:
         elif aim_scheme is AimScheme.KEYBOARD:
             if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
                 if input_code_is_down(aim_right_key, player_index=idx):
-                    heading = float(heading + float(dt) * _AIM_KEYBOARD_TURN_RATE)
+                    heading = x87_pc24_add(f32(heading), x87_pc24_mul(f32(dt), _AIM_KEYBOARD_TURN_RATE))
                 if input_code_is_down(aim_left_key, player_index=idx):
-                    heading = float(heading - float(dt) * _AIM_KEYBOARD_TURN_RATE)
+                    heading = x87_pc24_sub(f32(heading), x87_pc24_mul(f32(dt), _AIM_KEYBOARD_TURN_RATE))
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.MOUSE_RELATIVE:
             rel = mouse_screen - screen_center
@@ -424,10 +425,10 @@ class LocalInputInterpreter:
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.JOYSTICK:
-            if _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs):
-                heading = float(heading + float(dt) * _AIM_JOYSTICK_TURN_RATE)
             if _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs):
-                heading = float(heading - float(dt) * _AIM_JOYSTICK_TURN_RATE)
+                heading = x87_pc24_sub(f32(heading), x87_pc24_mul(f32(dt), _AIM_JOYSTICK_TURN_RATE))
+            if _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs):
+                heading = x87_pc24_add(f32(heading), x87_pc24_mul(f32(dt), _AIM_JOYSTICK_TURN_RATE))
             aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.COMPUTER:
             target_index = computer_target_index

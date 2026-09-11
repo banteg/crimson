@@ -15,6 +15,7 @@ from .math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
     f32,
+    native_aim_point_from_heading,
     x87_fpatan,
     x87_pc24_add,
     x87_pc24_div,
@@ -483,11 +484,7 @@ def _player_turn_aligned_velocity_native(
 
 
 def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radius: float = _AIM_POINT_RADIUS) -> Vec2:
-    aim_dir = _direction_from_heading_native(float(heading))
-    return Vec2(
-        f32(float(player.pos.x) + float(aim_dir.x) * float(radius)),
-        f32(float(player.pos.y) + float(aim_dir.y) * float(radius)),
-    )
+    return native_aim_point_from_heading(player.pos, heading, radius=radius)
 
 
 def _aim_heading_from_aim_point_native(player_pos: Vec2, aim_pos: Vec2) -> float:
@@ -521,13 +518,13 @@ def _player_update_aim_by_scheme(
                     )
                 target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.JOYSTICK:
-            if bool(input_state.turn_right_pressed):
-                player.aim_heading = float(
-                    f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
-                )
             if bool(input_state.turn_left_pressed):
                 player.aim_heading = float(
                     f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
+                )
+            if bool(input_state.turn_right_pressed):
+                player.aim_heading = float(
+                    f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
                 )
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.UNKNOWN:

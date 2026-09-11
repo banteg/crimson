@@ -2,6 +2,7 @@ const std = @import("std");
 
 const formats = @import("formats/mod.zig");
 const player_runtime = @import("runtime/player.zig");
+const native_math = @import("runtime/native_math.zig");
 const state_mod = @import("runtime/state.zig");
 
 pub const aim_keyboard_turn_rate: f32 = 3.0;
@@ -195,10 +196,10 @@ pub const LocalInputInterpreter = struct {
             aim_scheme_keyboard => {
                 if (move_mode_type == movement_control_relative or move_mode_type == movement_control_static) {
                     if (sampler.codeIsDown(aim_right_key, @intCast(idx))) {
-                        heading += dt * aim_keyboard_turn_rate;
+                        heading = native_math.pc24Add(heading, native_math.pc24Mul(dt, aim_keyboard_turn_rate));
                     }
                     if (sampler.codeIsDown(aim_left_key, @intCast(idx))) {
-                        heading -= dt * aim_keyboard_turn_rate;
+                        heading = native_math.pc24Sub(heading, native_math.pc24Mul(dt, aim_keyboard_turn_rate));
                     }
                     aim = aimPointFromHeading(player.pos, heading, aim_radius_keyboard);
                 }
@@ -226,11 +227,11 @@ pub const LocalInputInterpreter = struct {
                 }
             },
             aim_scheme_joystick => {
-                if (aimPovRightActive(sampler, idx, self.preserve_bugs)) {
-                    heading += dt * aim_joystick_turn_rate;
-                }
                 if (aimPovLeftActive(sampler, idx, self.preserve_bugs)) {
-                    heading -= dt * aim_joystick_turn_rate;
+                    heading = native_math.pc24Sub(heading, native_math.pc24Mul(dt, aim_joystick_turn_rate));
+                }
+                if (aimPovRightActive(sampler, idx, self.preserve_bugs)) {
+                    heading = native_math.pc24Add(heading, native_math.pc24Mul(dt, aim_joystick_turn_rate));
                 }
                 aim = aimPointFromHeading(player.pos, heading, aim_radius_keyboard);
             },
@@ -446,7 +447,7 @@ fn nearestLivingCreatureIndex(pos: state_mod.Vec2, creatures: anytype) ?i32 {
     return best_idx;
 }
 
-fn creatureAt(creatures: anytype, index: i32) ?@TypeOf(&creatures[0]) {
+fn creatureAt(creatures: anytype, index: i32) ?*const std.meta.Elem(@TypeOf(creatures)) {
     if (index < 0) return null;
     const idx: usize = @intCast(index);
     if (idx >= creatures.len) return null;
@@ -478,7 +479,8 @@ fn clampUnit(v: f32) f32 {
 }
 
 fn aimPointFromHeading(pos: state_mod.Vec2, heading: f32, radius: f32) state_mod.Vec2 {
-    return add(pos, state_mod.Vec2.fromAngle(heading).mul(radius));
+    const point = native_math.aimPointFromHeading(pos.x, pos.y, heading, radius);
+    return .{ .x = point[0], .y = point[1] };
 }
 
 fn add(a: state_mod.Vec2, b: state_mod.Vec2) state_mod.Vec2 {
@@ -569,7 +571,7 @@ test "computer aim auto fires without fire pressed" {
         .{ .active = true, .hp = 20.0, .pos = .{ .x = 612.0, .y = 512.0 } },
     };
 
-    const out = interpreter.buildPlayerInput(.{}, 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, creatures[0..]);
+    const out = interpreter.buildPlayerInput(@as(FakeSampler, .{}), 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, creatures[0..]);
 
     try std.testing.expect(out.flags.fire_down);
     try std.testing.expect(!out.flags.fire_pressed);
@@ -621,10 +623,10 @@ test "relative mode single player uses alt arrow fallback" {
     });
 
     const out = interpreter.buildPlayerInput(
-        .{ .down = &.{
+        @as(FakeSampler, .{ .down = &.{
             .{ .player_index = 0, .code = alt_move_key_up, .value = true },
             .{ .player_index = 0, .code = alt_move_key_left, .value = true },
-        } },
+        } }),
         0,
         1,
         &player,
@@ -668,10 +670,10 @@ test "relative mode multiplayer does not use alt arrow fallback" {
     });
 
     const out = interpreter.buildPlayerInput(
-        .{ .down = &.{
+        @as(FakeSampler, .{ .down = &.{
             .{ .player_index = 0, .code = alt_move_key_up, .value = true },
             .{ .player_index = 0, .code = alt_move_key_left, .value = true },
-        } },
+        } }),
         0,
         2,
         &player,
@@ -697,10 +699,10 @@ test "mouse point click marks move to cursor press" {
 
     const mouse_world: state_mod.Vec2 = .{ .x = 160.0, .y = 140.0 };
     const out = interpreter.buildPlayerInput(
-        .{
+        @as(FakeSampler, .{
             .down = &.{.{ .player_index = 0, .code = @bitCast(cfg.keybind_reload), .value = true }},
             .pressed = &.{.{ .player_index = 0, .code = @bitCast(cfg.keybind_reload), .value = true }},
-        },
+        }),
         0,
         1,
         &player,
@@ -728,7 +730,7 @@ test "computer move mode near center heads toward target" {
         .{ .active = true, .hp = 20.0, .pos = .{ .x = 560.0, .y = 500.0 } },
     };
 
-    const out = interpreter.buildPlayerInput(.{}, 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, creatures[0..]);
+    const out = interpreter.buildPlayerInput(@as(FakeSampler, .{}), 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, creatures[0..]);
 
     try expectFloatClose(1.0, out.move_x);
     try expectFloatClose(0.0, out.move_y);
@@ -743,7 +745,7 @@ test "computer move mode far from center heads toward center" {
         .{ .active = true, .hp = 20.0, .pos = .{ .x = 960.0, .y = 900.0 } },
     };
 
-    const out = interpreter.buildPlayerInput(.{}, 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, creatures[0..]);
+    const out = interpreter.buildPlayerInput(@as(FakeSampler, .{}), 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, creatures[0..]);
     const expected = normalized(sub(computer_arena_center, player.pos));
     try expectFloatClose(expected.x, out.move_x);
     try expectFloatClose(expected.y, out.move_y);
@@ -756,7 +758,7 @@ test "joystick aim uses pov not aim keybinds" {
     cfg.aim_schemes[0] = @bitCast(@as(i32, aim_scheme_joystick));
 
     const out = interpreter.buildPlayerInput(
-        .{ .down = &.{.{ .player_index = 0, .code = formats.crimson_cfg.playerBindBlock(&cfg, 0).aim_right, .value = true }} },
+        @as(FakeSampler, .{ .down = &.{.{ .player_index = 0, .code = formats.crimson_cfg.playerBindBlock(&cfg, 0).aim_right, .value = true }} }),
         0,
         1,
         &player,
@@ -779,7 +781,7 @@ test "joystick aim turns with pov input" {
     cfg.aim_schemes[0] = @bitCast(@as(i32, aim_scheme_joystick));
 
     const out = interpreter.buildPlayerInput(
-        .{ .down = &.{.{ .player_index = 0, .code = aim_pov_right_code, .value = true }} },
+        @as(FakeSampler, .{ .down = &.{.{ .player_index = 0, .code = aim_pov_right_code, .value = true }} }),
         0,
         1,
         &player,
@@ -803,7 +805,7 @@ test "dual action pad aim uses native radius scale" {
 
     const binds = formats.crimson_cfg.playerBindBlock(&cfg, 0);
     const out = interpreter.buildPlayerInput(
-        .{ .axes = &.{.{ .player_index = 0, .code = binds.axis_aim_x, .value = 1.0 }} },
+        @as(FakeSampler, .{ .axes = &.{.{ .player_index = 0, .code = binds.axis_aim_x, .value = 1.0 }} }),
         0,
         1,
         &player,
@@ -825,7 +827,7 @@ test "keyboard aim in static mode reanchors to heading" {
     var cfg = formats.crimson_cfg.defaultConfig();
     cfg.aim_schemes[0] = @bitCast(@as(i32, aim_scheme_keyboard));
 
-    const out = interpreter.buildPlayerInput(.{}, 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
+    const out = interpreter.buildPlayerInput(@as(FakeSampler, .{}), 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
 
     try expectFloatClose(100.0, out.aim_x);
     try expectFloatClose(40.0, out.aim_y);
@@ -838,7 +840,7 @@ test "keyboard aim with non relative move mode keeps world aim" {
     cfg.aim_schemes[0] = @bitCast(@as(i32, aim_scheme_keyboard));
     cfg.movement_schemes[0] = @intCast(movement_control_dual_action_pad);
 
-    const out = interpreter.buildPlayerInput(.{}, 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
+    const out = interpreter.buildPlayerInput(@as(FakeSampler, .{}), 0, 1, &player, &cfg, .{}, .{}, .{}, 0.1, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
 
     try expectFloatClose(180.0, out.aim_x);
     try expectFloatClose(130.0, out.aim_y);
@@ -851,8 +853,106 @@ test "relative mouse aim centered keeps world aim" {
     cfg.aim_schemes[0] = @bitCast(@as(i32, aim_scheme_mouse_relative));
     const center: state_mod.Vec2 = .{ .x = 320.0, .y = 200.0 };
 
-    const out = interpreter.buildPlayerInput(.{}, 0, 1, &player, &cfg, center, .{}, center, 0.1, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
+    const out = interpreter.buildPlayerInput(@as(FakeSampler, .{}), 0, 1, &player, &cfg, center, .{}, center, 0.1, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
 
     try expectFloatClose(180.0, out.aim_x);
     try expectFloatClose(130.0, out.aim_y);
+}
+
+test "heading aim and input dispatch match original player update witnesses" {
+    const Witness = struct {
+        position_x: f32,
+        position_y: f32,
+        heading: f32,
+        aim_x_bits: u32,
+        aim_y_bits: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { witnesses: []const Witness },
+        std.testing.allocator,
+        @embedFile("runtime/testdata/player-aim-point.json"),
+        .{},
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 1050), parsed.value.witnesses.len);
+    var cfg = formats.crimson_cfg.defaultConfig();
+    cfg.movement_schemes[0] = @intCast(movement_control_static);
+    for (parsed.value.witnesses, 0..) |witness, index| {
+        errdefer std.debug.print("native aim witness {d}\n", .{index});
+        const pos: state_mod.Vec2 = .{ .x = witness.position_x, .y = witness.position_y };
+        const point = aimPointFromHeading(pos, witness.heading, aim_radius_keyboard);
+        try std.testing.expectEqual(witness.aim_x_bits, @as(u32, @bitCast(point.x)));
+        try std.testing.expectEqual(witness.aim_y_bits, @as(u32, @bitCast(point.y)));
+        for ([_]i32{ aim_scheme_keyboard, aim_scheme_joystick }) |scheme| {
+            var interpreter: LocalInputInterpreter = .{};
+            interpreter.states[0].aim_heading = witness.heading;
+            const player = makePlayer(0, pos, .{}, witness.heading);
+            cfg.aim_schemes[0] = @bitCast(scheme);
+            const result = interpreter.buildPlayerInput(
+                @as(FakeSampler, .{}),
+                0,
+                1,
+                &player,
+                &cfg,
+                .{},
+                .{},
+                .{},
+                0.0,
+                &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{},
+            );
+            try std.testing.expectEqual(witness.aim_x_bits, @as(u32, @bitCast(result.aim_x)));
+            try std.testing.expectEqual(witness.aim_y_bits, @as(u32, @bitCast(result.aim_y)));
+        }
+    }
+}
+
+test "held aim controls match original player update turn witnesses" {
+    const Witness = struct {
+        position_x: f32,
+        position_y: f32,
+        heading: f32,
+        dt: f32,
+        scheme: i32,
+        left: bool,
+        right: bool,
+        aim_x_bits: u32,
+        aim_y_bits: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { witnesses: []const Witness },
+        std.testing.allocator,
+        @embedFile("runtime/testdata/player-aim-turns.json"),
+        .{},
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 240), parsed.value.witnesses.len);
+    var cfg = formats.crimson_cfg.defaultConfig();
+    cfg.movement_schemes[0] = @intCast(movement_control_static);
+    for (parsed.value.witnesses, 0..) |witness, index| {
+        errdefer std.debug.print("native aim turn witness {d}\n", .{index});
+        var interpreter: LocalInputInterpreter = .{};
+        interpreter.states[0].aim_heading = witness.heading;
+        const player = makePlayer(0, .{ .x = witness.position_x, .y = witness.position_y }, .{}, witness.heading);
+        cfg.aim_schemes[0] = @bitCast(witness.scheme);
+        const binds = formats.crimson_cfg.playerBindBlock(&cfg, 0);
+        const left = if (witness.scheme == aim_scheme_keyboard) binds.aim_left else aim_pov_left_code;
+        const right = if (witness.scheme == aim_scheme_keyboard) binds.aim_right else aim_pov_right_code;
+        const result = interpreter.buildPlayerInput(
+            @as(FakeSampler, .{ .down = &.{
+                .{ .player_index = 0, .code = left, .value = witness.left },
+                .{ .player_index = 0, .code = right, .value = witness.right },
+            } }),
+            0,
+            1,
+            &player,
+            &cfg,
+            .{},
+            .{},
+            .{},
+            witness.dt,
+            &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{},
+        );
+        try std.testing.expectEqual(witness.aim_x_bits, @as(u32, @bitCast(result.aim_x)));
+        try std.testing.expectEqual(witness.aim_y_bits, @as(u32, @bitCast(result.aim_y)));
+    }
 }

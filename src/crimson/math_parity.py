@@ -20,6 +20,7 @@ __all__ = [
     "heading_add_pi_f32",
     "heading_from_delta_f32",
     "heading_to_direction_f32",
+    "native_aim_point_from_heading",
     "native_fire_muzzle_pos",
     "native_shot_angle_from_jitter_draws",
     "x87_fpatan",
@@ -155,6 +156,20 @@ def heading_add_pi_f32(heading: float) -> float:
 def heading_to_direction_f32(heading: float) -> Vec2:
     radians = f32(float(f32(heading)) - NATIVE_HALF_PI)
     return Vec2(cos_f32(radians), sin_f32(radians))
+
+
+def native_aim_point_from_heading(player_pos: Vec2, aim_heading: float, *, radius: float = 60.0) -> Vec2:
+    """Preserve the asymmetric trig stores in the native 60-unit aim point."""
+
+    radians = x87_pc24_sub(f32(aim_heading), NATIVE_HALF_PI)
+    radius = f32(radius)
+    # player_update keeps FCOS wide, but stores FSIN to float32 before scaling.
+    offset_x = x87_pc24_cos_mul(radians, radius)
+    offset_y = x87_pc24_mul(sin_f32(radians), radius)
+    return Vec2(
+        x87_pc24_add(f32(player_pos.x), offset_x),
+        x87_pc24_add(f32(player_pos.y), offset_y),
+    )
 
 
 def native_fire_muzzle_pos(player_pos: Vec2, aim_heading: float) -> Vec2:
