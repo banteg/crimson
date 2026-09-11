@@ -1164,9 +1164,9 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t draw_pos =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            draw_pos -= 7.0f;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+            draw_pos -= 7.0f;
             grim_interface_ptr->grim_draw_quad(
                 draw_pos.x,
                 draw_pos.y,
@@ -1176,9 +1176,9 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t draw_pos =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            draw_pos -= 5.0f;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+            draw_pos -= 5.0f;
             grim_interface_ptr->grim_draw_quad(
                 draw_pos.x,
                 draw_pos.y,
@@ -1188,9 +1188,9 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t draw_pos =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            draw_pos -= 4.0f;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+            draw_pos -= 4.0f;
             grim_interface_ptr->grim_draw_quad(
                 draw_pos.x,
                 draw_pos.y,

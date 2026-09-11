@@ -131,6 +131,7 @@ def run(
     perk_count=0,
     player_count=0,
     player_rows=(),
+    secondary_rows=(),
 ):
     slots = {STUB + (slot // 4) * 16: value for slot, value in SLOTS.items()}
     effect = p.address("effect_select_texture")
@@ -221,6 +222,17 @@ def run(
         struct.pack_into("<if", b, 32, type_id, life)
         struct.pack_into("<f", b, 44, 2.0)
         mu.mem_write(p.address("projectile_pool"), bytes(b))
+    secondary_indices = set()
+    for index, kind, angle, x, y, active in secondary_rows:
+        assert 0 <= index < 64 and index not in secondary_indices
+        assert active in (0, 1)
+        secondary_indices.add(index)
+        secondary = bytearray(0x2C)
+        secondary[0] = active
+        struct.pack_into("<f", secondary, 4, angle)
+        struct.pack_into("<ff", secondary, 12, x, y)
+        struct.pack_into("<i", secondary, 28, kind)
+        mu.mem_write(p.address("secondary_projectile_pool") + 0x2C * index, bytes(secondary))
     esp = STACK + 0xF000
     mu.mem_write(esp, struct.pack("<If", STOP, alpha))
     mu.reg_write(x86.UC_X86_REG_ESP, esp)
@@ -336,6 +348,7 @@ def run(
         "calls": calls,
         "return_sites": call_sites,
         "state_sha256": sha(state),
+        "secondary_state_sha256": sha(bytes(mu.mem_read(p.address("secondary_projectile_pool"), 0x2C * 64))),
         "coverage": len(coverage),
         "ftol_sha256": sha(ftol_data),
         "creature_state_sha256": sha(bytes(mu.mem_read(p.address("creature_pool"), 0x98 * 384))),
@@ -362,13 +375,20 @@ def head_color(result, type_id):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    out = parser.parse_args().out.resolve()
+    parser.add_argument("--source", type=Path, help="Replay a historical source with the canonical build configuration")
+    args = parser.parse_args()
+    out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     assert unicorn.__version__ == "2.1.4"
     header = (match.REPO_ROOT / "tools/match/include/grim2d_cpp.h").read_text()
     methods = re.findall(r"virtual\s+[^;{}]*?\b(grim_\w+)\s*\((.*?)\)", header, re.DOTALL)
     assert all(methods[slot // 4][0] == name for slot, (name, _) in SLOTS.items())
     config = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches" / FUNCTION)
+    if args.source is not None:
+        source_dir = out / "source"
+        source_dir.mkdir(exist_ok=True)
+        (source_dir / config.source).write_bytes(args.source.read_bytes())
+        config = replace(config, directory=source_dir)
     current = Program(config)
     source = (config.directory / config.source).read_text()
     assert source.count("transition_alpha * 0.5f") == 4

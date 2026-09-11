@@ -62,6 +62,7 @@ the specified caller behavior, not pixel identity or all renderer paths.
 ```sh
 uv run --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/ion-chain-product-2026-09-10/verify.py \
+  --source tools/match/evidence/secondary-body-rounding-2026-09-11/before.cpp \
   --out /private/tmp/crimson-ion-chain-proof
 ```
 
@@ -83,3 +84,9 @@ is unchanged, scalar-side locals and compound strip updates still fail the
 fixture and lower alignment. No such control is retained.
 
 The current receipt includes the [laser owner/rounding recovery](../laser-owner-rounding-2026-09-10/README.md). Its shared-side control restores only that expression in the current source, with SHA-256 `12ffadcf927fc64d5d516bc17efcc4f3337fe6c6bf1bf88f83d7afc947cfd74d`; it is not the historical whole source above. Current metrics are 59.622514%, 2913/3021, and 464/0/10; restoring shared-side gives 59.236744%, 2901/3021, and 453/0/11. The same six negative cases still reproduce the caller-argument defect.
+
+The receipt above pins the source preceding the secondary-body rounding recovery.
+The reproduction command selects that preserved source explicitly; its original
+negative-control hashes remain checked. The [current-source regression replay](../secondary-body-rounding-2026-09-11/README.md)
+checks this complete fixture set and its recorded native trace hashes against
+the newly compiled renderer, with a separate receipt.

@@ -52,9 +52,16 @@ def execute(program, native, type_id, life, alpha, glow, perk, positions):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    out = parser.parse_args().out.resolve()
+    parser.add_argument("--source", type=Path, help="Replay a historical source with the canonical build configuration")
+    args = parser.parse_args()
+    out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     config = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches" / probe.FUNCTION)
+    if args.source is not None:
+        source_dir = out / "source"
+        source_dir.mkdir(exist_ok=True)
+        (source_dir / config.source).write_bytes(args.source.read_bytes())
+        config = replace(config, directory=source_dir)
     source = (config.directory / config.source).read_text()
     assert source.count("arc * effect_scale * 10.0f") == 4
     previous_source = source.replace("arc * effect_scale * 10.0f", "side * 10.0f").replace(

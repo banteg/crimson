@@ -1,0 +1,809 @@
+{
+  "schema_version": 1,
+  "baseline_sha256": "3b5c5cb097ebcf0cf298758ccefbf370202dcc41068f5808e99c9db503afb986",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "selected": "boundaries/compound-before-color-7",
+  "controls": [
+    {
+      "name": "variants/1",
+      "source_sha256": "ff129ddcb46fe0e69aac26b3925688d13594b8d52ee8dfd18d8a5c3ddafb5e88",
+      "edits": [
+        {
+          "start": 1165,
+          "stop": 1166,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5954146999325691,
+        "ins": 2911,
+        "refs": [
+          457,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "variants/2",
+      "source_sha256": "f9108d68caed49b16e9c6937e4c9982a8bd2da75613d7bf3ae1749fa894b4f05",
+      "edits": [
+        {
+          "start": 1177,
+          "stop": 1178,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.591031692515172,
+        "ins": 2911,
+        "refs": [
+          453,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "variants/3",
+      "source_sha256": "ed2231456e0c0ea8da9b0ffd3473e32149235d02565732ad2f7e1f55e083da32",
+      "edits": [
+        {
+          "start": 1165,
+          "stop": 1166,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1177,
+          "stop": 1178,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.6023608768971332,
+        "ins": 2909,
+        "refs": [
+          469,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "variants/4",
+      "source_sha256": "65f1c8136610353535b66451fe07cfe155905d6234e39f334ab98a81a3e8d6e0",
+      "edits": [
+        {
+          "start": 1189,
+          "stop": 1190,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.585974376264329,
+        "ins": 2911,
+        "refs": [
+          447,
+          0,
+          14
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "variants/5",
+      "source_sha256": "1631bd794f1e252112314e0d54503a858535727386ebdcb89b80d671f83a14fe",
+      "edits": [
+        {
+          "start": 1165,
+          "stop": 1166,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1189,
+          "stop": 1190,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5973018549747049,
+        "ins": 2909,
+        "refs": [
+          465,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "variants/6",
+      "source_sha256": "f97c46d80c85e1fcb1ee51e6c0b2ec135516098bf8435f2fed40c86a3b0a7393",
+      "edits": [
+        {
+          "start": 1177,
+          "stop": 1178,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1189,
+          "stop": 1190,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5949409780775716,
+        "ins": 2909,
+        "refs": [
+          463,
+          0,
+          14
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "variants/7",
+      "source_sha256": "0475c345ccadb8e6a385d59cf8b11daf51b286a356cca0acb68ff383ac7b5559",
+      "edits": [
+        {
+          "start": 1165,
+          "stop": 1166,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1177,
+          "stop": 1178,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1189,
+          "stop": 1190,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5887314439946019,
+        "ins": 2907,
+        "refs": [
+          444,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/compound-before-color-1",
+      "source_sha256": "aed7808f6d0518ad60c38fa0d75cafd3dac8a39f32bb97649e3f2703f5f92dea",
+      "edits": [
+        {
+          "start": 1166,
+          "stop": 1166,
+          "old": "",
+          "new": "            draw_pos -= 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5984490896830749,
+        "ins": 2911,
+        "refs": [
+          462,
+          0,
+          10
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/compound-before-color-2",
+      "source_sha256": "441c82e22e02268307c2599a3fca7ffe8aa4ee0f9ef32c07aba2e0967278c102",
+      "edits": [
+        {
+          "start": 1178,
+          "stop": 1178,
+          "old": "",
+          "new": "            draw_pos -= 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5944032366824006,
+        "ins": 2911,
+        "refs": [
+          458,
+          0,
+          10
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/compound-before-color-4",
+      "source_sha256": "171130904a8092279ea0992b35a555aacaafa53bfa39b054e2a64f2c5ff80050",
+      "edits": [
+        {
+          "start": 1190,
+          "stop": 1190,
+          "old": "",
+          "new": "            draw_pos -= 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5890087660148348,
+        "ins": 2911,
+        "refs": [
+          452,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/compound-before-color-7",
+      "source_sha256": "fb86981bab2b7365e5374a0cbf8f71d7b46b8e01d259e4fceec0c510217976cd",
+      "edits": [
+        {
+          "start": 1166,
+          "stop": 1166,
+          "old": "",
+          "new": "            draw_pos -= 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1178,
+          "stop": 1178,
+          "old": "",
+          "new": "            draw_pos -= 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1190,
+          "stop": 1190,
+          "old": "",
+          "new": "            draw_pos -= 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.6032388663967612,
+        "ins": 2907,
+        "refs": [
+          466,
+          0,
+          10
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/vector-subtraction-1",
+      "source_sha256": "2d386c2734b922a14e42158f26445f031b26d619b9d04931f27543834ee7a292",
+      "edits": [
+        {
+          "start": 1165,
+          "stop": 1166,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(7.0f, 7.0f);\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5954146999325691,
+        "ins": 2911,
+        "refs": [
+          457,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/vector-subtraction-2",
+      "source_sha256": "9d1157cabfd0b5ea362b9fe13f570871012673325751eaded3e1a9cc7f8e13af",
+      "edits": [
+        {
+          "start": 1177,
+          "stop": 1178,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(5.0f, 5.0f);\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.591031692515172,
+        "ins": 2911,
+        "refs": [
+          453,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/vector-subtraction-4",
+      "source_sha256": "eb2421d6f54195ee7e7d884fe246e8616e2a02d5c7d0673d040592a3706e9b9a",
+      "edits": [
+        {
+          "start": 1189,
+          "stop": 1190,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(4.0f, 4.0f);\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.585974376264329,
+        "ins": 2911,
+        "refs": [
+          447,
+          0,
+          14
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/vector-subtraction-7",
+      "source_sha256": "669ab9fc7e73739a1e921d606471e79820c69627bb0e4dd8e3ba3a61dcb6b6ed",
+      "edits": [
+        {
+          "start": 1165,
+          "stop": 1166,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(7.0f, 7.0f);\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1177,
+          "stop": 1178,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(5.0f, 5.0f);\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1189,
+          "stop": 1190,
+          "old": "                + *(projectile_render_vec2_t *)&projectile->position;\n",
+          "new": "                + *(projectile_render_vec2_t *)&projectile->position\n                - projectile_render_vec2_t(4.0f, 4.0f);\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5887314439946019,
+        "ins": 2907,
+        "refs": [
+          444,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/assigned-vector-1",
+      "source_sha256": "5526f5d7cf7bd5418cf8b9ef8841ce25ecd175f74134104e2d787eb5e3f67eca",
+      "edits": [
+        {
+          "start": 1166,
+          "stop": 1166,
+          "old": "",
+          "new": "            draw_pos = draw_pos - projectile_render_vec2_t(7.0f, 7.0f);\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5954146999325691,
+        "ins": 2911,
+        "refs": [
+          457,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/assigned-vector-2",
+      "source_sha256": "e9f93dc9e9a1edcd451f18f8619ea2f232bf8965941a230db4a43c6b2f189663",
+      "edits": [
+        {
+          "start": 1178,
+          "stop": 1178,
+          "old": "",
+          "new": "            draw_pos = draw_pos - projectile_render_vec2_t(5.0f, 5.0f);\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.591031692515172,
+        "ins": 2911,
+        "refs": [
+          453,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/assigned-vector-4",
+      "source_sha256": "3d8065ebd47a35fb686df7e29f3847b7ccc4ab9a0674abd584556624f6318cfe",
+      "edits": [
+        {
+          "start": 1190,
+          "stop": 1190,
+          "old": "",
+          "new": "            draw_pos = draw_pos - projectile_render_vec2_t(4.0f, 4.0f);\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.585974376264329,
+        "ins": 2911,
+        "refs": [
+          447,
+          0,
+          14
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/assigned-vector-7",
+      "source_sha256": "cef3f4252f1ae5341a76d0422f2c23e986bdf81a0ea28b866652ec3e7291f219",
+      "edits": [
+        {
+          "start": 1166,
+          "stop": 1166,
+          "old": "",
+          "new": "            draw_pos = draw_pos - projectile_render_vec2_t(7.0f, 7.0f);\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1178,
+          "stop": 1178,
+          "old": "",
+          "new": "            draw_pos = draw_pos - projectile_render_vec2_t(5.0f, 5.0f);\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1190,
+          "stop": 1190,
+          "old": "",
+          "new": "            draw_pos = draw_pos - projectile_render_vec2_t(4.0f, 4.0f);\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5887314439946019,
+        "ins": 2907,
+        "refs": [
+          444,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/copy-then-subtract-1",
+      "source_sha256": "db26b670894ee1362e66049669b61fab9629bac371211c82a8574b53ab511d8f",
+      "edits": [
+        {
+          "start": 1166,
+          "stop": 1166,
+          "old": "",
+          "new": "            draw_pos = draw_pos - 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5954146999325691,
+        "ins": 2911,
+        "refs": [
+          457,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/copy-then-subtract-2",
+      "source_sha256": "1e9c0f36439ba6ab2405d4eaea1a69d55ec56319a250016f07da2583e0d95ba9",
+      "edits": [
+        {
+          "start": 1178,
+          "stop": 1178,
+          "old": "",
+          "new": "            draw_pos = draw_pos - 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.591031692515172,
+        "ins": 2911,
+        "refs": [
+          453,
+          0,
+          12
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/copy-then-subtract-4",
+      "source_sha256": "66b8a845f162e7fe8a7cdb864a73ea512d5e475fc45fe39c07d3eff9b2b8f930",
+      "edits": [
+        {
+          "start": 1190,
+          "stop": 1190,
+          "old": "",
+          "new": "            draw_pos = draw_pos - 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.585974376264329,
+        "ins": 2911,
+        "refs": [
+          447,
+          0,
+          14
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "boundaries/copy-then-subtract-7",
+      "source_sha256": "54da427f715fadcc9b256200f08de98b2dfefd039e954216d0c5345f0b8bf523",
+      "edits": [
+        {
+          "start": 1166,
+          "stop": 1166,
+          "old": "",
+          "new": "            draw_pos = draw_pos - 7.0f;\n"
+        },
+        {
+          "start": 1168,
+          "stop": 1169,
+          "old": "            draw_pos -= 7.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1178,
+          "stop": 1178,
+          "old": "",
+          "new": "            draw_pos = draw_pos - 5.0f;\n"
+        },
+        {
+          "start": 1180,
+          "stop": 1181,
+          "old": "            draw_pos -= 5.0f;\n",
+          "new": ""
+        },
+        {
+          "start": 1190,
+          "stop": 1190,
+          "old": "",
+          "new": "            draw_pos = draw_pos - 4.0f;\n"
+        },
+        {
+          "start": 1192,
+          "stop": 1193,
+          "old": "            draw_pos -= 4.0f;\n",
+          "new": ""
+        }
+      ],
+      "observed": {
+        "ratio": 0.5887314439946019,
+        "ins": 2907,
+        "refs": [
+          444,
+          0,
+          12
+        ],
+        "error": null
+      }
+    }
+  ]
+}

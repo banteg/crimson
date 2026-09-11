@@ -1298,3 +1298,28 @@ Alignment improves from 57.427414% to 59.622514%, instructions from 2903 to
 flags remain false. No new waiver or whole-function credit is introduced.
 Current source SHA-256:
 `3b5c5cb097ebcf0cf298758ccefbf370202dcc41068f5808e99c9db503afb986`.
+
+## Secondary rocket body rounding (2026-09-11)
+
+Native subtracts each rocket body's half-size before its color call. The old
+source kept `draw_pos -= 7/5/4` after that call, forcing an early X-sum float32
+store. Three pinned inputs expose one-bit X argument errors. Moving the existing
+subtractions before the call recovers native's extended X subtraction and its
+separately rounded Y sum.
+
+The [secondary-body evidence](../../evidence/secondary-body-rounding-2026-09-11/README.md)
+checks all three native instruction windows, 1,194 complete caller fixtures,
+independent size/count/coordinate oracles, and six compiled reversion cases.
+All 1,502 previous plasma/beam/chain/laser fixtures also reproduce their pinned
+native trace hashes against the corrected source. The preceding source and 23
+reconstructible source controls remain available. External rendering is modeled;
+no GPU or all-input identity is claimed.
+
+Alignment improves from **59.622514% to 60.323887%**, gaining **88.029239**
+weighted bytes. References improve from **464/0/10 to 466/0/10**. Instructions
+fall from **2913 to 2907** against 3021, an explicit instruction-count tradeoff
+retained for the independently observed native behavior correction. Prefix
+remains zero, both exactness flags remain false, and all reference debt remains
+reported. No compiler override, alias, waiver, Python, or Zig edit is introduced.
+Current source SHA-256:
+`fb86981bab2b7365e5374a0cbf8f71d7b46b8e01d259e4fceec0c510217976cd`.

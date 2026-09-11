@@ -61,6 +61,7 @@ side effects, all renderer paths, or universal equivalence.
 ```sh
 uv run --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/beam-direction-2026-09-10/verify.py \
+  --source tools/match/evidence/secondary-body-rounding-2026-09-11/before.cpp \
   --out /private/tmp/crimson-beam-direction-proof
 ```
 
@@ -77,3 +78,9 @@ which improved those figures to **57.427414%**, **2903/3021**, and **456/0/11**.
 The current receipt includes the [laser owner/rounding recovery](../laser-owner-rounding-2026-09-10/README.md), reaching **59.622514%**, **2913/3021**, and **464/0/10**.
 The direction/anchor controls remain metric-neutral within this current source. Both exactness flags remain false. Aggregate metrics alone do not
 establish semantic equality, as these fixtures demonstrate.
+
+The receipt above pins the source preceding the secondary-body rounding recovery.
+The reproduction command selects that preserved source explicitly; its original
+negative-control hashes remain checked. The [current-source regression replay](../secondary-body-rounding-2026-09-11/README.md)
+checks this complete fixture set and its recorded native trace hashes against
+the newly compiled renderer, with a separate receipt.

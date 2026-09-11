@@ -51,6 +51,7 @@ renderer paths, real-callee side effects, or universal semantic equivalence.
 ```sh
 uv run --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/plasma-head-alpha-2026-09-10/verify.py \
+  --source tools/match/evidence/secondary-body-rounding-2026-09-11/before.cpp \
   --out /private/tmp/crimson-plasma-head-proof
 ```
 
@@ -87,3 +88,9 @@ geometry inputs, which the plasma fixtures do not enable.
 The receipt is also refreshed after the [ion-chain product correction](../ion-chain-product-2026-09-10/README.md). At that retention, renderer metrics were 57.427414%, 2903/3021 instructions, and 456/0/11 references; the preceding matching-debt discussion records the historical alpha correction. The plasma fixtures keep native creature search disabled and the perk stub at zero.
 
 The current receipt includes the [laser owner/rounding recovery](../laser-owner-rounding-2026-09-10/README.md): 59.622514%, 2913/3021 instructions, and 464/0/10 references. Its wrong-alpha source retains the other corrections. The shared runner now accepts explicit player records; these plasma fixtures retain zero players.
+
+The receipt above pins the source preceding the secondary-body rounding recovery.
+The reproduction command selects that preserved source explicitly; its original
+negative-control hashes remain checked. The [current-source regression replay](../secondary-body-rounding-2026-09-11/README.md)
+checks this complete fixture set and its recorded native trace hashes against
+the newly compiled renderer, with a separate receipt.

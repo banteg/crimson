@@ -54,6 +54,7 @@ are also replayed against this source, covering another **1,064 fixtures**.
 ```sh
 uv run --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/laser-owner-rounding-2026-09-10/verify.py \
+  --source tools/match/evidence/secondary-body-rounding-2026-09-11/before.cpp \
   --out /private/tmp/crimson-laser-proof
 ```
 
@@ -68,3 +69,9 @@ move from **2903 to 2913** against **3021**, and references improve from
 **456/0/11 to 464/0/10**. Both exactness flags remain false; this is partial
 recovery and grants no new whole-function match. No matching rule, alias,
 or regression exception is changed.
+
+The receipt above pins the source preceding the secondary-body rounding recovery.
+The reproduction command selects that preserved source explicitly; its original
+negative-control hashes remain checked. The [current-source regression replay](../secondary-body-rounding-2026-09-11/README.md)
+checks this complete fixture set and its recorded native trace hashes against
+the newly compiled renderer, with a separate receipt.
