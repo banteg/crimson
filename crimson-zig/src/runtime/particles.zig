@@ -181,17 +181,18 @@ pub const ParticlePool = struct {
                             if (bubblegunExpirySfx(creatures.entries[target_idx].type_id, sound_slot)) |sfx_id| {
                                 state.sfx_queue.append(sfx_id);
                             }
-                            _ = creatures.killNoCorpse(
-                                state,
-                                players,
-                                bonuses,
-                                terrain_fx,
-                                target_idx,
-                                entry.owner,
-                                dt_f32,
-                                world_size,
-                            );
                         }
+                        // Death history and forced bonuses precede the native active check.
+                        _ = creatures.killNoCorpse(
+                            state,
+                            players,
+                            bonuses,
+                            terrain_fx,
+                            target_idx,
+                            entry.owner,
+                            dt_f32,
+                            world_size,
+                        );
                     }
                 }
                 continue;
@@ -709,5 +710,73 @@ fn expectImpactSample(comptime T: type, expected: T, actual: T, index: usize) !v
             std.debug.print("impact {d} {s}: expected {any}, actual {any}\n", .{ index, field.name, e, a });
             return error.TestExpectedEqual;
         }
+    }
+}
+
+test "inactive bubble expiry matches native death history and reward gates" {
+    const Witness = struct {
+        input: struct {
+            dt: f32,
+            rng_seed: u32,
+            history_count: i32,
+            fire_seen: u8,
+            handout_enabled: u8,
+            history_positions: [6]f32,
+            creatures: []const struct { index: usize, x: f32, y: f32 },
+            particles: []const struct { index: usize, intensity: f32, target: i32 },
+        },
+        history_count: i32,
+        fire_seen: u8,
+        handout_enabled: u8,
+        history_positions: [6]f32,
+        rng_state: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        []Witness,
+        std.testing.allocator,
+        @embedFile("testdata/particle-bubble-expiry.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 112), parsed.value.len);
+    for (parsed.value) |witness| {
+        var state = state_mod.GameplayState.init(witness.input.rng_seed);
+        state.survival_recent_death_count = witness.input.history_count;
+        state.survival_reward_fire_seen = witness.input.fire_seen != 0;
+        state.survival_reward_handout_enabled = witness.input.handout_enabled != 0;
+        for (&state.survival_recent_death_pos, 0..) |*pos, j| {
+            pos.* = .{ .x = witness.input.history_positions[j * 2], .y = witness.input.history_positions[j * 2 + 1] };
+        }
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{} }};
+        var effects: effects_mod.EffectPool = .{};
+        var creatures: creatures_mod.CreaturePool = .{ .effects = &effects };
+        const target = witness.input.creatures[0];
+        creatures.entries[target.index].pos = .{ .x = target.x, .y = target.y };
+        const previous_owner = creatures.entries[target.index].last_hit_owner;
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var sprites: effects_mod.SpriteEffectPool = .{};
+        var terrain: terrain_fx_mod.TerrainFxScratch = .{};
+        var pool: ParticlePool = .{};
+        for (witness.input.particles) |item| pool.entries[item.index] = .{
+            .active = true,
+            .render_flag = false,
+            .intensity = item.intensity,
+            .style_id = .bubblegun,
+            .target_id = item.target,
+            .owner = owner_ref.OwnerRef.fromPlayer(0),
+        };
+        pool.update(&state, &players, &creatures, &bonuses, &sprites, &terrain, witness.input.dt, 1024.0);
+        try std.testing.expectEqual(witness.history_count, state.survival_recent_death_count);
+        try std.testing.expectEqual(witness.fire_seen != 0, state.survival_reward_fire_seen);
+        try std.testing.expectEqual(witness.handout_enabled != 0, state.survival_reward_handout_enabled);
+        for (state.survival_recent_death_pos, 0..) |pos, j| {
+            try std.testing.expectEqual(witness.history_positions[j * 2], pos.x);
+            try std.testing.expectEqual(witness.history_positions[j * 2 + 1], pos.y);
+        }
+        for (witness.input.particles) |item| try std.testing.expect(!pool.entries[item.index].active);
+        try std.testing.expectEqual(witness.rng_state, state.rng.state);
+        try std.testing.expectEqual(@as(usize, 0), state.sfx_queue.len);
+        try std.testing.expect(!creatures.entries[target.index].active);
+        try std.testing.expectEqual(previous_owner, creatures.entries[target.index].last_hit_owner);
     }
 }

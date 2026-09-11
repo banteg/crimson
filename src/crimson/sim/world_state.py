@@ -203,9 +203,8 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
         if not (0 <= idx < len(self.world.creatures.entries)):
             return
         creature = self.world.creatures.entries[idx]
-        if not creature.active:
-            return
-        creature.last_hit_owner = owner
+        if creature.active:
+            creature.last_hit_owner = owner
         self.world._record_creature_death(
             creature_index=idx,
             dt=float(self.dt),

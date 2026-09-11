@@ -283,11 +283,13 @@ class ParticlePool:
                 expired.append(idx)
                 if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
-                    if creatures is not None and 0 <= target_id < len(creatures) and creatures[target_id].active:
-                        sound_slot = int(
-                            rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX) % 3,
-                        )
-                        creature_damage_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
+                    if creatures is not None and 0 <= target_id < len(creatures):
+                        if creatures[target_id].active:
+                            sound_slot = int(
+                                rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX) % 3,
+                            )
+                            creature_damage_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
+                        # Death history and forced bonuses precede the native active check.
                         creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
                 continue
 

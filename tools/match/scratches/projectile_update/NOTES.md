@@ -193,12 +193,15 @@ and the gameplay displacement instead of stopping after damage.
 
 Bubblegun attachment copies the hit position once, zeros the particle velocity,
 and retains the target id, but native does not make the attached particle follow
-later creature movement. On expiry, an attached particle checks only the target's
-active byte: it draws `sfx_bank_a[rand() % 3]` at caller-static `0x00422723`,
-plays it at the creature position, then calls `creature_handle_death(target,
-false)`. The target id remains stored in the now-inactive particle. Both ports
-now preserve that order and stale-position/target state; Python no longer adds
-an HP guard that suppressed native active-corpse death re-entry.
+later creature movement. On expiry, an attached particle checks the target's
+active byte before drawing `sfx_bank_a[rand() % 3]` at caller-static `0x00422723`
+and playing it at the creature position. The subsequent
+`creature_handle_death(target, false)` is unconditional for an attached target,
+including an inactive one. The target id remains stored in the now-inactive
+particle. Both ports now preserve that order and stale-position/target state;
+Python no longer adds an HP guard that suppressed native active-corpse death
+re-entry. The later inactive-target recovery below also removes the misplaced
+active guard around death dispatch in both ports and Python's world adapter.
 Both that audio call and the Rocket Minigun freeze-shard burst now take
 `creature_t::position` directly instead of casting from `pos_x`.
 
@@ -1238,3 +1241,22 @@ fire damage for particles and avoids Pyromaniac RNG on nonpositive health.
 A shared 135-case fixture covers these boundaries in both runtime suites.
 Native `state_flag` remains unported, and Zig does not model hit-flash state;
 those omissions are explicit in the evidence package.
+
+## Inactive-target Bubblegun expiry proof
+
+`tools/match/evidence/particle-bubble-expiry-2026-09-11/` executes the native
+particle loop and real `creature_handle_death` through its inactive return.
+All 224 PC24/PC64 cases agree with current C++ in complete observed state,
+ordered writes/calls, and RNG. The matrix crosses initial recent-death counts
+0..6, one/three attached bubbles, target slots 0/383, and independent reward
+flags. Death history updates before the handler's active check; reaching three
+clears the fire-seen/handout flags, and the count saturates at six. Inactive
+expiry selects no SFX and consumes no RNG.
+
+Both runtime ports had incorrectly skipped the whole handler when the target
+was inactive. Python's real world adapter added a second early return. The
+correction lets all valid attached targets reach death handling while retaining
+the active-only SFX and owner updates. The 112 exported PC24 native witnesses
+cover both dispatch and real callee behavior; the existing active-corpse test
+continues to check sound/RNG order. Forced bonuses and active death side effects
+are outside the new native matrix. C++ and static matching counts are unchanged.

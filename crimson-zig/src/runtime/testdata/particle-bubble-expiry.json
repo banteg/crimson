@@ -1,0 +1,6386 @@
+[
+  {
+    "index": 0,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 1,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 2,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 3,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 4,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 5,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 6,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 7,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 1,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      123.25,
+      456.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 8,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 9,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 10,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 11,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 12,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 13,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 14,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 15,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 0,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      123.25,
+      456.5,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 16,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 17,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 18,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 19,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 20,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 21,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 22,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 23,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 2,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 24,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 25,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 26,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 27,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 28,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 29,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 30,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 31,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 1,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      123.25,
+      456.5,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 32,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 33,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 34,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 35,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 36,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 37,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 38,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 39,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 3,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 40,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 41,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 42,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 43,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 44,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 45,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 46,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 47,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 2,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      123.25,
+      456.5
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 48,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 49,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 50,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 51,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 52,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 53,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 54,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 55,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 4,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 56,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 57,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 58,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 59,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 60,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 61,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 62,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 63,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 3,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 64,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 65,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 66,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 67,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 68,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 69,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 70,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 71,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 5,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 72,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 73,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 74,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 75,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 76,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 77,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 78,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 79,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 4,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 80,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 81,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 82,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 83,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 84,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 85,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 86,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 87,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 88,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 89,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 90,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 91,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 92,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 93,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 94,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 95,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 5,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 96,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 97,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 98,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 99,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 100,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 101,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 102,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 103,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 1,
+    "rng_state": 20260911
+  },
+  {
+    "index": 104,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 105,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 106,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 107,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 0,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 0
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 108,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 109,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 0,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 0,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 110,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 0,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 0,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  },
+  {
+    "index": 111,
+    "input": {
+      "fpcw": 127,
+      "dt": 0.015625,
+      "rng_seed": 20260911,
+      "history_count": 6,
+      "fire_seen": 1,
+      "handout_enabled": 1,
+      "history_positions": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "creatures": [
+        {
+          "index": 383,
+          "active": 0,
+          "x": 123.25,
+          "y": 456.5,
+          "flags": 0
+        }
+      ],
+      "particles": [
+        {
+          "index": 0,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 63,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        },
+        {
+          "index": 126,
+          "style": 8,
+          "render": 0,
+          "intensity": 0.8,
+          "target": 383
+        }
+      ]
+    },
+    "history_count": 6,
+    "fire_seen": 1,
+    "handout_enabled": 1,
+    "history_positions": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "death_calls": 3,
+    "rng_state": 20260911
+  }
+]

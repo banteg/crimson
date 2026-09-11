@@ -1,0 +1,243 @@
+{
+  "source_sha256": "29ced950a9a07ed4972859045889678b2d6bceaded5a482c92b5dc2ab8bd23f0",
+  "object_sha256": "4f53be5dd1e4fe32e2d6481dbf72e51b2c76aa303b42e68a61553f6213cd1e70",
+  "body_sha256": "6ef992251aef821582118d48e5827cadb8746e9976b073689a08aa00503ef0f0",
+  "build_key": {
+    "toolchain": {
+      "compiler_trees": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      },
+      "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+      "runner_mode": 493,
+      "cl_environment": {
+        "CL": null,
+        "_CL_": null
+      }
+    },
+    "pipeline_sha256": [
+      "37d9cc8cd12c7e730fa9f07cc0dbf06db18661cfeded2edd1d8323960fd48fb4",
+      "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+      "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+    ],
+    "compiler": "msvc6.5",
+    "argv": [
+      "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+      "/c",
+      "/O2",
+      "/GB",
+      "/W3",
+      "/GR-",
+      "scratch.cpp"
+    ],
+    "auto_inline_off": [],
+    "dependencies": [
+      [
+        "scratches/projectile_update/scratch.cpp",
+        "29ced950a9a07ed4972859045889678b2d6bceaded5a482c92b5dc2ab8bd23f0"
+      ],
+      [
+        "scratches/projectile_update/scratch.conf",
+        "f3588b2bda9b53ccf6f57e3c913040e47f20f6193883cc4841f4fb53e2604e50"
+      ],
+      [
+        "cl.sh",
+        "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+      ],
+      [
+        "compilers/msvc6.5/Bin/CL.EXE",
+        "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+      ],
+      [
+        "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+        "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+      ],
+      [
+        "include/crimsonland_config_owner.h",
+        "36894d70bfa536783e43099079cdef0f6b50d2cff80f2b111f5317bdf56ad689"
+      ],
+      [
+        "include/crimsonland_console.h",
+        "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+      ],
+      [
+        "include/crimsonland_gameplay.h",
+        "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+      ],
+      [
+        "include/crimsonland_terrain_owner.h",
+        "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
+      ]
+    ]
+  },
+  "witnesses_sha256": "dc4585fea70db2c1993e0767bc9cbbb1b58ef05bb3da8e5b2ad9c8d96a8110f6",
+  "shared_regressions_sha256": "9e00266a6c03271ce0273265dbd5a9b491aecbd61dd6e320541d4014367df814",
+  "cases": 224,
+  "full_observation_matches": 224,
+  "layout": {
+    "sizeof(projectile_pool) / sizeof(projectile_pool[0])": 96,
+    "sizeof(projectile_pool[0])": 64,
+    "sizeof(secondary_projectile_pool) / sizeof(secondary_projectile_pool[0])": 64,
+    "sizeof(secondary_projectile_pool[0])": 44,
+    "sizeof(sprite_effect_pool) / sizeof(sprite_effect_pool[0])": 384,
+    "sizeof(sprite_effect_pool[0])": 44,
+    "sizeof(particle_pool) / sizeof(particle_pool[0])": 128,
+    "sizeof(particle_pool[0])": 56,
+    "sizeof(creature_pool) / sizeof(creature_pool[0])": 385,
+    "sizeof(creature_pool[0])": 152,
+    "sizeof(player_state_table) / sizeof(player_state_table[0])": 2,
+    "sizeof(player_state_table[0])": 864,
+    "sizeof(survival_recent_death_pos) / sizeof(survival_recent_death_pos[0])": 3,
+    "sizeof(survival_recent_death_pos[0])": 8,
+    "offsetof(particle_t, active)": 0,
+    "sizeof(((particle_t *)0)->active)": 1,
+    "offsetof(particle_t, render_flag)": 1,
+    "sizeof(((particle_t *)0)->render_flag)": 1,
+    "offsetof(particle_t, intensity)": 36,
+    "sizeof(((particle_t *)0)->intensity)": 4,
+    "offsetof(particle_t, spin)": 44,
+    "sizeof(((particle_t *)0)->spin)": 4,
+    "offsetof(particle_t, style_id)": 48,
+    "sizeof(((particle_t *)0)->style_id)": 1,
+    "offsetof(particle_t, target_id)": 52,
+    "sizeof(((particle_t *)0)->target_id)": 4,
+    "offsetof(creature_t, active)": 0,
+    "sizeof(((creature_t *)0)->active)": 1,
+    "offsetof(creature_t, pos_x)": 20,
+    "sizeof(((creature_t *)0)->pos_x)": 4,
+    "offsetof(creature_t, pos_y)": 24,
+    "sizeof(((creature_t *)0)->pos_y)": 4,
+    "offsetof(creature_t, flags)": 140,
+    "sizeof(((creature_t *)0)->flags)": 4,
+    "sizeof(gameplay_run_state.survival_recent_death_count)": 4,
+    "sizeof(gameplay_run_state.survival_reward_fire_seen)": 1,
+    "sizeof(gameplay_run_state.survival_reward_handout_enabled)": 1
+  },
+  "native_helpers": {
+    "crt_ftol": {
+      "entry": 4591700,
+      "instructions": 16
+    },
+    "vec2_add": {
+      "entry": 4317808,
+      "instructions": 10
+    },
+    "vec2_add_inplace": {
+      "entry": 4318208,
+      "instructions": 10
+    },
+    "fx_spawn_sprite": {
+      "entry": 4324272,
+      "instructions": 48
+    },
+    "creature_find_in_radius": {
+      "entry": 4327072,
+      "instructions": 47
+    },
+    "creature_handle_death": {
+      "entry": 4319504,
+      "instructions": 204
+    }
+  },
+  "native_coverage": [
+    0,
+    6,
+    11,
+    12,
+    13,
+    14,
+    15,
+    21,
+    22,
+    23,
+    29,
+    37,
+    42,
+    45,
+    47,
+    57,
+    65,
+    69,
+    72,
+    78,
+    84,
+    86,
+    3691,
+    3695,
+    3696,
+    3699,
+    3703,
+    3709,
+    3714,
+    3717,
+    3719,
+    6347,
+    6350,
+    6356,
+    6362,
+    6367,
+    6370,
+    6372,
+    6477,
+    6480,
+    6486,
+    6488,
+    6496,
+    6501,
+    6504,
+    6506,
+    6512,
+    6515,
+    6521,
+    6523,
+    6529,
+    6535,
+    6538,
+    6541,
+    6547,
+    6553,
+    6556,
+    6559,
+    6562,
+    6564,
+    6943,
+    6946,
+    6949,
+    6951,
+    6979,
+    6985,
+    6987,
+    6990,
+    6996,
+    7000,
+    7003,
+    7005,
+    7011,
+    7014,
+    7017,
+    7023,
+    7026,
+    7029,
+    7032,
+    7038,
+    7040,
+    7108,
+    7111,
+    7113,
+    7114,
+    7119,
+    7122,
+    8374,
+    8378,
+    8381,
+    8382,
+    8388,
+    8392,
+    8398,
+    8399,
+    8400,
+    8401,
+    8402,
+    8408
+  ]
+}
