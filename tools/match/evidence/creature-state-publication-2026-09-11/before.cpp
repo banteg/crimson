@@ -42,8 +42,9 @@ struct creature_vec2_t {
 
 inline float creature_vec2_length(creature_vec2_t &value)
 {
-    float length = (float)sqrt(value.x * value.x + value.y * value.y);
-    return length;
+    float reciprocal = 1.0f / (float)sqrt(
+        value.x * value.x + value.y * value.y);
+    return 1.0f / reciprocal;
 }
 
 inline float creature_vec2_angle(const creature_vec2_t &value)
@@ -378,9 +379,9 @@ extern "C" void creature_update_all(void)
                                     creature_pool[creature_index].ai_mode =
                                         CREATURE_AI_ORBIT_PLAYER;
                                 } else {
+                                    creature_pool[creature_index].orbit_radius.radius -= frame_dt;
                                     creature_pool[creature_index].target_x = position->x;
                                     creature_pool[creature_index].target_y = position->y;
-                                    creature_pool[creature_index].orbit_radius.radius -= frame_dt;
                                 }
                             } else {
                                 creature_pool[creature_index].target_x = position->x;
@@ -458,8 +459,8 @@ extern "C" void creature_update_all(void)
                             }
 
                             if ((flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
-                                creature_pool[creature_index].vel_x =
-                                    creature_pool[creature_index].vel_y = 0.0f;
+                                creature_pool[creature_index].vel_x = 0.0f;
+                                creature_pool[creature_index].vel_y = 0.0f;
                             } else {
                                 angle_approach(
                                     &creature_pool[creature_index].heading,
@@ -469,11 +470,11 @@ extern "C" void creature_update_all(void)
                                 double movement_heading =
                                     creature_pool[creature_index].heading - 1.5707964f;
                                 creature_pool[creature_index].vel_x =
-                                    30.0f * creature_pool[creature_index].move_speed
-                                    * (move_scale * (frame_dt * (float)cos(movement_heading)));
+                                    (float)cos(movement_heading) * frame_dt * move_scale
+                                    * creature_pool[creature_index].move_speed * 30.0f;
                                 creature_pool[creature_index].vel_y =
-                                    30.0f * creature_pool[creature_index].move_speed
-                                    * (move_scale * (frame_dt * (float)sin(movement_heading)));
+                                    (float)sin(movement_heading) * frame_dt * move_scale
+                                    * creature_pool[creature_index].move_speed * 30.0f;
                                 vec2_add_inplace(
                                     creature_index,
                                     position,
@@ -506,11 +507,11 @@ extern "C" void creature_update_all(void)
                             double movement_heading =
                                 creature_pool[creature_index].heading - 1.5707964f;
                             creature_pool[creature_index].vel_x =
-                                30.0f * creature_pool[creature_index].move_speed
-                                * (move_scale * (frame_dt * (float)cos(movement_heading)));
+                                (float)cos(movement_heading) * frame_dt * move_scale
+                                * creature_pool[creature_index].move_speed * 30.0f;
                             creature_pool[creature_index].vel_y =
-                                30.0f * creature_pool[creature_index].move_speed
-                                * (move_scale * (frame_dt * (float)sin(movement_heading)));
+                                (float)sin(movement_heading) * frame_dt * move_scale
+                                * creature_pool[creature_index].move_speed * 30.0f;
                             vec2_add_inplace(
                                 creature_index,
                                 position,

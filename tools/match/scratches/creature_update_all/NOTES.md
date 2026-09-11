@@ -520,8 +520,10 @@ rewrite.
 The 2003 mod SDK provides direct source evidence for the original vector
 idiom: `vec2_t::operator-` returns a temporary and `VEC2_Length(vec2_t &)`
 accepts that result as a non-const reference. Its implementation computes a
-reciprocal square root and returns the reciprocal, while optimized VC6 emits
-the native inline `fsqrt` sequence.
+reciprocal square root and returns the reciprocal. The earlier assertion that
+this emitted only the native inline `fsqrt` was incorrect for the retained
+candidate: the 2026-09-11 execution audit below finds two additional divisions
+and replaces them with a direct float length while retaining the vector boundary.
 
 Replaying that exact `VEC2_Length(player.position - creature.position)`
 boundary for the first, long-lived current-player distance improves the
@@ -673,3 +675,31 @@ The unchanged source SHA-256 is
 `b22a92a6656ebba289c6a0356ffee44033f46ecf595593b2397a72f7d0b0b8c0`;
 the updated experiment log SHA-256 is
 `0ad00946eb4434e2a26d94cef5e58ac3758af9ffbf6bbdbf869265025b18c84f`.
+
+## Native execution recovery (2026-09-11)
+
+The [replayable native/candidate audit](../../evidence/creature-state-publication-2026-09-11/README.md)
+compares 2,472 cases under both 24-bit and 64-bit x87 precision. The preceding
+source differs in 460 state/callback traces and 886 ordered-write traces; the
+recovered source has no differences in the recorded observations.
+
+The first distance now returns a named float `sqrt` result, removing the two
+non-native reciprocal divisions. Both live movement branches recover the
+native multiplication order: trigonometric result, frame time, movement scale,
+movement speed, then 30. The stationary live spawner clears velocity Y before X,
+while the corpse branch keeps X before Y. The hold-timer branch publishes both
+target coordinates before its radius. The latter two edits recover write order;
+the first two also correct numerical differences exposed by PC=24 execution.
+
+The static result improves from 2,926.750094804703 to
+2,928.971537001898/5,330 fuzzy-weighted bytes, **54.952561669829%**.
+Candidate instructions fall from 1,299 to 1,297 against 1,338 native instructions;
+the prefix remains zero and the reference audit remains `225/0/2`.
+Neither normalized exactness nor encoded-body exactness is claimed.
+
+The harness executes 1,332/1,338 native and 1,291/1,297 candidate instructions;
+the six remaining instructions on each side handle negative random remainders,
+outside its 0..32767 callback model. It checks complete fixture state, callback
+argument words, write order, compiled layout, and calling-convention invariants.
+Shared callback models and finite inputs bound this evidence. This does not
+prove whole-function equivalence or remove the remaining compiler/reference work.
