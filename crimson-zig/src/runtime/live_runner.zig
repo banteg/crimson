@@ -374,7 +374,7 @@ pub const LiveRunner = struct {
             ticks_advanced += 1;
         }
 
-        return self.snapshot(ticks_advanced, self.perkPendingCount() > 0, frame_audio, frame_terrain_fx.takeBatch());
+        return self.snapshot(ticks_advanced, input.perk_menu_active and self.perkPendingCount() > 0, frame_audio, frame_terrain_fx.takeBatch());
     }
 
     pub fn perkPendingCount(self: *const LiveRunner) i32 {
@@ -463,7 +463,9 @@ pub const LiveRunner = struct {
 
     pub fn captureSnapshot(self: *const LiveRunner) LiveRunnerSnapshot {
         var captured: LiveRunnerSnapshot = .{ .runner = self.* };
-        captured.runner.rebindInternalPointers();
+        // Snapshots are movable values. Only restoration has a stable destination
+        // at which the session's internal effect-pool pointer can be rebound.
+        captured.runner.session.creatures.effects = null;
         return captured;
     }
 
@@ -655,7 +657,7 @@ test "live runner snapshots restore deterministic session state" {
     runner.session.state.rng.state = 0xDEADBEEF;
 
     const snapshot = runner.captureSnapshot();
-    try std.testing.expect(snapshot.runner.session.creatures.effects.? == &snapshot.runner.session.effects);
+    try std.testing.expect(snapshot.runner.session.creatures.effects == null);
 
     runner.player0().?.health = 0.0;
     runner.session.tick_index = 99;
@@ -673,6 +675,11 @@ test "live runner applies local inputs for every active player" {
     var runner = try LiveSurvivalRunner.init(.{
         .player_count = 2,
     });
+
+    // Face each input direction so native turn alignment does not suppress
+    // translation while a player turns through the opposite heading.
+    runner.session.players()[0].heading = std.math.pi / 2.0;
+    runner.session.players()[1].heading = std.math.pi;
 
     const before_p0 = runner.session.players()[0].pos;
     const before_p1 = runner.session.players()[1].pos;
@@ -721,6 +728,8 @@ test "live runner emits shot audio for secondary local player" {
     var runner = try LiveSurvivalRunner.init(.{
         .player_count = 2,
     });
+    // The native reset starts every pistol with a 0.8-second shot cooldown.
+    runner.session.players()[1].weapon.shot_cooldown = 0.0;
 
     var inputs = [_]player_runtime.GameInput{defaultGameInput()} ** state_mod.max_players;
     inputs[1] = .{

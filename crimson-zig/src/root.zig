@@ -66,6 +66,7 @@ test {
     _ = @import("cdt_wire.zig");
     _ = @import("runtime/replay/diagnostic_trace.zig");
     _ = session_builders;
+    _ = live_runner;
     _ = @import("runtime/replay/step.zig");
     _ = effects;
     _ = projectiles;
