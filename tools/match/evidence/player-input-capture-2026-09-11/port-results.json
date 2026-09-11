@@ -1,0 +1,245 @@
+{
+  "native_receipt_sha256": "f8a1a06b86823d9bad276bfe9a6a81cb20aaa1fed1979bf69aa6554df95e1779",
+  "verifier_sha256": "aa9902e41b3095ee6664785ee227501f02d42e4f99fcd675fd524e33eb265ef3",
+  "zig_binary_sha256": "e80ea7b6d9dadfdcb8140ccea48c274fd934ea0e2dd49b737c41d9818d8e66a1",
+  "source_sha256": {
+    "scripts/frida/gameplay_diff_capture.js": "8e7b670a1a2aeb15e20847db1a5cfab48d3f6d7e92fab42fa77b705a0c5d3ca3",
+    "src/crimson/replay/input_codec.py": "f27ae77cf0a3beaef0b00ac9f22f0666c080df2c9c599ddf222a4df382e97caa",
+    "src/crimson/replay/types.py": "b3464c1ee6418b056754d5f42fae0f6fbe81af21f1b87f90b9382e71b3eed8bc",
+    "src/crimson/gameplay.py": "6510258b046a1902d5a16d08f1b7a5c468603913855f725cae1acd45f17983e5",
+    "src/crimson/weapon_runtime/fire.py": "561d432a382af0e721d467d87040071f1377bb7ee27d7908a49f6d346f235d54",
+    "src/crimson/sim/input.py": "d4436a5b1fb9d32b7a7bc2b8f9103f5214575d64bcf19692ca6a13af855fc655",
+    "crimson-zig/src/replay_codec.zig": "9ac45a459de6f58441feb218f4bf4d3b748aedda477e0a1e07b8ab926413920a",
+    "crimson-zig/src/runtime/player.zig": "39f142242c77960e99df8a1ba3a4a32ddfd495c366f61763c2635c8e97e4b055",
+    "crimson-zig/src/runtime/weapons.zig": "41351c43a60bf6dc4073ccd18b01549ad41c8dd74a7a1126f77226afb96ba621",
+    "crimson-zig/src/runtime/replay_runner.zig": "d0ceaeb2060d0d3095a8c173eef510afbc359457f464f750b7efa42da8f2cb62",
+    "crimson-zig/src/runtime/replay/step.zig": "d5843485d85c4fb115bab9a24ca017ff467abfe046a34dd06aac03599bbf4e89",
+    "crimson-zig/src/dbg_verify_native.zig": "237653e3169d8491271f08c430a1aa2429ce006ca206cde4397cc6c318fc6efa"
+  },
+  "cases": [
+    {
+      "name": "computer-auto-p0-before",
+      "shots_fired_by_player": [
+        0,
+        0
+      ],
+      "owner": 0,
+      "fire_bullets_timers": [
+        0.0,
+        0.0
+      ],
+      "ammo": [
+        10.0,
+        10.0
+      ],
+      "replay_sha256": "3b81a7e99ffb592da64a507a7c37df1d469c54f6e64d848a2093288584d1652e",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "computer-auto-p0-current",
+      "shots_fired_by_player": [
+        1,
+        0
+      ],
+      "owner": 0,
+      "fire_bullets_timers": [
+        9.683338165283203,
+        0.0
+      ],
+      "ammo": [
+        10.0,
+        10.0
+      ],
+      "replay_sha256": "5ca9e43cc71aaec39a7422d8a32dc6211183f78b825e7753d236b90ca1172754",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "computer-auto-p1-before",
+      "shots_fired_by_player": [
+        0,
+        0
+      ],
+      "owner": 1,
+      "fire_bullets_timers": [
+        0.0,
+        0.0
+      ],
+      "ammo": [
+        10.0,
+        10.0
+      ],
+      "replay_sha256": "0cb0f32cb105bb0b9f519d64d703b44c799e34cfa7b1739a18ce6be782da6dc2",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "computer-auto-p1-current",
+      "shots_fired_by_player": [
+        0,
+        1
+      ],
+      "owner": 1,
+      "fire_bullets_timers": [
+        0.0,
+        9.683338165283203
+      ],
+      "ammo": [
+        10.0,
+        10.0
+      ],
+      "replay_sha256": "dac3c1bc591f758b106a3d30d73de4a8267276a7f21eed790d03791ff7d11399",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "auto-no-g-p0-before",
+      "shots_fired_by_player": [
+        0,
+        0
+      ],
+      "owner": 0,
+      "fire_bullets_timers": [
+        0.0,
+        0.0
+      ],
+      "ammo": [
+        10.0,
+        10.0
+      ],
+      "replay_sha256": "87b4b3f80a26e0582f337fb1252164022a9dcaec4fcf8fcc8209e0071707f005",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "auto-no-g-p0-current",
+      "shots_fired_by_player": [
+        1,
+        0
+      ],
+      "owner": 0,
+      "fire_bullets_timers": [
+        0.0,
+        0.0
+      ],
+      "ammo": [
+        9.0,
+        10.0
+      ],
+      "replay_sha256": "7e2b4d21defc71c6a85ebff8f8486d18c2fe51840c890ad06ad449b681758bb6",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "auto-no-g-p1-before",
+      "shots_fired_by_player": [
+        0,
+        0
+      ],
+      "owner": 1,
+      "fire_bullets_timers": [
+        0.0,
+        0.0
+      ],
+      "ammo": [
+        10.0,
+        10.0
+      ],
+      "replay_sha256": "be8f9a545a70055e3cf36592a793bc41d66946b5d8f6be3aaf4345b9cb0b2cd5",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    },
+    {
+      "name": "auto-no-g-p1-current",
+      "shots_fired_by_player": [
+        0,
+        1
+      ],
+      "owner": 1,
+      "fire_bullets_timers": [
+        0.0,
+        0.0
+      ],
+      "ammo": [
+        10.0,
+        9.0
+      ],
+      "replay_sha256": "b341df470fa67795eb4bb02443034e3d7271602a09401f3d75ec1f360d48a6df",
+      "trace_comparison": {
+        "schema_version": 2,
+        "status": "ok",
+        "checked_count": 80,
+        "compared_count": 80,
+        "tick_start": null,
+        "tick_end": null,
+        "mismatch": null,
+        "channel_first_mismatches": {},
+        "channel_first_diagnostics": {}
+      }
+    }
+  ]
+}

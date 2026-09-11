@@ -11,9 +11,9 @@
     "crimson-zig/src/runtime/weapons.zig": "41351c43a60bf6dc4073ccd18b01549ad41c8dd74a7a1126f77226afb96ba621",
     "crimson-zig/src/runtime/replay_runner.zig": "d0ceaeb2060d0d3095a8c173eef510afbc359457f464f750b7efa42da8f2cb62",
     "crimson-zig/src/runtime/replay/step.zig": "d5843485d85c4fb115bab9a24ca017ff467abfe046a34dd06aac03599bbf4e89",
-    "scripts/frida/gameplay_diff_capture.js": "8b210232a55456d982e0bd69d29adbc870088301075d9694a7e85081fb97b470"
+    "scripts/frida/gameplay_diff_capture.js": "8e7b670a1a2aeb15e20847db1a5cfab48d3f6d7e92fab42fa77b705a0c5d3ca3"
   },
-  "zig_binary_sha256": "0e47f177b28ed063dd9acbb71a997565c1bb392f474ef20218763c51cab01eb9",
+  "zig_binary_sha256": "e80ea7b6d9dadfdcb8140ccea48c274fd934ea0e2dd49b737c41d9818d8e66a1",
   "cases": [
     {
       "name": "preserve-0-g-0",
@@ -26,7 +26,7 @@
       ],
       "ammo_final": 9.0,
       "shots_fired": 1,
-      "replay_sha256": "f14f9bed627dfdbd2522bef08864c853b234c366c47840ead366cba33e1e0b65",
+      "replay_sha256": "109ee05e5c56c722c7e398749f31302e63d730224bd1dcf4692468b916dcb795",
       "trace_comparison": {
         "schema_version": 2,
         "status": "ok",
@@ -50,7 +50,7 @@
       ],
       "ammo_final": 9.0,
       "shots_fired": 1,
-      "replay_sha256": "bdeed42a02a7cf40cb48660a37e7de6ad1a3bb361dbff3d17fd79208cf40f5f2",
+      "replay_sha256": "737ee79adc7b48a4a42e016040c8e6a46f4c4df93cabbddf7c4991ce4b2367fb",
       "trace_comparison": {
         "schema_version": 2,
         "status": "ok",
@@ -74,7 +74,7 @@
       ],
       "ammo_final": 9.0,
       "shots_fired": 1,
-      "replay_sha256": "caf2b669b587c1af5ca6c45a4e2c38bed187b16ea96636ad83d0c3ec844f5d29",
+      "replay_sha256": "cda17e6088cd9297ae3271c9259f6d9708ab40509bea060b5fcc027ef6e6c8a5",
       "trace_comparison": {
         "schema_version": 2,
         "status": "ok",
@@ -98,7 +98,7 @@
       ],
       "ammo_final": 10.0,
       "shots_fired": 2,
-      "replay_sha256": "bdefd5c24a014d4193424cf6a804dee16ec44c0a222c4d39b572a6e2eca1bc46",
+      "replay_sha256": "2ae13fbde4abc9939983d75faebadf861352abf54ddef22888296d82223caff4",
       "trace_comparison": {
         "schema_version": 2,
         "status": "ok",

@@ -1,0 +1,74 @@
+{
+  "before": [
+    {
+      "name": "nested-primary",
+      "passed": false,
+      "assertion": ""
+    },
+    {
+      "name": "nested-and-interleaved",
+      "passed": false,
+      "assertion": ""
+    },
+    {
+      "name": "byte-false",
+      "passed": false,
+      "assertion": ""
+    },
+    {
+      "name": "auto-player-zero",
+      "passed": false,
+      "assertion": ""
+    },
+    {
+      "name": "auto-player-one",
+      "passed": false,
+      "assertion": ""
+    },
+    {
+      "name": "integer-width-control",
+      "passed": true
+    },
+    {
+      "name": "unrelated-query-control",
+      "passed": true
+    }
+  ],
+  "current": [
+    {
+      "name": "nested-primary",
+      "passed": true
+    },
+    {
+      "name": "nested-and-interleaved",
+      "passed": true
+    },
+    {
+      "name": "byte-false",
+      "passed": true
+    },
+    {
+      "name": "auto-player-zero",
+      "passed": true
+    },
+    {
+      "name": "auto-player-one",
+      "passed": true
+    },
+    {
+      "name": "integer-width-control",
+      "passed": true
+    },
+    {
+      "name": "unrelated-query-control",
+      "passed": true
+    }
+  ],
+  "sha256": {
+    "scripts/frida/gameplay_diff_capture.js": "8e7b670a1a2aeb15e20847db1a5cfab48d3f6d7e92fab42fa77b705a0c5d3ca3",
+    "tools/match/evidence/player-input-capture-2026-09-11/before-input-hooks.js": "ba1cf2f034135e8b561dd03fd214d42f679d52439619cae8df9701088271333f",
+    "tools/match/evidence/player-input-capture-2026-09-11/harness.js": "6f136d5e490fe314e7442eddbe10e50527a458e45658210fb0fe51d6fe21ceaf",
+    "tools/match/evidence/player-input-capture-2026-09-11/verify_controls.py": "24bead28a0db7b2a06fbfb63744212f6f85160075ca6e88652fd5d3b346afabd",
+    "tests/debug/test_frida_input_hooks.py": "a2d1abe0e7d9ebe9cc25267b91f043d469361242eca43b2315cd1d49fb42d8d9"
+  }
+}

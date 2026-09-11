@@ -68,7 +68,9 @@ intentional input flag difference. The enabled case ends with timer
 zero timer, one fired shot, and nine rounds. `port-results.json` pins the
 sources and tested Zig binary.
 
-The current-only contract becomes CRD 19, CDT payload 19, and Frida raw 27.
+This recovery introduced CRD 19, CDT payload 19, and Frida raw 27. The later
+[input-capture repair](../player-input-capture-2026-09-11/README.md) advances
+Frida raw to 28; the replay and trace layouts remain the same.
 CDT container 2, checkpoint 5, and evidence sidecar 3 retain their layouts.
 Older recordings must be regenerated; there is no silent migration.
 

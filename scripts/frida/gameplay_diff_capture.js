@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 27;
+const CAPTURE_FORMAT_VERSION = 28;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -391,6 +391,8 @@ const FN = {
 
 // Ghidra (latest sync): first function after `player_update`.
 const PLAYER_UPDATE_END_RVA = 0x00417640;
+// The fixed G query runs only after player_update has accepted a weapon shot.
+const PLAYER_FIRE_GATE_RETURN = 0x00415cee;
 
 const FN_GRIM_RVA = {
   grim_is_key_down: 0x00007320,
@@ -402,6 +404,7 @@ const DATA = {
   config_game_mode: 0x00480360,
   config_movement_schemes: 0x00480364,
   config_aim_schemes: 0x0048038c,
+  render_overlay_player_index: 0x004aaf0c,
   config_key_reload: 0x004807c4,
   config_hardcore: 0x00480790,
   config_violence_disabled: 0x004807b4,
@@ -540,6 +543,7 @@ const REQUIRED_REPLAY_DATA_NAMES = [
   "config_game_mode",
   "config_movement_schemes",
   "config_aim_schemes",
+  "render_overlay_player_index",
   "config_key_reload",
   "config_hardcore",
   "config_violence_disabled",
@@ -4073,6 +4077,19 @@ function isPlayerUpdateCaller(callerStaticHex) {
   return caller >= (FN.player_update >>> 0) && caller < (PLAYER_UPDATE_END_RVA >>> 0);
 }
 
+function recordPlayerFireGate(tick) {
+  if (!tick) return;
+  const index = readDataI32("render_overlay_player_index");
+  const players = tick.before && tick.before.players;
+  if (!Number.isInteger(index) || !Array.isArray(players) || index < 0 || index >= players.length) {
+    emitCaptureContractError("player_fire_gate_invalid_player_index", tick);
+    return;
+  }
+  // Computer aim can accept a shot with the physical fire key released. Replay
+  // consumes effective firing intent, so retain this native gate observation.
+  ensurePlayerKeyState(tick, index).fire_down = true;
+}
+
 function ownerIdToPlayerIndex(ownerId) {
   if (!Number.isFinite(ownerId)) return null;
   const idx = (-100 - (ownerId | 0)) | 0;
@@ -5601,7 +5618,9 @@ function installHooks() {
           if (!ctx) return;
           let pressed = false;
           try {
-            pressed = retval.toInt32() !== 0;
+            const result = retval.toInt32();
+            // primary_is_down returns int; the other two helpers define AL.
+            pressed = (queryKey === "primary_down" ? result : result & 0xff) !== 0;
           } catch (_) {
             pressed = false;
           }
@@ -5640,6 +5659,7 @@ function installHooks() {
     function addGrimInputQueryHook(name, ptrVal, classifyKind, tokenPrefix) {
       attachHook(name, ptrVal, {
         onEnter(args) {
+          this._trackedInputQuery = false;
           let arg0 = null;
           try {
             arg0 = args[0] ? args[0].toInt32() : null;
@@ -5659,13 +5679,20 @@ function installHooks() {
             caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
             backtrace: maybeBacktrace(this.context),
           });
+          this._trackedInputQuery = true;
+          if (name === "grim_is_key_active" && arg0 === 0x22 && callerStatic === PLAYER_FIRE_GATE_RETURN) {
+            recordPlayerFireGate(outState.currentTick);
+          }
         },
         onLeave(retval) {
+          // A nested Grim call filtered out by onEnter owns no stack entry.
+          if (!this._trackedInputQuery) return;
+          this._trackedInputQuery = false;
           const ctx = popInputContext(this.threadId);
           if (!ctx) return;
           let pressed = false;
           try {
-            pressed = retval.toInt32() !== 0;
+            pressed = (retval.toInt32() & 0xff) !== 0;
           } catch (_) {
             pressed = false;
           }

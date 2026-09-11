@@ -8,7 +8,7 @@ tags:
 # Gameplay differential capture
 
 `scripts/frida/gameplay_diff_capture.js` records the original executable using
-raw capture format 27. The host finalizes each completed run into the same
+raw capture format 28. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
 - CDT container 2, schema 19
@@ -138,8 +138,15 @@ selection index in `0..6`. A choice refresh inside the native tick is a separate
 the next tick's prelude. An outside-tick selection pick likewise remains in the
 next tick's prelude.
 
-Input intent is captured before simulation rather than inferred from player
-movement. `sim_state.players` separately records the resulting `heading`,
+Input intent follows the native key queries and the accepted-shot gate in
+`player_update`. Reaching the fixed G query at `0x00415ce8` records effective
+`fire_down` for the current player even when computer aim fires with the
+physical fire key released. The G query's result independently records the
+held cheat key. Projectile creation alone does not establish firing intent:
+perks can also spawn projectiles. Nested Grim queries retain their own hook
+contexts, and byte-returning queries are decoded from AL.
+
+`sim_state.players` separately records the resulting `heading`,
 `move_speed`, `move_phase`, `aim`, and `aim_heading`, so a diff can distinguish
 bad input capture from bad movement integration.
 

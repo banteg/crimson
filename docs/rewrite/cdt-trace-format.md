@@ -190,7 +190,7 @@ enclosing `dt_ms_i32`, and its `mode_fn` identifies
 
 The intended comparison set is:
 
-1. Frida capture format 27 finalized into CDT v2/schema 19.
+1. Frida capture format 28 finalized into CDT v2/schema 19.
 2. Python CRD v19 replay recording.
 3. Zig CRD v19 replay recording.
 
