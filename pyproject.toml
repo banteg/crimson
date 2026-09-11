@@ -36,6 +36,9 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = ["crimson", "grim"]
 
+[tool.uv.sources]
+asm-differ = { git = "https://github.com/simonlindholm/asm-differ", rev = "0dd09af8f8008f1f880327cf0aca3b26d2562ea2" }
+
 [dependency-groups]
 dev = [
     "capstone>=5.0.9",
@@ -51,6 +54,9 @@ dev = [
     "syrupy>=5.0.0",
     "ty>=0.0.63",
     "zensical>=0.0.22",
+]
+match-explain = [
+    "asm-differ",
 ]
 
 [tool.ruff]

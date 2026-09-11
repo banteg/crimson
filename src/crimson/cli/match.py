@@ -417,6 +417,49 @@ def cmd_match_scratch(
     )
 
 
+@match_app.command("explain")
+def cmd_match_explain(
+    directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
+    output: Path = typer.Option(..., "--out", help="new diagnostic bundle directory; must not already exist"),
+    engine: Literal["objdiff", "levenshtein", "both"] = typer.Option("objdiff", "--engine"),
+    objdiff: str = typer.Option("objdiff-cli", "--objdiff", help="optional objdiff CLI executable"),
+    asm_differ: Path | None = typer.Option(None, "--asm-differ", help="optional asm-differ diff.py path"),
+    asm_python: str = typer.Option(
+        sys.executable,
+        "--asm-python",
+        help="Python with asm-differ dependencies installed",
+    ),
+    objdump: str = typer.Option("objdump", "--objdump", help="GNU objdump with pe-i386 support"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root"),
+    scope: Literal["port", "all"] = typer.Option(matchlib.DEFAULT_MATCH_SCOPE, "--scope"),
+) -> None:
+    """Export optional alignments and conditional source hypotheses; never changes acceptance."""
+    from .. import match_explain
+
+    try:
+        if output.exists():
+            raise ValueError("Output directory already exists; choose a fresh --out directory")
+        if engine in ("objdiff", "both"):
+            match_explain.executable(objdiff)
+        if engine in ("levenshtein", "both"):
+            asm_differ = match_explain.resolve_asm_differ(asm_differ)
+            match_explain.executable(asm_python)
+            match_explain.executable(objdump)
+        match_explain.export_scratch(directory, output, match_root, scope)
+        summary = match_explain.compare_bundle(
+            output,
+            engine=engine,
+            objdiff=objdiff,
+            asm_differ=asm_differ,
+            asm_python=asm_python,
+            objdump=objdump,
+        )
+    except Exception as exc:
+        typer.echo(f"explain failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(f"Diagnostic only: {summary['reference_counts']}; report: {output.resolve() / 'README.md'}")
+
+
 @match_app.command("dump")
 def cmd_match_dump(
     obj_path: Path = typer.Argument(..., help="candidate COFF .obj"),

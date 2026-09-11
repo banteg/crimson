@@ -1,0 +1,96 @@
+[
+  {
+    "function": "highscore_screen_update",
+    "reference_counts": {
+      "objdiff": {
+        "ok": 605,
+        "unresolved": 40,
+        "mismatch": 13
+      },
+      "levenshtein": {
+        "ok": 603,
+        "unresolved": 38,
+        "mismatch": 16
+      }
+    },
+    "input_hashes": {
+      "target": "8a369c3056ac89d90afd0e0847cd2c9f24f59680f5ac7fd4b2accd1a64879e48",
+      "candidate": "7a5e8ae52f4a665fff48f51a28a62db5d2687f77fef7847e6ad729076f04526b"
+    },
+    "objdiff_same_pairings": true,
+    "levenshtein_same_pairings": true
+  },
+  {
+    "function": "projectile_render",
+    "reference_counts": {
+      "objdiff": {
+        "ok": 483,
+        "unresolved": 86,
+        "mismatch": 12
+      },
+      "levenshtein": {
+        "ok": 480,
+        "unresolved": 96,
+        "mismatch": 10
+      }
+    },
+    "input_hashes": {
+      "target": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+      "candidate": "00cbfabd5f926a8d3631419cc23ebf018754394351a153162c0ff1fb65c5884b"
+    },
+    "objdiff_same_pairings": true,
+    "levenshtein_same_pairings": true,
+    "avoids_two_cross_branch_literal_pairs": true
+  },
+  {
+    "function": "quest_build_spiders_inc",
+    "reference_counts": {
+      "objdiff": {
+        "ok": 8
+      },
+      "levenshtein": {
+        "ok": 8
+      }
+    },
+    "input_hashes": {
+      "target": "35cf113305044a5b188173b0599728bde4429a55040a41299025a2bc1e060154",
+      "candidate": "91553c9231b5fa5227c137cf6c699e4d9b4754e48c3212af116e4c7118990270"
+    },
+    "objdiff_same_pairings": true,
+    "levenshtein_same_pairings": true
+  },
+  {
+    "function": "quest_spawn_timeline_update",
+    "reference_counts": {
+      "objdiff": {
+        "ok": 13
+      },
+      "levenshtein": {
+        "ok": 13
+      }
+    },
+    "input_hashes": {
+      "target": "6b84f0beddbfe368fac092a5faf71d40ed2b1e611f1deb0c600382731bd655a7",
+      "candidate": "846ce5764f3a43f8d178292b60805d7c2054b7467251f8957625d92e7e82a1d8"
+    },
+    "objdiff_same_pairings": true,
+    "levenshtein_same_pairings": true
+  },
+  {
+    "function": "statistics_update_check_worker",
+    "reference_counts": {
+      "objdiff": {
+        "ok": 120
+      },
+      "levenshtein": {
+        "ok": 120
+      }
+    },
+    "input_hashes": {
+      "target": "c17ea22ab2adfa33e8ee4fb18cfaa3687e59e7b1077d91e1164f2f23987e5d6f",
+      "candidate": "a6bcc6879980d59baaabb6a45e281bdfc7235b8882932f29e6839d871eebedf9"
+    },
+    "objdiff_same_pairings": true,
+    "levenshtein_same_pairings": true
+  }
+]

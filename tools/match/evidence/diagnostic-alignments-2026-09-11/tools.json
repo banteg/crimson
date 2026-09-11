@@ -1,0 +1,14 @@
+{
+  "objdiff": {
+    "path": "/private/tmp/crimson-objdiff-spike/objdiff-cli",
+    "sha256": "98f8275c27900c4fe2248fce3af37617658be49648fa7dbb5b376371f046dfdb",
+    "version": "objdiff-cli 3.8.1"
+  },
+  "levenshtein": {
+    "script": "/Users/banteg/dev/banteg/crimson/.venv/lib/python3.13/site-packages/diff.py",
+    "sha256": "10b8b1f21fba9ffe4294ecf21dc67d14a41473d9ec3ebf0bb60a6d50955d3873",
+    "python": "/Users/banteg/dev/banteg/crimson/.venv/bin/python3",
+    "objdump": "/opt/homebrew/opt/binutils/bin/objdump",
+    "objdump_version": "GNU objdump (GNU Binutils) 2.47.20260726"
+  }
+}

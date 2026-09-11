@@ -436,6 +436,16 @@ block anchors and reports reordered exact blocks, structurally compatible
 similar blocks, unmatched blocks, and conflicting paired edges. This CFG view
 is diagnostic only and never contributes to the exact-match score.
 
+## Optional external alignments
+
+Use `crimson match explain <scratch-directory> --out <new-directory>` for objdiff
+pairing, or `--engine both` for an additional asm-differ Levenshtein view. The
+bundle preserves original offsets/bytes, independently checks references, lists
+alignment disagreements, and groups supported affine address chains into
+conditional source hypotheses. It does not change native acceptance or scores.
+See [setup, output and controls](../../docs/re/diagnostic-alignments.md).
+
+
 ## Parallel Matching Batches
 
 The coordinator evaluates the corpus once, ranks the requested targets by

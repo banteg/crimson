@@ -1,0 +1,265 @@
+{
+  "kind": "retained-index-scale",
+  "origin": {
+    "target": {
+      "offset": 7883,
+      "address": 4344635,
+      "text": "call ADDR",
+      "size": 5,
+      "masked_references": [
+        {
+          "operand_index": 0,
+          "kind": "imm",
+          "source": "image",
+          "value": 4327072,
+          "text": "creature_find_in_radius",
+          "keys": [
+            "address:0x004206a0",
+            "name:creature_find_in_radius",
+            "local:-0x25d0"
+          ],
+          "explained": true
+        }
+      ]
+    },
+    "candidate": {
+      "offset": 7811,
+      "address": 7811,
+      "text": "call ADDR",
+      "size": 5,
+      "masked_references": [
+        {
+          "operand_index": 0,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_creature_find_in_radius",
+          "keys": [
+            "name:creature_find_in_radius",
+            "address:0x004206a0"
+          ],
+          "explained": true
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "target": [
+      {
+        "offset": 7888,
+        "instruction": "mov edi, eax",
+        "register": "edi",
+        "affine": [
+          1,
+          0
+        ]
+      },
+      {
+        "offset": 8014,
+        "instruction": "lea ecx, [edi + edi*8]",
+        "register": "ecx",
+        "affine": [
+          9,
+          0
+        ]
+      },
+      {
+        "offset": 8017,
+        "instruction": "lea esi, [edi + ecx*2]",
+        "register": "esi",
+        "affine": [
+          19,
+          0
+        ]
+      },
+      {
+        "offset": 8024,
+        "instruction": "shl esi, 3",
+        "register": "esi",
+        "affine": [
+          152,
+          0
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "offset": 7816,
+        "instruction": "mov esi, eax",
+        "register": "esi",
+        "affine": [
+          1,
+          0
+        ]
+      },
+      {
+        "offset": 7939,
+        "instruction": "lea eax, [esi + esi*8]",
+        "register": "eax",
+        "affine": [
+          9,
+          0
+        ]
+      },
+      {
+        "offset": 7942,
+        "instruction": "lea ebx, [esi + eax*2]",
+        "register": "ebx",
+        "affine": [
+          19,
+          0
+        ]
+      }
+    ]
+  },
+  "assumptions": [
+    "These paired calls return the same index on corresponding paths.",
+    "Intervening calls follow the x86 callee-saved register ABI.",
+    "Only statically decoded direct control-flow paths are considered.",
+    "This return-value lifetime ends at the next call with the same reference operands."
+  ],
+  "claim": "Listed reference operands have equal affine offsets modulo 2^32 under the assumptions.",
+  "prediction": "Changing where the source retains the scaled index may change this group of operands together.",
+  "uses": [
+    {
+      "reference_keys": [
+        "address:0x0049bf4c"
+      ],
+      "target": {
+        "offset": 8028,
+        "instruction": "fld dword [esi+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "esi": [
+            152,
+            0
+          ]
+        },
+        "memory_scale": 1
+      },
+      "candidate": {
+        "offset": 7950,
+        "instruction": "fld dword [ebx*8+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "ebx": [
+            19,
+            0
+          ]
+        },
+        "memory_scale": 8
+      }
+    },
+    {
+      "reference_keys": [
+        "address:0x0049bf50"
+      ],
+      "target": {
+        "offset": 8041,
+        "instruction": "fld dword [esi+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "esi": [
+            152,
+            0
+          ]
+        },
+        "memory_scale": 1
+      },
+      "candidate": {
+        "offset": 7964,
+        "instruction": "fld dword [ebx*8+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "ebx": [
+            19,
+            0
+          ]
+        },
+        "memory_scale": 8
+      }
+    },
+    {
+      "reference_keys": [
+        "address:0x0049bf4c"
+      ],
+      "target": {
+        "offset": 8324,
+        "instruction": "fadd dword [esi+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "esi": [
+            152,
+            0
+          ]
+        },
+        "memory_scale": 1
+      },
+      "candidate": {
+        "offset": 8247,
+        "instruction": "fadd dword [ebx*8+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "ebx": [
+            19,
+            0
+          ]
+        },
+        "memory_scale": 8
+      }
+    },
+    {
+      "reference_keys": [
+        "address:0x0049bf50"
+      ],
+      "target": {
+        "offset": 8343,
+        "instruction": "fadd dword [esi+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "esi": [
+            152,
+            0
+          ]
+        },
+        "memory_scale": 1
+      },
+      "candidate": {
+        "offset": 8264,
+        "instruction": "fadd dword [ebx*8+ADDR]",
+        "affine": [
+          152,
+          0
+        ],
+        "retained_registers": {
+          "ebx": [
+            19,
+            0
+          ]
+        },
+        "memory_scale": 8
+      }
+    }
+  ]
+}
