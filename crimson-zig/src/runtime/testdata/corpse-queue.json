@@ -1,0 +1,9987 @@
+{
+  "fpcw": 127,
+  "queue": [
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            2147483648
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1036831949
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1054168405
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1040187392
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1031798784
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3187671040
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1059313419
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1076538027
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1061997773
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1053609165
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3209481421
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1061997773
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1079334229
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1065353216
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1056964608
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3212836864
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1063339951
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1080732331
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1066192077
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057803469
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3213675725
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3181631243
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3198855851
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3184315597
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3175926989
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1036831949
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 0,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            2147483648
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1036831949
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1054168405
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1040187392
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1031798784
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3187671040
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1059313419
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1076538027
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1061997773
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1053609165
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3209481421
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1061997773
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1079334229
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1065353216
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1056964608
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3212836864
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1063339951
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1080732331
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1066192077
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057803469
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3213675725
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3181631243
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3198855851
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3184315597
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3175926989
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 2,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1036831949
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 1,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            0
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            2147483648
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1036831949
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1054168405
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1040187392
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1031798784
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3187671040
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1059313419
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1076538027
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1061997773
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1053609165
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3209481421
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1061997773
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1079334229
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1065353216
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1056964608
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3212836864
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1063339951
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1080732331
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1066192077
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057803469
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3213675725
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3181631243
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3198855851
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3184315597
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            3175926989
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1036831949
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        }
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 62,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 62,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 0,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 0,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.125
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          0.8
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.0
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          1.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 0.3,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": 2.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    },
+    {
+      "input": {
+        "count": 63,
+        "failed": 1,
+        "transparency": -1.0,
+        "pos": [
+          120.3,
+          -230.7
+        ],
+        "color": [
+          0.6,
+          0.4,
+          0.8,
+          -0.1
+        ],
+        "rotation": -1.3,
+        "scale": 40.3,
+        "type_id": 7
+      },
+      "expected": {
+        "return": 1,
+        "count": 63,
+        "entry": null
+      }
+    }
+  ],
+  "callers": [
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 0,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123047834,
+            3278295859
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1048576000,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1120423117,
+            3279608217
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1113404212,
+            3281246618
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1124204544,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 0,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 0,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123047834,
+            3278295859
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1048576000,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1120423117,
+            3279608217
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1113404212,
+            3281246618
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1124204544,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 4,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            3
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 0,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123047834,
+            3278295859
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1048576000,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1120423117,
+            3279608217
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            3
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1113404212,
+            3281246618
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1124204544,
+          "type_id": 3
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 16,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            7
+          ]
+        ],
+        "entry": null,
+        "lifecycle_bits": 981668463,
+        "kill_count": 0
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123064218,
+              3278287667
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            0,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123064218,
+            3278287667
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 0,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1123047834,
+              3278295859
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1048576000,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1123047834,
+            3278295859
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1048576000,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1120423117,
+              3279608217
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1109472051,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1120423117,
+            3279608217
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1109472051,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 0,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [
+          [
+            [
+              1113404212,
+              3281246618
+            ],
+            [
+              1058642330,
+              1053609165,
+              1061997773,
+              1060320051
+            ],
+            3215353446,
+            1124204544,
+            7
+          ]
+        ],
+        "entry": {
+          "pos_bits": [
+            1113404212,
+            3281246618
+          ],
+          "color_bits": [
+            1058642330,
+            1053609165,
+            1061997773,
+            1057971241
+          ],
+          "rotation_bits": 3215353446,
+          "scale_bits": 1124204544,
+          "type_id": 7
+        },
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 0,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 0.25,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 40.3,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    },
+    {
+      "input": {
+        "dt": 0.016,
+        "fpcw": 127,
+        "fade": 1,
+        "violence": 1,
+        "queued": 1,
+        "creatures": [
+          {
+            "lifecycle_stage": 0.1,
+            "flags": 20,
+            "health": 0.0,
+            "size": 130.0,
+            "type_id": 3,
+            "pos_x": 120.3,
+            "pos_y": -230.7,
+            "heading": -1.3,
+            "tint_r": 0.6,
+            "tint_g": 0.4,
+            "tint_b": 0.8,
+            "tint_a": 0.7
+          }
+        ]
+      },
+      "expected": {
+        "queue_calls": [],
+        "entry": null,
+        "lifecycle_bits": 3199347983,
+        "kill_count": 1
+      }
+    }
+  ]
+}

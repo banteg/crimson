@@ -1759,11 +1759,15 @@ class CreaturePool:
 
         # lifecycle_stage just crossed <= 0: bake a persistent corpse decal into the ground.
         if int(violence_disabled) == 0 and fx_queue_rotated is not None:
-            corpse_size = max(1.0, float(creature.size))
+            corpse_size = f32(creature.size)
+            corpse_half_size = x87_pc24_mul(corpse_size, 0.5)
             # Native uses a special fallback corpse id for ping-pong strip creatures.
             corpse_type_id = int(creature.type_id) if long_strip else 7
             ok = fx_queue_rotated.add(
-                top_left=Vec2(creature.pos.x - corpse_size * 0.5, creature.pos.y - corpse_size * 0.5),
+                top_left=Vec2(
+                    x87_pc24_sub(f32(creature.pos.x), corpse_half_size),
+                    x87_pc24_sub(f32(creature.pos.y), corpse_half_size),
+                ),
                 rgba=creature.tint,
                 rotation=float(creature.heading),
                 scale=corpse_size,

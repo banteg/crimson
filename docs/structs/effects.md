@@ -246,7 +246,14 @@ Notes:
 - The rotated queue is drawn in two passes: the first uses half alpha and a
   slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
 
-- `fx_queue_add_rotated` skips enqueuing when `terrain_texture_failed != 0` or the queue is full.
+- `fx_queue_add_rotated` permits 63 live entries. A full queue returns false;
+  `terrain_texture_failed != 0` returns true without writing, even when full.
+- The queued color retains the creature's tint. Alpha is multiplied by `0.8f`
+  for zero `cv_terrainBodiesTransparency`, otherwise by a separately rounded
+  `1.0f / transparency`, at gameplay x87 PC=24 precision. Corpse size is stored
+  unchanged, with top-left position computed by subtracting half that size.
+  Native queue and staged-death witnesses are recorded in the
+  [corpse queue proof](https://github.com/banteg/crimson/tree/master/tools/match/evidence/corpse-queue-2026-09-11).
 
 ## Effect entries (`effect_pool_pos_x` pool)
 

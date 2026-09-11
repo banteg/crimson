@@ -111099,6 +111099,7 @@
     "tools/match/evidence/bonus-pick-flow-graph-2026-09-11/verify_controls.py": "40f3b00922e98ca1a7a6863d9685a7a1ae7803cd3c8f4ae5f312f91e3e8d3c92",
     "tools/match/evidence/call-boundaries-2026-09-09/verify.py": "0553451c461615b3540739ee2cc1bfe207df8fd379ea0d83a5ff1ee5508fd1c9",
     "tools/match/evidence/call-boundaries-2026-09-09/verify_head_color.py": "8b8dd69ff02cd3d826601dd09bd43e08dece7e7f13b10df45fedaf40f34a619d",
+    "tools/match/evidence/corpse-queue-2026-09-11/verify.py": "5693594c85ab2790514a1717271824756b5f80deaea439b09fe4a2785a125980",
     "tools/match/evidence/creature-frame-selection-2026-09-11/fixtures.py": "e8f15bf30b977e113d4e9bb77aa76a39a8ca4354a5f72a50e9badaab6cdf9a6e",
     "tools/match/evidence/creature-frame-selection-2026-09-11/runner.py": "758abe5fda023232b916ae60ea498bf1abe583143453bf2873171adfaec81087",
     "tools/match/evidence/creature-frame-selection-2026-09-11/verify.py": "e67480f75e5a499474aeb87a8033f59b31d62ea398f3b90a4787b5de3b509845",

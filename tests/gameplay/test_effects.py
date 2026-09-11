@@ -175,7 +175,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
         terrain_bodies_transparency=0.0,
     )
     entry = q.entries[0]
-    assert_float_close(entry.color.a, 0.8)
+    assert entry.color.a == f32(0.8)
 
 
 def test_fx_queue_rotated_texture_failure_is_a_successful_noop() -> None:

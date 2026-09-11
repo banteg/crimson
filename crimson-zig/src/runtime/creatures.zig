@@ -4285,14 +4285,15 @@ fn tickDead(
         return;
     }
     if (state.gore_disabled == 0) {
-        const corpse_size = @max(1.0, creature.size);
+        const corpse_size = creature.size;
+        const corpse_half_size = native_math.pc24Mul(corpse_size, 0.5);
         const corpse_type_id = if (long_strip) creature.type_id else 7;
         const corpse_ok = terrain_fx.corpses.add(
             .{
-                .x = creature.pos.x - corpse_size * 0.5,
-                .y = creature.pos.y - corpse_size * 0.5,
+                .x = native_math.pc24Sub(creature.pos.x, corpse_half_size),
+                .y = native_math.pc24Sub(creature.pos.y, corpse_half_size),
             },
-            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+            .{ .r = creature.tint[0], .g = creature.tint[1], .b = creature.tint[2], .a = creature.tint[3] },
             creature.heading,
             corpse_size,
             corpse_type_id,
@@ -5244,6 +5245,46 @@ test "pool residue restores creature tint and hit flash" {
         .contact_damage = 0,
     });
     try std.testing.expectEqual(@as(f32, 0), pool.entries[slot].hit_flash_timer);
+}
+
+test "staged death matches native corpse tint size and queue backpressure" {
+    const Entry = struct { pos_bits: [2]u32, color_bits: [4]u32, rotation_bits: u32, scale_bits: u32, type_id: i32 };
+    const Creature = struct { lifecycle_stage: f32, flags: u32, health: f32, size: f32, type_id: i32, pos_x: f32, pos_y: f32, heading: f32, tint_r: f32, tint_g: f32, tint_b: f32, tint_a: f32 };
+    const Case = struct {
+        input: struct { dt: f32, violence: u8, queued: u8, creatures: []Creature },
+        expected: struct { entry: ?Entry, lifecycle_bits: u32, kill_count: i32 },
+    };
+    const parsed = try std.json.parseFromSlice(struct { callers: []Case }, std.testing.allocator, @embedFile("testdata/corpse-queue.json"), .{ .ignore_unknown_fields = true });
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 64), parsed.value.callers.len);
+    for (parsed.value.callers) |case| {
+        const row = case.input.creatures[0];
+        var effects: effects_mod.EffectPool = .{};
+        var pool: CreaturePool = .{ .effects = &effects };
+        var state = state_mod.GameplayState.init(1);
+        state.gore_disabled = case.input.violence;
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{ .x = 300, .y = 400 }, .health = 100 }};
+        var terrain: terrain_fx_mod.TerrainFxScratch = .{};
+        const initial_count: usize = if (case.input.queued != 0) 0 else 63;
+        terrain.corpses.count = initial_count;
+        pool.entries[0] = .{ .active = true, .hp = row.health, .lifecycle_stage = row.lifecycle_stage, .flags = row.flags, .size = row.size, .type_id = row.type_id, .pos = .{ .x = row.pos_x, .y = row.pos_y }, .heading = row.heading, .tint = .{ row.tint_r, row.tint_g, row.tint_b, row.tint_a } };
+        try pool.updateWithTerrainFx(&state, &players, case.input.dt, 1024, &bonuses, &terrain, 5);
+        try std.testing.expectEqual(case.expected.lifecycle_bits, @as(u32, @bitCast(pool.entries[0].lifecycle_stage)));
+        try std.testing.expectEqual(case.expected.kill_count, pool.kill_count);
+        try std.testing.expectEqual(initial_count + @intFromBool(case.expected.entry != null), terrain.corpses.count);
+        if (case.expected.entry) |expected| {
+            const entry = terrain.corpses.entries[initial_count];
+            const actual: Entry = .{
+                .pos_bits = .{ @bitCast(entry.top_left.x), @bitCast(entry.top_left.y) },
+                .color_bits = .{ @bitCast(entry.color.r), @bitCast(entry.color.g), @bitCast(entry.color.b), @bitCast(entry.color.a) },
+                .rotation_bits = @bitCast(entry.rotation),
+                .scale_bits = @bitCast(entry.scale),
+                .type_id = entry.creature_type_id,
+            };
+            try std.testing.expectEqual(expected, actual);
+        }
+    }
 }
 
 test "hit flash countdown matches native active frozen and corpse witnesses" {

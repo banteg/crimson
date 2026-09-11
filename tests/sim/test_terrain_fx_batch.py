@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.camera import CameraUpdate
+from crimson.math_parity import f32
 from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.terrain_fx import TerrainCorpseFx, TerrainDecalFx, TerrainFxBatch, TerrainFxScratch
@@ -24,9 +25,9 @@ def _terrain_batch() -> TerrainFxBatch:
         corpses=(
             TerrainCorpseFx(
                 top_left=Vec2(40.0, 44.0),
-                color=RGBA(1.0, 1.0, 1.0, 0.8),
+                color=RGBA(1.0, 1.0, 1.0, f32(0.8)),
                 rotation=0.5,
-                scale=1.2,
+                scale=f32(1.2),
                 creature_type_id=17,
             ),
         ),

@@ -22,6 +22,7 @@ from .math_parity import (
     f32_vec2,
     x87_pc24_add,
     x87_pc24_cos_mul,
+    x87_pc24_div,
     x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sin_mul,
@@ -630,18 +631,16 @@ class FxQueueRotated:
         if self._count >= self._max_count:
             return False
 
-        color = rgba
-        a = color.a
-        if terrain_bodies_transparency != 0.0:
-            a = a / float(terrain_bodies_transparency)
-        else:
-            a = a * 0.8
+        transparency = f32(terrain_bodies_transparency)
+        # Native divides first, then multiplies at gameplay PC=24 precision.
+        alpha_scale = x87_pc24_div(1.0, transparency) if transparency != 0.0 else f32(0.8)
+        a = x87_pc24_mul(f32(rgba.a), alpha_scale)
 
         entry = self._entries[self._count]
-        entry.top_left = top_left
-        entry.color = color.with_alpha(a)
-        entry.rotation = float(rotation)
-        entry.scale = float(scale)
+        entry.top_left = f32_vec2(top_left)
+        entry.color = RGBA(f32(rgba.r), f32(rgba.g), f32(rgba.b), a)
+        entry.rotation = f32(rotation)
+        entry.scale = f32(scale)
         entry.creature_type_id = int(creature_type_id)
 
         self._count += 1

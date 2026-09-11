@@ -362,13 +362,7 @@ pub const LiveRunner = struct {
                 );
             }
             for (step_result.terrain_fx.corpsesSlice()) |entry| {
-                _ = frame_terrain_fx.corpses.add(
-                    entry.top_left,
-                    entry.color,
-                    entry.rotation,
-                    entry.scale,
-                    entry.creature_type_id,
-                );
+                _ = frame_terrain_fx.corpses.append(entry);
             }
             self.accumulator = @max(0.0, self.accumulator - self.session.dt_nominal);
             ticks_advanced += 1;
@@ -643,6 +637,28 @@ test "live survival runner advances fixed ticks from frame time" {
     );
     try std.testing.expectEqual(@as(usize, 1), update.ticks_advanced);
     try std.testing.expectEqual(@as(usize, 1), runner.session.tick_index);
+}
+
+test "live frame keeps corpse tint after multiple simulation ticks" {
+    var runner = try LiveSurvivalRunner.init(.{});
+    runner.session.creatures.entries[0] = .{
+        .active = true,
+        .hp = 0,
+        .lifecycle_stage = 0.1,
+        .size = 40,
+        .type_id = 3,
+        .pos = .{ .x = 400, .y = 400 },
+        .tint = .{ 0.6, 0.4, 0.8, 0.7 },
+    };
+    const update = try runner.stepFrame(runner.session.dt_nominal * 2, .{});
+    try std.testing.expectEqual(@as(usize, 2), update.ticks_advanced);
+    const corpses = update.terrain_fx.corpsesSlice();
+    try std.testing.expectEqual(@as(usize, 1), corpses.len);
+    // Original queue witness: 0.7 * 0.8 at PC=24. Batching must not attenuate again.
+    try std.testing.expectEqual(@as(u32, 0x3f0f5c29), @as(u32, @bitCast(corpses[0].color.a)));
+    try std.testing.expectEqual(@as(f32, 0.6), corpses[0].color.r);
+    try std.testing.expectEqual(@as(f32, 0.4), corpses[0].color.g);
+    try std.testing.expectEqual(@as(f32, 0.8), corpses[0].color.b);
 }
 
 test "live runner snapshots restore deterministic session state" {
