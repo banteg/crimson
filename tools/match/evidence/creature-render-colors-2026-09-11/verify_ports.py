@@ -4,9 +4,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
-import math
 import shutil
-import struct
 import subprocess
 import sys
 from pathlib import Path
@@ -19,8 +17,8 @@ from tests.support.creature_draw_capture import capture_creature_draws
 GIT = shutil.which("git")
 ZIG = shutil.which("zig")
 assert GIT and ZIG
-BASELINE = "c8c9cda9922d15a5f95c00ca1247994dd52e51bc"
-WITNESSES = ROOT / "crimson-zig/src/runtime/testdata/creature-pass-order.json"
+BASELINE = "4e9ef68d2464228c4b67fd4db87bf0972f032a47"
+WITNESSES = ROOT / "crimson-zig/src/runtime/testdata/creature-render-colors.json"
 FUNCTIONS = (
     "drawCreatures",
     "drawCreatureHitFlashes",
@@ -64,40 +62,27 @@ def differences(witnesses, actual):
         if len(draws) != len(expected):
             failures.append({"case": case, "reason": "count", "actual": len(draws), "expected": len(expected)})
         for index, (native, draw) in enumerate(zip(expected, draws)):
-            fields = [name for name in ("pass", "index", "type_id", "frame") if native[name] != draw[name]]
-            sizes = struct.unpack("<2f", struct.pack("<2I", *native["quad_bits"][2:]))
-            for name, size in zip(("width", "height"), sizes, strict=True):
-                if not math.isclose(draw[name], size, rel_tol=1e-6 if native["pass"] == "shadow" else 0, abs_tol=0):
-                    fields.append(name)
+            fields = [name for name in ("pass", "index", "frame") if native[name] != draw[name]]
+            packed = native["packed_color"]
+            rgba = [(packed >> shift) & 255 for shift in (16, 8, 0, 24)]
+            # Native ZERO/INVSRCALPHA ignores source RGB; Raylib uses black.
+            if native["pass"] == "shadow":
+                rgba[:3] = [0, 0, 0]
+            if draw["rgba"] != rgba:
+                fields.append("rgba")
             if fields:
                 failures.append({"case": case, "draw": index, "fields": fields, "actual": draw, "expected": native})
     return failures
 
 
 def summarize(witnesses, draws, failures):
-    # Match dimensions by creature/pass independently of ordering failures.
-    size_failures = []
-    order_cases = []
-    for ordinal, (witness, records) in enumerate(zip(witnesses, draws, strict=True)):
-        expected = {(row["pass"], row["index"]): row for row in witness["expected"]}
-        if [(row["pass"], row["index"]) for row in records] != [
-            (row["pass"], row["index"]) for row in witness["expected"]
-        ]:
-            order_cases.append(ordinal)
-        for record in records:
-            native = expected[record["pass"], record["index"]]
-            sizes = struct.unpack("<2f", struct.pack("<2I", *native["quad_bits"][2:]))
-            if any(
-                not math.isclose(record[name], size, rel_tol=1e-6 if native["pass"] == "shadow" else 0, abs_tol=0)
-                for name, size in zip(("width", "height"), sizes, strict=True)
-            ):
-                size_failures.append({"case": ordinal, "pass": record["pass"], "index": record["index"]})
     return {
         "count": len(failures),
         "case_count": len({row["case"] for row in failures}),
-        "ordered_sequence_cases": order_cases,
-        "dimension_mismatches_aligned_by_creature": len(size_failures),
-        "dimension_mismatches_sha256": sha(json.dumps(size_failures).encode()),
+        "pass_counts": {
+            batch: sum(row.get("actual", {}).get("pass") == batch for row in failures)
+            for batch in ("shadow", "body", "flash")
+        },
         "all_differences_sha256": sha(json.dumps(failures).encode()),
         "first_five_differences": failures[:5],
     }
@@ -124,7 +109,10 @@ def main():
     previous = previous_python(out)
     for label, options in (("previous", {"module": previous}), ("current", {})):
         for size in (256, 512):
-            draws = [capture_creature_draws(row["input"], texture_size=size, **options) for row in witnesses]
+            draws = [
+                capture_creature_draws(row["input"], texture_size=size, include_color=True, **options)
+                for row in witnesses
+            ]
             failures = differences(witnesses, draws)
             assert bool(failures) == (label == "previous"), (label, size, failures[:1])
             python_results.append(
@@ -165,7 +153,7 @@ def main():
                 assert run.returncode == 0, run.stderr
                 draws = [[] for _ in witnesses]
                 for line in run.stdout.splitlines():
-                    case, batch, index, kind, frame, width, height = line.split()
+                    case, batch, index, kind, frame, width, height, r, g, b, a = line.split()
                     draws[int(case)].append(
                         {
                             "pass": batch,
@@ -174,6 +162,7 @@ def main():
                             "frame": int(frame),
                             "width": float(width),
                             "height": float(height),
+                            "rgba": [int(r), int(g), int(b), int(a)],
                         },
                     )
                 failures = differences(witnesses, draws)

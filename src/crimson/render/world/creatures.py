@@ -1,14 +1,66 @@
 from __future__ import annotations
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from ...creatures.anim import creature_anim_select_flash_frame, creature_anim_select_frame
+from ...creatures.anim import creature_anim_is_long_strip, creature_anim_select_flash_frame, creature_anim_select_frame
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
+from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...sim.world_defs import CREATURE_ANIM
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
+
+
+def creature_render_tint(
+    tint: RGBA,
+    *,
+    max_hp: float,
+    energizer_timer: float,
+    lifecycle_stage: float,
+    transition: float,
+) -> RGBA:
+    """Native body tint, including PC24 blend order and lifecycle fading."""
+    r, g, b, a = (f32(channel) for channel in tint)
+    energy = f32(energizer_timer)
+    life = f32(lifecycle_stage)
+    if energy > 0.0 and f32(max_hp) < 500.0:
+        blend = min(energy, 1.0)
+        inverse = x87_pc24_sub(1.0, blend)
+        half_blend = x87_pc24_mul(blend, 0.5)
+        r = x87_pc24_add(x87_pc24_mul(inverse, r), half_blend)
+        g = x87_pc24_add(x87_pc24_mul(inverse, g), half_blend)
+        b = x87_pc24_add(x87_pc24_mul(inverse, b), blend)
+        a = x87_pc24_add(x87_pc24_mul(inverse, a), blend)
+    if life < 0.0:
+        a = max(0.0, x87_pc24_add(a, x87_pc24_mul(life, f32(0.1))))
+    return RGBA(r, g, b, x87_pc24_mul(a, f32(transition)))
+
+
+def creature_shadow_alpha(
+    tint_alpha: float,
+    *,
+    flags: CreatureFlags,
+    lifecycle_stage: float,
+    transition: float,
+) -> float:
+    """Native shadow alpha before Grim2D packs it into a byte."""
+    alpha = x87_pc24_mul(f32(tint_alpha), f32(0.4))
+    life = f32(lifecycle_stage)
+    if life < 0.0:
+        fade = 0.5 if creature_anim_is_long_strip(flags) else f32(0.1)
+        alpha = max(0.0, x87_pc24_add(alpha, x87_pc24_mul(life, fade)))
+    return x87_pc24_mul(alpha, f32(transition))
+
+
+def creature_color_byte(channel: float) -> int:
+    """Grim2D truncates the scaled channel and keeps its low byte."""
+    return int(x87_pc24_mul(f32(channel), 255.0)) & 0xFF
+
+
+def creature_color_to_rl(tint: RGBA) -> rl.Color:
+    return rl.Color(*(creature_color_byte(channel) for channel in tint))
 
 
 def draw_creature_sprite(

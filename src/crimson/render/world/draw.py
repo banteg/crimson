@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId
-from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -24,7 +23,13 @@ from . import viewport
 from .bonuses import draw_bonus_hover_labels, draw_bonus_pickups
 from .constants import _RAD_TO_DEG, monster_vision_fade_alpha
 from .context import WorldRenderCtx
-from .creatures import draw_creature_sprite
+from .creatures import (
+    creature_color_byte,
+    creature_color_to_rl,
+    creature_render_tint,
+    creature_shadow_alpha,
+    draw_creature_sprite,
+)
 from .effects import draw_effect_pool, draw_particle_pool, draw_sprite_effect_pool
 from .overlays import draw_aim_circle, draw_clock_gauge, draw_direction_arrows
 from .profile_hooks import profile_pass
@@ -308,44 +313,31 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                     )
                     continue
 
-                tint_rgba = creature.tint
-
-                # Energizer: tint "weak" creatures blue-ish while active.
-                # Mirrors `creature_render_type` (0x00418b60) branch when
-                # `_bonus_energizer_timer > 0` and `max_health < 500`.
-                energizer_timer = float(frame.state.bonuses.energizer)
-                if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
-                    # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
-                    # Effect is full strength while timer >= 1 and fades out during the last second.
-                    t = energizer_timer
-                    if t >= 1.0:
-                        t = 1.0
-                    elif t < 0.0:
-                        t = 0.0
-                    tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
-
-                if lifecycle_stage < 0.0:
-                    # Mirrors the main-pass alpha fade when lifecycle_stage ramps negative.
-                    tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + lifecycle_stage * 0.1))
-
-                tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
-
                 # Native quad dimensions use the creature's actual size.
                 if texture.width <= 0:
                     continue
                 size_scale = float(creature.size) / (float(texture.width) / 8.0)
-                long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
-                    creature.flags & CreatureFlags.ANIM_LONG_STRIP
-                ) != 0
-
                 shadow_alpha = None
                 if shadow:
-                    # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
-                    shadow_a = float(creature.tint.a) * 0.4
-                    if lifecycle_stage < 0.0:
-                        shadow_a += lifecycle_stage * (0.5 if long_strip else 0.1)
-                        shadow_a = max(0.0, shadow_a)
-                    shadow_alpha = int(clamp(shadow_a * ctx.entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+                    shadow_alpha = creature_color_byte(
+                        creature_shadow_alpha(
+                            creature.tint.a,
+                            flags=creature.flags,
+                            lifecycle_stage=lifecycle_stage,
+                            transition=ctx.entity_alpha,
+                        ),
+                    )
+                    tint = rl.Color(0, 0, 0, shadow_alpha)
+                else:
+                    tint = creature_color_to_rl(
+                        creature_render_tint(
+                            creature.tint,
+                            max_hp=creature.max_hp,
+                            energizer_timer=frame.state.bonuses.energizer,
+                            lifecycle_stage=lifecycle_stage,
+                            transition=ctx.entity_alpha,
+                        ),
+                    )
 
                 draw_creature_sprite(
                     render_ctx,
@@ -391,7 +383,7 @@ def draw_creature_hit_flashes(
                 continue
             alpha = x87_pc24_mul(min(x87_pc24_mul(creature.hit_flash_timer, 5.0), 1.0), f32(ctx.entity_alpha))
             # grim_set_color_ptr truncates the scaled channel to a byte.
-            alpha_byte = int(x87_pc24_mul(alpha, 255.0)) & 0xFF
+            alpha_byte = creature_color_byte(alpha)
             draw_creature_sprite(
                 render_ctx,
                 texture,

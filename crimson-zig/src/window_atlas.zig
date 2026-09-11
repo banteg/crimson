@@ -218,12 +218,60 @@ pub fn creatureRenderFlashFrame(creature: creatures_runtime.CreatureState) ?Crea
     return creatureRenderFrame(flash);
 }
 
+/// Native body blend order, lifecycle fading, and transition at PC24.
+pub fn creatureRenderTint(
+    base_tint: [4]f32,
+    max_hp: f32,
+    energizer_timer: f32,
+    lifecycle_stage: f32,
+    transition: f32,
+) [4]f32 {
+    var tint = base_tint;
+    if (energizer_timer > 0.0 and max_hp < 500.0) {
+        const blend = @min(energizer_timer, @as(f32, 1.0));
+        const inverse = native_math.pc24Sub(@as(f32, 1.0), blend);
+        const half_blend = native_math.pc24Mul(blend, @as(f32, 0.5));
+        for (0..4) |channel| {
+            tint[channel] = native_math.pc24Add(
+                native_math.pc24Mul(inverse, tint[channel]),
+                if (channel < 2) half_blend else blend,
+            );
+        }
+    }
+    if (lifecycle_stage < 0.0) {
+        tint[3] = @max(@as(f32, 0.0), native_math.pc24Add(tint[3], native_math.pc24Mul(lifecycle_stage, @as(f32, 0.1))));
+    }
+    tint[3] = native_math.pc24Mul(tint[3], transition);
+    return tint;
+}
+
+/// Native shadow alpha before Grim2D packs it into a byte.
+pub fn creatureShadowAlpha(tint_alpha: f32, flags: u32, lifecycle_stage: f32, transition: f32) f32 {
+    var alpha = native_math.pc24Mul(tint_alpha, @as(f32, 0.4));
+    if (lifecycle_stage < 0.0) {
+        const fade: f32 = if (runtime_anim.creatureAnimIsLongStrip(flags)) 0.5 else 0.1;
+        alpha = @max(@as(f32, 0.0), native_math.pc24Add(alpha, native_math.pc24Mul(lifecycle_stage, fade)));
+    }
+    return native_math.pc24Mul(alpha, transition);
+}
+
+/// Grim2D truncates the scaled channel and keeps its low byte.
+pub fn creatureColorByte(channel: f32) u8 {
+    const scaled: i32 = @intFromFloat(native_math.pc24Mul(channel, @as(f32, 255.0)));
+    return @truncate(@as(u32, @bitCast(scaled)));
+}
+
+pub fn creatureColorBytes(tint: [4]f32) [4]u8 {
+    var result: [4]u8 = undefined;
+    for (tint, 0..) |channel, index| result[index] = creatureColorByte(channel);
+    return result;
+}
+
 /// Packed alpha from the native flash and Grim2D color-pointer paths at PC24.
 pub fn creatureFlashAlphaByte(timer: f32, transition: f32) u8 {
     const fade = @min(native_math.pc24Mul(timer, @as(f32, 5.0)), @as(f32, 1.0));
     const alpha = native_math.pc24Mul(fade, transition);
-    const channel: i32 = @intFromFloat(native_math.pc24Mul(alpha, @as(f32, 255.0)));
-    return @truncate(@as(u32, @bitCast(channel)));
+    return creatureColorByte(alpha);
 }
 
 pub const CreatureHitFlash = struct {
@@ -412,6 +460,65 @@ test "creature atlas frames match native PC24 witnesses" {
         try std.testing.expectEqual(witness.frame, creatureRenderFrame(creature).?.frame);
         try std.testing.expectEqual(witness.flash_frame, creatureRenderFlashFrame(creature).?.frame);
     }
+}
+
+test "creature body and shadow color words match native PC24 witnesses" {
+    const Creature = struct {
+        index: usize,
+        flags: u32,
+        lifecycle_stage: f32,
+        max_health: f32,
+        tint_r: f32,
+        tint_g: f32,
+        tint_b: f32,
+        tint_a: f32,
+    };
+    const Draw = struct { pass: enum { shadow, body, flash }, index: usize, rgba_bits: [4]u32, packed_color: u32 };
+    const Case = struct {
+        input: struct { name: []const u8, energizer: f32, transition: f32, creatures: []Creature },
+        expected: []Draw,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { fpcw: u16, cases: []Case },
+        std.testing.allocator,
+        @embedFile("runtime/testdata/creature-render-colors.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(u16, 0x7F), parsed.value.fpcw);
+    try std.testing.expectEqual(@as(usize, 40), parsed.value.cases.len);
+    var checked: usize = 0;
+    for (parsed.value.cases) |case| {
+        for (case.expected) |draw| {
+            if (draw.pass == .flash) continue;
+            errdefer std.debug.print("native creature color {s}, index {d}, pass {s}\n", .{ case.input.name, draw.index, @tagName(draw.pass) });
+            const creature = for (case.input.creatures) |creature| {
+                if (creature.index == draw.index) break creature;
+            } else return error.MissingCreature;
+            if (draw.pass == .body) {
+                const tint = creatureRenderTint(
+                    .{ creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a },
+                    creature.max_health,
+                    case.input.energizer,
+                    creature.lifecycle_stage,
+                    case.input.transition,
+                );
+                for (tint, draw.rgba_bits) |channel, bits| {
+                    try std.testing.expectEqual(bits, @as(u32, @bitCast(channel)));
+                }
+                const rgba = creatureColorBytes(tint);
+                const packed_color = (@as(u32, rgba[3]) << 24) | (@as(u32, rgba[0]) << 16) |
+                    (@as(u32, rgba[1]) << 8) | @as(u32, rgba[2]);
+                try std.testing.expectEqual(draw.packed_color, packed_color);
+            } else {
+                const alpha = creatureShadowAlpha(creature.tint_a, creature.flags, creature.lifecycle_stage, case.input.transition);
+                try std.testing.expectEqual(draw.rgba_bits[3], @as(u32, @bitCast(alpha)));
+                try std.testing.expectEqual(@as(u8, @truncate(draw.packed_color >> 24)), creatureColorByte(alpha));
+            }
+            checked += 1;
+        }
+    }
+    try std.testing.expectEqual(@as(usize, 2160), checked);
 }
 
 test "creature flash selection and packed alpha match native witnesses" {

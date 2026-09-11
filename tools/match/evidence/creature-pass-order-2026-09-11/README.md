@@ -59,9 +59,10 @@ the unrelated overlay pass and perk query. The regression checks exact creature
 and pass sequence, atlas frame, and body/flash dimensions. Shadow dimensions
 allow a relative tolerance of `1e-6` for the existing backend arithmetic.
 
-The Zig observer compiles **nine unchanged function bodies** extracted from
+The Zig observer compiles **eight current function bodies** extracted from
 `window_main.zig`, including the species loops, flash loop, atlas drawing,
-tint and conversion helpers. It imports the actual atlas, animation, perk and
+conversion helpers (the immutable baseline also extracts its former local
+tint helper). It imports the actual atlas, animation, perk and
 state modules. [ports.zig](ports.zig) provides only the state envelope,
 texture lookup and drawing boundary needed to record those functions. The
 renderer reaches the production atlas-rectangle calculation before the draw
@@ -91,6 +92,10 @@ GPU pixels, exact shadow geometry, tint/alpha arithmetic, rotation conversion,
 or lifecycle timing across simulation frames. Native's ZERO/INVSRCALPHA shadow
 blend is represented by the ports' existing black-alpha silhouette; alpha-channel
 and backend rasterization equivalence are not claimed.
+
+The subsequent [colour audit](../creature-render-colors-2026-09-11/README.md)
+checks native float words and packed channels. The port receipts here have
+been refreshed after that correction; the native witnesses are unchanged.
 
 ## Reproduce
 

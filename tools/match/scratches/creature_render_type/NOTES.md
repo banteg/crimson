@@ -1,5 +1,16 @@
 # `creature_render_type`
 
+## Native sprite colours (2026-09-11)
+
+The [colour audit](../../evidence/creature-render-colors-2026-09-11/README.md)
+records 4,320 quads from 40 native/C++ comparisons and executes Grim2D packing
+for 375 unique colour inputs. Both ports now preserve PC24 blend/fade order
+and truncate scaled channels as native does. Exact body/shadow float words
+and submitted colour bytes pass; immutable old-port controls differ in all
+40 cases. This changes port code only and leaves the canonical C++ source,
+79.737705% alignment and 139/0/5 references unchanged. The proof covers finite
+fixture arithmetic and CPU submissions; it does not certify GPU pixels.
+
 ## Native sprite passes and dimensions (2026-09-11)
 
 The [pass-order proof](../../evidence/creature-pass-order-2026-09-11/README.md)

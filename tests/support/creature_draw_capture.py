@@ -15,7 +15,7 @@ from tests.render.test_world_draw_order import _render_ctx_for_creatures, _Textu
 from tests.support.factories import make_creature_state
 
 
-def capture_creature_draws(case, *, module=world_draw, texture_size=512):
+def capture_creature_draws(case, *, module=world_draw, texture_size=512, include_color=False):
     creatures = []
     indices = {}
     for row in case["creatures"]:
@@ -45,6 +45,7 @@ def capture_creature_draws(case, *, module=world_draw, texture_size=512):
     )
     additive = False
     active_index = None
+    shadow_pending = False
     active_type = None
     drawn = []
     sprite = module.draw_creature_sprite
@@ -60,24 +61,29 @@ def capture_creature_draws(case, *, module=world_draw, texture_size=512):
         additive = False
 
     def draw_sprite(*args, **kwargs):
-        nonlocal active_index, active_type
+        nonlocal active_index, active_type, shadow_pending
+        shadow_pending = kwargs.get("shadow", False)
         active_index = indices[kwargs["pos"]]
         active_type = int(kwargs["type_id"])
         return sprite(*args, **kwargs)
 
     def draw_texture(_texture, src, dst, _origin, _rotation, tint):
+        nonlocal shadow_pending
         assert active_index is not None
         cell = texture_size / 8
         drawn.append(
             {
                 "index": active_index,
                 "type_id": active_type,
-                "pass": "flash" if additive else "shadow" if (tint.r, tint.g, tint.b) == (0, 0, 0) else "body",
+                "pass": "flash" if additive else "shadow" if shadow_pending else "body",
                 "frame": int(src.x / cell) + int(src.y / cell) * 8,
                 "width": dst.width,
                 "height": dst.height,
             },
         )
+        if include_color:
+            drawn[-1]["rgba"] = [tint.r, tint.g, tint.b, tint.a]
+        shadow_pending = False
 
     with (
         patch.object(module, "draw_creature_overlays"),

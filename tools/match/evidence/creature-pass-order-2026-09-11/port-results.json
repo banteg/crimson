@@ -2,13 +2,13 @@
   "baseline_commit": "c8c9cda9922d15a5f95c00ca1247994dd52e51bc",
   "witnesses_sha256": "caddb6954856abfebbd1e1172ee8a78c1174b0c3d1d1b1eede1d50b618ef3c01",
   "files": {
-    "tools/match/evidence/creature-pass-order-2026-09-11/verify_ports.py": "d6564dbd593ee2b15e22c03ac1ce97d964e16b6fb4ff3da97bae9ea68daa8376",
+    "tools/match/evidence/creature-pass-order-2026-09-11/verify_ports.py": "8bd8c7b12ebfce4091abe0a8aecb617af8dce8e0b4efaee88ca04e90dfb17aad",
     "tools/match/evidence/creature-pass-order-2026-09-11/ports.zig": "6fa7aba50da574b353052dfade2318d58080d3067e035927490a0f60366377d7",
-    "tests/support/creature_draw_capture.py": "2e17912640954cdd337eb7792b63ccf4fa351444a1d615532b41a51e4975f5e8",
-    "src/crimson/render/world/draw.py": "7fd2ad38732c8969c909eae4568bbcf85d578290e94dcf588f3ed321b15e5b44",
-    "src/crimson/render/world/creatures.py": "75e2d77db4050db769d184a1684dc0fc3eced954a01a6e4c39140a767b941fbc",
-    "crimson-zig/src/window_main.zig": "bb4479f33756ab141657a7fb9f1f0d0a7c4199627869d1679797e40ede2746f5",
-    "crimson-zig/src/window_atlas.zig": "ab8fbadce7bd518dd9e1d17662722571cccfdf4b20cfaeaa709a8194761a9905",
+    "tests/support/creature_draw_capture.py": "ea8890382a9f889f78d7caa7794a0cd8f36c08e5f7ae6a44c545abbb5560c225",
+    "src/crimson/render/world/draw.py": "d2cd54c141c8bfa83c8f55f32477d6e0d092831e4614fd40a4c0dcdb1d4d27cb",
+    "src/crimson/render/world/creatures.py": "064a9356216939146ae166ff85c9b32d29f16acac23326f755123b405492f6a1",
+    "crimson-zig/src/window_main.zig": "f7c6e534202ff6232687721caef150c572c2dd0dfd74a0d18d32b051927b5ebd",
+    "crimson-zig/src/window_atlas.zig": "d45e4797ba399c23df293bc367a131d96160ab66ba556fed21f382f42d4efd03",
     "crimson-zig/src/runtime/anim.zig": "b54b1830a58b2123ccf4915f60eb08d50ee1847f43602871c350be48d65b2c9c",
     "crimson-zig/src/runtime/native_math.zig": "cb9fa2c0a19a0142b42186d0e415c79065d8a20fe449ccafd1c44d52d0930df8"
   },
@@ -26,9 +26,8 @@
       "toRlVec": "9af0384617a791461fab5f5ef1f3ccf4f66cd26e4a63631b1c552cbb25cadaa4"
     },
     "current": {
-      "drawCreatures": "47f526070e8c3b8e2050150f6960d1125d1842df3c25eff86ebaa3b33431532f",
+      "drawCreatures": "a8e5a04a10a389501db06f4b2e49ce74b9653c05be4ca03ed09979dc7cc36eca",
       "drawCreatureHitFlashes": "0892e7da817c4544648a3d3f57f0f106536e4adceddc267787bbdfea1c402536",
-      "creatureRenderTint": "65a6bfb1dd85e81d6548cf6006c7212192fb4fb445fe902532f5ea41c8017d15",
       "drawAtlasFrameCenteredRotated": "1ccf6d4c047541c2218569e72a73655a58b43bc5cf974181301e267e207d6e0f",
       "radiansToDegrees": "28c2e321fb184951db64dff03b46e94581f211a4a49db5d9f27480a0271f2d5a",
       "colorWithAlpha": "2889730768562ed538443e0cdb3cf46366452aecdf28ebd0308e9de1cd8a7752",
@@ -1024,7 +1023,7 @@
       "texture_size": 256,
       "draws": 1056,
       "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
-      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "source_sha256": "2a4c70b94e1a22fe0d6ec0bfa6a8d435c05e2b205eb5ed2b056a765e84b19e12",
       "differences": {
         "count": 0,
         "case_count": 0,
@@ -1041,7 +1040,7 @@
       "texture_size": 512,
       "draws": 1056,
       "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
-      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "source_sha256": "2a4c70b94e1a22fe0d6ec0bfa6a8d435c05e2b205eb5ed2b056a765e84b19e12",
       "differences": {
         "count": 0,
         "case_count": 0,
@@ -1058,7 +1057,7 @@
       "texture_size": 256,
       "draws": 1056,
       "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
-      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "source_sha256": "2a4c70b94e1a22fe0d6ec0bfa6a8d435c05e2b205eb5ed2b056a765e84b19e12",
       "differences": {
         "count": 0,
         "case_count": 0,
@@ -1075,7 +1074,7 @@
       "texture_size": 512,
       "draws": 1056,
       "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
-      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "source_sha256": "2a4c70b94e1a22fe0d6ec0bfa6a8d435c05e2b205eb5ed2b056a765e84b19e12",
       "differences": {
         "count": 0,
         "case_count": 0,

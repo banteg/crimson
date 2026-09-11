@@ -62,6 +62,21 @@ Python bodies to 16–128 pixels or tie their dimensions to atlas resolution.
 Both ports preserve this ordering, including zero-alpha shadow submissions.
 See the [native pass-order and dimension audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-pass-order-2026-09-11/README.md).
 
+## Body and shadow colour arithmetic
+
+For positive Energizer time and `max_health < 500`, the body tint blends toward
+`(0.5, 0.5, 1, 1)` as `(1 - t) * base + t * target`, with `t` capped at 1.
+A negative lifecycle then adds `lifecycle_stage * 0.1` to alpha and clamps the
+result to zero. Shadow alpha starts at `tint_a * 0.4`; negative lifecycle adds
+`lifecycle_stage * 0.5` for long strips or `* 0.1` for short strips, with the
+same lower clamp. Transition alpha is multiplied last in both passes.
+
+The ports round each arithmetic operation at gameplay PC24 and pack each
+channel by truncating `channel * 255` and keeping its low byte. Without
+Energizer or corpse fading, tint `(0.8, 0.7, 0.6, 0.9)` at transition 0.8 becomes `(204, 178, 153, 183)`.
+See the [native colour audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-render-colors-2026-09-11/README.md)
+for exact float words, packed bytes, old-port controls and proof limits.
+
 ## Hit flash with violence disabled
 
 When `violence_disabled` is nonzero, each species' body batch is followed by
