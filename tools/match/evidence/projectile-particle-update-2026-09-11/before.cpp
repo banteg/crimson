@@ -1224,7 +1224,6 @@ extern "C" void projectile_update(void)
                 *(projectile_vec2_t *)&particle->position;
             projectile_vec2_t &particle_velocity =
                 *(projectile_vec2_t *)&particle->velocity;
-            float &angle = particle->angle;
             unsigned char style_id = particle->style_id;
             if (style_id == 8) {
                 particle->intensity -= frame_dt * 0.11f;
@@ -1236,11 +1235,15 @@ extern "C" void projectile_update(void)
                             * 0.55f
                             * particle->intensity;
                     } else {
-                        projectile_vec2_t movement =
-                            frame_dt * particle_velocity * particle->intensity;
+                        float move_x = frame_dt * particle->velocity.x;
+                        vec2f_t movement = {
+                            move_x * particle->intensity,
+                            frame_dt * particle->velocity.y
+                                * particle->intensity,
+                        };
                         vec2_add(
                             &particle->position,
-                            (vec2f_t *)&movement,
+                            &movement,
                             3.0f);
                     }
                 }
@@ -1248,14 +1251,20 @@ extern "C" void projectile_update(void)
                 particle->intensity -= frame_dt * 0.9f;
                 particle->spin += frame_dt;
                 if (particle->intensity <= 0.15f) {
-                    particle_position +=
-                        frame_dt * particle_velocity * 2.5f * 0.15f;
+                    float move_x = frame_dt * particle->velocity.x;
+                    particle->position.x += move_x * 2.5f * 0.15f;
+                    particle->position.y += frame_dt * particle->velocity.y
+                        * 2.5f * 0.15f;
                 } else {
-                    projectile_vec2_t movement =
-                        frame_dt * particle_velocity * 2.5f * particle->intensity;
+                    float move_x = frame_dt * particle->velocity.x;
+                    vec2f_t movement = {
+                        move_x * 2.5f * particle->intensity,
+                        frame_dt * particle->velocity.y * 2.5f
+                            * particle->intensity,
+                    };
                     vec2_add(
                         &particle->position,
-                        (vec2f_t *)&movement,
+                        &movement,
                         3.0f);
                 }
             }
@@ -1285,33 +1294,33 @@ extern "C" void projectile_update(void)
                         turn_delta *= particle->intensity;
                         turn_delta *= frame_dt;
                         turn_delta *= 1.96f;
-                        angle -= turn_delta;
+                        particle->angle -= turn_delta;
                         particle->velocity.x =
-                            (float)cos(angle) * 82.0f;
+                            (float)cos(particle->angle) * 82.0f;
                         particle->velocity.y =
-                            (float)sin(angle) * 82.0f;
+                            (float)sin(particle->angle) * 82.0f;
                     } else if (style_id == 8) {
                         int turn = crt_rand() % 100 - 50;
                         float turn_delta = (float)turn * 0.06f;
                         turn_delta *= particle->intensity;
                         turn_delta *= frame_dt;
                         turn_delta *= 1.1f;
-                        angle -= turn_delta;
+                        particle->angle -= turn_delta;
                         particle->velocity.x =
-                            (float)cos(angle) * 62.0f;
+                            (float)cos(particle->angle) * 62.0f;
                         particle->velocity.y =
-                            (float)sin(angle) * 62.0f;
+                            (float)sin(particle->angle) * 62.0f;
                     } else {
                         int turn = crt_rand() % 100 - 50;
                         float turn_delta = (float)turn * 0.06f;
                         turn_delta *= particle->intensity;
                         turn_delta *= frame_dt;
                         turn_delta *= 1.1f;
-                        angle -= turn_delta;
+                        particle->angle -= turn_delta;
                         particle->velocity.x =
-                            (float)cos(angle) * 82.0f;
+                            (float)cos(particle->angle) * 82.0f;
                         particle->velocity.y =
-                            (float)sin(angle) * 82.0f;
+                            (float)sin(particle->angle) * 82.0f;
                     }
                 }
                 if (particle->intensity <= 1.0f) {

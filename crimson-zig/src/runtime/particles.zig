@@ -142,26 +142,28 @@ pub const ParticlePool = struct {
             if (!entry.active) continue;
             const style = entry.style_id;
 
-            if (style == ParticleStyleId.bubblegun) {
-                entry.intensity = narrowF32(entry.intensity - dt_f32 * 0.11);
-                entry.spin = narrowF32(entry.spin + dt_f32 * 5.0);
-                var move_scale = entry.intensity;
-                if (move_scale <= 0.15) {
-                    move_scale = narrowF32(move_scale * 0.55);
-                }
-                const move = entry.vel.mul(narrowF32(dt_f32 * move_scale));
-                entry.pos = .{
-                    .x = narrowF32(entry.pos.x + move.x),
-                    .y = narrowF32(entry.pos.y + move.y),
+            const bubblegun = style == ParticleStyleId.bubblegun;
+            const decay: f32 = if (bubblegun) 0.11 else 0.9;
+            entry.intensity = native_math.pc24Sub(entry.intensity, native_math.pc24Mul(dt_f32, decay));
+            entry.spin = native_math.pc24Add(entry.spin, if (bubblegun) native_math.pc24Mul(dt_f32, @as(f32, 5.0)) else dt_f32);
+            if (!bubblegun or entry.render_flag) {
+                // The SDK vector chain multiplies dt into velocity first,
+                // rounding each operation before adding the position.
+                var move: state_mod.Vec2 = .{
+                    .x = native_math.pc24Mul(dt_f32, entry.vel.x),
+                    .y = native_math.pc24Mul(dt_f32, entry.vel.y),
                 };
-            } else {
-                entry.intensity = narrowF32(entry.intensity - dt_f32 * 0.9);
-                entry.spin = narrowF32(entry.spin + dt_f32);
-                const move_scale = narrowF32(@max(entry.intensity, 0.15) * 2.5);
-                const move = entry.vel.mul(narrowF32(dt_f32 * move_scale));
+                if (!bubblegun or entry.intensity <= 0.15) {
+                    const scale: f32 = if (bubblegun) 0.55 else 2.5;
+                    move.x = native_math.pc24Mul(move.x, scale);
+                    move.y = native_math.pc24Mul(move.y, scale);
+                }
+                const intensity = if (bubblegun) entry.intensity else @max(entry.intensity, 0.15);
+                move.x = native_math.pc24Mul(move.x, intensity);
+                move.y = native_math.pc24Mul(move.y, intensity);
                 entry.pos = .{
-                    .x = narrowF32(entry.pos.x + move.x),
-                    .y = narrowF32(entry.pos.y + move.y),
+                    .x = native_math.pc24Add(entry.pos.x, move.x),
+                    .y = native_math.pc24Add(entry.pos.y, move.y),
                 };
             }
 
@@ -197,28 +199,22 @@ pub const ParticlePool = struct {
 
             if (entry.render_flag) {
                 const jitter_caller = switch (style) {
-                    .flamethrower, .blow_torch, .hr_flamer => rng_callers.projectile_update_particle_jitter_flamethrower,
+                    .flamethrower => rng_callers.projectile_update_particle_jitter_flamethrower,
+                    .blow_torch, .hr_flamer => rng_callers.projectile_update_particle_jitter_alt,
                     .bubblegun => rng_callers.projectile_update_particle_jitter_bubblegun,
                 };
-                const jitter_base = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(jitter_caller) % 100)) - 50)) * 0.06;
-                var jitter = jitter_base * @max(entry.intensity, 0.0) * dt_f32;
-                var speed: f32 = 82.0;
-                if (style == ParticleStyleId.flamethrower) {
-                    jitter *= 1.96;
-                    speed = 82.0;
-                } else if (style == ParticleStyleId.bubblegun) {
-                    jitter *= 1.1;
-                    speed = 62.0;
-                } else {
-                    jitter *= 1.1;
-                    speed = 82.0;
-                }
-                entry.angle -= jitter;
-                entry.vel = runtime_helpers.directionFromAngle(entry.angle).mul(speed);
+                const turn: f32 = @floatFromInt(@as(i32, @intCast(state.rng.randTagged(jitter_caller) % 100)) - 50);
+                var jitter = native_math.pc24Mul(turn, @as(f32, 0.06));
+                jitter = native_math.pc24Mul(jitter, entry.intensity);
+                jitter = native_math.pc24Mul(jitter, dt_f32);
+                const turn_scale: f32 = if (style == .flamethrower) 1.96 else 1.1;
+                jitter = native_math.pc24Mul(jitter, turn_scale);
+                entry.angle = native_math.pc24Sub(entry.angle, jitter);
+                entry.vel = nativeParticleVelocity(entry.angle, if (bubblegun) 62.0 else 82.0);
             }
 
             const alpha = std.math.clamp(entry.intensity, 0.0, 1.0);
-            const shade = 1.0 - @max(entry.intensity, 0.0) * 0.95;
+            const shade = native_math.pc24Sub(@as(f32, 1.0), native_math.pc24Mul(entry.intensity, @as(f32, 0.95)));
             entry.age = alpha;
             entry.scale_x = shade;
             entry.scale_y = shade;
@@ -396,4 +392,116 @@ test "particle spawn math keeps native x87 operation boundaries" {
     try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x41effffa))), slow.x);
     try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x3cdd2f18))), slow.y);
     try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x3d4ccccc))), nativeParticleSpin(5));
+}
+
+test "particle update matches native no-hit trajectories and RNG callers" {
+    // Regenerated from native projectile_update by the matching evidence package.
+    const Sample = struct {
+        index: usize,
+        active: u8 = 1,
+        render: u8,
+        x: f32,
+        y: f32,
+        vx: f32,
+        vy: f32,
+        sx: f32 = 0,
+        sy: f32 = 0,
+        sz: f32 = 0,
+        age: f32 = 0,
+        intensity: f32,
+        angle: f32,
+        spin: f32,
+        style: i32,
+        target: i32,
+    };
+    const Witness = struct {
+        input: struct { dt: f32, rng_seed: u32, particles: []Sample },
+        particles: []Sample,
+        rng_state: u32,
+        draws: []u32,
+        rng_callers: []u32,
+    };
+    const Trace = struct {
+        const Self = @This();
+
+        records: [128]spawn_mod.Crand.TraceDraw = undefined,
+        count: usize = 0,
+        fn record(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx.?));
+            self.records[self.count] = draw;
+            self.count += 1;
+        }
+    };
+    const parsed = try std.json.parseFromSlice(
+        []Witness,
+        std.testing.allocator,
+        @embedFile("testdata/particle-update.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 80), parsed.value.len);
+    for (parsed.value) |witness| {
+        var state = state_mod.GameplayState.init(witness.input.rng_seed);
+        var trace: Trace = .{};
+        state.rng.setTraceSink(&trace, Trace.record, true);
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{} }};
+        var creatures: creatures_mod.CreaturePool = .{};
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var sprites: effects_mod.SpriteEffectPool = .{};
+        var terrain: terrain_fx_mod.TerrainFxScratch = .{};
+        var pool: ParticlePool = .{};
+        for (witness.input.particles) |item| {
+            pool.entries[item.index] = .{
+                .active = true,
+                .render_flag = item.render != 0,
+                .pos = .{ .x = item.x, .y = item.y },
+                .vel = .{ .x = item.vx, .y = item.vy },
+                .scale_x = 0,
+                .scale_y = 0,
+                .scale_z = 0,
+                .age = 0,
+                .intensity = item.intensity,
+                .angle = item.angle,
+                .spin = item.spin,
+                .style_id = @enumFromInt(item.style),
+                .target_id = item.target,
+            };
+        }
+        pool.update(&state, &players, &creatures, &bonuses, &sprites, &terrain, witness.input.dt, 1024.0);
+        for (witness.particles) |expected| {
+            const entry = pool.entries[expected.index];
+            const actual: Sample = .{
+                .index = expected.index,
+                .active = @intFromBool(entry.active),
+                .render = @intFromBool(entry.render_flag),
+                .x = entry.pos.x,
+                .y = entry.pos.y,
+                .vx = entry.vel.x,
+                .vy = entry.vel.y,
+                .sx = entry.scale_x,
+                .sy = entry.scale_y,
+                .sz = entry.scale_z,
+                .age = entry.age,
+                .intensity = entry.intensity,
+                .angle = entry.angle,
+                .spin = entry.spin,
+                .style = @intFromEnum(entry.style_id),
+                .target = entry.target_id,
+            };
+            inline for (std.meta.fields(Sample)) |field| {
+                if (field.type == f32) {
+                    try std.testing.expectEqual(@as(u32, @bitCast(@field(expected, field.name))), @as(u32, @bitCast(@field(actual, field.name))));
+                } else {
+                    try std.testing.expectEqual(@field(expected, field.name), @field(actual, field.name));
+                }
+            }
+        }
+        try std.testing.expectEqual(witness.rng_state, state.rng.state);
+        try std.testing.expectEqual(witness.draws.len, trace.count);
+        for (trace.records[0..trace.count], witness.draws, witness.rng_callers) |record, value, caller| {
+            try std.testing.expectEqual(value, record.value_15);
+            try std.testing.expectEqual(caller, @intFromEnum(record.caller.?));
+        }
+        try std.testing.expect(!state.rng.missing_trace_caller);
+    }
 }

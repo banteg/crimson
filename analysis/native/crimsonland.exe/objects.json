@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "c1f409c94aa743dcbb5118b046be145e740ad7c1a71f684b535e119b7b80b19f",
+  "audit_digest": "9ef977c20b8a8a769f3d25a3529d1992fafa266efddbf92d064f072f093cac45",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -53585,7 +53585,7 @@
         {
           "path": "tools/match/scratches/projectile_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1"
+          "sha256": "eaa8170a3090ebbfa1e7ae61fec4a9d63f49be48ad692247b988d36d3b569a93"
         },
         {
           "path": "tools/match/scratches/projectile_update/scratch.conf",
@@ -53641,23 +53641,23 @@
           "canonical_config_sha256": "f3588b2bda9b53ccf6f57e3c913040e47f20f6193883cc4841f4fb53e2604e50",
           "canonical_scratch": "tools/match/scratches/projectile_update",
           "canonical_source": "tools/match/scratches/projectile_update/scratch.cpp",
-          "canonical_source_sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1",
+          "canonical_source_sha256": "eaa8170a3090ebbfa1e7ae61fec4a9d63f49be48ad692247b988d36d3b569a93",
           "effective_end": 4336745,
           "end": 4336745,
-          "experiment_epoch": "da28d9b16275c56850a8232766dde56b6bd016cd3af41237f617ddc4294167db",
+          "experiment_epoch": "8e13d447975124bd6300dc4ed6a35caa3a297bf51c87505f5d332a4a82666f2b",
           "function": "projectile_update",
           "match": {
             "body_byte_exact": false,
-            "candidate_instructions": 2183,
-            "masked_mismatches": 13,
-            "masked_ok": 426,
+            "candidate_instructions": 2187,
+            "masked_mismatches": 10,
+            "masked_ok": 429,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
             "prefix_instructions": 0,
-            "ratio": 0.6288189694482444,
+            "ratio": 0.6605922551252847,
             "state": "wip",
             "target_instructions": 2203
           },
@@ -53667,25 +53667,25 @@
       ],
       "match": {
         "body_byte_exact": false,
-        "candidate_instructions": 2183,
-        "masked_mismatches": 13,
-        "masked_ok": 426,
+        "candidate_instructions": 2187,
+        "masked_mismatches": 10,
+        "masked_ok": 429,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
         "prefix_instructions": 0,
-        "ratio": 0.6288189694482444,
+        "ratio": 0.6605922551252847,
         "state": "wip",
         "target_instructions": 2203
       },
       "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
       "object_function_symbol": "_projectile_update",
-      "object_sha256": "ed87d4aeadb4b96a765f943ed4597645c74e2f64037b62a4c3565abb5950e71c",
+      "object_sha256": "722147f27b88efd94625bf7db1506ed10cd6628e4904ce935ee6e3997cf190da",
       "scratch": "tools/match/scratches/projectile_update",
       "source": "tools/match/scratches/projectile_update/scratch.cpp",
-      "source_sha256": "7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1",
+      "source_sha256": "eaa8170a3090ebbfa1e7ae61fec4a9d63f49be48ad692247b988d36d3b569a93",
       "target_size": 8409,
       "translation_unit": {
         "kind": "isolated",

@@ -22,6 +22,7 @@ from .math_parity import (
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_mul,
+    x87_pc24_mul_chain,
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
@@ -258,28 +259,25 @@ class ParticlePool:
 
             style = int(entry.style_id) & 0xFF
 
-            if style == int(ParticleStyleId.BUBBLEGUN):
-                entry.intensity = f32(float(entry.intensity) - float(dt) * 0.11)
-                entry.spin = f32(float(entry.spin) + float(dt) * 5.0)
-                move_scale = float(entry.intensity)
-                if move_scale <= 0.15:
-                    move_scale *= 0.55
-                move = entry.vel * (float(dt) * float(move_scale))
+            bubblegun = style == int(ParticleStyleId.BUBBLEGUN)
+            decay = f32(0.11 if bubblegun else 0.9)
+            entry.intensity = x87_pc24_sub(entry.intensity, x87_pc24_mul(dt, decay))
+            entry.spin = x87_pc24_add(entry.spin, x87_pc24_mul(dt, 5.0) if bubblegun else dt)
+            if not bubblegun or entry.render_flag:
+                # The SDK vector chain multiplies dt into velocity first, with
+                # PC=24 rounding at each operation before adding the position.
+                if bubblegun:
+                    factors = (entry.intensity,) if entry.intensity > f32(0.15) else (f32(0.55), entry.intensity)
+                else:
+                    factors = (2.5, max(entry.intensity, f32(0.15)))
+                move_x = x87_pc24_mul_chain(dt, entry.vel.x, *factors)
+                move_y = x87_pc24_mul_chain(dt, entry.vel.y, *factors)
                 entry.pos = Vec2(
-                    f32(float(entry.pos.x) + float(move.x)),
-                    f32(float(entry.pos.y) + float(move.y)),
-                )
-            else:
-                entry.intensity = f32(float(entry.intensity) - float(dt) * 0.9)
-                entry.spin = f32(float(entry.spin) + float(dt))
-                move_scale = max(float(entry.intensity), 0.15) * 2.5
-                move = entry.vel * (float(dt) * float(move_scale))
-                entry.pos = Vec2(
-                    f32(float(entry.pos.x) + float(move.x)),
-                    f32(float(entry.pos.y) + float(move.y)),
+                    x87_pc24_add(entry.pos.x, move_x),
+                    x87_pc24_add(entry.pos.y, move_y),
                 )
 
-            alive = entry.intensity > (0.0 if style == int(ParticleStyleId.FLAMETHROWER) else 0.8)
+            alive = entry.intensity > (0.0 if style == int(ParticleStyleId.FLAMETHROWER) else f32(0.8))
             if not alive:
                 entry.active = False
                 expired.append(idx)
@@ -300,30 +298,14 @@ class ParticlePool:
                     jitter_caller = RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_FLAMETHROWER
                 elif style == int(ParticleStyleId.BUBBLEGUN):
                     jitter_caller = RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_BUBBLEGUN
-                jitter = f32(
-                    float(rng.rand_tagged(jitter_caller) % 100 - 50)
-                    * 0.06
-                    * max(float(entry.intensity), 0.0)
-                    * float(dt),
-                )
-                if style == int(ParticleStyleId.FLAMETHROWER):
-                    jitter = f32(float(jitter) * 1.96)
-                    speed = 82.0
-                elif style == int(ParticleStyleId.BUBBLEGUN):
-                    jitter = f32(float(jitter) * 1.1)
-                    speed = 62.0
-                else:
-                    jitter = f32(float(jitter) * 1.1)
-                    speed = 82.0
-                entry.angle = f32(float(entry.angle) - float(jitter))
-                vel = Vec2.from_angle(float(entry.angle)) * speed
-                entry.vel = Vec2(
-                    f32(float(vel.x)),
-                    f32(float(vel.y)),
-                )
+                turn = rng.rand_tagged(jitter_caller) % 100 - 50
+                turn_scale = f32(1.96 if style == int(ParticleStyleId.FLAMETHROWER) else 1.1)
+                jitter = x87_pc24_mul_chain(float(turn), f32(0.06), entry.intensity, dt, turn_scale)
+                entry.angle = x87_pc24_sub(entry.angle, jitter)
+                entry.vel = _native_particle_velocity(entry.angle, 62.0 if bubblegun else 82.0)
 
             alpha = clamp(entry.intensity, 0.0, 1.0)
-            shade = 1.0 - max(entry.intensity, 0.0) * 0.95
+            shade = x87_pc24_sub(1.0, x87_pc24_mul(entry.intensity, f32(0.95)))
             entry.age = alpha
             entry.scale_x = shade
             entry.scale_y = shade

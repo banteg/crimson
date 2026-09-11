@@ -1,5 +1,5 @@
 {
-  "audit_digest": "c1f409c94aa743dcbb5118b046be145e740ad7c1a71f684b535e119b7b80b19f",
+  "audit_digest": "9ef977c20b8a8a769f3d25a3529d1992fafa266efddbf92d064f072f093cac45",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -69884,24 +69884,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "__real@4@3ffdc000008000000000",
-          "comdat_selection": 2,
-          "function": "projectile_update",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@3ffdc000008000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffdc90fdb0000000000",
           "comdat_selection": 2,
           "function": "bonus_apply",
@@ -103540,7 +103522,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8272,
+          "logical_section_size": 8304,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
           "section": ".text",
           "size": null,
@@ -151776,7 +151758,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8272,
+          "logical_section_size": 8304,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
           "section": ".text",
           "size": null,
@@ -171878,7 +171860,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2966,
+    "defined_symbols": 2965,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},

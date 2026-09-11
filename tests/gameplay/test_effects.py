@@ -270,7 +270,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p0.render_flag = False
     pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
     assert p0.active
-    assert_float_close(p0.intensity, f32(0.1))
+    assert p0.intensity == 0.10000002384185791  # Native subtracts the f32 0.9 literal.
 
     # Style 1 expires once intensity <= 0.8.
     idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)

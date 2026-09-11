@@ -1016,18 +1016,21 @@ temporaries.
 The retained source raises `projectile_update` by 112.8544 fuzzy-weighted bytes,
 from `5085.8557/8409` to `5198.7101/8409` (`60.4810997%` to
 `61.8231666%`), and moves the candidate from 2,162 to 2,174 of 2,203 native
-instructions. References improve from `408/0/19` to `416/0/18`. Equivalent
+instructions. References improve from `408/0/19` to `416/0/18`. Alternative
 operator forms in the two high-intensity helper arms, the default
 low-intensity arm, collision geometry, velocity scaling, Pulse Gun knockback,
 and the final hit-creature displacement were measured individually and in the
-relevant interactions; all were neutral or regressive and are not retained.
+relevant interactions; all were neutral or regressive in the static score and
+were not retained then. Native execution on 2026-09-11 subsequently demonstrated
+that the scalar particle forms were not behaviorally equivalent; see the
+particle vector/steering recovery below.
 The retained source SHA-256 is
 `f283368028c152aa81044e3a1fd17fc2a5fcc22a375bc248eac1c9e50e47fa59`.
 
 ## Bloody Mess offset and destination vectors
 
-After excluding the completed primary-microstep and particle movement/
-collision-owner families, the highest uncovered region was native
+After the preceding primary-microstep and particle movement/collision-owner
+controls, the next region selected for investigation was native
 `0x004210a6..0x00421201`. Its Bloody Mess loop does not add each random
 component directly to the hit creature position. At
 `0x004210ce..0x00421183`, native first converts both random offsets, then
@@ -1078,15 +1081,14 @@ winner, so the source remains unchanged. The updated `experiments.jsonl`
 SHA-256 is
 `4701e2d756c3342893633fad8109ce9fc233097629c176e0499ef7d3ef556e11`.
 
-The next two large unmatched islands are also closed surfaces: block 55 is the
-retained Bloody Mess offset/destination split, while block 74 is the rejected
-Plasma Cannon child-position staging. Block 256 is the retained particle-hit
-geometry. Advice for the next agent: treat the `+0x30` frame delta as one
-upstream lifetime clue, but do not add or hoist locals merely to reach `0xf4`
-and do not reopen these ranked islands without new native evidence. A fresh
-hypothesis should start outside the covered decal, Plasma-child, and particle
-geometry regions and must improve its bounded region without trading references
-or already-matched blocks.
+The next two large unmatched islands had previously measured controls: block
+55 is the retained Bloody Mess offset/destination split, while block 74 is the
+rejected Plasma Cannon child-position staging. Block 256 is the retained
+particle-hit geometry. The `+0x30` frame delta is an upstream lifetime clue;
+adding or hoisting locals merely to reach `0xf4` would not establish recovery.
+These finite controls do not close the regions. New source or native execution
+evidence can justify revisiting them, and behavior must be checked independently
+of static score and positional-reference alignment.
 
 ## Primary-impact jitter lifetime boundary
 
@@ -1097,7 +1099,7 @@ current source's ordinary `int jitter = crt_rand() & 3` instead lets VC6 load
 the heading before materializing the integer, so this was a concrete x87
 lifetime hypothesis rather than a frame-size guess.
 
-Three complete plans close the local surface. The 5/5 lifetime sweep (spec SHA
+Three complete plans measure this finite set of local controls. The 5/5 lifetime sweep (spec SHA
 `3affdcc608216d87b02ac1d7902aa5f4423ff565cb2e2ec457cc9fe7640b1446`)
 found that `double jitter` gains 11.2989 weighted bytes and preserves
 references at `417/0/18`, but removes three candidate instructions from an
@@ -1150,3 +1152,43 @@ helpers avoid that loss, but the uniform const-reference result helper also
 recovers seven instructions and expresses one consistent operation. The
 higher-scoring instruction regressions and the by-value/aggregate controls
 remain recorded, not retained.
+
+## Native particle vector and steering recovery (2026-09-11)
+
+The earlier `semantic-complete` declaration did not establish equivalence.
+Fresh execution found missing SDK vector value boundaries in the style-eight
+high-intensity arm and both generic motion arms. Restoring `dt * velocity`
+followed by the existing vector scalar operators preserves the native x
+component stores and live y intermediates. These forms alone fix the motion
+counterexamples but leave the steering angle rounded through an extra stack
+copy at PC=64.
+
+Binding the actual `particle->angle` field through `float &angle` removes that
+copy: native and candidate retain the updated angle for cosine, store the angle,
+and reload it for sine. This is a natural field owner with a verified schedule,
+not a claim that the original source used this exact spelling. A velocity-field
+owner alternative is preserved in the reconstruction recipe as a positive
+control; it has the same static score with three additional reference problems.
+
+The retained source improves `62.8818969%` to `66.0592255%` (267.1816
+fuzzy-weighted bytes), from 2,183 to 2,187 of 2,203 native instructions.
+References improve from `426/0/13` to `429/0/10`. It is still WIP and has neither
+normalized nor encoded-body exactness. The source SHA-256 is
+`eaa8170a3090ebbfa1e7ae61fec4a9d63f49be48ad692247b988d36d3b569a93`.
+
+The reconstructible evidence package is
+`../../evidence/projectile-particle-update-2026-09-11/`. Its 4,817 no-hit fixtures
+cross both PC=24 and PC=64, all four valid particle styles, generic style 3,
+render flags, decay/movement thresholds, mixed pools, and unchanged primary,
+secondary, and sprite paths. Full observed storage, callback arguments, and
+non-stack write sequences agree. The prior source fails 783 cases; the vector
+changes without the angle owner fail 184. Collision callbacks return no hit;
+this does not establish equivalence for impact, expiry-with-target, all external
+callees, exceptional floating-point values, or the entire function.
+
+The port comparison fixes SDK multiplication order, bubble movement gating,
+PC24 decay/spin/steering/shade boundaries, Python's f32 expiry threshold, and
+Zig's alternate-style RNG caller tags. Python matches all 1,039 applicable
+native PC24 cases. Both ports run a shared 80-case native regression fixture.
+The runtime ports intentionally retain their existing positive-dt update guard;
+the execution evidence does not redefine their pause policy.

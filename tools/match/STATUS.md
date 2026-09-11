@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **799/810** functions matched exactly (**98.6%**), **261971/341992** code bytes (**76.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **320754/341992** code bytes (**93.8%**).
+Fuzzy-weighted alignment is **321021/341992** code bytes (**93.9%**).
 
-Remaining exact-match debt is **11 functions**, **80021 code bytes**, and **21238 fuzzy-gap bytes**.
+Remaining exact-match debt is **11 functions**, **80021 code bytes**, and **20971 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**11** non-exact scratch-backed functions hold **21238 fuzzy-gap bytes**. The top 5 hold **85.1%** of that gap; the top 10 hold **99.8%**.
+**11** non-exact scratch-backed functions hold **20971 fuzzy-gap bytes**. The top 5 hold **84.9%** of that gap; the top 10 hold **99.8%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **11 / 21238** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **11 / 20971** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -40,7 +40,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5845 | semantic-complete | compiler,references | historical-only | 0/70 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 2 | crimsonland.exe | projectile_render | 4980 | incomplete | analysis,compiler,references | historical-only | 0/72 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 3 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 3 | crimsonland.exe | projectile_update | 2854 | semantic-complete | compiler,references | historical-only | 0/76 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | creature_update_all | 2401 | semantic-complete | compiler,references | historical-only | 0/25 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 6 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/44 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
@@ -118,12 +118,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 660/671 | 240806/320827 | 75.1% | 299589/320827 | 93.4% | 671/671 | 320827/320827 | 100.0% | 660/671 |
+| crimsonland.exe | 660/671 | 240806/320827 | 75.1% | 299856/320827 | 93.5% | 671/671 | 320827/320827 | 100.0% | 660/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**660/671** functions (**98.4%**), **240806/320827** bytes (**75.1%**), **299589/320827** fuzzy-weighted bytes (**93.4%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **660/671** scratches verified.
+**660/671** functions (**98.4%**), **240806/320827** bytes (**75.1%**), **299856/320827** fuzzy-weighted bytes (**93.5%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **660/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -467,7 +467,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | creature_find_in_radius | 0x004206a0 | 133 | 133/133 | 0 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | match | creature_apply_damage | 0x004207c0 | 963 | 963/963 | 0 | 237/237 | 100.00% | 237/237 | 83/0/0 |  | creature-damage-and-lethal-effects |
-| wip | projectile_update | 0x00420b90 | 8409 | 5288/8409 | 3121 | 2183/2203 | 62.88% | 0/2203 | 426/0/13 |  | core-projectile-simulation |
+| wip | projectile_update | 0x00420b90 | 8409 | 5555/8409 | 2854 | 2187/2203 | 66.06% | 0/2203 | 429/0/10 |  | core-projectile-simulation |
 | wip | projectile_render | 0x00422c70 | 12551 | 7571/12551 | 4980 | 2907/3021 | 60.32% | 0/3021 | 466/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
