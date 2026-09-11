@@ -7,6 +7,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
+from ...math_parity import NATIVE_HALF_PI, f32, f32_vec2, sin_f32, x87_pc24_cos_mul, x87_pc24_sin_mul
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles.types import ProjectileTemplateId
@@ -18,7 +19,6 @@ from ..projectile_draw import (
     draw_secondary_projectile_from_registry,
 )
 from ..projectile_render_registry import known_proj_rgb
-from . import viewport
 from .context import WorldRenderCtx
 
 if TYPE_CHECKING:
@@ -79,12 +79,45 @@ def draw_projectile(
     )
 
 
+def _sharpshooter_laser_corners(
+    player_pos: Vec2,
+    aim_heading: float,
+    *,
+    camera: Vec2,
+) -> tuple[Vec2, Vec2, Vec2, Vec2]:
+    """Preserve the native laser's trig products and PC24 corner stores."""
+
+    player_pos = f32_vec2(player_pos)
+    aim_heading = f32(aim_heading)
+    heading = f32(aim_heading - NATIVE_HALF_PI)
+    # Native keeps the far cosine wide, but stores its sine before scaling.
+    end = f32_vec2(
+        player_pos + Vec2(x87_pc24_cos_mul(heading, 512.0), f32(sin_f32(heading) * 512.0)),
+    )
+    start_heading = f32(heading - f32(0.150915))
+    start = f32_vec2(
+        player_pos + Vec2(x87_pc24_cos_mul(start_heading, 15.0), x87_pc24_sin_mul(start_heading, 15.0)),
+    )
+    half_width = Vec2(
+        x87_pc24_cos_mul(aim_heading, f32(1.1)),
+        x87_pc24_sin_mul(aim_heading, f32(1.1)),
+    )
+    camera = f32_vec2(camera)
+    start = f32_vec2(start + camera)
+    end = f32_vec2(end + camera)
+    return (
+        f32_vec2(start - half_width),
+        f32_vec2(start + half_width),
+        f32_vec2(end + half_width),
+        f32_vec2(end - half_width),
+    )
+
+
 def draw_sharpshooter_laser_sight(
     render_ctx: WorldRenderCtx,
     *,
     camera: Vec2,
     view_scale: Vec2,
-    scale: float,
     alpha: float,
 ) -> None:
     """Laser sight overlay for the Sharpshooter perk (`projectile_render` @ 0x00422c70)."""
@@ -98,10 +131,12 @@ def draw_sharpshooter_laser_sight(
     if not players:
         return
 
-    tail_alpha = int(clamp(alpha * 0.5, 0.0, 1.0) * 255.0 + 0.5)
-    head_alpha = int(clamp(alpha * 0.2, 0.0, 1.0) * 255.0 + 0.5)
+    alpha = f32(alpha)
+    # Grim truncates each scaled float channel; the far slots are black.
+    tail_alpha = int(f32(f32(alpha * 0.5) * 255.0))
+    head_alpha = int(f32(f32(alpha * f32(0.2)) * 255.0))
     tail = rl.Color(255, 0, 0, tail_alpha)
-    head = rl.Color(255, 0, 0, head_alpha)
+    head = rl.Color(0, 0, 0, head_alpha)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     rl.rl_set_texture(bullet_trail_texture.id)
@@ -114,27 +149,8 @@ def draw_sharpshooter_laser_sight(
         perk_owner = players[0] if render_ctx.frame.state.preserve_bugs else player
         if not perk_active(perk_owner, PerkId.SHARPSHOOTER):
             continue
-        player_pos = player.pos
-
-        aim_heading = float(player.aim_heading)
-        aim_dir = Vec2.from_heading(aim_heading)
-        start = player_pos + aim_dir * 15.0
-        end = player_pos + aim_dir * 512.0
-
-        start_screen = viewport.world_to_screen_with(start, camera=camera, view_scale=view_scale)
-        end_screen = viewport.world_to_screen_with(end, camera=camera, view_scale=view_scale)
-        segment = end_screen - start_screen
-        direction, dist = segment.normalized_with_length()
-        if dist <= 1e-3:
-            continue
-
-        thickness = max(1.0, 2.0 * scale)
-        half = thickness * 0.5
-        side_offset = direction.perp_left() * half
-        p0 = start_screen - side_offset
-        p1 = start_screen + side_offset
-        p2 = end_screen + side_offset
-        p3 = end_screen - side_offset
+        corners = _sharpshooter_laser_corners(player.pos, player.aim_heading, camera=camera)
+        p0, p1, p2, p3 = (point.mul_components(view_scale) for point in corners)
 
         rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
         rl.rl_tex_coord2f(0.0, 0.0)

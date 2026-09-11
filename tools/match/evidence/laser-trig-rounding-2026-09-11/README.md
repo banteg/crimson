@@ -105,3 +105,43 @@ uv run --with unicorn==2.1.4 python tools/match/evidence/conventional-corner-rou
 Use the source named by the receipt when reproducing a historical result.
 `verify.py --source PATH` accepts a historical or private candidate without
 editing the canonical scratch.
+
+## Python renderer follow-up
+
+The Python renderer previously started the laser directly along the aim
+direction, used a two-unit width with a one-screen-pixel minimum, kept the far
+vertices red, and rounded alpha bytes upward. Its new corner helper preserves
+the verified native start angle, 15/512-unit lengths, 2.2-unit width, and PC24
+operation/store boundaries. Complete native corners are then projected with
+the rewrite's per-axis viewport scale. The far vertices are black and alpha
+bytes truncate like Grim2D. Existing alpha gating and both perk-ownership
+modes remain in place.
+
+[`verify_colors.py`](verify_colors.py) executes the original `grim_set_color`
+and `grim_set_color_slot` bodies with the recorded native arguments.
+[`native-colors.json`](native-colors.json) binds twelve palettes across six
+alpha inputs and both control words. Its MSVCRT `_ftol` import is explicitly
+modeled with the game's native converter, as in the earlier creature-color
+proofs. Stack guards, callee-saved registers, and x87 state are checked.
+
+[`verify_ports.py`](verify_ports.py) records the actual Python draw function
+for **2,376 native fixtures**, **four viewport scales**, and **both
+`preserve_bugs` modes**: **19,008 cases** agree on submitted vertex words and
+packed vertex colors. Per-player ownership mode selects that player's
+independently recorded native corner words. The historical Python function
+from `07d412c426b343ee0328b543b63d73ce376509a0` fails geometry and color checks
+for every case that submits a quad: 2,168 per scale with bug preservation,
+2,176 per scale with per-player ownership. Texture, UV, blend, and draw counts
+remain unchanged. See [`port-results.json`](port-results.json).
+
+The CI test captures actual raylib submissions for **38 native fixtures at
+four scales**, including every PC24 witness that rejected the old C++ trig
+stores. Existing tests still exercise the ownership combinations. These
+checks establish bounded CPU submission identity, not whole-frame, GPU,
+simulation-state, or out-of-range-alpha equivalence. The C++ proof and
+compiled source remain unchanged by the Python follow-up.
+
+```sh
+uv run --with unicorn==2.1.4 python tools/match/evidence/laser-trig-rounding-2026-09-11/verify_colors.py --out /tmp/laser-colors
+uv run python tools/match/evidence/laser-trig-rounding-2026-09-11/verify_ports.py --out /tmp/laser-python
+```

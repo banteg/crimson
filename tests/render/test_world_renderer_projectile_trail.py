@@ -368,10 +368,11 @@ def test_sharpshooter_laser_preserves_native_player_zero_owner(
         ctx,
         camera=Vec2(),
         view_scale=Vec2(1.0, 1.0),
-        scale=1.0,
         alpha=0.7,
     )
     points = [call.args for call in vertices.call_args_list]
     assert len(points) == 4 * len(expected_centers)
-    centers = [(points[i][0] + points[i + 1][0]) * 0.5 for i in range(0, len(points), 4)]
+    # With vertical headings, far-end X identifies the player. The near end
+    # has the native muzzle-angle offset and need not share the player's X.
+    centers = [(points[i + 2][0] + points[i + 3][0]) * 0.5 for i in range(0, len(points), 4)]
     assert centers == pytest.approx(expected_centers)

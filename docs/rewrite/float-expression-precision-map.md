@@ -67,6 +67,7 @@ Historical IDA whole-view scan:
 | `E13` | Creature atlas frame selection | `F32_STORE` (int boundary) | `__ftol(phase + 0.5f)` or `__ftol((float)(base + 15) - lifecycle)` | Round the add/subtract at PC24 before truncating; select the lifecycle branch directly | `creature_render_type` @ `0x00418b60` |
 | `E14` | Heading-derived 60-unit aim point | `X87_INTERMEDIATE_THEN_F32` | Native keeps cosine wide through scaling but stores sine first | Subtract native half-pi at PC24; multiply wide cosine and stored sine at PC24; round each position add | `player_update` @ `0x004136b0` |
 | `E15` | Conventional projectile trail corners | `F32_STORE` at PC24 | `(camera + origin/position) +/- velocity * width_factor` | Round input fields, width product, camera sums, and corner additions/subtractions before viewport scaling | `projectile_render` @ `0x004230e5..0x00423663` |
+| `E16` | Sharpshooter laser corners | `X87_INTERMEDIATE_THEN_F32` | Offset near heading by `0.150915f`, scale trig products by 15/512/1.1, then form camera-relative corners | Preserve wide trig through multiplication except the stored far-end sine; round PC24 arithmetic and complete corners before per-axis viewport scaling | `projectile_render` laser geometry starting at `0x00422d63` |
 
 `E14` is an exception to treating both direction components as stored floats.
 The original-image witnesses in
@@ -80,6 +81,13 @@ turn witnesses; see that evidence package for modeled boundaries and limits.
 the rewrite's viewport scale. The evidence package separately documents the
 native wider-register/store asymmetries under diagnostic PC64; those are not
 a reason to use binary64 arithmetic for the Python gameplay renderer.
+
+`E16` uses the native 15-unit angled near endpoint and 2.2-unit total width.
+The witnesses in `tools/match/evidence/laser-trig-rounding-2026-09-11/`
+check Python's actual submitted corners against native PC24 values at four
+viewport scales and in both perk-ownership modes. Native Grim2D color-setter
+execution also pins red near vertices, black far vertices, and truncating
+alpha-byte conversion. These are CPU submission checks, not GPU pixel proof.
 
 ## Binary Ninja cross-check pattern
 
