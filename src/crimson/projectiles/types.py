@@ -54,6 +54,9 @@ class ProjectileHit(msgspec.Struct, frozen=True):
     origin: Vec2
     hit: Vec2
     target: Vec2
+    # Native presentation uses the stored projectile angle, even after its
+    # rounded movement no longer points exactly away from the origin.
+    angle: float | None = None
 
 
 class Projectile(msgspec.Struct):

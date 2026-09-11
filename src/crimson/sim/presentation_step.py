@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
@@ -17,6 +16,16 @@ from ..camera import CameraUpdate
 from ..effects import FxQueue
 from ..features.presentation import queue_projectile_large_streak_decal
 from ..game_modes import GameMode
+from ..math_parity import (
+    NATIVE_HALF_PI,
+    NATIVE_PI,
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..projectiles.types import ProjectileHit, ProjectileTemplateId
@@ -200,7 +209,11 @@ def queue_projectile_decals_pre_hit(
 
     type_id = hit.type_id
 
-    base_angle = (hit.hit - hit.origin).to_angle()
+    base_angle = (
+        x87_pc24_sub(hit.angle, NATIVE_HALF_PI)
+        if hit.angle is not None
+        else (hit.hit - hit.origin).to_angle()
+    )
 
     if type_id == ProjectileTemplateId.BLADE_GUN:
         for _ in range(8):
@@ -226,7 +239,7 @@ def queue_projectile_decals_pre_hit(
                 ) * 0.0625
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
-                    angle=base_angle + spread,
+                    angle=x87_pc24_add(base_angle, spread),
                     age=0.0,
                     rng=rng,
                     detail_preset=detail_preset,
@@ -234,7 +247,7 @@ def queue_projectile_decals_pre_hit(
                 )
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,
-                angle=base_angle + math.pi,
+                angle=x87_pc24_add(base_angle, NATIVE_PI),
                 age=0.0,
                 rng=rng,
                 detail_preset=detail_preset,
@@ -258,7 +271,7 @@ def queue_projectile_decals_pre_hit(
                 dx = float(rng.rand_tagged(dx_caller) % span + lo)
                 dy = float(rng.rand_tagged(dy_caller) % span + lo)
                 fx_queue.add_random(
-                    pos=hit.target + Vec2(dx, dy),
+                    pos=Vec2(x87_pc24_add(hit.target.x, dx), x87_pc24_add(hit.target.y, dy)),
                     rng=rng,
                 )
             lo -= 10
@@ -276,7 +289,7 @@ def queue_projectile_decals_pre_hit(
             if (rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_REVERSE_SPLATTER_GATE) & 7) == 2:
                 state.effects.spawn_blood_splatter(
                     pos=hit.hit,
-                    angle=base_angle + math.pi,
+                    angle=x87_pc24_add(base_angle, NATIVE_PI),
                     age=0.0,
                     rng=rng,
                     detail_preset=detail_preset,
@@ -333,22 +346,21 @@ def queue_projectile_decals_post_hit(
         return
 
     for _ in range(3):
-        spread = float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD) % 20 - 10) * 0.1
-        angle = base_angle + spread
-        direction = Vec2.from_angle(angle) * 20.0
+        spread = x87_pc24_mul(
+            float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DECAL_SPREAD) % 20 - 10),
+            f32(0.1),
+        )
+        angle = x87_pc24_add(base_angle, spread)
+        direction = Vec2(x87_pc24_cos_mul(angle, 20.0), x87_pc24_sin_mul(angle, 20.0))
         fx_queue.add_random(pos=hit.target, rng=rng)
-        fx_queue.add_random(
-            pos=hit.target + direction * 1.5,
-            rng=rng,
-        )
-        fx_queue.add_random(
-            pos=hit.target + direction * 2.0,
-            rng=rng,
-        )
-        fx_queue.add_random(
-            pos=hit.target + direction * 2.5,
-            rng=rng,
-        )
+        for scale in (1.5, 2.0, 2.5):
+            fx_queue.add_random(
+                pos=Vec2(
+                    x87_pc24_add(hit.target.x, x87_pc24_mul(direction.x, scale)),
+                    x87_pc24_add(hit.target.y, x87_pc24_mul(direction.y, scale)),
+                ),
+                rng=rng,
+            )
 
 
 def plan_world_presentation_step(

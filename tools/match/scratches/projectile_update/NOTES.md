@@ -1313,3 +1313,23 @@ primary, and bubble suites additionally agree directly with native. Particle
 impact replay preserves its previous documented PC64 residuals rather than
 claiming new native equality. This is a bounded recovery and does not close the
 whole-function semantic or encoded-body debt.
+
+## Primary presentation parity in Python and Zig
+
+`tools/match/evidence/primary-impact-presentation-2026-09-11/` extends native
+execution through blood-splatter, damage, and randomized-FX helpers. The ports
+now carry the original projectile angle into presentation instead of deriving
+it from rounded positions, and preserve native PC24 decal and blood-splatter
+arithmetic. The same matrix also identifies and fixes Zig's unsigned splatter
+rotation subtraction and second Bloody Mess coordinate-pair RNG caller tags.
+
+All 1,000 measured Python impacts agree in the checked state, helper arguments,
+spawned-effect/decal fields, shots-hit count, and RNG observations. The committed
+baseline differs in 959 cases, including 501 with visible output differences.
+Zig Debug and ReleaseFast pass the same full matrix for their represented state,
+final effect/decal fields, and RNG. The shared regression selection has 120
+cases spanning twelve origin/perk/violence combinations. The native reset's
+scale-one store is pinned; other shared-template histories, audio arguments,
+PC64 ports, freeze/large streaks, lethal handling, and effect allocation are
+outside this proof. C++ source and all normalized/encoded matching counts are
+unchanged.

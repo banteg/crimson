@@ -1,0 +1,13 @@
+{
+  "cases": 1000,
+  "witnesses_sha256": "f46a3cc9cc09e2b35f263e7969cbcfb4d7c072c39d5f73dc4f86738975f85f72",
+  "source_sha256": {
+    "crimson.effects": "1e1c14828354494d87f2b618cde3200ad8ab946953ad27ea32ab0f24d7e2fce0",
+    "crimson.projectiles.runtime.projectile_pool": "b229a0c96d18c446f967918cef8c4797778ad60bbae07f77525634a140311e98",
+    "crimson.projectiles.types": "421b4577209112aeee2066e026aef80f18e19b6637924d8a252f15a26edd9e69",
+    "crimson.sim.presentation_step": "822cda5abbae67bbab772cbe4839e9c546ca213bcc0db43b066ec8ea3ebafebd"
+  },
+  "failing_cases": 0,
+  "difference_counts": {},
+  "failures": []
+}

@@ -16,6 +16,7 @@ from .creatures.damage_runtime import CreatureDamageRuntime
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import (
+    NATIVE_PI,
     NATIVE_TAU,
     f32,
     f32_vec2,
@@ -853,22 +854,24 @@ class EffectPool:
         if int(violence_disabled) != 0:
             return
 
-        lifetime = 0.25 - float(age)
-        base = float(angle) + math.pi
-        direction = Vec2.from_angle(base)
+        lifetime = x87_pc24_sub(0.25, f32(age))
+        base = x87_pc24_add(f32(angle), NATIVE_PI)
+        # The native helper stores both trig results before multiplying them
+        # by each particle's independently sampled speed.
+        direction = Vec2(f32(math.cos(base)), f32(math.sin(base)))
 
         for _ in range(2):
             r0 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_ROTATION)
-            rotation = float((r0 & 0x3F) - 0x20) * 0.1 + base
+            rotation = x87_pc24_add(x87_pc24_mul(float((r0 & 0x3F) - 0x20), f32(0.1)), base)
             r1 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_HALF)
             half = float((r1 & 7) + 1)
             r2 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_X)
             speed_x = float((r2 & 0x3F) + 100)
             r3 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_Y)
             speed_y = float((r3 & 0x3F) + 100)
-            velocity = Vec2(direction.x * speed_x, direction.y * speed_y)
+            velocity = Vec2(x87_pc24_mul(direction.x, speed_x), x87_pc24_mul(direction.y, speed_y))
             r4 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SCALE_STEP)
-            scale_step = float(r4 & 0x7F) * 0.03 + 0.1
+            scale_step = x87_pc24_add(x87_pc24_mul(float(r4 & 0x7F), f32(0.03)), f32(0.1))
 
             self.spawn(
                 effect_id=int(EffectId.BLOOD_SPLATTER),

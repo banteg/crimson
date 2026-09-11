@@ -319,10 +319,14 @@ pub const EffectPool = struct {
     ) void {
         if (violence_disabled != 0) return;
         const lifetime = narrowF32(0.25 - age);
-        const base = narrowF32(angle + std.math.pi);
+        const base = native_math.pc24Add(angle, native_math.native_pi);
         const direction = state_mod.Vec2.fromAngle(base);
         for (0..2) |_| {
-            const rotation = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_rotation) & 0x3F) -% 0x20)) * 0.1 + base;
+            const rotation_draw: i32 = @intCast(state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_rotation) & 0x3F);
+            const rotation = native_math.pc24Add(
+                native_math.pc24Mul(@as(f32, @floatFromInt(rotation_draw - 0x20)), @as(f32, 0.1)),
+                base,
+            );
             const half = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_half) & 7) + 1));
             const speed_x = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_x) & 0x3F) + 100));
             const speed_y = @as(f32, @floatFromInt((state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_speed_y) & 0x3F) + 100));
@@ -330,7 +334,10 @@ pub const EffectPool = struct {
                 .x = narrowF32(direction.x * speed_x),
                 .y = narrowF32(direction.y * speed_y),
             };
-            const scale_step = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_scale_step) & 0x7F)) * 0.03 + 0.1;
+            const scale_step = native_math.pc24Add(
+                native_math.pc24Mul(@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_blood_splatter_scale_step) & 0x7F)), @as(f32, 0.03)),
+                @as(f32, 0.1),
+            );
             _ = self.spawn(
                 @intFromEnum(EffectId.blood_splatter),
                 pos,

@@ -424,7 +424,7 @@ pub const ProjectilePool = struct {
                         state,
                         player,
                         proj.type_id,
-                        proj.origin,
+                        proj.angle,
                         proj.pos,
                         creatures.entries[hit_idx.?].pos,
                         effects,
@@ -593,7 +593,7 @@ pub const ProjectilePool = struct {
                         emitProjectileHitPresentationPost(
                             state,
                             proj.type_id,
-                            proj.origin,
+                            proj.angle,
                             proj.pos,
                             creatures.entries[hit_idx.?].pos,
                             effects,
@@ -619,7 +619,7 @@ pub const ProjectilePool = struct {
                     emitProjectileHitPresentationPost(
                         state,
                         proj.type_id,
-                        proj.origin,
+                        proj.angle,
                         proj.pos,
                         creatures.entries[hit_idx.?].pos,
                         effects,
@@ -787,7 +787,7 @@ fn emitProjectileHitPresentationPre(
     state: *state_mod.GameplayState,
     player: *const state_mod.PlayerState,
     projectile_type_id: i32,
-    hit_origin: state_mod.Vec2,
+    projectile_angle: f32,
     hit_pos: state_mod.Vec2,
     hit_target: state_mod.Vec2,
     effects: *effects_mod.EffectPool,
@@ -795,7 +795,7 @@ fn emitProjectileHitPresentationPre(
     detail_preset: i32,
 ) void {
     const freeze_active = state.bonuses.freeze > 0.0;
-    const base_angle = state_mod.Vec2.sub(hit_pos, hit_origin).toAngle();
+    const base_angle = native_math.pc24Sub(projectile_angle, native_half_pi);
 
     if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
         for (0..8) |_| {
@@ -820,9 +820,13 @@ fn emitProjectileHitPresentationPre(
         var hi: i32 = 30;
         while (lo > -60) {
             const span: u32 = @intCast(hi - lo);
-            for (0..2) |_| {
-                const dx = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dx_1) % span)) + lo));
-                const dy = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_bloody_mess_decal_dy_1) % span)) + lo));
+            const decal_callers = [_][2]rng_callers.Caller{
+                .{ rng_callers.projectile_update_bloody_mess_decal_dx_1, rng_callers.projectile_update_bloody_mess_decal_dy_1 },
+                .{ rng_callers.projectile_update_bloody_mess_decal_dx_2, rng_callers.projectile_update_bloody_mess_decal_dy_2 },
+            };
+            for (decal_callers) |callers| {
+                const dx = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(callers[0]) % span)) + lo));
+                const dy = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(callers[1]) % span)) + lo));
                 _ = terrain_fx.decals.addRandom(state, .{
                     .x = hit_target.x + dx,
                     .y = hit_target.y + dy,
@@ -844,7 +848,7 @@ fn emitProjectileHitPresentationPre(
 fn emitProjectileHitPresentationPost(
     state: *state_mod.GameplayState,
     projectile_type_id: i32,
-    hit_origin: state_mod.Vec2,
+    projectile_angle: f32,
     hit_pos: state_mod.Vec2,
     hit_target: state_mod.Vec2,
     effects: *effects_mod.EffectPool,
@@ -852,7 +856,7 @@ fn emitProjectileHitPresentationPost(
     detail_preset: i32,
 ) void {
     const freeze_active = state.bonuses.freeze > 0.0;
-    const base_angle = state_mod.Vec2.sub(hit_pos, hit_origin).toAngle();
+    const base_angle = native_math.pc24Sub(projectile_angle, native_half_pi);
 
     _ = state.rng.randTagged(rng_callers.projectile_update_post_hit_decal_burn);
 
@@ -872,13 +876,22 @@ fn emitProjectileHitPresentationPost(
 
     var streak_idx: usize = 0;
     while (streak_idx < 3) : (streak_idx += 1) {
-        const spread = (@as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_decal_spread) % 20)) - 10))) * 0.1;
-        const angle = base_angle + spread;
-        const direction = state_mod.Vec2.fromAngle(angle).mul(20.0);
+        const spread = native_math.pc24Mul(
+            @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.randTagged(rng_callers.projectile_update_decal_spread) % 20)) - 10)),
+            @as(f32, 0.1),
+        );
+        const angle = native_math.pc24Add(base_angle, spread);
+        const direction: state_mod.Vec2 = .{
+            .x = native_math.pc24Mul(@cos(@as(f64, angle)), @as(f32, 20.0)),
+            .y = native_math.pc24Mul(@sin(@as(f64, angle)), @as(f32, 20.0)),
+        };
         _ = terrain_fx.decals.addRandom(state, hit_target);
-        _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(hit_target, direction.mul(1.5)));
-        _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(hit_target, direction.mul(2.0)));
-        _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(hit_target, direction.mul(2.5)));
+        for ([_]f32{ 1.5, 2.0, 2.5 }) |scale| {
+            _ = terrain_fx.decals.addRandom(state, .{
+                .x = native_math.pc24Add(hit_target.x, native_math.pc24Mul(direction.x, scale)),
+                .y = native_math.pc24Add(hit_target.y, native_math.pc24Mul(direction.y, scale)),
+            });
+        }
     }
 }
 
@@ -2226,5 +2239,230 @@ test "primary movement threshold preserves native position and player damage" {
         }
         try std.testing.expectEqual(witness.rng_state, state.rng.state);
         try std.testing.expectEqual(@as(usize, 0), state.sfx_queue.len);
+    }
+}
+
+test "primary impacts match native damage, splatters, decals and RNG" {
+    const Sample = struct {
+        index: usize = 0,
+        active: u8 = 1,
+        angle: f32,
+        x: f32,
+        y: f32,
+        origin_x: f32,
+        origin_y: f32,
+        vx: f32 = 0,
+        vy: f32 = 0,
+        type: i32,
+        life: f32,
+        speed: f32,
+        damage: f32,
+        radius: f32,
+        travel: f32,
+        owner: i32,
+    };
+    const CreatureSample = struct {
+        active: u8 = 1,
+        index: usize = 0,
+        lifecycle: f32,
+        x: f32,
+        y: f32,
+        health: f32,
+        max_health: f32,
+        size: f32,
+        r: f32 = 0,
+        g: f32 = 0,
+        b: f32 = 0,
+        a: f32 = 0,
+        type: i32 = 0,
+        vx: f32 = 0,
+        vy: f32 = 0,
+        heading: f32 = 0,
+        flags: u32 = 0,
+    };
+    const EffectSample = std.meta.Tuple(&.{ i32, [2]u32, [15]u32 });
+    const DecalSample = std.meta.Tuple(&.{ i32, [2]u32, u32, u32, u32, [4]u32 });
+    const Witness = struct {
+        index: usize,
+        input: struct {
+            dt: f32,
+            rng_seed: u32,
+            violence_disabled: i32,
+            template_scale: f32,
+            damage_scale: f32,
+            primary: []Sample,
+            creatures: []CreatureSample,
+            perks: []i32,
+        },
+        expected: struct {
+            primary: Sample,
+            creature: CreatureSample,
+            effects: []EffectSample,
+            decals: []DecalSample,
+            shots_hit: i32,
+            rng_state: u32,
+            draws: []u32,
+            rng_callers: []u32,
+        },
+    };
+    const Checks = struct {
+        const Self = @This();
+
+        records: [512]spawn_mod.Crand.TraceDraw = undefined,
+        count: usize = 0,
+
+        fn record(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx.?));
+            self.records[self.count] = draw;
+            self.count += 1;
+        }
+
+        fn bits(value: f32) u32 {
+            return @bitCast(value);
+        }
+
+        fn same(comptime T: type, expected: T, actual: T) !void {
+            inline for (std.meta.fields(T)) |field| {
+                if (field.type == f32) {
+                    try std.testing.expectEqual(bits(@field(expected, field.name)), bits(@field(actual, field.name)));
+                } else {
+                    try std.testing.expectEqual(@field(expected, field.name), @field(actual, field.name));
+                }
+            }
+        }
+    };
+    const parsed = try std.json.parseFromSlice(
+        []Witness,
+        std.testing.allocator,
+        @embedFile("testdata/primary-impact-presentation.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    // The checked-in selection has 120 cases; the evidence replay can supply
+    // the complete generated matrix through the same fixture file.
+    try std.testing.expect(parsed.value.len >= 120);
+    for (parsed.value) |witness| {
+        errdefer std.debug.print("native primary impact witness {d}\n", .{witness.index});
+        var state = state_mod.GameplayState.init(witness.input.rng_seed);
+        state.gore_disabled = witness.input.violence_disabled;
+        state.game_tune_started = true;
+        var trace: Checks = .{};
+        state.rng.setTraceSink(&trace, Checks.record, true);
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{} }};
+        for (witness.input.perks) |perk| players[0].perk_counts.set(@enumFromInt(perk), 1);
+        var creatures: creatures_mod.CreaturePool = .{};
+        const target = witness.input.creatures[0];
+        creatures.entries[target.index] = .{
+            .active = true,
+            .pos = .{ .x = target.x, .y = target.y },
+            .hp = target.health,
+            .max_hp = target.max_health,
+            .size = target.size,
+            .lifecycle_stage = target.lifecycle,
+            .tint = .{ target.r, target.g, target.b, target.a },
+            .type_id = target.type,
+        };
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var pool: ProjectilePool = .{};
+        const item = witness.input.primary[0];
+        try std.testing.expectEqual(damageScaleFromRawId(item.type), witness.input.damage_scale);
+        try std.testing.expectEqual(@as(f32, 1), witness.input.template_scale);
+        pool.entries[item.index] = .{
+            .active = true,
+            .angle = item.angle,
+            .pos = .{ .x = item.x, .y = item.y },
+            .origin = .{ .x = item.origin_x, .y = item.origin_y },
+            .type_id = item.type,
+            .life_timer = item.life,
+            .speed_scale = item.speed,
+            .damage_pool = item.damage,
+            .hit_radius = item.radius,
+            .travel_budget = item.travel,
+            .owner = owner_ref.OwnerRef.fromLegacy(item.owner),
+        };
+        var effects: effects_mod.EffectPool = .{};
+        var terrain: terrain_fx_mod.TerrainFxScratch = .{};
+        const stats = pool.updateWithEffects(&state, &players, &creatures, &bonuses, &effects, &terrain, 5, witness.input.dt, 1024.0);
+        try std.testing.expectEqual(@as(i32, 1), stats.hit_count);
+        const projectile = pool.entries[item.index];
+        try Checks.same(Sample, witness.expected.primary, .{
+            .active = @intFromBool(projectile.active),
+            .angle = projectile.angle,
+            .x = projectile.pos.x,
+            .y = projectile.pos.y,
+            .origin_x = projectile.origin.x,
+            .origin_y = projectile.origin.y,
+            .vx = projectile.vel.x,
+            .vy = projectile.vel.y,
+            .type = projectile.type_id,
+            .life = projectile.life_timer,
+            .speed = projectile.speed_scale,
+            .damage = projectile.damage_pool,
+            .radius = projectile.hit_radius,
+            .travel = projectile.travel_budget,
+            .owner = projectile.owner.toLegacy(),
+        });
+        const creature = creatures.entries[target.index];
+        try Checks.same(CreatureSample, witness.expected.creature, .{
+            .active = @intFromBool(creature.active),
+            .lifecycle = creature.lifecycle_stage,
+            .x = creature.pos.x,
+            .y = creature.pos.y,
+            .health = creature.hp,
+            .max_health = creature.max_hp,
+            .size = creature.size,
+            .r = creature.tint[0],
+            .g = creature.tint[1],
+            .b = creature.tint[2],
+            .a = creature.tint[3],
+            .type = creature.type_id,
+            .vx = creature.vel.x,
+            .vy = creature.vel.y,
+            .heading = creature.heading,
+            .flags = creature.flags,
+        });
+        var effect_count: usize = 0;
+        for (effects.entries) |effect| {
+            if (effect.flags == 0) continue;
+            const actual: EffectSample = .{
+                effect.effect_id,
+                .{ Checks.bits(effect.pos.x), Checks.bits(effect.pos.y) },
+                .{
+                    Checks.bits(effect.vel.x),      Checks.bits(effect.vel.y),
+                    Checks.bits(effect.rotation),   Checks.bits(effect.scale),
+                    Checks.bits(effect.half_width), Checks.bits(effect.half_height),
+                    Checks.bits(effect.age),        Checks.bits(effect.lifetime),
+                    @bitCast(effect.flags),         Checks.bits(effect.color.r),
+                    Checks.bits(effect.color.g),    Checks.bits(effect.color.b),
+                    Checks.bits(effect.color.a),    Checks.bits(effect.rotation_step),
+                    Checks.bits(effect.scale_step),
+                },
+            };
+            try std.testing.expectEqualDeep(witness.expected.effects[effect_count], actual);
+            effect_count += 1;
+        }
+        try std.testing.expectEqual(witness.expected.effects.len, effect_count);
+        try std.testing.expectEqual(witness.expected.decals.len, terrain.decals.count);
+        for (terrain.decals.entries[0..terrain.decals.count], witness.expected.decals) |decal, expected| {
+            const actual: DecalSample = .{
+                decal.effect_id,
+                .{
+                    Checks.bits(native_math.pc24Sub(decal.pos.x, native_math.pc24Mul(decal.width, @as(f32, 0.5)))),
+                    Checks.bits(native_math.pc24Sub(decal.pos.y, native_math.pc24Mul(decal.height, @as(f32, 0.5)))),
+                },
+                Checks.bits(decal.width),
+                Checks.bits(decal.height),
+                Checks.bits(decal.rotation),
+                .{ Checks.bits(decal.color.r), Checks.bits(decal.color.g), Checks.bits(decal.color.b), Checks.bits(decal.color.a) },
+            };
+            try std.testing.expectEqualDeep(expected, actual);
+        }
+        try std.testing.expectEqual(witness.expected.shots_hit, state.shots_hit[0]);
+        try std.testing.expectEqual(witness.expected.rng_state, state.rng.state);
+        try std.testing.expectEqual(witness.expected.draws.len, trace.count);
+        for (trace.records[0..trace.count], witness.expected.draws, witness.expected.rng_callers) |draw, expected, caller| {
+            try std.testing.expectEqual(expected, draw.value_15);
+            try std.testing.expectEqual(caller, @intFromEnum(draw.caller.?));
+        }
     }
 }

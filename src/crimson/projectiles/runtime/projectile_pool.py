@@ -441,6 +441,7 @@ class ProjectilePool:
                         origin=proj.origin,
                         hit=proj.pos,
                         target=target,
+                        angle=proj.angle,
                     )
                     hits.append(hit)
                     hit_presentation = hit_runtime.begin_hit_presentation(hit)
@@ -616,6 +617,7 @@ class ProjectilePool:
                     origin=proj.origin,
                     hit=proj.pos,
                     target=creature.pos,
+                    angle=proj.angle,
                 ),
             )
 

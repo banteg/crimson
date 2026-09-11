@@ -40121,7 +40121,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2190,
-        "candidate_object_sha256": "9f58b0dd6004cd6d83a3d1403d06b0eb2d7ee2b8e6a2db0d2d5a1bc9a7b6b2cd",
+        "candidate_object_sha256": "2c8285b93de15cd3d8b3deeba846413d63b224a7d29bce86fe573428fa51af0c",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -111124,6 +111124,11 @@
     "tools/match/evidence/particle-bubble-expiry-2026-09-11/execute.py": "7167686756376b09669b41da434f9de86f37cd52a80c5516e9fa5f9f6265f336",
     "tools/match/evidence/particle-bubble-expiry-2026-09-11/verify.py": "ef6e07be4b33491561c1816d71b5eb21a7785c23e79eb795246c706e9f5fc1da",
     "tools/match/evidence/plasma-head-alpha-2026-09-10/verify.py": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+    "tools/match/evidence/primary-impact-presentation-2026-09-11/execute.py": "3f4cb71371d70d787b922eea8eb2622efcbe72a89dd4fcaf1926de86d711b291",
+    "tools/match/evidence/primary-impact-presentation-2026-09-11/export_regressions.py": "5e68e36671725b065ff6e209cf2ec605620ba5d8d01715d1f9f3ec5f65439d4b",
+    "tools/match/evidence/primary-impact-presentation-2026-09-11/fixtures.py": "26dee3d1eceed0085519b007462cd7bcc92dc70d5f77d32d2a820f9c3b461546",
+    "tools/match/evidence/primary-impact-presentation-2026-09-11/verify.py": "98f25915e2096d7cefec6bd08cbe79dfbb98083410a105854959d898162713ab",
+    "tools/match/evidence/primary-impact-presentation-2026-09-11/verify_ports.py": "1d946cd33c6a6e6f2139dc4e85655cc4fe9b1b700658a53d7e05967ddabbb233",
     "tools/match/evidence/primary-impact-template-2026-09-11/before.cpp": "29ced950a9a07ed4972859045889678b2d6bceaded5a482c92b5dc2ab8bd23f0",
     "tools/match/evidence/primary-impact-template-2026-09-11/execute.py": "c56626b0d55f198fa818057980b804e6e93155105c74db2db92f503ade6c994a",
     "tools/match/evidence/primary-impact-template-2026-09-11/fixtures.py": "504ff02c2bc7310302baa083e65276aeaafed5af363fa8ab0fb0575bd6fdff94",
