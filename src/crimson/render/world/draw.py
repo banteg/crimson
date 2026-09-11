@@ -17,7 +17,7 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles.types import ProjectileTemplateId
-from ...sim.world_defs import CREATURE_ANIM, CREATURE_ASSET
+from ...sim.world_defs import CREATURE_ASSET
 from ...ui.cursor import draw_aim_cursor
 from . import viewport
 from .bonuses import draw_bonus_hover_labels, draw_bonus_pickups
@@ -280,8 +280,6 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             rl.draw_circle(int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * render_ctx.view.scale), tint)
             continue
 
-        info = CREATURE_ANIM[type_id]
-
         tint_rgba = creature.tint
 
         # Energizer: tint "weak" creatures blue-ish while active.
@@ -313,16 +311,6 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             creature.flags & CreatureFlags.ANIM_LONG_STRIP
         ) != 0
 
-        phase = float(creature.anim_phase)
-        if long_strip:
-            if lifecycle_stage < 0.0:
-                # Negative phase selects the fallback "corpse" frame in creature_render_type.
-                phase = -1.0
-            elif lifecycle_stage < 16.0:
-                # Death staging: while lifecycle_stage ramps down (16..0), creature_render_type
-                # selects frames via `__ftol((base_frame + 15) - lifecycle_stage)`.
-                phase = float(info.base + 0x0F) - lifecycle_stage - 0.5
-
         shadow_alpha = None
         if shadow:
             # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
@@ -337,8 +325,8 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             texture,
             type_id=type_id or CreatureTypeId.ZOMBIE,
             flags=creature.flags,
-            phase=phase,
-            mirror_long=bool(info.mirror) and lifecycle_stage >= 16.0,
+            phase=float(creature.anim_phase),
+            lifecycle_stage=lifecycle_stage,
             shadow_alpha=shadow_alpha,
             pos=creature.pos,
             screen_pos=screen,

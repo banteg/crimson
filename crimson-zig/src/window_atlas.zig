@@ -187,19 +187,11 @@ pub fn creatureSizeScale(size: f32) f32 {
 pub fn creatureRenderFrame(creature: creatures_runtime.CreatureState) ?CreatureRenderFrame {
     const info = runtime_anim.creatureAnimInfoForRawTypeId(creature.type_id) orelse return null;
     const creature_type = std.enums.fromInt(spawn_runtime.CreatureTypeId, creature.type_id) orelse return null;
-    var phase = creature.anim_phase;
-    if (runtime_anim.creatureAnimIsLongStrip(creature.flags)) {
-        if (creature.lifecycle_stage < 0.0) {
-            phase = -1.0;
-        } else if (creature.lifecycle_stage < creature_lifecycle.alive) {
-            phase = @as(f32, @floatFromInt(info.base + 0x0F)) - creature.lifecycle_stage - 0.5;
-        }
-    }
-
     const selection = runtime_anim.creatureAnimSelectFrame(
-        phase,
+        creature.anim_phase,
+        creature.lifecycle_stage,
         info.base,
-        info.mirror and creature.lifecycle_stage >= creature_lifecycle.alive,
+        info.mirror,
         creature.flags,
     );
     return .{
@@ -353,6 +345,38 @@ test "weapon icon rect spans two ui wicon cells" {
     const rect = weaponIconRect(256, 256, 3);
     try std.testing.expectApproxEqAbs(@as(f32, 192.0), rect.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 64.0), rect.width, 1e-6);
+}
+
+test "creature atlas frames match native PC24 witnesses" {
+    const Witness = struct {
+        case: []const u8,
+        slot: usize,
+        type_id: i32,
+        flags: u32,
+        lifecycle_stage: f32,
+        phase: f32,
+        frame: i32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { fpcw: u16, witnesses: []const Witness },
+        std.testing.allocator,
+        @embedFile("runtime/testdata/creature-frame-selection.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(u16, 0x7F), parsed.value.fpcw);
+    try std.testing.expectEqual(@as(usize, 2640), parsed.value.witnesses.len);
+    for (parsed.value.witnesses) |witness| {
+        errdefer std.debug.print("native creature frame {s}, slot {d}\n", .{ witness.case, witness.slot });
+        const creature: creatures_runtime.CreatureState = .{
+            .active = true,
+            .type_id = witness.type_id,
+            .flags = witness.flags,
+            .lifecycle_stage = witness.lifecycle_stage,
+            .anim_phase = witness.phase,
+        };
+        try std.testing.expectEqual(witness.frame, creatureRenderFrame(creature).?.frame);
+    }
 }
 
 test "bonus icon mapping mirrors metadata" {

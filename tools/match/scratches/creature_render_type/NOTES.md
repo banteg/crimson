@@ -344,3 +344,19 @@ This supports the recovered behavior only on those scenarios and observer
 contracts. Full instruction coverage is not all-path or all-input equivalence,
 and the GPU and actual perk lookup are modeled. No source or reference alias
 changes are retained; 79.74%, `139/0/5`, and both exactness flags remain unchanged.
+
+## Port frame-selection correction (2026-09-11)
+
+The [species-table frame matrix](../../evidence/creature-frame-selection-2026-09-11/README.md)
+compares 36 original/C++ scenarios across PC24 and PC64, with all observed calls
+and writes equal. Its 2,640 PC24 frame witnesses identify 270 differences in
+the previous Python caller/helper path, 229 differences in 2,628 comparable
+Zig rows, and a reproduced Debug overflow for a negative ping-pong diagnostic.
+The ports now use lifecycle directly, retain PC24 conversion inputs, and apply
+the shock offset after corpse selection. Current Python and Zig agree with all
+2,640 witnesses; Zig is checked in Debug and ReleaseFast. The separate flash
+frame selection is recorded but is outside this port correction.
+
+This work changes port behavior and adds finite evidence. The C++ source remains
+79.737705%, 760/765 instructions, prefix 25, and `139/0/5`; neither exactness
+flag changes. No source or reference mismatch is declared resolved.

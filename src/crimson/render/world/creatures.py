@@ -18,6 +18,7 @@ def draw_creature_sprite(
     type_id: CreatureTypeId,
     flags: CreatureFlags,
     phase: float,
+    lifecycle_stage: float = 16.0,
     mirror_long: bool | None = None,
     shadow_alpha: int | None = None,
     pos: Vec2,
@@ -38,6 +39,7 @@ def draw_creature_sprite(
         base_frame=info.base,
         mirror_long=mirror_flag,
         flags=flags,
+        lifecycle_stage=lifecycle_stage,
     )
     if index < 0:
         return

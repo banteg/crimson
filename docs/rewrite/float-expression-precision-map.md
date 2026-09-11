@@ -22,12 +22,17 @@ Use this with [float parity policy](float-parity-policy.md).
   but should not drive gameplay state evolution.
 
 Runtime assumption for this map:
-- CRT startup sets x87 precision-control to 53-bit (`__controlfp(_PC_53,
-  _MCW_PC)` equivalent path), so “x87 intermediate” here means x87-shaped
-  evaluation under `PC_53` unless a function locally overrides CW.
-  Evidence: `crt_set_default_precision` returns the control-word mapping call at
-  `0x004636f8`; the helper applies the `0x10000` precision selector around
-  `0x00469f8e`–`0x00469f9e`.
+- Gameplay follows the [PC24 policy](float-parity-policy.md): Direct3D device
+  creation uses flags `0x20`, without `D3DCREATE_FPU_PRESERVE` (`0x02`). The
+  earlier CRT startup `PC_53` setting therefore does not describe gameplay.
+- “X87 intermediate” does not mean that ordinary arithmetic stays wide.
+  Add, subtract, multiply, divide, and square root follow PC24 rounding at each
+  operation. Preserve extended transcendental results until the following
+  arithmetic operation or store, as described in the policy.
+- The frame witness matrix in
+  `tools/match/evidence/creature-frame-selection-2026-09-11/results.json`
+  demonstrates 126 frame-index differences between PC24 and PC64 on the same
+  stored inputs. Port regressions use the PC24 observations.
 
 ## Decompile-wide signal counts (for confidence)
 
@@ -59,6 +64,7 @@ Historical IDA whole-view scan:
 | `E10` | Timers/cooldowns/speeds state updates | `F32_STORE` | `state = state +/- frame_dt * k`, clamp to bounds | Keep state as `f32`; avoid accidental long-lived `f64` accumulators in gameplay paths | `player_update` @ `0x004136b0` |
 | `E11` | Float-int conversion hotspots (`__ftol` family) | `X87_INTERMEDIATE_THEN_F32` (int boundary) | explicit `__ftol()` calls in movement/effects code | Route through native-compatible helper; treat conversion semantics as parity-sensitive | `projectile_update` @ `0x00420b90` |
 | `E12` | Formatting/vararg conversion | `F64_BOUNDARY_ONLY` | `crt_sprintf(..., (double)f32_value)` | `double` here is boundary formatting ABI, not simulation precision policy | `mods_menu_update` @ `0x0040e9a0` |
+| `E13` | Creature atlas frame selection | `F32_STORE` (int boundary) | `__ftol(phase + 0.5f)` or `__ftol((float)(base + 15) - lifecycle)` | Round the add/subtract at PC24 before truncating; select the lifecycle branch directly | `creature_render_type` @ `0x00418b60` |
 
 ## Binary Ninja cross-check pattern
 

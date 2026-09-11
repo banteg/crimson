@@ -114,20 +114,25 @@ pub fn creatureAnimAdvancePhase(
     return .{ .phase = next_phase, .step = step };
 }
 
+/// Select the native shadow/body atlas frame with PC24 integer-conversion inputs.
 pub fn creatureAnimSelectFrame(
     phase: f32,
+    lifecycle_stage: f32,
     base_frame: i32,
     mirror_long: bool,
     flags: u32,
 ) FrameSelection {
     if (creatureAnimIsLongStrip(flags)) {
-        if (phase < 0.0) {
-            return .{ .frame = base_frame + 0x0F, .mirrored = false, .mode = .long };
-        }
-
-        var frame: i32 = @intFromFloat(phase + 0.5);
+        // Keep lifecycle selection separate from animation rounding. The shock
+        // offset also applies after the corpse/death-stage branches.
+        var frame: i32 = if (lifecycle_stage < 0.0)
+            base_frame + 0x0F
+        else if (lifecycle_stage < 16.0)
+            @intFromFloat(native_math.pc24Sub(@as(f32, @floatFromInt(base_frame + 0x0F)), lifecycle_stage))
+        else
+            @intFromFloat(native_math.pc24Add(phase, @as(f32, 0.5)));
         var mirrored = false;
-        if (mirror_long and frame > 0x0F) {
+        if (lifecycle_stage >= 16.0 and mirror_long and frame > 0x0F) {
             frame = 0x1F - frame;
             mirrored = true;
         }
@@ -137,29 +142,27 @@ pub fn creatureAnimSelectFrame(
         return .{ .frame = frame, .mirrored = mirrored, .mode = .long };
     }
 
-    const raw: i32 = @intFromFloat(phase + 0.5);
-    var idx: i32 = @bitCast(@as(u32, @bitCast(raw)) & 0x8000000F);
-    if (idx < 0) {
-        idx = @bitCast((@as(u32, @bitCast(idx - 1)) | 0xFFFFFFF0) + 1);
-    }
+    const raw: i32 = @intFromFloat(native_math.pc24Add(phase, @as(f32, 0.5)));
+    var idx = @rem(raw, 16);
     if (idx > 7) idx = 0x0F - idx;
     return .{ .frame = base_frame + 0x10 + idx, .mirrored = false, .mode = .ping_pong };
 }
 
 test "creature anim select mirrors long strips and shock frames" {
     const base = creature_anim_info.get(.lizard).base;
-    const mirrored = creatureAnimSelectFrame(17.2, base, true, 0);
+    const mirrored = creatureAnimSelectFrame(17.2, 16.0, base, true, 0);
     try std.testing.expectEqual(@as(i32, 14), mirrored.frame);
     try std.testing.expect(mirrored.mirrored);
     try std.testing.expectEqual(FrameMode.long, mirrored.mode);
 
-    const shocked = creatureAnimSelectFrame(2.0, base, false, spawn_mod.CreatureFlags.ranged_attack_shock);
+    const shocked = creatureAnimSelectFrame(2.0, 16.0, base, false, spawn_mod.CreatureFlags.ranged_attack_shock);
     try std.testing.expectEqual(@as(i32, 0x22), shocked.frame);
 }
 
 test "creature anim select handles ping pong strips" {
     const selection = creatureAnimSelectFrame(
         9.0,
+        16.0,
         creature_anim_info.get(.alien).base,
         false,
         spawn_mod.CreatureFlags.anim_ping_pong,

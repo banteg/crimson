@@ -1,0 +1,3105 @@
+{
+  "schema_version": 1,
+  "kind": "native-creature-frame-port-comparison",
+  "baseline_commit": "76a92bf522e3ee8591fcbab324009201683d6dea",
+  "baseline_hashes": {
+    "src/crimson/creatures/anim.py": "6f9fe7758b06d4c750f6eb3c63f50779b7a37e58c87b61f7f6edddbe56d02c10",
+    "crimson-zig/src/runtime/anim.zig": "73868905c1b27b627ad684d1ebc8e161130ed62fb62df17c891d9a0ad4ef34e5",
+    "crimson-zig/src/window_atlas.zig": "a018dd4ca0fce3f43ba790d9c80c5e918577d7d13c85e0eb81e0331cc13c3bf4",
+    "src/crimson/render/world/draw.py": "8faef2666247bbab056bd178d679c37b8f29ef4cb65f5df103b41738fd026412"
+  },
+  "witnesses_sha256": "b4489900fc803e8d726ef3b8f1d713a7a3c2d17040060b3100b3cafefc86f6b5",
+  "verifier_sha256": "849ad1d78e3b89036d87ae4376686fd9951a4b35a46b9f03336dd5ca7ba236fa",
+  "zig_harness_sha256": "13032d0949c1e0e4270537c1a741570eb5c209207c41b203659d5d33345a2a50",
+  "zig_version": "0.16.0",
+  "current_source_hashes": {
+    "src/crimson/creatures/anim.py": "33f750653a2116c203e8d31b1b83ad6bb283f8debd3673e39572ce29874af506",
+    "src/crimson/render/world/draw.py": "90d6fb0fbd85dfb01ddb4a4cbcb18731af9c70e73eb08e7a38e823c826b309bd",
+    "src/crimson/render/world/creatures.py": "bc66b539b440b7d243d940f5688512c7506965223ae3e6daf067eabde4c6c059",
+    "crimson-zig/src/runtime/anim.zig": "b54b1830a58b2123ccf4915f60eb08d50ee1847f43602871c350be48d65b2c9c",
+    "crimson-zig/src/window_atlas.zig": "e17a40cd652ce02d1b135e7e2db00de4dbeb82718718d101d57136ff40bce6a9",
+    "crimson-zig/src/root.zig": "1e60cde317164925094aaffbbb828285afff61aa69125fc6ca3c750b106b6e73"
+  },
+  "python": {
+    "count": 2640,
+    "current_differences": [],
+    "baseline_differences": [
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 10,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 13,
+        "native": 40,
+        "actual": 39
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 16,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 50,
+        "native": 78,
+        "actual": 77
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 53,
+        "native": 72,
+        "actual": 71
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 56,
+        "native": 64,
+        "actual": 63
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 90,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 93,
+        "native": 40,
+        "actual": 39
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 96,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 110,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 113,
+        "native": 40,
+        "actual": 39
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 116,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 130,
+        "native": 78,
+        "actual": 77
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 133,
+        "native": 72,
+        "actual": 71
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 136,
+        "native": 64,
+        "actual": 63
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 150,
+        "native": 78,
+        "actual": 77
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 153,
+        "native": 72,
+        "actual": 71
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 156,
+        "native": 64,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 5,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 28,
+        "native": 49,
+        "actual": 48
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 51,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 74,
+        "native": 49,
+        "actual": 48
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 97,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 120,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 143,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 166,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 53,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 10,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 13,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 50,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 53,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 90,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 93,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 110,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 113,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 130,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 133,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 150,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 153,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 5,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 28,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 51,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 74,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 97,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 120,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 143,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 166,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 81,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 10,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 13,
+        "native": 40,
+        "actual": 39
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 16,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 50,
+        "native": 78,
+        "actual": 77
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 53,
+        "native": 72,
+        "actual": 71
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 56,
+        "native": 64,
+        "actual": 63
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 90,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 93,
+        "native": 40,
+        "actual": 39
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 96,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 110,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 113,
+        "native": 40,
+        "actual": 39
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 116,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 130,
+        "native": 78,
+        "actual": 77
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 133,
+        "native": 72,
+        "actual": 71
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 136,
+        "native": 64,
+        "actual": 63
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 150,
+        "native": 78,
+        "actual": 77
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 153,
+        "native": 72,
+        "actual": 71
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 156,
+        "native": 64,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 5,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 28,
+        "native": 49,
+        "actual": 48
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 51,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 74,
+        "native": 49,
+        "actual": 48
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 97,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 120,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 143,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 79
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 166,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 10,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 13,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 50,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 53,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 90,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 93,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 110,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 113,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 130,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 133,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 150,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 153,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 5,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 28,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 51,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 74,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 97,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 120,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 143,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 166,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 10,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 13,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 50,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 53,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 90,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 93,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 110,
+        "native": 30,
+        "actual": 29
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 113,
+        "native": 24,
+        "actual": 23
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 130,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 133,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 150,
+        "native": 62,
+        "actual": 61
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 153,
+        "native": 56,
+        "actual": 55
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 5,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 28,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 51,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 74,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 97,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 120,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 143,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 63
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 166,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 6,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 10,
+        "native": 14,
+        "actual": 13
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 14,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 15,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 16,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 17,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 46,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 50,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 54,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 55,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 56,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 57,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 86,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 90,
+        "native": 14,
+        "actual": 13
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 95,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 96,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 97,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 106,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 110,
+        "native": 14,
+        "actual": 13
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 114,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 115,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 126,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 130,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 134,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 135,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 136,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 137,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 146,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 150,
+        "native": 46,
+        "actual": 45
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 154,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 155,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 156,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 157,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 5,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 28,
+        "native": 17,
+        "actual": 16
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 51,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 74,
+        "native": 17,
+        "actual": 16
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 97,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 120,
+        "native": 1,
+        "actual": 0
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 143,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 166,
+        "native": 33,
+        "actual": 32
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 47,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 51,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 62,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 65,
+        "native": 0,
+        "actual": 15
+      }
+    ]
+  },
+  "zig_current": [
+    {
+      "mode": "Debug",
+      "count": 2640,
+      "stdout_sha256": "8b4bc2cd630640dfd0a55f5d169b3bbba2b2fdd9fcb41dd64f5b930198d4a2c9"
+    },
+    {
+      "mode": "ReleaseFast",
+      "count": 2640,
+      "stdout_sha256": "8b4bc2cd630640dfd0a55f5d169b3bbba2b2fdd9fcb41dd64f5b930198d4a2c9"
+    }
+  ],
+  "zig_baseline": {
+    "mode": "Debug",
+    "compared_count": 2628,
+    "differences": [
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 40,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 41,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 120,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 121,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 140,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-0-cw-007f",
+        "slot": 141,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 7,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 37,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 48,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 50,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 53,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 56,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 63,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-0-cw-007f",
+        "slot": 89,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 40,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 41,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 120,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 121,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 140,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-1-cw-007f",
+        "slot": 141,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 0,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 21,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 23,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 24,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 32,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 65,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 73,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 81,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "random-type-1-cw-007f",
+        "slot": 85,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 40,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 41,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 120,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 121,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 140,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-2-cw-007f",
+        "slot": 141,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 0,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 3,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 13,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 40,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 41,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 49,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 53,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 58,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 65,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 85,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "random-type-2-cw-007f",
+        "slot": 94,
+        "native": 79,
+        "actual": 47
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 40,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 41,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 120,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 121,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 140,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-3-cw-007f",
+        "slot": 141,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 0,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 19,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 28,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 40,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 51,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 58,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 63,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-3-cw-007f",
+        "slot": 67,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 40,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 41,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 120,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 121,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 140,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-4-cw-007f",
+        "slot": 141,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 11,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 26,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 28,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 40,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 42,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 52,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 79,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 87,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "random-type-4-cw-007f",
+        "slot": 383,
+        "native": 63,
+        "actual": 31
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 6,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 14,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 15,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 16,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 17,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 40,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 41,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 46,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 54,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 55,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 56,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 57,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 86,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 95,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 96,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 97,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 106,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 114,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 115,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 120,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 121,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 126,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 134,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 135,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 136,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 137,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 140,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 141,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 146,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 154,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 155,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 156,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "lifecycle-type-5-cw-007f",
+        "slot": 157,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 0,
+        "native": -16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 1,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 2,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 46,
+        "native": 16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 47,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 48,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 92,
+        "native": -16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 93,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 94,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 115,
+        "native": -16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 116,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 117,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 138,
+        "native": 16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 139,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 140,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 161,
+        "native": 16,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 162,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 163,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 11,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 33,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 40,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 46,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 47,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 51,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 62,
+        "native": 32,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 65,
+        "native": 0,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 72,
+        "native": 47,
+        "actual": 15
+      },
+      {
+        "case": "random-type-5-cw-007f",
+        "slot": 76,
+        "native": 47,
+        "actual": 15
+      }
+    ],
+    "excluded_from_frame_comparison": [
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 23
+      },
+      {
+        "case": "phase-type-0-cw-007f",
+        "slot": 69
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 23
+      },
+      {
+        "case": "phase-type-1-cw-007f",
+        "slot": 69
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 23
+      },
+      {
+        "case": "phase-type-2-cw-007f",
+        "slot": 69
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 23
+      },
+      {
+        "case": "phase-type-3-cw-007f",
+        "slot": 69
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 23
+      },
+      {
+        "case": "phase-type-4-cw-007f",
+        "slot": 69
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 23
+      },
+      {
+        "case": "phase-type-5-cw-007f",
+        "slot": 69
+      }
+    ],
+    "executed_panic_case": {
+      "case": "phase-type-0-cw-007f",
+      "slot": 23,
+      "type_id": 0,
+      "base_frame": 32,
+      "mirror_long": false,
+      "flags": 4,
+      "lifecycle_stage": 20.0,
+      "phase": -17.0,
+      "frame": 48,
+      "flash_frame": 48
+    },
+    "panic_exit_code": -6,
+    "panic": "integer overflow"
+  }
+}

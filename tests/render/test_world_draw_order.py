@@ -9,7 +9,7 @@ from typing import Any, cast
 import pytest
 
 import crimson.render.world.draw as world_draw
-from crimson.creatures.spawn import CreatureTypeId
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
@@ -112,6 +112,37 @@ def test_draw_world_requires_initialized_ground(mocker) -> None:
 
     with pytest.raises(AssertionError, match="ground renderer must be initialized"):
         world_draw.draw_world(render_ctx)
+
+
+@pytest.mark.parametrize(
+    ("lifecycle", "phase", "flags", "frame"),
+    [
+        (7.000000476837158, 4.2, CreatureFlags(0), 24),
+        (-1.0, 4.2, CreatureFlags.RANGED_ATTACK_SHOCK, 63),
+        (20.0, 0.4999999701976776, CreatureFlags(0), 1),
+    ],
+)
+def test_draw_creatures_uses_native_lifecycle_and_rounding_frames(mocker, lifecycle, phase, flags, frame) -> None:
+    creature = make_creature_state(pos=Vec2(137.0, 241.0), type_id=CreatureTypeId.SPIDER_SP1)
+    creature.lifecycle_stage = lifecycle
+    creature.anim_phase = phase
+    creature.flags = flags
+    render_ctx = _render_ctx_for_creatures([creature])
+    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub())
+    draw = mocker.patch.object(world_draw.rl, "draw_texture_pro")
+
+    world_draw.draw_creatures(render_ctx, ctx=WorldDrawContext())
+
+    # Both the shadow and body use this frame, without a synthetic phase.
+    assert draw.call_count == 2
+    for call in draw.call_args_list:
+        source = call.args[1]
+        assert (source.x, source.y, source.width, source.height) == (
+            (frame % 8) * 32,
+            (frame // 8) * 32,
+            32,
+            32,
+        )
 
 
 @pytest.mark.parametrize("entity_alpha", [0.0, 0.0005, 0.001])

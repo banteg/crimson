@@ -149,25 +149,31 @@ def creature_anim_select_frame(
     base_frame: int,
     mirror_long: bool,
     flags: CreatureFlags = CreatureFlags(0),
+    lifecycle_stage: float = 16.0,
 ) -> tuple[int, bool, str]:
-    """Select an 8x8 atlas frame index (creature_render_type).
+    """Select the shadow/body atlas frame from lifecycle and animation state.
 
     Returns (frame_index, mirror_applied, mode).
+    The default lifecycle is alive; death staging uses its own truncation path.
+    Arithmetic before integer conversion follows native gameplay PC24 rounding.
 
     Note: mirror_applied refers to the long-strip ping-pong index mirroring
     (frame = 0x1f - frame) when the per-type mirror flag is set, not a texture flip.
     """
+    phase = _f32(phase)
+    lifecycle_stage = _f32(lifecycle_stage)
     flags_bits = int(flags)
     is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
     if is_long_strip:
-        if phase < 0.0:
-            # Negative anim_phase is used as a special render state in the game; keep the
-            # same fallback frame selection.
-            frame = base_frame + 0x0F
+        if lifecycle_stage < 16.0:
+            # Native branches on lifecycle, not on a synthetic animation phase.
+            # Subtraction rounds at PC24 before __ftol truncates toward zero.
+            frame = (
+                base_frame + 0x0F if lifecycle_stage < 0.0 else int(_f32(float(base_frame + 0x0F) - lifecycle_stage))
+            )
             mirrored = False
         else:
-            # Matches __ftol(phase + 0.5f) used by the original binary.
-            frame = int(phase + 0.5)
+            frame = int(_f32(phase + 0.5))
             mirrored = False
             if mirror_long and frame > 0x0F:
                 frame = 0x1F - frame
@@ -178,7 +184,7 @@ def creature_anim_select_frame(
 
     # Ping-pong strip:
     #   idx = (__ftol(phase + 0.5f) & 0x8000000f); then normalize negatives; then mirror >7.
-    raw = int(phase + 0.5)
+    raw = int(_f32(phase + 0.5))
     idx = _i32(_u32(raw) & 0x8000000F)
     if idx < 0:
         idx = _i32(_u32(((idx - 1) | 0xFFFFFFF0) + 1))
