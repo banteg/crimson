@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "base_commit": "cbc3a1785fc5d1a574eb00184c2faadd3c4951ba",
+  "base_commit": "ad9d1b402bc497cf54fbfd6366dc61a5af3cfc43",
   "waivers": [
     {
       "image": "crimsonland.exe",
       "address": 4336752,
       "check": "mismatches-increased",
-      "reason": "Correct conventional projectile corner store boundaries, proven by tools/match/evidence/conventional-corner-rounding-2026-09-11/verify.py: 4118 native/candidate fixtures agree with an independent rational x87 oracle, while the previous source fails 61 of the 1280 discovery fixtures. All 2696 earlier renderer fixtures also pass. The WIP positional reference audit changes from 10 to 12 mismatches: its two ion-fading pairings at 0x004247fe and 0x00424808 become four pairings at 0x00424808, 0x004248e6, 0x00424924 and 0x00424963. The other eight mismatch addresses persist. All 12 remain reported; no aliases or exactness acceptance are relaxed. This exception applies only against the named base commit."
+      "reason": "Correct the Sharpshooter near-end cosine and width-sine store boundaries, proven by tools/match/evidence/laser-trig-rounding-2026-09-11/verify.py: 5040 native/candidate fixtures agree, including 2520 independently checked PC24 cases, while the previous source fails 19 cases (9 PC24 and 10 PC64). All 6814 earlier renderer fixtures retain native call and pool hashes. The WIP positional reference audit retains its previous 12 mismatch addresses and adds one pairing at 0x00422e22, where native camera Y aligns with candidate camera X. Changing-camera native execution confirms the actual coordinate arguments. All 13 mismatches remain reported; no aliases, compiler settings, or exactness acceptance are relaxed. This exception applies only against the named base commit."
     }
   ]
 }

@@ -1354,3 +1354,30 @@ is a measured consequence of real expression temporaries, not a reason to
 introduce artificial locals. Python and Zig are unchanged by this step.
 Current source SHA-256:
 `609e75e367fff344342547b6227072827986038c6fd93e1db6636dd7dd874bb0`.
+
+## Sharpshooter trig store boundaries (2026-09-11)
+
+The near-end cosine and width sine must remain wide through scaling. The
+previous direction-vector construction stored each trig result too early.
+Moving the scale into the vector components and compound-adding the near
+offset to a player-position copy recovers the native boundaries. The
+far-end sine retains its separate float32 store before multiplication.
+
+The [laser trig proof](../../evidence/laser-trig-rounding-2026-09-11/README.md)
+passes **5,040** native/candidate fixtures at PC24 and PC64, with all **2,520**
+PC24 cases independently checked. The old source fails **19** cases, including
+**9 at PC24**. Seven local expression controls isolate the two premature
+stores; a direct coordinate sum still fails a PC64 witness. All **6,814**
+earlier conventional, plasma, beam, ion-chain, laser, and secondary-projectile
+cases retain their original native trace and state hashes.
+
+Similarity improves **59.946417% -> 60.268007%**. Instructions change
+**2951 -> 2949** against native's 3021; frame remains **0x184** against native's
+0x19c. References change **470/0/12 -> 471/0/13**. The previous twelve mismatch
+addresses remain, with one new positional camera-Y/camera-X pairing at
+`0x00422e22`; the base-bound exception preserves its visibility. No aliases
+or compiler settings change. Prefix remains zero, exactness flags remain
+false, and recovery remains incomplete. This is submitted-argument recovery,
+not a GPU or whole-function equivalence claim. Python and Zig are unchanged.
+Current source SHA-256:
+`29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9`.

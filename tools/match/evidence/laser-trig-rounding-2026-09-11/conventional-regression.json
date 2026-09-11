@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "conventional-corner-regression-replay",
+  "new_source_matches": 0,
+  "source_sha256": "29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9",
+  "verifier_sha256": "76978c203209852a7fc0a5735d0b768fe6c61accd920cef5ac8fc0603d07339e",
+  "executor_sha256": "929478efa3db26233c39cdd158186831e482263ee1c16a8df0d4ec56ba4aa0f4",
+  "program_loader_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "candidate_body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+  "candidate_object_sha256": "2c2f5eb6f29e7faf9ba606c0c2d4126c5888e7abf736361baa6fd42c241b4a24",
+  "previous_receipt_sha256": "5b7d219c32e180084d17a0b9fbf39c7cc7ffabdb58d6c85765280806dd1cc060",
+  "previous_fixture_sha256": "7a9a9566873101ccf05d1ed8005b55ed19ad96cc5c09f69efed6bf3794829a35",
+  "fixture_count": 4118,
+  "ordered_native_trace_hashes_sha256": "a877da7fdab4a42589be5a6ff5982fb48eb91a23442db248db5591f155d59e47",
+  "scope": "All recorded native argument bits, corner words, pool hashes, and writes; unchanged external recording contracts"
+}

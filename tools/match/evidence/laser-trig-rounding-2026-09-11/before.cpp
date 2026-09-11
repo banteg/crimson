@@ -140,15 +140,16 @@ extern "C" void projectile_render(float transition_alpha)
                       (float)cos(heading), (float)sin(heading))
                     * 512.0f;
             float start_heading = heading - 0.150915f;
-            // Scale before vector construction: native keeps these trig
-            // results wide through FMUL, unlike the end-position sine above.
-            projectile_render_vec2_t start_pos = player_pos;
-            start_pos += projectile_render_vec2_t(
-                (float)cos(start_heading) * 15.0f,
-                (float)sin(start_heading) * 15.0f);
-            projectile_render_vec2_t half_width(
-                (float)cos(player->aim_heading) * 1.1f,
-                (float)sin(player->aim_heading) * 1.1f);
+            projectile_render_vec2_t start_pos =
+                player_pos
+                + projectile_render_vec2_t(
+                      (float)cos(start_heading), (float)sin(start_heading))
+                    * 15.0f;
+            projectile_render_vec2_t half_width =
+                projectile_render_vec2_t(
+                    (float)cos(player->aim_heading),
+                    (float)sin(player->aim_heading))
+                * 1.1f;
             projectile_render_vec2_t start_screen = start_pos;
             start_screen += camera_offset;
             projectile_render_vec2_t point0 = start_screen - half_width;

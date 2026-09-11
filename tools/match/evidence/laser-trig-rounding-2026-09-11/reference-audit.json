@@ -1,0 +1,969 @@
+{
+  "before": [
+    {
+      "target_index": 660,
+      "candidate_index": 661,
+      "target_offset": 2932,
+      "candidate_offset": 2883,
+      "target_address": 4339684,
+      "candidate_address": 2883,
+      "instruction": "mov esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4794052,
+          "text": "projectile_pos_y",
+          "keys": [
+            "address:0x004926c4",
+            "name:projectile_pos_y",
+            "local:+0x6fa54"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x2c",
+            "address:0x004926e4"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1293,
+      "candidate_index": 1291,
+      "target_offset": 5284,
+      "candidate_offset": 5268,
+      "target_address": 4342036,
+      "candidate_address": 5268,
+      "instruction": "cmp esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4800196,
+          "text": "particle_vel_x",
+          "keys": [
+            "address:0x00493ec4",
+            "name:particle_vel_x",
+            "local:+0x71254"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x182c",
+            "address:0x00493ee4"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1737,
+      "candidate_index": 1797,
+      "target_offset": 7064,
+      "candidate_offset": 7336,
+      "target_address": 4343816,
+      "candidate_address": 7336,
+      "instruction": "fcomp dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649508,
+          "text": "0x0046f224",
+          "keys": [
+            "address:0x0046f224",
+            "local:+0x4c5b4",
+            "bytes4:0000803f"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40078000000000000000",
+          "keys": [
+            "bytes4:00008043"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1790,
+      "candidate_index": 1806,
+      "target_offset": 7286,
+      "candidate_offset": 7381,
+      "target_address": 4344038,
+      "candidate_address": 7381,
+      "instruction": "fmul dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649520,
+          "text": "0x0046f230",
+          "keys": [
+            "address:0x0046f230",
+            "local:+0x4c5c0",
+            "bytes4:00008041"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@4000c666660000000000",
+          "keys": [
+            "bytes4:66664640"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1801,
+      "candidate_index": 1808,
+      "target_offset": 7348,
+      "candidate_offset": 7391,
+      "target_address": 4344100,
+      "candidate_address": 7391,
+      "instruction": "fcomp dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649648,
+          "text": "0x0046f2b0",
+          "keys": [
+            "address:0x0046f2b0",
+            "local:+0x4c640",
+            "bytes4:00008043"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40029000000000000000",
+          "keys": [
+            "bytes4:00001041"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1814,
+      "candidate_index": 1814,
+      "target_offset": 7411,
+      "candidate_offset": 7419,
+      "target_address": 4344163,
+      "candidate_address": 7419,
+      "instruction": "fmul dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4650588,
+          "text": "0x0046f65c",
+          "keys": [
+            "address:0x0046f65c",
+            "local:+0x4c9ec",
+            "bytes4:66664640"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40048000000000000000",
+          "keys": [
+            "bytes4:00000042"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2457,
+      "candidate_index": 2401,
+      "target_offset": 10059,
+      "candidate_offset": 9867,
+      "target_address": 4346811,
+      "candidate_address": 9867,
+      "instruction": "mov esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4794040,
+          "text": "projectile_pool",
+          "keys": [
+            "address:0x004926b8",
+            "name:projectile_pool",
+            "local:+0x6fa48"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x4",
+            "address:0x004926bc"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2471,
+      "candidate_index": 2414,
+      "target_offset": 10107,
+      "candidate_offset": 9910,
+      "target_address": 4346859,
+      "candidate_address": 9910,
+      "instruction": "fld dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4739016,
+          "text": "camera_offset|camera_offset_x",
+          "keys": [
+            "address:0x00484fc8",
+            "name:camera_offset",
+            "name:camera_offset_x",
+            "local:+0x62358"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "_camera_offset",
+          "keys": [
+            "name:camera_offset+0x4",
+            "address:0x00484fcc"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2491,
+      "candidate_index": 2430,
+      "target_offset": 10196,
+      "candidate_offset": 9975,
+      "target_address": 4346948,
+      "candidate_address": 9975,
+      "instruction": "cmp esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4800184,
+          "text": "particle_pool",
+          "keys": [
+            "address:0x00493eb8",
+            "name:particle_pool",
+            "local:+0x71248"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x1804",
+            "address:0x00493ebc"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2560,
+      "candidate_index": 2511,
+      "target_offset": 10481,
+      "candidate_offset": 10301,
+      "target_address": 4347233,
+      "candidate_address": 10301,
+      "instruction": "fsub dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649544,
+          "text": "0x0046f248",
+          "keys": [
+            "address:0x0046f248",
+            "local:+0x4c5d8",
+            "bytes4:00004040"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40018000000000000000",
+          "keys": [
+            "bytes4:00008040"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2578,
+      "candidate_index": 2526,
+      "target_offset": 10562,
+      "candidate_offset": 10358,
+      "target_address": 4347314,
+      "candidate_address": 10358,
+      "instruction": "fsub dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649564,
+          "text": "0x0046f25c",
+          "keys": [
+            "address:0x0046f25c",
+            "local:+0x4c5ec",
+            "bytes4:00008040"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40008000000000000000",
+          "keys": [
+            "bytes4:00000040"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2583,
+      "candidate_index": 2530,
+      "target_offset": 10589,
+      "candidate_offset": 10376,
+      "target_address": 4347341,
+      "candidate_address": 10376,
+      "instruction": "fsub dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649564,
+          "text": "0x0046f25c",
+          "keys": [
+            "address:0x0046f25c",
+            "local:+0x4c5ec",
+            "bytes4:00008040"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40008000000000000000",
+          "keys": [
+            "bytes4:00000040"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    }
+  ],
+  "current": [
+    {
+      "target_index": 111,
+      "candidate_index": 132,
+      "target_offset": 434,
+      "candidate_offset": 508,
+      "target_address": 4337186,
+      "candidate_address": 508,
+      "instruction": "fadd dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4739020,
+          "text": "camera_offset_y",
+          "keys": [
+            "address:0x00484fcc",
+            "name:camera_offset_y",
+            "local:+0x6235c"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "_camera_offset",
+          "keys": [
+            "name:camera_offset",
+            "address:0x00484fc8"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 660,
+      "candidate_index": 659,
+      "target_offset": 2932,
+      "candidate_offset": 2850,
+      "target_address": 4339684,
+      "candidate_address": 2850,
+      "instruction": "mov esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4794052,
+          "text": "projectile_pos_y",
+          "keys": [
+            "address:0x004926c4",
+            "name:projectile_pos_y",
+            "local:+0x6fa54"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x2c",
+            "address:0x004926e4"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1293,
+      "candidate_index": 1289,
+      "target_offset": 5284,
+      "candidate_offset": 5235,
+      "target_address": 4342036,
+      "candidate_address": 5235,
+      "instruction": "cmp esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4800196,
+          "text": "particle_vel_x",
+          "keys": [
+            "address:0x00493ec4",
+            "name:particle_vel_x",
+            "local:+0x71254"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x182c",
+            "address:0x00493ee4"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1737,
+      "candidate_index": 1795,
+      "target_offset": 7064,
+      "candidate_offset": 7303,
+      "target_address": 4343816,
+      "candidate_address": 7303,
+      "instruction": "fcomp dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649508,
+          "text": "0x0046f224",
+          "keys": [
+            "address:0x0046f224",
+            "local:+0x4c5b4",
+            "bytes4:0000803f"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40078000000000000000",
+          "keys": [
+            "bytes4:00008043"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1790,
+      "candidate_index": 1804,
+      "target_offset": 7286,
+      "candidate_offset": 7348,
+      "target_address": 4344038,
+      "candidate_address": 7348,
+      "instruction": "fmul dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649520,
+          "text": "0x0046f230",
+          "keys": [
+            "address:0x0046f230",
+            "local:+0x4c5c0",
+            "bytes4:00008041"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@4000c666660000000000",
+          "keys": [
+            "bytes4:66664640"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1801,
+      "candidate_index": 1806,
+      "target_offset": 7348,
+      "candidate_offset": 7358,
+      "target_address": 4344100,
+      "candidate_address": 7358,
+      "instruction": "fcomp dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649648,
+          "text": "0x0046f2b0",
+          "keys": [
+            "address:0x0046f2b0",
+            "local:+0x4c640",
+            "bytes4:00008043"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40029000000000000000",
+          "keys": [
+            "bytes4:00001041"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 1814,
+      "candidate_index": 1812,
+      "target_offset": 7411,
+      "candidate_offset": 7386,
+      "target_address": 4344163,
+      "candidate_address": 7386,
+      "instruction": "fmul dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4650588,
+          "text": "0x0046f65c",
+          "keys": [
+            "address:0x0046f65c",
+            "local:+0x4c9ec",
+            "bytes4:66664640"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40048000000000000000",
+          "keys": [
+            "bytes4:00000042"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2457,
+      "candidate_index": 2399,
+      "target_offset": 10059,
+      "candidate_offset": 9828,
+      "target_address": 4346811,
+      "candidate_address": 9828,
+      "instruction": "mov esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4794040,
+          "text": "projectile_pool",
+          "keys": [
+            "address:0x004926b8",
+            "name:projectile_pool",
+            "local:+0x6fa48"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x4",
+            "address:0x004926bc"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2471,
+      "candidate_index": 2412,
+      "target_offset": 10107,
+      "candidate_offset": 9871,
+      "target_address": 4346859,
+      "candidate_address": 9871,
+      "instruction": "fld dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4739016,
+          "text": "camera_offset|camera_offset_x",
+          "keys": [
+            "address:0x00484fc8",
+            "name:camera_offset",
+            "name:camera_offset_x",
+            "local:+0x62358"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "_camera_offset",
+          "keys": [
+            "name:camera_offset+0x4",
+            "address:0x00484fcc"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2491,
+      "candidate_index": 2428,
+      "target_offset": 10196,
+      "candidate_offset": 9936,
+      "target_address": 4346948,
+      "candidate_address": 9936,
+      "instruction": "cmp esi, ADDR",
+      "target_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "image",
+          "value": 4800184,
+          "text": "particle_pool",
+          "keys": [
+            "address:0x00493eb8",
+            "name:particle_pool",
+            "local:+0x71248"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 1,
+          "kind": "imm",
+          "source": "reloc",
+          "value": null,
+          "text": "_projectile_pool",
+          "keys": [
+            "name:projectile_pool+0x1804",
+            "address:0x00493ebc"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2560,
+      "candidate_index": 2509,
+      "target_offset": 10481,
+      "candidate_offset": 10262,
+      "target_address": 4347233,
+      "candidate_address": 10262,
+      "instruction": "fsub dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649544,
+          "text": "0x0046f248",
+          "keys": [
+            "address:0x0046f248",
+            "local:+0x4c5d8",
+            "bytes4:00004040"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40018000000000000000",
+          "keys": [
+            "bytes4:00008040"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2578,
+      "candidate_index": 2524,
+      "target_offset": 10562,
+      "candidate_offset": 10319,
+      "target_address": 4347314,
+      "candidate_address": 10319,
+      "instruction": "fsub dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649564,
+          "text": "0x0046f25c",
+          "keys": [
+            "address:0x0046f25c",
+            "local:+0x4c5ec",
+            "bytes4:00008040"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40008000000000000000",
+          "keys": [
+            "bytes4:00000040"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    },
+    {
+      "target_index": 2583,
+      "candidate_index": 2528,
+      "target_offset": 10589,
+      "candidate_offset": 10337,
+      "target_address": 4347341,
+      "candidate_address": 10337,
+      "instruction": "fsub dword [ADDR]",
+      "target_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "image",
+          "value": 4649564,
+          "text": "0x0046f25c",
+          "keys": [
+            "address:0x0046f25c",
+            "local:+0x4c5ec",
+            "bytes4:00008040"
+          ],
+          "explained": true
+        }
+      ],
+      "candidate_references": [
+        {
+          "operand_index": 0,
+          "kind": "disp",
+          "source": "reloc",
+          "value": null,
+          "text": "__real@4@40008000000000000000",
+          "keys": [
+            "bytes4:00000040"
+          ],
+          "explained": true
+        }
+      ],
+      "status": "mismatch"
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "kind": "bounded-laser-trig-store-source-controls",
+  "before_source_sha256": "609e75e367fff344342547b6227072827986038c6fd93e1db6636dd7dd874bb0",
+  "verifier_sha256": "cb8a1422fc3b8781485ae3fb5e810250fa7770db157870fc076a76553004247f",
+  "executor_sha256": "feff11bf7d0d309e313325cc58073b16560aa45ea431f812503d2c9904ff2765",
+  "fixture_sha256": "0f096537c84782c1c6130a7e8b95e029a8f5e01c7f192ad4cd46911483560d19",
+  "selected_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    464,
+    539,
+    628,
+    629,
+    668,
+    669
+  ],
+  "controls": [
+    {
+      "name": "before-width1",
+      "failures": [
+        464,
+        539,
+        668,
+        669
+      ],
+      "metrics": {
+        "ratio": 0.5998659517426274,
+        "instructions": 2947,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 472,
+        "references_unresolved": 0,
+        "references_mismatched": 13,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "1ee05f66595760edfe677ba2f0c3733e0e00057b132245415ac8171520f1b68e",
+      "body_sha256": "6e4257c7d44ba1c61fe2fc2f4e10f33939da4f83b7e6e9f0f7c9b19bf5df9163"
+    },
+    {
+      "name": "component-width0",
+      "failures": [
+        628,
+        629
+      ],
+      "metrics": {
+        "ratio": 0.597924338801473,
+        "instructions": 2953,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 469,
+        "references_unresolved": 0,
+        "references_mismatched": 14,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "a9698fef89ba3ff41cb8776a1abb648325459e59dac590637fdfca6ed81daeed",
+      "body_sha256": "63c7924fcf092fdd45286bf0ea56a91456a8abf685bc9120d92ec87dcb115aea"
+    },
+    {
+      "name": "component-width1",
+      "failures": [],
+      "metrics": {
+        "ratio": 0.6026800670016751,
+        "instructions": 2949,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 471,
+        "references_unresolved": 0,
+        "references_mismatched": 13,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "4ad3d10da4c258aaee653b95797bd29911180ef28442c8024b32f061a0acb68c",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d"
+    },
+    {
+      "name": "sum-width0",
+      "failures": [
+        628,
+        629
+      ],
+      "metrics": {
+        "ratio": 0.5996649916247906,
+        "instructions": 2949,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 471,
+        "references_unresolved": 0,
+        "references_mismatched": 13,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "873d084f6610f72a913971887bb85a4a132a91afde68c880fb57d287a7fc5c8d",
+      "body_sha256": "53fd8f626c3c72b00c9c4f41297046d541e6f264b1a5ecb23cc6b45adbc09ada"
+    },
+    {
+      "name": "sum-width1",
+      "failures": [],
+      "metrics": {
+        "ratio": 0.5973851827019778,
+        "instructions": 2945,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 465,
+        "references_unresolved": 0,
+        "references_mismatched": 16,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "3c79f358f1819d3897090f6a55904d1bb1bceb6aab3292c32b33094ce5229640",
+      "body_sha256": "0cad400ead7e3bd60eaea73c4eb8f5c020fae349f5229ef14a814ffffa5696c6"
+    },
+    {
+      "name": "direct-width0",
+      "failures": [
+        539,
+        628,
+        629
+      ],
+      "metrics": {
+        "ratio": 0.5960442507542743,
+        "instructions": 2945,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 464,
+        "references_unresolved": 0,
+        "references_mismatched": 16,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "2abccd0f4535e3407467490a53b07f60454a43bfaf64acd47635e2f7a00100e1",
+      "body_sha256": "1fbea11fe39e660baf6b8681a86de97b030c86b617ad6cc528a2a72fdcfa91dd"
+    },
+    {
+      "name": "direct-width1",
+      "failures": [
+        539
+      ],
+      "metrics": {
+        "ratio": 0.5984568936598457,
+        "instructions": 2941,
+        "native_instructions": 3021,
+        "frame": 388,
+        "references_ok": 470,
+        "references_unresolved": 0,
+        "references_mismatched": 12,
+        "prefix": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "source_sha256": "47035d36d5ca47eff1ab49afbb1cfff01697d98285f40d6fb8b31b24d64ed3c1",
+      "body_sha256": "14142344d5842e7beb3e443cca3f82816ceea39f264a2eb0bdfb99a420e2d14b"
+    }
+  ],
+  "scope": "Seven concrete source controls and 70 recorded discovery cases; no source-shape ceiling claim"
+}
