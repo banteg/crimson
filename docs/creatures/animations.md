@@ -26,16 +26,20 @@ The renderer (`creature_render_type`, `0x00418b60`) selects an atlas frame based
 - the integer part of `anim_phase`
 - the creature `heading` (rotation)
 
-Known behaviors (medium confidence):
+Frame selection is checked against
+[2,640 native PC24 witnesses](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-frame-selection-2026-09-11/README.md):
 
 - Flag `0x4` selects the short 8-frame ping‑pong strip.
 - Flag `0x40` forces the long strip even when `0x4` is set.
-- For the short strip: `frame = base + 0x10 + ping_pong(int(phase) & 0xf)`,
+- For the short strip: `frame = base + 0x10 + ping_pong(__ftol(phase + 0.5) % 16)`,
   where ping‑pong folds 0..15 into 0..7..0.
+  The remainder is signed for diagnostic negative phases; arithmetic before
+  integer conversion follows gameplay PC24 rounding.
 
 - For the long strip (alive, `lifecycle_stage >= 16.0`): `frame = __ftol(anim_phase + 0.5)`.
   - If the type mirror flag is set and `frame > 0x0f`, the index is mirrored: `frame = 0x1f - frame`.
-- If per‑creature flags include `0x10`, the frame offset shifts by `+0x20` (alt strip for some spawns).
+- In the shadow/body long-strip passes, flag `0x10` adds `+0x20` after either
+  alive or death-stage selection (an alternate strip for some spawns).
 - For the long strip during death staging (`0 <= lifecycle_stage < 16.0`): `frame = __ftol((base_frame + 0x0f) - lifecycle_stage)`
   - This effectively ramps through the 16 death frames as `lifecycle_stage` decays from `~16` to `0`.
 - For long-strip corpses (`lifecycle_stage < 0.0`): `frame = base_frame + 0x0f` (static corpse frame).
@@ -50,6 +54,27 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
 - for long-strip corpses (`lifecycle_stage < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + lifecycle_stage * 0.5` (clamped to `>= 0`).
 - Evidence: `analysis/frida/creature_render_trace_summary.json` (captured via `scripts/frida/creature_render_trace.js`).
+
+## Hit flash with violence disabled
+
+When `violence_disabled` is nonzero, each species' body batch is followed by
+a white additive flash batch. Active matching creatures with positive
+`hit_flash_timer` emit **two identical quads** at their actual size. The alpha
+is `min(hit_flash_timer * 5, 1) * transition_alpha`, rounded at PC24 after
+each multiplication. Grim2D truncates `alpha * 255` when packing the color.
+The pass restores normal alpha blending afterward.
+
+The flash uses the same ping-pong frames as the body. For long strips, the
+shock offset applies only while `lifecycle_stage >= 16`; dying shock creatures
+therefore use a different frame in this pass. Stages below `-10` are retired
+by the preceding body pass and do not flash.
+
+`creature_apply_damage` sets the timer to `0.2f`, including zero damage and
+corpse hits. The active-creature update subtracts `frame_dt` while the timer
+is positive, before the Freeze branch, and allows it to cross below zero.
+Spawn allocation clears it. Both ports implement the flash; Zig also restores
+the timer from existing replay slot residue. See the
+[native lifetime and draw audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-hit-flash-2026-09-11/README.md).
 
 ## Creature flags related to animation / attacks (partial)
 

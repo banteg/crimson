@@ -14,6 +14,7 @@ from grim.raylib_api import rl
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
+from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...projectiles.types import ProjectileTemplateId
@@ -123,6 +124,8 @@ def draw_background(
         out_w=out_size.x,
         out_h=out_size.y,
     )
+
+
 def effect_src_rect(texture: rl.Texture, effect_id: EffectId) -> rl.Rectangle | None:
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
     if atlas is None:
@@ -186,7 +189,9 @@ def draw_player(render_ctx: WorldRenderCtx, player: PlayerState, *, ctx: WorldDr
         )
         return
 
-    screen = viewport.world_to_screen_with(player.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
+    screen = viewport.world_to_screen_with(
+        player.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
+    )
     tint = rl.Color(90, 190, 120, int(255 * ctx.entity_alpha + 0.5))
     rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * render_ctx.view.scale), tint)
 
@@ -262,80 +267,133 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
     for creature in iter_active_creature_overlay_pass(creature_entries):
-        screen = viewport.world_to_screen_with(creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
+        screen = viewport.world_to_screen_with(
+            creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
+        )
         lifecycle_stage = float(creature.lifecycle_stage)
         draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
     resources = frame.resources
-    for creature in iter_native_creature_sprite_pass(creature_entries):
-        screen = viewport.world_to_screen_with(creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
-        lifecycle_stage = float(creature.lifecycle_stage)
+    for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
+        for creature in creature_entries:
+            if not creature.active or creature.type_id != type_id:
+                continue
+            screen = viewport.world_to_screen_with(
+                creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
+            )
+            lifecycle_stage = float(creature.lifecycle_stage)
 
-        type_id = creature.type_id
-        asset = CREATURE_ASSET[type_id]
-        texture = _creature_texture(resources, asset)
+            type_id = creature.type_id
+            asset = CREATURE_ASSET[type_id]
+            texture = _creature_texture(resources, asset)
 
-        if texture is None:
-            tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
-            rl.draw_circle(int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * render_ctx.view.scale), tint)
-            continue
+            if texture is None:
+                tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
+                rl.draw_circle(
+                    int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * render_ctx.view.scale), tint,
+                )
+                continue
 
-        tint_rgba = creature.tint
+            tint_rgba = creature.tint
 
-        # Energizer: tint "weak" creatures blue-ish while active.
-        # Mirrors `creature_render_type` (0x00418b60) branch when
-        # `_bonus_energizer_timer > 0` and `max_health < 500`.
-        energizer_timer = float(frame.state.bonuses.energizer)
-        if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
-            # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
-            # Effect is full strength while timer >= 1 and fades out during the last second.
-            t = energizer_timer
-            if t >= 1.0:
-                t = 1.0
-            elif t < 0.0:
-                t = 0.0
-            tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
+            # Energizer: tint "weak" creatures blue-ish while active.
+            # Mirrors `creature_render_type` (0x00418b60) branch when
+            # `_bonus_energizer_timer > 0` and `max_health < 500`.
+            energizer_timer = float(frame.state.bonuses.energizer)
+            if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
+                # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
+                # Effect is full strength while timer >= 1 and fades out during the last second.
+                t = energizer_timer
+                if t >= 1.0:
+                    t = 1.0
+                elif t < 0.0:
+                    t = 0.0
+                tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
 
-        if lifecycle_stage < 0.0:
-            # Mirrors the main-pass alpha fade when lifecycle_stage ramps negative.
-            tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + lifecycle_stage * 0.1))
-
-        tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
-
-        size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
-        shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
-        # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by shadows_enabled
-        # and is disabled when the Monster Vision perk is active.
-        shadow = shadows_enabled and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
-        long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
-            creature.flags & CreatureFlags.ANIM_LONG_STRIP
-        ) != 0
-
-        shadow_alpha = None
-        if shadow:
-            # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
-            shadow_a = float(creature.tint.a) * 0.4
             if lifecycle_stage < 0.0:
-                shadow_a += lifecycle_stage * (0.5 if long_strip else 0.1)
-                shadow_a = max(0.0, shadow_a)
-            shadow_alpha = int(clamp(shadow_a * ctx.entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+                # Mirrors the main-pass alpha fade when lifecycle_stage ramps negative.
+                tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + lifecycle_stage * 0.1))
 
-        draw_creature_sprite(
-            render_ctx,
-            texture,
-            type_id=type_id or CreatureTypeId.ZOMBIE,
-            flags=creature.flags,
-            phase=float(creature.anim_phase),
-            lifecycle_stage=lifecycle_stage,
-            shadow_alpha=shadow_alpha,
-            pos=creature.pos,
-            screen_pos=screen,
-            rotation_rad=float(creature.heading) - math.pi / 2.0,
-            scale=render_ctx.view.scale,
-            size_scale=size_scale,
-            tint=tint,
-            shadow=shadow,
-        )
+            tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
+
+            size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
+            shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
+            # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by shadows_enabled
+            # and is disabled when the Monster Vision perk is active.
+            shadow = shadows_enabled and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
+            long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
+                creature.flags & CreatureFlags.ANIM_LONG_STRIP
+            ) != 0
+
+            shadow_alpha = None
+            if shadow:
+                # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
+                shadow_a = float(creature.tint.a) * 0.4
+                if lifecycle_stage < 0.0:
+                    shadow_a += lifecycle_stage * (0.5 if long_strip else 0.1)
+                    shadow_a = max(0.0, shadow_a)
+                shadow_alpha = int(clamp(shadow_a * ctx.entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+
+            draw_creature_sprite(
+                render_ctx,
+                texture,
+                type_id=type_id or CreatureTypeId.ZOMBIE,
+                flags=creature.flags,
+                phase=float(creature.anim_phase),
+                lifecycle_stage=lifecycle_stage,
+                shadow_alpha=shadow_alpha,
+                pos=creature.pos,
+                screen_pos=screen,
+                rotation_rad=float(creature.heading) - math.pi / 2.0,
+                scale=render_ctx.view.scale,
+                size_scale=size_scale,
+                tint=tint,
+                shadow=shadow,
+            )
+
+        if frame.config is not None and frame.config.display.violence_disabled:
+            draw_creature_hit_flashes(render_ctx, type_id=type_id, ctx=ctx)
+
+
+def draw_creature_hit_flashes(
+    render_ctx: WorldRenderCtx,
+    *,
+    type_id: CreatureTypeId,
+    ctx: WorldDrawContext,
+) -> None:
+    texture = _creature_texture(render_ctx.frame.resources, CREATURE_ASSET[type_id])
+    if texture is None or texture.width <= 0:
+        return
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
+    try:
+        for creature in render_ctx.frame.creatures.entries:
+            # Native retires stages below -10 after the body draw, before this pass.
+            if (
+                not creature.active
+                or creature.type_id != type_id
+                or creature.lifecycle_stage < -10.0
+                or creature.hit_flash_timer <= 0.0
+            ):
+                continue
+            alpha = x87_pc24_mul(min(x87_pc24_mul(creature.hit_flash_timer, 5.0), 1.0), f32(ctx.entity_alpha))
+            # grim_set_color_ptr truncates the scaled channel to a byte.
+            alpha_byte = int(x87_pc24_mul(alpha, 255.0)) & 0xFF
+            draw_creature_sprite(
+                render_ctx,
+                texture,
+                type_id=type_id,
+                flags=creature.flags,
+                phase=creature.anim_phase,
+                lifecycle_stage=creature.lifecycle_stage,
+                pos=creature.pos,
+                rotation_rad=x87_pc24_sub(creature.heading, NATIVE_HALF_PI),
+                scale=render_ctx.view.scale,
+                size_scale=creature.size / (texture.width / 8.0),
+                tint=rl.Color(255, 255, 255, alpha_byte),
+                hit_flash=True,
+            )
+    finally:
+        rl.end_blend_mode()
 
 
 def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
@@ -436,6 +494,7 @@ def draw_aim_indicators(
 ) -> None:
     transform = world_to_screen_with
     if transform is None:
+
         def transform(pos: Vec2, camera: Vec2, view_scale: Vec2) -> Vec2:
             return viewport.world_to_screen_with(
                 pos,
@@ -445,6 +504,7 @@ def draw_aim_indicators(
 
     draw_circle = draw_aim_circle_fn
     if draw_circle is None:
+
         def draw_circle(center: Vec2, radius: float, alpha: float) -> None:
             draw_aim_circle(
                 render_ctx,
@@ -455,6 +515,7 @@ def draw_aim_indicators(
 
     draw_gauge = draw_clock_gauge_fn
     if draw_gauge is None:
+
         def draw_gauge(pos: Vec2, ms: int, scale: float, alpha: float) -> None:
             draw_clock_gauge(
                 render_ctx,
@@ -492,6 +553,7 @@ def draw_aim_enhancements(
 ) -> None:
     transform = world_to_screen_with
     if transform is None:
+
         def transform(pos: Vec2, camera: Vec2, view_scale: Vec2) -> Vec2:
             return viewport.world_to_screen_with(
                 pos,

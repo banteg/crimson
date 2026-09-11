@@ -5416,68 +5416,110 @@ fn drawCreatures(
     else
         false;
 
-    for (runner.session.creatures.entries) |creature| {
-        if (!creature.active) continue;
-        const color = if (creature.hp > 0.0) creature_color else corpse_color;
-        const radius = @max(6.0, creature.size * 0.24);
-        if (runtime_assets) |assets| {
-            if (window_atlas.creatureRenderFrame(creature)) |render_frame| {
-                const texture = assets.texture(switch (render_frame.texture_kind) {
-                    .alien => .alien,
-                    .lizard => .lizard,
-                    .spider_sp1 => .spider_sp1,
-                    .spider_sp2 => .spider_sp2,
-                    .trooper => .trooper,
-                    .zombie => .zombie,
-                });
-                const cell = @as(f32, @floatFromInt(texture.width)) / 8.0;
-                if (cell > 0.0) {
-                    const base_scale = creature.size / cell;
-                    const tint = creatureRenderTint(
-                        creature.tint,
-                        creature.max_hp,
-                        runner.session.state.bonuses.energizer,
-                        creature.lifecycle_stage,
-                    );
-                    const shadow_enabled = !monster_vision_active;
-                    if (shadow_enabled and shadows_enabled) {
-                        const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
-                        var shadow_alpha: f32 = creature.tint[3] * 0.4;
-                        if (creature.lifecycle_stage < 0.0) {
-                            shadow_alpha = @max(
-                                @as(f32, 0.0),
-                                shadow_alpha + creature.lifecycle_stage * (if (is_long) @as(f32, 0.5) else @as(f32, 0.1)),
-                            );
+    // creature_render_all species order; each type's flash follows its body batch.
+    for ([_]i32{ 0, 3, 4, 2, 1 }) |type_id| {
+        for (runner.session.creatures.entries) |creature| {
+            if (!creature.active or creature.type_id != type_id) continue;
+            const color = if (creature.hp > 0.0) creature_color else corpse_color;
+            const radius = @max(6.0, creature.size * 0.24);
+            if (runtime_assets) |assets| {
+                if (window_atlas.creatureRenderFrame(creature)) |render_frame| {
+                    const texture = assets.texture(switch (render_frame.texture_kind) {
+                        .alien => .alien,
+                        .lizard => .lizard,
+                        .spider_sp1 => .spider_sp1,
+                        .spider_sp2 => .spider_sp2,
+                        .trooper => .trooper,
+                        .zombie => .zombie,
+                    });
+                    const cell = @as(f32, @floatFromInt(texture.width)) / 8.0;
+                    if (cell > 0.0) {
+                        const base_scale = creature.size / cell;
+                        const tint = creatureRenderTint(
+                            creature.tint,
+                            creature.max_hp,
+                            runner.session.state.bonuses.energizer,
+                            creature.lifecycle_stage,
+                        );
+                        const shadow_enabled = !monster_vision_active;
+                        if (shadow_enabled and shadows_enabled) {
+                            const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
+                            var shadow_alpha: f32 = creature.tint[3] * 0.4;
+                            if (creature.lifecycle_stage < 0.0) {
+                                shadow_alpha = @max(
+                                    @as(f32, 0.0),
+                                    shadow_alpha + creature.lifecycle_stage * (if (is_long) @as(f32, 0.5) else @as(f32, 0.1)),
+                                );
+                            }
+                            if (shadow_alpha > 1e-3) {
+                                drawAtlasFrameCenteredRotated(
+                                    texture,
+                                    8,
+                                    render_frame.frame,
+                                    .{
+                                        .x = creature.pos.x + creature.size * 0.035 - 0.7,
+                                        .y = creature.pos.y + creature.size * 0.035 - 0.7,
+                                    },
+                                    base_scale * 1.07,
+                                    creature.heading - std.math.pi / 2.0,
+                                    colorWithAlpha(rl.Color.black, shadow_alpha * entity_alpha),
+                                );
+                            }
                         }
-                        if (shadow_alpha > 1e-3) {
-                            drawAtlasFrameCenteredRotated(
-                                texture,
-                                8,
-                                render_frame.frame,
-                                .{
-                                    .x = creature.pos.x + creature.size * 0.035 - 0.7,
-                                    .y = creature.pos.y + creature.size * 0.035 - 0.7,
-                                },
-                                base_scale * 1.07,
-                                creature.heading - std.math.pi / 2.0,
-                                colorWithAlpha(rl.Color.black, shadow_alpha * entity_alpha),
-                            );
-                        }
+                        drawAtlasFrameCenteredRotated(
+                            texture,
+                            8,
+                            render_frame.frame,
+                            toRlVec(creature.pos),
+                            base_scale,
+                            creature.heading - std.math.pi / 2.0,
+                            colorFromUnitRgba(tint[0], tint[1], tint[2], tint[3] * entity_alpha),
+                        );
+                        continue;
                     }
-                    drawAtlasFrameCenteredRotated(
-                        texture,
-                        8,
-                        render_frame.frame,
-                        toRlVec(creature.pos),
-                        base_scale,
-                        creature.heading - std.math.pi / 2.0,
-                        colorFromUnitRgba(tint[0], tint[1], tint[2], tint[3] * entity_alpha),
-                    );
-                    continue;
                 }
             }
+            rl.drawCircleV(toRlVec(creature.pos), radius, colorWithAlpha(color, entity_alpha));
         }
-        rl.drawCircleV(toRlVec(creature.pos), radius, colorWithAlpha(color, entity_alpha));
+        if (runner.session.gore_disabled != 0) {
+            drawCreatureHitFlashes(runner, runtime_assets, type_id, entity_alpha);
+        }
+    }
+}
+
+fn drawCreatureHitFlashes(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
+    type_id: i32,
+    entity_alpha: f32,
+) void {
+    const assets = runtime_assets orelse return;
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (runner.session.creatures.entries) |creature| {
+        const flash = window_atlas.creatureHitFlash(creature, type_id, entity_alpha) orelse continue;
+        const texture = assets.texture(switch (flash.frame.texture_kind) {
+            .alien => .alien,
+            .lizard => .lizard,
+            .spider_sp1 => .spider_sp1,
+            .spider_sp2 => .spider_sp2,
+            .trooper => .trooper,
+            .zombie => .zombie,
+        });
+        if (texture.width <= 0) continue;
+        const scale = creature.size / (@as(f32, @floatFromInt(texture.width)) / 8.0);
+        const tint = rl.Color.init(255, 255, 255, flash.alpha);
+        for (0..2) |_| {
+            drawAtlasFrameCenteredRotated(
+                texture,
+                8,
+                flash.frame.frame,
+                toRlVec(creature.pos),
+                scale,
+                creature.heading - @as(f32, 1.57079637),
+                tint,
+            );
+        }
     }
 }
 

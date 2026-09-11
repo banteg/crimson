@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import msgspec
+
 from grim import music as grim_music
 from grim.assets import (
     TextureId,
@@ -319,6 +321,13 @@ class ReplayPlaybackMode:
         hardcore = bool(replay.header.hardcore)
         preserve_bugs = bool(replay.header.preserve_bugs)
         rtx_mode = mode_from_rtx_flag(self._rtx)
+        replay_config = msgspec.structs.replace(
+            self._config,
+            display=msgspec.structs.replace(
+                self._config.display,
+                violence_disabled=int(replay.header.violence_disabled),
+            ),
+        )
 
         runtime = WorldRuntime(
             assets_dir=self._ctx.assets_dir,
@@ -327,7 +336,7 @@ class ReplayPlaybackMode:
             quest_fail_retry_count=int(quest_fail_retry_count),
             hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),
-            config=self._config,
+            config=replay_config,
             audio=self._audio,
             audio_rng=self._audio_rng,
             rtx_mode=rtx_mode,

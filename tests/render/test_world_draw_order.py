@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, cast
 
+import msgspec
 import pytest
 
 import crimson.render.world.draw as world_draw
@@ -17,6 +18,7 @@ from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.draw import WorldDrawContext
 from crimson.render.world.viewport import view_transform
 from crimson.sim.gameplay_state import GameplayState
+from grim.config import default_crimson_cfg
 from grim.geom import Vec2
 from tests.support.factories import make_creature_state
 
@@ -143,6 +145,129 @@ def test_draw_creatures_uses_native_lifecycle_and_rounding_frames(mocker, lifecy
             32,
             32,
         )
+
+
+def test_creature_hit_flash_draws_match_native_witnesses(mocker) -> None:
+    import json
+    import struct
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-hit-flash.json"
+    witnesses = json.loads(path.read_text())["render"]
+    additive = False
+    drawn: list[tuple[object, ...]] = []
+
+    def begin(mode) -> None:
+        nonlocal additive
+        assert not additive
+        assert mode == world_draw.rl.BlendMode.BLEND_ADDITIVE
+        additive = True
+
+    def end() -> None:
+        nonlocal additive
+        assert additive
+        additive = False
+
+    def draw(_texture, src, dst, origin, rotation, tint) -> None:
+        if additive:
+            drawn.append(
+                (
+                    src.x,
+                    src.y,
+                    dst.x,
+                    dst.y,
+                    dst.width,
+                    dst.height,
+                    origin.x,
+                    origin.y,
+                    rotation,
+                    tint.r,
+                    tint.g,
+                    tint.b,
+                    tint.a,
+                ),
+            )
+
+    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub(512, 512))
+    mocker.patch.object(world_draw.rl, "draw_texture_pro", side_effect=draw)
+    mocker.patch.object(world_draw.rl, "begin_blend_mode", side_effect=begin)
+    mocker.patch.object(world_draw.rl, "end_blend_mode", side_effect=end)
+    for witness in witnesses:
+        case = witness["input"]
+        creatures = []
+        for row in case["creatures"]:
+            creature = make_creature_state(
+                pos=Vec2(row["pos_x"], row["pos_y"]),
+                active=bool(row["active"]),
+                type_id=CreatureTypeId(row["type_id"]),
+                lifecycle_stage=row["lifecycle_stage"],
+                size=row["size"],
+                flags=CreatureFlags(row["flags"]),
+            )
+            creature.anim_phase = row["anim_phase"]
+            creature.heading = row["heading"]
+            creature.hit_flash_timer = row["hit_flash_timer"]
+            creatures.append(creature)
+        config = default_crimson_cfg()
+        config.display.violence_disabled = case["flash"]
+        render_ctx = _render_ctx_for_creatures(creatures)
+        render_ctx = msgspec.structs.replace(
+            render_ctx,
+            frame=msgspec.structs.replace(render_ctx.frame, config=config),
+            view=msgspec.structs.replace(render_ctx.view, camera=Vec2(13.25, -18.5)),
+        )
+        drawn.clear()
+        ctx = WorldDrawContext(entity_alpha=case["transition"])
+        # Compare a species pass, including the native filter for other types.
+        # The render_all gate and batch order are exercised separately below.
+        if case["flash"]:
+            world_draw.draw_creature_hit_flashes(render_ctx, type_id=CreatureTypeId(case["type_id"]), ctx=ctx)
+        assert not additive
+        assert len(drawn) == len(witness["expected"]) * 2, case["name"]
+        for index, expected in enumerate(witness["expected"]):
+            first, second = drawn[index * 2 : index * 2 + 2]
+            assert first == second
+            frame = expected["frame"]
+            x, y, width, height = struct.unpack("<4f", struct.pack("<4I", *expected["quad_bits"]))
+            rotation = struct.unpack("<f", struct.pack("<I", expected["rotation_bits"]))[0]
+            assert first[:8] == (
+                (frame % 8) * 64,
+                (frame // 8) * 64,
+                x + width / 2,
+                y + height / 2,
+                width,
+                height,
+                width / 2,
+                height / 2,
+            ), case["name"]
+            assert first[8] == pytest.approx(rotation * world_draw._RAD_TO_DEG, abs=1e-5)
+            packed = expected["packed_color"]
+            assert first[9:] == (255, 255, 255, packed >> 24), case["name"]
+
+
+@pytest.mark.parametrize("violence_disabled", [0, 1])
+def test_creature_flash_follows_each_species_body_batch(mocker, violence_disabled) -> None:
+    creatures = [
+        make_creature_state(pos=Vec2(10.0, 10.0), type_id=CreatureTypeId.SPIDER_SP1),
+        make_creature_state(pos=Vec2(20.0, 20.0), type_id=CreatureTypeId.ZOMBIE),
+        make_creature_state(pos=Vec2(30.0, 30.0), type_id=CreatureTypeId.ZOMBIE),
+    ]
+    for creature in creatures:
+        creature.hit_flash_timer = 0.2
+    config = default_crimson_cfg()
+    config.display.violence_disabled = violence_disabled
+    render_ctx = _render_ctx_for_creatures(creatures)
+    render_ctx = msgspec.structs.replace(render_ctx, frame=msgspec.structs.replace(render_ctx.frame, config=config))
+    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub())
+    mocker.patch.object(world_draw.rl, "begin_blend_mode")
+    mocker.patch.object(world_draw.rl, "end_blend_mode")
+    sprite = mocker.patch.object(world_draw, "draw_creature_sprite")
+    world_draw.draw_creatures(render_ctx, ctx=WorldDrawContext())
+    calls = [(call.kwargs["pos"].x, call.kwargs.get("hit_flash", False)) for call in sprite.call_args_list]
+    if violence_disabled:
+        assert calls == [(20, False), (30, False), (20, True), (30, True), (10, False), (10, True)]
+    else:
+        assert calls == [(20, False), (30, False), (10, False)]
 
 
 @pytest.mark.parametrize("entity_alpha", [0.0, 0.0005, 0.001])

@@ -2284,6 +2284,7 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
         vy: f32 = 0,
         heading: f32 = 0,
         flags: u32 = 0,
+        hit_flash: f32 = 0,
     };
     const EffectSample = std.meta.Tuple(&.{ i32, [2]u32, [15]u32 });
     const DecalSample = std.meta.Tuple(&.{ i32, [2]u32, u32, u32, u32, [4]u32 });
@@ -2367,6 +2368,7 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
             .lifecycle_stage = target.lifecycle,
             .tint = .{ target.r, target.g, target.b, target.a },
             .type_id = target.type,
+            .hit_flash_timer = target.hit_flash,
         };
         var bonuses: bonus_runtime.BonusPool = .{};
         var pool: ProjectilePool = .{};
@@ -2426,6 +2428,7 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
             .vy = creature.vel.y,
             .heading = creature.heading,
             .flags = creature.flags,
+            .hit_flash = creature.hit_flash_timer,
         });
         var effect_count: usize = 0;
         for (effects.entries) |effect| {

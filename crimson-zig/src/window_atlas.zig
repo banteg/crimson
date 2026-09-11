@@ -4,6 +4,7 @@ const bonuses_runtime = @import("runtime/bonuses.zig");
 const creature_lifecycle = @import("runtime/lifecycle.zig").CreatureLifecycle;
 const creatures_runtime = @import("runtime/creatures.zig");
 const game_ids = @import("game_ids.zig");
+const native_math = @import("runtime/native_math.zig");
 const runtime_anim = @import("runtime/anim.zig");
 const spawn_runtime = @import("runtime/spawn.zig");
 
@@ -208,6 +209,38 @@ pub fn creatureRenderFrame(creature: creatures_runtime.CreatureState) ?CreatureR
     };
 }
 
+/// The flash pass omits the shock offset for dying long-strip creatures.
+pub fn creatureRenderFlashFrame(creature: creatures_runtime.CreatureState) ?CreatureRenderFrame {
+    var flash = creature;
+    if (flash.lifecycle_stage < 16.0) {
+        flash.flags &= ~spawn_runtime.CreatureFlags.ranged_attack_shock;
+    }
+    return creatureRenderFrame(flash);
+}
+
+/// Packed alpha from the native flash and Grim2D color-pointer paths at PC24.
+pub fn creatureFlashAlphaByte(timer: f32, transition: f32) u8 {
+    const fade = @min(native_math.pc24Mul(timer, @as(f32, 5.0)), @as(f32, 1.0));
+    const alpha = native_math.pc24Mul(fade, transition);
+    const channel: i32 = @intFromFloat(native_math.pc24Mul(alpha, @as(f32, 255.0)));
+    return @truncate(@as(u32, @bitCast(channel)));
+}
+
+pub const CreatureHitFlash = struct {
+    frame: CreatureRenderFrame,
+    alpha: u8,
+};
+
+/// Select a flash in the current species pass after native body retirement.
+pub fn creatureHitFlash(creature: creatures_runtime.CreatureState, type_id: i32, transition: f32) ?CreatureHitFlash {
+    if (!creature.active or creature.type_id != type_id or
+        creature.lifecycle_stage < -10.0 or creature.hit_flash_timer <= 0.0) return null;
+    return .{
+        .frame = creatureRenderFlashFrame(creature) orelse return null,
+        .alpha = creatureFlashAlphaByte(creature.hit_flash_timer, transition),
+    };
+}
+
 pub fn bonusIconId(entry: bonuses_runtime.BonusEntry) ?i32 {
     return switch (entry.bonus_id) {
         .unused => null,
@@ -356,6 +389,7 @@ test "creature atlas frames match native PC24 witnesses" {
         lifecycle_stage: f32,
         phase: f32,
         frame: i32,
+        flash_frame: i32,
     };
     const parsed = try std.json.parseFromSlice(
         struct { fpcw: u16, witnesses: []const Witness },
@@ -376,6 +410,56 @@ test "creature atlas frames match native PC24 witnesses" {
             .anim_phase = witness.phase,
         };
         try std.testing.expectEqual(witness.frame, creatureRenderFrame(creature).?.frame);
+        try std.testing.expectEqual(witness.flash_frame, creatureRenderFlashFrame(creature).?.frame);
+    }
+}
+
+test "creature flash selection and packed alpha match native witnesses" {
+    const Creature = struct {
+        index: usize,
+        active: u8,
+        type_id: i32,
+        hit_flash_timer: f32,
+        lifecycle_stage: f32,
+        flags: u32,
+        anim_phase: f32,
+    };
+    const Draw = struct { slot: usize, frame: i32, packed_color: u32 };
+    const Case = struct {
+        input: struct { name: []const u8, type_id: i32, transition: f32, flash: u8, creatures: []Creature },
+        expected: []Draw,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { fpcw: u16, render: []Case },
+        std.testing.allocator,
+        @embedFile("runtime/testdata/creature-hit-flash.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(u16, 0x7F), parsed.value.fpcw);
+    try std.testing.expectEqual(@as(usize, 84), parsed.value.render.len);
+    for (parsed.value.render) |case| {
+        errdefer std.debug.print("native hit-flash case {s}\n", .{case.input.name});
+        var count: usize = 0;
+        for (case.input.creatures) |row| {
+            if (case.input.flash == 0) continue;
+            const creature: creatures_runtime.CreatureState = .{
+                .active = row.active != 0,
+                .type_id = row.type_id,
+                .hit_flash_timer = row.hit_flash_timer,
+                .lifecycle_stage = row.lifecycle_stage,
+                .flags = row.flags,
+                .anim_phase = row.anim_phase,
+            };
+            const flash = creatureHitFlash(creature, case.input.type_id, case.input.transition) orelse continue;
+            try std.testing.expect(count < case.expected.len);
+            const expected = case.expected[count];
+            try std.testing.expectEqual(expected.slot, row.index);
+            try std.testing.expectEqual(expected.frame, flash.frame.frame);
+            try std.testing.expectEqual(expected.packed_color, @as(u32, flash.alpha) << 24 | 0xFFFFFF);
+            count += 1;
+        }
+        try std.testing.expectEqual(case.expected.len, count);
     }
 }
 

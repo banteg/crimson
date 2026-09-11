@@ -64,9 +64,11 @@ visible decals.
 Both Zig Debug and ReleaseFast pass the full 1,000-case matrix, including every
 spawned-effect and final-decal field, represented projectile/creature state,
 shots-hit count, and RNG value/caller/state. The committed Zig baseline fails
-the same regression at witness zero. Zig does not expose native hit-flash or
-state-flag fields, nor does this test intercept its private presentation or
-damage-call arguments; those are not included in its equality claim.
+the same regression at witness zero. At this audit's original revision, Zig
+did not expose native hit-flash or state-flag fields. The subsequent
+[hit-flash correction](../creature-hit-flash-2026-09-11/README.md) adds the timer
+and checks it against these shared impact fixtures. State flags and private
+presentation/damage-call arguments remain outside this Zig equality claim.
 
 The shared fixture file contains 120 cases: ten complete cycles of all twelve
 combinations. All 3,610 Python tests pass, with 13 skips and 135 snapshots;

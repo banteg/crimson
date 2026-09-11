@@ -99,7 +99,7 @@ Field map (medium confidence):
 | `0x2c` | heading (radians) | `creature_heading` | set on spawn; eased toward desired heading each frame. |
 | `0x30` | desired heading | `creature_target_heading` | computed from target position each frame. |
 | `0x34` | size/radius | `creature_size` | used in collision tests (`creatures_apply_radius_damage`, `0x00420600`) and speed scaling. |
-| `0x38` | hit flash timer | `creature_hit_flash_timer` | decremented each frame; set by `creature_apply_damage` (`0x004207c0`) on damage. |
+| `0x38` | hit flash timer | `creature_hit_flash_timer` | positive timers decrement on active slots even during Freeze, without clamping; damage sets `0.2f` before health checks; allocation clears it. See [hit-flash rendering](animations.md#hit-flash-with-violence-disabled). |
 | `0x3c` | tint_r | `creature_tint_r` | set from spawn color parameter; modified by difficulty scaling. |
 | `0x40` | tint_g | `creature_tint_g` | set from spawn color parameter; modified by difficulty scaling. |
 | `0x44` | tint_b | `creature_tint_b` | set from spawn color parameter; modified by difficulty scaling. |

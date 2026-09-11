@@ -98,6 +98,7 @@ pub const CreatureState = struct {
     collision_timer: f32 = plague_collision_period,
     lifecycle_stage: creature_lifecycle.Stage = creature_lifecycle.alive,
     attack_cooldown: f32 = 0.0,
+    hit_flash_timer: f32 = 0.0,
     last_hit_owner: owner_ref.OwnerRef = owner_local_player,
     flags: u32 = 0,
 };
@@ -181,6 +182,7 @@ pub fn applyPoolResidue(
             .collision_timer = slot.collision_timer,
             .lifecycle_stage = slot.lifecycle_stage,
             .attack_cooldown = slot.attack_cooldown,
+            .hit_flash_timer = slot.hit_flash_timer,
             .flags = @bitCast(slot.flags),
         };
     }
@@ -2129,6 +2131,10 @@ pub const CreaturePool = struct {
         }
         for (&self.entries, 0..) |*creature, idx| {
             if (!creature.active) continue;
+            // This countdown precedes the native Freeze branch and may cross zero.
+            if (creature.hit_flash_timer > 0.0) {
+                creature.hit_flash_timer = native_math.pc24Sub(creature.hit_flash_timer, dt_f32);
+            }
             if (state.bonuses.freeze > 0.0) continue;
             if (!(creature.hp > 0.0)) {
                 // Native advances a fresh 16.0 death stage before routing the
@@ -2779,6 +2785,7 @@ pub const CreaturePool = struct {
             k.* = false;
         }
         if (creature_index >= self.entries.len) return 0;
+        self.entries[creature_index].hit_flash_timer = 0.2;
         if (players.len == 0) return 0;
 
         var creature = &self.entries[creature_index];
@@ -3335,6 +3342,7 @@ pub const CreaturePool = struct {
         world_size: f32,
     ) i32 {
         if (creature_index >= self.entries.len) return 0;
+        self.entries[creature_index].hit_flash_timer = 0.2;
         if (players.len == 0) return 0;
 
         var creature = &self.entries[creature_index];
@@ -4328,6 +4336,7 @@ fn applySelfDamageTickToDead(
     dt: f32,
 ) void {
     if (!(selfDamageTickAmount(creature.flags, dt) > 0.0)) return;
+    creature.hit_flash_timer = 0.2;
     if (dt > 0.0) {
         creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt * 15.0);
     }
@@ -5205,7 +5214,7 @@ test "full creature pool declines spawns without replacing a live entry" {
     try std.testing.expectEqual(max_creatures, pool.activeCount());
 }
 
-test "pool residue restores creature tint" {
+test "pool residue restores creature tint and hit flash" {
     var pool: CreaturePool = .{};
     const tint = [4]f32{ 0.125, 0.25, 0.5, 0.75 };
 
@@ -5215,9 +5224,119 @@ test "pool residue restores creature tint" {
         .tint_g = tint[1],
         .tint_b = tint[2],
         .tint_a = tint[3],
+        .hit_flash_timer = 0.125,
     }});
 
     try std.testing.expectEqual(tint, pool.entries[3].tint);
+    try std.testing.expectEqual(@as(f32, 0.125), pool.entries[3].hit_flash_timer);
+    // Allocation resets the flash even when that inactive slot held residue.
+    const slot = pool.spawnInitAt(3, .{
+        .origin_template_id = -1,
+        .pos = .{ .x = 0, .y = 0 },
+        .heading = 0,
+        .phase_seed = 0,
+        .type_id = .zombie,
+        .size = 32,
+        .health = 100,
+        .max_health = 100,
+        .move_speed = 0,
+        .reward_value = 0,
+        .contact_damage = 0,
+    });
+    try std.testing.expectEqual(@as(f32, 0), pool.entries[slot].hit_flash_timer);
+}
+
+test "hit flash countdown matches native active frozen and corpse witnesses" {
+    const Creature = struct {
+        index: usize,
+        active: u8,
+        health: f32,
+        lifecycle_stage: f32,
+        hit_flash_timer: f32,
+    };
+    const Case = struct {
+        input: struct { name: []const u8, dt: f32, freeze: f32, creatures: []Creature },
+        expected: []struct { index: usize, timer_bits: u32 },
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { countdown: []Case },
+        std.testing.allocator,
+        @embedFile("testdata/creature-hit-flash.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 8), parsed.value.countdown.len);
+    for (parsed.value.countdown) |case| {
+        errdefer std.debug.print("native flash countdown {s}\n", .{case.input.name});
+        var pool: CreaturePool = .{};
+        var state = state_mod.GameplayState.init(1);
+        state.bonuses.freeze = case.input.freeze;
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{ .x = 300, .y = 400 }, .health = 100 }};
+        for (case.input.creatures) |row| {
+            pool.entries[row.index] = .{
+                .active = row.active != 0,
+                .hp = row.health,
+                .lifecycle_stage = row.lifecycle_stage,
+                .hit_flash_timer = row.hit_flash_timer,
+                .pos = .{ .x = 120, .y = 230 },
+                .size = 40,
+                .ai_mode = .orbit_player,
+            };
+        }
+        try pool.update(&state, &players, case.input.dt, 1024, &bonuses);
+        for (case.expected) |expected| {
+            try std.testing.expectEqual(expected.timer_bits, @as(u32, @bitCast(pool.entries[expected.index].hit_flash_timer)));
+        }
+    }
+}
+
+test "damage refreshes hit flash for native live corpse and zero damage witnesses" {
+    const Creature = struct { index: usize, active: u8, health: f32, max_health: f32, size: f32, flags: u32, hit_flash: f32, lifecycle: f32 };
+    const Case = struct {
+        input: struct { name: []const u8, dt: f32, damage: f32, damage_type: i32, creatures: []Creature, players: []struct { index: usize } },
+        timer_bits: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { damage: []Case },
+        std.testing.allocator,
+        @embedFile("testdata/creature-hit-flash.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 480), parsed.value.damage.len);
+    for (parsed.value.damage) |case| {
+        errdefer std.debug.print("native flash damage {s}\n", .{case.input.name});
+        var pool: CreaturePool = .{};
+        var state = state_mod.GameplayState.init(123);
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var terrain: terrain_fx_mod.TerrainFxScratch = .{};
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{}, .health = 100 }};
+        const row = case.input.creatures[0];
+        pool.entries[row.index] = .{
+            .active = row.active != 0,
+            .hp = row.health,
+            .max_hp = row.max_health,
+            .size = row.size,
+            .flags = row.flags,
+            .hit_flash_timer = row.hit_flash,
+            .lifecycle_stage = row.lifecycle,
+        };
+        const apply: ?@TypeOf(&CreaturePool.applyDamage) = switch (case.input.damage_type) {
+            0 => &CreaturePool.applyDamage,
+            1 => &CreaturePool.applyProjectileDamage,
+            4 => &CreaturePool.applyFireDamage,
+            7 => &CreaturePool.applyIonDamage,
+            3 => null,
+            else => unreachable,
+        };
+        if (apply) |damage_fn| {
+            _ = damage_fn(&pool, &state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, .{}, owner_local_player, case.input.dt, 1024);
+        } else {
+            _ = pool.applyExplosionDamage(&state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, .{}, owner_local_player, case.input.dt, 1024, null);
+        }
+        try std.testing.expectEqual(case.timer_bits, @as(u32, @bitCast(pool.entries[row.index].hit_flash_timer)));
+    }
 }
 
 test "template spawn supports survival late-stage templates" {

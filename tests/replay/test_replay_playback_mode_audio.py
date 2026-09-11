@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from typing import Protocol
 from unittest.mock import call
 
+import msgspec
 import pytest
 
 from crimson.modes import replay_playback_mode
@@ -15,6 +16,8 @@ from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.world.sim_world_state import SimWorldState
+from crimson.world.terrain_runtime import TerrainRuntime
+from grim.assets import RuntimeResources
 from grim.color import RGBA
 from grim.console import ConsoleState
 from grim.geom import Vec2
@@ -31,6 +34,35 @@ def _replay_with_ticks(tick_count: int, *, game_mode_id: int = 0) -> Replay:
 
 def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value: object) -> None:
     setattr(view, name, value)
+
+
+@pytest.mark.parametrize("recorded_gore", [0, 1])
+def test_replay_render_uses_recorded_gore_setting(mocker, replay_playback_view, recorded_gore) -> None:
+    view, _console = replay_playback_view
+    viewer_config = view._config
+    viewer_config.display.violence_disabled = 1 - recorded_gore
+    replay = _replay_with_ticks(0, game_mode_id=1)
+    replay = msgspec.structs.replace(
+        replay,
+        header=msgspec.structs.replace(replay.header, violence_disabled=recorded_gore),
+    )
+    mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
+    mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
+    mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
+    mocker.patch.object(replay_playback_mode.WorldRuntime, "open_runtime")
+    mocker.patch.object(TerrainRuntime, "apply_terrain_setup")
+
+    view.open()
+
+    assert view._runtime is not None
+    view._runtime.render_resources.resources = mocker.Mock(spec=RuntimeResources)
+    frame = view._runtime.build_render_frame()
+    assert frame.config is not None
+    assert frame.config.display.violence_disabled == recorded_gore
+    assert view._driver is not None
+    assert view._driver.session.violence_disabled == recorded_gore
+    assert viewer_config.display.violence_disabled == 1 - recorded_gore
+    assert frame.config is not viewer_config
 
 
 @dataclass

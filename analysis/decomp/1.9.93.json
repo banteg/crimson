@@ -111103,6 +111103,7 @@
     "tools/match/evidence/creature-frame-selection-2026-09-11/runner.py": "758abe5fda023232b916ae60ea498bf1abe583143453bf2873171adfaec81087",
     "tools/match/evidence/creature-frame-selection-2026-09-11/verify.py": "e67480f75e5a499474aeb87a8033f59b31d62ea398f3b90a4787b5de3b509845",
     "tools/match/evidence/creature-frame-selection-2026-09-11/verify_ports.py": "849ad1d78e3b89036d87ae4376686fd9951a4b35a46b9f03336dd5ca7ba236fa",
+    "tools/match/evidence/creature-hit-flash-2026-09-11/verify.py": "1e18f9c6ede77d638dbacb852b90e9f6556d1c97aad47897c135b490fd28d6e6",
     "tools/match/evidence/creature-pool-sentinel-2026-09-09/verify.py": "3ca3450c569ab5a892f55dcd361d44edc9bd83240c83f20fac84d4cc729d81c0",
     "tools/match/evidence/creature-render-execution-2026-09-09/verify.py": "34bd1380f39c3b49aa2d9876dc62444e18d93720311ceef7e2aa169d4cd4f9db",
     "tools/match/evidence/creature-render-execution-2026-09-09/verify_cursors.py": "d6c3ad416ffd7e03988a3104bbcbb792cac5eeba34634e62cdfb6a4bbd3584ca",

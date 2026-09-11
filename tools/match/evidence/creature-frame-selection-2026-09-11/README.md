@@ -45,6 +45,9 @@ The native flash pass deliberately differs: a dying shock spider uses frame
 31 there. The witness file retains `flash_frame`, but the port correction and
 regressions compare shadow/body frames only. This does not implement or certify
 the ports' flash pass, batch ordering, tint/alpha arithmetic, or GPU output.
+The subsequent [hit-flash audit](../creature-hit-flash-2026-09-11/README.md)
+implements the flash in both ports and extends the shared frame regressions
+to check `flash_frame` as well.
 
 ## Evidence boundary
 

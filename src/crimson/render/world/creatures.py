@@ -4,7 +4,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from ...creatures.anim import creature_anim_select_frame
+from ...creatures.anim import creature_anim_select_flash_frame, creature_anim_select_frame
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...sim.world_defs import CREATURE_ANIM
 from .constants import _RAD_TO_DEG
@@ -28,13 +28,15 @@ def draw_creature_sprite(
     size_scale: float,
     tint: rl.Color,
     shadow: bool = False,
+    hit_flash: bool = False,
 ) -> None:
     info = CREATURE_ANIM.get(type_id)
     if info is None:
         return
     mirror_flag = info.mirror if mirror_long is None else mirror_long
     # Long-strip mirroring is handled by frame index selection, not texture flips.
-    index, _, _ = creature_anim_select_frame(
+    select_frame = creature_anim_select_flash_frame if hit_flash else creature_anim_select_frame
+    index, _, _ = select_frame(
         phase,
         base_frame=info.base,
         mirror_long=mirror_flag,
@@ -72,3 +74,6 @@ def draw_creature_sprite(
     dst = rl.Rectangle(screen_pos.x, screen_pos.y, width, height)
     origin = rl.Vector2(width * 0.5, height * 0.5)
     rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
+    if hit_flash:
+        # Native emits two identical additive quads for each flash.
+        rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)

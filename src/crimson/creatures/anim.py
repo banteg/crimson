@@ -192,3 +192,23 @@ def creature_anim_select_frame(
         idx = 0x0F - idx
     frame = base_frame + 0x10 + idx
     return frame, False, "ping-pong"
+
+
+def creature_anim_select_flash_frame(
+    phase: float,
+    *,
+    base_frame: int,
+    mirror_long: bool,
+    flags: CreatureFlags = CreatureFlags(0),
+    lifecycle_stage: float = 16.0,
+) -> tuple[int, bool, str]:
+    """Select the hit-flash frame; dying long strips omit the shock offset."""
+    if _f32(lifecycle_stage) < 16.0:
+        flags &= ~CreatureFlags.RANGED_ATTACK_SHOCK
+    return creature_anim_select_frame(
+        phase,
+        base_frame=base_frame,
+        mirror_long=mirror_long,
+        flags=flags,
+        lifecycle_stage=lifecycle_stage,
+    )
