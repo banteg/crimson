@@ -1,0 +1,2233 @@
+{
+  "function": "projectile_render",
+  "before_sha256": "29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9",
+  "controls": [
+    {
+      "name": "baseline",
+      "family": "results",
+      "edits": [],
+      "source_sha256": "29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "creature-pointer",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    creature_t *creature = &creature_pool[creature_index];\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature->pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature->pos_x;\n"
+          ]
+        }
+      ],
+      "source_sha256": "e9e3147b9b40a2c26654487bf1becbc6c0fc1f0c947b7085fd22d463616262c8",
+      "body_sha256": "f99727fe275661eb536f518a2820af8496b073628af8d08a2e155a9f1b88bfec",
+      "ratio": 0.6076034165131469,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "creature-pointer-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    creature_t *creature = &creature_pool[creature_index];\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature->pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature->pos_x;\n"
+          ]
+        }
+      ],
+      "source_sha256": "fd07edc90ffd63d83285ee624b5b098ab575e2e4ade55e485d842770d8d39cc8",
+      "body_sha256": "6b4f74fa8d9fd426fb2a60675be0520dcd29de7a2f76fc33b9516959ed001145",
+      "ratio": 0.6029140847429242,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "creature-reference",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    creature_t &creature = creature_pool[creature_index];\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature.pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature.pos_x;\n"
+          ]
+        }
+      ],
+      "source_sha256": "306f5b08f6638e1beb667c15e7294ccb5d9bc15b9a383a07b8651b53ec3ba068",
+      "body_sha256": "f99727fe275661eb536f518a2820af8496b073628af8d08a2e155a9f1b88bfec",
+      "ratio": 0.6076034165131469,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "creature-reference-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    creature_t &creature = creature_pool[creature_index];\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature.pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature.pos_x;\n"
+          ]
+        }
+      ],
+      "source_sha256": "e61ce21c2661c19e1cf3aea27dc54deb2340624ba65f31357511fadade4ac703",
+      "body_sha256": "6b4f74fa8d9fd426fb2a60675be0520dcd29de7a2f76fc33b9516959ed001145",
+      "ratio": 0.6029140847429242,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "position-pointer",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    float *creature_position = &creature_pool[creature_index].pos_x;\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             creature_position\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             creature_position;\n"
+          ]
+        }
+      ],
+      "source_sha256": "75adc03ef6fec89508d8a441c8bdd54e9f3df4c0d8b019bd74c36b4e945962b0",
+      "body_sha256": "e2dc8bb9da12ae8b9ce960b7b0fb95451d94653bb544af0f24f15488bf1d9a67",
+      "ratio": 0.6076034165131469,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "position-pointer-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    float *creature_position = &creature_pool[creature_index].pos_x;\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             creature_position\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             creature_position;\n"
+          ]
+        }
+      ],
+      "source_sha256": "e057497fa636ae00ae9cd50cc93d41623f45658195f8f71e616c637a70f7c4d6",
+      "body_sha256": "2808a71fc48a0dba9d7ba4c1bba2d4511fbf572f2b5503308f0bc200410d573f",
+      "ratio": 0.6029140847429242,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "vector-reference",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    projectile_render_vec2_t &creature_position = *(projectile_render_vec2_t *)&creature_pool[creature_index].pos_x;\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature_position\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature_position;\n"
+          ]
+        }
+      ],
+      "source_sha256": "7eff31e8193aa6ccabbf4a7b68f82b4669bfc7ce19be6947397190253fa9b95a",
+      "body_sha256": "e2dc8bb9da12ae8b9ce960b7b0fb95451d94653bb544af0f24f15488bf1d9a67",
+      "ratio": 0.6076034165131469,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "vector-reference-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    projectile_render_vec2_t &creature_position = *(projectile_render_vec2_t *)&creature_pool[creature_index].pos_x;\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature_position\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature_position;\n"
+          ]
+        }
+      ],
+      "source_sha256": "ce2f1f8fa3ac0d276f7f3c226f6cc65597596e2b0855b4152c9abb2b50ed655f",
+      "body_sha256": "2808a71fc48a0dba9d7ba4c1bba2d4511fbf572f2b5503308f0bc200410d573f",
+      "ratio": 0.6029140847429242,
+      "instructions": 2950,
+      "refs_ok": 467,
+      "refs_problems": 13
+    },
+    {
+      "name": "byte-offset-int",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "fb9e3d864d75f4c80747f1b2a23b8489de0faa452bc9dea3eb0ee351cf042a45",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "byte-offset-int-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "294c731cf453eeba41e8c16143a5d56abdab0f30d55f70bed678d01d192a4ccf",
+      "body_sha256": "7eea1f2f414e4987d016d5df9c4c49c8fedbe751743090e792a5cd2d1127ce1c",
+      "ratio": 0.593200468933177,
+      "instructions": 2950,
+      "refs_ok": 465,
+      "refs_problems": 13
+    },
+    {
+      "name": "byte-offset-unsigned",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    unsigned creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "e17f62cb5c70d0b6567a0a5213ca358882e9601473597ca487a5bf96ceb8cdc5",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "byte-offset-unsigned-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    unsigned creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "b9980cd3549e16d0ad0e0cc3e1c6c482769d03dfcc3738c30f7b084ff671e21f",
+      "body_sha256": "7eea1f2f414e4987d016d5df9c4c49c8fedbe751743090e792a5cd2d1127ce1c",
+      "ratio": 0.593200468933177,
+      "instructions": 2950,
+      "refs_ok": 465,
+      "refs_problems": 13
+    },
+    {
+      "name": "float-offset",
+      "family": "results",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * (sizeof(creature_t) / sizeof(float));\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             (&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             (&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "e924f7f1cc3b2fa2785a743050adcc81db8e4b9a05dfd2d05760e228a72b949a",
+      "body_sha256": "b9b7747fddb202553da2b580f81dd820194c86252965622d492af58022d531a3",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "float-offset-before-uv",
+      "family": "results",
+      "edits": [
+        {
+          "start": 865,
+          "end": 865,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * (sizeof(creature_t) / sizeof(float));\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             (&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             (&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "94500fb69aecf78ed86f06dbe000280a2d30e77156256c747bb58c04bfc71260",
+      "body_sha256": "a476ecb4ca82c6b4280d78532fa2bdd248b0a619deff6d097217173431a34e03",
+      "ratio": 0.593200468933177,
+      "instructions": 2950,
+      "refs_ok": 465,
+      "refs_problems": 13
+    },
+    {
+      "name": "unsigned-index",
+      "family": "results",
+      "edits": [
+        {
+          "start": 860,
+          "end": 861,
+          "old": [
+            "                int creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                unsigned creature_index = creature_find_in_radius(\n"
+          ]
+        }
+      ],
+      "source_sha256": "8eacac9f360c3ab056a0ad484565f7aed72215e62b025c5f10a0d64ee866e726",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "signed-sizeof",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * (int)sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "b0021027d56a5e0711255eb447457254cddf3c35d62c0385f631796485f029ad",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "long-offset",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    long creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "b6b99876d653850e825dcb69085e33b71c753c8f44de05e58f2d5d3d2fe6636d",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "const-offset",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    const int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "6ed3d4265eb8d9d985f5b7e0d46b7fba3d3230bf57b6afde4b0a120c898d8ab1",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "offset-before-index",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 860,
+          "end": 860,
+          "old": [],
+          "new": [
+            "                int creature_offset;\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "15a5f5fce86345200b5f33d802c31cfed548125ee296bbcd259e643ac7b87f33",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "offset-before-loop",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 864,
+          "end": 864,
+          "old": [],
+          "new": [
+            "                int creature_offset;\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "7dd6182455c9343a8c40187104491ec900947170ae4d1e771523a2f552da6660",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "offset-and-index-declaration",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 860,
+          "end": 861,
+          "old": [
+            "                int creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                int creature_offset, creature_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "049442a38267155948b4841ce8efb406ccaaab2fb700f9ce87c2e20ba778bd8c",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "byte-offset-pool-base",
+      "family": "lifetime",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &((creature_t *)((char *)creature_pool + creature_offset))->pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &((creature_t *)((char *)creature_pool + creature_offset))->pos_x;\n"
+          ]
+        }
+      ],
+      "source_sha256": "ef827233738e73cdb6995a9331e2d3695dbf82b0433925dd1e1d3932cf968b2a",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "tail-reference",
+      "family": "owner",
+      "edits": [
+        {
+          "start": 618,
+          "end": 619,
+          "old": [
+            "        projectile_tail_t *primary = &projectile->pos.tail;\n"
+          ],
+          "new": [
+            "        projectile_tail_t &primary = projectile->pos.tail;\n"
+          ]
+        },
+        {
+          "start": 622,
+          "end": 624,
+          "old": [
+            "        projectile_type_id_t &type_id = primary->vy.type_id;\n",
+            "        float life = primary->vy.life_timer;\n"
+          ],
+          "new": [
+            "        projectile_type_id_t &type_id = primary.vy.type_id;\n",
+            "        float life = primary.vy.life_timer;\n"
+          ]
+        },
+        {
+          "start": 626,
+          "end": 627,
+          "old": [
+            "            if (primary->vy.life_timer == 0.4f) {\n"
+          ],
+          "new": [
+            "            if (primary.vy.life_timer == 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 629,
+          "end": 630,
+          "old": [
+            "                    primary->origin_y - projectile->pos.pos_y).length()\n"
+          ],
+          "new": [
+            "                    primary.origin_y - projectile->pos.pos_y).length()\n"
+          ]
+        },
+        {
+          "start": 658,
+          "end": 659,
+          "old": [
+            "            if (primary->vy.life_timer != 0.4f) {\n"
+          ],
+          "new": [
+            "            if (primary.vy.life_timer != 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 663,
+          "end": 664,
+          "old": [
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                primary.origin_y - projectile->pos.pos_y).length();\n"
+          ]
+        },
+        {
+          "start": 680,
+          "end": 681,
+          "old": [
+            "            if (primary->vy.life_timer != 0.4f) {\n"
+          ],
+          "new": [
+            "            if (primary.vy.life_timer != 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 685,
+          "end": 686,
+          "old": [
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                primary.origin_y - projectile->pos.pos_y).length();\n"
+          ]
+        },
+        {
+          "start": 710,
+          "end": 711,
+          "old": [
+            "        if (primary->vy.life_timer == 0.4f) {\n"
+          ],
+          "new": [
+            "        if (primary.vy.life_timer == 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "old": [
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                projectile->pos.pos_y - primary.origin_y);\n"
+          ]
+        },
+        {
+          "start": 730,
+          "end": 731,
+          "old": [
+            "            if (primary->vy.type_id\n"
+          ],
+          "new": [
+            "            if (primary.vy.type_id\n"
+          ]
+        },
+        {
+          "start": 743,
+          "end": 744,
+          "old": [
+            "            float base_y = camera_offset_y + primary->origin_y\n"
+          ],
+          "new": [
+            "            float base_y = camera_offset_y + primary.origin_y\n"
+          ]
+        },
+        {
+          "start": 790,
+          "end": 791,
+          "old": [
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                projectile->pos.pos_y - primary.origin_y);\n"
+          ]
+        },
+        {
+          "start": 813,
+          "end": 814,
+          "old": [
+            "            float base_y = camera_offset_y + primary->origin_y\n"
+          ],
+          "new": [
+            "            float base_y = camera_offset_y + primary.origin_y\n"
+          ]
+        },
+        {
+          "start": 831,
+          "end": 832,
+          "old": [
+            "                if (primary->vy.type_id\n"
+          ],
+          "new": [
+            "                if (primary.vy.type_id\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "83174a1234411e5361da6479e0547b35f53cea3201aca09bbe100cc892d73656",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "tail-direct",
+      "family": "owner",
+      "edits": [
+        {
+          "start": 618,
+          "end": 619,
+          "old": [
+            "        projectile_tail_t *primary = &projectile->pos.tail;\n"
+          ],
+          "new": []
+        },
+        {
+          "start": 622,
+          "end": 624,
+          "old": [
+            "        projectile_type_id_t &type_id = primary->vy.type_id;\n",
+            "        float life = primary->vy.life_timer;\n"
+          ],
+          "new": [
+            "        projectile_type_id_t &type_id = projectile->pos.tail.vy.type_id;\n",
+            "        float life = projectile->pos.tail.vy.life_timer;\n"
+          ]
+        },
+        {
+          "start": 626,
+          "end": 627,
+          "old": [
+            "            if (primary->vy.life_timer == 0.4f) {\n"
+          ],
+          "new": [
+            "            if (projectile->pos.tail.vy.life_timer == 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 629,
+          "end": 630,
+          "old": [
+            "                    primary->origin_y - projectile->pos.pos_y).length()\n"
+          ],
+          "new": [
+            "                    projectile->pos.tail.origin_y - projectile->pos.pos_y).length()\n"
+          ]
+        },
+        {
+          "start": 658,
+          "end": 659,
+          "old": [
+            "            if (primary->vy.life_timer != 0.4f) {\n"
+          ],
+          "new": [
+            "            if (projectile->pos.tail.vy.life_timer != 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 663,
+          "end": 664,
+          "old": [
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                projectile->pos.tail.origin_y - projectile->pos.pos_y).length();\n"
+          ]
+        },
+        {
+          "start": 680,
+          "end": 681,
+          "old": [
+            "            if (primary->vy.life_timer != 0.4f) {\n"
+          ],
+          "new": [
+            "            if (projectile->pos.tail.vy.life_timer != 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 685,
+          "end": 686,
+          "old": [
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                projectile->pos.tail.origin_y - projectile->pos.pos_y).length();\n"
+          ]
+        },
+        {
+          "start": 710,
+          "end": 711,
+          "old": [
+            "        if (primary->vy.life_timer == 0.4f) {\n"
+          ],
+          "new": [
+            "        if (projectile->pos.tail.vy.life_timer == 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "old": [
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                projectile->pos.pos_y - projectile->pos.tail.origin_y);\n"
+          ]
+        },
+        {
+          "start": 730,
+          "end": 731,
+          "old": [
+            "            if (primary->vy.type_id\n"
+          ],
+          "new": [
+            "            if (projectile->pos.tail.vy.type_id\n"
+          ]
+        },
+        {
+          "start": 743,
+          "end": 744,
+          "old": [
+            "            float base_y = camera_offset_y + primary->origin_y\n"
+          ],
+          "new": [
+            "            float base_y = camera_offset_y + projectile->pos.tail.origin_y\n"
+          ]
+        },
+        {
+          "start": 790,
+          "end": 791,
+          "old": [
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                projectile->pos.pos_y - projectile->pos.tail.origin_y);\n"
+          ]
+        },
+        {
+          "start": 813,
+          "end": 814,
+          "old": [
+            "            float base_y = camera_offset_y + primary->origin_y\n"
+          ],
+          "new": [
+            "            float base_y = camera_offset_y + projectile->pos.tail.origin_y\n"
+          ]
+        },
+        {
+          "start": 831,
+          "end": 832,
+          "old": [
+            "                if (primary->vy.type_id\n"
+          ],
+          "new": [
+            "                if (projectile->pos.tail.vy.type_id\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "3ee5e86e31e06a422aee0aeee3daf6c312b810a04c6d109509c98552be968a53",
+      "body_sha256": "bb40fd88ad9ebff89676ece8c7bad30dfae0139bb6b4ada73c4d5a25f8d06ca4",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "position-y-owner",
+      "family": "owner",
+      "edits": [
+        {
+          "start": 618,
+          "end": 619,
+          "old": [
+            "        projectile_tail_t *primary = &projectile->pos.tail;\n"
+          ],
+          "new": [
+            "        projectile_pos_y_block_t *primary = &projectile->pos;\n"
+          ]
+        },
+        {
+          "start": 622,
+          "end": 624,
+          "old": [
+            "        projectile_type_id_t &type_id = primary->vy.type_id;\n",
+            "        float life = primary->vy.life_timer;\n"
+          ],
+          "new": [
+            "        projectile_type_id_t &type_id = primary->tail.vy.type_id;\n",
+            "        float life = primary->tail.vy.life_timer;\n"
+          ]
+        },
+        {
+          "start": 626,
+          "end": 627,
+          "old": [
+            "            if (primary->vy.life_timer == 0.4f) {\n"
+          ],
+          "new": [
+            "            if (primary->tail.vy.life_timer == 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 629,
+          "end": 630,
+          "old": [
+            "                    primary->origin_y - projectile->pos.pos_y).length()\n"
+          ],
+          "new": [
+            "                    primary->tail.origin_y - projectile->pos.pos_y).length()\n"
+          ]
+        },
+        {
+          "start": 658,
+          "end": 659,
+          "old": [
+            "            if (primary->vy.life_timer != 0.4f) {\n"
+          ],
+          "new": [
+            "            if (primary->tail.vy.life_timer != 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 663,
+          "end": 664,
+          "old": [
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                primary->tail.origin_y - projectile->pos.pos_y).length();\n"
+          ]
+        },
+        {
+          "start": 680,
+          "end": 681,
+          "old": [
+            "            if (primary->vy.life_timer != 0.4f) {\n"
+          ],
+          "new": [
+            "            if (primary->tail.vy.life_timer != 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 685,
+          "end": 686,
+          "old": [
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                primary->tail.origin_y - projectile->pos.pos_y).length();\n"
+          ]
+        },
+        {
+          "start": 710,
+          "end": 711,
+          "old": [
+            "        if (primary->vy.life_timer == 0.4f) {\n"
+          ],
+          "new": [
+            "        if (primary->tail.vy.life_timer == 0.4f) {\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "old": [
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                projectile->pos.pos_y - primary->tail.origin_y);\n"
+          ]
+        },
+        {
+          "start": 730,
+          "end": 731,
+          "old": [
+            "            if (primary->vy.type_id\n"
+          ],
+          "new": [
+            "            if (primary->tail.vy.type_id\n"
+          ]
+        },
+        {
+          "start": 743,
+          "end": 744,
+          "old": [
+            "            float base_y = camera_offset_y + primary->origin_y\n"
+          ],
+          "new": [
+            "            float base_y = camera_offset_y + primary->tail.origin_y\n"
+          ]
+        },
+        {
+          "start": 790,
+          "end": 791,
+          "old": [
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                projectile->pos.pos_y - primary->tail.origin_y);\n"
+          ]
+        },
+        {
+          "start": 813,
+          "end": 814,
+          "old": [
+            "            float base_y = camera_offset_y + primary->origin_y\n"
+          ],
+          "new": [
+            "            float base_y = camera_offset_y + primary->tail.origin_y\n"
+          ]
+        },
+        {
+          "start": 831,
+          "end": 832,
+          "old": [
+            "                if (primary->vy.type_id\n"
+          ],
+          "new": [
+            "                if (primary->tail.vy.type_id\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "b6fb869146894c5da4974c2788c64a84d5b460464f690536910499baa00315b0",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "local-projectile-index",
+      "family": "owner",
+      "edits": [
+        {
+          "start": 607,
+          "end": 607,
+          "old": [],
+          "new": [
+            "    int ion_projectile_index;\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 618,
+          "old": [
+            "    for (projectile_index = 0;\n",
+            "         projectile_index < 0x60;\n",
+            "         ++projectile_index) {\n",
+            "        projectile_t *projectile = &projectile_pool[projectile_index];\n"
+          ],
+          "new": [
+            "    for (ion_projectile_index = 0;\n",
+            "         ion_projectile_index < 0x60;\n",
+            "         ++ion_projectile_index) {\n",
+            "        projectile_t *projectile = &projectile_pool[ion_projectile_index];\n"
+          ]
+        },
+        {
+          "start": 690,
+          "end": 691,
+          "old": [
+            "                (float)projectile_index * 0.1f\n"
+          ],
+          "new": [
+            "                (float)ion_projectile_index * 0.1f\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "d111c3d631ca775e97374e4a5eeabc9be21a0f206cb685bae0564836283d2f19",
+      "body_sha256": "be354b27770c0623f2c353da31f230e149fb6c1f8f71c8e7289bf49ff96c1e36",
+      "ratio": 0.5587003851951097,
+      "instructions": 2950,
+      "refs_ok": 444,
+      "refs_problems": 11
+    },
+    {
+      "name": "position-reference",
+      "family": "owner",
+      "edits": [
+        {
+          "start": 618,
+          "end": 618,
+          "old": [],
+          "new": [
+            "        projectile_render_vec2_t &ion_position = *(projectile_render_vec2_t *)&projectile->position;\n"
+          ]
+        },
+        {
+          "start": 628,
+          "end": 630,
+          "old": [
+            "                    projectile->pos.origin_x - projectile->pos_x,\n",
+            "                    primary->origin_y - projectile->pos.pos_y).length()\n"
+          ],
+          "new": [
+            "                    projectile->pos.origin_x - ion_position.x,\n",
+            "                    primary->origin_y - ion_position.y).length()\n"
+          ]
+        },
+        {
+          "start": 636,
+          "end": 637,
+          "old": [
+            "                    camera_offset_x + projectile->pos_x\n"
+          ],
+          "new": [
+            "                    camera_offset_x + ion_position.x\n"
+          ]
+        },
+        {
+          "start": 638,
+          "end": 639,
+          "old": [
+            "                    camera_offset_y + projectile->pos.pos_y\n"
+          ],
+          "new": [
+            "                    camera_offset_y + ion_position.y\n"
+          ]
+        },
+        {
+          "start": 649,
+          "end": 651,
+          "old": [
+            "                    camera_offset_x + projectile->pos_x - 28.0f,\n",
+            "                    camera_offset_y + projectile->pos.pos_y - 28.0f,\n"
+          ],
+          "new": [
+            "                    camera_offset_x + ion_position.x - 28.0f,\n",
+            "                    camera_offset_y + ion_position.y - 28.0f,\n"
+          ]
+        },
+        {
+          "start": 662,
+          "end": 664,
+          "old": [
+            "                projectile->pos.origin_x - projectile->pos_x,\n",
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                projectile->pos.origin_x - ion_position.x,\n",
+            "                primary->origin_y - ion_position.y).length();\n"
+          ]
+        },
+        {
+          "start": 672,
+          "end": 674,
+          "old": [
+            "                camera_offset_x + projectile->pos_x - size * 0.5f,\n",
+            "                camera_offset_y + projectile->pos.pos_y - size * 0.5f,\n"
+          ],
+          "new": [
+            "                camera_offset_x + ion_position.x - size * 0.5f,\n",
+            "                camera_offset_y + ion_position.y - size * 0.5f,\n"
+          ]
+        },
+        {
+          "start": 684,
+          "end": 686,
+          "old": [
+            "                projectile->pos.origin_x - projectile->pos_x,\n",
+            "                primary->origin_y - projectile->pos.pos_y).length();\n"
+          ],
+          "new": [
+            "                projectile->pos.origin_x - ion_position.x,\n",
+            "                primary->origin_y - ion_position.y).length();\n"
+          ]
+        },
+        {
+          "start": 696,
+          "end": 698,
+          "old": [
+            "                camera_offset_x + projectile->pos_x - size * 0.5f,\n",
+            "                camera_offset_y + projectile->pos.pos_y - size * 0.5f,\n"
+          ],
+          "new": [
+            "                camera_offset_x + ion_position.x - size * 0.5f,\n",
+            "                camera_offset_y + ion_position.y - size * 0.5f,\n"
+          ]
+        },
+        {
+          "start": 725,
+          "end": 727,
+          "old": [
+            "                projectile->pos_x - projectile->pos.origin_x,\n",
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                ion_position.x - projectile->pos.origin_x,\n",
+            "                ion_position.y - primary->origin_y);\n"
+          ]
+        },
+        {
+          "start": 779,
+          "end": 781,
+          "old": [
+            "                camera_offset_x + projectile->pos_x - half_size,\n",
+            "                camera_offset_y + projectile->pos.pos_y - half_size,\n"
+          ],
+          "new": [
+            "                camera_offset_x + ion_position.x - half_size,\n",
+            "                camera_offset_y + ion_position.y - half_size,\n"
+          ]
+        },
+        {
+          "start": 789,
+          "end": 791,
+          "old": [
+            "                projectile->pos_x - projectile->pos.origin_x,\n",
+            "                projectile->pos.pos_y - primary->origin_y);\n"
+          ],
+          "new": [
+            "                ion_position.x - projectile->pos.origin_x,\n",
+            "                ion_position.y - primary->origin_y);\n"
+          ]
+        },
+        {
+          "start": 851,
+          "end": 853,
+          "old": [
+            "                camera_offset_x + projectile->pos_x - 16.0f,\n",
+            "                camera_offset_y + projectile->pos.pos_y - 16.0f,\n"
+          ],
+          "new": [
+            "                camera_offset_x + ion_position.x - 16.0f,\n",
+            "                camera_offset_y + ion_position.y - 16.0f,\n"
+          ]
+        },
+        {
+          "start": 861,
+          "end": 862,
+          "old": [
+            "                    &projectile->pos_x,\n"
+          ],
+          "new": [
+            "                    &ion_position.x,\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 874,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n",
+            "                        - *(projectile_render_vec2_t *)&projectile->position;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n",
+            "                        - ion_position;\n"
+          ]
+        },
+        {
+          "start": 882,
+          "end": 883,
+          "old": [
+            "                        + *(projectile_render_vec2_t *)&projectile->position;\n"
+          ],
+          "new": [
+            "                        + ion_position;\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        },
+        {
+          "start": 933,
+          "end": 934,
+          "old": [
+            "                        &projectile->pos_x,\n"
+          ],
+          "new": [
+            "                        &ion_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "800b6e0c9f7f9bbc6dcfcb1e79718b333ecb74e8ce50a897f9ca846f9960ea60",
+      "body_sha256": "adb636a9efbd4779bfc9b1bef3217be291118bc955ede415439c17d6f6e98dbf",
+      "ratio": 0.5733422638981915,
+      "instructions": 2951,
+      "refs_ok": 445,
+      "refs_problems": 13
+    },
+    {
+      "name": "baseline-reuse-player_index",
+      "family": "counter",
+      "edits": [
+        {
+          "start": 860,
+          "end": 861,
+          "old": [
+            "                int creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                player_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 864,
+          "end": 865,
+          "old": [
+            "                while (creature_index != -1) {\n"
+          ],
+          "new": [
+            "                while (player_index != -1) {\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature_pool[player_index].pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature_pool[player_index].pos_x;\n"
+          ]
+        },
+        {
+          "start": 932,
+          "end": 933,
+          "old": [
+            "                    creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                    player_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 935,
+          "end": 936,
+          "old": [
+            "                        creature_index + 1);\n"
+          ],
+          "new": [
+            "                        player_index + 1);\n"
+          ]
+        }
+      ],
+      "source_sha256": "d203d07baf4f70cba3a9aa558211ba2c1fca8173d7102b6baff30da2c5ccbd71",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "baseline-reuse-secondary_index",
+      "family": "counter",
+      "edits": [
+        {
+          "start": 860,
+          "end": 861,
+          "old": [
+            "                int creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                secondary_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 864,
+          "end": 865,
+          "old": [
+            "                while (creature_index != -1) {\n"
+          ],
+          "new": [
+            "                while (secondary_index != -1) {\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             &creature_pool[secondary_index].pos_x\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             &creature_pool[secondary_index].pos_x;\n"
+          ]
+        },
+        {
+          "start": 932,
+          "end": 933,
+          "old": [
+            "                    creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                    secondary_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 935,
+          "end": 936,
+          "old": [
+            "                        creature_index + 1);\n"
+          ],
+          "new": [
+            "                        secondary_index + 1);\n"
+          ]
+        }
+      ],
+      "source_sha256": "c13b672f168b75c289b6e3542d3ee542c6d23c6c332ba158bb9405f590e09b50",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "byte-offset-int-reuse-player_index",
+      "family": "counter",
+      "edits": [
+        {
+          "start": 860,
+          "end": 861,
+          "old": [
+            "                int creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                player_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 864,
+          "end": 865,
+          "old": [
+            "                while (creature_index != -1) {\n"
+          ],
+          "new": [
+            "                while (player_index != -1) {\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = player_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        },
+        {
+          "start": 932,
+          "end": 933,
+          "old": [
+            "                    creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                    player_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 935,
+          "end": 936,
+          "old": [
+            "                        creature_index + 1);\n"
+          ],
+          "new": [
+            "                        player_index + 1);\n"
+          ]
+        }
+      ],
+      "source_sha256": "f017e050f6d830ee6bc656439b03ed16ae02ad3d764d4a8264ae48e5186f9c54",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "byte-offset-int-reuse-secondary_index",
+      "family": "counter",
+      "edits": [
+        {
+          "start": 860,
+          "end": 861,
+          "old": [
+            "                int creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                secondary_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 864,
+          "end": 865,
+          "old": [
+            "                while (creature_index != -1) {\n"
+          ],
+          "new": [
+            "                while (secondary_index != -1) {\n"
+          ]
+        },
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = secondary_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        },
+        {
+          "start": 932,
+          "end": 933,
+          "old": [
+            "                    creature_index = creature_find_in_radius(\n"
+          ],
+          "new": [
+            "                    secondary_index = creature_find_in_radius(\n"
+          ]
+        },
+        {
+          "start": 935,
+          "end": 936,
+          "old": [
+            "                        creature_index + 1);\n"
+          ],
+          "new": [
+            "                        secondary_index + 1);\n"
+          ]
+        }
+      ],
+      "source_sha256": "a13c4f33be726c26f9c6649ac807e22bd426e46558a9aeb80a0d6efc8e8f182f",
+      "body_sha256": "6594477dff4657d9b568676b3f9016d560479ab376042df08e06c86b844e516d",
+      "ratio": 0.5620499078881259,
+      "instructions": 2950,
+      "refs_ok": 445,
+      "refs_problems": 11
+    },
+    {
+      "name": "offset-use-0",
+      "family": "uses",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset)\n"
+          ]
+        }
+      ],
+      "source_sha256": "e12a4b5a1e1ba84bda4e25c566da4b35c5fcb9d7c0f79cc8e214edbd5ffe5202",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "offset-use-1",
+      "family": "uses",
+      "edits": [
+        {
+          "start": 870,
+          "end": 870,
+          "old": [],
+          "new": [
+            "                    int creature_offset = creature_index * sizeof(creature_t);\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_offset);\n"
+          ]
+        }
+      ],
+      "source_sha256": "8703d8c70eaa4a6abe8fb9b313528eaf1d4aa333e1ee500b2d0131d596614996",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "inline-byte",
+      "family": "uses",
+      "edits": [
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_index * sizeof(creature_t))\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + creature_index * sizeof(creature_t));\n"
+          ]
+        }
+      ],
+      "source_sha256": "7842c0e5ff5ee677180ac649851103cd7cab1fe634f83108c88f98cb431ce439",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "inline-byte-reversed",
+      "family": "uses",
+      "edits": [
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + sizeof(creature_t) * creature_index)\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             ((char *)&creature_pool[0].pos_x + sizeof(creature_t) * creature_index);\n"
+          ]
+        }
+      ],
+      "source_sha256": "7d7ff4b894fc1f968e7e42dc2cf7964c106262cd94890bd226867fb27c454e94",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    },
+    {
+      "name": "inline-float",
+      "family": "uses",
+      "edits": [
+        {
+          "start": 872,
+          "end": 873,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x\n"
+          ],
+          "new": [
+            "                             (&creature_pool[0].pos_x + creature_index * (sizeof(creature_t)/sizeof(float)))\n"
+          ]
+        },
+        {
+          "start": 893,
+          "end": 894,
+          "old": [
+            "                             &creature_pool[creature_index].pos_x;\n"
+          ],
+          "new": [
+            "                             (&creature_pool[0].pos_x + creature_index * (sizeof(creature_t)/sizeof(float)));\n"
+          ]
+        }
+      ],
+      "source_sha256": "0dae6f94406c421cb90e3081637bf7cce8bda29ac58ed14e3c419e217155ac87",
+      "body_sha256": "f7dbb2cfbebacf426b1234a71c0d2352cecfc96c19069eb07d0f51c1a8f2257d",
+      "ratio": 0.6026800670016751,
+      "instructions": 2949,
+      "refs_ok": 471,
+      "refs_problems": 13
+    }
+  ]
+}

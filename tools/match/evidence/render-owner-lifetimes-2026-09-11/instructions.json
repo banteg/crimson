@@ -1,0 +1,1338 @@
+{
+  "schema_version": 1,
+  "kind": "partial-ion-index-addressing-control",
+  "verifier_sha256": "e4a18b42f0329e01ddddf92239969d87cfed7958bcc58005ada2006e8804dd8b",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "new_source_matches": 0,
+  "limitations": "Selected instructions between paired search calls; no whole-span or whole-function identity. Native retains two additional field reads absent from both candidate controls.",
+  "rows": {
+    "native": {
+      "field_accesses": [
+        {
+          "offset": 8028,
+          "text": "fld dword [esi+ADDR]"
+        },
+        {
+          "offset": 8041,
+          "text": "fld dword [esi+ADDR]"
+        },
+        {
+          "offset": 8324,
+          "text": "fadd dword [esi+ADDR]"
+        },
+        {
+          "offset": 8343,
+          "text": "fadd dword [esi+ADDR]"
+        },
+        {
+          "offset": 8922,
+          "text": "fadd dword [esi+ADDR]"
+        },
+        {
+          "offset": 8959,
+          "text": "fadd dword [esi+ADDR]"
+        }
+      ],
+      "instructions": [
+        {
+          "offset": 7883,
+          "text": "call ADDR",
+          "reference_keys": [
+            [
+              "address:0x004206a0",
+              "name:creature_find_in_radius",
+              "local:-0x25d0"
+            ]
+          ]
+        },
+        {
+          "offset": 7888,
+          "text": "mov edi, eax",
+          "reference_keys": []
+        },
+        {
+          "offset": 7890,
+          "text": "add esp, 0xc",
+          "reference_keys": []
+        },
+        {
+          "offset": 7893,
+          "text": "cmp edi, -0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7896,
+          "text": "je L2331",
+          "reference_keys": []
+        },
+        {
+          "offset": 7902,
+          "text": "fld dword [esp+0x24]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7906,
+          "text": "fmul dword [ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0046f2c0",
+              "local:+0x4c650",
+              "bytes4:00000042"
+            ]
+          ]
+        },
+        {
+          "offset": 7912,
+          "text": "fstp dword [esp+0x20]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7916,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0048083c",
+              "name:grim_interface_ptr",
+              "local:+0x5dbcc"
+            ]
+          ]
+        },
+        {
+          "offset": 7922,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7924,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7929,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7931,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7933,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7939,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0048083c",
+              "name:grim_interface_ptr",
+              "local:+0x5dbcc"
+            ]
+          ]
+        },
+        {
+          "offset": 7945,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7950,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7955,
+          "text": "push 0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7957,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7959,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7965,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0048083c",
+              "name:grim_interface_ptr",
+              "local:+0x5dbcc"
+            ]
+          ]
+        },
+        {
+          "offset": 7971,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7976,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7981,
+          "text": "push 0x2",
+          "reference_keys": []
+        },
+        {
+          "offset": 7983,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7985,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7991,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0048083c",
+              "name:grim_interface_ptr",
+              "local:+0x5dbcc"
+            ]
+          ]
+        },
+        {
+          "offset": 7997,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7999,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 8004,
+          "text": "push 0x3",
+          "reference_keys": []
+        },
+        {
+          "offset": 8006,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8008,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8014,
+          "text": "lea ecx, dword [edi+edi*8]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8017,
+          "text": "lea esi, dword [edi+ecx*2]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8020,
+          "text": "lea ecx, dword [esp+0x54]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8024,
+          "text": "shl esi, 0x3",
+          "reference_keys": []
+        },
+        {
+          "offset": 8027,
+          "text": "push ecx",
+          "reference_keys": []
+        },
+        {
+          "offset": 8028,
+          "text": "fld dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x792dc"
+            ]
+          ]
+        },
+        {
+          "offset": 8034,
+          "text": "fsub dword [ebp]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8037,
+          "text": "fstp dword [esp+0x30]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8041,
+          "text": "fld dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x792e0"
+            ]
+          ]
+        },
+        {
+          "offset": 8047,
+          "text": "fsub dword [ebp+0x4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8050,
+          "text": "mov edx, dword [esp+0x30]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8054,
+          "text": "mov dword [esp+0x58], edx",
+          "reference_keys": []
+        },
+        {
+          "offset": 8058,
+          "text": "lea edx, dword [esp+0x58]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8324,
+          "text": "fadd dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x792dc"
+            ]
+          ]
+        },
+        {
+          "offset": 8343,
+          "text": "fadd dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x792e0"
+            ]
+          ]
+        },
+        {
+          "offset": 8922,
+          "text": "fadd dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x792e0"
+            ]
+          ]
+        },
+        {
+          "offset": 8959,
+          "text": "fadd dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x792dc"
+            ]
+          ]
+        }
+      ]
+    },
+    "baseline": {
+      "field_accesses": [
+        {
+          "offset": 7950,
+          "text": "fld dword [ebx*8+ADDR]"
+        },
+        {
+          "offset": 7964,
+          "text": "fld dword [ebx*8+ADDR]"
+        },
+        {
+          "offset": 8247,
+          "text": "fadd dword [ebx*8+ADDR]"
+        },
+        {
+          "offset": 8264,
+          "text": "fadd dword [ebx*8+ADDR]"
+        }
+      ],
+      "instructions": [
+        {
+          "offset": 7811,
+          "text": "call ADDR",
+          "reference_keys": [
+            [
+              "name:creature_find_in_radius",
+              "address:0x004206a0"
+            ]
+          ]
+        },
+        {
+          "offset": 7816,
+          "text": "mov esi, eax",
+          "reference_keys": []
+        },
+        {
+          "offset": 7818,
+          "text": "add esp, 0xc",
+          "reference_keys": []
+        },
+        {
+          "offset": 7821,
+          "text": "cmp esi, -0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7824,
+          "text": "je L2239",
+          "reference_keys": []
+        },
+        {
+          "offset": 7830,
+          "text": "mov edx, dword [esp+0xb4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7837,
+          "text": "mov dword [esp+0x18], edx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7841,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7847,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7849,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7854,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7856,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7858,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7864,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7870,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7875,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7880,
+          "text": "push 0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7882,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7884,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7890,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7896,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7901,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7906,
+          "text": "push 0x2",
+          "reference_keys": []
+        },
+        {
+          "offset": 7908,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7910,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7916,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7922,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7924,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7929,
+          "text": "push 0x3",
+          "reference_keys": []
+        },
+        {
+          "offset": 7931,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7933,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7939,
+          "text": "lea eax, dword [esi+esi*8]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7942,
+          "text": "lea ebx, dword [esi+eax*2]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7945,
+          "text": "lea eax, dword [esp+0x3c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7949,
+          "text": "push eax",
+          "reference_keys": []
+        },
+        {
+          "offset": 7950,
+          "text": "fld dword [ebx*8+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "offset": 7957,
+          "text": "fsub dword [ebp]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7960,
+          "text": "fstp dword [esp+0x78]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7964,
+          "text": "fld dword [ebx*8+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "offset": 7971,
+          "text": "fsub dword [ebp+0x4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7974,
+          "text": "mov ecx, dword [esp+0x78]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7978,
+          "text": "mov dword [esp+0x40], ecx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7982,
+          "text": "lea ecx, dword [esp+0x40]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7986,
+          "text": "fstp dword [esp+0x7c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7990,
+          "text": "mov edx, dword [esp+0x7c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8247,
+          "text": "fadd dword [ebx*8+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "offset": 8264,
+          "text": "fadd dword [ebx*8+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        }
+      ]
+    },
+    "byte-offset-int": {
+      "field_accesses": [
+        {
+          "offset": 7958,
+          "text": "fld dword [esi+ADDR]"
+        },
+        {
+          "offset": 7970,
+          "text": "fld dword [esi+ADDR]"
+        },
+        {
+          "offset": 8251,
+          "text": "fadd dword [esi+ADDR]"
+        },
+        {
+          "offset": 8267,
+          "text": "fadd dword [esi+ADDR]"
+        }
+      ],
+      "instructions": [
+        {
+          "offset": 7816,
+          "text": "call ADDR",
+          "reference_keys": [
+            [
+              "name:creature_find_in_radius",
+              "address:0x004206a0"
+            ]
+          ]
+        },
+        {
+          "offset": 7821,
+          "text": "mov edi, eax",
+          "reference_keys": []
+        },
+        {
+          "offset": 7823,
+          "text": "add esp, 0xc",
+          "reference_keys": []
+        },
+        {
+          "offset": 7826,
+          "text": "cmp edi, -0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7829,
+          "text": "je L223b",
+          "reference_keys": []
+        },
+        {
+          "offset": 7835,
+          "text": "mov edx, dword [esp+0xb4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7842,
+          "text": "mov dword [esp+0x18], edx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7846,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7852,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7854,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7859,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7861,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7863,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7869,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7875,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7880,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7885,
+          "text": "push 0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7887,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7889,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7895,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7901,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7906,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7911,
+          "text": "push 0x2",
+          "reference_keys": []
+        },
+        {
+          "offset": 7913,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7915,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7921,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7927,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7929,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7934,
+          "text": "push 0x3",
+          "reference_keys": []
+        },
+        {
+          "offset": 7936,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7938,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7944,
+          "text": "lea eax, dword [edi+edi*8]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7947,
+          "text": "lea esi, dword [edi+eax*2]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7950,
+          "text": "lea eax, dword [esp+0x3c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7954,
+          "text": "shl esi, 0x3",
+          "reference_keys": []
+        },
+        {
+          "offset": 7957,
+          "text": "push eax",
+          "reference_keys": []
+        },
+        {
+          "offset": 7958,
+          "text": "fld dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "offset": 7964,
+          "text": "fsub dword [ebx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7966,
+          "text": "fstp dword [esp+0x78]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7970,
+          "text": "fld dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "offset": 7976,
+          "text": "fsub dword [ebx+0x4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7979,
+          "text": "mov ecx, dword [esp+0x78]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7983,
+          "text": "mov dword [esp+0x40], ecx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7987,
+          "text": "lea ecx, dword [esp+0x40]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7991,
+          "text": "fstp dword [esp+0x7c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 8251,
+          "text": "fadd dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "offset": 8267,
+          "text": "fadd dword [esi+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        }
+      ]
+    },
+    "creature-pointer": {
+      "field_accesses": [
+        {
+          "offset": 7945,
+          "text": "fld dword [ecx*8+ADDR]"
+        }
+      ],
+      "instructions": [
+        {
+          "offset": 7811,
+          "text": "call ADDR",
+          "reference_keys": [
+            [
+              "name:creature_find_in_radius",
+              "address:0x004206a0"
+            ]
+          ]
+        },
+        {
+          "offset": 7816,
+          "text": "mov esi, eax",
+          "reference_keys": []
+        },
+        {
+          "offset": 7818,
+          "text": "add esp, 0xc",
+          "reference_keys": []
+        },
+        {
+          "offset": 7821,
+          "text": "cmp esi, -0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7824,
+          "text": "je L2234",
+          "reference_keys": []
+        },
+        {
+          "offset": 7830,
+          "text": "mov edx, dword [esp+0xb4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7837,
+          "text": "mov dword [esp+0x18], edx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7841,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7847,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7849,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7854,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7856,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7858,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7864,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7870,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7875,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7880,
+          "text": "push 0x1",
+          "reference_keys": []
+        },
+        {
+          "offset": 7882,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7884,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7890,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7896,
+          "text": "push 0x3e800000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7901,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7906,
+          "text": "push 0x2",
+          "reference_keys": []
+        },
+        {
+          "offset": 7908,
+          "text": "mov eax, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7910,
+          "text": "call dword [eax+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7916,
+          "text": "mov ecx, dword [ADDR]",
+          "reference_keys": [
+            [
+              "name:grim_interface_ptr",
+              "address:0x0048083c"
+            ]
+          ]
+        },
+        {
+          "offset": 7922,
+          "text": "push 0x0",
+          "reference_keys": []
+        },
+        {
+          "offset": 7924,
+          "text": "push 0x3f200000",
+          "reference_keys": []
+        },
+        {
+          "offset": 7929,
+          "text": "push 0x3",
+          "reference_keys": []
+        },
+        {
+          "offset": 7931,
+          "text": "mov edx, dword [ecx]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7933,
+          "text": "call dword [edx+0x10c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7939,
+          "text": "lea eax, dword [esi+esi*8]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7942,
+          "text": "lea ecx, dword [esi+eax*2]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7945,
+          "text": "fld dword [ecx*8+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "offset": 7952,
+          "text": "fsub dword [ebp]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7955,
+          "text": "lea ebx, dword [ecx*8+ADDR]",
+          "reference_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "offset": 7962,
+          "text": "lea ecx, dword [esp+0x3c]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7966,
+          "text": "push ecx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7967,
+          "text": "fstp dword [esp+0x78]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7971,
+          "text": "fld dword [ebx+0x18]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7974,
+          "text": "fsub dword [ebp+0x4]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7977,
+          "text": "mov edx, dword [esp+0x78]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7981,
+          "text": "mov dword [esp+0x40], edx",
+          "reference_keys": []
+        },
+        {
+          "offset": 7985,
+          "text": "lea edx, dword [esp+0x40]",
+          "reference_keys": []
+        },
+        {
+          "offset": 7989,
+          "text": "fstp dword [esp+0x7c]",
+          "reference_keys": []
+        }
+      ]
+    }
+  },
+  "overlay": {
+    "early_named_body_identical": true,
+    "early_sprite_size_changes": [
+      {
+        "baseline_offset": 861,
+        "baseline": "fstp dword [esp+0x18]",
+        "control_offset": 861,
+        "control": "fstp dword [esp+0x14]"
+      },
+      {
+        "baseline_offset": 865,
+        "baseline": "mov eax, dword [esp+0x18]",
+        "control_offset": 865,
+        "control": "mov eax, dword [esp+0x14]"
+      },
+      {
+        "baseline_offset": 1095,
+        "baseline": "mov dword [esp+0x18], ecx",
+        "control_offset": 1095,
+        "control": "mov dword [esp+0x14], ecx"
+      },
+      {
+        "baseline_offset": 1105,
+        "baseline": "mov eax, dword [esp+0x18]",
+        "control_offset": 1105,
+        "control": "mov eax, dword [esp+0x14]"
+      },
+      {
+        "baseline_offset": 1843,
+        "baseline": "fstp dword [esp+0x18]",
+        "control_offset": 1843,
+        "control": "fstp dword [esp+0x14]"
+      },
+      {
+        "baseline_offset": 1847,
+        "baseline": "mov eax, dword [esp+0x18]",
+        "control_offset": 1847,
+        "control": "mov eax, dword [esp+0x14]"
+      },
+      {
+        "baseline_offset": 2937,
+        "baseline": "fstp dword [esp+0x18]",
+        "control_offset": 2937,
+        "control": "fstp dword [esp+0x1c]"
+      },
+      {
+        "baseline_offset": 3010,
+        "baseline": "fld dword [esp+0x14]",
+        "control_offset": 3010,
+        "control": "fld dword [esp+0x18]"
+      },
+      {
+        "baseline_offset": 3065,
+        "baseline": "fsub dword [esp+0x20]",
+        "control_offset": 3065,
+        "control": "fsub dword [esp+0x24]"
+      },
+      {
+        "baseline_offset": 3085,
+        "baseline": "fsub dword [esp+0x24]",
+        "control_offset": 3085,
+        "control": "fsub dword [esp+0x28]"
+      },
+      {
+        "baseline_offset": 3180,
+        "baseline": "fstp dword [esp+0x18]",
+        "control_offset": 3180,
+        "control": "fstp dword [esp+0x1c]"
+      },
+      {
+        "baseline_offset": 3205,
+        "baseline": "fld dword [esp+0x14]",
+        "control_offset": 3205,
+        "control": "fld dword [esp+0x18]"
+      },
+      {
+        "baseline_offset": 3260,
+        "baseline": "fsub dword [esp+0x20]",
+        "control_offset": 3260,
+        "control": "fsub dword [esp+0x24]"
+      },
+      {
+        "baseline_offset": 3280,
+        "baseline": "fsub dword [esp+0x24]",
+        "control_offset": 3280,
+        "control": "fsub dword [esp+0x28]"
+      },
+      {
+        "baseline_offset": 3862,
+        "baseline": "mov dword [esp+0x18], ecx",
+        "control_offset": 3862,
+        "control": "mov dword [esp+0x14], ecx"
+      },
+      {
+        "baseline_offset": 3872,
+        "baseline": "mov esi, dword [esp+0x18]",
+        "control_offset": 3872,
+        "control": "mov esi, dword [esp+0x14]"
+      }
+    ],
+    "same_stack_groups": true,
+    "same_timestamp_normalized_coff": true,
+    "stack_trace_hashes": {
+      "stack-current.json": "a4223b6d48c270d666e4c6227e7bd59dc203452cc6fc3b438631e03942fc421c",
+      "overlay-stack-early-owned.json": "c425f9b8c92c0a73fa469c00459ec5cac86f6e1d7c2dfc756e0f1c919f4f8e40"
+    }
+  }
+}
