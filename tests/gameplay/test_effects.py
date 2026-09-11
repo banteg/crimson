@@ -346,10 +346,10 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     deflect_step = f32(math.tau * 0.2)
     assert_float_close(float(particle.angle), deflect_step)
 
-    speed_scale = f32(0.7)
-    bounce_velocity = Vec2.from_angle(float(particle.angle)) * 82.0
-    expected_vel_x = f32(float(bounce_velocity.x) * float(speed_scale))
-    expected_vel_y = f32(float(bounce_velocity.y) * float(speed_scale))
+    # Native PC24 keeps the trigonometric results wide until multiplication
+    # by 82, then multiplies the stored velocity by the once-scaled RNG draw.
+    expected_vel_x = 17.737573623657227
+    expected_vel_y = 54.590641021728516
     assert_float_close(float(particle.vel.x), expected_vel_x)
     assert_float_close(float(particle.vel.y), expected_vel_y)
 
@@ -357,7 +357,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert_float_close(float(creature.pos.x), x87_pc24_add(0.0, x87_pc24_mul(expected_vel_x, dt_f32)))
     assert_float_close(float(creature.pos.y), x87_pc24_add(0.0, x87_pc24_mul(expected_vel_y, dt_f32)))
 
-    tint_factor = x87_pc24_sub(1.0, x87_pc24_mul(particle.intensity, 0.01))
+    tint_factor = x87_pc24_sub(1.0, x87_pc24_mul(particle.intensity, f32(0.01)))
     assert_float_close(creature.tint.r, x87_pc24_mul(tint_factor, 0.9))
     assert_float_close(creature.tint.g, x87_pc24_mul(tint_factor, 0.6))
     assert_float_close(creature.tint.b, x87_pc24_mul(tint_factor, 0.2))

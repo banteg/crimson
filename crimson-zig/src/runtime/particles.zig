@@ -245,15 +245,21 @@ pub const ParticlePool = struct {
                             entry.angle = narrowF32(entry.angle + native_tau_f32);
                         }
                         const hit_delta: state_mod.Vec2 = .{
-                            .x = (entry.pos.x - entry.vel.x * dt_f32) - creature.pos.x,
-                            .y = (entry.pos.y - entry.vel.y * dt_f32) - creature.pos.y,
+                            .x = native_math.pc24Sub(
+                                native_math.pc24Sub(entry.pos.x, native_math.pc24Mul(dt_f32, entry.vel.x)),
+                                creature.pos.x,
+                            ),
+                            .y = native_math.pc24Sub(
+                                native_math.pc24Sub(entry.pos.y, native_math.pc24Mul(dt_f32, entry.vel.y)),
+                                creature.pos.y,
+                            ),
                         };
                         var hit_angle: f64 = std.math.atan2(@as(f64, hit_delta.y), @as(f64, hit_delta.x));
                         while (@as(f64, native_tau_f32) < hit_angle) {
-                            hit_angle -= @as(f64, native_tau_f32);
+                            hit_angle = native_math.pc24Sub(hit_angle, native_tau_f32);
                         }
                         while (hit_angle < 0.0) {
-                            hit_angle += @as(f64, native_tau_f32);
+                            hit_angle = native_math.pc24Add(hit_angle, native_tau_f32);
                         }
                         const deflect_step: f32 = 1.2566371;
                         if (@as(f64, entry.angle) <= hit_angle) {
@@ -262,16 +268,19 @@ pub const ParticlePool = struct {
                             entry.angle -= deflect_step;
                         }
 
-                        const bounce = runtime_helpers.directionFromAngle(entry.angle).mul(82.0);
-                        const speed_scale = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_particle_bounce_speed_scale) % 10)) * 0.1;
+                        const bounce = nativeParticleVelocity(entry.angle, 82.0);
+                        const speed_scale = native_math.pc24Mul(
+                            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_particle_bounce_speed_scale) % 10)),
+                            @as(f32, 0.1),
+                        );
                         entry.vel = .{
-                            .x = bounce.x * speed_scale,
-                            .y = bounce.y * speed_scale,
+                            .x = native_math.pc24Mul(bounce.x, speed_scale),
+                            .y = native_math.pc24Mul(bounce.y, speed_scale),
                         };
 
                         const damage = @max(0.0, entry.intensity * 10.0);
                         if (damage > 0.0) {
-                            _ = creatures.applyProjectileDamage(
+                            _ = creatures.applyFireDamage(
                                 state,
                                 players,
                                 bonuses,
@@ -297,9 +306,9 @@ pub const ParticlePool = struct {
                             creature.tint[0] = native_math.pc24Mul(tint_factor, creature.tint[0]);
                             creature.tint[1] = native_math.pc24Mul(tint_factor, creature.tint[1]);
                             creature.tint[2] = native_math.pc24Mul(tint_factor, creature.tint[2]);
-                        }
-                        for (&creature.tint) |*channel| {
-                            channel.* = nativeClampUnit(channel.*);
+                            for (&creature.tint) |*channel| {
+                                channel.* = nativeClampUnit(channel.*);
+                            }
                         }
 
                         if ((particle_idx % 3) == 0) {
@@ -503,5 +512,202 @@ test "particle update matches native no-hit trajectories and RNG callers" {
             try std.testing.expectEqual(caller, @intFromEnum(record.caller.?));
         }
         try std.testing.expect(!state.rng.missing_trace_caller);
+    }
+}
+
+test "particle impacts match native fire damage, tint, sprites and RNG" {
+    // Regenerated from native projectile_update by the matching evidence package.
+    const Sample = struct {
+        index: usize,
+        active: u8 = 1,
+        render: u8,
+        x: f32,
+        y: f32,
+        vx: f32,
+        vy: f32,
+        sx: f32 = 0,
+        sy: f32 = 0,
+        sz: f32 = 0,
+        age: f32 = 0,
+        intensity: f32,
+        angle: f32,
+        spin: f32,
+        style: i32,
+        target: i32,
+    };
+    const CreatureSample = struct {
+        index: usize = 0,
+        active: u8 = 1,
+        lifecycle: f32,
+        x: f32,
+        y: f32,
+        health: f32,
+        max_health: f32,
+        size: f32,
+        r: f32,
+        g: f32,
+        b: f32,
+        a: f32,
+        type: i32,
+        vx: f32 = 0,
+        vy: f32 = 0,
+        heading: f32 = 0,
+    };
+    const SpriteSample = struct { index: usize, active: u8, alpha: f32, rotation: f32, x: f32, y: f32, vx: f32, vy: f32, scale: f32 };
+    const DecalSample = struct { effect: i32, x: f32, y: f32, width: f32, height: f32, rotation: f32, r: f32, g: f32, b: f32, a: f32 };
+    const Witness = struct {
+        index: usize,
+        input: struct { dt: f32, rng_seed: u32, particles: []Sample, creatures: []CreatureSample, perks: []i32 = &.{} },
+        particle: Sample,
+        creature: CreatureSample,
+        sprites: []SpriteSample,
+        decals: []DecalSample,
+        rng_state: u32,
+        draws: []u32,
+        rng_callers: []u32,
+    };
+    const Trace = struct {
+        const Self = @This();
+
+        records: [128]spawn_mod.Crand.TraceDraw = undefined,
+        count: usize = 0,
+        fn record(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx.?));
+            self.records[self.count] = draw;
+            self.count += 1;
+        }
+    };
+    const parsed = try std.json.parseFromSlice(
+        []Witness,
+        std.testing.allocator,
+        @embedFile("testdata/particle-impact.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 135), parsed.value.len);
+    for (parsed.value) |witness| {
+        var state = state_mod.GameplayState.init(witness.input.rng_seed);
+        var trace: Trace = .{};
+        state.rng.setTraceSink(&trace, Trace.record, true);
+        var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{} }};
+        for (witness.input.perks) |perk| players[0].perk_counts.set(@enumFromInt(perk), 1);
+        var creatures: creatures_mod.CreaturePool = .{};
+        for (witness.input.creatures) |item| creatures.entries[item.index] = .{
+            .active = true,
+            .pos = .{ .x = item.x, .y = item.y },
+            .vel = .{ .x = item.vx, .y = item.vy },
+            .hp = item.health,
+            .max_hp = item.max_health,
+            .size = item.size,
+            .lifecycle_stage = item.lifecycle,
+            .tint = .{ item.r, item.g, item.b, item.a },
+            .type_id = item.type,
+            .heading = item.heading,
+        };
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var sprites: effects_mod.SpriteEffectPool = .{};
+        var terrain: terrain_fx_mod.TerrainFxScratch = .{};
+        var pool: ParticlePool = .{};
+        for (witness.input.particles) |item| {
+            pool.entries[item.index] = .{
+                .active = true,
+                .render_flag = item.render != 0,
+                .pos = .{ .x = item.x, .y = item.y },
+                .vel = .{ .x = item.vx, .y = item.vy },
+                .scale_x = 0,
+                .scale_y = 0,
+                .scale_z = 0,
+                .age = 0,
+                .intensity = item.intensity,
+                .angle = item.angle,
+                .spin = item.spin,
+                .style_id = @enumFromInt(item.style),
+                .target_id = item.target,
+            };
+        }
+        pool.update(&state, &players, &creatures, &bonuses, &sprites, &terrain, witness.input.dt, 1024.0);
+        for ([_]Sample{witness.particle}) |expected| {
+            const entry = pool.entries[expected.index];
+            const actual: Sample = .{
+                .index = expected.index,
+                .active = @intFromBool(entry.active),
+                .render = @intFromBool(entry.render_flag),
+                .x = entry.pos.x,
+                .y = entry.pos.y,
+                .vx = entry.vel.x,
+                .vy = entry.vel.y,
+                .sx = entry.scale_x,
+                .sy = entry.scale_y,
+                .sz = entry.scale_z,
+                .age = entry.age,
+                .intensity = entry.intensity,
+                .angle = entry.angle,
+                .spin = entry.spin,
+                .style = @intFromEnum(entry.style_id),
+                .target = entry.target_id,
+            };
+            inline for (std.meta.fields(Sample)) |field| {
+                if (field.type == f32) {
+                    try std.testing.expectEqual(@as(u32, @bitCast(@field(expected, field.name))), @as(u32, @bitCast(@field(actual, field.name))));
+                } else {
+                    try std.testing.expectEqual(@field(expected, field.name), @field(actual, field.name));
+                }
+            }
+        }
+        const creature = creatures.entries[witness.creature.index];
+        const creature_actual: CreatureSample = .{
+            .index = witness.creature.index,
+            .active = @intFromBool(creature.active),
+            .lifecycle = creature.lifecycle_stage,
+            .x = creature.pos.x,
+            .y = creature.pos.y,
+            .vx = creature.vel.x,
+            .vy = creature.vel.y,
+            .health = creature.hp,
+            .max_health = creature.max_hp,
+            .size = creature.size,
+            .heading = creature.heading,
+            .r = creature.tint[0],
+            .g = creature.tint[1],
+            .b = creature.tint[2],
+            .a = creature.tint[3],
+            .type = creature.type_id,
+        };
+        try expectImpactSample(CreatureSample, witness.creature, creature_actual, witness.index);
+        var sprite_count: usize = 0;
+        for (sprites.entries) |entry| {
+            if (entry.active) sprite_count += 1;
+        }
+        try std.testing.expectEqual(witness.sprites.len, sprite_count);
+        for (witness.sprites) |expected| {
+            const entry = sprites.entries[expected.index];
+            const actual: SpriteSample = .{ .index = expected.index, .active = @intFromBool(entry.active), .alpha = entry.color.a, .rotation = entry.rotation, .x = entry.pos.x, .y = entry.pos.y, .vx = entry.vel.x, .vy = entry.vel.y, .scale = entry.scale };
+            try expectImpactSample(SpriteSample, expected, actual, witness.index);
+        }
+        try std.testing.expectEqual(witness.decals.len, terrain.decals.count);
+        for (witness.decals, terrain.decals.entries[0..terrain.decals.count]) |expected, entry| {
+            // The port stores the center; the native enqueue receives top-left.
+            const actual: DecalSample = .{ .effect = entry.effect_id, .x = native_math.pc24Sub(entry.pos.x, entry.width * 0.5), .y = native_math.pc24Sub(entry.pos.y, entry.height * 0.5), .width = entry.width, .height = entry.height, .rotation = entry.rotation, .r = entry.color.r, .g = entry.color.g, .b = entry.color.b, .a = entry.color.a };
+            try expectImpactSample(DecalSample, expected, actual, witness.index);
+        }
+        try std.testing.expectEqual(witness.rng_state, state.rng.state);
+        try std.testing.expectEqual(witness.draws.len, trace.count);
+        for (trace.records[0..trace.count], witness.draws, witness.rng_callers) |record, value, caller| {
+            try std.testing.expectEqual(value, record.value_15);
+            try std.testing.expectEqual(caller, @intFromEnum(record.caller.?));
+        }
+        try std.testing.expect(!state.rng.missing_trace_caller);
+    }
+}
+
+fn expectImpactSample(comptime T: type, expected: T, actual: T, index: usize) !void {
+    inline for (std.meta.fields(T)) |field| {
+        const a = @field(actual, field.name);
+        const e = @field(expected, field.name);
+        const same = if (field.type == f32) @as(u32, @bitCast(a)) == @as(u32, @bitCast(e)) else a == e;
+        if (!same) {
+            std.debug.print("impact {d} {s}: expected {any}, actual {any}\n", .{ index, field.name, e, a });
+            return error.TestExpectedEqual;
+        }
     }
 }

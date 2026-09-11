@@ -1377,9 +1377,9 @@ extern "C" void projectile_update(void)
                                 (float)cos(particle->angle) * 82.0f;
                             particle->velocity.y =
                                 (float)sin(particle->angle) * 82.0f;
-                            float speed_scale = (float)(crt_rand() % 10) * 0.1f;
-                            particle->velocity.x *= speed_scale;
-                            particle->velocity.y *= speed_scale;
+                            int speed_scale = crt_rand() % 10;
+                            particle->velocity.x *= (float)speed_scale * 0.1f;
+                            particle->velocity.y *= (float)speed_scale * 0.1f;
                             creature_pool[hit_id].state_flag = 1;
                             vec2f_t impulse = {0.0f, 0.0f};
                             creature_apply_damage(
@@ -1423,12 +1423,10 @@ extern "C" void projectile_update(void)
                             }
                             fx_queue_add_random(
                                 &hit_creature->position);
-                            vec2f_t creature_displacement = {
-                                frame_dt * particle->velocity.x,
-                                frame_dt * particle->velocity.y,
-                            };
-                            hit_creature->position.x += creature_displacement.x;
-                            hit_creature->position.y += creature_displacement.y;
+                            hit_creature->position.x +=
+                                frame_dt * particle->velocity.x;
+                            hit_creature->position.y +=
+                                frame_dt * particle->velocity.y;
                         }
                     }
                 }

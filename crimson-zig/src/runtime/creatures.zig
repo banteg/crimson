@@ -2680,7 +2680,11 @@ pub const CreaturePool = struct {
         world_size: f32,
     ) i32 {
         var damage_amount = damage;
-        if (damagePerkActive(state, players, PerkId.pyromaniac)) {
+        // Native checks positive health before the fire perk and its RNG draw.
+        if (creature_index < self.entries.len and
+            self.entries[creature_index].hp > 0.0 and
+            damagePerkActive(state, players, PerkId.pyromaniac))
+        {
             damage_amount *= 1.5;
             _ = state.rng.randTagged(rng_callers.creature_apply_damage_pyromaniac);
         }

@@ -331,32 +331,33 @@ class ParticlePool:
                         while angle < 0.0:
                             angle = float(f32(angle + float(NATIVE_TAU)))
                         entry.angle = angle
-                        hit_angle = float(
-                            Vec2(
-                                (entry.pos.x - entry.vel.x * dt) - creature.pos.x,
-                                (entry.pos.y - entry.vel.y * dt) - creature.pos.y,
-                            ).to_angle(),
+                        hit_x = x87_pc24_sub(
+                            x87_pc24_sub(entry.pos.x, x87_pc24_mul(dt, entry.vel.x)),
+                            creature.pos.x,
                         )
+                        hit_y = x87_pc24_sub(
+                            x87_pc24_sub(entry.pos.y, x87_pc24_mul(dt, entry.vel.y)),
+                            creature.pos.y,
+                        )
+                        hit_angle = math.atan2(hit_y, hit_x)
                         while float(NATIVE_TAU) < hit_angle:
-                            hit_angle -= float(NATIVE_TAU)
+                            hit_angle = x87_pc24_sub(hit_angle, NATIVE_TAU)
                         while hit_angle < 0.0:
-                            hit_angle += float(NATIVE_TAU)
+                            hit_angle = x87_pc24_add(hit_angle, NATIVE_TAU)
                         deflect_step = float(f32(1.2566371))
                         if float(entry.angle) <= hit_angle:
                             entry.angle = f32(float(entry.angle) + deflect_step)
                         else:
                             entry.angle = f32(float(entry.angle) - deflect_step)
 
-                        bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
-                        speed_scale = f32(
-                            float(
-                                rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE) % 10,
-                            )
-                            * 0.1,
+                        bounce_velocity = _native_particle_velocity(entry.angle, 82.0)
+                        speed_scale = x87_pc24_mul(
+                            float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE) % 10),
+                            f32(0.1),
                         )
                         entry.vel = Vec2(
-                            f32(float(bounce_velocity.x) * float(speed_scale)),
-                            f32(float(bounce_velocity.y) * float(speed_scale)),
+                            x87_pc24_mul(bounce_velocity.x, speed_scale),
+                            x87_pc24_mul(bounce_velocity.y, speed_scale),
                         )
 
                         damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
@@ -370,21 +371,18 @@ class ParticlePool:
                             )
 
                         tint = creature.tint
-                        tint_sum = x87_pc24_add(x87_pc24_add(tint.g, tint.b), tint.r)
                         tint_r = f32(tint.r)
                         tint_g = f32(tint.g)
                         tint_b = f32(tint.b)
+                        tint_sum = x87_pc24_add(x87_pc24_add(tint_g, tint_b), tint_r)
                         if tint_sum > f32(1.6):
-                            factor = x87_pc24_sub(1.0, x87_pc24_mul(entry.intensity, 0.01))
-                            tint_r = x87_pc24_mul(factor, tint_r)
-                            tint_g = x87_pc24_mul(factor, tint_g)
-                            tint_b = x87_pc24_mul(factor, tint_b)
-                        creature.tint = RGBA(
-                            _native_clamp_unit(tint_r),
-                            _native_clamp_unit(tint_g),
-                            _native_clamp_unit(tint_b),
-                            _native_clamp_unit(tint.a),
-                        )
+                            factor = x87_pc24_sub(1.0, x87_pc24_mul(entry.intensity, f32(0.01)))
+                            creature.tint = RGBA(
+                                _native_clamp_unit(x87_pc24_mul(factor, tint_r)),
+                                _native_clamp_unit(x87_pc24_mul(factor, tint_g)),
+                                _native_clamp_unit(x87_pc24_mul(factor, tint_b)),
+                                _native_clamp_unit(tint.a),
+                            )
 
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
@@ -551,9 +549,15 @@ class FxQueue:
             return False
         # Native `fx_queue_add_random` always consumes RNG even when the queue
         # is full, then lets `fx_queue_add` fail silently.
-        gray = float(rng.rand_tagged(RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY) & 0xF) * 0.01 + 0.84
+        gray = x87_pc24_add(
+            x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY) & 0xF), f32(0.01)),
+            f32(0.84),
+        )
         w = float(rng.rand_tagged(RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH) % 24 - 12) + 30.0
-        rotation = float(rng.rand_tagged(RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION) % 628) * 0.01
+        rotation = x87_pc24_mul(
+            float(rng.rand_tagged(RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION) % 628),
+            f32(0.01),
+        )
         effect_id = rng.rand_tagged(RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID) % 5 + 3
         return self.add(
             effect_id=effect_id,

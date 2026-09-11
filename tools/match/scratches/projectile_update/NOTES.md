@@ -1192,3 +1192,49 @@ Zig's alternate-style RNG caller tags. Python matches all 1,039 applicable
 native PC24 cases. Both ports run a shared 80-case native regression fixture.
 The runtime ports intentionally retain their existing positive-dt update guard;
 the execution evidence does not redefine their pause policy.
+
+## Reachable particle impacts and retained geometry residual (2026-09-11)
+
+Fresh native creature lookup exposes two more arithmetic boundaries. At
+`0x00422a28`, the random bounce scale is formed once as integer-to-float times
+`0.1f`, then reused for both velocity components. Repeating that expression
+inside each `*=` allowed VC6 to reassociate the velocity before the integer
+scale at PC24. At `0x00422c05..0x00422c43`, final creature displacement retains
+its X product live and stores its Y product before addition. A named aggregate
+recovers that value boundary.
+
+The promoted source SHA is
+`29ced950a9a07ed4972859045889678b2d6bceaded5a482c92b5dc2ab8bd23f0`.
+It improves `66.0592255%` to `66.0897290%`, adds one candidate instruction
+(`2187` to `2188/2203`), and raises reference agreements from `429` to `430`
+with the same `0` unresolved and `10` mismatches. Both normalized and encoded
+exactness remain false.
+
+`../../evidence/projectile-particle-impact-2026-09-11/` reconstructs and
+executes the before, single-scale, promoted, and SDK-geometry variants.
+Of 1,230 reachable impacts on both PC24 and PC64, the before source has 178
+state failures, the single-scale control has 38, and the promoted source has
+25. All observed callback arguments, scalar values, and RNG states agree.
+The 25 remaining state failures are PC64 deflection boundaries in the previous
+position / hit-direction geometry. The script rejects newly failing fields and
+records all native/before/recovered field values for those retained failures.
+Ordered-write differences are separate, including redundant in-range tint
+stores and bubble field publication order.
+
+The named SDK-vector geometry alternate has zero state failures on those
+1,230 cases, but lowers the score to `63.9179954%` and increases reference
+problems to 15. It remains reconstructible and unpromoted; no regression gate
+is weakened. Both source candidates retain complete agreement on the prior
+4,817 no-hit cases. This is a bounded positive control, not a compiler ceiling
+or a claim that remaining source/ownership work is exhausted.
+
+The integrated second matrix executes native fire damage, random decal setup,
+and sprite spawning on 663 PC24 cases. Native live and corpse targets cross
+Pyromaniac and independent bullet perks. The promoted C++ source and Python
+port match all observed state/calls/RNG there. Both runtime ports carry the
+native particle geometry, bounce, and conditional RGBA-clamp corrections;
+Python also restores native decal grayscale/rotation boundaries. Zig now uses
+fire damage for particles and avoids Pyromaniac RNG on nonpositive health.
+A shared 135-case fixture covers these boundaries in both runtime suites.
+Native `state_flag` remains unported, and Zig does not model hit-flash state;
+those omissions are explicit in the evidence package.
