@@ -23,13 +23,13 @@ Known missing work:
 - residual register scheduling still diverges inside the hardcore modifier
   block after the large dispatch
 
-Keep tracking prefix, not just total match percent. This scratch is expected to
-be low percentage until more template families are added.
+Keep tracking prefix, execution evidence, and reference identity alongside total
+match percent. The declared source recovery still has compiler/reference debt.
 
-Current local score:
+Current local score (refreshed 2026-09-11):
 
 ```txt
-match=86.93% prefix=23/3159 target_insns=3159 candidate_insns=3161 refs=352/0/1
+match=88.89% prefix=23/3159 target_insns=3159 candidate_insns=3161 refs=357/0/1
 first_target=mov dword [esp+0x10], 0
 first_candidate=mov dword [esp+0x14], 0
 ```
@@ -1032,3 +1032,27 @@ Plans: `grid-publication-interactions-2026-09-06-mutations.json` (9 controls)
 and `grid-publication-single-controls-2026-09-06-mutations.json` (6 controls).
 All compiled, all were evaluated, and their current-baseline results are
 recorded in `experiments.jsonl`.
+
+
+## 2026-09-11: bronze-grid dispatch and runtime grid recovery
+
+The replayable package `../../evidence/spawn-grid-dispatch-2026-09-11/`
+contains the pinned before source, branch reconstruction, native execution
+harness, compiler layout checks and receipts. The `0x18` bronze grid now joins
+the following splitter/remaining-template dispatch ladder, preserving native
+last-child health 260 and avoiding the old extra unhandled-type console call.
+Grids `0x14..0x17` retain their native fallthrough and last-child health 20
+before difficulty modifiers. Fresh static before/after metrics are identical;
+the old 86.93% heading in this note was stale, not this change's baseline.
+
+The bounded replay passes final creature/slot/global state, return value, RNG
+and calls in 2,928 cases (both x87 precisions). The prior source disagreed in
+78 cases. CPU write order still differs in all 2,928 cases and the remaining
+reference mismatch is unresolved. These are explicit debts, not waived proof.
+
+Native grids allocate 27 children at 64-unit vertical intervals, unlike the
+81 children produced by the previous Python/Zig loops. Both runtime loops
+are corrected and have regression checks for allocation count/order, every
+cell position, RNG consumption, phase seeds and the final child. Python also
+now uses the native float32 `0.01` literal for random sentinel headings.
+A separate verifier checks 100 PC24 grid witnesses against both real ports.

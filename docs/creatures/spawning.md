@@ -75,6 +75,14 @@ claim that the records are byte-for-byte identical:
 - May allocate and configure spawn-slot entries (deferred child spawns driven by `creature_update_all`).
 - May spawn a burst effect at the spawn position (skipped in demo mode or when out of bounds).
 
+Grid templates `0x14..0x18` allocate one root plus 27 children: nine columns
+at x offsets `0, -64, ..., -512`, each with y offsets `128, 192, 256`.
+The vertical step is 64 units. Allocation proceeds down each column before
+moving to the next. The last child receives the requested heading and shared
+tail modifiers. Grids `0x14..0x17` also reach the native fallback that sets
+that child's health to 20; bronze grid `0x18` retains health 260 before
+difficulty modifiers. See the [native replay evidence](https://github.com/banteg/crimson/blob/master/tools/match/evidence/spawn-grid-dispatch-2026-09-11/README.md).
+
 ## Algorithm sketch (high level)
 
 ### 1) Base init (always)

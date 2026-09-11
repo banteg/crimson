@@ -1259,11 +1259,11 @@ test "formation child headings preserve or clear recycled slot state" {
         final_idx: usize,
     }{
         .{ .template_id = 0x0E, .final_idx = 24 },
-        .{ .template_id = 0x14, .final_idx = 81 },
-        .{ .template_id = 0x15, .final_idx = 81 },
-        .{ .template_id = 0x16, .final_idx = 81 },
-        .{ .template_id = 0x17, .final_idx = 81 },
-        .{ .template_id = 0x18, .final_idx = 81 },
+        .{ .template_id = 0x14, .final_idx = 27 },
+        .{ .template_id = 0x15, .final_idx = 27 },
+        .{ .template_id = 0x16, .final_idx = 27 },
+        .{ .template_id = 0x17, .final_idx = 27 },
+        .{ .template_id = 0x18, .final_idx = 27 },
     };
 
     for (zeroed_cases) |case| {

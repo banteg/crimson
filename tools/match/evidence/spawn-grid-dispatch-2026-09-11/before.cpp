@@ -479,15 +479,15 @@ extern "C" creature_t *creature_spawn_template(
                                              0.66499996f, 0.385f, 0.259f, 0.56f, 50.0f, 35.0f);
                     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
                     creature->max_health = 20.0f;
-                }
-
-    if (template_id == SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18) {
+                } else if (template_id == SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18) {
                     creature = &creature_pool[root_slot_idx];
                     INIT_GRID_ROOT(CREATURE_TYPE_ALIEN, CREATURE_AI_CHASE_PLAYER,
                                    0.7f, 0.8f, 0.31f, 500.0f, 2.0f, 40.0f);
                     SPAWN_GRID(CREATURE_AI_FOLLOW_LINK, CREATURE_TYPE_ALIEN, 260.0f,
                                0.7125f, 0.41250002f, 0.2775f, 3.8f, 0.6f, 50.0f, 35.0f);
-    } else if (template_id == SPAWN_ID_SPIDER_SP2_SPLITTER_01) {
+    }
+
+    if (template_id == SPAWN_ID_SPIDER_SP2_SPLITTER_01) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP2;
                     creature->flags = CREATURE_FLAG_SPLIT_ON_DEATH;
                     creature->size = 80.0f;

@@ -1164,8 +1164,8 @@ pub const CreaturePool = struct {
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
-                    for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
+                    for (0..3) |y_idx| {
+                        const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1218,8 +1218,8 @@ pub const CreaturePool = struct {
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
-                    for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
+                    for (0..3) |y_idx| {
+                        const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1272,8 +1272,8 @@ pub const CreaturePool = struct {
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
-                    for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
+                    for (0..3) |y_idx| {
+                        const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1326,8 +1326,8 @@ pub const CreaturePool = struct {
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
-                    for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
+                    for (0..3) |y_idx| {
+                        const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1379,8 +1379,8 @@ pub const CreaturePool = struct {
 
                 for (0..9) |x_idx| {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
-                    for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
+                    for (0..3) |y_idx| {
+                        const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -6022,6 +6022,41 @@ test "template spawn supports quest constant lizard templates" {
     }
 }
 
+test "grid formations match native cells and random stream" {
+    for ([_]i32{ 0x14, 0x15, 0x16, 0x17, 0x18 }) |template_id| {
+        for ([_]f32{ 0.75, -100.0 }) |heading| {
+            var pool: CreaturePool = .{};
+            var rng = spawn_mod.Crand.init(0xBEEF);
+            try pool.spawnTemplateCall(.{
+                .template_id = template_id,
+                .pos = .{ .x = 100.0, .y = 200.0 },
+                .heading = heading,
+            }, &rng);
+            try std.testing.expectEqual(@as(usize, 28), pool.activeCount());
+            var expected_rng = spawn_mod.Crand.init(0xBEEF);
+            try std.testing.expectEqual(@as(i32, @intCast(expected_rng.rand() & 0x17f)), pool.entries[0].phase_seed);
+            if (heading == -100.0) _ = expected_rng.rand();
+            _ = expected_rng.rand(); // Transient base heading before child allocation.
+            for (pool.entries[1..28], 0..) |child, cell| {
+                const x_offset = -64.0 * @as(f32, @floatFromInt(cell / 3));
+                const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(cell % 3));
+                try expectFloatClose(x_offset, child.target_offset.x);
+                try expectFloatClose(y_offset, child.target_offset.y);
+                try expectFloatClose(100.0 + x_offset, child.pos.x);
+                try expectFloatClose(200.0 + y_offset, child.pos.y);
+                try std.testing.expectEqual(@as(i32, 0), child.link_index);
+                try std.testing.expectEqual(@as(i32, @intCast(expected_rng.rand() & 0x17f)), child.phase_seed);
+                if (cell != 26) try expectFloatClose(0.0, child.heading);
+            }
+            try std.testing.expectEqual(expected_rng.state, rng.state);
+            if (heading != -100.0) try expectFloatClose(heading, pool.entries[27].heading);
+            const expected_health: f32 = if (template_id == 0x18) 260.0 else 20.0;
+            try expectFloatClose(expected_health, pool.entries[27].hp);
+            try expectFloatClose(expected_health, pool.entries[27].max_hp);
+        }
+    }
+}
+
 test "template spawn supports quest formation templates" {
     {
         var pool: CreaturePool = .{};
@@ -6034,12 +6069,12 @@ test "template spawn supports quest formation templates" {
             },
             &rng,
         );
-        try std.testing.expectEqual(@as(usize, 82), pool.activeCount());
+        try std.testing.expectEqual(@as(usize, 28), pool.activeCount());
         try std.testing.expectEqual(spawn_mod.CreatureAiMode.chase_player, pool.entries[0].ai_mode);
         try std.testing.expectEqual(spawn_mod.CreatureAiMode.follow_link_tethered, pool.entries[1].ai_mode);
         try std.testing.expectEqual(@as(i32, 0), pool.entries[1].link_index);
-        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[81].type_id);
-        try expectFloatClose(20.0, pool.entries[81].hp);
+        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[27].type_id);
+        try expectFloatClose(20.0, pool.entries[27].hp);
     }
 
     {
@@ -6094,12 +6129,12 @@ test "template spawn supports quest formation templates" {
             },
             &rng,
         );
-        try std.testing.expectEqual(@as(usize, 82), pool.activeCount());
+        try std.testing.expectEqual(@as(usize, 28), pool.activeCount());
         try std.testing.expectEqual(spawn_mod.CreatureAiMode.chase_player, pool.entries[0].ai_mode);
         try std.testing.expectEqual(spawn_mod.CreatureAiMode.link_guard, pool.entries[1].ai_mode);
         try std.testing.expectEqual(@as(i32, 0), pool.entries[1].link_index);
-        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[81].type_id);
-        try expectFloatClose(20.0, pool.entries[81].hp);
+        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[27].type_id);
+        try expectFloatClose(20.0, pool.entries[27].hp);
     }
 
     {
@@ -6113,11 +6148,11 @@ test "template spawn supports quest formation templates" {
             },
             &rng,
         );
-        try std.testing.expectEqual(@as(usize, 82), pool.activeCount());
+        try std.testing.expectEqual(@as(usize, 28), pool.activeCount());
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), pool.entries[0].type_id);
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), pool.entries[1].type_id);
-        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[81].type_id);
-        try expectFloatClose(20.0, pool.entries[81].hp);
+        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[27].type_id);
+        try expectFloatClose(20.0, pool.entries[27].hp);
     }
 
     {
@@ -6131,11 +6166,11 @@ test "template spawn supports quest formation templates" {
             },
             &rng,
         );
-        try std.testing.expectEqual(@as(usize, 82), pool.activeCount());
+        try std.testing.expectEqual(@as(usize, 28), pool.activeCount());
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)), pool.entries[0].type_id);
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)), pool.entries[1].type_id);
-        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[81].type_id);
-        try expectFloatClose(20.0, pool.entries[81].hp);
+        try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), pool.entries[27].type_id);
+        try expectFloatClose(20.0, pool.entries[27].hp);
     }
 
     {
@@ -6149,10 +6184,10 @@ test "template spawn supports quest formation templates" {
             },
             &rng,
         );
-        try std.testing.expectEqual(@as(usize, 82), pool.activeCount());
+        try std.testing.expectEqual(@as(usize, 28), pool.activeCount());
         try std.testing.expectEqual(spawn_mod.CreatureAiMode.chase_player, pool.entries[0].ai_mode);
         try std.testing.expectEqual(spawn_mod.CreatureAiMode.follow_link, pool.entries[1].ai_mode);
-        try expectFloatClose(260.0, pool.entries[81].hp);
+        try expectFloatClose(260.0, pool.entries[27].hp);
     }
 
     {

@@ -43,7 +43,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 3 | crimsonland.exe | projectile_update | 3121 | semantic-complete | compiler,references | historical-only | 0/75 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | creature_update_all | 2401 | semantic-complete | compiler,references | historical-only | 0/25 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 6 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/43 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 6 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/44 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 7 | crimsonland.exe | creature_render_type | 574 | semantic-complete | compiler,references | historical-only | 0/27 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
 | 8 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 9 | crimsonland.exe | player_render_overlays | 319 | semantic-complete | compiler | historical-only | 0/33 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |

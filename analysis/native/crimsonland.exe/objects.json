@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "9eca4fa7103462eecca7bc4429bd385eff9aaaa8a75c335597882e2a01777c7a",
+  "audit_digest": "c1f409c94aa743dcbb5118b046be145e740ad7c1a71f684b535e119b7b80b19f",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -61723,7 +61723,7 @@
         {
           "path": "tools/match/scratches/creature_spawn_template/scratch.cpp",
           "repository_relative": true,
-          "sha256": "5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f"
+          "sha256": "d5885acac74d8812378a588b472f47cd3cf228285a87423222ff02220bb730ad"
         },
         {
           "path": "tools/match/scratches/creature_spawn_template/scratch.conf",
@@ -61769,10 +61769,10 @@
           "canonical_config_sha256": "99c8fd411c5991a0a904d0ccc19975e32f92990224059fd62d1f32084265cfdb",
           "canonical_scratch": "tools/match/scratches/creature_spawn_template",
           "canonical_source": "tools/match/scratches/creature_spawn_template/scratch.cpp",
-          "canonical_source_sha256": "5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f",
+          "canonical_source_sha256": "d5885acac74d8812378a588b472f47cd3cf228285a87423222ff02220bb730ad",
           "effective_end": 4407811,
           "end": 4407811,
-          "experiment_epoch": "1fe7094512a86681e86ae3bdb34ae8958d115261edb2c574bafa2751c31f882e",
+          "experiment_epoch": "7ccb4bd6ec1eaaad295b0b6f51488ab84f53b373303c824ba512ce29f40d199f",
           "function": "creature_spawn_template",
           "match": {
             "body_byte_exact": false,
@@ -61810,10 +61810,10 @@
       },
       "object": "tools/match/scratches/creature_spawn_template/build/msvc6.5/5e4a09ff02f61a15/scratch.obj",
       "object_function_symbol": "_creature_spawn_template",
-      "object_sha256": "e1089e6c68874bc8c0f87bcdc371d5c21b4eb34a1320ce0af6e8a4c5082685fb",
+      "object_sha256": "b462491903992412a0534370fdc67a285e8daeeb6337c8f2eb3a2554e3b960fc",
       "scratch": "tools/match/scratches/creature_spawn_template",
       "source": "tools/match/scratches/creature_spawn_template/scratch.cpp",
-      "source_sha256": "5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f",
+      "source_sha256": "d5885acac74d8812378a588b472f47cd3cf228285a87423222ff02220bb730ad",
       "target_size": 14099,
       "translation_unit": {
         "kind": "isolated",

@@ -1,0 +1,1156 @@
+{
+  "schema_version": 1,
+  "native_results_sha256": "b58a56f641f19caccbf644e641252919f4e465f1663b723513dfd218ae476843",
+  "verifier_sha256": "98c41b31b2b3f85a53d7748a350546fd728beeeae4a2db30db7df153ce52f75b",
+  "zig_binary_sha256": "77d9c2639fa4379736a346fa2781f9f01187fe00067047973a869cce05fdf97b",
+  "source_sha256": {
+    "src/crimson/creatures/spawn.py": "ce8d108345d17a95cf42dc7159b156b745891979ebabddbea9949b58f0fa428d",
+    "crimson-zig/src/runtime/creatures.zig": "78bdad6748a47f55db7005fb9008c0ad64c25b1bffa9ae75ec97f507401a710c",
+    "crimson-zig/src/spawn_plan_native.zig": "aeef879bc85842f7fedd3bb0c722b0a6e3f5c7316b57e35734c9d885b194ca73"
+  },
+  "cases": 100,
+  "skipped": [
+    {
+      "case": 328,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 330,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 332,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 334,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 344,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 346,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 348,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 350,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 360,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 362,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 364,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 366,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 376,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 378,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 380,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 382,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 392,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 394,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 396,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 398,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1633,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1635,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1637,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1645,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1647,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1649,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1657,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1659,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1661,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1669,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1671,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1673,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1681,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1683,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1685,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1693,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1695,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1697,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1705,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1707,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1709,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1717,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1719,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1721,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1729,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1731,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1733,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1741,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1743,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1745,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1753,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1755,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1757,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1765,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1767,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1769,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1777,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1779,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1781,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1789,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1791,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1793,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1801,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1803,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 1805,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2154,
+      "reason": "Zig CLI rejects negative retry counts"
+    },
+    {
+      "case": 2155,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2157,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2159,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2161,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2163,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2165,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2167,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2169,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2170,
+      "reason": "Zig CLI rejects negative retry counts"
+    },
+    {
+      "case": 2171,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2173,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2175,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2177,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2179,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2181,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2183,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2185,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2186,
+      "reason": "Zig CLI rejects negative retry counts"
+    },
+    {
+      "case": 2187,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2189,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2191,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2193,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2195,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2197,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2199,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2201,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2202,
+      "reason": "Zig CLI rejects negative retry counts"
+    },
+    {
+      "case": 2203,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2205,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2207,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2209,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2211,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2213,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2215,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2217,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2218,
+      "reason": "Zig CLI rejects negative retry counts"
+    },
+    {
+      "case": 2219,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2221,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2223,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2225,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2227,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2229,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2231,
+      "reason": "Runtime arithmetic uses PC24"
+    },
+    {
+      "case": 2233,
+      "reason": "Runtime arithmetic uses PC24"
+    }
+  ],
+  "rows": [
+    {
+      "case": 320,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 2253185571,
+      "zig_output_sha256": "617a287a4a40089f2227c3929bb4b5ede34d119656f2dbc2994ec345d3408c4d"
+    },
+    {
+      "case": 322,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 2253185571,
+      "zig_output_sha256": "ab67f54892aca34ef4ba351f8dc50d57e73b72b6cb08ed2d82807d7d7e1c719f"
+    },
+    {
+      "case": 324,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 2253185571,
+      "zig_output_sha256": "c4e9be33c5bb409653f80be9ddfefffe0c12523be23f85a084e5f1372fac376d"
+    },
+    {
+      "case": 326,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 2253185571,
+      "zig_output_sha256": "5f0b9aa2d98a3d4fe88fce762cdc35fb7fb46baa61f476a9be77da29989d967f"
+    },
+    {
+      "case": 336,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3589141212,
+      "zig_output_sha256": "91d732a8f9d0391081513f441639e0f12bc25758bc837508629566676495da1a"
+    },
+    {
+      "case": 338,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3589141212,
+      "zig_output_sha256": "505fc121fce7401a022b534ece4c663ba71f7f1dc4830e33e3d3295bfbb7a247"
+    },
+    {
+      "case": 340,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3589141212,
+      "zig_output_sha256": "a3834e3e110d89204720f57309f72ed6b8e2d0526cb6049aa04a53a9336b1149"
+    },
+    {
+      "case": 342,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3589141212,
+      "zig_output_sha256": "ae77870afe43110e0004eac7987e582c536e96f71f7e0d9a697bdf751a159fe3"
+    },
+    {
+      "case": 352,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 630129557,
+      "zig_output_sha256": "b4da08c8e8731d9ab1522d0e812a7b3d41da0db4ec246379d1b935bd95b3faa0"
+    },
+    {
+      "case": 354,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 630129557,
+      "zig_output_sha256": "aa2f01e5e392ac72f446e98070c3531325e0181a414eab78ef868c2dbe268f29"
+    },
+    {
+      "case": 356,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 630129557,
+      "zig_output_sha256": "02970ffd69586f2dea5a06fa7a3ce7819ce202bdf1baf165176cda28962755b3"
+    },
+    {
+      "case": 358,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 630129557,
+      "zig_output_sha256": "f04c27bacadfb631c4bf5c387dd3da28aafd26ce11eab0a2cad2d2ec3d2e8d88"
+    },
+    {
+      "case": 368,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1966085198,
+      "zig_output_sha256": "1d4f1dea5e890b6e6afae077791c07701ca3dbd1c24f91d393b11dcb25e9bf7b"
+    },
+    {
+      "case": 370,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1966085198,
+      "zig_output_sha256": "c78da67a93d11c6a55b53d30b0e07bf1992452628c8b70680d839ff0bd3d5d44"
+    },
+    {
+      "case": 372,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1966085198,
+      "zig_output_sha256": "ac51de5551ec7af3324dfbc84f0fe57c319cefceeee9869b132ba40f36dae2cb"
+    },
+    {
+      "case": 374,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1966085198,
+      "zig_output_sha256": "464755226db54aa63a1a9d9e65b7243c34ef02b58920ac1ede248567df623d04"
+    },
+    {
+      "case": 384,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3302040839,
+      "zig_output_sha256": "63714548984dae3aa80a01ba81fd4618ac22ad88f79df7ad31d605f3e1f10725"
+    },
+    {
+      "case": 386,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3302040839,
+      "zig_output_sha256": "639f04f1e82cfa254c778d29fd9d6e944a927088fd10893698300448cb66a0c8"
+    },
+    {
+      "case": 388,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3302040839,
+      "zig_output_sha256": "7109361bc5f2f512d4bcc8136b1ba72affcb7c3b75337b6648a5a2b2b8f678cd"
+    },
+    {
+      "case": 390,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3302040839,
+      "zig_output_sha256": "c89d87f9d8f331f415b719a7ce7b7e3f2254d6c79ee4cdf8ebd9d66eb7780ed3"
+    },
+    {
+      "case": 1632,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "97b02f7d0a543eecb44db3295ee58acdbf5e91a0dbf7f1c84312826aae8528a1"
+    },
+    {
+      "case": 1634,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "fd12ea0d9e7c368d63c23267f922552a40ad4327af4ee9f9a55604e3c24c9ae5"
+    },
+    {
+      "case": 1636,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "f034b5cb4b7fbb3518a7c99286b1ce5337755c255620f8795d5bb36b16707853"
+    },
+    {
+      "case": 1644,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "ae9d671cdc32fba183a5c1af3f9f1e8b9ae5d3cd8c6cda4fbc54aa1ef58e13a1"
+    },
+    {
+      "case": 1646,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "fe0acbe628da2e5beed63227316c258a4e4e41a921c7f940514ad2822f07f135"
+    },
+    {
+      "case": 1648,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "d5db9596f528e802af677f88786799f2d5de00a61f7ac2abd33a2b0fced4250f"
+    },
+    {
+      "case": 1656,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "68dd47c1c3b76ea894222e2405f06b91dd964ac6544ba52933610b0f13538b85"
+    },
+    {
+      "case": 1658,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "ffe123b79e328dbf37286c524260338c5c36987f06257300114975eb97e6cc1b"
+    },
+    {
+      "case": 1660,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "3887c8633189772dcfebcb53b6d5f6de2d2514250cbbc363ce08e9d2a7aec203"
+    },
+    {
+      "case": 1668,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "39ee396dc580acf93b2b462bb1ee92046c74cf5fd04bbfc405cb41b899ead612"
+    },
+    {
+      "case": 1670,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "45d0f96de9d8fabdded1fba8a5c6e55fcb3b4f465075ec60cc7139612d51ccab"
+    },
+    {
+      "case": 1672,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "36728853421d5bf9ae5aac2c4d317a4c89cdcdf71126e74ee314c7d2e04e19d7"
+    },
+    {
+      "case": 1680,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "6fc15149100dad3cfe5aeb99042ee02c131f70d50e0af31a345b2a5f586909fb"
+    },
+    {
+      "case": 1682,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "dbb59e244ebd799f33298c1bc18616201fa951ac0ce0de126718023faac7f73c"
+    },
+    {
+      "case": 1684,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "b5ced0ce69f610196e7b699694979d0bbce414dbebfe09b7a126400cd702b9ea"
+    },
+    {
+      "case": 1692,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "ccf87c40ece50cdc212be476b1d9f4045a712aeefce3634883ed36e6dae23ea8"
+    },
+    {
+      "case": 1694,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "fc853ea3b9b1ff8cc1b334d06280a063e5a437bb7c5d7af0a0061de9efeedcf8"
+    },
+    {
+      "case": 1696,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "c47e031ae7c7ace3944ab033f1bd254da6eafcbf90c126ef951bec0551d6136f"
+    },
+    {
+      "case": 1704,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "75d3980e032cf2dc94166798e59abbea26bc4c99cb4186bf31244cf492a5adbb"
+    },
+    {
+      "case": 1706,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "3b6431bbccd8e4f49f377aa936d0af880f483aada071cd00d61feffa55a45de4"
+    },
+    {
+      "case": 1708,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "b64d6a99cdbed860cbff9fe84696f2d41d685864f021173dc59a1f79fcb439db"
+    },
+    {
+      "case": 1716,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "53cff1650d3e3f9d6757204a6d772ecdccf7e1ebf41b314ebe06f82eebd4da2b"
+    },
+    {
+      "case": 1718,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "80e6bae328c2a650d564fb01e5f2abecd552cb91f3abd8a07946d20af7f35b3a"
+    },
+    {
+      "case": 1720,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "b108a33ac25ba23abbd2a83613d84bf93b58c704819d1db9ff3f8fa3c874ab22"
+    },
+    {
+      "case": 1728,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "2e7560c6ad82bb4090264eb92e5f471d438c20cfb56278f4b706cb0376cc2e4f"
+    },
+    {
+      "case": 1730,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "97a78212963646920416f1e2ec1754434659c9950c6fa732aa235a81ade637b0"
+    },
+    {
+      "case": 1732,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "a5edf258ca9103bc2440926f826be1d7cfc846c717b48be7217dfacced89bb09"
+    },
+    {
+      "case": 1740,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "d8ac19641ab8ed699dde69d050185411fffad22a79bb5026a719eee56ce99dd7"
+    },
+    {
+      "case": 1742,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "8ffe0ba5116726caf3a15028ecab0715114dbef67eef9106ae3552d457a25284"
+    },
+    {
+      "case": 1744,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "595937e0355e546d4b30d77188afede0cc40e8b97658368ff5b6130eda696b78"
+    },
+    {
+      "case": 1752,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "10346600b2c85cfa1f79777285ea853bb461c4e4384bd2b0808c78f3eb2e46cf"
+    },
+    {
+      "case": 1754,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "84e73ed690b970302a1eb96e7f9dcfaf07722f7e56c6b4a3f652d012733eae47"
+    },
+    {
+      "case": 1756,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "bc4ceb140a3cf2ef16bbb3dfd5537a0c0daeb738fed7552d6ed1a844c9139f6e"
+    },
+    {
+      "case": 1764,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "ee31f17775ffc633de02a7702ff1551c1e673f8e184b0cf82111e8ff193b6832"
+    },
+    {
+      "case": 1766,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "7c5e01824ea803a63259471b343d37c06a0ce3efe6d653a4de4baf5d5b5b09a4"
+    },
+    {
+      "case": 1768,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "e56a2276f6e9f154ed959314d17ae199a3af318e433d9916bb4af321a7ec0b50"
+    },
+    {
+      "case": 1776,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "6a71bcf2fe105169c1b15d667fafb3f73f7e036d8444e6a51a4ea6d98c692d7b"
+    },
+    {
+      "case": 1778,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "f892d86aea8e03d6f6bcc23c0e5f1b32319305e8deb0f6664e77f715bb02c7fe"
+    },
+    {
+      "case": 1780,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "4edabaf86dc15b465e93400ba7a546e698f3411ebfcedbf0c33e8b569ed06da1"
+    },
+    {
+      "case": 1788,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "6508720480b3c58d34f128fe9b32ec7b3dd5b81b1ccc4ccafa40cfef3a5aca7c"
+    },
+    {
+      "case": 1790,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "0e385ea02992542711284bb839314835d812e530822aed701c978787ad6260d1"
+    },
+    {
+      "case": 1792,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 1044413874,
+      "zig_output_sha256": "e83b6db62b10a98258924860b9a6162e35b1a26252f5c9c4250664a8926edcf3"
+    },
+    {
+      "case": 1800,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "f08bc097926230e050b0afe16469403898cb90aecbb8acdf4a73adfa4f838c18"
+    },
+    {
+      "case": 1802,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "59b96ac9bc6c5900c71fcc77aef007a3bcbdf467bd62853bdebf84435d535f5f"
+    },
+    {
+      "case": 1804,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "203b0c8841acfb36cd98dec0f26aeed69e08638db6c002fb76dc1332229c964a"
+    },
+    {
+      "case": 2156,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "d06d00397f0eab81e5862e0a6f03752b9bf0208e7229627d390d974a73d06fc4"
+    },
+    {
+      "case": 2158,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "b34a32d904b8a279b2096b73ccbd3da84103d9a4c5d03d6aa4f7f1a5f88a59c7"
+    },
+    {
+      "case": 2160,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "cbac8e2433d63e0137253893955d118fd47ca70c1569146ff21996345bd6ad08"
+    },
+    {
+      "case": 2162,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "affcee0b9b12adbc8ad3f1c48f730c1961cf6110ec8e464c07f8c61012676944"
+    },
+    {
+      "case": 2164,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "990977ef6d598fcea483953b26435e362beb038435e7bb3c6b558275084a7050"
+    },
+    {
+      "case": 2166,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "a53a4f3469b1b0fb0776623e1d477aa282ee4f62bfd21b127ae45b43b2da067a"
+    },
+    {
+      "case": 2168,
+      "template": 20,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "1d08b1764425d6f1788e09a64b9246ab1058e485ad606793843099f756773a96"
+    },
+    {
+      "case": 2172,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "76581bb74055396354ff7e7a3a01ef86dd100cb225f4400b953b7a514ab15660"
+    },
+    {
+      "case": 2174,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "51589c03db1a926d134bb4abf997a66fb55eadfb8db6d19b070f1e456994a918"
+    },
+    {
+      "case": 2176,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "02fc5ebda225770811e79daed42707d200bef6754562a68affa4fcb3773b153f"
+    },
+    {
+      "case": 2178,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "9da98cbe0b10ab3fd891b0fec3ea3b94aeb04503dce4914b4063e1a1bb5050e8"
+    },
+    {
+      "case": 2180,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "4b6761a8fce7b6c4ae6ad5d88453e9540a420315783dfc9d3f4b7d5dff11fca0"
+    },
+    {
+      "case": 2182,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "4d95558d521b3d6a7410e825163950824ab3c09f391df0e1a7bd5865b7817339"
+    },
+    {
+      "case": 2184,
+      "template": 21,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "cca88834aed8c71f8c8f4da6b445c3ece9d04ea1add97f7bec21fb6a1cf5c9f7"
+    },
+    {
+      "case": 2188,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "f2de0ab16af5c48d6e5aea528138759e47d02cbee19ac850630ab182dc510973"
+    },
+    {
+      "case": 2190,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "6a0ef68356e2bf2221fb47dac96ef149b9d981554beedf9721cf6ca739c949e9"
+    },
+    {
+      "case": 2192,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "9abc50bde85ea098ffb10031b50ea418e12a3a6e7485f9be2738a44b4f7d9db7"
+    },
+    {
+      "case": 2194,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "e7e0dc44384f3a6534269a13add98fd3bad4e7eedf3d0d6008b43433ef58625c"
+    },
+    {
+      "case": 2196,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "b04834846e0284cc815e9f448d8638c39c80ea272ac6a72fa3f65ebb0627b94a"
+    },
+    {
+      "case": 2198,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "ed69c43bb58ab31752718aedd8bfacf706c81ff60d554f8ed73f78c129a6934d"
+    },
+    {
+      "case": 2200,
+      "template": 22,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "c36913fa1582379f9a230fe5cd2645e356fc92a09bab5470c82c7930ae9df4cd"
+    },
+    {
+      "case": 2204,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "9d55eed78533f560a68db7125c175fc43548114d17d1dd32ef4876509de8736b"
+    },
+    {
+      "case": 2206,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "a24b4f768682b027b7f5dbaa1c9620b0227eb63704414acce9965e0e0d7fb069"
+    },
+    {
+      "case": 2208,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "5985a0961dd644fec59955ed66409066832d089c736eab1db899936b0fa4e7bb"
+    },
+    {
+      "case": 2210,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "c4955404c61069290a9454950cd215bc62788a80722afce2957df11cb611a6c9"
+    },
+    {
+      "case": 2212,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "258a838e93df7f0bbee915939a66472e0437fe7e97ae97d5c0f820d2ba621a1b"
+    },
+    {
+      "case": 2214,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "91eee1fc0a2d1b4e5306f21a9f1ef46c83e5a7962f4fdcf5364fd90ed214dba4"
+    },
+    {
+      "case": 2216,
+      "template": 23,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "44485bfbf035a31648b562397566bdb3e0b1886d070ca77bdb3d09ff2b7bb31f"
+    },
+    {
+      "case": 2220,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "3344d03cde38d10525ba3e8ce72d6504558839de7757cf83789d1b3fb8f2d88f"
+    },
+    {
+      "case": 2222,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "f9f4c98710cf3e6051c7f568c2c9ceb71153605501adab29eaf88d7ee27c364c"
+    },
+    {
+      "case": 2224,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "97bf2f953591158b31b2aec4c178edeb4bfd05bba5351dbb87f8a82be65b48d1"
+    },
+    {
+      "case": 2226,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "1b5825803e7be7987d8b46648dc5efac9a19baa4b10f0ca7d7b8e3fc0420e7ee"
+    },
+    {
+      "case": 2228,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "582efcf792e0133af29f6e8d496de04885e04513b59e68304f31e7fd18a10dc4"
+    },
+    {
+      "case": 2230,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "71be377916e52f2453a52d336a3ac5384073fbdd7354e83dd3c16bd4d1c8a18f"
+    },
+    {
+      "case": 2232,
+      "template": 24,
+      "creatures": 28,
+      "rng_state": 3755896237,
+      "zig_output_sha256": "0ed293120ce7228698afaa05e38da4a91b0bc2214b9646f5ca6405270adf16bd"
+    }
+  ]
+}

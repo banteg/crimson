@@ -277,6 +277,50 @@ def test_build_spawn_plan_rejects_unsupported_template_id(default_spawn_env: Spa
         build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)
 
 
+def test_random_spawn_heading_uses_native_float_literal(default_spawn_env: SpawnEnv) -> None:
+    plan = build_spawn_plan(
+        SpawnId.FORMATION_GRID_ALIEN_GREEN_14,
+        Vec2(100.0, 200.0),
+        RANDOM_HEADING_SENTINEL,
+        Crand(21),
+        default_spawn_env,
+    )
+    # Native PC24: the heading roll is 292 and the literal is float32 0.01.
+    assert plan.creatures[-1].heading == 2.919999837875366
+
+
+@pytest.mark.parametrize("template_id", [SpawnId(value) for value in range(0x14, 0x19)])
+@pytest.mark.parametrize("heading", [0.75, RANDOM_HEADING_SENTINEL])
+def test_grid_formation_native_cells_and_random_stream(
+    default_spawn_env: SpawnEnv,
+    template_id: SpawnId,
+    heading: float,
+) -> None:
+    # Native SPAWN_GRID uses nine columns and three rows, each 64 units apart.
+    rng = Crand(0xBEEF)
+    plan = build_spawn_plan(template_id, Vec2(100.0, 200.0), heading, rng, default_spawn_env)
+    assert len(plan.creatures) == 28
+    assert plan.primary == 27
+    expected_rng = Crand(0xBEEF)
+    assert plan.creatures[0].phase_seed == expected_rng.rand() & 0x17F
+    if heading == RANDOM_HEADING_SENTINEL:
+        expected_rng.rand()
+    expected_rng.rand()  # Transient base heading, before any child allocation.
+    offsets = [Vec2(float(x), float(y)) for x in range(0, -513, -64) for y in (128, 192, 256)]
+    for child, offset in zip(plan.creatures[1:], offsets, strict=True):
+        assert child.target_offset == offset
+        assert child.pos == Vec2(100.0 + offset.x, 200.0 + offset.y)
+        assert child.ai_link_parent == 0
+        assert child.phase_seed == expected_rng.rand() & 0x17F
+    assert rng.state == expected_rng.state
+    assert all(child.heading == 0.0 for child in plan.creatures[1:-1])
+    if heading != RANDOM_HEADING_SENTINEL:
+        assert plan.creatures[-1].heading == heading
+    expected_health = 260.0 if template_id == SpawnId.FORMATION_GRID_ALIEN_BRONZE_18 else 20.0
+    assert plan.creatures[-1].health == expected_health
+    assert plan.creatures[-1].max_health == expected_health
+
+
 @pytest.mark.parametrize(
     ("template_id", "caller"),
     [

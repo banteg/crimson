@@ -511,7 +511,7 @@ GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
             tint=(0.4, 0.7, 0.11, 1.0),
         ),
         x_range=range(0, -576, -64),
-        y_range=range(128, 257, 16),
+        y_range=range(128, 257, 64),
         apply_fallback=True,
     ),
     SpawnId.FORMATION_GRID_ALIEN_WHITE_15: GridFormationSpec(
@@ -536,7 +536,7 @@ GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
             tint=(0.4, 0.7, 0.11, 1.0),
         ),
         x_range=range(0, -576, -64),
-        y_range=range(128, 257, 16),
+        y_range=range(128, 257, 64),
         apply_fallback=True,
     ),
     SpawnId.FORMATION_GRID_LIZARD_WHITE_16: GridFormationSpec(
@@ -561,7 +561,7 @@ GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
             tint=(0.4, 0.7, 0.11, 1.0),
         ),
         x_range=range(0, -576, -64),
-        y_range=range(128, 257, 16),
+        y_range=range(128, 257, 64),
         apply_fallback=True,
     ),
     SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17: GridFormationSpec(
@@ -586,7 +586,7 @@ GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
             tint=(0.4, 0.7, 0.11, 1.0),
         ),
         x_range=range(0, -576, -64),
-        y_range=range(128, 257, 16),
+        y_range=range(128, 257, 64),
         apply_fallback=True,
     ),
     SpawnId.FORMATION_GRID_ALIEN_BRONZE_18: GridFormationSpec(
@@ -611,7 +611,7 @@ GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
             tint=(0.7125, 0.4125, 0.2775, 0.6),
         ),
         x_range=range(0, -576, -64),
-        y_range=range(128, 257, 16),
+        y_range=range(128, 257, 64),
     ),
 }
 
@@ -975,7 +975,10 @@ class PlanBuilder(msgspec.Struct):
         # `heading == RANDOM_HEADING_SENTINEL` uses a randomized heading.
         final_heading = heading
         if final_heading == RANDOM_HEADING_SENTINEL:
-            final_heading = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_RANDOM_HEADING) % 628) * 0.01
+            final_heading = x87_pc24_mul(
+                f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_RANDOM_HEADING) % 628)),
+                f32(0.01),
+            )
 
         # Base initialization always consumes one rand() for a transient heading value.
         creatures[0].heading = x87_pc24_mul(
