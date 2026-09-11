@@ -1,0 +1,7278 @@
+[
+  {
+    "label": "boundary-8.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "136e8a8a4b536c64d8cc41eb0109c065f66e204b1adac5cc5621df65118e96d5"
+  },
+  {
+    "label": "boundary-8.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "8772e94857d3ba9ab1c673383aa5ee9ba6bbdb152a160868402ef1fc33a2fadd"
+  },
+  {
+    "label": "boundary-8.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "fd728352f323273c188e74d44764537427124218760d878ef0bfdff5e783dd3f"
+  },
+  {
+    "label": "boundary-8.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "97913e1c9fec2d9be60e0d4d802db3e25a8e9695886bc1ff33b4d43317d191a2"
+  },
+  {
+    "label": "boundary-8.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "8bae7c8b5a055bb7c7ad1f3ff3aa65bf1e9e2697953f0d9b80edc4f1ff6a18b4"
+  },
+  {
+    "label": "boundary-8.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "fdb554123b036944a0ea3d17a74b563b99120c364e73a63207a8f6abaa8d078f"
+  },
+  {
+    "label": "boundary-8.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "9a357340ece74c05e474cff7b16acefd98b999c9e6fae514ce7a6ac8521abaee"
+  },
+  {
+    "label": "boundary-8.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "648d72716c216d2eecaa32cf57cb51408419cf20ee93b704659102e82751dba4"
+  },
+  {
+    "label": "boundary-8.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "19d914a50d86b69be1e40daf65f27a31ab944f02a807ceb9ad1f286678a150b0"
+  },
+  {
+    "label": "boundary-16.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "319606c2c875e9b094fa57ec358bb963ad04b111d178c08b6490df651ea92506"
+  },
+  {
+    "label": "boundary-16.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "86b24f7896c4f353c7de45273a6b5f6e4e5080ae6c7902ee22fcf698d05ab07f"
+  },
+  {
+    "label": "boundary-16.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "7546908dd6f6d0ade9bce81ebac50cad7468f345124d719497ec0a681a5d0280"
+  },
+  {
+    "label": "boundary-16.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "6a820c206254f3e73601023a9e900e0bf972dfa48cf50d5bb5b68de114d7bbe1"
+  },
+  {
+    "label": "boundary-16.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "44b3e5f3b876ad26aa971e0663f7618da467aa5ed93c6bbf44a11abda794d4df"
+  },
+  {
+    "label": "boundary-16.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "81a17039795e3770a086772c3d5aad25f6803321144c5dc0a5e920398f39c5e9"
+  },
+  {
+    "label": "boundary-16.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "b33e11bc15119291a47a9f377f59aacd16d32564a8b1fcba18f0ddabcab78715"
+  },
+  {
+    "label": "boundary-16.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "ff9cc784c35970322f3e31d3c932030810c9f25cc33a28988011f69af11fa835"
+  },
+  {
+    "label": "boundary-16.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.018359361216425896,
+          16.32999038696289
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "fc04962ba846e78c2525afdbe8dc694291ee67cdca4179b35a95a03b2d8fdae2"
+  },
+  {
+    "label": "boundary-24.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "953f206b08f742988dda2f694a9a3b624adc7a984d46a6ad76ca62cc2782dafd"
+  },
+  {
+    "label": "boundary-24.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "64a4009e8765006f3f863be7aaaf6a6ce24894d1f5d9aee463bf38d02c1d0066"
+  },
+  {
+    "label": "boundary-24.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "8fb7e132283acb1716dde6355d21192e11cc84a58a9be2e4b051b75317e1e112"
+  },
+  {
+    "label": "boundary-24.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "fd1f27d328c9a8d22ae3c5e3c7507c1db1d7d7374b8f173e77bf19ccca9c0516"
+  },
+  {
+    "label": "boundary-24.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "f017ad5dad56a4380f3555ad5ca26f81aded841b36bf210775a199e78969d173"
+  },
+  {
+    "label": "boundary-24.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "65bd6182074614f1dcf9339a6ac5fc3be3a6163d09db273a4a309e35afd6c9b5"
+  },
+  {
+    "label": "boundary-24.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "19790f5033b9f374199c881ce1a7bd0ca7aa5974dd0bfffb2e04da596a217c68"
+  },
+  {
+    "label": "boundary-24.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "4b88fc59dd7716ce1636d9bfdfc4a5f1c70e64a10ba9bb4f6e03b24f028c40fa"
+  },
+  {
+    "label": "boundary-24.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.381606578826904,
+          22.936635971069336
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "0d66558e184671c4e768e48c28736b03ba00cff9b1807b4ed628056545633c40"
+  },
+  {
+    "label": "boundary-32.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "a7b84bf30f2f9fcbd4b35aedd53d44d4ff5e24f92ae80a8ff34ff3fe12be0710"
+  },
+  {
+    "label": "boundary-32.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "edd3a62cd4c1a6ef81b9cf270bf7edad56cb1443c8fd289dc5ee2f4b70fc530c"
+  },
+  {
+    "label": "boundary-32.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "e3ebf29cb6a561947fda240e817e13db5c76f7b816db564ebc25cd1282e86fcd"
+  },
+  {
+    "label": "boundary-32.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "e8edef16080c507f8b8cb089950212660b30b178c16bdd3503d9f805f1ad3082"
+  },
+  {
+    "label": "boundary-32.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "a5cbe21444192118a6dd779c5f17c5675821205a1544d13356ea83d854a5a019"
+  },
+  {
+    "label": "boundary-32.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "8bacb00fa0f1b1b75fcc2ef476dd7b02b54f1e81c558b95640e680901bd20866"
+  },
+  {
+    "label": "boundary-32.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "a52bf6d3a225147e2eed0805c27c9f7da5e71a199c9eb4f20095eecf1bdf109a"
+  },
+  {
+    "label": "boundary-32.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "3d6114a78e41aeff7096055de8d75141b8dae53f5a241013a24f5e0701886c38"
+  },
+  {
+    "label": "boundary-32.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          4.361884593963623,
+          32.935325622558594
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "0af81562596f36f4eb2cba3cbb8475e86fda3dacb7da6cbc0305db7a646ce9dc"
+  },
+  {
+    "label": "boundary-40.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "abf038996e7139b9f78afcf20ceca0cda0ac373d42655215f6d5b6a858337eb4"
+  },
+  {
+    "label": "boundary-40.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "2b7be8acc124aff553d898da12152e41e3cc77cc6e53f55e19234cac1434bfd5"
+  },
+  {
+    "label": "boundary-40.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "68bea3ec48c6d9bae031211b5261d2ba99784a228cc17892fe2f8a57ce472dfc"
+  },
+  {
+    "label": "boundary-40.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "31e1247a14a821d5a103bc6225afe009003318101900fd4a3bf3cb1ffc026446"
+  },
+  {
+    "label": "boundary-40.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "f10667edb1991c4c2f9011618782947014a96d64062a7a7dd17d092b05326cb2"
+  },
+  {
+    "label": "boundary-40.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "e26d1450516eb02a0d580b1679616bf38dd61a0d31b23201ca9e80362a8004fe"
+  },
+  {
+    "label": "boundary-40.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "1a9c5f160399a4a933dd2ce18ade320702accbd23fc82dbf65cc86a4d35bad97"
+  },
+  {
+    "label": "boundary-40.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "2bf9518f521c4364462584c283a4ce2c5c069e5c071e4ead633c288d6f8bf62b"
+  },
+  {
+    "label": "boundary-40.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          1.1998395919799805,
+          40.31200408935547
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "568cc4d5d577473a77a5d9eeb785d98d7cc208b177c7b250088b4ae6751315fb"
+  },
+  {
+    "label": "boundary-48.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "2a3a8fea192a2d90899db94a6806d04f78580849e27b5fe9fb2449a328c08eeb"
+  },
+  {
+    "label": "boundary-48.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "94fdd062a8e160c6ca9d4e49e3a7681d6db61628d2cbaa96ef8beda276759cd2"
+  },
+  {
+    "label": "boundary-48.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "af1ac27a106edde69421ee17f43651ecf495734ac4acda541971a3f897c3f462"
+  },
+  {
+    "label": "boundary-48.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "b7b8d2143fd6670358dbbb1a0acaf8e3c37a6f7f8fd3e2a8ab20dc34a5dbe7f8"
+  },
+  {
+    "label": "boundary-48.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "79a528655e43638e51690866029c4eca85242c3a46347f8cdad71a7bffb69cad"
+  },
+  {
+    "label": "boundary-48.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "e17375acb355ef7234752c9c8794b648a1feb869b97c4bd1d2fd1238479ef768"
+  },
+  {
+    "label": "boundary-48.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "c05d13116c2c206dddd2337e55458bb6f1a839bae994c935ce2ac3e3359c9d8e"
+  },
+  {
+    "label": "boundary-48.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "7e9a7d7ae443f05eb1880423c070f096711f0888419c5ecbf80d50bc3dd20111"
+  },
+  {
+    "label": "boundary-48.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.33000001311302185
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          14.592571258544922,
+          46.05807876586914
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "bdbe7e7daaf8dec1ff08de5ca08bb1e0d566c666d1383d59944f4357c6ff9a08"
+  },
+  {
+    "label": "boundary-56.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "a16d5665483d1a1569aaf607e581c5f2baecc4ecbdf4c50f4f25ec228d94709a"
+  },
+  {
+    "label": "boundary-56.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "3da035ba5b22340854b6967dc31152e1348a6540123b8c00a9f3c0b665c65db9"
+  },
+  {
+    "label": "boundary-56.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "cae6b6a5daf57959861a2618c526707098b87dbc50fa9e5b1c6aa275735a2aa2"
+  },
+  {
+    "label": "boundary-56.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "ada2c71b1afc1ddfd2e897154e361f8b3f7d2421a4417aacb61d4a86165582b6"
+  },
+  {
+    "label": "boundary-56.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "5d83b3e7199ab7e864cbc45f9a3e86afef76833ac5193a2ec0880f64d4d8c284"
+  },
+  {
+    "label": "boundary-56.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "a8267906c12e12650af5cfbe66d4ca504e48d127f064e1c0f51e1234e8cc30ff"
+  },
+  {
+    "label": "boundary-56.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "2db09ad34761663b83571f84c8e196c35c7b9b9fcfe448f83367a43d25dcf058"
+  },
+  {
+    "label": "boundary-56.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "2b32fb19b0d45bda3c7795246cf8767af16ccc743ad2501b56f051acf6c0c2f4"
+  },
+  {
+    "label": "boundary-56.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          3.8504021167755127,
+          56.067474365234375
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "691d4697b6f31ef07ecf8c74ead2dc47aa51c7a12f1494516510a7366a841349"
+  },
+  {
+    "label": "boundary-64.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "238ba1b12257f639927d091844f4ef279127fbfb06f56de457898065e233a62d"
+  },
+  {
+    "label": "boundary-64.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "fa6c762112a5533b44f557c9925ef3c18a84fb5dccee900788b9d01d205be07a"
+  },
+  {
+    "label": "boundary-64.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "7d70c518d72f5b69f0b0ce98835c809e0ccfa61cfe186b4b1159788f965f93a7"
+  },
+  {
+    "label": "boundary-64.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "a5f47a95a9ae8a3dd24625deec10a36eaa29654aab9c181210ccc123aa500d13"
+  },
+  {
+    "label": "boundary-64.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "8fd634dc55407439903a2803c55e6ba3e1f7b02ad98d729f593704252d72cbb1"
+  },
+  {
+    "label": "boundary-64.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "874c072d2b5db62158562fe1302a579273c8f06049bf37aec0f3af7893d9ba03"
+  },
+  {
+    "label": "boundary-64.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "cacfa09c592e98eb4217c4ad8d462a96b3019d5389842968b999bcd2e0da9099"
+  },
+  {
+    "label": "boundary-64.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "734cea840a17836aa435b8694d30cdaabd10411a6bdb41ba0163bb085e0ec0dc"
+  },
+  {
+    "label": "boundary-64.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            0.10000000149011612
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.855133056640625,
+          64.03628540039062
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "ea9da82f1bff60c05cb9d77588ffdaf3807622a0c59b88735e285d519abcada4"
+  },
+  {
+    "label": "boundary-72.0-0.2-1-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "6fc7748ca0fb754e42f3dd37bb0542531fb210573b9e5bb43087e25785c9deff"
+  },
+  {
+    "label": "boundary-72.0-0.2-2-0",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "13efc699f2bf3ed3dcfeded58c04e6411446b09de4d47375ccff4d3fd3b3b02a"
+  },
+  {
+    "label": "boundary-72.0-0.2-2-1",
+    "frame": {
+      "alpha": 0.2,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "5322a870388d50c9bbb65a28bd4e61a80ceee5a61d98f645f0328a26b24a31d1"
+  },
+  {
+    "label": "boundary-72.0-0.7-1-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "2bac3d26e15c6309d376fe06cc555414ab160a14e2259f8de8de7194604f6a70"
+  },
+  {
+    "label": "boundary-72.0-0.7-2-0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "196244e32408c5702b840785f365ef857e406ba8a3231b14f66ce91112ecde55"
+  },
+  {
+    "label": "boundary-72.0-0.7-2-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "aef117b9519381154013efd9054688bc7cab7898c56486114d2d9513217e8c7f"
+  },
+  {
+    "label": "boundary-72.0-1.5-1-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "065f54d32725b9d0ca79dc8fe6be927ef3607fd166a48e8b8cabd7d4571e6f25"
+  },
+  {
+    "label": "boundary-72.0-1.5-2-0",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "f5a0b541769c941ff3d6311ffff3a4c0bf4b4d1cbadf0d174008d79bb9f162ef"
+  },
+  {
+    "label": "boundary-72.0-1.5-2-1",
+    "frame": {
+      "alpha": 1.5,
+      "player_count": 2,
+      "overlay_index": 1,
+      "players": [
+        {
+          "index": 1,
+          "position": [
+            0.0,
+            -0.20000000298023224
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.11706238985061646,
+          71.79991149902344
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "66a3eb203c8f670f7b41839647c80d0e7e1efd296c4575f3700970912c59c7a1"
+  },
+  {
+    "label": "axis-0.0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "0b09802188dbfd1d7671e13b842d2d2c7e02fccfa7047cb13543f6eff1d1bb23"
+  },
+  {
+    "label": "axis-7.9",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          7.9,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "8dd83db1354ed9465c093f67b32257cd7438771845bb9fa93d479bf284345cd4"
+  },
+  {
+    "label": "axis-8.0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          8.0,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "15dba8cea32662f89faef75ad7315b072f2b239b96a973711342851ac757caa2"
+  },
+  {
+    "label": "axis-8.1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          8.1,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "c633c8c59501e63a394ff2b5152d1d02eba8f111493f496bd9be267967ee1d03"
+  },
+  {
+    "label": "axis-79.9",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          79.9,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "bc4eb22b1a1b790ad15f01a2172c7c648d0535fa8d1dbde4661b866d55d9ebd0"
+  },
+  {
+    "label": "axis-80.0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          80.0,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "0b92f9f1e9361e265430e149cd91d869e05e775f22d55b55fe7fa1304f858091"
+  },
+  {
+    "label": "axis-80.1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          80.1,
+          0.0
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "83687a5626e8cea5a23f708dd295cb909de8f76dbf96be27d847202efe8181b5"
+  },
+  {
+    "label": "gate-line_perk-False",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ],
+      "line_perk": false
+    },
+    "prior_call_trace_sha256": "e2c2b8ff246d182269303783fbf48eb4b6c73ace519c970e313df2f47073cda2"
+  },
+  {
+    "label": "gate-suppressed-1",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ],
+      "suppressed": 1
+    },
+    "prior_call_trace_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "label": "gate-alpha-0.0",
+    "frame": {
+      "alpha": 0.0,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "label": "gate-alpha--0.1",
+    "frame": {
+      "alpha": -0.1,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ]
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "label": "trail-gate-0.0",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ],
+          "trail": 0.0
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "b63196ff8007474a4b4873aab1d215ef92608893016c205eebe8c16d18e28249"
+  },
+  {
+    "label": "trail-gate-0.25",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ],
+          "trail": 0.25
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "b63196ff8007474a4b4873aab1d215ef92608893016c205eebe8c16d18e28249"
+  },
+  {
+    "label": "trail-gate-0.25001",
+    "frame": {
+      "alpha": 0.7,
+      "player_count": 1,
+      "overlay_index": 0,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            0.0,
+            -1.2339999675750732
+          ],
+          "trail": 0.25001
+        }
+      ],
+      "targets": [
+        [
+          0,
+          2.3839526176452637,
+          6.4025421142578125
+        ]
+      ]
+    },
+    "prior_call_trace_sha256": "97913e1c9fec2d9be60e0d4d802db3e25a8e9695886bc1ff33b4d43317d191a2"
+  },
+  {
+    "label": "body-1-0-0.0-0.0-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "403623e6c7f3825beb87875db466808e308b82e8376def8a4b7bac9cb694b385"
+  },
+  {
+    "label": "body-1-0-0.0-0.0-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "2b1d4a003418c179eeb05c61ca30ec21ec5dcd745e6725ae8b226e3934576b4b"
+  },
+  {
+    "label": "body-1-0-0.0-0.0-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6021d82744366a0e07c6fe2ca9757db90a210da1b13767c09f9c79c3fd2f243e"
+  },
+  {
+    "label": "body-1-0-0.0-0.0-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "403623e6c7f3825beb87875db466808e308b82e8376def8a4b7bac9cb694b385"
+  },
+  {
+    "label": "body-1-0-0.0-0.0-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "2b1d4a003418c179eeb05c61ca30ec21ec5dcd745e6725ae8b226e3934576b4b"
+  },
+  {
+    "label": "body-1-0-0.0-0.0-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6021d82744366a0e07c6fe2ca9757db90a210da1b13767c09f9c79c3fd2f243e"
+  },
+  {
+    "label": "body-1-0-0.0-0.0--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "54e78a14871159a2e1939fdfdd5456b36d246d299ebb3280cfe7bc1d5ad06542"
+  },
+  {
+    "label": "body-1-0-0.0-0.0--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0b34969717f01007f1829f58a8c90c140016e7d82afedb9573c5d6536712c4bc"
+  },
+  {
+    "label": "body-1-0-0.0-0.0--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a3fc6a242ae55294ad38e7471866a1db3abcdc42f947ad69477e2119d73759a2"
+  },
+  {
+    "label": "body-1-0-0.0-0.0--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "54e78a14871159a2e1939fdfdd5456b36d246d299ebb3280cfe7bc1d5ad06542"
+  },
+  {
+    "label": "body-1-0-0.0-0.0--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0b34969717f01007f1829f58a8c90c140016e7d82afedb9573c5d6536712c4bc"
+  },
+  {
+    "label": "body-1-0-0.0-0.0--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a3fc6a242ae55294ad38e7471866a1db3abcdc42f947ad69477e2119d73759a2"
+  },
+  {
+    "label": "body-1-0-0.0-0.5-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "403623e6c7f3825beb87875db466808e308b82e8376def8a4b7bac9cb694b385"
+  },
+  {
+    "label": "body-1-0-0.0-0.5-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "2b1d4a003418c179eeb05c61ca30ec21ec5dcd745e6725ae8b226e3934576b4b"
+  },
+  {
+    "label": "body-1-0-0.0-0.5-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6021d82744366a0e07c6fe2ca9757db90a210da1b13767c09f9c79c3fd2f243e"
+  },
+  {
+    "label": "body-1-0-0.0-0.5-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "403623e6c7f3825beb87875db466808e308b82e8376def8a4b7bac9cb694b385"
+  },
+  {
+    "label": "body-1-0-0.0-0.5-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "2b1d4a003418c179eeb05c61ca30ec21ec5dcd745e6725ae8b226e3934576b4b"
+  },
+  {
+    "label": "body-1-0-0.0-0.5-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6021d82744366a0e07c6fe2ca9757db90a210da1b13767c09f9c79c3fd2f243e"
+  },
+  {
+    "label": "body-1-0-0.0-0.5--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "54e78a14871159a2e1939fdfdd5456b36d246d299ebb3280cfe7bc1d5ad06542"
+  },
+  {
+    "label": "body-1-0-0.0-0.5--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0b34969717f01007f1829f58a8c90c140016e7d82afedb9573c5d6536712c4bc"
+  },
+  {
+    "label": "body-1-0-0.0-0.5--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a3fc6a242ae55294ad38e7471866a1db3abcdc42f947ad69477e2119d73759a2"
+  },
+  {
+    "label": "body-1-0-0.0-0.5--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "54e78a14871159a2e1939fdfdd5456b36d246d299ebb3280cfe7bc1d5ad06542"
+  },
+  {
+    "label": "body-1-0-0.0-0.5--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0b34969717f01007f1829f58a8c90c140016e7d82afedb9573c5d6536712c4bc"
+  },
+  {
+    "label": "body-1-0-0.0-0.5--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a3fc6a242ae55294ad38e7471866a1db3abcdc42f947ad69477e2119d73759a2"
+  },
+  {
+    "label": "body-1-0-100.0-0.0-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "9426b086a20f49c3e04dabc7b862fb9d59babc7d08b142b36a3ebd41a19d1b5b"
+  },
+  {
+    "label": "body-1-0-100.0-0.0-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "7bb74f10e1397a1d8c5636c9a5204f1d0f7d495999727d5dab1bd9b9c8effc3b"
+  },
+  {
+    "label": "body-1-0-100.0-0.0-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "63d28a2ff0f6322efab91c74de2270af4ef8641cea8b0365851dfa8e147aff44"
+  },
+  {
+    "label": "body-1-0-100.0-0.0-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "903d4f2501d4fbb954fdfabaa909dc5d7e9212c3fc2d0d4dc18f3461c032ed59"
+  },
+  {
+    "label": "body-1-0-100.0-0.0-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "c0275628c732c9ed57a9efa77bcd154c72ed320b3b1a3ef67541c2ab2897179a"
+  },
+  {
+    "label": "body-1-0-100.0-0.0-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "d11229d37044bc9ef6b5683784d4b9841c64d9a1cd115d32c5145098eeb94721"
+  },
+  {
+    "label": "body-1-0-100.0-0.0--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "fe53b85c61bf8be48a57b557407ecb9e5d7f5ac249e3ff587868a645227ba44f"
+  },
+  {
+    "label": "body-1-0-100.0-0.0--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "73c2ee62ed3ec5241c2afdefc5b220d193546d48bcdd550c4952a9749d6e2bc2"
+  },
+  {
+    "label": "body-1-0-100.0-0.0--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "80409d64a8c9d0fc4ee556967bbfa3b961f5fa86327305d1ea7096ea413e3660"
+  },
+  {
+    "label": "body-1-0-100.0-0.0--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "4a73ec39f52d15fcad134496b1b21c0712110f337c21bf0c01a6aea8e0bbfd49"
+  },
+  {
+    "label": "body-1-0-100.0-0.0--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "8fd03793dd7343bc4b1f788b4ea153d36d2a4e405f50d73c301828c4a62d90e6"
+  },
+  {
+    "label": "body-1-0-100.0-0.0--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "cfd674777a2ba8e20a690036923f64ad0f4fced628b88f7e7dd1cf4d34d63185"
+  },
+  {
+    "label": "body-1-0-100.0-0.5-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "55409675f64319621de8632642444bd1dc63875d06a5f13626beb511e230c782"
+  },
+  {
+    "label": "body-1-0-100.0-0.5-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "37bcb28715aa60cc0df8e7768d410a42314bd39b796ea2872b04e7eb2232324b"
+  },
+  {
+    "label": "body-1-0-100.0-0.5-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "36d53889569c9a94f93e2ee86d06cbae9b039a57ef5ae212fc27b07aad00e87a"
+  },
+  {
+    "label": "body-1-0-100.0-0.5-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "16a2fac5e98941c675b8a5eab83a90ea314fb6d60004d2083785017d7d465833"
+  },
+  {
+    "label": "body-1-0-100.0-0.5-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "feb8ce87ad94ff4f5335d0a380ea21cad3e2179ab8f65560b495ee85d636d6fc"
+  },
+  {
+    "label": "body-1-0-100.0-0.5-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "cff28a22c2ddcba140237eba5d7d6235a6c362240b64f9762df3776e0fb25fec"
+  },
+  {
+    "label": "body-1-0-100.0-0.5--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "b6fd50419ea8e58a5fb3e3ba08b446105f57d4d859c4bfbccbba86d2121252e4"
+  },
+  {
+    "label": "body-1-0-100.0-0.5--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "dee76f17d2d144143124363b1a767bb6284de7d2ca740bf32dec1ccb002be370"
+  },
+  {
+    "label": "body-1-0-100.0-0.5--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "9d0217aadd70116a3093e49c34f93f0d7db739de984ad31aa0186bd78cbd6b7a"
+  },
+  {
+    "label": "body-1-0-100.0-0.5--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "3052d1636c68b65000078a773216f9540e7a95d77e18f6e846abde8ca1f1058d"
+  },
+  {
+    "label": "body-1-0-100.0-0.5--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "78ad59508fe0f06e48326884d002143f7519b45faedfe82b1a70caae33bfeddb"
+  },
+  {
+    "label": "body-1-0-100.0-0.5--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 1,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "548ab77d40ebac1dc11ea2a216eccca8cb4228a406636e08338c044c93aa8115"
+  },
+  {
+    "label": "body-2-0-0.0-0.0-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "f5cc0cc9aae0428ae39a9f1dcc5343633717aa1099fa4bdad0625506e8951882"
+  },
+  {
+    "label": "body-2-0-0.0-0.0-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "4983751e5153bed703381ebf543065c0f92c7242e75a36956650453b33ee333a"
+  },
+  {
+    "label": "body-2-0-0.0-0.0-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0f83f6d54a64165ee91cd400076b04607d4062b908cbde76478b610516577b0f"
+  },
+  {
+    "label": "body-2-0-0.0-0.0-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "f5cc0cc9aae0428ae39a9f1dcc5343633717aa1099fa4bdad0625506e8951882"
+  },
+  {
+    "label": "body-2-0-0.0-0.0-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "4983751e5153bed703381ebf543065c0f92c7242e75a36956650453b33ee333a"
+  },
+  {
+    "label": "body-2-0-0.0-0.0-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0f83f6d54a64165ee91cd400076b04607d4062b908cbde76478b610516577b0f"
+  },
+  {
+    "label": "body-2-0-0.0-0.0--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "8c4521ccddf9a577063e5dbbac2376fbbea07f559d26dd2db69a918545ca3915"
+  },
+  {
+    "label": "body-2-0-0.0-0.0--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "387019a76900736247a4ea889be22df4f4c93408b2e7944335acd5d5e6220de8"
+  },
+  {
+    "label": "body-2-0-0.0-0.0--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "97167b0c8259a0a2726e35561e752ba182946b2332ddf34e86fab9bb90ef9d5e"
+  },
+  {
+    "label": "body-2-0-0.0-0.0--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "8c4521ccddf9a577063e5dbbac2376fbbea07f559d26dd2db69a918545ca3915"
+  },
+  {
+    "label": "body-2-0-0.0-0.0--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "387019a76900736247a4ea889be22df4f4c93408b2e7944335acd5d5e6220de8"
+  },
+  {
+    "label": "body-2-0-0.0-0.0--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "97167b0c8259a0a2726e35561e752ba182946b2332ddf34e86fab9bb90ef9d5e"
+  },
+  {
+    "label": "body-2-0-0.0-0.5-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "f5cc0cc9aae0428ae39a9f1dcc5343633717aa1099fa4bdad0625506e8951882"
+  },
+  {
+    "label": "body-2-0-0.0-0.5-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "4983751e5153bed703381ebf543065c0f92c7242e75a36956650453b33ee333a"
+  },
+  {
+    "label": "body-2-0-0.0-0.5-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0f83f6d54a64165ee91cd400076b04607d4062b908cbde76478b610516577b0f"
+  },
+  {
+    "label": "body-2-0-0.0-0.5-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "f5cc0cc9aae0428ae39a9f1dcc5343633717aa1099fa4bdad0625506e8951882"
+  },
+  {
+    "label": "body-2-0-0.0-0.5-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "4983751e5153bed703381ebf543065c0f92c7242e75a36956650453b33ee333a"
+  },
+  {
+    "label": "body-2-0-0.0-0.5-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0f83f6d54a64165ee91cd400076b04607d4062b908cbde76478b610516577b0f"
+  },
+  {
+    "label": "body-2-0-0.0-0.5--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "8c4521ccddf9a577063e5dbbac2376fbbea07f559d26dd2db69a918545ca3915"
+  },
+  {
+    "label": "body-2-0-0.0-0.5--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "387019a76900736247a4ea889be22df4f4c93408b2e7944335acd5d5e6220de8"
+  },
+  {
+    "label": "body-2-0-0.0-0.5--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "97167b0c8259a0a2726e35561e752ba182946b2332ddf34e86fab9bb90ef9d5e"
+  },
+  {
+    "label": "body-2-0-0.0-0.5--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "8c4521ccddf9a577063e5dbbac2376fbbea07f559d26dd2db69a918545ca3915"
+  },
+  {
+    "label": "body-2-0-0.0-0.5--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "387019a76900736247a4ea889be22df4f4c93408b2e7944335acd5d5e6220de8"
+  },
+  {
+    "label": "body-2-0-0.0-0.5--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "97167b0c8259a0a2726e35561e752ba182946b2332ddf34e86fab9bb90ef9d5e"
+  },
+  {
+    "label": "body-2-0-100.0-0.0-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "7d88f28ec47a6b92fbcd3ada3c9a0b6749e9c97a400bb339e001f22d7af6edfd"
+  },
+  {
+    "label": "body-2-0-100.0-0.0-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "90ec260b75920fd43ea56c92bdcbb8d519721ffa4aa3a15688981b025502646a"
+  },
+  {
+    "label": "body-2-0-100.0-0.0-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a69dbd7b03e15aa0b4ebecd290f46af759fec3f1a72baaa624dacacb59db0c3f"
+  },
+  {
+    "label": "body-2-0-100.0-0.0-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "1c32c62f6fefea1444c9f4b35a440602bd69f619dc32cf261e6e309de0833a5c"
+  },
+  {
+    "label": "body-2-0-100.0-0.0-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "da44b39f940d18366cdd98b74eeb7efcb2cc51fd1e1b3a8dab7919902da96457"
+  },
+  {
+    "label": "body-2-0-100.0-0.0-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "b37d741e5272eb18af4d50d4fe7508372ed8bc57ad8b7ef91c68f4a1f39a0148"
+  },
+  {
+    "label": "body-2-0-100.0-0.0--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "5e569deacf9049c0b88dbb6046ef589c79116b8a43a66af9fa38eb2b39944288"
+  },
+  {
+    "label": "body-2-0-100.0-0.0--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "44efc392c0ab99ac0511e1fcb21865ccd23c3317fb98e353a02b833b3712d45d"
+  },
+  {
+    "label": "body-2-0-100.0-0.0--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "f531f34e11b3b687853be3a016945b9b070cf429a28f2dc72ffffb32ee0c2533"
+  },
+  {
+    "label": "body-2-0-100.0-0.0--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6c186dcb58e5302f521161deeeb3cf8266e126f5c7a9d2b7458232aee32a7c30"
+  },
+  {
+    "label": "body-2-0-100.0-0.0--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "04cdb42ddca0f84e3e878914171aac4fe6bda1561d4436ae5d18d36dc1dffb47"
+  },
+  {
+    "label": "body-2-0-100.0-0.0--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "ecf0a9c878c2c3ff3eeee2039adcbb67888204ffb7692e1a44d8ad20fe669d85"
+  },
+  {
+    "label": "body-2-0-100.0-0.5-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "7b1b7253b40d422c5bc3597428b81a3e244c5b95d532316614d97e5f5f3fd077"
+  },
+  {
+    "label": "body-2-0-100.0-0.5-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "79360b9096932172ac49cb2730946b9206405d4e0350aaaf6672da10a87ffff9"
+  },
+  {
+    "label": "body-2-0-100.0-0.5-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "806a4998c717ab795b573bc7fc83cb150001f2e49d43a580066f8e3785a5e966"
+  },
+  {
+    "label": "body-2-0-100.0-0.5-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "72223f5b174b9a52ca9f8be1b54e1847795803abfdf4fb8ac0b7ef729f353e2d"
+  },
+  {
+    "label": "body-2-0-100.0-0.5-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "e3e0960a1de1b942b706aac4a5c196ab78bc4b396dcdceea8b7cd10af0c7f1bf"
+  },
+  {
+    "label": "body-2-0-100.0-0.5-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "af7ed4efd5bf7e7f3885ecb3d7442af9fe0e77d499c7ec1c3fa8ba58bde6ef9e"
+  },
+  {
+    "label": "body-2-0-100.0-0.5--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6ec84f92f474823f8d96f8d587090c837796bb205c25fb580bfcd307c44f37e4"
+  },
+  {
+    "label": "body-2-0-100.0-0.5--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "8faa16c252f24393ccb7c1d97a0408561163876498760235c2124f52bdba3b56"
+  },
+  {
+    "label": "body-2-0-100.0-0.5--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "ec03196680ce6d82cde21b2b83fca457c6ddd8a15af1a1c4d4242ac29b941ab4"
+  },
+  {
+    "label": "body-2-0-100.0-0.5--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "b495717914a2eace71814b7c7f4fefeb7b02d540c9d53230ae1fd4dcaeee3295"
+  },
+  {
+    "label": "body-2-0-100.0-0.5--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "9bf0e93b9aae72997f51ab1bf420ad712a907b63186ce44e162071958d6f72a3"
+  },
+  {
+    "label": "body-2-0-100.0-0.5--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 0,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "fd6b80c95f3b2aefaa586434b41e52a2b5654d603a542a22aa2f92394146e0a2"
+  },
+  {
+    "label": "body-2-1-0.0-0.0-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "05bdf33d5b9180fb74ffa740cd268b8b28602294542618988b559c3a854e5d85"
+  },
+  {
+    "label": "body-2-1-0.0-0.0-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "41ef48929d20dc60b88fc5268a1fd7338945c34547fb5a14a9002d729930ed43"
+  },
+  {
+    "label": "body-2-1-0.0-0.0-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "be8eab3f74086b351ebefef1b49d37b70add7b7c97fb31b54c5b2cf24a8531d4"
+  },
+  {
+    "label": "body-2-1-0.0-0.0-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "05bdf33d5b9180fb74ffa740cd268b8b28602294542618988b559c3a854e5d85"
+  },
+  {
+    "label": "body-2-1-0.0-0.0-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "41ef48929d20dc60b88fc5268a1fd7338945c34547fb5a14a9002d729930ed43"
+  },
+  {
+    "label": "body-2-1-0.0-0.0-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "be8eab3f74086b351ebefef1b49d37b70add7b7c97fb31b54c5b2cf24a8531d4"
+  },
+  {
+    "label": "body-2-1-0.0-0.0--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "84be02a4087c5a6da86d567df7169d4945fc185566c8d8514c176e4a8dee7fa0"
+  },
+  {
+    "label": "body-2-1-0.0-0.0--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a465dcb15cd010cb19a18fd469541448c83550e94d1b03ba75bb5ac06165eaec"
+  },
+  {
+    "label": "body-2-1-0.0-0.0--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "44f0d296aa0dcad825e48c0dab7ed516ae71fb48b2d38690b5df2cca842ff472"
+  },
+  {
+    "label": "body-2-1-0.0-0.0--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "84be02a4087c5a6da86d567df7169d4945fc185566c8d8514c176e4a8dee7fa0"
+  },
+  {
+    "label": "body-2-1-0.0-0.0--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a465dcb15cd010cb19a18fd469541448c83550e94d1b03ba75bb5ac06165eaec"
+  },
+  {
+    "label": "body-2-1-0.0-0.0--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "44f0d296aa0dcad825e48c0dab7ed516ae71fb48b2d38690b5df2cca842ff472"
+  },
+  {
+    "label": "body-2-1-0.0-0.5-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "05bdf33d5b9180fb74ffa740cd268b8b28602294542618988b559c3a854e5d85"
+  },
+  {
+    "label": "body-2-1-0.0-0.5-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "41ef48929d20dc60b88fc5268a1fd7338945c34547fb5a14a9002d729930ed43"
+  },
+  {
+    "label": "body-2-1-0.0-0.5-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "be8eab3f74086b351ebefef1b49d37b70add7b7c97fb31b54c5b2cf24a8531d4"
+  },
+  {
+    "label": "body-2-1-0.0-0.5-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "05bdf33d5b9180fb74ffa740cd268b8b28602294542618988b559c3a854e5d85"
+  },
+  {
+    "label": "body-2-1-0.0-0.5-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "41ef48929d20dc60b88fc5268a1fd7338945c34547fb5a14a9002d729930ed43"
+  },
+  {
+    "label": "body-2-1-0.0-0.5-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "be8eab3f74086b351ebefef1b49d37b70add7b7c97fb31b54c5b2cf24a8531d4"
+  },
+  {
+    "label": "body-2-1-0.0-0.5--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "84be02a4087c5a6da86d567df7169d4945fc185566c8d8514c176e4a8dee7fa0"
+  },
+  {
+    "label": "body-2-1-0.0-0.5--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a465dcb15cd010cb19a18fd469541448c83550e94d1b03ba75bb5ac06165eaec"
+  },
+  {
+    "label": "body-2-1-0.0-0.5--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "44f0d296aa0dcad825e48c0dab7ed516ae71fb48b2d38690b5df2cca842ff472"
+  },
+  {
+    "label": "body-2-1-0.0-0.5--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "84be02a4087c5a6da86d567df7169d4945fc185566c8d8514c176e4a8dee7fa0"
+  },
+  {
+    "label": "body-2-1-0.0-0.5--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a465dcb15cd010cb19a18fd469541448c83550e94d1b03ba75bb5ac06165eaec"
+  },
+  {
+    "label": "body-2-1-0.0-0.5--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 0.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "44f0d296aa0dcad825e48c0dab7ed516ae71fb48b2d38690b5df2cca842ff472"
+  },
+  {
+    "label": "body-2-1-100.0-0.0-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "3cfc3a28bf37804cb39d1ad10f24c8bb99f56d0e1ebbee37df0e52588dfba223"
+  },
+  {
+    "label": "body-2-1-100.0-0.0-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "3c9597e1785692144e9fee174963ba93fba2fa1b02d3956e31955caa550befca"
+  },
+  {
+    "label": "body-2-1-100.0-0.0-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "b261df3d9e1324c645603210b249a0f338ece1161694f894786b0334ee1e0649"
+  },
+  {
+    "label": "body-2-1-100.0-0.0-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "33018d6738da209f027638db6676ab0a659543a848ca65e762a0c45cc1a818fd"
+  },
+  {
+    "label": "body-2-1-100.0-0.0-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6fba7a25ca9226e2ccd58426a4f9a0bd77c4ec594dcf60ed2c99a5aed6844bf9"
+  },
+  {
+    "label": "body-2-1-100.0-0.0-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "bea4d0fbb27ac1a33af2dd14a5b50b5eb28a91292fd0dee495562ce5205a5e4b"
+  },
+  {
+    "label": "body-2-1-100.0-0.0--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "cdf2568c073b3458dff8edd2727b7f240322aa4bb8e870bd2419b9a4095a2ff1"
+  },
+  {
+    "label": "body-2-1-100.0-0.0--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "2c9399f3de5563232c2b9d8e1cd1e5e23bae58ca969e494c8d9330eaed30f97e"
+  },
+  {
+    "label": "body-2-1-100.0-0.0--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "6821833f1b1f32d0288cf23152a143961622416bff200e990f457d76f8bc2066"
+  },
+  {
+    "label": "body-2-1-100.0-0.0--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "69133bd5697a34e827b7624faed9e24f45dca56038db377399891a1250bafb36"
+  },
+  {
+    "label": "body-2-1-100.0-0.0--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "65f6873a71f7e918c990c282706d3c53a184138b86e1d6e72803702582ba802d"
+  },
+  {
+    "label": "body-2-1-100.0-0.0--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.0,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "2239a0d261ca8f3af0c9c2b0a9c2345cb3d0fff25752fcedfa962439cb5db95b"
+  },
+  {
+    "label": "body-2-1-100.0-0.5-0.3-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "22abf6f5ead9d8c2e38ae85d4de6080df525bf1dd242fae2e95c76816173b483"
+  },
+  {
+    "label": "body-2-1-100.0-0.5-0.3-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "0ac65fab8c24b8207318cb1cc1b51c2139bd9fc4a0f3181f2b2a4f5347263d68"
+  },
+  {
+    "label": "body-2-1-100.0-0.5-0.3-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "9e4b284edbd3c25dcdd7c55a043f1bfe176f74fb5c8847bbdbc2bc5ee13e43ef"
+  },
+  {
+    "label": "body-2-1-100.0-0.5-0.3-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "fc2a20984a8afc5a7daad8b44eec0d9ff8dad0f3a0c3ed8d8c685b772f1a42b1"
+  },
+  {
+    "label": "body-2-1-100.0-0.5-0.3-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "5d70b9594474486ce8226327246a6c72b259a8a52ceb6ceedd57e4f47309c22b"
+  },
+  {
+    "label": "body-2-1-100.0-0.5-0.3-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": 0.3,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "ca5541298954dfd0be98d84cea397ffebc7a7e0110a8b29d58df060e11507312"
+  },
+  {
+    "label": "body-2-1-100.0-0.5--2.4-0.0-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "e83fb9e13e18b888e0a78324a47b5f78f15242e43034c6a4c41c2477cfff8ad8"
+  },
+  {
+    "label": "body-2-1-100.0-0.5--2.4-0.0-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "27e6a6042ac83cba78ec67f3915e950b459806969fa4595433bacfc36773f51d"
+  },
+  {
+    "label": "body-2-1-100.0-0.5--2.4-0.0-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.0
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "467cf94e1d6cc4d260fb2248238d52c06a957a96e20781af6f3774280d75f0e5"
+  },
+  {
+    "label": "body-2-1-100.0-0.5--2.4-0.7-0.2",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.2,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "c6c5fd58fbf7ae09b279b37cf7d729f63e5476013cdc9740c1d522aa149c29f9"
+  },
+  {
+    "label": "body-2-1-100.0-0.5--2.4-0.7-0.7",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 0.7,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "a345d4fabeb9a537766e103dcac0623d4c433218e0c17273c689faf01adaec87"
+  },
+  {
+    "label": "body-2-1-100.0-0.5--2.4-0.7-1.5",
+    "frame": {
+      "player_count": 2,
+      "overlay_index": 1,
+      "alpha": 1.5,
+      "line_perk": false,
+      "players": [
+        {
+          "index": 0,
+          "position": [
+            100.23,
+            150.27
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        },
+        {
+          "index": 1,
+          "position": [
+            220.31,
+            210.37
+          ],
+          "health": 100.0,
+          "flash": 0.5,
+          "aim_heading": -2.4,
+          "shield": 0.7
+        }
+      ]
+    },
+    "prior_call_trace_sha256": "952be786eccb4fc08b081f9f6bfd86a01e51b91a421c2df255a0a65916515c96"
+  }
+]

@@ -260,13 +260,13 @@ extern "C" void player_render_overlays(void)
               [render_overlay_player_index]
                   .pos_x
         - shadow_size;
-    float alive_shadow_size =
+    sprite_size =
         player_state_table[render_overlay_player_index].size * 1.02f;
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x + 1.0f,
         render_scratch_f0.y + 1.0f,
-        alive_shadow_size,
-        alive_shadow_size);
+        sprite_size,
+        sprite_size);
 
     player_render_set_uv(player_overlay_torso_uv8, frame);
     grim_interface_ptr->grim_set_rotation(
@@ -465,13 +465,13 @@ extern "C" void player_render_overlays(void)
                           .pos_x
                 - half_size
                 + effect_offset;
-            float small_flash_size =
+            sprite_size =
                 player_state_table[render_overlay_player_index].size * 0.5f;
             grim_interface_ptr->grim_draw_quad(
                 render_scratch_f0.x,
                 render_scratch_f0.y,
-                small_flash_size,
-                small_flash_size);
+                sprite_size,
+                sprite_size);
         } else {
             player_render_vec2_t muzzle_size(
                 sprite_size * 0.5f, sprite_size * 0.5f);

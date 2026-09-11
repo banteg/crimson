@@ -406,3 +406,31 @@ Alignment improves from `91.1867365%` to `93.0313589%`; candidate instructions
 increase from `1,144` to `1,148` against `1,148`. Prefix remains 9 and all
 `331/0/0` references remain clean. Both whole-function exactness flags remain
 false. No matching rules, aliases, waivers, Python, or Zig code changed.
+
+## Separate shadow and small-flash size owners (2026-09-11)
+
+The [size-ownership proof](../../evidence/overlay-size-ownership-2026-09-11/README.md)
+separates the alive shadow and small muzzle flash from the shared `sprite_size`
+scalar. Direct stock-compiler observations show its counted uses falling from
+ten to six, letting the eight-use half-size precede it in allocation order.
+The new values each have two uses. All 41 baseline and 43 recovered local
+descriptor offsets are independently predicted from the observed graphs;
+normal/captured/replayed/observed whole COFF objects agree except for timestamps.
+
+Actual native ESP observations identify 199 paired stack accesses. The change
+restores 26 and displaces six unnamed temporary accesses, reducing mismatches
+from 48 to 28. The six displaced accesses and all exclusions remain explicit.
+Every changed candidate instruction differs only in its ESP displacement.
+All 851 native/before/current caller fixtures agree, including 239 retained
+tint/trail cases and 612 varied flash/branch cases. The prior 18 distance
+negative controls and 40-byte tint window remain valid. This is instruction
+recovery without an observed runtime defect in the preceding source.
+
+Alignment rises from `93.0313589%` to `94.7735192%`, gaining `79.825784`
+fuzzy-weighted bytes. Instructions remain `1148/1148`, prefix nine, and
+references `331/0/0`; both whole-function exactness flags remain false.
+All 56 reconstructible source controls compile, including the full scalar
+split matrix; their results do not establish exhaustion. The retained source
+SHA-256 is `893863b7f9421b1aef6bd0e72818a4f024c49d4190543f0534e5fa84427dd484`.
+No compiler setting, matching rule, reference alias, waiver, Python, or Zig
+source changes accompany this recovery.
