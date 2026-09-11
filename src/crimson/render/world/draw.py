@@ -190,7 +190,9 @@ def draw_player(render_ctx: WorldRenderCtx, player: PlayerState, *, ctx: WorldDr
         return
 
     screen = viewport.world_to_screen_with(
-        player.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
+        player.pos,
+        camera=render_ctx.view.camera,
+        view_scale=render_ctx.view.view_scale,
     )
     tint = rl.Color(90, 190, 120, int(255 * ctx.entity_alpha + 0.5))
     rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * render_ctx.view.scale), tint)
@@ -268,88 +270,100 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     # before any species-specific sprite passes.
     for creature in iter_active_creature_overlay_pass(creature_entries):
         screen = viewport.world_to_screen_with(
-            creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
+            creature.pos,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
         )
         lifecycle_stage = float(creature.lifecycle_stage)
         draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
     resources = frame.resources
+    shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
+    shadow_pass = shadows_enabled and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
     for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
-        for creature in creature_entries:
-            if not creature.active or creature.type_id != type_id:
-                continue
-            screen = viewport.world_to_screen_with(
-                creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
-            )
-            lifecycle_stage = float(creature.lifecycle_stage)
-
-            type_id = creature.type_id
-            asset = CREATURE_ASSET[type_id]
-            texture = _creature_texture(resources, asset)
-
-            if texture is None:
-                tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
-                rl.draw_circle(
-                    int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * render_ctx.view.scale), tint,
+        # Native batches every shadow before drawing any body of this species.
+        for shadow in (True, False) if shadow_pass else (False,):
+            for creature in creature_entries:
+                if not creature.active or creature.type_id != type_id:
+                    continue
+                screen = viewport.world_to_screen_with(
+                    creature.pos,
+                    camera=render_ctx.view.camera,
+                    view_scale=render_ctx.view.view_scale,
                 )
-                continue
+                lifecycle_stage = float(creature.lifecycle_stage)
 
-            tint_rgba = creature.tint
+                asset = CREATURE_ASSET[type_id]
+                texture = _creature_texture(resources, asset)
 
-            # Energizer: tint "weak" creatures blue-ish while active.
-            # Mirrors `creature_render_type` (0x00418b60) branch when
-            # `_bonus_energizer_timer > 0` and `max_health < 500`.
-            energizer_timer = float(frame.state.bonuses.energizer)
-            if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
-                # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
-                # Effect is full strength while timer >= 1 and fades out during the last second.
-                t = energizer_timer
-                if t >= 1.0:
-                    t = 1.0
-                elif t < 0.0:
-                    t = 0.0
-                tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
+                if texture is None:
+                    if shadow:
+                        continue
+                    tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
+                    rl.draw_circle(
+                        int(screen.x),
+                        int(screen.y),
+                        max(1.0, creature.size * 0.5 * render_ctx.view.scale),
+                        tint,
+                    )
+                    continue
 
-            if lifecycle_stage < 0.0:
-                # Mirrors the main-pass alpha fade when lifecycle_stage ramps negative.
-                tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + lifecycle_stage * 0.1))
+                tint_rgba = creature.tint
 
-            tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
+                # Energizer: tint "weak" creatures blue-ish while active.
+                # Mirrors `creature_render_type` (0x00418b60) branch when
+                # `_bonus_energizer_timer > 0` and `max_health < 500`.
+                energizer_timer = float(frame.state.bonuses.energizer)
+                if energizer_timer > 0.0 and float(creature.max_hp) < 500.0:
+                    # Native clamps to 1.0, then blends towards (0.5, 0.5, 1.0, 1.0).
+                    # Effect is full strength while timer >= 1 and fades out during the last second.
+                    t = energizer_timer
+                    if t >= 1.0:
+                        t = 1.0
+                    elif t < 0.0:
+                        t = 0.0
+                    tint_rgba = RGBA.lerp(tint_rgba, RGBA(0.5, 0.5, 1.0, 1.0), t)
 
-            size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
-            shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
-            # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by shadows_enabled
-            # and is disabled when the Monster Vision perk is active.
-            shadow = shadows_enabled and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
-            long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
-                creature.flags & CreatureFlags.ANIM_LONG_STRIP
-            ) != 0
-
-            shadow_alpha = None
-            if shadow:
-                # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
-                shadow_a = float(creature.tint.a) * 0.4
                 if lifecycle_stage < 0.0:
-                    shadow_a += lifecycle_stage * (0.5 if long_strip else 0.1)
-                    shadow_a = max(0.0, shadow_a)
-                shadow_alpha = int(clamp(shadow_a * ctx.entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+                    # Mirrors the main-pass alpha fade when lifecycle_stage ramps negative.
+                    tint_rgba = tint_rgba.with_alpha(max(0.0, tint_rgba.a + lifecycle_stage * 0.1))
 
-            draw_creature_sprite(
-                render_ctx,
-                texture,
-                type_id=type_id or CreatureTypeId.ZOMBIE,
-                flags=creature.flags,
-                phase=float(creature.anim_phase),
-                lifecycle_stage=lifecycle_stage,
-                shadow_alpha=shadow_alpha,
-                pos=creature.pos,
-                screen_pos=screen,
-                rotation_rad=float(creature.heading) - math.pi / 2.0,
-                scale=render_ctx.view.scale,
-                size_scale=size_scale,
-                tint=tint,
-                shadow=shadow,
-            )
+                tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
+
+                # Native quad dimensions use the creature's actual size.
+                if texture.width <= 0:
+                    continue
+                size_scale = float(creature.size) / (float(texture.width) / 8.0)
+                long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
+                    creature.flags & CreatureFlags.ANIM_LONG_STRIP
+                ) != 0
+
+                shadow_alpha = None
+                if shadow:
+                    # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (lifecycle_stage < 0).
+                    shadow_a = float(creature.tint.a) * 0.4
+                    if lifecycle_stage < 0.0:
+                        shadow_a += lifecycle_stage * (0.5 if long_strip else 0.1)
+                        shadow_a = max(0.0, shadow_a)
+                    shadow_alpha = int(clamp(shadow_a * ctx.entity_alpha * 255.0, 0.0, 255.0) + 0.5)
+
+                draw_creature_sprite(
+                    render_ctx,
+                    texture,
+                    type_id=type_id or CreatureTypeId.ZOMBIE,
+                    flags=creature.flags,
+                    phase=float(creature.anim_phase),
+                    lifecycle_stage=lifecycle_stage,
+                    shadow_alpha=shadow_alpha,
+                    pos=creature.pos,
+                    screen_pos=screen,
+                    rotation_rad=float(creature.heading) - math.pi / 2.0,
+                    scale=render_ctx.view.scale,
+                    size_scale=size_scale,
+                    tint=tint,
+                    shadow=shadow,
+                    body=not shadow,
+                )
 
         if frame.config is not None and frame.config.display.violence_disabled:
             draw_creature_hit_flashes(render_ctx, type_id=type_id, ctx=ctx)

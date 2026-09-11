@@ -55,6 +55,13 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 - for long-strip corpses (`lifecycle_stage < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + lifecycle_stage * 0.5` (clamped to `>= 0`).
 - Evidence: `analysis/frida/creature_render_trace_summary.json` (captured via `scripts/frida/creature_render_trace.js`).
 
+Each species finishes **all shadows before any body**, followed by its optional
+hit flashes. The species order is zombie, spider_sp1, spider_sp2, alien, lizard.
+Body and flash dimensions use actual creature size; the ports no longer clamp
+Python bodies to 16–128 pixels or tie their dimensions to atlas resolution.
+Both ports preserve this ordering, including zero-alpha shadow submissions.
+See the [native pass-order and dimension audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-pass-order-2026-09-11/README.md).
+
 ## Hit flash with violence disabled
 
 When `violence_disabled` is nonzero, each species' body batch is followed by

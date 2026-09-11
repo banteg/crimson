@@ -28,6 +28,7 @@ def draw_creature_sprite(
     size_scale: float,
     tint: rl.Color,
     shadow: bool = False,
+    body: bool = True,
     hit_flash: bool = False,
 ) -> None:
     info = CREATURE_ANIM.get(type_id)
@@ -57,10 +58,10 @@ def draw_creature_sprite(
     rotation_deg = float(rotation_rad * _RAD_TO_DEG)
 
     if shadow:
-        # In the original exe this is a "darken" blend pass gated by shadows_enabled
-        # (creature_render_type). We approximate it with a black silhouette draw.
-        # The observed pass is slightly bigger than the main sprite and offset
-        # down-right by ~1px at default sizes.
+        # Native darkens with ZERO/INVSRCALPHA; a black silhouette gives the
+        # same RGB blend under normal alpha blending. Its 1.07-sized quad is
+        # anchored at camera + position - (size / 2 + 0.7). Convert that native
+        # top-left position to the centered rectangle expected by Raylib.
         alpha = int(shadow_alpha) if shadow_alpha is not None else int(clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
         shadow_tint = rl.Color(0, 0, 0, alpha)
         shadow_scale = 1.07
@@ -70,6 +71,9 @@ def draw_creature_sprite(
         shadow_dst = rl.Rectangle(screen_pos.x + offset, screen_pos.y + offset, shadow_w, shadow_h)
         shadow_origin = rl.Vector2(shadow_w * 0.5, shadow_h * 0.5)
         rl.draw_texture_pro(texture, src, shadow_dst, shadow_origin, rotation_deg, shadow_tint)
+
+    if not body:
+        return
 
     dst = rl.Rectangle(screen_pos.x, screen_pos.y, width, height)
     origin = rl.Vector2(width * 0.5, height * 0.5)

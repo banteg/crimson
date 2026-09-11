@@ -10,7 +10,7 @@ after its species' body batch. Its alpha is
 `min(hit_flash_timer * 5, 1) * transition_alpha`, followed by Grim2D's truncated
 byte packing. A dying long-strip shock creature omits the `+32` offset used by
 its body. The flash preserves actual creature size, including sizes outside
-the Python body's existing clamp. Zig now uses the recovered species order
+the then-current Python body's clamp. Zig now uses the recovered species order
 `zombie, spider_sp1, spider_sp2, alien, lizard` to place these batches correctly.
 
 The timer is set to `0.2f` before native damage checks, including zero damage,
@@ -64,9 +64,11 @@ simulation and render frame use that setting while retaining the viewer's
 saved preference.
 
 This is a bounded CPU/call audit. It does not certify GPU pixels or the existing
-shadow/body tint and geometry approximations. Those passes still interleave
-shadow and body per creature in the ports. Trooper cases exercise the direct
-type renderer; native `creature_render_all` omits that species.
+shadow/body tint and geometry approximations. The later
+[pass-order audit](../creature-pass-order-2026-09-11/README.md) corrects the
+ports' shadow/body interleaving, Python size clamp and fixed atlas divisor.
+Trooper cases exercise the direct type renderer; native `creature_render_all`
+omits that species.
 
 ## Reproduce
 

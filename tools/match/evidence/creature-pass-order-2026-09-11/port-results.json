@@ -1,0 +1,1090 @@
+{
+  "baseline_commit": "c8c9cda9922d15a5f95c00ca1247994dd52e51bc",
+  "witnesses_sha256": "caddb6954856abfebbd1e1172ee8a78c1174b0c3d1d1b1eede1d50b618ef3c01",
+  "files": {
+    "tools/match/evidence/creature-pass-order-2026-09-11/verify_ports.py": "d6564dbd593ee2b15e22c03ac1ce97d964e16b6fb4ff3da97bae9ea68daa8376",
+    "tools/match/evidence/creature-pass-order-2026-09-11/ports.zig": "6fa7aba50da574b353052dfade2318d58080d3067e035927490a0f60366377d7",
+    "tests/support/creature_draw_capture.py": "2e17912640954cdd337eb7792b63ccf4fa351444a1d615532b41a51e4975f5e8",
+    "src/crimson/render/world/draw.py": "7fd2ad38732c8969c909eae4568bbcf85d578290e94dcf588f3ed321b15e5b44",
+    "src/crimson/render/world/creatures.py": "75e2d77db4050db769d184a1684dc0fc3eced954a01a6e4c39140a767b941fbc",
+    "crimson-zig/src/window_main.zig": "bb4479f33756ab141657a7fb9f1f0d0a7c4199627869d1679797e40ede2746f5",
+    "crimson-zig/src/window_atlas.zig": "ab8fbadce7bd518dd9e1d17662722571cccfdf4b20cfaeaa709a8194761a9905",
+    "crimson-zig/src/runtime/anim.zig": "b54b1830a58b2123ccf4915f60eb08d50ee1847f43602871c350be48d65b2c9c",
+    "crimson-zig/src/runtime/native_math.zig": "cb9fa2c0a19a0142b42186d0e415c79065d8a20fe449ccafd1c44d52d0930df8"
+  },
+  "zig_version": "0.16.0",
+  "extracted_functions": {
+    "previous": {
+      "drawCreatures": "2b4f43cab8c104eb79fe8b4fd683c9456cb7105de2f479336e345039a6d7dc1e",
+      "drawCreatureHitFlashes": "0892e7da817c4544648a3d3f57f0f106536e4adceddc267787bbdfea1c402536",
+      "creatureRenderTint": "65a6bfb1dd85e81d6548cf6006c7212192fb4fb445fe902532f5ea41c8017d15",
+      "drawAtlasFrameCenteredRotated": "1ccf6d4c047541c2218569e72a73655a58b43bc5cf974181301e267e207d6e0f",
+      "radiansToDegrees": "28c2e321fb184951db64dff03b46e94581f211a4a49db5d9f27480a0271f2d5a",
+      "colorWithAlpha": "2889730768562ed538443e0cdb3cf46366452aecdf28ebd0308e9de1cd8a7752",
+      "colorFromUnitRgba": "1da5c8a92fec0ea2c12e9b86624be1d4fc558e9295ba9e2ed888a4b181c55bec",
+      "alphaByte": "dd1a0713b4ed1afa85122a92ade77e8c7278730fa1c05de747d70c43f6a35bd1",
+      "toRlVec": "9af0384617a791461fab5f5ef1f3ccf4f66cd26e4a63631b1c552cbb25cadaa4"
+    },
+    "current": {
+      "drawCreatures": "47f526070e8c3b8e2050150f6960d1125d1842df3c25eff86ebaa3b33431532f",
+      "drawCreatureHitFlashes": "0892e7da817c4544648a3d3f57f0f106536e4adceddc267787bbdfea1c402536",
+      "creatureRenderTint": "65a6bfb1dd85e81d6548cf6006c7212192fb4fb445fe902532f5ea41c8017d15",
+      "drawAtlasFrameCenteredRotated": "1ccf6d4c047541c2218569e72a73655a58b43bc5cf974181301e267e207d6e0f",
+      "radiansToDegrees": "28c2e321fb184951db64dff03b46e94581f211a4a49db5d9f27480a0271f2d5a",
+      "colorWithAlpha": "2889730768562ed538443e0cdb3cf46366452aecdf28ebd0308e9de1cd8a7752",
+      "colorFromUnitRgba": "1da5c8a92fec0ea2c12e9b86624be1d4fc558e9295ba9e2ed888a4b181c55bec",
+      "alphaByte": "dd1a0713b4ed1afa85122a92ade77e8c7278730fa1c05de747d70c43f6a35bd1",
+      "toRlVec": "9af0384617a791461fab5f5ef1f3ccf4f66cd26e4a63631b1c552cbb25cadaa4"
+    }
+  },
+  "python": [
+    {
+      "side": "previous",
+      "texture_size": 256,
+      "draws": 1056,
+      "draws_sha256": "e715df1ff969125884b1b739e9efeb4597076e5db0b2e7cf9bbdb7c116c85885",
+      "differences": {
+        "count": 560,
+        "case_count": 16,
+        "ordered_sequence_cases": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "dimension_mismatches_aligned_by_creature": 540,
+        "dimension_mismatches_sha256": "e4302e026852704e916588e0bfe1c5db30fb61a44cfb3e255145f19d7d326b64",
+        "all_differences_sha256": "50d6cb65d691b52f77f2e6034c3bca1e62c668f1508c575efa208baf8e3fdb00",
+        "first_five_differences": [
+          {
+            "case": 0,
+            "draw": 1,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 18,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 4,
+              "width": 8.0,
+              "height": 8.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "quad_bits": [
+                1140936704,
+                1137885184,
+                1098907648,
+                1098907648
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 2,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 33,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 52,
+              "width": 16.25,
+              "height": 16.25
+            },
+            "expected": {
+              "pass": "body",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1146044416,
+                1141854208,
+                1107427328,
+                1107427328
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 3,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 48,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 47,
+              "width": 32.0,
+              "height": 32.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 48,
+              "type_id": 0,
+              "frame": 47,
+              "quad_bits": [
+                1150134272,
+                1144217600,
+                1115684864,
+                1115684864
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 4,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 63,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 52,
+              "width": 64.0,
+              "height": 64.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 63,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1152493568,
+                1146314752,
+                1124073472,
+                1124073472
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 5,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 78,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 40,
+              "width": 64.0,
+              "height": 64.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 78,
+              "type_id": 0,
+              "frame": 40,
+              "quad_bits": [
+                1154820096,
+                1148346368,
+                1128792064,
+                1128792064
+              ],
+              "rotation_bits": 3190744384
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "previous",
+      "texture_size": 512,
+      "draws": 1056,
+      "draws_sha256": "fbb56d1565c98f7ec92447386e8c6724ea1f11740abce2eb0df34d4e4dc295b5",
+      "differences": {
+        "count": 400,
+        "case_count": 16,
+        "ordered_sequence_cases": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "dimension_mismatches_aligned_by_creature": 240,
+        "dimension_mismatches_sha256": "6f50f552dbed69aa2a8122d3388705cf2b7461983e18b0ba66a27c45cf3340c4",
+        "all_differences_sha256": "b1edfdea2b70c5fccc45de0f88a799eadee4171c2231080664d5fa4f6f381c19",
+        "first_five_differences": [
+          {
+            "case": 0,
+            "draw": 0,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 3,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 52,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 3,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1128873984,
+                1132773376,
+                1090519040,
+                1090519040
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 5,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 78,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 40,
+              "width": 128.0,
+              "height": 128.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 78,
+              "type_id": 0,
+              "frame": 40,
+              "quad_bits": [
+                1154820096,
+                1148346368,
+                1128792064,
+                1128792064
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 6,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 383,
+              "type_id": 0,
+              "pass": "body",
+              "frame": 52,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 383,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1162802176,
+                1132838912,
+                1082130432,
+                1082130432
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 7,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 9,
+              "type_id": 3,
+              "pass": "body",
+              "frame": 36,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 9,
+              "type_id": 3,
+              "frame": 36,
+              "quad_bits": [
+                1134862336,
+                1134870528,
+                1090519040,
+                1090519040
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 0,
+            "draw": 12,
+            "fields": [
+              "width",
+              "height"
+            ],
+            "actual": {
+              "index": 84,
+              "type_id": 3,
+              "pass": "body",
+              "frame": 31,
+              "width": 128.0,
+              "height": 128.0
+            },
+            "expected": {
+              "pass": "body",
+              "index": 84,
+              "type_id": 3,
+              "frame": 31,
+              "quad_bits": [
+                1155868672,
+                1149317120,
+                1128792064,
+                1128792064
+              ],
+              "rotation_bits": 3190744384
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "current",
+      "texture_size": 256,
+      "draws": 1056,
+      "draws_sha256": "fb9dae25dee330335e0be20739b793d3ce422eb2eb1074520b187e99ae07d5bc",
+      "differences": {
+        "count": 0,
+        "case_count": 0,
+        "ordered_sequence_cases": [],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "first_five_differences": []
+      }
+    },
+    {
+      "side": "current",
+      "texture_size": 512,
+      "draws": 1056,
+      "draws_sha256": "fb9dae25dee330335e0be20739b793d3ce422eb2eb1074520b187e99ae07d5bc",
+      "differences": {
+        "count": 0,
+        "case_count": 0,
+        "ordered_sequence_cases": [],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "first_five_differences": []
+      }
+    }
+  ],
+  "zig": [
+    {
+      "side": "previous",
+      "mode": "Debug",
+      "texture_size": 256,
+      "draws": 1052,
+      "stdout_sha256": "ca3ca2659184a9727e5ff9827a07e7891a8fd49077573ae6a3749cbbfffc13e1",
+      "source_sha256": "5ad675e14a47c251fe785a185b60e0902f77249f036961b378b504b44f458408",
+      "differences": {
+        "count": 272,
+        "case_count": 4,
+        "ordered_sequence_cases": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "8f6aaafe7f27f197bd87cbb866f4a3654dfd9ca9c2a419084baa02aec7573e30",
+        "first_five_differences": [
+          {
+            "case": 8,
+            "reason": "count",
+            "actual": 63,
+            "expected": 64
+          },
+          {
+            "case": 8,
+            "draw": 1,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 3,
+              "type_id": 0,
+              "frame": 52,
+              "width": 8.0,
+              "height": 8.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "quad_bits": [
+                1140925235,
+                1137862246,
+                1099494851,
+                1099494851
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 2,
+            "fields": [
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 17.12,
+              "height": 17.12
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1146032947,
+                1141842739,
+                1108023706,
+                1108023706
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 3,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 48,
+              "type_id": 0,
+              "frame": 47,
+              "quad_bits": [
+                1150128538,
+                1144206131,
+                1116272067,
+                1116272067
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 4,
+            "fields": [
+              "index",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "width": 34.775,
+              "height": 34.775
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 63,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1152487834,
+                1146303283,
+                1124660675,
+                1124660675
+              ],
+              "rotation_bits": 3190744384
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "previous",
+      "mode": "Debug",
+      "texture_size": 512,
+      "draws": 1052,
+      "stdout_sha256": "ca3ca2659184a9727e5ff9827a07e7891a8fd49077573ae6a3749cbbfffc13e1",
+      "source_sha256": "5ad675e14a47c251fe785a185b60e0902f77249f036961b378b504b44f458408",
+      "differences": {
+        "count": 272,
+        "case_count": 4,
+        "ordered_sequence_cases": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "8f6aaafe7f27f197bd87cbb866f4a3654dfd9ca9c2a419084baa02aec7573e30",
+        "first_five_differences": [
+          {
+            "case": 8,
+            "reason": "count",
+            "actual": 63,
+            "expected": 64
+          },
+          {
+            "case": 8,
+            "draw": 1,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 3,
+              "type_id": 0,
+              "frame": 52,
+              "width": 8.0,
+              "height": 8.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "quad_bits": [
+                1140925235,
+                1137862246,
+                1099494851,
+                1099494851
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 2,
+            "fields": [
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 17.12,
+              "height": 17.12
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1146032947,
+                1141842739,
+                1108023706,
+                1108023706
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 3,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 48,
+              "type_id": 0,
+              "frame": 47,
+              "quad_bits": [
+                1150128538,
+                1144206131,
+                1116272067,
+                1116272067
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 4,
+            "fields": [
+              "index",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "width": 34.775,
+              "height": 34.775
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 63,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1152487834,
+                1146303283,
+                1124660675,
+                1124660675
+              ],
+              "rotation_bits": 3190744384
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "previous",
+      "mode": "ReleaseFast",
+      "texture_size": 256,
+      "draws": 1052,
+      "stdout_sha256": "ca3ca2659184a9727e5ff9827a07e7891a8fd49077573ae6a3749cbbfffc13e1",
+      "source_sha256": "5ad675e14a47c251fe785a185b60e0902f77249f036961b378b504b44f458408",
+      "differences": {
+        "count": 272,
+        "case_count": 4,
+        "ordered_sequence_cases": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "8f6aaafe7f27f197bd87cbb866f4a3654dfd9ca9c2a419084baa02aec7573e30",
+        "first_five_differences": [
+          {
+            "case": 8,
+            "reason": "count",
+            "actual": 63,
+            "expected": 64
+          },
+          {
+            "case": 8,
+            "draw": 1,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 3,
+              "type_id": 0,
+              "frame": 52,
+              "width": 8.0,
+              "height": 8.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "quad_bits": [
+                1140925235,
+                1137862246,
+                1099494851,
+                1099494851
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 2,
+            "fields": [
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 17.12,
+              "height": 17.12
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1146032947,
+                1141842739,
+                1108023706,
+                1108023706
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 3,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 48,
+              "type_id": 0,
+              "frame": 47,
+              "quad_bits": [
+                1150128538,
+                1144206131,
+                1116272067,
+                1116272067
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 4,
+            "fields": [
+              "index",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "width": 34.775,
+              "height": 34.775
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 63,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1152487834,
+                1146303283,
+                1124660675,
+                1124660675
+              ],
+              "rotation_bits": 3190744384
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "previous",
+      "mode": "ReleaseFast",
+      "texture_size": 512,
+      "draws": 1052,
+      "stdout_sha256": "ca3ca2659184a9727e5ff9827a07e7891a8fd49077573ae6a3749cbbfffc13e1",
+      "source_sha256": "5ad675e14a47c251fe785a185b60e0902f77249f036961b378b504b44f458408",
+      "differences": {
+        "count": 272,
+        "case_count": 4,
+        "ordered_sequence_cases": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "8f6aaafe7f27f197bd87cbb866f4a3654dfd9ca9c2a419084baa02aec7573e30",
+        "first_five_differences": [
+          {
+            "case": 8,
+            "reason": "count",
+            "actual": 63,
+            "expected": 64
+          },
+          {
+            "case": 8,
+            "draw": 1,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 3,
+              "type_id": 0,
+              "frame": 52,
+              "width": 8.0,
+              "height": 8.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "quad_bits": [
+                1140925235,
+                1137862246,
+                1099494851,
+                1099494851
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 2,
+            "fields": [
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 17.12,
+              "height": 17.12
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1146032947,
+                1141842739,
+                1108023706,
+                1108023706
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 3,
+            "fields": [
+              "pass",
+              "index",
+              "frame",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "body",
+              "index": 18,
+              "type_id": 0,
+              "frame": 4,
+              "width": 16.0,
+              "height": 16.0
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 48,
+              "type_id": 0,
+              "frame": 47,
+              "quad_bits": [
+                1150128538,
+                1144206131,
+                1116272067,
+                1116272067
+              ],
+              "rotation_bits": 3190744384
+            }
+          },
+          {
+            "case": 8,
+            "draw": 4,
+            "fields": [
+              "index",
+              "width",
+              "height"
+            ],
+            "actual": {
+              "pass": "shadow",
+              "index": 33,
+              "type_id": 0,
+              "frame": 52,
+              "width": 34.775,
+              "height": 34.775
+            },
+            "expected": {
+              "pass": "shadow",
+              "index": 63,
+              "type_id": 0,
+              "frame": 52,
+              "quad_bits": [
+                1152487834,
+                1146303283,
+                1124660675,
+                1124660675
+              ],
+              "rotation_bits": 3190744384
+            }
+          }
+        ]
+      }
+    },
+    {
+      "side": "current",
+      "mode": "Debug",
+      "texture_size": 256,
+      "draws": 1056,
+      "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
+      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "differences": {
+        "count": 0,
+        "case_count": 0,
+        "ordered_sequence_cases": [],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "first_five_differences": []
+      }
+    },
+    {
+      "side": "current",
+      "mode": "Debug",
+      "texture_size": 512,
+      "draws": 1056,
+      "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
+      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "differences": {
+        "count": 0,
+        "case_count": 0,
+        "ordered_sequence_cases": [],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "first_five_differences": []
+      }
+    },
+    {
+      "side": "current",
+      "mode": "ReleaseFast",
+      "texture_size": 256,
+      "draws": 1056,
+      "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
+      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "differences": {
+        "count": 0,
+        "case_count": 0,
+        "ordered_sequence_cases": [],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "first_five_differences": []
+      }
+    },
+    {
+      "side": "current",
+      "mode": "ReleaseFast",
+      "texture_size": 512,
+      "draws": 1056,
+      "stdout_sha256": "03ab214e7f80c6f160f6128a3f70156ce5aa75b400b75ac6c8a891989b917f6b",
+      "source_sha256": "ef1a427ba6f4d8e67f38eec6cbbf370a505f3e06f0b29be0a81f8a53aaac6e3a",
+      "differences": {
+        "count": 0,
+        "case_count": 0,
+        "ordered_sequence_cases": [],
+        "dimension_mismatches_aligned_by_creature": 0,
+        "dimension_mismatches_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "all_differences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "first_five_differences": []
+      }
+    }
+  ]
+}

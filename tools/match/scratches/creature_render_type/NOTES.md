@@ -1,5 +1,19 @@
 # `creature_render_type`
 
+## Native sprite passes and dimensions (2026-09-11)
+
+The [pass-order proof](../../evidence/creature-pass-order-2026-09-11/README.md)
+records 1,056 native quads across 80 native/C++ comparisons. Both ports now
+batch all shadows before bodies within each species. Python also uses actual
+creature dimensions at the current atlas resolution, and Zig retains native
+submission of fully transparent shadows. Current production draw paths pass
+all witnesses; immutable old ports fail the order/dimension controls.
+
+This is a port correction. Canonical C++ source, 79.737705% alignment,
+760/765 instructions, 139/0/5 references and both non-exact flags are unchanged.
+The new matrix covers 720/765 native instructions at PC24 and does not establish
+all-input equivalence, exact backend arithmetic or GPU pixel equality.
+
 ## Cursor experiment correction (2026-09-10)
 
 The historical `main-animation-cursor-mutations.json` and

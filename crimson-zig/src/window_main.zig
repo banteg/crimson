@@ -5418,40 +5418,40 @@ fn drawCreatures(
 
     // creature_render_all species order; each type's flash follows its body batch.
     for ([_]i32{ 0, 3, 4, 2, 1 }) |type_id| {
-        for (runner.session.creatures.entries) |creature| {
-            if (!creature.active or creature.type_id != type_id) continue;
-            const color = if (creature.hp > 0.0) creature_color else corpse_color;
-            const radius = @max(6.0, creature.size * 0.24);
-            if (runtime_assets) |assets| {
-                if (window_atlas.creatureRenderFrame(creature)) |render_frame| {
-                    const texture = assets.texture(switch (render_frame.texture_kind) {
-                        .alien => .alien,
-                        .lizard => .lizard,
-                        .spider_sp1 => .spider_sp1,
-                        .spider_sp2 => .spider_sp2,
-                        .trooper => .trooper,
-                        .zombie => .zombie,
-                    });
-                    const cell = @as(f32, @floatFromInt(texture.width)) / 8.0;
-                    if (cell > 0.0) {
-                        const base_scale = creature.size / cell;
-                        const tint = creatureRenderTint(
-                            creature.tint,
-                            creature.max_hp,
-                            runner.session.state.bonuses.energizer,
-                            creature.lifecycle_stage,
-                        );
-                        const shadow_enabled = !monster_vision_active;
-                        if (shadow_enabled and shadows_enabled) {
-                            const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
-                            var shadow_alpha: f32 = creature.tint[3] * 0.4;
-                            if (creature.lifecycle_stage < 0.0) {
-                                shadow_alpha = @max(
-                                    @as(f32, 0.0),
-                                    shadow_alpha + creature.lifecycle_stage * (if (is_long) @as(f32, 0.5) else @as(f32, 0.1)),
-                                );
-                            }
-                            if (shadow_alpha > 1e-3) {
+        for ([_]bool{ true, false }) |shadow| {
+            if (shadow and (!shadows_enabled or monster_vision_active)) continue;
+            for (runner.session.creatures.entries) |creature| {
+                if (!creature.active or creature.type_id != type_id) continue;
+                const color = if (creature.hp > 0.0) creature_color else corpse_color;
+                const radius = @max(6.0, creature.size * 0.24);
+                if (runtime_assets) |assets| {
+                    if (window_atlas.creatureRenderFrame(creature)) |render_frame| {
+                        const texture = assets.texture(switch (render_frame.texture_kind) {
+                            .alien => .alien,
+                            .lizard => .lizard,
+                            .spider_sp1 => .spider_sp1,
+                            .spider_sp2 => .spider_sp2,
+                            .trooper => .trooper,
+                            .zombie => .zombie,
+                        });
+                        const cell = @as(f32, @floatFromInt(texture.width)) / 8.0;
+                        if (cell > 0.0) {
+                            const base_scale = creature.size / cell;
+                            const tint = creatureRenderTint(
+                                creature.tint,
+                                creature.max_hp,
+                                runner.session.state.bonuses.energizer,
+                                creature.lifecycle_stage,
+                            );
+                            if (shadow) {
+                                const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
+                                var shadow_alpha: f32 = creature.tint[3] * 0.4;
+                                if (creature.lifecycle_stage < 0.0) {
+                                    shadow_alpha = @max(
+                                        @as(f32, 0.0),
+                                        shadow_alpha + creature.lifecycle_stage * (if (is_long) @as(f32, 0.5) else @as(f32, 0.1)),
+                                    );
+                                }
                                 drawAtlasFrameCenteredRotated(
                                     texture,
                                     8,
@@ -5464,22 +5464,23 @@ fn drawCreatures(
                                     creature.heading - std.math.pi / 2.0,
                                     colorWithAlpha(rl.Color.black, shadow_alpha * entity_alpha),
                                 );
+                            } else {
+                                drawAtlasFrameCenteredRotated(
+                                    texture,
+                                    8,
+                                    render_frame.frame,
+                                    toRlVec(creature.pos),
+                                    base_scale,
+                                    creature.heading - std.math.pi / 2.0,
+                                    colorFromUnitRgba(tint[0], tint[1], tint[2], tint[3] * entity_alpha),
+                                );
                             }
+                            continue;
                         }
-                        drawAtlasFrameCenteredRotated(
-                            texture,
-                            8,
-                            render_frame.frame,
-                            toRlVec(creature.pos),
-                            base_scale,
-                            creature.heading - std.math.pi / 2.0,
-                            colorFromUnitRgba(tint[0], tint[1], tint[2], tint[3] * entity_alpha),
-                        );
-                        continue;
                     }
                 }
+                if (!shadow) rl.drawCircleV(toRlVec(creature.pos), radius, colorWithAlpha(color, entity_alpha));
             }
-            rl.drawCircleV(toRlVec(creature.pos), radius, colorWithAlpha(color, entity_alpha));
         }
         if (runner.session.gore_disabled != 0) {
             drawCreatureHitFlashes(runner, runtime_assets, type_id, entity_alpha);

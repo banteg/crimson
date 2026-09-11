@@ -81,7 +81,7 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
     def _record_sprite(*_args, **kwargs) -> None:
         pos = kwargs["pos"]
         key = (float(pos.x), float(pos.y))
-        call_order.append(("sprite", pos_to_index[key]))
+        call_order.append(("shadow" if not kwargs.get("body", True) else "sprite", pos_to_index[key]))
 
     mocker.patch.object(world_draw, "draw_creature_overlays", side_effect=_record_overlay)
     mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub())
@@ -99,10 +99,15 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
         ("overlay", 3),
         ("overlay", 4),
         ("overlay", 5),
+        ("shadow", 2),
         ("sprite", 2),
+        ("shadow", 4),
         ("sprite", 4),
+        ("shadow", 0),
         ("sprite", 0),
+        ("shadow", 5),
         ("sprite", 5),
+        ("shadow", 3),
         ("sprite", 3),
     ]
 
@@ -263,7 +268,11 @@ def test_creature_flash_follows_each_species_body_batch(mocker, violence_disable
     mocker.patch.object(world_draw.rl, "end_blend_mode")
     sprite = mocker.patch.object(world_draw, "draw_creature_sprite")
     world_draw.draw_creatures(render_ctx, ctx=WorldDrawContext())
-    calls = [(call.kwargs["pos"].x, call.kwargs.get("hit_flash", False)) for call in sprite.call_args_list]
+    calls = [
+        (call.kwargs["pos"].x, call.kwargs.get("hit_flash", False))
+        for call in sprite.call_args_list
+        if call.kwargs.get("body", True)
+    ]
     if violence_disabled:
         assert calls == [(20, False), (30, False), (20, True), (30, True), (10, False), (10, True)]
     else:
