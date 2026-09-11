@@ -537,7 +537,13 @@ def _player_update_aim_by_scheme(
         player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
 
 
-def _player_tick_low_health(player: PlayerState, state: GameplayState, dt: float, detail_preset: int) -> None:
+def _player_tick_low_health(
+    player: PlayerState,
+    state: GameplayState,
+    dt: float,
+    detail_preset: int,
+    violence_disabled: int,
+) -> None:
     # Native low-health warning pulse (`player_update` @ 0x004136b0): once
     # `player_take_damage` has armed `low_health_timer` (!= 100.0), count down
     # while HP < 20 and emit a 3x blood splatter + bloodspill SFX burst.
@@ -567,7 +573,7 @@ def _player_tick_low_health(player: PlayerState, state: GameplayState, dt: float
                     age=0.0,
                     rng=state.rng,
                     detail_preset=int(detail_preset),
-                    violence_disabled=0,
+                    violence_disabled=int(violence_disabled),
                 )
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
                 state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
@@ -889,6 +895,7 @@ def player_update(
     state: GameplayState,
     *,
     detail_preset: int = 5,
+    violence_disabled: int = 0,
     world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
     creatures: Sequence[CreatureState] | None = None,
@@ -915,7 +922,7 @@ def player_update(
     # even while the overlay-selected player's fields are being updated.
     perk_player = players[0] if state.preserve_bugs and players else player
 
-    _player_tick_low_health(player, state, dt, detail_preset)
+    _player_tick_low_health(player, state, dt, detail_preset, violence_disabled)
 
     damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
     if float(state.player_spread_damping_gate) <= 0.0:

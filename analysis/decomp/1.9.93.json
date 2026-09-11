@@ -111221,6 +111221,7 @@
     "tools/match/evidence/vector-return-contract-2026-09-08/helpers.cpp": "8dc3cd1462943620cc6d2813ef44befe42f6fd0b21c47a7f970088c4a10249ce",
     "tools/match/evidence/vector-return-contract-2026-09-08/vectors.h": "b520ca4122395c433ace205c1ab56382be4678f96386d70b238861432d35e846",
     "tools/match/evidence/vector-return-contract-2026-09-08/verify.py": "c4e9cf3992cce46c23b5a98f7d848a5bd5c8509b2c24d1eea625cb5e46775fe0",
+    "tools/match/evidence/violence-disabled-2026-09-11/verify.py": "e28956806c4fdad05beb9dcd1eefa494402b7e9c26a6427130e063b4d50d7536",
     "tools/match/include/console_update_translation_unit_probe.h": "868446a2295fbd51da846b5fc37da027f5b2477317e18de669bb7fe4c22c3665",
     "tools/match/include/crimson_config_defaults_impl.h": "d498934b784c704bed53d5e439f747e9de0d258773ca165ad133d7a85df8645d",
     "tools/match/include/crimsonland_audio.h": "cc26490c0f5a77b289328a81281573dbd8037d9a9cbd9862ea300b0991fc4197",

@@ -255,6 +255,71 @@ test "low-health preprocessing offsets blood effects from the player" {
     try std.testing.expectEqual(@as(usize, 1), state.sfx_queue.len);
 }
 
+test "low-health gore gate matches native effects sound timer and RNG" {
+    const Frame = struct {
+        index: i32,
+        violence_disabled: i32,
+        health: f32,
+        low_health_timer: f32,
+        dt: f32,
+        seed: u32,
+        aim_heading: f32,
+        pos_x: f32,
+        pos_y: f32,
+    };
+    const Effect = struct { effect_id: i32, position_bits: [2]u32, template_bits: [15]u32 };
+    const Sound = struct { sample_offset: u32 };
+    const Case = struct {
+        input: struct { name: []const u8, frame: Frame },
+        expected: struct { timer_bits: u32, effects: []Effect, sounds: []Sound, rng_state: u32 },
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { fpcw: u16, cases: []Case },
+        std.testing.allocator,
+        @embedFile("testdata/violence-disabled-low-health.json"),
+        .{ .ignore_unknown_fields = true },
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(u16, 0x7F), parsed.value.fpcw);
+    try std.testing.expectEqual(@as(usize, 192), parsed.value.cases.len);
+    for (parsed.value.cases) |case| {
+        errdefer std.debug.print("native low-health case {s}\n", .{case.input.name});
+        const frame = case.input.frame;
+        var state = state_mod.GameplayState.init(frame.seed);
+        state.gore_disabled = frame.violence_disabled;
+        var effects: effects_mod.EffectPool = .{};
+        var player: state_mod.PlayerState = .{
+            .index = frame.index,
+            .pos = .{ .x = frame.pos_x, .y = frame.pos_y },
+            .health = frame.health,
+            .low_health_timer = frame.low_health_timer,
+            .aim_heading = frame.aim_heading,
+        };
+        _ = preprocessPlayerForPerkTicksWithEffects(&state, &player, &effects, 5, frame.dt);
+        try std.testing.expectEqual(case.expected.timer_bits, @as(u32, @bitCast(player.low_health_timer)));
+        try std.testing.expectEqual(case.expected.rng_state, state.rng.state);
+        try std.testing.expectEqual(case.expected.effects.len, effects.entries.len - effects.free_len);
+        for (case.expected.effects, effects.entries[0..case.expected.effects.len]) |expected, effect| {
+            try std.testing.expectEqual(expected.effect_id, effect.effect_id);
+            try std.testing.expectEqual(expected.position_bits, [2]u32{ @bitCast(effect.pos.x), @bitCast(effect.pos.y) });
+            // The helper preserves template.scale; it does not initialize it.
+            const actual = [14]u32{
+                @bitCast(effect.vel.x),         @bitCast(effect.vel.y),       @bitCast(effect.rotation),
+                @bitCast(effect.half_width),    @bitCast(effect.half_height), @bitCast(effect.age),
+                @bitCast(effect.lifetime),      @bitCast(effect.flags),       @bitCast(effect.color.r),
+                @bitCast(effect.color.g),       @bitCast(effect.color.b),     @bitCast(effect.color.a),
+                @bitCast(effect.rotation_step), @bitCast(effect.scale_step),
+            };
+            try std.testing.expectEqual(expected.template_bits[0..3].* ++ expected.template_bits[4..15].*, actual);
+        }
+        try std.testing.expectEqual(case.expected.sounds.len, state.sfx_queue.len);
+        for (case.expected.sounds, state.sfx_queue.constSlice()) |sound, actual| {
+            const expected: state_mod.SfxId = if (sound.sample_offset == 0) .bloodspill_01 else .bloodspill_02;
+            try std.testing.expectEqual(expected, actual);
+        }
+    }
+}
+
 pub fn stepPlayerForTick(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,

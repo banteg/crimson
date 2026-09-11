@@ -1706,7 +1706,7 @@ const App = struct {
             runner.session.game_mode,
             reason,
             run_config.preserve_bugs,
-            self.runtime.config.violence_disabled,
+            runner.session.gore_disabled,
         );
         const save_error: ?[]const u8 = save_err: {
             self.runtime.saveStatusIfDirty() catch |err| break :save_err resultsStatusSaveErrorDetail(err);
@@ -1956,7 +1956,7 @@ const App = struct {
 
             if (gameplay.perk_ui.active()) {
                 if (runtime_assets) |assets| {
-                    window_perk_menu.drawMenu(&gameplay.perk_ui, assets, &self.runtime.config, runner);
+                    window_perk_menu.drawMenu(&gameplay.perk_ui, assets, runner);
                 }
             } else {
                 if (self.demo_attract_active) {

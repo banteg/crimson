@@ -168,7 +168,7 @@ the blob start.
 | `0x461` | 3 | - | Padding | Alignment before volume floats. |
 | `0x464` | 4 | `1.0` | `config_sfx_volume` | SFX Volume (float). |
 | `0x468` | 4 | `1.0` | `config_music_volume` | Music Volume (float). |
-| `0x46C` | 1 | `0` | `config_violence_disabled` | Gates blood/particle paths and alternate perk text. |
+| `0x46C` | 1 | `0` | `config_violence_disabled` | Gates blood/corpse paths, enables white hit flashes, and selects alternate perk text. |
 | `0x46D` | 1 | `0` | `config_show_online_scores` | Source `showOnlineScores`; controls the UI checkbox and remote-score loading. |
 | `0x46E` | 1 | `0` | `config_safe_mode_backend_enabled` | Safe-mode backend flag mirrored to Grim. |
 | `0x46F` | 1 | - | Padding | Alignment. |
@@ -205,6 +205,25 @@ Notes:
 
 - The options UI clamps `config_detail_preset` to 1..5, then calls `config_apply_detail_preset` (`options_menu_update` at `0x004475d0`).
 - Default init (`config_init_defaults` at `0x004028f0`) sets `flag0/1/2` to 1 and `config_detail_preset` to 5.
+
+## Violence disabled
+
+Any nonzero byte suppresses blood splatters, random blood decals, corpse decals,
+and the ping-pong corpse's blood burst. It enables the doubled additive
+[creature hit-flash pass](../creatures/animations.md#hit-flash-with-violence-disabled)
+and changes perk 1's display text to
+[Quick Learner](../mechanics/perks.md#1-bloody-mess-quick-learner).
+
+The low-health warning still plays its sound and resets its timer to one second.
+With gore enabled, one warning creates six blood effects and uses 31 RNG draws;
+with gore disabled, it uses only the one sound-selection draw. Both ports pass
+the run's setting to this helper. Python replay rendering uses the recording's
+setting, and Zig's in-run perk and quest-unlock text honors the session setting.
+
+Native `config_ensure_file` sets this byte to `1` when creating a missing file;
+the modern port configuration defaults to `0`. The branch audit and bounded
+native execution evidence are in
+[the violence-disabled evidence package](https://github.com/banteg/crimson/tree/master/tools/match/evidence/violence-disabled-2026-09-11).
 
 ## Keybind Block Structure
 

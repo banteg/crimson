@@ -396,6 +396,7 @@ class WorldState(msgspec.Struct):
                 player_dt,
                 self.state,
                 detail_preset=int(detail_preset),
+                violence_disabled=int(violence_disabled),
                 world_size=float(world_size),
                 players=self.players,
                 creatures=self.creatures.entries,
