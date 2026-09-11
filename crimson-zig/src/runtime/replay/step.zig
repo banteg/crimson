@@ -452,6 +452,7 @@ pub fn stepTick(
                 .fire_pressed = flags.fire_pressed,
                 .reload_pressed = flags.reload_pressed,
                 .reload_down = flags.reload_down,
+                .fire_bullets_key_down = flags.fire_bullets_key_down,
                 .reload_active_any = frame.reload_active_any,
                 .move_mode = move_mode_for_tick,
                 .single_player_mode = players.len == 1,

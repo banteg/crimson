@@ -1416,3 +1416,23 @@ This correctness fix reduces fuzzy score from 64.0473887814% to
 instruction prefix and 805/0/2 references are unchanged. The 4.2425473064
 weighted-byte reduction is retained transparently because the previous source
 fails native execution. No exactness or ownership credit is added.
+
+### Fixed G-key shortcut: native witnesses and preserve-bugs port policy (2026-09-11)
+
+The existing recovered `grim_is_key_active(0x22)` branch is real: original
+`player_update` assigns `10.0f` at `0x00415cf2`, after the eligible firing path
+charges any reload-bypass perk and produces casing/jitter work. There is no
+developer-mode gate. The current C++ body agrees with original machine code
+on all final observed bytes and ordered modeled calls for 38 focused controls;
+14 of those grant ten seconds. This is bounded callback-model evidence, not a
+new byte-exact claim.
+
+Both ports previously omitted the input. They now record the fixed G held
+state, enforce `preserve_bugs` in the firing routine, and use the granted bonus
+on the triggering shot. Normal mode ignores injected replay flags. Four
+64-tick fresh recordings agree across Python and Zig on all trace channels;
+normal-mode G on/off have identical gameplay state/RNG channels.
+
+See `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/` for pinned
+receipts, shared native witnesses, and reproduction commands. CRD/CDT payload
+versions are 19 and Frida raw is 27 under the current-only format contract.

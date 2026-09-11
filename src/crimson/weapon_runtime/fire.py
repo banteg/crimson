@@ -229,7 +229,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         return WeaponFireResult(fired=False)
 
     ammo_cost = 1.0
-    is_fire_bullets = float(player.fire_bullets_timer) > 0.0
     perk_fire_ready = not fire_gate.normal_ready
     use_regression_bullets = False
     use_ammunition_within = False
@@ -271,6 +270,12 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 players=players,
                 death_runtime=player_death_runtime,
             )
+    # Native player_update grants ten seconds for DIK_G on an eligible shot.
+    # Keep this legacy cheat opt-in, including when replay input supplies it.
+    if state.preserve_bugs and input_state.fire_bullets_key_down:
+        player.fire_bullets_timer = 10.0
+    is_fire_bullets = float(player.fire_bullets_timer) > 0.0
+
     pellet_count = int(weapon.pellet_count)
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 

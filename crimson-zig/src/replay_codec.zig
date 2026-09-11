@@ -2,7 +2,7 @@ const std = @import("std");
 const msgpack = @import("msgpack");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 18;
+pub const replay_format_version: i32 = 19;
 pub const weapon_usage_count: usize = 53;
 pub const quest_play_count: usize = 91;
 pub const status_reserved_seed_words_byte_size: usize = 16;
@@ -24,6 +24,7 @@ pub const fire_down_flag: u32 = 1 << 0;
 pub const fire_pressed_flag: u32 = 1 << 1;
 pub const reload_pressed_flag: u32 = 1 << 2;
 pub const reload_down_flag: u32 = 1 << 16;
+pub const fire_bullets_key_down_flag: u32 = 1 << 17;
 pub const move_keys_present_flag: u32 = 1 << 3;
 pub const move_forward_flag: u32 = 1 << 4;
 pub const move_backward_flag: u32 = 1 << 5;
@@ -39,6 +40,7 @@ const supported_input_flags_mask: u32 = fire_down_flag |
     fire_pressed_flag |
     reload_pressed_flag |
     reload_down_flag |
+    fire_bullets_key_down_flag |
     move_keys_present_flag |
     move_forward_flag |
     move_backward_flag |
@@ -196,6 +198,7 @@ pub const InputFlags = struct {
     fire_pressed: bool,
     reload_pressed: bool,
     reload_down: bool,
+    fire_bullets_key_down: bool,
     move_mode: ?i32 = null,
     aim_scheme: ?i32 = null,
     move_forward_pressed: ?bool = null,
@@ -210,6 +213,7 @@ pub fn unpackInputFlags(flags: u32) InputFlags {
         .fire_pressed = (flags & fire_pressed_flag) != 0,
         .reload_pressed = (flags & reload_pressed_flag) != 0,
         .reload_down = (flags & reload_down_flag) != 0,
+        .fire_bullets_key_down = (flags & fire_bullets_key_down_flag) != 0,
     };
 
     if ((flags & move_keys_present_flag) != 0) {
@@ -2273,6 +2277,7 @@ test "unpack input flags decodes packed fields" {
     const packed_flags: u32 = fire_down_flag |
         reload_pressed_flag |
         reload_down_flag |
+        fire_bullets_key_down_flag |
         move_keys_present_flag |
         move_forward_flag |
         turn_left_flag |
@@ -2286,6 +2291,7 @@ test "unpack input flags decodes packed fields" {
     try std.testing.expect(!decoded.fire_pressed);
     try std.testing.expect(decoded.reload_pressed);
     try std.testing.expect(decoded.reload_down);
+    try std.testing.expect(decoded.fire_bullets_key_down);
     try std.testing.expectEqual(@as(?i32, 3), decoded.move_mode);
     try std.testing.expectEqual(@as(?i32, -1), decoded.aim_scheme);
     try std.testing.expect(decoded.move_forward_pressed != null and decoded.move_forward_pressed.?);
@@ -2815,7 +2821,7 @@ test "current header enforces latest semantic constraints" {
 test "current input flags enforce the shared packed-bit contract" {
     const invalid = [_]i32{
         -1,
-        1 << 17,
+        1 << 18,
         move_forward_flag,
         1 << move_mode_shift,
         move_mode_present_flag | (6 << move_mode_shift),

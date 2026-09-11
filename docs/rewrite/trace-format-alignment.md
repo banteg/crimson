@@ -22,11 +22,11 @@ all consumers see the same typed tick data and no producer-specific aliases.
 
 | Artifact | Current version | Authority |
 | --- | ---: | --- |
-| Frida raw JSONL | 26 | `scripts/frida/gameplay_diff_capture.js` |
+| Frida raw JSONL | 27 | `scripts/frida/gameplay_diff_capture.js` |
 | Frida evidence sidecar | 3 | `src/crimson/dbg/frida_finalize.py` |
 | CDT container | 2 | `src/crimson/dbg/schema.py` |
-| CDT payload schema | 18 | `src/crimson/dbg/schema.py` |
-| CRD replay | 18 | `src/crimson/replay/types.py` |
+| CDT payload schema | 19 | `src/crimson/dbg/schema.py` |
+| CRD replay | 19 | `src/crimson/replay/types.py` |
 
 These artifacts are throwaway debugging data. Readers and finalizers require
 exactly these versions; they do not translate, normalize, or salvage an older
@@ -43,11 +43,15 @@ Every `TickRecord` contains:
 - `mode_id`
 - `channels`
 
-Schema 18 preserves Quest's scaled simulation timeline and uses stage `0.0`
-outside Quest. Entity generations count allocations rather than sampled active
-transitions. Capture 26 emits these semantics. Old recordings must be regenerated.
+Schema 19 and CRD 19 add packed input bit 17, `fire_bullets_key_down`, for the
+native fixed G-key shortcut. Capture 27 records that query; older captures omit
+it and must be regenerated. Playback only honors the shortcut with
+`preserve_bugs` enabled.
 
-Schema 18 requires every channel on every tick:
+Quest keeps its scaled simulation timeline and uses stage `0.0` outside Quest.
+Entity generations count allocations rather than sampled active transitions.
+
+Schema 19 requires every channel on every tick:
 
 - `replay_step`
 - `checkpoint`
@@ -115,7 +119,7 @@ supported.
 
 ### Frida original capture
 
-Capture format 26 emits typed lifecycle rows and canonical tick channels. The
+Capture format 27 emits typed lifecycle rows and canonical tick channels. The
 finalizer validates them, writes one CDT/CRD pair per completed run, and writes
 a sibling typed evidence sidecar containing the producer-only rows used to
 explain how canonical values were derived. The CDT, CRD, RNG report, and typed
@@ -134,7 +138,7 @@ replay fingerprint and implementation, and is validated through the same typed
 
 ### Zig replay recorder
 
-Zig writes the same CDT v2/schema 18 chunks and channel payloads. Use
+Zig writes the same CDT v2/schema 19 chunks and channel payloads. Use
 `crimson-zig dbg record <replay.crd> --out <trace.cdt>` to record and
 `crimson-zig dbg verify` to check that its compiled schema and replay versions
 match the owned contract.

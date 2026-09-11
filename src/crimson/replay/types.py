@@ -18,7 +18,7 @@ from ..sim.run_spec import RunSpec
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 18
+REPLAY_FORMAT_VERSION = 19
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -26,6 +26,7 @@ FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
 RELOAD_PRESSED_FLAG = 1 << 2
 RELOAD_DOWN_FLAG = 1 << 16
+FIRE_BULLETS_KEY_DOWN_FLAG = 1 << 17
 MOVE_KEYS_PRESENT_FLAG = 1 << 3
 MOVE_FORWARD_FLAG = 1 << 4
 MOVE_BACKWARD_FLAG = 1 << 5
@@ -43,6 +44,7 @@ SUPPORTED_INPUT_FLAGS_MASK = (
     | FIRE_PRESSED_FLAG
     | RELOAD_PRESSED_FLAG
     | RELOAD_DOWN_FLAG
+    | FIRE_BULLETS_KEY_DOWN_FLAG
     | MOVE_KEYS_PRESENT_FLAG
     | MOVE_FORWARD_FLAG
     | MOVE_BACKWARD_FLAG
@@ -143,6 +145,7 @@ def pack_input_flags(
     fire_pressed: bool,
     reload_pressed: bool,
     reload_down: bool = False,
+    fire_bullets_key_down: bool = False,
     move_mode: MovementControlType | None = None,
     aim_scheme: AimScheme | None = None,
     move_forward_pressed: bool | None = None,
@@ -159,6 +162,8 @@ def pack_input_flags(
         flags |= RELOAD_PRESSED_FLAG
     if reload_down:
         flags |= RELOAD_DOWN_FLAG
+    if fire_bullets_key_down:
+        flags |= FIRE_BULLETS_KEY_DOWN_FLAG
     key_fields = (
         move_forward_pressed,
         move_backward_pressed,

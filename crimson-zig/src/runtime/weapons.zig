@@ -108,6 +108,7 @@ pub const TickInputFlags = struct {
     fire_pressed: bool = false,
     reload_pressed: bool = false,
     reload_down: bool = false,
+    fire_bullets_key_down: bool = false,
     reload_active_any: bool = false,
     move_mode: i32 = 0,
     single_player_mode: bool = true,
@@ -443,6 +444,7 @@ pub fn stepPlayerForTickWithEffects(
             detail_preset,
             dt,
             fire_gate,
+            input_flags.fire_bullets_key_down,
         );
     }
 }
@@ -495,6 +497,7 @@ pub fn tryFireWeaponWithEffects(
         detail_preset,
         0.0,
         captureFireGate(player, player),
+        false,
     );
 }
 
@@ -512,6 +515,7 @@ fn tryFireWeaponWithGate(
     detail_preset: i32,
     dt: f32,
     fire_gate: FireGate,
+    fire_bullets_key_down: bool,
 ) WeaponRuntimeError!bool {
     if (!fire_gate.normal_ready and !fire_gate.perk_ready) return false;
     const perk_player = playerUpdatePerkSource(state, player, all_players);
@@ -571,6 +575,10 @@ fn tryFireWeaponWithGate(
             }
         }
     }
+
+    // Native DIK_G grants ten seconds on an eligible shot; replay input must
+    // pass the same preserve-bugs policy as live keyboard input.
+    if (state.preserve_bugs and fire_bullets_key_down) player.fire_bullets_timer = 10.0;
 
     const shot_cooldown_base = weapon_data.weapon_stats.get(weapon_id).shot_cooldown;
     const pellet_count = @max(0, weapon_data.weapon_stats.get(weapon_id).pellet_count);
@@ -2232,6 +2240,7 @@ test "captured closed fire gate stays closed after the weapon slot changes" {
         5,
         0.01,
         fire_gate,
+        false,
     ));
     try std.testing.expectEqual(@as(i32, 0), player.shot_seq);
     try std.testing.expectEqual(@as(i32, 1000), player.experience);
@@ -3143,4 +3152,92 @@ test "mini rocket swarmers preserve bugged spread when requested" {
     const bug_first_angle = narrowF32((shot_angle - native_pi) - bug_step * rocket_count * 0.5);
     try expectFloatClose(bug_first_angle, bug_secondary_projectiles.entries[0].angle);
     try expectFloatClose(narrowF32(bug_first_angle + bug_step), bug_secondary_projectiles.entries[1].angle);
+}
+
+test "G shortcut native witnesses require preserve bugs and survive replay decoding" {
+    const Witness = struct {
+        name: []const u8,
+        index: usize,
+        fire_down: bool,
+        fire_bullets_key_down: bool,
+        health: f32,
+        console: bool,
+        shot_cooldown: f32,
+        reload_timer: f32,
+        reload_active: bool,
+        ammo: f32,
+        experience: i32,
+        regression_bullets: bool,
+        ammunition_within: bool,
+        timer_before: f32,
+        timer_after: f32,
+        queried: bool,
+        fired: bool,
+    };
+    const parsed = try std.json.parseFromSlice(struct { witnesses: []Witness }, std.testing.allocator, @embedFile("testdata/player-fire-bullets-shortcut.json"), .{});
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 38), parsed.value.witnesses.len);
+    for ([_]bool{ false, true }) |preserve_bugs| {
+        for (parsed.value.witnesses) |row| {
+            // Console-open pauses the whole port frame before weapon ticking.
+            if (row.console) continue;
+            var state = state_mod.GameplayState.init(1);
+            state.preserve_bugs = preserve_bugs;
+            var players = [_]state_mod.PlayerState{ .{ .index = 0, .pos = .{} }, .{ .index = 1, .pos = .{} } };
+            const player = &players[row.index];
+            player.health = row.health;
+            player.pos = .{ .x = 100.0, .y = 100.0 };
+            player.aim = .{ .x = 200.0, .y = 100.0 };
+            player.experience = row.experience;
+            player.fire_bullets_timer = row.timer_before;
+            player.weapon = .{
+                .weapon_id = .pistol,
+                .clip_size = 10,
+                .ammo = row.ammo,
+                .shot_cooldown = row.shot_cooldown,
+                .reload_timer = row.reload_timer,
+                .reload_active = row.reload_active,
+            };
+            for (&players) |*entry| {
+                if (row.regression_bullets) entry.perk_counts.set(PerkId.regression_bullets, 1);
+                if (row.ammunition_within) entry.perk_counts.set(PerkId.ammunition_within, 1);
+            }
+            var projectiles: projectiles_mod.ProjectilePool = .{};
+            var secondary: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+            var creatures: creatures_mod.CreaturePool = .{};
+            var particles: particles_mod.ParticlePool = .{};
+            var effects: effects_mod.EffectPool = .{};
+            var sprites: effects_mod.SpriteEffectPool = .{};
+            const codec = @import("../replay_codec.zig");
+            const flags = codec.unpackInputFlags(
+                @as(u32, if (row.fire_down) codec.fire_down_flag else 0) |
+                    @as(u32, if (row.fire_bullets_key_down) codec.fire_bullets_key_down_flag else 0),
+            );
+            try stepPlayerForTickWithEffects(
+                &state,
+                player,
+                &players,
+                &projectiles,
+                &secondary,
+                &creatures,
+                &particles,
+                &effects,
+                &sprites,
+                null,
+                5,
+                .{ .fire_down = flags.fire_down, .fire_bullets_key_down = flags.fire_bullets_key_down },
+                0.016,
+            );
+            const expected_timer = if (preserve_bugs) row.timer_after else row.timer_before;
+            try std.testing.expectEqual(expected_timer, player.fire_bullets_timer);
+            try std.testing.expectEqual(@as(f32, 0.0), players[1 - row.index].fire_bullets_timer);
+            try std.testing.expectEqual(row.fired, activeProjectileCount(&projectiles) > 0);
+            for (projectiles.entries) |projectile| {
+                if (!projectile.active) continue;
+                const expected_type: game_ids.ProjectileTypeId = if (expected_timer > 0.0) .fire_bullets else .pistol;
+                try std.testing.expectEqual(@intFromEnum(expected_type), projectile.type_id);
+            }
+            if (row.fired and expected_timer > 0.0) try std.testing.expectEqual(row.ammo, player.weapon.ammo);
+        }
+    }
 }

@@ -9,7 +9,7 @@ tags:
 ## Scope
 
 Compare how Fire Bullets modifies player shots in Crimsonland 1.9.8 vs 1.9.93.
-Cross-check against the rewrite (`src/crimson/gameplay.py`) for parity.
+Cross-check against the rewrite (`src/crimson/weapon_runtime/fire.py`) for parity.
 
 ## Architectural differences
 
@@ -150,10 +150,10 @@ When Fire Bullets IS the equipped weapon (shot_cooldown=0.14s, pellet_count=1, s
 
 The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branch).
 
-- Projectile override gate: `src/crimson/gameplay.py:636`
-- Dedicated Fire Bullets loop: `src/crimson/gameplay.py:831`
-- Single-pellet fallback cadence: `src/crimson/gameplay.py:763`
-- Ammo bypass: `src/crimson/gameplay.py:1024`
+- Dedicated Fire Bullets dispatch, single-pellet cadence, and ammo bypass:
+  `src/crimson/weapon_runtime/fire.py` (`fire_weapon`).
+- Projectile conversion policy: `src/crimson/weapon_runtime/spawn.py`
+  (`_fire_bullets_active`).
 
 ## Evidence anchors
 
@@ -169,3 +169,18 @@ The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branc
 - Fallback constants in `weapon_table_init` at `0x004519b0` (stores at `0x00451b6a` and `0x00451b7e`).
 - Pellet count field: `docs/re/static/reference/weapon-table.md:102`
 - Projectile hit damage formula: `src/crimson/projectiles/runtime/projectile_pool.py`
+
+## Fixed G-key shortcut in 1.9.93
+
+The supplied 1.9.93-gog image also grants Fire Bullets without a pickup:
+`player_update` queries DIK_G (`0x22`) on an eligible shot and writes `10.0f`
+to the firing player's timer at `0x00415cf2`. The current shot takes the Fire
+Bullets branch, and holding G refreshes the timer on later eligible shots.
+This assignment follows the readiness/input gates, any reload-bypass perk
+cost, casing effects, and jitter; no developer-mode flag guards it.
+
+The rewrite deliberately enables this legacy cheat hook only with
+`--preserve-bugs`, including during replay playback. See the
+[policy and bounded native witnesses](../../rewrite/original-bugs.md#24-holding-g-while-firing-grants-free-fire-bullets).
+This finding concerns the supplied 1.9.93 image; it does not establish whether
+1.9.8 has the same shortcut.

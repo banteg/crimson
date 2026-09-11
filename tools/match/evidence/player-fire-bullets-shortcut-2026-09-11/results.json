@@ -1,0 +1,5296 @@
+{
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "engine_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "runner_sha256": "f16a034623c30637a525f1b692addeb284e96deeb89198f01307d4678601835a",
+  "layout": {
+    "sizeof(player_state_t)": 864,
+    "sizeof(creature_t)": 152,
+    "sizeof(creature_spawn_slot_t)": 24,
+    "sizeof(projectile_t)": 64,
+    "sizeof(projectile_pool_t)": 6144,
+    "sizeof(sprite_effect_t)": 44,
+    "sizeof(particle_t)": 56,
+    "sizeof(effect_template_t)": 60,
+    "sizeof(weapon_stats_t)": 124,
+    "offsetof(cvar_float_t, value)": 12,
+    "offsetof(player_state_t, death_timer)": 16,
+    "offsetof(player_state_t, pos_x)": 20,
+    "offsetof(player_state_t, pos_y)": 24,
+    "offsetof(player_state_t, health)": 36,
+    "offsetof(player_state_t, heading)": 44,
+    "offsetof(player_state_t, size)": 52,
+    "offsetof(player_state_t, speed_multiplier)": 92,
+    "offsetof(player_state_t, move_speed)": 104,
+    "offsetof(player_state_t, move_phase)": 148,
+    "offsetof(player_state_t, spread_heat)": 696,
+    "offsetof(player_state_t, clip_size)": 708,
+    "offsetof(player_state_t, ammo)": 716,
+    "offsetof(player_state_t, reload_timer)": 720,
+    "offsetof(player_state_t, shot_cooldown)": 724,
+    "offsetof(player_state_t, reload_timer_max)": 728,
+    "offsetof(player_state_t, muzzle_flash_alpha)": 764,
+    "offsetof(player_state_t, aim_heading)": 768,
+    "offsetof(player_state_t, turn_speed)": 772,
+    "offsetof(player_state_t, low_health_timer)": 784,
+    "offsetof(player_state_t, speed_bonus_timer)": 788,
+    "offsetof(player_state_t, man_bomb_timer)": 160,
+    "offsetof(player_state_t, living_fortress_timer)": 164,
+    "offsetof(player_state_t, fire_cough_timer)": 168,
+    "offsetof(player_state_t, hot_tempered_timer)": 156,
+    "offsetof(player_state_t, fire_bullets_timer)": 796,
+    "offsetof(player_state_t, alt_clip_size)": 736,
+    "offsetof(player_state_t, alt_ammo)": 744,
+    "offsetof(player_state_t, alt_reload_timer)": 748,
+    "offsetof(player_state_t, alt_shot_cooldown)": 752,
+    "offsetof(player_state_t, alt_reload_timer_max)": 756,
+    "offsetof(player_state_t, move_target_x)": 804,
+    "offsetof(player_state_t, move_target_y)": 808,
+    "offsetof(player_state_t, aim)": 80,
+    "offsetof(player_state_t, experience)": 172,
+    "offsetof(player_state_t, perk_counts)": 184,
+    "offsetof(player_state_t, weapon_id)": 704,
+    "offsetof(player_state_t, reload_active)": 712,
+    "offsetof(player_state_t, alt_weapon_id)": 732,
+    "offsetof(player_state_t, alt_reload_active)": 740,
+    "offsetof(player_state_t, auto_target)": 800,
+    "offsetof(player_state_t, input)": 812,
+    "offsetof(player_input_t, move_key_forward)": 0,
+    "offsetof(player_input_t, move_key_backward)": 4,
+    "offsetof(player_input_t, turn_key_left)": 8,
+    "offsetof(player_input_t, turn_key_right)": 12,
+    "offsetof(player_input_t, fire_key)": 16,
+    "offsetof(player_input_t, key_reserved_0)": 20,
+    "offsetof(player_input_t, key_reserved_1)": 24,
+    "offsetof(player_input_t, aim_key_left)": 28,
+    "offsetof(player_input_t, aim_key_right)": 32,
+    "offsetof(player_input_t, axis_aim_x)": 36,
+    "offsetof(player_input_t, axis_aim_y)": 40,
+    "offsetof(player_input_t, axis_move_x)": 44,
+    "offsetof(player_input_t, axis_move_y)": 48,
+    "offsetof(creature_t, active)": 0,
+    "offsetof(creature_t, pos_x)": 20,
+    "offsetof(creature_t, pos_y)": 24,
+    "offsetof(creature_t, health)": 36,
+    "offsetof(creature_t, size)": 52,
+    "offsetof(weapon_stats_t, shot_cooldown)": 72,
+    "offsetof(weapon_stats_t, reload_time)": 76,
+    "offsetof(weapon_stats_t, spread_heat)": 80,
+    "offsetof(weapon_stats_t, shot_sfx_base_id)": 88,
+    "offsetof(weapon_stats_t, shot_sfx_variant_count)": 92,
+    "offsetof(weapon_stats_t, reload_sfx_id)": 96,
+    "offsetof(weapon_stats_t, flags)": 104,
+    "offsetof(weapon_stats_t, pellet_count)": 116
+  },
+  "candidate": {
+    "ratio": 0.6402129203968062,
+    "fuzzy_weighted_bytes": 10407.941446890878,
+    "candidate_instructions": 4060,
+    "target_instructions": 4206,
+    "prefix": 7,
+    "references": {
+      "ok": 805,
+      "unresolved": 0,
+      "mismatch": 2
+    },
+    "exact": false,
+    "body_byte_exact": false,
+    "source_sha256": "6ec9615d136a330bf87ec2ab7088471124507379b1a6532580eccb31f0476c5e",
+    "object_sha256": "e8c1cf75e1b6563b0982dbfd11a609d0394ed02ba15a6b2ff499916c599f349f",
+    "body_sha256": "cca096670eab32fc7cf1d11885eff0da559b9150a5947b8ff604a60e7e3d74c2",
+    "body_bytes": 15867
+  },
+  "cases": [
+    {
+      "name": "shot-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ]
+      },
+      "native_observation_sha256": "9db26f15682118d192f326083c30c847134afccb31d80a6869a14ce583f75f41",
+      "candidate_observation_sha256": "9db26f15682118d192f326083c30c847134afccb31d80a6869a14ce583f75f41",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "no-g-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104
+        ]
+      },
+      "native_observation_sha256": "ab66a28c61744add87c2750123098a6372237971f9e3d8d9ea3724fbb89d1174",
+      "candidate_observation_sha256": "ab66a28c61744add87c2750123098a6372237971f9e3d8d9ea3724fbb89d1174",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "sfx_play_panned",
+          [
+            12,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3230265258,
+            1,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3234723535,
+              1096337496
+            ],
+            1073741824
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "g-only-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          34
+        ]
+      },
+      "native_observation_sha256": "d148cc29801d943183b4beaade7cad33aa99db0bfde3bc2757cb5709ce9870a0",
+      "candidate_observation_sha256": "d148cc29801d943183b4beaade7cad33aa99db0bfde3bc2757cb5709ce9870a0",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ]
+      ]
+    },
+    {
+      "name": "no-keys-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": []
+      },
+      "native_observation_sha256": "d148cc29801d943183b4beaade7cad33aa99db0bfde3bc2757cb5709ce9870a0",
+      "candidate_observation_sha256": "d148cc29801d943183b4beaade7cad33aa99db0bfde3bc2757cb5709ce9870a0",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ]
+      ]
+    },
+    {
+      "name": "cooldown-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.5,
+        "keys": [
+          104,
+          34
+        ]
+      },
+      "native_observation_sha256": "7a4646342427a56c1cc336f84eb478fcfc3f16d1b0c17e07d71191597844a3f5",
+      "candidate_observation_sha256": "7a4646342427a56c1cc336f84eb478fcfc3f16d1b0c17e07d71191597844a3f5",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "reload-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1
+      },
+      "native_observation_sha256": "2def17aad36a088015598ea7781c8f6a30fdefccf42631e8a9bf6f18c838934a",
+      "candidate_observation_sha256": "2def17aad36a088015598ea7781c8f6a30fdefccf42631e8a9bf6f18c838934a",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "dead-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "health": 0.0
+      },
+      "native_observation_sha256": "81f16fa40410cead8a18f6a341f98edabb1be405cece9c6e27275c9d11e77619",
+      "candidate_observation_sha256": "81f16fa40410cead8a18f6a341f98edabb1be405cece9c6e27275c9d11e77619",
+      "native_calls": []
+    },
+    {
+      "name": "console-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "console": 1
+      },
+      "native_observation_sha256": "b889498648dda9291a96e8d1b061ff7c16773ab36b899ffc66e8dfba18b852e2",
+      "candidate_observation_sha256": "b889498648dda9291a96e8d1b061ff7c16773ab36b899ffc66e8dfba18b852e2",
+      "native_calls": []
+    },
+    {
+      "name": "empty-ammo-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "ammo": 0.0
+      },
+      "native_observation_sha256": "8d702e0cb8d2b1839dcef16e48e0636c52eb04f1c7886902d2b9d2198e7d0747",
+      "candidate_observation_sha256": "8d702e0cb8d2b1839dcef16e48e0636c52eb04f1c7886902d2b9d2198e7d0747",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "player_start_reload",
+          []
+        ]
+      ]
+    },
+    {
+      "name": "refresh-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "9db26f15682118d192f326083c30c847134afccb31d80a6869a14ce583f75f41",
+      "candidate_observation_sha256": "9db26f15682118d192f326083c30c847134afccb31d80a6869a14ce583f75f41",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "overwrite-longer-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "fire_bullets_timer": 20.0
+      },
+      "native_observation_sha256": "9db26f15682118d192f326083c30c847134afccb31d80a6869a14ce583f75f41",
+      "candidate_observation_sha256": "9db26f15682118d192f326083c30c847134afccb31d80a6869a14ce583f75f41",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "no-g-existing-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "d377dd7f5bc120bdba067a47986b15b1a20aa149f5854e38a4f83c1a4196c63e",
+      "candidate_observation_sha256": "d377dd7f5bc120bdba067a47986b15b1a20aa149f5854e38a4f83c1a4196c63e",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "g-only-existing-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          34
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "cc28a485853c4e54884485276c2d676b4e587ef3af6df5841dd2c90bfa6f1d50",
+      "candidate_observation_sha256": "cc28a485853c4e54884485276c2d676b4e587ef3af6df5841dd2c90bfa6f1d50",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ]
+      ]
+    },
+    {
+      "name": "cooldown-existing-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.5,
+        "keys": [
+          104,
+          34
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "abaecc751f15839dd5ad0bca29cb82fceac9d96ddd289e6eac5aa7b3ab2634e5",
+      "candidate_observation_sha256": "abaecc751f15839dd5ad0bca29cb82fceac9d96ddd289e6eac5aa7b3ab2634e5",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "regression-reload-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "experience": 1000,
+        "perks": {
+          "regression_bullets": 1
+        }
+      },
+      "native_observation_sha256": "a77fbbeedeca4d10027c9d11e9feb03afecf2f7824e5165357583bda3092029b",
+      "candidate_observation_sha256": "a77fbbeedeca4d10027c9d11e9feb03afecf2f7824e5165357583bda3092029b",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "regression-no-xp-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "perks": {
+          "regression_bullets": 1
+        }
+      },
+      "native_observation_sha256": "0577533295cabcde16acd8034a595ed9dcf2a34712090f0ffffd8f5678b062fe",
+      "candidate_observation_sha256": "0577533295cabcde16acd8034a595ed9dcf2a34712090f0ffffd8f5678b062fe",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "ammunition-reload-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "experience": 1,
+        "perks": {
+          "ammunition_within": 1
+        }
+      },
+      "native_observation_sha256": "805b5c323d31cad454d9815b3ce3cdb5934db126d9946751dceb9ccea2ac858c",
+      "candidate_observation_sha256": "805b5c323d31cad454d9815b3ce3cdb5934db126d9946751dceb9ccea2ac858c",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "perk",
+          11
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "perk",
+          11
+        ],
+        [
+          "player_take_damage",
+          [
+            0,
+            1041865114
+          ]
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "ammunition-no-xp-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "perks": {
+          "ammunition_within": 1
+        }
+      },
+      "native_observation_sha256": "8d1200005293a4c385e58b16643b5d363bad1e53fe7dd6d49bfdf793be2cdcda",
+      "candidate_observation_sha256": "8d1200005293a4c385e58b16643b5d363bad1e53fe7dd6d49bfdf793be2cdcda",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "computer-auto-p0",
+      "frame": {
+        "index": 0,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          34
+        ],
+        "aim": 5,
+        "aim_position": [
+          300,
+          400
+        ],
+        "creatures": [
+          {
+            "index": 0,
+            "x": 301,
+            "y": 402
+          }
+        ]
+      },
+      "native_observation_sha256": "2caf4957fb85d4b890033c4222759e9061661d542ac786dbac9e5d8960a52d95",
+      "candidate_observation_sha256": "2caf4957fb85d4b890033c4222759e9061661d542ac786dbac9e5d8960a52d95",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          0
+        ],
+        [
+          "move",
+          0,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128120320,
+          1128366080
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123554773,
+              1129978908
+            ],
+            3228832223,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123554773,
+              1129978908
+            ],
+            [
+              3247361116,
+              1099696105
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "shot-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ]
+      },
+      "native_observation_sha256": "5ce8076e05e5d8acf1b684079f8bd11c52f604f92fbd9bd8863d72bc967e9421",
+      "candidate_observation_sha256": "5ce8076e05e5d8acf1b684079f8bd11c52f604f92fbd9bd8863d72bc967e9421",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "no-g-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104
+        ]
+      },
+      "native_observation_sha256": "8c68d9d3dc13290009bb8150819e9b2e759ed2c9119831d6a3c298d22d7592f6",
+      "candidate_observation_sha256": "8c68d9d3dc13290009bb8150819e9b2e759ed2c9119831d6a3c298d22d7592f6",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "sfx_play_panned",
+          [
+            12,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3230265258,
+            1,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3234723535,
+              1096337496
+            ],
+            1073741824
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "g-only-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          34
+        ]
+      },
+      "native_observation_sha256": "4294c890c6a4f4512cf438cea601d15ea354853d7ac8d9fd46b0ce24845ed07d",
+      "candidate_observation_sha256": "4294c890c6a4f4512cf438cea601d15ea354853d7ac8d9fd46b0ce24845ed07d",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ]
+      ]
+    },
+    {
+      "name": "no-keys-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": []
+      },
+      "native_observation_sha256": "4294c890c6a4f4512cf438cea601d15ea354853d7ac8d9fd46b0ce24845ed07d",
+      "candidate_observation_sha256": "4294c890c6a4f4512cf438cea601d15ea354853d7ac8d9fd46b0ce24845ed07d",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ]
+      ]
+    },
+    {
+      "name": "cooldown-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.5,
+        "keys": [
+          104,
+          34
+        ]
+      },
+      "native_observation_sha256": "e605ed77ced12316c3a3463bb3da1ceab856133134cbb4a27d770512a46b540c",
+      "candidate_observation_sha256": "e605ed77ced12316c3a3463bb3da1ceab856133134cbb4a27d770512a46b540c",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "reload-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1
+      },
+      "native_observation_sha256": "7383e160b8a880c20a69bba9a6d87867ce2a521983abca79bae08444cfe51b2e",
+      "candidate_observation_sha256": "7383e160b8a880c20a69bba9a6d87867ce2a521983abca79bae08444cfe51b2e",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "dead-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "health": 0.0
+      },
+      "native_observation_sha256": "4c3b7b8a71867ddf3f6d2a94e08b470d407f684febf92c5226cd4dbbf58ec3af",
+      "candidate_observation_sha256": "4c3b7b8a71867ddf3f6d2a94e08b470d407f684febf92c5226cd4dbbf58ec3af",
+      "native_calls": []
+    },
+    {
+      "name": "console-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "console": 1
+      },
+      "native_observation_sha256": "ff3e40bda42f93551e14c8e495b57cb70dad2c67aef40d5c2fe5937e422b01f1",
+      "candidate_observation_sha256": "ff3e40bda42f93551e14c8e495b57cb70dad2c67aef40d5c2fe5937e422b01f1",
+      "native_calls": []
+    },
+    {
+      "name": "empty-ammo-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "ammo": 0.0
+      },
+      "native_observation_sha256": "e871103005e027a8b8f30f1e8da2640daf485ec1eabf446b184bfbe686a6380f",
+      "candidate_observation_sha256": "e871103005e027a8b8f30f1e8da2640daf485ec1eabf446b184bfbe686a6380f",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "player_start_reload",
+          []
+        ]
+      ]
+    },
+    {
+      "name": "refresh-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "5ce8076e05e5d8acf1b684079f8bd11c52f604f92fbd9bd8863d72bc967e9421",
+      "candidate_observation_sha256": "5ce8076e05e5d8acf1b684079f8bd11c52f604f92fbd9bd8863d72bc967e9421",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "overwrite-longer-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "fire_bullets_timer": 20.0
+      },
+      "native_observation_sha256": "5ce8076e05e5d8acf1b684079f8bd11c52f604f92fbd9bd8863d72bc967e9421",
+      "candidate_observation_sha256": "5ce8076e05e5d8acf1b684079f8bd11c52f604f92fbd9bd8863d72bc967e9421",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "no-g-existing-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "b3b26283e48fdc3c10d369ba6b0376f178276b1b58448c76544dd26f52db8054",
+      "candidate_observation_sha256": "b3b26283e48fdc3c10d369ba6b0376f178276b1b58448c76544dd26f52db8054",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "g-only-existing-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          34
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "d84a152e96902596079265bee5fca54f1d135ee7b9447cf43871bc000d606b00",
+      "candidate_observation_sha256": "d84a152e96902596079265bee5fca54f1d135ee7b9447cf43871bc000d606b00",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ]
+      ]
+    },
+    {
+      "name": "cooldown-existing-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.5,
+        "keys": [
+          104,
+          34
+        ],
+        "fire_bullets_timer": 2.0
+      },
+      "native_observation_sha256": "e249bf9b194340a9efc993ff50cb02d6d2a11b38abc06775662375c4a855d889",
+      "candidate_observation_sha256": "e249bf9b194340a9efc993ff50cb02d6d2a11b38abc06775662375c4a855d889",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "regression-reload-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "experience": 1000,
+        "perks": {
+          "regression_bullets": 1
+        }
+      },
+      "native_observation_sha256": "db63bbfd65b13f4621232bd3e03d91cf2dc202f686d1309981de2ef485d73e8e",
+      "candidate_observation_sha256": "db63bbfd65b13f4621232bd3e03d91cf2dc202f686d1309981de2ef485d73e8e",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "regression-no-xp-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "perks": {
+          "regression_bullets": 1
+        }
+      },
+      "native_observation_sha256": "6658956cd7ea9840d907b8208a21a8fa1f6d2aa3fa4dc4b34c2caa80446cd46a",
+      "candidate_observation_sha256": "6658956cd7ea9840d907b8208a21a8fa1f6d2aa3fa4dc4b34c2caa80446cd46a",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "ammunition-reload-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "experience": 1,
+        "perks": {
+          "ammunition_within": 1
+        }
+      },
+      "native_observation_sha256": "68338f8c889435232e69ca7d0f35b362f8b3088bf742135a63bb96eef7cac823",
+      "candidate_observation_sha256": "68338f8c889435232e69ca7d0f35b362f8b3088bf742135a63bb96eef7cac823",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "perk",
+          11
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "perk",
+          10
+        ],
+        [
+          "perk",
+          11
+        ],
+        [
+          "player_take_damage",
+          [
+            1,
+            1041865114
+          ]
+        ],
+        [
+          "length",
+          1128652800,
+          1119617024
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            3229966414,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123886050,
+              1129651546
+            ],
+            [
+              3240862466,
+              1102358261
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "ammunition-no-xp-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          104,
+          34
+        ],
+        "reload_timer": 1.0,
+        "reload_active": 1,
+        "perks": {
+          "ammunition_within": 1
+        }
+      },
+      "native_observation_sha256": "8b32f5d8a183ceeb0ccf8000a6b3486fe3d4000c5dcbc2ba53377fcb9cc18089",
+      "candidate_observation_sha256": "8b32f5d8a183ceeb0ccf8000a6b3486fe3d4000c5dcbc2ba53377fcb9cc18089",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "computer-auto-p1",
+      "frame": {
+        "index": 1,
+        "movement": 2,
+        "move_speed": 0.0,
+        "shot_cooldown": 0.0,
+        "keys": [
+          34
+        ],
+        "aim": 5,
+        "aim_position": [
+          300,
+          400
+        ],
+        "creatures": [
+          {
+            "index": 0,
+            "x": 301,
+            "y": 402
+          }
+        ]
+      },
+      "native_observation_sha256": "529384ac3d26f58404b8da2d3beb77452283519fe08a5043128e9f2f979ae755",
+      "candidate_observation_sha256": "529384ac3d26f58404b8da2d3beb77452283519fe08a5043128e9f2f979ae755",
+      "native_calls": [
+        [
+          "perk",
+          1
+        ],
+        [
+          "perk",
+          2
+        ],
+        [
+          "perk",
+          3
+        ],
+        [
+          "perk",
+          4
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          102
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          103
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          100
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "key",
+          101
+        ],
+        [
+          "move",
+          1,
+          1121878016,
+          1129349120,
+          0,
+          2147483648
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "perk",
+          5
+        ],
+        [
+          "perk",
+          6
+        ],
+        [
+          "perk",
+          7
+        ],
+        [
+          "perk",
+          8
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          90
+        ],
+        [
+          "perk",
+          9
+        ],
+        [
+          "key",
+          104
+        ],
+        [
+          "length",
+          1128120320,
+          1128366080
+        ],
+        [
+          "rand",
+          7584
+        ],
+        [
+          "rand",
+          19164
+        ],
+        [
+          "key",
+          34
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "sfx_play_panned",
+          [
+            11,
+            [
+              1121878016,
+              1129349120
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "rand",
+          25795
+        ],
+        [
+          "projectile_spawn",
+          [
+            [
+              1123554773,
+              1129978908
+            ],
+            3228832223,
+            45,
+            4294967196
+          ]
+        ],
+        [
+          "fx_spawn_sprite",
+          [
+            [
+              1123554773,
+              1129978908
+            ],
+            [
+              3247361116,
+              1099696105
+            ],
+            1065353216
+          ]
+        ],
+        [
+          "perk",
+          5
+        ]
+      ]
+    }
+  ]
+}

@@ -18,7 +18,7 @@ workflow details, see
 ## Versioning
 
 - `trace_format_version = 2`: container and envelope
-- `trace_schema_version = 18`: typed tick payloads
+- `trace_schema_version = 19`: typed tick payloads
 
 The reader requires both exact versions. There is no compatibility path for an
 older CDT because traces are cheap to record again.
@@ -97,11 +97,11 @@ time scaling and completion pauses. Other modes use the summed unscaled replay
 clock. `dt_ms_i32` always remains the unscaled frame delta. Outside Quest mode,
 canonical quest stage fields are `0.0`; stale native globals belong in evidence.
 
-Schema 18 changes these semantics and allocation generations. Earlier traces
+Schema 19 changes these semantics and allocation generations. Earlier traces
 are rejected and must be regenerated; rewriting their version number cannot
 recover missing allocation events or correct their clocks.
 
-## Channel contract (schema 18)
+## Channel contract (schema 19)
 
 Every tick requires all six channels:
 
@@ -190,9 +190,9 @@ enclosing `dt_ms_i32`, and its `mode_fn` identifies
 
 The intended comparison set is:
 
-1. Frida capture format 26 finalized into CDT v2/schema 18.
-2. Python CRD v18 replay recording.
-3. Zig CRD v18 replay recording.
+1. Frida capture format 27 finalized into CDT v2/schema 19.
+2. Python CRD v19 replay recording.
+3. Zig CRD v19 replay recording.
 
 All emit the same durable channel semantics. A producer may keep additional
 diagnostics before finalization, but it may not add aliases or optional channel

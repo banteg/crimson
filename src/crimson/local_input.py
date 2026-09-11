@@ -479,6 +479,7 @@ class LocalInputInterpreter:
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
             reload_down=reload_down,
+            fire_bullets_key_down=input_code_is_down(0x22, player_index=idx),
             move_to_cursor_pressed=move_to_cursor_pressed,
             move_forward_pressed=move_forward_pressed,
             move_backward_pressed=move_backward_pressed,

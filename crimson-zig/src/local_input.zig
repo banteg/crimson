@@ -296,6 +296,7 @@ pub const LocalInputInterpreter = struct {
                 .fire_pressed = fire_pressed,
                 .reload_pressed = reload_pressed,
                 .reload_down = reload_down,
+                .fire_bullets_key_down = sampler.codeIsDown(0x22, @intCast(idx)),
                 .move_to_cursor_pressed = move_to_cursor_pressed,
                 .move_mode = move_mode_type,
                 .aim_scheme = aim_scheme,
@@ -955,4 +956,16 @@ test "held aim controls match original player update turn witnesses" {
         try std.testing.expectEqual(witness.aim_x_bits, @as(u32, @bitCast(result.aim_x)));
         try std.testing.expectEqual(witness.aim_y_bits, @as(u32, @bitCast(result.aim_y)));
     }
+}
+
+test "fixed G held state is recorded independently of the fire binding" {
+    var interpreter: LocalInputInterpreter = .{};
+    const player = makePlayer(0, .{ .x = 100.0, .y = 100.0 }, .{ .x = 160.0, .y = 100.0 }, 0.0);
+    var cfg = formats.crimson_cfg.defaultConfig();
+    const sampler: FakeSampler = .{
+        .down = &.{.{ .player_index = 0, .code = 0x22, .value = true }},
+    };
+    const result = interpreter.buildPlayerInput(sampler, 0, 1, &player, &cfg, .{}, .{}, .{}, 0.016, &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{});
+    try std.testing.expect(result.flags.fire_bullets_key_down);
+    try std.testing.expect(!result.flags.fire_down);
 }

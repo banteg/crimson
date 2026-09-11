@@ -11,7 +11,7 @@ const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v2\n";
 pub const trace_format_version: u32 = 2;
-pub const trace_schema_version: i32 = 18;
+pub const trace_schema_version: i32 = 19;
 pub const trace_required_channels = "replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 const trace_chunk_ticks: usize = 256;
 

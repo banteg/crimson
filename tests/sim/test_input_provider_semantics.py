@@ -241,7 +241,11 @@ def test_pause_discards_pending_edges_but_keeps_commands_and_held_controls() -> 
     provider = LocalInputProvider(
         player_count=1,
         runtime=StaticLocalInputRuntime(
-            inputs=(PlayerInput(fire_pressed=True, fire_down=True, reload_pressed=True, reload_down=True),),
+            inputs=(
+                PlayerInput(
+                    fire_pressed=True, fire_down=True, reload_pressed=True, reload_down=True, fire_bullets_key_down=True,
+                ),
+            ),
         ),
     )
     command = PerkMenuOpenCommand(player_index=0)
@@ -250,5 +254,5 @@ def test_pause_discards_pending_edges_but_keeps_commands_and_held_controls() -> 
     provider.clear_pending_edges()
     tick = provider.pull_tick(0, 1 / 60).tick
     assert tick is not None
-    assert tick.inputs == (PlayerInput(fire_down=True, reload_down=True),)
+    assert tick.inputs == (PlayerInput(fire_down=True, reload_down=True, fire_bullets_key_down=True),)
     assert tick.commands == (command,)

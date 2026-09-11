@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 26;
+const CAPTURE_FORMAT_VERSION = 27;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -117,6 +117,7 @@ const REPLAY_AIM_SCHEME_PRESENT_FLAG = 1 << 12;
 const REPLAY_AIM_SCHEME_SHIFT = 13;
 const REPLAY_AIM_SCHEME_MASK = 0x7;
 const REPLAY_RELOAD_DOWN_FLAG = 1 << 16;
+const REPLAY_FIRE_BULLETS_KEY_DOWN_FLAG = 1 << 17;
 const CONFIG_PARSE_ERRORS = [];
 
 function recordConfigParseError(key, raw, reason) {
@@ -1575,6 +1576,7 @@ function packReplayInputFlags(inputRow) {
   if (row.fire_pressed === true) flags |= REPLAY_FIRE_PRESSED_FLAG;
   if (row.reload_pressed === true) flags |= REPLAY_RELOAD_PRESSED_FLAG;
   if (row.reload_down === true) flags |= REPLAY_RELOAD_DOWN_FLAG;
+  if (row.fire_bullets_key_down === true) flags |= REPLAY_FIRE_BULLETS_KEY_DOWN_FLAG;
 
   const hasMoveKeys =
     row.move_forward_pressed != null ||
@@ -1718,6 +1720,9 @@ function replayInputIntentFromTick(tickObj) {
       fire_pressed: requireReplayBool(keyRow.fire_pressed, "input_player_keys[" + i + "].fire_pressed"),
       reload_pressed: requireReplayBool(keyRow.reload_pressed, "input_player_keys[" + i + "].reload_pressed"),
       reload_down: requireReplayBool(keyRow.reload_down, "input_player_keys[" + i + "].reload_down"),
+      fire_bullets_key_down: requireReplayBool(
+        keyRow.fire_bullets_key_down, "input_player_keys[" + i + "].fire_bullets_key_down"
+      ),
       move_forward_pressed: moveForwardPressed,
       move_backward_pressed: moveBackwardPressed,
       turn_left_pressed: turnLeftPressed,
@@ -4049,6 +4054,7 @@ function buildEmptyPlayerKeyState(playerIndex) {
     fire_pressed: false,
     reload_pressed: false,
     reload_down: false,
+    fire_bullets_key_down: false,
   };
 }
 
@@ -4106,6 +4112,8 @@ function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStat
       if (!binding || typeof binding !== "object") continue;
       const state = ensurePlayerKeyState(tick, i);
       if (!state) continue;
+      if (key === 0x22 && (queryName === "grim_is_key_active" || queryName === "grim_is_key_down"))
+        state.fire_bullets_key_down = downSeen(state.fire_bullets_key_down);
       if ((binding.move_forward | 0) === key) state.move_forward_pressed = down;
       if ((binding.move_backward | 0) === key) state.move_backward_pressed = down;
       if ((binding.turn_left | 0) === key) state.turn_left_pressed = down;

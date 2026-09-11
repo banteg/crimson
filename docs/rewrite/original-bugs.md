@@ -557,3 +557,31 @@ Rewrite behavior:
 
 - Default: activate Plaguebearer contact infection for every player.
 - With `--preserve-bugs`: keep native player-1-only flag activation.
+
+## 24) Holding G while firing grants free Fire Bullets
+
+**Observed original behavior:**
+
+- `player_update` (`0x004136b0`) queries the fixed DirectInput G scan code
+  (`0x22`) after the firing readiness/input gates and reload-bypass perk costs,
+  casing effects, and shot jitter. A true result writes `10.0f` to the current
+  player's Fire Bullets timer at `0x00415cf2`.
+- The triggering shot already uses Fire Bullets. Subsequent eligible shots
+  while G remains held assign ten seconds again, even reducing a longer timer.
+- G alone, a blocked shot, death, and an open console do not grant the bonus.
+  Computer auto-fire and reload-bypass perks can reach the shortcut.
+- There is no developer-mode or console-cheat check on this path in the supplied
+  `1.9.93-gog` executable. It appears to be a leftover cheat hook; its original
+  developer intent is unknown.
+
+**Rewrite policy:**
+
+- Default: ignore this shortcut, including flags injected through replay input.
+- `--preserve-bugs`: reproduce the ten-second grant on eligible shots. Ordinary
+  Fire Bullets bonus pickups continue to work in both modes.
+- Input recording stores the held G state in CRD/CDT bit 17. It is a held input,
+  so fixed-step catch-up retains it; it is not a press edge or a configurable
+  bonus action. Both Python and Zig enforce the policy in the firing routine.
+
+Evidence: `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/README.md`
+and the [Fire Bullets version comparison](../re/static/fire-bullets-1.9.8-vs-1.9.93.md).

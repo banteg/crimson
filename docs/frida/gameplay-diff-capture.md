@@ -8,11 +8,11 @@ tags:
 # Gameplay differential capture
 
 `scripts/frida/gameplay_diff_capture.js` records the original executable using
-raw capture format 26. The host finalizes each completed run into the same
+raw capture format 27. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
-- CDT container 2, schema 18
-- CRD replay 18
+- CDT container 2, schema 19
+- CRD replay 19
 - a sibling `.rng_evidence.json` diagnostic report
 - a typed `.evidence.msgpack.zst` native-evidence sidecar
 
@@ -106,7 +106,7 @@ format.
 
 ## Tick contract
 
-Every tick has the canonical schema 18 channels:
+Every tick has the canonical schema 19 channels:
 
 - `replay_step`
 - `checkpoint`
@@ -232,6 +232,6 @@ It then writes versioned provenance to `manifest.json`. A stale or inconsistent
 pair aborts the import instead of being skipped.
 
 The importer and fixture tests accept only the current capture/CDT/CRD contract.
-Old checked-in recordings should be deleted and replaced with a fresh format 26
+Old checked-in recordings should be deleted and replaced with a fresh format 27
 capture. Fixture parity is a strict diff assertion; known mismatches are not
 hidden behind a blanket `xfail`.
