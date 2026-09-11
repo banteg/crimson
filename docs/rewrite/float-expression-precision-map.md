@@ -66,12 +66,20 @@ Historical IDA whole-view scan:
 | `E12` | Formatting/vararg conversion | `F64_BOUNDARY_ONLY` | `crt_sprintf(..., (double)f32_value)` | `double` here is boundary formatting ABI, not simulation precision policy | `mods_menu_update` @ `0x0040e9a0` |
 | `E13` | Creature atlas frame selection | `F32_STORE` (int boundary) | `__ftol(phase + 0.5f)` or `__ftol((float)(base + 15) - lifecycle)` | Round the add/subtract at PC24 before truncating; select the lifecycle branch directly | `creature_render_type` @ `0x00418b60` |
 | `E14` | Heading-derived 60-unit aim point | `X87_INTERMEDIATE_THEN_F32` | Native keeps cosine wide through scaling but stores sine first | Subtract native half-pi at PC24; multiply wide cosine and stored sine at PC24; round each position add | `player_update` @ `0x004136b0` |
+| `E15` | Conventional projectile trail corners | `F32_STORE` at PC24 | `(camera + origin/position) +/- velocity * width_factor` | Round input fields, width product, camera sums, and corner additions/subtractions before viewport scaling | `projectile_render` @ `0x004230e5..0x00423663` |
 
 `E14` is an exception to treating both direction components as stored floats.
 The original-image witnesses in
 `tools/match/evidence/player-aim-direction-2026-09-11/results.json` pin the
 asymmetry and held-turn ordering. Python and Zig share 1,050 point and 240
 turn witnesses; see that evidence package for modeled boundaries and limits.
+
+`E15` is checked against the original executable's submitted corner words in
+`tools/match/evidence/conventional-corner-rounding-2026-09-11/`. Python's
+`bullet_trail_corners` preserves the game's PC24 arithmetic before applying
+the rewrite's viewport scale. The evidence package separately documents the
+native wider-register/store asymmetries under diagnostic PC64; those are not
+a reason to use binary64 arithmetic for the Python gameplay renderer.
 
 ## Binary Ninja cross-check pattern
 

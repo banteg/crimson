@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, cast
+import json
+import struct
+from pathlib import Path
+from typing import Any, NamedTuple, cast
 
 import pytest
 from msgspec import structs
@@ -11,7 +14,7 @@ from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world.context import WorldRenderCtx, draw_bullet_trail_quad
-from crimson.render.world.viewport import view_transform
+from crimson.render.world.viewport import ViewTransform, view_transform
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.assets import TextureId
@@ -78,7 +81,6 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
         Vec2(120.0, 90.0),
         type_id=int(ProjectileTemplateId.PISTOL),
         alpha=128,
-        scale=1.0,
         velocity=Vec2(1.5, 0.0),
     )
 
@@ -87,7 +89,14 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     assert len(vertices) == 4
 
 
-def _capture_projectile_trail(mocker, projectile: Projectile, *, transition_alpha: float = 1.0):
+def _capture_projectile_trail(
+    mocker,
+    projectile: Projectile,
+    *,
+    transition_alpha: float = 1.0,
+    camera: Vec2 | None = None,
+    view_scale: Vec2 | None = None,
+):
     for name in ("begin_blend_mode", "rl_set_texture", "rl_begin", "rl_end", "end_blend_mode"):
         mocker.patch.object(world_projectiles.rl, name)
     vertices = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
@@ -96,10 +105,10 @@ def _capture_projectile_trail(mocker, projectile: Projectile, *, transition_alph
     frame = _WorldStub().build_render_frame()
     render_ctx = WorldRenderCtx(
         frame=frame,
-        view=view_transform(
-            world_size=frame.world_size,
-            config=frame.config,
-            camera=frame.camera,
+        view=ViewTransform(
+            camera=frame.camera if camera is None else camera,
+            view_scale=Vec2(1, 1) if view_scale is None else view_scale,
+            screen_size=Vec2(1024, 1024),
             out_size=Vec2(1024, 1024),
         ),
     )
@@ -109,6 +118,75 @@ def _capture_projectile_trail(mocker, projectile: Projectile, *, transition_alph
         [tuple(call.args) for call in colors.call_args_list],
         [tuple(call.args) for call in uvs.call_args_list],
     )
+
+
+class _NativeTrailCase(NamedTuple):
+    origin: Vec2
+    position: Vec2
+    velocity: Vec2
+    camera: Vec2
+    type_id: ProjectileTemplateId
+    words: tuple[int, ...]
+
+
+def _native_trail_cases() -> list[_NativeTrailCase]:
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "tools/match/evidence/conventional-corner-rounding-2026-09-11/fixtures.jsonl"
+    )
+    cases = []
+    with path.open() as stream:
+        for line in stream:
+            row = json.loads(line)
+            if row["index"] >= 128:
+                break
+            fixture = row["case"]
+            if fixture["fpcw"] != 0x007F:
+                continue
+            assert fixture["group"] == "discovery" and len(fixture["records"]) == 1
+            projectile = fixture["records"][0]
+            cases.append(
+                _NativeTrailCase(
+                    origin=Vec2(*projectile["origin"]),
+                    position=Vec2(*projectile["position"]),
+                    velocity=Vec2(*projectile["velocity"]),
+                    camera=Vec2(*fixture["camera"]),
+                    type_id=ProjectileTemplateId(projectile["type_id"]),
+                    words=tuple(row["corners"][0]),
+                ),
+            )
+    assert len(cases) == 64
+    return cases
+
+
+@pytest.mark.parametrize("case", _native_trail_cases())
+@pytest.mark.parametrize("view_scale", [Vec2(1, 1), Vec2(2, 2), Vec2(1.5, 0.75)])
+def test_bullet_trail_native_corner_rounding_precedes_viewport_scaling(
+    mocker,
+    case: _NativeTrailCase,
+    view_scale: Vec2,
+) -> None:
+    projectile = Projectile(
+        type_id=case.type_id,
+        origin=case.origin,
+        pos=case.position,
+        vel=case.velocity,
+        life_timer=0.2,
+    )
+    vertices, _, _ = _capture_projectile_trail(
+        mocker,
+        projectile,
+        transition_alpha=0.7,
+        camera=case.camera,
+        view_scale=view_scale,
+    )
+    assert len(vertices) == 4
+    expected = [
+        struct.unpack("<I", struct.pack("<f", struct.unpack("<f", struct.pack("<I", word))[0] * scale))[0]
+        for word, scale in zip(case.words, (view_scale.x, view_scale.y) * 4, strict=True)
+    ]
+    actual = [struct.unpack("<I", struct.pack("<f", coordinate))[0] for point in vertices for coordinate in point]
+    assert actual == expected
 
 
 @pytest.mark.parametrize(

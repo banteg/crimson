@@ -106,3 +106,38 @@ exact preceding commit and this proof. All twelve mismatches remain reported;
 neither the matcher nor any reference alias is changed. This evidence proves
 the listed caller traces, not GPU output, all-input equivalence, original
 source identity, or a whole-function match.
+
+## Python PC=24 follow-up
+
+The Python renderer had a separate discrepancy in the game's normal precision
+mode: it carried camera sums, width products, and corner additions in Python
+binary64 until submitting the final vertex. Capturing the actual registry
+dispatch and `rl_vertex2f` arguments found **292 differing records out of the
+640 PC=24 discovery cases**.
+
+`bullet_trail_corners` now narrows input fields and width constants, rounds the
+camera sums and scaled velocity, then rounds each corner addition/subtraction.
+The draw helper accepts world positions and applies the viewport transform to
+the completed native corners. Unequal viewport scales therefore apply to each
+coordinate independently, instead of averaging the axes for width alone.
+
+`verify_ports.py` checks **1,161 recorded native fixtures at three viewport
+scales**: `(1, 1)`, `(2, 2)`, and `(1.5, 0.75)`. All 3,483 current cases pass.
+The exact preceding Python modules from commit `544af3e05` fail 726 cases at
+unit scale, 726 at doubled scale, and 1,160 at unequal scales. All recorded
+non-vertex GL calls remain identical between the two renderers, including
+colors, UVs, texture selection, and blend/batch calls. The regular renderer
+tests cover 64 native records at each scale, adding 192 exact argument checks.
+
+```sh
+uv run --no-sync python tools/match/evidence/conventional-corner-rounding-2026-09-11/verify_ports.py --out /tmp/conventional-python
+```
+
+This command consumes the already verified native fixture file; it does not
+require Unicorn or execute the original binary again. `port-results.json`
+records the native receipt and fixture hashes, current and historical Python
+source hashes, submitted-vertex/trace hashes, and old-renderer differences.
+It covers positive-alpha trails for the six represented Python types
+`1/2/3/5/6/29`. Native-only IDs `0/4/7` are excluded. The fixture exposes only
+the trail texture, so this proof does not cover sprite heads, world-level
+visibility gates, simulation mutations, or GPU pixels. Zig remains unchanged.

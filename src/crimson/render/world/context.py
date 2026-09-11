@@ -8,6 +8,7 @@ from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
 
+from ...math_parity import f32, f32_vec2
 from ...projectiles.types import ProjectileTemplateId
 from . import viewport
 from .constants import _RAD_TO_DEG
@@ -64,20 +65,15 @@ def bullet_sprite_size(type_id: int, *, scale: float) -> float:
     return max(2.0, base * scale)
 
 
-def draw_bullet_trail_quad(
-    render_ctx: WorldRenderCtx,
-    start: Vec2,
-    end: Vec2,
+def bullet_trail_corners(
+    origin: Vec2,
+    position: Vec2,
+    velocity: Vec2,
     *,
     type_id: int,
-    alpha: int,
-    scale: float,
-    velocity: Vec2,
-) -> bool:
-    bullet_trail_texture = render_ctx.frame.resources.texture(TextureId.BULLET_TRAIL)
-    if alpha <= 0:
-        return False
-
+    camera: Vec2,
+) -> tuple[Vec2, Vec2, Vec2, Vec2]:
+    """Return native PC=24 trail corners before viewport scaling."""
     # Native 0x423108/0x423120 reads the stored velocity as the half-width,
     # including degenerate impact frames. It is already scaled by 1.5 at spawn.
     if type_id == ProjectileTemplateId.ASSAULT_RIFLE:
@@ -88,11 +84,33 @@ def draw_bullet_trail_quad(
         side_mul = 1.1
     else:
         side_mul = 0.7
-    side_offset = velocity * (side_mul * scale)
-    p0 = start - side_offset
-    p1 = start + side_offset
-    p2 = end + side_offset
-    p3 = end - side_offset
+    side_offset = f32_vec2(f32_vec2(velocity) * f32(side_mul))
+    camera = f32_vec2(camera)
+    start = f32_vec2(camera + f32_vec2(origin))
+    end = f32_vec2(camera + f32_vec2(position))
+    return (
+        f32_vec2(start - side_offset),
+        f32_vec2(start + side_offset),
+        f32_vec2(end + side_offset),
+        f32_vec2(end - side_offset),
+    )
+
+
+def draw_bullet_trail_quad(
+    render_ctx: WorldRenderCtx,
+    origin: Vec2,
+    position: Vec2,
+    *,
+    type_id: int,
+    alpha: int,
+    velocity: Vec2,
+) -> bool:
+    bullet_trail_texture = render_ctx.frame.resources.texture(TextureId.BULLET_TRAIL)
+    if alpha <= 0:
+        return False
+
+    corners = bullet_trail_corners(origin, position, velocity, type_id=type_id, camera=render_ctx.view.camera)
+    p0, p1, p2, p3 = (point.mul_components(render_ctx.view.view_scale) for point in corners)
 
     # Native uses additive blending for bullet trails and sets color slots per projectile type.
     # Gauss has a distinct blue tint; most other bullet trails are neutral gray.

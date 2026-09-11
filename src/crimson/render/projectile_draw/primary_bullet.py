@@ -28,14 +28,12 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
         if type_id != ProjectileTemplateId.GAUSS_GUN:
             trail_alpha *= float(ctx.alpha)
         origin = proj_origin(ctx.proj, ctx.pos)
-        origin_screen = renderer.world_to_screen(origin)
         drawn = draw_bullet_trail_quad(
             renderer,
-            origin_screen,
-            ctx.screen_pos,
+            origin,
+            ctx.pos,
             type_id=type_id,
             alpha=int(clamp(trail_alpha * 255.0, 0.0, 255.0)),
-            scale=ctx.scale,
             velocity=ctx.proj.vel,
         )
 
