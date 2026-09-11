@@ -108,3 +108,9 @@ uv run --no-sync python \
 verifier, engine, native image/body, object, relocation, fixture, and build
 identities. Generated native executables and scratch controls stay outside the
 tracked evidence package.
+
+These commands describe the source revision pinned by this package. After the
+[conventional-corner correction](../conventional-corner-rounding-2026-09-11/README.md),
+that package's `replay_regressions.py` verifies all 1,194 secondary fixtures
+against the new canonical source while preserving this receipt and its native
+trace hashes.

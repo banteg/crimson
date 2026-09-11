@@ -1323,3 +1323,34 @@ remains zero, both exactness flags remain false, and all reference debt remains
 reported. No compiler override, alias, waiver, Python, or Zig edit is introduced.
 Current source SHA-256:
 `fb86981bab2b7365e5374a0cbf8f71d7b46b8e01d259e4fceec0c510217976cd`.
+
+## Conventional trail corner store boundaries (2026-09-11)
+
+Native's scaled width X has two simultaneous lifetimes: a stored float32
+value for origin corners, and a wider x87 product for head corners. Scaled
+head X likewise remains wide for its plus corner while being stored for its
+minus corner. The shared width/screen temporaries in the previous source
+did not preserve those boundaries. Separate vector expressions per corner
+recover them; Assault retains its distinct wide head-sum behavior.
+
+The [conventional-corner proof](../../evidence/conventional-corner-rounding-2026-09-11/README.md)
+verifies 4,118 native/candidate fixtures against a rational-arithmetic oracle.
+The previous source fails 61 of 1,280 discovery fixtures, all under diagnostic
+PC=64; both sources agree on that matrix under the game's PC=24 setting.
+The proof also covers all nine conventional IDs, multiple slots, inactive
+and noncanonical active bytes, mixed pools, changing cameras, and degenerate
+geometry. All 2,696 earlier renderer fixtures retain their native call hashes.
+This is caller-boundary source recovery, not a claim of visible PC=24 defects,
+GPU equivalence, or all-input equivalence.
+
+The verified correction trades **60.323887% for 59.946417%**, with instructions
+**2907 -> 2951** against 3021 and stack frame **0x144 -> 0x184** against
+native's 0x19c. References change from **466/0/10 to 470/0/12**: two positional
+ion-fading pairings become four, and all eight other mismatch addresses
+persist. The base-bound regression exception records this tradeoff; all
+twelve mismatches remain visible. Neither the compiler nor aliases change.
+Prefix remains zero, and both exactness flags remain false. The new frame
+is a measured consequence of real expression temporaries, not a reason to
+introduce artificial locals. Python and Zig are unchanged by this step.
+Current source SHA-256:
+`609e75e367fff344342547b6227072827986038c6fd93e1db6636dd7dd874bb0`.

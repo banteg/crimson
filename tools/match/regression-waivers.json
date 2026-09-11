@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "base_commit": "0acb990a825ca35b5c70feb8c8dedd1c2cf224e8",
+  "base_commit": "cbc3a1785fc5d1a574eb00184c2faadd3c4951ba",
   "waivers": [
     {
       "image": "crimsonland.exe",
       "address": 4336752,
       "check": "mismatches-increased",
-      "reason": "Correct the native 16px Plasma Minigun, Spider Plasma, and Shrinkifier head alpha from 0.45 to 0.5, proven by tools/match/evidence/plasma-head-alpha-2026-09-10/verify.py and results.json: 200 native/candidate draw traces agree, and three compiled wrong-alpha controls fail. This WIP source correction changes positional mismatches from 12 to 14. The new pairings compare native camera Y with candidate camera X at 0x00422e22 and native Sharpshooter perk id with candidate Grim receiver at 0x00422e90. All prior mismatch addresses persist, and all 14 remain reported. No alias, exactness, or encoded-body acceptance is relaxed. This exception applies only against the named base commit."
+      "reason": "Correct conventional projectile corner store boundaries, proven by tools/match/evidence/conventional-corner-rounding-2026-09-11/verify.py: 4118 native/candidate fixtures agree with an independent rational x87 oracle, while the previous source fails 61 of the 1280 discovery fixtures. All 2696 earlier renderer fixtures also pass. The WIP positional reference audit changes from 10 to 12 mismatches: its two ion-fading pairings at 0x004247fe and 0x00424808 become four pairings at 0x00424808, 0x004248e6, 0x00424924 and 0x00424963. The other eight mismatch addresses persist. All 12 remain reported; no aliases or exactness acceptance are relaxed. This exception applies only against the named base commit."
     }
   ]
 }
