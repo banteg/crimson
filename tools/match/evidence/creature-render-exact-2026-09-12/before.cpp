@@ -64,12 +64,11 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
         for (int creature_index = 0; creature_index < 384; creature_index++) {
             creature_t *creature = &creature_pool[creature_index];
-            if (!creature->active
-                || creature_pool[creature_index].type_id != type_id) {
+            if (!creature->active || creature->type_id != type_id) {
                 continue;
             }
 
-            int flags = creature_pool[creature_index].flags;
+            int flags = creature->flags;
             creature_render_color_t *tint =
                 (creature_render_color_t *)&creature->color;
             color = *tint;
@@ -141,101 +140,102 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
     grim_interface_ptr->grim_begin_batch();
 
     if (bonus_energizer_timer > 0.0f) {
-        for (int creature_index = 0; creature_index < 384; ++creature_index) {
-            creature_t *creature = &creature_pool[creature_index];
-            if (creature->active
-                && creature_pool[creature_index].type_id == type_id) {
+        float *max_health = creature_max_health;
+        do {
+            creature_t *creature = (creature_t *)(
+                (char *)max_health - offsetof(creature_t, max_health));
+            if (creature->active && creature->type_id == type_id) {
 
-                if (creature->max_health < 500.0f) {
-                    float energizer_alpha = bonus_energizer_timer < 1.0f
-                        ? bonus_energizer_timer
-                        : 1.0f;
-                    float original_alpha = 1.0f - energizer_alpha;
-                    float half_energizer_alpha = energizer_alpha * 0.5f;
-                    color.r = original_alpha * creature->tint_r
-                        + half_energizer_alpha;
-                    color.g = original_alpha * creature->tint_g
-                        + half_energizer_alpha;
-                    color.b = original_alpha * creature->tint_b
-                        + energizer_alpha;
-                    color.a = original_alpha * creature->tint_a
-                        + energizer_alpha;
-                } else {
-                    creature_render_color_t *tint =
-                        (creature_render_color_t *)&creature->color;
-                    color = *tint;
+            if (*max_health < 500.0f) {
+                float energizer_alpha = bonus_energizer_timer < 1.0f
+                    ? bonus_energizer_timer
+                    : 1.0f;
+                float original_alpha = 1.0f - energizer_alpha;
+                float half_energizer_alpha = energizer_alpha * 0.5f;
+                color.r = original_alpha * creature->tint_r
+                    + half_energizer_alpha;
+                color.g = original_alpha * creature->tint_g
+                    + half_energizer_alpha;
+                color.b = original_alpha * creature->tint_b
+                    + energizer_alpha;
+                color.a = original_alpha * creature->tint_a
+                    + energizer_alpha;
+            } else {
+                creature_render_color_t *tint =
+                    (creature_render_color_t *)&creature->color;
+                color = *tint;
+            }
+
+            int flags = creature->flags;
+            int frame;
+            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
+                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
+                frame = (int)(creature->anim_phase + 0.5f) % 16;
+                if (frame > 7) {
+                    frame = 15 - frame;
                 }
+                frame += creature_type_table[type_id].base_frame + 16;
+                grim_interface_ptr->grim_set_atlas_frame(8, frame);
 
-                int flags = creature->flags;
-                int frame;
-                if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
-                    && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
-                    frame = (int)(creature->anim_phase + 0.5f) % 16;
-                    if (frame > 7) {
-                        frame = 15 - frame;
+                if (creature->lifecycle_stage < 0.0f) {
+                    color.a += creature->lifecycle_stage * 0.1f;
+                    if (color.a < 0.0f) {
+                        color.a = 0.0f;
                     }
-                    frame += creature_type_table[type_id].base_frame + 16;
-                    grim_interface_ptr->grim_set_atlas_frame(8, frame);
-
+                }
+            } else {
+                if (creature->lifecycle_stage < 16.0f) {
                     if (creature->lifecycle_stage < 0.0f) {
+                        frame = creature_type_table[type_id].base_frame + 15;
                         color.a += creature->lifecycle_stage * 0.1f;
                         if (color.a < 0.0f) {
                             color.a = 0.0f;
                         }
+                    } else {
+                        frame = (int)((float)(
+                            creature_type_table[type_id].base_frame + 15)
+                            - creature->lifecycle_stage);
                     }
                 } else {
-                    if (creature->lifecycle_stage < 16.0f) {
-                        if (creature->lifecycle_stage < 0.0f) {
-                            frame = creature_type_table[type_id].base_frame + 15;
-                            color.a += creature->lifecycle_stage * 0.1f;
-                            if (color.a < 0.0f) {
-                                color.a = 0.0f;
-                            }
-                        } else {
-                            frame = (int)((float)(
-                                creature_type_table[type_id].base_frame + 15)
-                                - creature->lifecycle_stage);
-                        }
-                    } else {
-                        frame = (int)(creature->anim_phase + 0.5f);
-                        if ((creature_type_table[type_id].anim_flags & 1) != 0
-                            && frame > 15) {
-                            frame = 31 - frame;
-                        }
+                    frame = (int)(creature->anim_phase + 0.5f);
+                    if ((creature_type_table[type_id].anim_flags & 1) != 0
+                        && frame > 15) {
+                        frame = 31 - frame;
                     }
-                    if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
-                        frame += 32;
-                    }
-                    grim_interface_ptr->grim_set_atlas_frame(8, frame);
                 }
+                if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                    frame += 32;
+                }
+                grim_interface_ptr->grim_set_atlas_frame(8, frame);
+            }
 
-                color.a *= transition_alpha;
-                grim_interface_ptr->grim_set_color_ptr((float *)&color);
-                grim_interface_ptr->grim_set_rotation(
-                    creature->heading - 1.57079637f);
+            color.a *= transition_alpha;
+            grim_interface_ptr->grim_set_color_ptr((float *)&color);
+            grim_interface_ptr->grim_set_rotation(
+                creature->heading - 1.57079637f);
 
-                draw_pos =
-                    camera_offset
-                    + *(creature_render_vec2_t *)&creature->position
-                    - creature_render_vec2_t(
-                        creature->size * 0.5f,
-                        creature->size * 0.5f);
-                grim_interface_ptr->grim_draw_quad(
-                    draw_pos.x, draw_pos.y, creature->size, creature->size);
+            draw_pos =
+                camera_offset
+                + *(creature_render_vec2_t *)&creature->position
+                - creature_render_vec2_t(
+                    creature->size * 0.5f,
+                    creature->size * 0.5f);
+            grim_interface_ptr->grim_draw_quad(
+                draw_pos.x, draw_pos.y, creature->size, creature->size);
 
-                if (creature->lifecycle_stage < -10.0f) {
-                    creature->active = 0;
-                    if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
-                        creature_spawn_slot_table[creature->link_index].owner = 0;
-                    }
+            if (creature->lifecycle_stage < -10.0f) {
+                creature->active = 0;
+                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+                    creature_spawn_slot_table[creature->link_index].owner = 0;
                 }
             }
-        }
+            }
+            max_health += 38;
+        } while ((int)max_health < (int)(creature_max_health + 384 * 38));
     } else {
         for (int creature_index = 0; creature_index < 384; creature_index++) {
             creature_t *creature = &creature_pool[creature_index];
-            if (!creature->active
-                || creature_pool[creature_index].type_id != type_id) {
+            if (!creature->active || creature->type_id != type_id) {
                 continue;
             }
 
@@ -321,11 +321,11 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
             creature_t *creature = &creature_pool[creature_index];
             if (!creature->active
                 || creature->type_id != type_id
-                || creature_pool[creature_index].hit_flash_timer <= 0.0f) {
+                || creature->hit_flash_timer <= 0.0f) {
                 continue;
             }
 
-            color.a = creature_pool[creature_index].hit_flash_timer * 5.0f;
+            color.a = creature->hit_flash_timer * 5.0f;
             if (color.a > 1.0f) {
                 color.a = 1.0f;
             }

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ad22323a32f9979f91f1d3e1ab5b0522dc2c88db860f4e4c7a4916cab5c79114",
+  "audit_digest": "4a4401f2eca46c513005652596a5d00e7f31ab0c6f417e893bef1601a94ea4dc",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -92552,30 +92552,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 4833120,
-          "data_binding_kind": "definition",
-          "data_name": "creature_max_health",
-          "data_storage_address": 4833120,
-          "data_storage_name": "creature_max_health",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 58520,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_creature_max_health"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 4833080,
           "data_binding_kind": "definition",
           "data_name": "creature_pool",
@@ -92655,7 +92631,7 @@
           "comdat_selection": 1,
           "function": "creature_render_type",
           "kind": "section",
-          "logical_section_size": 2800,
+          "logical_section_size": 2848,
           "object": "tools/match/scratches/creature_render_type/build/msvc6.5/4df8b48a842c6e59/scratch.obj",
           "section": ".text",
           "size": null,
@@ -131676,37 +131652,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 4833120,
-          "data_binding_kind": "definition",
-          "data_name": "creature_max_health",
-          "data_storage_address": 4833120,
-          "data_storage_name": "creature_max_health",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 58520,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_creature_max_health",
-      "referenced_by": [
-        {
-          "function": "creature_render_type",
-          "object": "tools/match/scratches/creature_render_type/build/msvc6.5/4df8b48a842c6e59/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 4833080,
           "data_binding_kind": "definition",
           "data_name": "creature_pool",
@@ -131977,7 +131922,7 @@
           "comdat_selection": 1,
           "function": "creature_render_type",
           "kind": "section",
-          "logical_section_size": 2800,
+          "logical_section_size": 2848,
           "object": "tools/match/scratches/creature_render_type/build/msvc6.5/4df8b48a842c6e59/scratch.obj",
           "section": ".text",
           "size": null,
@@ -171800,7 +171745,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2964,
+    "defined_symbols": 2963,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -171809,7 +171754,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 570,
     "reference_exports_closed": true,
-    "resolved_symbols": 1268,
+    "resolved_symbols": 1267,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

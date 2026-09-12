@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "ad22323a32f9979f91f1d3e1ab5b0522dc2c88db860f4e4c7a4916cab5c79114",
+  "audit_digest": "4a4401f2eca46c513005652596a5d00e7f31ab0c6f417e893bef1601a94ea4dc",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -6778,21 +6778,6 @@
           ]
         },
         {
-          "address": 4833120,
-          "alignment": 4,
-          "initializer_target": null,
-          "kind": "definition",
-          "name": "creature_max_health",
-          "section_number": 355,
-          "section_offset": 40,
-          "size": 4,
-          "storage_address": 4833120,
-          "storage_name": "creature_max_health",
-          "symbols": [
-            "_creature_max_health"
-          ]
-        },
-        {
           "address": 4891856,
           "alignment": 4,
           "initializer_target": null,
@@ -11021,9 +11006,9 @@
         "repository_relative": true,
         "sha256": "aa67a621050e3cc2dac3393e2950f56b39e4367809b4decef794b9c6c708b02e"
       },
-      "emitted_symbol_count": 752,
+      "emitted_symbol_count": 751,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-      "object_sha256": "f9fe611d1e83841100b4be023c12dedafd170e2079580a5546e6bb53e8a06d51",
+      "object_sha256": "cc7594f95757582acca01c191dd29bcfafb98a0d8d98fd6fc2ac399b6ccc4a93",
       "regions": [
         {
           "address": 4650988,
@@ -16054,10 +16039,6 @@
             {
               "address": 4833080,
               "name": "creature_pool"
-            },
-            {
-              "address": 4833120,
-              "name": "creature_max_health"
             }
           ],
           "relocations": [],
@@ -41042,12 +41023,12 @@
         {
           "path": "tools/match/scratches/creature_render_type/scratch.cpp",
           "repository_relative": true,
-          "sha256": "64c270c898ac14e21ab7ad932cc0cf83a5bdc7d97b397461b102ff93276f7086"
+          "sha256": "ccc5b0965304ef83c444bfae3b091e640802411d0f2c65231f907653e9ed0107"
         },
         {
           "path": "tools/match/scratches/creature_render_type/scratch.conf",
           "repository_relative": true,
-          "sha256": "4c37bc8eb97ed9c4fcf8c6608cdf03204d7a60614279ff052dbc7cf9f1156b94"
+          "sha256": "adc68e9119cd64cd26673af04b1fd0bb95eb9fc25ef62123e0a7d3792017b00e"
         },
         {
           "path": "tools/match/cl.sh",
@@ -41082,7 +41063,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/creature_render_type/scratch.conf",
-      "config_sha256": "4c37bc8eb97ed9c4fcf8c6608cdf03204d7a60614279ff052dbc7cf9f1156b94",
+      "config_sha256": "adc68e9119cd64cd26673af04b1fd0bb95eb9fc25ef62123e0a7d3792017b00e",
       "effective_end": 4298354,
       "end": 4298354,
       "function": "creature_render_type",
@@ -41090,27 +41071,27 @@
         {
           "address": 4295520,
           "canonical_config": "tools/match/scratches/creature_render_type/scratch.conf",
-          "canonical_config_sha256": "4c37bc8eb97ed9c4fcf8c6608cdf03204d7a60614279ff052dbc7cf9f1156b94",
+          "canonical_config_sha256": "adc68e9119cd64cd26673af04b1fd0bb95eb9fc25ef62123e0a7d3792017b00e",
           "canonical_scratch": "tools/match/scratches/creature_render_type",
           "canonical_source": "tools/match/scratches/creature_render_type/scratch.cpp",
-          "canonical_source_sha256": "64c270c898ac14e21ab7ad932cc0cf83a5bdc7d97b397461b102ff93276f7086",
+          "canonical_source_sha256": "ccc5b0965304ef83c444bfae3b091e640802411d0f2c65231f907653e9ed0107",
           "effective_end": 4298354,
           "end": 4298354,
-          "experiment_epoch": "2c9916978e1c7a79afd7016ce12fb96269ff0ad80754394cf2516a43c47263f9",
+          "experiment_epoch": "068e6b32206137e3ee9244cf232920a1ad902e042adb987c393bad27e6a359e0",
           "function": "creature_render_type",
           "match": {
-            "body_byte_exact": false,
-            "candidate_instructions": 760,
-            "masked_mismatches": 5,
-            "masked_ok": 139,
+            "body_byte_exact": true,
+            "candidate_instructions": 765,
+            "masked_mismatches": 0,
+            "masked_ok": 145,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 25,
-            "ratio": 0.7973770491803279,
-            "state": "wip",
+            "prefix_instructions": 765,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 765
           },
           "object_function_symbol": "_creature_render_type",
@@ -41118,26 +41099,26 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
-        "candidate_instructions": 760,
-        "masked_mismatches": 5,
-        "masked_ok": 139,
+        "body_byte_exact": true,
+        "candidate_instructions": 765,
+        "masked_mismatches": 0,
+        "masked_ok": 145,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 25,
-        "ratio": 0.7973770491803279,
-        "state": "wip",
+        "prefix_instructions": 765,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 765
       },
       "object": "tools/match/scratches/creature_render_type/build/msvc6.5/4df8b48a842c6e59/scratch.obj",
       "object_function_symbol": "_creature_render_type",
-      "object_sha256": "21c892fd2494b0038ca442470b61047319f0d827db980421b0e1ba50125fb5d6",
+      "object_sha256": "bcdfa0712ee38f7b30c6512c8b5e38889014c10a7ac36e7973c346cf7409b76d",
       "scratch": "tools/match/scratches/creature_render_type",
       "source": "tools/match/scratches/creature_render_type/scratch.cpp",
-      "source_sha256": "64c270c898ac14e21ab7ad932cc0cf83a5bdc7d97b397461b102ff93276f7086",
+      "source_sha256": "ccc5b0965304ef83c444bfae3b091e640802411d0f2c65231f907653e9ed0107",
       "target_size": 2834,
       "translation_unit": {
         "kind": "isolated",
@@ -87528,8 +87509,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 661,
-    "wip": 10
+    "match": 662,
+    "wip": 9
   },
   "translation_units": {
     "cluster_count": 28,

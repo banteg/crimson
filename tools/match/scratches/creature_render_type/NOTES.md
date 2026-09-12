@@ -1,5 +1,22 @@
 # `creature_render_type`
 
+## Exact recovery (2026-09-12)
+
+The [indexed-entry ownership proof](../../evidence/creature-render-exact-2026-09-12/README.md)
+recovers **765/765 instructions, 2,834/2,834 encoded body bytes and 145/0/0
+references**. Both normalized and encoded-body exactness are true.
+
+Indexed type guards, the shadow flags read, a counted Energizer entry loop,
+and indexed hit-flash timer reads restore all four native cursors and the
+missing tint-pointer/register lifetimes. Rendering expressions and state
+changes are preserved. The proof includes 558 reconstructible source controls,
+a complete four-pass reversion matrix, and 130 native/before/current execution
+scenarios with full instruction coverage and four detected negative controls.
+Compiler flags, reference aliases and matching rules are unchanged. Source SHA-256:
+`ccc5b0965304ef83c444bfae3b091e640802411d0f2c65231f907653e9ed0107`.
+
+## Earlier recovery history
+
 ## Native sprite colours (2026-09-11)
 
 The [colour audit](../../evidence/creature-render-colors-2026-09-11/README.md)
