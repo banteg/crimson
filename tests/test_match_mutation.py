@@ -89,6 +89,31 @@ def _write_spec(path: Path) -> None:
     )
 
 
+def test_mutation_sweep_selects_encoded_identity_gain(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    config = _config(tmp_path)
+    baseline = replace(_status(config, 1.0, prefix=10), body_byte_exact=False)
+    exact = replace(baseline, body_byte_exact=True)
+    monkeypatch.setattr("crimson.match.evaluate_scratch", lambda *args, **kwargs: baseline)
+    monkeypatch.setattr(
+        "crimson.match.evaluate_source_overlay",
+        lambda config, source, **kwargs: exact if source == "y + x" else baseline,
+    )
+    spec_path = tmp_path / "spec.json"
+    _write_spec(spec_path)
+    spec = load_mutation_spec(spec_path)
+    spec = replace(spec, sites=spec.sites[:1])
+    sweep = evaluate_mutation_sweep(config, spec, source_text="x + y", jobs=1)
+    assert sweep.best_improves
+    assert sweep.winner is not None
+    assert sweep.winner.variant.label == "sum-order/commuted"
+    assert mutation_sweep_payload(sweep)["best_improves"] is True
+    assert "best_improves=yes" in render_mutation_sweep(sweep)
+
+    loss = MutationEvaluation(sweep.winner.variant, baseline, exact)
+    assert loss.tradeoffs == ("encoded-body-identity-lost",)
+    assert replace(loss, status=replace(baseline, ratio=0.9)).tradeoffs == ("encoded-body-identity-lost",)
+
+
 def test_mutation_spec_generates_bounded_combinations(tmp_path: Path) -> None:
     spec_path = tmp_path / "mutations.json"
     _write_spec(spec_path)

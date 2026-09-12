@@ -1,5 +1,49 @@
 # `quest_build_the_beating`
 
+## Encoded-body exact (2026-09-12)
+
+The final ring phase now derives both its position offset and trigger time from
+the zero-based wave index, like the preceding repeated phases. With the unchanged
+stock `msvc6.5 /O2 /GB /W3 /GR-` profile, all **649 encoded bytes** match after
+audited relocation handling: **166/166** instructions, prefix **166**, references
+**8/0/0**, and `body_byte_exact=true`. Neither body has terminal padding.
+
+The preceding source was normalized exact but differed at function offset
+`0x238` (native address `0x00435848`). Native's ring-coordinate instruction at
+`0x00435846` is `8d 44 33 2c`; the old candidate was `8d 44 1e 2c`. The SIB
+byte exchanged EBX and ESI as the scale-one base/index. Both compute the same
+address; this recovery changes encoding, with no runtime behavior correction.
+The six ring entries still use `(width / 2, width + 44 + wave * 32)`, triggers
+`40000 + wave * 100`, template `0x12`, and count two. The output remains 31 entries.
+
+`ring-wave-index-2026-09-12.json` preserves eight complete source controls against
+the preceding source. Two position-and-time index forms reach encoded identity;
+the two parenthesized offset forms retain the old encoded mismatch. Four forms
+that index position but retain the incremented trigger lose normalized identity
+(95.783133%). All eight compile, with results recorded in `experiments.jsonl`.
+The matching-tool fix makes the two encoded-exact variants win instead of tying
+the old normalized-exact source. The canonical form is
+`ring-induction/indexed-position-and-time`.
+
+A recorded `ring-wave-index-reversion` probe restores the preceding source
+against the final canonical baseline. All normalized metrics tie, while body
+identity falls from true to false and the tool reports
+`encoded-body-identity-lost`. This exercises the regression warning with the
+actual compiled function as well as synthetic tests.
+
+The forward plan's `find` is the preceding final loop; its named replacements
+contain the complete alternative loops. To reconstruct that baseline from the
+current source, replace the canonical replacement text with `find`. The source
+SHA-256 before recovery is
+`b8069215e2b896e0a98556cc6a554b39a834955fea25990696a5f4a9cb0052c9`;
+after recovery it is
+`a0a12c4e10c1b0c64672498a8f0c09ae6e7b045db0a2aaaec5aa133df1bc4bbb`.
+Verify the retained source with:
+
+```sh
+.venv/bin/crimson match scratch tools/match/scratches/quest_build_the_beating --json
+```
+
 ## Current result: exact (2026-09-04)
 
 The first three repeated phases now use a zero-based wave index to derive

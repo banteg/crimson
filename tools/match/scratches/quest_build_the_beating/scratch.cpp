@@ -104,9 +104,11 @@ extern "C" void quest_build_the_beating(
         ++wave;
     } while (wave < 6);
 
-    int y_offset = 0;
+    wave = 0;
     trigger_time_ms = 40000;
     do {
+        int y_offset = wave * 32;
+        trigger_time_ms = wave * 100 + 40000;
         spawns[entry_count].pos = quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)(terrain_texture_width + y_offset + 44));
@@ -114,9 +116,8 @@ extern "C" void quest_build_the_beating(
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 2;
         ++entry_count;
-        y_offset += 32;
-        trigger_time_ms += 100;
-    } while (trigger_time_ms < 40600);
+        ++wave;
+    } while (wave < 6);
 
     *count = entry_count;
 }

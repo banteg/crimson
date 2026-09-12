@@ -7621,6 +7621,38 @@ def test_body_identity_masks_only_reference_proven_relocations(key: str) -> None
         reference_catalog=ReferenceCatalog({0x402000: ("expected",)}),
     )
     assert result.body_byte_exact is (key == "name:expected")
+    assert result.body_byte_mismatches == (() if key == "name:expected" else None)
+
+
+def test_encoded_mismatch_diagnostic_ignores_relocations_and_padding(capsys: pytest.CaptureFixture[str]) -> None:
+    from crimson.cli.match import _echo_result
+
+    result = match_function(
+        bytes.fromhex("a1002040008b44080cc3"),
+        ObjectFunction(
+            "_foo", bytes.fromhex("a1000000008b44010cc38bff"), frozenset({1}),
+            (ObjectRelocationReference(1, "expected", "name:expected", True, relocation_type=6),),
+        ),
+        image=LoadedImage(b"", 0x400000, 0x10000), target_va=0x401000,
+        reference_catalog=ReferenceCatalog({0x402000: ("expected",)}),
+    )
+    assert result.exact
+    assert result.body_byte_exact is False
+    assert result.candidate_padding_bytes == 2
+    assert match_result_payload(result)["body_byte_mismatches"] == [
+        {"offset": 7, "target": 8, "candidate": 1},
+    ]
+    _echo_result(result)
+    assert "encoded byte mismatches: 1\n  +0x7: target=08 candidate=01" in capsys.readouterr().out
+
+
+def test_encoded_mismatch_diagnostic_is_unavailable_for_nonexact_instructions() -> None:
+    result = match_function(
+        bytes.fromhex("b801000000c3"), ObjectFunction("_foo", bytes.fromhex("31c0c3"), frozenset()),
+        image=LoadedImage(b"", 0x400000, 0), target_va=0x401000,
+    )
+    assert result.body_byte_exact is False
+    assert match_result_payload(result)["body_byte_mismatches"] is None
 
 
 @pytest.mark.parametrize(
@@ -7650,6 +7682,7 @@ def test_body_identity_resolves_coff_local_rel32(
         image=LoadedImage(b"", 0x400000, 0), target_va=0x401000,
     )
     assert result.body_byte_exact is body_exact
+    assert result.body_byte_mismatches == (() if body_exact else None)
 
 
 def test_worker_and_mutation_acceptance_reject_the_same_score_tradeoffs(tmp_path: Path) -> None:
@@ -7663,3 +7696,20 @@ def test_worker_and_mutation_acceptance_reject_the_same_score_tradeoffs(tmp_path
     better = replace(before, ratio=0.91)
     assert status_improves(before, better)
     assert status_improves_claim_baseline(better, scratch_status_payload(before))
+
+
+@pytest.mark.parametrize("previous_identity", [False, None])
+def test_encoded_identity_gain_is_a_worker_improvement(tmp_path: Path, previous_identity: bool | None) -> None:
+    from crimson.match import scratch_status_payload, status_improves, status_improves_claim_baseline
+
+    config = ScratchConfig(tmp_path, "foo", "crimsonland.exe", "msvc6.5", "/O2", "scratch.cpp", None, None, "")
+    before = ScratchStatus(config, 0x401000, 1000, 1.0, 100, 100, 100, None, body_byte_exact=previous_identity)
+    after = replace(before, body_byte_exact=True)
+    assert status_improves(before, after)
+    assert status_improves_claim_baseline(after, scratch_status_payload(before))
+    assert not status_improves(after, before)
+    assert not status_improves_claim_baseline(before, scratch_status_payload(after))
+    assert not status_improves(after, after)
+    legacy = scratch_status_payload(before)
+    del legacy["body_byte_exact"]
+    assert status_improves_claim_baseline(after, legacy)

@@ -409,7 +409,7 @@ def generate_mutation_variants(
     )
 
 
-def _evaluation_rank(evaluation: MutationEvaluation) -> tuple[tuple[int, float, int, int, int], int, str]:
+def _evaluation_rank(evaluation: MutationEvaluation) -> tuple[tuple[int, float, int, int, int, bool], int, str]:
     return (matchlib.status_rank(evaluation.status), -len(evaluation.variant.choices), evaluation.variant.label)
 
 

@@ -10,7 +10,7 @@ import struct
 from collections import Counter, defaultdict
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, cast
 
@@ -889,6 +889,13 @@ class MaskedOperandAudit:
 
 
 @dataclass(frozen=True, slots=True)
+class EncodedByteMismatch:
+    offset: int
+    target: int
+    candidate: int
+
+
+@dataclass(frozen=True, slots=True)
 class MatchResult:
     ratio: float
     prefix_instructions: int
@@ -900,6 +907,7 @@ class MatchResult:
     body_byte_exact: bool | None = None
     target_padding_bytes: int = 0
     candidate_padding_bytes: int = 0
+    body_byte_mismatches: tuple[EncodedByteMismatch, ...] | None = None
 
     @property
     def exact(self) -> bool:
@@ -3499,13 +3507,13 @@ def _encoded_body_comparison(
     target_data: bytes,
     candidate: ObjectFunction,
     result: MatchResult,
-) -> tuple[bool, int, int]:
+) -> tuple[bool, int, int, tuple[EncodedByteMismatch, ...] | None]:
     """Resolve local relative relocations and mask only audited external fields."""
     target_end = max((line.offset + line.size for line in result.target_disassembly), default=0)
     candidate_end = max((line.offset + line.size for line in result.candidate_disassembly), default=0)
     padding = (len(target_data) - target_end, len(candidate.data) - candidate_end)
     if not result.exact or target_end != candidate_end:
-        return False, *padding
+        return False, *padding, None
     target = bytearray(target_data[:target_end])
     encoded = bytearray(candidate.data[:candidate_end])
     audited = {entry.candidate_index for entry in result.masked_operand_audit.entries if entry.status == "ok"}
@@ -3528,11 +3536,16 @@ def _encoded_body_comparison(
             target_line = result.target_disassembly[index]
             if line.offset <= reference.offset and reference.offset + 4 <= line.offset + line.size:
                 if line.offset != target_line.offset or line.size != target_line.size:
-                    return False, *padding
+                    return False, *padding, None
                 target[reference.offset : reference.offset + 4] = b"\0" * 4
                 encoded[reference.offset : reference.offset + 4] = b"\0" * 4
                 break
-    return target == encoded, *padding
+    mismatches = tuple(
+        EncodedByteMismatch(offset, target_byte, candidate_byte)
+        for offset, (target_byte, candidate_byte) in enumerate(zip(target, encoded, strict=True))
+        if target_byte != candidate_byte
+    )
+    return not mismatches, *padding, mismatches
 
 
 def match_function(
@@ -3589,12 +3602,15 @@ def match_function(
         candidate_disassembly=candidate_disassembly,
         masked_operand_audit=audit_masked_operands(target_disassembly, candidate_disassembly),
     )
-    body_exact, target_padding, candidate_padding = _encoded_body_comparison(target_data, candidate, result)
+    body_exact, target_padding, candidate_padding, byte_mismatches = _encoded_body_comparison(
+        target_data, candidate, result,
+    )
     return replace(
         result,
         body_byte_exact=body_exact,
         target_padding_bytes=target_padding,
         candidate_padding_bytes=candidate_padding,
+        body_byte_mismatches=byte_mismatches,
     )
 
 
@@ -3849,6 +3865,11 @@ def match_result_payload(
     return {
         "exact": result.exact,
         "body_byte_exact": result.body_byte_exact,
+        "body_byte_mismatches": (
+            [asdict(mismatch) for mismatch in result.body_byte_mismatches]
+            if result.body_byte_mismatches is not None
+            else None
+        ),
         "padding_bytes": {"target": result.target_padding_bytes, "candidate": result.candidate_padding_bytes},
         "match_ratio": result.ratio,
         "prefix_instructions": result.prefix_instructions,
@@ -8610,7 +8631,7 @@ def collect_image_totals(
     return totals
 
 
-def status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int]:
+def status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int, bool]:
     state_rank = {"error": 0, "wip": 1, "audit": 2, "match": 3}[status.state]
     return (
         state_rank,
@@ -8618,6 +8639,7 @@ def status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int]:
         -(status.masked_unresolved + status.masked_mismatches),
         status.prefix_instructions,
         -abs(status.candidate_instructions - status.target_instructions),
+        status.body_byte_exact is True,
     )
 
 
@@ -8644,6 +8666,7 @@ def status_improves_claim_baseline(
             masked_mismatches=int(references["mismatch"]),
             first_target_mismatch_offset=mismatch["target_offset"],
             first_candidate_mismatch_offset=mismatch["candidate_offset"],
+            body_byte_exact=baseline.get("body_byte_exact"),
         )
     except (KeyError, TypeError, ValueError):
         return False
@@ -9230,12 +9253,14 @@ def fuzzy_score_tradeoffs(
     baseline: ScratchStatus,
     candidate: ScratchStatus,
 ) -> tuple[str, ...]:
+    warnings: list[str] = []
+    if baseline.body_byte_exact is True and candidate.body_byte_exact is not True:
+        warnings.append("encoded-body-identity-lost")
     # A byte-neutral result can still be worse: relocation masking may hide a
     # changed reference target from the headline fuzzy score.
     if candidate.fuzzy_weighted_bytes < baseline.fuzzy_weighted_bytes:
-        return ()
+        return tuple(warnings)
 
-    warnings: list[str] = []
     baseline_debt = baseline.masked_unresolved + baseline.masked_mismatches
     candidate_debt = candidate.masked_unresolved + candidate.masked_mismatches
     if candidate_debt > baseline_debt:

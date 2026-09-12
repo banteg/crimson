@@ -640,7 +640,10 @@ When fuzzy bytes improve or remain tied while reference debt,
 resolved-reference coverage, prefix, first mismatch, or instruction-count
 shape regresses, the report labels the result with explicit tradeoff warnings.
 This matters because relocation masking can leave the headline score unchanged
-even when a candidate names the wrong native target.
+even when a candidate names the wrong native target. At otherwise equal metrics,
+proven encoded-body identity wins over a non-identical or unevaluated body.
+Losing previously proven identity is reported as `encoded-body-identity-lost`
+and cannot become an accepted probe, mutation, or worker improvement.
 
 ```sh
 uv run crimson match probe tools/match/scratches/player_update \
@@ -1251,6 +1254,16 @@ non-identical in this metric. Recognized terminal padding is excluded and
 reported as `padding_bytes.target` and `padding_bytes.candidate` for the
 compared buffers. The field is available in scratch/probe JSON, native
 manifests, and the status dashboard; it does not change normalized acceptance.
+
+For normalized-exact, reference-clean bodies with comparable extents and
+relocation locations, scratch/diff output shows up to eight remaining encoded
+byte differences. JSON includes every difference in `body_byte_mismatches`,
+with the function-relative `offset` and the `target`/`candidate` byte values.
+These differences are computed after the same audited relocation treatment
+used for body identity, excluding terminal padding. An empty list proves no
+differences; `null` means this byte comparison was unavailable, for example
+because instructions or references did not match. This diagnostic does not
+relax either exactness rule.
 
 Instruction normalization replaces relocated and in-image addresses with
 `ADDR`, but an `ADDR` token is not proof that the operands refer to the same

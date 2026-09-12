@@ -190,6 +190,14 @@ def _echo_result(result: matchlib.MatchResult) -> None:
     if result.ratio != 1.0:
         typer.echo(f"first_target={result.first_target_mismatch}")
         typer.echo(f"first_candidate={result.first_candidate_mismatch}")
+    if result.body_byte_mismatches:
+        typer.echo(f"encoded byte mismatches: {len(result.body_byte_mismatches)}")
+        for mismatch in result.body_byte_mismatches[:8]:
+            typer.echo(
+                f"  +0x{mismatch.offset:x}: target={mismatch.target:02x} candidate={mismatch.candidate:02x}",
+            )
+        if len(result.body_byte_mismatches) > 8:
+            typer.echo(f"  ... {len(result.body_byte_mismatches) - 8} more (see --json)")
 
 
 def _reference_text(references: tuple[matchlib.MaskedReference, ...]) -> str:

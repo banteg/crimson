@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ring-induction",
+      "find": "    int y_offset = 0;\n    trigger_time_ms = 40000;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        y_offset += 32;\n        trigger_time_ms += 100;\n    } while (trigger_time_ms < 40600);\n",
+      "replacements": [
+        {
+          "name": "indexed-position",
+          "text": "    wave = 0;\n    trigger_time_ms = 40000;\n    do {\n        int y_offset = wave * 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        ++wave;\n        trigger_time_ms += 100;\n    } while (wave < 6);\n"
+        },
+        {
+          "name": "indexed-position-grouped",
+          "text": "    wave = 0;\n    trigger_time_ms = 40000;\n    do {\n        int y_offset = wave * 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + (y_offset + 44)));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        ++wave;\n        trigger_time_ms += 100;\n    } while (wave < 6);\n"
+        },
+        {
+          "name": "indexed-position-commuted",
+          "text": "    wave = 0;\n    trigger_time_ms = 40000;\n    do {\n        int y_offset = wave * 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(y_offset + (terrain_texture_width + 44)));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        ++wave;\n        trigger_time_ms += 100;\n    } while (wave < 6);\n"
+        },
+        {
+          "name": "indexed-position-inline",
+          "text": "    wave = 0;\n    trigger_time_ms = 40000;\n    do {\n        int y_offset = wave * 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + (wave * 32 + 44)));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        ++wave;\n        trigger_time_ms += 100;\n    } while (wave < 6);\n"
+        },
+        {
+          "name": "offset-grouped",
+          "text": "    int y_offset = 0;\n    trigger_time_ms = 40000;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + (y_offset + 44)));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        y_offset += 32;\n        trigger_time_ms += 100;\n    } while (trigger_time_ms < 40600);\n"
+        },
+        {
+          "name": "offset-commuted",
+          "text": "    int y_offset = 0;\n    trigger_time_ms = 40000;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(y_offset + (terrain_texture_width + 44)));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        y_offset += 32;\n        trigger_time_ms += 100;\n    } while (trigger_time_ms < 40600);\n"
+        },
+        {
+          "name": "indexed-position-and-time",
+          "text": "    wave = 0;\n    trigger_time_ms = 40000;\n    do {\n        int y_offset = wave * 32;\n        trigger_time_ms = wave * 100 + 40000;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        ++wave;\n    } while (wave < 6);\n"
+        },
+        {
+          "name": "indexed-position-and-time-commuted",
+          "text": "    wave = 0;\n    trigger_time_ms = 40000;\n    do {\n        int y_offset = wave * 32;\n        trigger_time_ms = 40000 + wave * 100;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));\n        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 2;\n        ++entry_count;\n        ++wave;\n    } while (wave < 6);\n"
+        }
+      ]
+    }
+  ]
+}
