@@ -165,6 +165,13 @@ credit. Object hashes are local compilation receipts, not independently rebuilt
 objects in CI. Inputs must stay unchanged
 throughout the evaluation.
 
+The `decomp-report` pre-push hook runs the same saved-evidence verification as
+CI when matching or report inputs change. If it reports stale evidence, run
+the refresh command above and commit the generated evidence before pushing.
+This includes source controls and verifier scripts under `tools/match/evidence/`,
+which are part of the recorded input inventory even when canonical scratches
+stay unchanged. The hook verifies evidence; it does not regenerate it.
+
 `report.metrics.json` accompanies the objdiff report in a separate CI artifact.
 It includes encoded-body credit, unmatched bytes, the largest uncredited functions,
 and executable reconciliation. Target hashes, inventory/ownership identity and
