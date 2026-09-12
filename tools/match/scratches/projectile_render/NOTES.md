@@ -1381,3 +1381,32 @@ false, and recovery remains incomplete. This is submitted-argument recovery,
 not a GPU or whole-function equivalence claim. Python and Zig are unchanged.
 Current source SHA-256:
 `29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9`.
+
+## Exact-sibling source idioms and beam copy (2026-09-13)
+
+The exact player-overlay renderer's aggregate-copy idiom transfers to the
+fading beam: copying `direction_result` as a whole `vec2f_t` before
+normalization improves the compiled layout. Native also computes the chain
+radius before testing the Fire Bullets skip. Both changes are retained with
+unchanged compiler flags, aliases and native extent.
+
+The complete copy/radius interaction improves alignment from 60.268007% to
+60.726846%, adds 57.588974 fuzzy-weighted bytes, moves 2,949 to 2,950 candidate
+instructions against 3,021 native, and changes references from 471/0/13 to
+479/0/8. Prefix remains zero and the frame remains 388 versus 412 bytes.
+Both exactness flags remain false. Reference improvements are positional
+pairings; they do not independently establish five runtime reference fixes.
+
+The [source-style package](../../evidence/renderer-house-style-2026-09-13/README.md)
+contains 133 reconstructible controls and replays all 11,854 historical native
+renderer fixtures. Wider vector, scalar-reuse and indexed-owner transformations
+remain bounded controls, not a universal source-style rule.
+
+New Fire Bullets overlay fixtures expose ten PC64-only Y-sum rounding
+mismatches in 512 cases, unchanged by the retained edits. No PC24 case differs.
+Vector forms that fix those ten Y witnesses still regress other allocation;
+the closest one introduces three PC64 X differences in the full 512-case
+matrix. They remain diagnostic. The package preserves the witnesses and explicit residual
+rather than hiding it behind the passing historical fixture matrix.
+Current source SHA-256:
+`48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750`.

@@ -1,0 +1,1737 @@
+{
+  "verified_controls": [
+    {
+      "name": "beam-shapes/00000",
+      "source_sha256": "29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9",
+      "observed": {
+        "ratio": 0.6026800670016751,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00001",
+      "source_sha256": "5e707604aa693d9a0a47a1893a4ebd9fa563bf6d7519def4a87003eae3531205",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00010",
+      "source_sha256": "66db340f1c3d5331705e4de6f1089252fbbb207e27f1cda4add52be905b1229f",
+      "observed": {
+        "ratio": 0.6026800670016751,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00011",
+      "source_sha256": "a60c0cd461efb91bd136c2d933fc00b8c41edfa5cb70b75f1f5963dd2af771c3",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00100",
+      "source_sha256": "6582f3ff6b9d4bb371b749f66544e3af5d978f267c74c1164fd11e180b938da9",
+      "observed": {
+        "ratio": 0.6026800670016751,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00101",
+      "source_sha256": "b105e57aa0bc0229821cb4026e433674da8f619a232759be21852b9bfe390327",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00110",
+      "source_sha256": "3d25a1d8086bf2bc609849cc4ac3a753551969410a18e5f523772bf584797c76",
+      "observed": {
+        "ratio": 0.6026800670016751,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/00111",
+      "source_sha256": "6ed9a060445fe1db5b25a9694f2f5398dc387d8df7068a0d5a285615d5c38e2f",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01000",
+      "source_sha256": "a8df7ccc16511d75aeb2afcf5e216779550fdae8b0ec636c8eaadc6a6aba8047",
+      "observed": {
+        "ratio": 0.6020100502512563,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 470,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01001",
+      "source_sha256": "0087c0a39da55b59f3687bc97a60d445a0d1bc0a0fc82fc6faead901c2f57a88",
+      "observed": {
+        "ratio": 0.5988946575113047,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01010",
+      "source_sha256": "51f12df16803a89e19ecc9790ddfbf3fcdcb2cd9e54d498f0b21e1fe249a8359",
+      "observed": {
+        "ratio": 0.6020100502512563,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 470,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01011",
+      "source_sha256": "91cc71cfb90ea9194fcf29b3e8a517e7648526d9e97f70f4cf6452b359883a67",
+      "observed": {
+        "ratio": 0.5988946575113047,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01100",
+      "source_sha256": "cbf42fdf8c9d7255bfbcf27301f8172aa62a33b86f7d5467d9c0311d967c42a6",
+      "observed": {
+        "ratio": 0.6020100502512563,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 470,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01101",
+      "source_sha256": "05794d1dd02811d691b08839a9e2571f1be4589e525a36c77f1809dbb2386285",
+      "observed": {
+        "ratio": 0.5988946575113047,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01110",
+      "source_sha256": "ef08e5275e9e1ef9ae6fbeeaf2a0df0d4f2d66df94d126fa919ed81712209c26",
+      "observed": {
+        "ratio": 0.6020100502512563,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 470,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/01111",
+      "source_sha256": "d607e0e6dfff2039de5c4431f129651acaf6acf76dc9d3d2407ce744b187728a",
+      "observed": {
+        "ratio": 0.5988946575113047,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10000",
+      "source_sha256": "3bb83a04b50f26a1e39e2cd060fdbb1ad1def9ed13f9dd4ef97c612af8282a8d",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10001",
+      "source_sha256": "a5a02d604797313839f6e190b08f3ecc13425798e937420968096ce5b75d2410",
+      "observed": {
+        "ratio": 0.6062636074359404,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10010",
+      "source_sha256": "349b6408048c4a6eb93591efb4bed05b8cedab44679ff9ed15ab9d3122a435eb",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10011",
+      "source_sha256": "beeb09c92333165c2f626617c35b7fcd62e49ea0d5bf96574f13c9666f7965d4",
+      "observed": {
+        "ratio": 0.6062636074359404,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10100",
+      "source_sha256": "d907520bc503380b2d2d545d23e92d5f743d5797f845f29c0e1ac317f1623a95",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10101",
+      "source_sha256": "56c52bc9f0f9d6466921f21786f8de02bac8ea058ece171568bc478af8ef5d9f",
+      "observed": {
+        "ratio": 0.6062636074359404,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10110",
+      "source_sha256": "a06e11b004b4cb88010b277a4e51cf90041d1a4e1cc59f74f75ea2cb6aab547d",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/10111",
+      "source_sha256": "4e2aacd81c1ee5e449b8f0a953d090e78e389d9ad1e145859968ead6c5b510cb",
+      "observed": {
+        "ratio": 0.6062636074359404,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11000",
+      "source_sha256": "3c0aa766a2a57eb9f6d81fd428bf319b44857cb31049e857f7f69217e7c437ac",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 465,
+        "problems": 15,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11001",
+      "source_sha256": "4d253b425387e1d743cc426a62d12ea13cbb21813995cbf24c1bfe8cbbf0369f",
+      "observed": {
+        "ratio": 0.6019092279350192,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11010",
+      "source_sha256": "d70218ec9840084380c53446b0ea8fc56654c977c47532efdcbd09a508717f1e",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 465,
+        "problems": 15,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11011",
+      "source_sha256": "a141cd454b038a240ce241372a1cedf3d9c77d232b72708dcc4bf02b4e110048",
+      "observed": {
+        "ratio": 0.6019092279350192,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11100",
+      "source_sha256": "884dedcfd890bb981f4a96352369e99b90eee18d103a26e883086d60177d42cf",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 465,
+        "problems": 15,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11101",
+      "source_sha256": "0beaa8d4a079adb43303e9a5ffca45c7fc7a73ae7dc82832b4cf4cf36bbc619f",
+      "observed": {
+        "ratio": 0.6019092279350192,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11110",
+      "source_sha256": "cfbfc35dd95ed49758e4ac09346911cad091cbd2827c0d0c6f5a4f8298093ecc",
+      "observed": {
+        "ratio": 0.6016750418760469,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 465,
+        "problems": 15,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "beam-shapes/11111",
+      "source_sha256": "b99cb763b3b78ce3d94a323f1d08214602d0640725d17384f469884fb0e07289",
+      "observed": {
+        "ratio": 0.6019092279350192,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0000",
+      "source_sha256": "5e707604aa693d9a0a47a1893a4ebd9fa563bf6d7519def4a87003eae3531205",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0001",
+      "source_sha256": "3936c49cac4595dd8e6576419aa1df75c61219998766f3019b99fc5664f8c1c8",
+      "observed": {
+        "ratio": 0.6012393233964161,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 474,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0010",
+      "source_sha256": "6bc5b9ee716882823a9555b3c524c36fd12058f9a7e5f286dcccb1d7565dcbbd",
+      "observed": {
+        "ratio": 0.6054922973878097,
+        "ins": 2951,
+        "prefix": 0,
+        "refs": 476,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0011",
+      "source_sha256": "bafdf87c840fb19257b1a3e5f10999411cc7069ae8d2f6a1bd7b47941e63be6e",
+      "observed": {
+        "ratio": 0.6026800670016751,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 473,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0100",
+      "source_sha256": "923a6e2ea04df1ab6d992f13c5a5c19e4fac0c7a0ae1df3038453062834e7316",
+      "observed": {
+        "ratio": 0.5912665216663878,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0101",
+      "source_sha256": "6b30e3af4849c4f879a0c2f58fd8b8b31d0543deb37ec5006e4dd897eedb6519",
+      "observed": {
+        "ratio": 0.585439330543933,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0110",
+      "source_sha256": "cd14948b8a6e0c8eac277b2234f75dbe8e5227bdcbe95a52301bbd518d4e6934",
+      "observed": {
+        "ratio": 0.6001003512293026,
+        "ins": 2958,
+        "prefix": 0,
+        "refs": 474,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/0111",
+      "source_sha256": "8936147d523b47100d1192c78173c6515a9e7c1ff9351ac29761d2c95e1d4c36",
+      "observed": {
+        "ratio": 0.5960863020572001,
+        "ins": 2958,
+        "prefix": 0,
+        "refs": 476,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1000",
+      "source_sha256": "c747d8b6a253b4194fd6c2672e5728d1dba5ecf2cff6a9f4895e19228382a263",
+      "observed": {
+        "ratio": 0.5937447733734739,
+        "ins": 2958,
+        "prefix": 0,
+        "refs": 476,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1001",
+      "source_sha256": "e18f9342fcf002846a720c214449e6d472268c136f0154af85d792cea878c372",
+      "observed": {
+        "ratio": 0.5879203613853103,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1010",
+      "source_sha256": "561c8af911767e1481177b5cb394da276e9b389c9b8a524b8a44368a18923c16",
+      "observed": {
+        "ratio": 0.6029092125062698,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1011",
+      "source_sha256": "3da0d5f716fd0e0dab508bd5e4ceffe42b4d60f7cc47597a9d2b538443c419eb",
+      "observed": {
+        "ratio": 0.5964208061548754,
+        "ins": 2958,
+        "prefix": 0,
+        "refs": 473,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1100",
+      "source_sha256": "988ca4fba8bb276eaaf2630943a4d6bf991b1b8f4fa3483699162b462d083879",
+      "observed": {
+        "ratio": 0.5943869027731373,
+        "ins": 2965,
+        "prefix": 0,
+        "refs": 470,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1101",
+      "source_sha256": "1393937e19af8be99efc767bdf0077c0ad37fba28e23c7f1d6cbc40a61775138",
+      "observed": {
+        "ratio": 0.5957233544938189,
+        "ins": 2965,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1110",
+      "source_sha256": "0b1cdf575f70e868a898467ba4f12c80cdb43008e93e897e4b4f22485ec80319",
+      "observed": {
+        "ratio": 0.5868983957219251,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 470,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "arc-shapes/1111",
+      "source_sha256": "6fd0090f384a544817d6ef0d7c6c1c9befba80dff31e5185934b274723353ae6",
+      "observed": {
+        "ratio": 0.5887069829602406,
+        "ins": 2965,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/000",
+      "source_sha256": "5e707604aa693d9a0a47a1893a4ebd9fa563bf6d7519def4a87003eae3531205",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/001",
+      "source_sha256": "41948f664b30d62d7b530524688f202fff0b8f833f6f4449b1ea720b139f9cc1",
+      "observed": {
+        "ratio": 0.6082733210517501,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/010",
+      "source_sha256": "5c3a9dd3cdb778fdcfe73245fd518eff5a9b9dd8e28f82c3a6e02c92450011bd",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/011",
+      "source_sha256": "f06dd99c4555dea56e2ab1440144338bf9eda3d5d2686d8b2476c5587a33770e",
+      "observed": {
+        "ratio": 0.6086082733210517,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/100",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/101",
+      "source_sha256": "981f83722c1eebeeb792e63946e22d578d25cc6e4d55f9b391f499c081ca9446",
+      "observed": {
+        "ratio": 0.6086082733210517,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/110",
+      "source_sha256": "7b847a09ed188e15624b64dcdda681fa4a771ad11d12ed0757c1e2cf22f1e609",
+      "observed": {
+        "ratio": 0.6076034165131469,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "scalar-shapes/111",
+      "source_sha256": "6840859b17991001644c68fbb4c81727bec57e0f2a677771a9f6ed06ffda623e",
+      "observed": {
+        "ratio": 0.6089432255903534,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0000",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0001",
+      "source_sha256": "fb765f3494066ace1c3ddda19c92274961cd712ad4c31778c83682f7c292bd20",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0010",
+      "source_sha256": "3ef5b6ff3c1b0bc23a933b6b721033791bc68cd15332fbcbec05f9abc036416c",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0011",
+      "source_sha256": "a844edbfddbacea2dbdbcfad99cfa2e3aa45391d1c4999cdf3c37adaf951576e",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0100",
+      "source_sha256": "d386583695534556bae200f71fc5d2d421aa5b0dcf67d3a8a17b5b430e04ede5",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0101",
+      "source_sha256": "3bf445206d533da1d374b2279a953a62ded8d57aaf9b6e472c29952dfbb8bc0a",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0110",
+      "source_sha256": "696829be4b872de8cdf894668cc39b9cdb3e99ae7bc5bbda5a516928c5e7275c",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-0111",
+      "source_sha256": "d85c85f25e5a1d26611a6cd8b21cd2356e5cf3729139aec2d093135e49403b18",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1000",
+      "source_sha256": "fae66bbecb7c4f24339bbd2a0fd0595337fc9ac4ed321f41c63b78f97dda7134",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1001",
+      "source_sha256": "2a823c98deb5337f0d0602fea66c193b90267a0e45fa8e73c0eeeb73309bc9e1",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1010",
+      "source_sha256": "f8192f57af8c0e28a070fea8b7ee4842bb13dfcd6dce3774958f3ba4d7a27e44",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1011",
+      "source_sha256": "d0f60a0c5f6592f7af1638ded654a26cb5fd3610d28f9426be78b0d862239a70",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1100",
+      "source_sha256": "dad4911b2fda2156fe31e4f618c784638ab6f80adbfaa71a1a64db8dd7578805",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1101",
+      "source_sha256": "6e64f98833c68f832a98d3e0479f191a989dfe0ccfb96b12835acb3adb210d8e",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1110",
+      "source_sha256": "e76cfe37dfec8126173a5ee2ae367771c5400eb768d929eb16fe3b3fe4d5085e",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/fire-1111",
+      "source_sha256": "374de5cd6d6838be31ee2d23eb2e6685cfc2841671831a6799bfc466b2945235",
+      "observed": {
+        "ratio": 0.6069335119745436,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0000",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0001",
+      "source_sha256": "594dd5258bf1d0592b0659f47f99f6772b6073fdea6d7c3daf0db9e5444f988c",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0010",
+      "source_sha256": "fbd42cff37af3ec0516913f29086820bbf859b14aa113062ee796e837a0c3962",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0011",
+      "source_sha256": "4ae473238eb86a1cefd91f5a61829182b1c8910ee1ebcb337e6c4b5d298b779a",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0100",
+      "source_sha256": "a90298196de6e2850a93a36765e83af77cf3c603bf833acbabca710ebcb17902",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0101",
+      "source_sha256": "4109aa2c03027c246f979e9c651a0e83182cb84b93fba45a919d47b49a19da6b",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0110",
+      "source_sha256": "635438a030720f747679fae72b447e8fd8f97de2cef4670fc6497126121d3eb1",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-0111",
+      "source_sha256": "da9159f8fc985fd57d4fae9135868d1ac453fbe1ca8839b146c1c7a259f9a3b8",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1000",
+      "source_sha256": "7225cf6107c92bf89b0346b3a96f4711229ae8a873666bc4cd3fc5ba886197bc",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1001",
+      "source_sha256": "c3ee0f9b4aad7cfcb5d563797197215273d6b2ff750307140085825a7e66c3a5",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1010",
+      "source_sha256": "2931ceb85a1f2d88ab218a0bbe956592194c7d6e1ed3e6729aca690d6b10ef7d",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1011",
+      "source_sha256": "220ef7a186999e7b64d60224b2abbd5d45e0b0e5291b0a9a10b60c1963d45548",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1100",
+      "source_sha256": "e2aff670d876d8bf1fe5e91dafb4e10892c10b41031ed5388fe24e895823c571",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1101",
+      "source_sha256": "1f4f1242293ba08f3111bbd70f9d3e323d22b0ce428a5fd217ce8edd636691c8",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1110",
+      "source_sha256": "70b7831f423636fc435476b6f3366f4f1c0024513aea1956a9f014f0ec7a934f",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "pool-shapes/plasma-1111",
+      "source_sha256": "c5eb6099619b6082f362b4f18c9b57092250b6cac6961162a19da24abb204c7c",
+      "observed": {
+        "ratio": 0.6074719383481321,
+        "ins": 2948,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/0-before",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/0-compound",
+      "source_sha256": "b180e5acfb902409f840d304a833a35e066480a43c191be95733d830f8ab7aa3",
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/0-expression",
+      "source_sha256": "3ab4e82791f3719f7e59978bbd0053e4de312637a25a0f7b2341821ec94ab8ec",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/0-assign",
+      "source_sha256": "0e5df6c6a667f0bf3c4dce54fb534549a1eca5d12ebff371a5aefb064c429e65",
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/0-constructor",
+      "source_sha256": "17c7bdb27e99a0cd4ee4527af51c7ada9756d30323ab88d79c44919aa9886233",
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/0-vector-offset",
+      "source_sha256": "b917c573603a5695ed3abc31ace078d3405d073724fc5d1663073e2a4d4eb7d4",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/1-before",
+      "source_sha256": "a844edbfddbacea2dbdbcfad99cfa2e3aa45391d1c4999cdf3c37adaf951576e",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/1-compound",
+      "source_sha256": "0dac8e437bd7e39f71929486db9347259219f5f066d38c42f52742ec22792050",
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/1-expression",
+      "source_sha256": "cc1842ea55a69d5543559540d3e4d1f048bf0bf8d3232aa9bc2d5bf560bc6b0e",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/1-assign",
+      "source_sha256": "ba2daef8a8af07714f85c7c684d106f98608bcbbd8be3bb871e3e488ba30fc66",
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/1-constructor",
+      "source_sha256": "c3f2cac074975873152b49b04587b03a653e718a0eea02858c1c0fcaf11ea121",
+      "observed": {
+        "ratio": 0.5403414797455641,
+        "ins": 2953,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-shapes/1-vector-offset",
+      "source_sha256": "273e101983bdc5ef98a01e3f93298c9d3047f24a126de35448363d8f7123dbe4",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/0-scalar-xy",
+      "source_sha256": "fc6348b0117d62f5d51481d7f7a88a2fbc7e2c66ad67022e068c1a823b6196be",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/0-scalar-yx",
+      "source_sha256": "fcfbaf6a96f6816a861f3b9fca71ba23b61b1f1656c73f016adb7d008e94a866",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/0-scalar-y-store",
+      "source_sha256": "7738c5c4ee1136aa38b19f9605a4eeb25640a416295856639c365d1c5c2bfba5",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/0-scalar-y-subtract",
+      "source_sha256": "7a1dcc08f3a362d703cbeed8d8bd1b0c8a8b23e764064f369301459afc631cdc",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/0-plain-pair",
+      "source_sha256": "2b0a2b78e7576677e0f59a807f2323190f9b31ed21a4b21f05b0f0049c7e2f10",
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/0-assign-pair",
+      "source_sha256": "9de5023740847f7127bb514358c96ed25fc8d7126242a528bf905b78d9219894",
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 11,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/1-scalar-xy",
+      "source_sha256": "ed777b3a6b7550bbed2c86d8f4db6beb9cf378287b5bcf712b47c00f07a29b27",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/1-scalar-yx",
+      "source_sha256": "1a4e91349a90d37090c53df80ced8f10aa5e1bf53281b196f7ce5769bdeb8145",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/1-scalar-y-store",
+      "source_sha256": "3cf333b23fe1090dfd42b64d44f0115787ef81405a715e116898ddfa124082b7",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/1-scalar-y-subtract",
+      "source_sha256": "7fe53464333803d358a098af05da29e834ee0107327a7241c6eaac53d1019c89",
+      "observed": {
+        "ratio": 0.6080402010050251,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 481,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/1-plain-pair",
+      "source_sha256": "9ebdfebae1dd790e875c07c777a7869b3bb1da5fe2620e8ce7ca31f9243302b0",
+      "observed": {
+        "ratio": 0.5403414797455641,
+        "ins": 2953,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scalar-shapes/1-assign-pair",
+      "source_sha256": "c71dbd220540b20a7abb920c0df5a9f5252db2f3a73c5a6df7f8989471997e01",
+      "observed": {
+        "ratio": 0.5403414797455641,
+        "ins": 2953,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 9,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-loop",
+      "source_sha256": "664adb1e4c801ce7a734bfb620ae886d4f95526b30b6bb933c712d87fbf1143b",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-pass",
+      "source_sha256": "61e38acd4e318dc455de031729a8bbdfb241874c51feca647e3cfac225f538be",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-000",
+      "source_sha256": "2f676291cf3e1214acfcadd42e6aaec5e5728c930753f6bb635614becbf05262",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-001",
+      "source_sha256": "5a28a331746a2c2aab1229bf4caf20ca3e87adaaf14c79441e57fe0a558cb2f2",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-010",
+      "source_sha256": "6ee82f0b22223986cc784a2e88e2ebc32d18b84b3db9e005f1a856967e9d89d7",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-011",
+      "source_sha256": "e11c9d769f32cf15e67c6ff96aec12f6b8e65f43731f0c6fda8cbb74b6de46b8",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-100",
+      "source_sha256": "008490e15d6d487449b6d16d6ac33564bb896357c54e680e8b21809084fd6e90",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-101",
+      "source_sha256": "eee8d52c7360ca95f75042c9ceb0ecc644ba4d8da27b7bc2568345d94f4e9c90",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-110",
+      "source_sha256": "1c8f04e8e440ebb5be9e02c10f880668c288a02396ac5e3d940774fb8fbe7b5f",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/0-111",
+      "source_sha256": "a41891bd9cc1cc4dd59467fc395c322844a450e555b8e521a5d925e1f3671ea7",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-loop",
+      "source_sha256": "7654da0b850096601531f01ea889e5c5dd567f1d32375d430543704c7f9c1bd4",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-pass",
+      "source_sha256": "5ead8f12f8d55cdf6ec51acbdd8f22429042f2bdeec3d76e4996f2b884b44706",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-000",
+      "source_sha256": "523d5ecc7c043880a8ce9c1fe4edb65e0ad2a384abbb5f1e5d209cfa6b5fdab6",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-001",
+      "source_sha256": "adadea835ae9dd7dca3937a051875dea3d895ad209802cab5de660505b92a591",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-010",
+      "source_sha256": "2811e9716e4a3541f102401d341762cd8810e8a9102bc13f4a2ca1f930d5ca29",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-011",
+      "source_sha256": "c793195943e90ebdbdfbb068b5d7080670e4a99617dae7c68c4b52e4466f0208",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-100",
+      "source_sha256": "e1ebc18832fe26822caa6a07b07fb7cab261a4903500be80ea6c14a522d977fc",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-101",
+      "source_sha256": "de87b1667d26c1835907130067fe738869ca1143958559540be8f658deee40d7",
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-110",
+      "source_sha256": "04ccd4813e6e247a4528be881cc4dca603dcfea161d81c3859673e1ded21f648",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "fire-scope-shapes/1-111",
+      "source_sha256": "413bb88030f8701464b919e285d07b2f252235d8f5b15c536e450319852189d7",
+      "observed": {
+        "ratio": 0.5658487731597396,
+        "ins": 2970,
+        "prefix": 0,
+        "refs": 451,
+        "problems": 12,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "radius-only",
+      "source_sha256": "b08864727d4b836db1f0e5b897247c128d5190c39f1fb53c5615cd251c91ed14",
+      "observed": {
+        "ratio": 0.6030150753768844,
+        "ins": 2949,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 13,
+        "exact": false,
+        "body": false
+      }
+    }
+  ],
+  "baseline_sha256": "29966e39e8f1e9ed67ac197d8cc8c9cb8048a4457e51ec1138d3487b912d23d9",
+  "controls_sha256": "0569d2c5e786c0e0b5f6af9e718b90340ae60290f23d03d72bf0de3ea00ebb23",
+  "verifier_sha256": "d8a87d438cba89434fe9b8bde598a4ea32630ad64c6d73bc478930449c943ebc",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
+}

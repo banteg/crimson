@@ -789,7 +789,9 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t direction_result(
                 projectile->pos_x - projectile->pos.origin_x,
                 projectile->pos.pos_y - primary->origin_y);
-            vec2f_t direction = *(vec2f_t *)&direction_result;
+            vec2f_t direction;
+            direction.x = direction_result.x;
+            direction.y = direction_result.y;
             float distance = direction_result.length();
             D3DXVec2Normalize(&direction, &direction);
 
@@ -854,8 +856,8 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_set_color(
                 0.5f, 0.6f, 1.0f, head_alpha);
 
-            float radius = effect_scale * ion_scale * 40.0f;
             if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
+                float radius = effect_scale * ion_scale * 40.0f;
                 int creature_index = creature_find_in_radius(
                     &projectile->pos_x,
                     radius,

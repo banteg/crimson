@@ -1,0 +1,240 @@
+{
+  "source_sha256": "664adb1e4c801ce7a734bfb620ae886d4f95526b30b6bb933c712d87fbf1143b",
+  "cases": 512,
+  "failures": [
+    {
+      "index": 163,
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              -8.120068550109863,
+              -508.7162170410156
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.30000001192092896,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 45,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "angle": 0.0,
+            "life": 0.0
+          }
+        ],
+        "camera": [
+          87.5098876953125,
+          133.61636352539062
+        ],
+        "fpcw": 895,
+        "alpha": 0.699999988079071,
+        "glow": 0
+      },
+      "differences": [
+        [
+          37,
+          [
+            "grim_draw_quad",
+            [
+              1111330605,
+              3284896968,
+              1115684864,
+              1115684864
+            ]
+          ],
+          [
+            "grim_draw_quad",
+            [
+              1111330604,
+              3284896968,
+              1115684864,
+              1115684864
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "index": 303,
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              -150.3619842529297,
+              -412.7026062011719
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.30000001192092896,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 45,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "angle": 0.0,
+            "life": 0.0
+          }
+        ],
+        "camera": [
+          418.36102294921875,
+          -173.47714233398438
+        ],
+        "fpcw": 895,
+        "alpha": 0.699999988079071,
+        "glow": 0
+      },
+      "differences": [
+        [
+          37,
+          [
+            "grim_draw_quad",
+            [
+              1131151297,
+              3290073985,
+              1115684864,
+              1115684864
+            ]
+          ],
+          [
+            "grim_draw_quad",
+            [
+              1131151296,
+              3290073985,
+              1115684864,
+              1115684864
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "index": 441,
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              257.05059814453125,
+              -213.77236938476562
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.30000001192092896,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 45,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "angle": 0.0,
+            "life": 0.0
+          }
+        ],
+        "camera": [
+          2.4250385761260986,
+          -389.31658935546875
+        ],
+        "fpcw": 895,
+        "alpha": 0.699999988079071,
+        "glow": 0
+      },
+      "differences": [
+        [
+          37,
+          [
+            "grim_draw_quad",
+            [
+              1130592707,
+              3290351026,
+              1115684864,
+              1115684864
+            ]
+          ],
+          [
+            "grim_draw_quad",
+            [
+              1130592708,
+              3290351026,
+              1115684864,
+              1115684864
+            ]
+          ]
+        ]
+      ]
+    }
+  ],
+  "verifier_sha256": "434a776c6773cdf03d63863948705fa0730401819b3574aaa6fd28753eff37a1",
+  "executor_sha256": "929478efa3db26233c39cdd158186831e482263ee1c16a8df0d4ec56ba4aa0f4",
+  "engine_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "candidate_body_sha256": "b25d0279a1e360b435698b50f13a391023074bc9ef1e2e4b46995e824063ddeb",
+  "object_sha256": "0b47188b33871d9b7af7b4875e1b62fbf6e3ec046f989664475f3881e942269e",
+  "unicorn_version": "2.1.4",
+  "scope": "512 deterministic Fire Bullets overlay witnesses. Only inactive slot 95 may use type 45; all active records use the unchanged conventional executor contracts. Diagnostic PC64 and game PC24, modeled external calls, no GPU proof."
+}

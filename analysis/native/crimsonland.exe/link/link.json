@@ -51,7 +51,7 @@
       }
     }
   ],
-  "audit_digest": "addf83b927dd21b047fd7341784ed92605caa90db85a6bb7019239e11ac4b5e5",
+  "audit_digest": "b9e5d75aec38e115fb2e5e291be71f970f872ce35fff72cea8771e26b167becf",
   "entry": {
     "aliases": {
       "object": {
@@ -76,7 +76,7 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 325294,
+      "entry_point_rva": 325326,
       "image_base": 4194304,
       "image_size": 876544,
       "machine": 332,
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "1c0584ccf9b1cad625503d00a088984979a81e6cc29e97faf441a2898f2c4722"
+    "sha256": "3c34e002c257fa525bbbf1a60b48a38f44cac159417f0bbbf1d9bcb59093098d"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -339,7 +339,7 @@
           "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "c3b2cfafa22db822b0427b38fc16b0154b1ea1fb9de256988dff348cb0339511"
+          "sha256": "7bdb9bd0fc4b183057cace78d3fe153b4d89eda83c891041e3f3e8e7188adb94"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
