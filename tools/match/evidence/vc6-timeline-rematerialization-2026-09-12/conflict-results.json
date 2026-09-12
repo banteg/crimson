@@ -1,0 +1,454 @@
+[
+  {
+    "mode": "control",
+    "strategy": "conflict",
+    "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+    "watched": [
+      [
+        2,
+        1814069856,
+        1814069856,
+        258,
+        1814135392,
+        1814095924,
+        18,
+        40,
+        5,
+        1,
+        258,
+        0
+      ],
+      [
+        0,
+        1814069856,
+        1814069856,
+        258,
+        1814093368,
+        1814135392,
+        18,
+        40,
+        1814038160,
+        0,
+        258,
+        0
+      ]
+    ],
+    "metrics": {
+      "ratio": 0.9122807017543859,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    },
+    "screen": {
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    }
+  },
+  {
+    "mode": "early-only",
+    "strategy": "conflict",
+    "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+    "watched": [
+      [
+        2,
+        1814069856,
+        1814069856,
+        258,
+        1814135392,
+        1814095924,
+        18,
+        40,
+        5,
+        1,
+        258,
+        0
+      ],
+      [
+        0,
+        1814069856,
+        1814069856,
+        258,
+        1814093368,
+        1814135392,
+        18,
+        40,
+        1814038160,
+        0,
+        258,
+        1
+      ],
+      [
+        7,
+        1814069856,
+        1814069856,
+        2,
+        1814135392,
+        1814069720,
+        18,
+        40,
+        1,
+        1814123016,
+        2,
+        0
+      ],
+      [
+        5,
+        1814069856,
+        1814069856,
+        2,
+        1814135392,
+        1814135392,
+        18,
+        40,
+        1,
+        0,
+        2,
+        0
+      ],
+      [
+        6,
+        1814069856,
+        1814069856,
+        2,
+        1814135392,
+        13,
+        18,
+        40,
+        1,
+        1,
+        2,
+        0
+      ],
+      [
+        4,
+        1814069856,
+        1814069856,
+        2,
+        1814135392,
+        1814069856,
+        18,
+        40,
+        1814069856,
+        1,
+        2,
+        0
+      ]
+    ],
+    "metrics": {
+      "ratio": 0.8421052631578947,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 14,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    },
+    "screen": {
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 83,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 101,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 98,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    }
+  },
+  {
+    "mode": "late-only",
+    "strategy": "conflict",
+    "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+    "watched": [
+      [
+        2,
+        1814069856,
+        1814069856,
+        258,
+        1814135392,
+        1814095924,
+        18,
+        40,
+        5,
+        1,
+        258,
+        0
+      ],
+      [
+        0,
+        1814069856,
+        1814069856,
+        258,
+        1814093368,
+        1814135392,
+        18,
+        40,
+        1814038160,
+        0,
+        258,
+        0
+      ]
+    ],
+    "metrics": {
+      "ratio": 0.9122807017543859,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    },
+    "screen": {
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 82,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 100,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 49,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 97,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    }
+  },
+  {
+    "mode": "early-and-late",
+    "strategy": "conflict",
+    "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+    "watched": [
+      [
+        2,
+        1814135392,
+        1814135392,
+        258,
+        1814200928,
+        1814161460,
+        18,
+        40,
+        5,
+        1,
+        258,
+        0
+      ],
+      [
+        0,
+        1814135392,
+        1814135392,
+        258,
+        1814158904,
+        1814200928,
+        18,
+        40,
+        1814103696,
+        0,
+        258,
+        1
+      ],
+      [
+        7,
+        1814135392,
+        1814135392,
+        2,
+        1814200928,
+        1814135256,
+        18,
+        40,
+        1,
+        1814188552,
+        2,
+        0
+      ],
+      [
+        5,
+        1814135392,
+        1814135392,
+        2,
+        1814200928,
+        1814200928,
+        18,
+        40,
+        1,
+        0,
+        2,
+        0
+      ],
+      [
+        6,
+        1814135392,
+        1814135392,
+        2,
+        1814200928,
+        13,
+        18,
+        40,
+        1,
+        1,
+        2,
+        0
+      ],
+      [
+        4,
+        1814135392,
+        1814135392,
+        2,
+        1814200928,
+        1814135392,
+        18,
+        40,
+        1814135392,
+        1,
+        2,
+        1
+      ]
+    ],
+    "metrics": {
+      "ratio": 0.8558951965065502,
+      "target_instructions": 115,
+      "candidate_instructions": 114,
+      "prefix_instructions": 14,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    },
+    "screen": {
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 41,
+          "instruction": "lea eax, dword [ebp+ebp*2]"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "lea esi, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "lea edi, dword [esi+0xc]"
+        },
+        {
+          "instruction_index": 84,
+          "instruction": "lea ecx, dword [esp+0x24]"
+        },
+        {
+          "instruction_index": 102,
+          "instruction": "lea eax, dword [edi+-0x1]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "mov dword [esp+0x10], ebx"
+        },
+        {
+          "instruction_index": 99,
+          "instruction": "mov dword [esp+0x10], ecx"
+        }
+      ]
+    }
+  }
+]

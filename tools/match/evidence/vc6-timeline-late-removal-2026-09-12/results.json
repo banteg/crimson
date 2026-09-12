@@ -1,0 +1,89 @@
+[
+  {
+    "label": "baseline",
+    "mode": "control",
+    "equal_stock_coff": true,
+    "interventions": [],
+    "preserving_capture_verified": true,
+    "missing_stream_rejected": true,
+    "metrics": {
+      "ratio": 0.9122807017543859,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "label": "baseline",
+    "mode": "reject-template-eligibility",
+    "equal_stock_coff": false,
+    "interventions": [
+      [
+        2,
+        1814200928,
+        1814200928,
+        258,
+        1814266464,
+        1814226996,
+        18,
+        40,
+        5,
+        1,
+        258,
+        1
+      ]
+    ],
+    "preserving_capture_verified": true,
+    "missing_stream_rejected": true,
+    "metrics": {
+      "ratio": 0.8421052631578947,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 14,
+      "references_ok": 12,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "label": "relative-heading",
+    "mode": "control",
+    "equal_stock_coff": true,
+    "interventions": [],
+    "preserving_capture_verified": true,
+    "missing_stream_rejected": true,
+    "metrics": {
+      "ratio": 0.9122807017543859,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "label": "relative-heading",
+    "mode": "reject-template-eligibility",
+    "equal_stock_coff": true,
+    "interventions": [],
+    "preserving_capture_verified": true,
+    "missing_stream_rejected": true,
+    "metrics": {
+      "ratio": 0.9122807017543859,
+      "target_instructions": 115,
+      "candidate_instructions": 113,
+      "prefix_instructions": 51,
+      "references_ok": 13,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  }
+]

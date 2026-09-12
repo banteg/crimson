@@ -1,0 +1,1514 @@
+[
+  {
+    "mode": "control",
+    "instrumentation_preserves_parent_coff": true,
+    "snapshots": [
+      {
+        "phase": 0,
+        "total_nodes": 154,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c175b5c",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 1,
+        "total_nodes": 147,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 2,
+        "total_nodes": 146,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 3,
+        "total_nodes": 155,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 4,
+        "total_nodes": 140,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 5,
+        "total_nodes": 158,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c20dfdc"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166830"
+          }
+        ]
+      },
+      {
+        "phase": 6,
+        "total_nodes": 153,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c20dfdc"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166830"
+          }
+        ]
+      },
+      {
+        "phase": 7,
+        "total_nodes": 172,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c20dfdc"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166830"
+          }
+        ]
+      },
+      {
+        "phase": 8,
+        "total_nodes": 172,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c20dfdc"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166830"
+          }
+        ]
+      },
+      {
+        "phase": 9,
+        "total_nodes": 170,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c218260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c175b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c20dfdc"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166830"
+          }
+        ]
+      },
+      {
+        "phase": 10,
+        "total_nodes": 165,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 17,
+        "total_nodes": 164,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 18,
+        "total_nodes": 164,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 19,
+        "total_nodes": 164,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 20,
+        "total_nodes": 161,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 21,
+        "total_nodes": 161,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 22,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 32,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 155,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 155,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 155,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 23,
+        "total_nodes": 155,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      },
+      {
+        "phase": 11,
+        "total_nodes": 155,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c217ff0",
+            "base_symbol": "0x6c166734"
+          },
+          {
+            "id": "0x6c179444",
+            "base_symbol": "0x6c166734"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "reject-template-eligibility",
+    "instrumentation_preserves_parent_coff": true,
+    "snapshots": [
+      {
+        "phase": 0,
+        "total_nodes": 154,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c215b5c",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 1,
+        "total_nodes": 147,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 2,
+        "total_nodes": 146,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 3,
+        "total_nodes": 155,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x16d"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 4,
+        "total_nodes": 140,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x15b"
+          }
+        ],
+        "field_loads": []
+      },
+      {
+        "phase": 5,
+        "total_nodes": 158,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c22dfdc"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 6,
+        "total_nodes": 153,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c22dfdc"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 7,
+        "total_nodes": 172,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c22dfdc"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 8,
+        "total_nodes": 172,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c22dfdc"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 9,
+        "total_nodes": 170,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          },
+          {
+            "id": "0x6c215b98",
+            "opcode": "0x1"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c22dfdc"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 10,
+        "total_nodes": 166,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 17,
+        "total_nodes": 165,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 18,
+        "total_nodes": 165,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 19,
+        "total_nodes": 165,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 20,
+        "total_nodes": 162,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 21,
+        "total_nodes": 162,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 22,
+        "total_nodes": 159,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 32,
+        "total_nodes": 159,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 159,
+        "pointer_line_nodes": [
+          {
+            "id": "0x6c238260",
+            "opcode": "0x12"
+          }
+        ],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206830"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 24,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 25,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 26,
+        "total_nodes": 158,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 23,
+        "total_nodes": 153,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      },
+      {
+        "phase": 11,
+        "total_nodes": 153,
+        "pointer_line_nodes": [],
+        "field_loads": [
+          {
+            "id": "0x6c237ff0",
+            "base_symbol": "0x6c206734"
+          },
+          {
+            "id": "0x6c219444",
+            "base_symbol": "0x6c206734"
+          }
+        ]
+      }
+    ]
+  }
+]

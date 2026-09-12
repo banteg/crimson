@@ -1,0 +1,148 @@
+[
+  {
+    "mode": "control",
+    "strategy": "eligibility",
+    "source_sha256": "b418b27e9efcafa1cc8ebecedb5b0447a651c759c2f715df84b21c738bb2ae53",
+    "watched": [
+      [
+        2,
+        1814135660,
+        1814135660,
+        258,
+        1814060000,
+        1814059028,
+        1,
+        40,
+        1,
+        0,
+        258,
+        0
+      ]
+    ],
+    "metrics": {
+      "ratio": 0.2743682310469314,
+      "target_instructions": 115,
+      "candidate_instructions": 162,
+      "prefix_instructions": 1,
+      "references_ok": 5,
+      "reference_problems": 1,
+      "exact": false,
+      "body_byte_exact": false
+    },
+    "screen": {
+      "same_block_stack_overwrites": [],
+      "computed_addresses": [
+        {
+          "instruction_index": 43,
+          "instruction": "lea eax, dword [esi+esi*2]"
+        },
+        {
+          "instruction_index": 45,
+          "instruction": "lea eax, dword [eax*8+ADDR]"
+        },
+        {
+          "instruction_index": 48,
+          "instruction": "lea ecx, dword [eax+-0x8]"
+        },
+        {
+          "instruction_index": 49,
+          "instruction": "lea edx, dword [eax+0x10]"
+        },
+        {
+          "instruction_index": 52,
+          "instruction": "lea edi, dword [eax+-0x4]"
+        },
+        {
+          "instruction_index": 53,
+          "instruction": "lea edx, dword [eax+-0x18]"
+        },
+        {
+          "instruction_index": 54,
+          "instruction": "lea ebp, dword [eax+-0x14]"
+        },
+        {
+          "instruction_index": 55,
+          "instruction": "lea ecx, dword [eax+0xc]"
+        },
+        {
+          "instruction_index": 114,
+          "instruction": "lea ecx, dword [esp+0x40]"
+        }
+      ],
+      "register_stack_stores": [
+        {
+          "instruction_index": 17,
+          "instruction": "mov dword [esp+0x10], esi"
+        },
+        {
+          "instruction_index": 36,
+          "instruction": "mov dword [esp+0x10], esi"
+        },
+        {
+          "instruction_index": 44,
+          "instruction": "mov dword [esp+0x10], esi"
+        },
+        {
+          "instruction_index": 50,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 51,
+          "instruction": "mov dword [esp+0x18], edx"
+        },
+        {
+          "instruction_index": 58,
+          "instruction": "mov dword [esp+0x30], ebx"
+        },
+        {
+          "instruction_index": 60,
+          "instruction": "mov dword [esp+0x34], ebx"
+        },
+        {
+          "instruction_index": 66,
+          "instruction": "mov dword [esp+0x24], eax"
+        },
+        {
+          "instruction_index": 70,
+          "instruction": "mov dword [esp+0x28], ecx"
+        },
+        {
+          "instruction_index": 74,
+          "instruction": "mov dword [esp+0x18], ecx"
+        },
+        {
+          "instruction_index": 78,
+          "instruction": "mov dword [esp+0x20], edx"
+        },
+        {
+          "instruction_index": 79,
+          "instruction": "mov dword [esp+0x14], ecx"
+        },
+        {
+          "instruction_index": 80,
+          "instruction": "mov dword [esp+0x1c], ebx"
+        },
+        {
+          "instruction_index": 91,
+          "instruction": "mov dword [esp+0x2c], edx"
+        },
+        {
+          "instruction_index": 129,
+          "instruction": "mov dword [esp+0x1c], ecx"
+        },
+        {
+          "instruction_index": 140,
+          "instruction": "mov dword [esp+0x18], ebx"
+        },
+        {
+          "instruction_index": 146,
+          "instruction": "mov dword [esp+0x14], ebx"
+        },
+        {
+          "instruction_index": 160,
+          "instruction": "mov dword [esp+0x10], esi"
+        }
+      ]
+    }
+  }
+]

@@ -387,3 +387,12 @@ field updates and borrowed constructor arguments also fail to improve the
 canonical result. The source remains unchanged. See the
 [measured families](../../evidence/hud-stack-coloring-2026-09-10/README.md#coordinate-construction-and-bonus-cursor-controls)
 for the reproducible transformations and their limits.
+
+## Local-reuse controls (2026-09-12)
+
+The [16-way local-reuse matrix](../../evidence/hud-local-reuse-2026-09-12/README.md)
+records a temporary **96.271930%** candidate with **1,824 instructions**,
+prefix **100**, and **393/0/0 references**. Three float-local groups and the
+HUD/popup row lifetime interact to change stack coloring. The candidate remains
+non-exact; the source identities are hypotheses, not deductions from shared
+native stack offsets. Canonical source and configuration are unchanged.

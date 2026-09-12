@@ -1,0 +1,67 @@
+[
+  {
+    "image": "crimsonland.exe",
+    "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+    "inventoried_functions": 1283,
+    "known_instruction_boundaries": 118870,
+    "sections": [
+      {
+        "name": ".text",
+        "address": "0x401000",
+        "bytes": 448888
+      }
+    ],
+    "hits": [
+      {
+        "address": "0x41cdfe",
+        "inventory_function": "dx_get_version_from_dxdiag",
+        "second_at_known_boundary": true,
+        "instructions": [
+          "0041cdfe mov dword ptr [esp + 0x34], ecx",
+          "0041ce02 mov dword ptr [esp + 0x34], 0x10"
+        ]
+      },
+      {
+        "address": "0x41ce0a",
+        "inventory_function": "dx_get_version_from_dxdiag",
+        "second_at_known_boundary": true,
+        "instructions": [
+          "0041ce0a mov dword ptr [esp + 0x38], ecx",
+          "0041ce0e mov dword ptr [esp + 0x38], 0x6f"
+        ]
+      },
+      {
+        "address": "0x41ce16",
+        "inventory_function": "dx_get_version_from_dxdiag",
+        "second_at_known_boundary": true,
+        "instructions": [
+          "0041ce16 mov dword ptr [esp + 0x3c], ecx",
+          "0041ce1a mov dword ptr [esp + 0x3c], edi"
+        ]
+      },
+      {
+        "address": "0x4342f7",
+        "inventory_function": "quest_spawn_timeline_update",
+        "second_at_known_boundary": true,
+        "instructions": [
+          "004342f7 mov dword ptr [esp + 0x10], edi",
+          "004342fb mov dword ptr [esp + 0x10], ebx"
+        ]
+      }
+    ]
+  },
+  {
+    "image": "grim.dll",
+    "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
+    "inventoried_functions": 1154,
+    "known_instruction_boundaries": 95188,
+    "sections": [
+      {
+        "name": ".text",
+        "address": "0x10001000",
+        "bytes": 306153
+      }
+    ],
+    "hits": []
+  }
+]

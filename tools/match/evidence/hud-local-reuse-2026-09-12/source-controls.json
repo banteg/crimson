@@ -1,0 +1,4490 @@
+{
+  "baseline_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+  "baseline_commit": "8f3e3d672b3ff21a52652dc7d25aebc8d450399f",
+  "baseline_compiler": "msvc6.5",
+  "baseline_cflags": "/O2 /GB /W3 /GR-",
+  "controls": [
+    {
+      "name": "hud-reversion-0000",
+      "source_sha256": "4fb8d2904abcd6358100407897c8fe2fe3ffe9d4a7575c1edbb7cb55a9b7b10b",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9221491228070176,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0001",
+      "source_sha256": "0317426dd28674917ef051408af696f938a106b16178db1855c27fbd975af961",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 470,
+          "stop": 471,
+          "old": "            hud_y = 158;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    float bonus_y = (float)hud_row_1;\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9046052631578947,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0010",
+      "source_sha256": "2e14ce51e9b1dcf3bbbdeee09a15ceb84abd744f611747ebe615ea79d51a5f2c",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_7;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_7 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_7 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_7 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_7);\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9210526315789473,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0011",
+      "source_sha256": "c2ddc0b9e8e2fe73e5c0c8d7f6b97a221bba1b097a1a896e3da36780a1450330",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_7;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_7 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_7 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_7 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_7);\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 470,
+          "stop": 471,
+          "old": "            hud_y = 158;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    float bonus_y = (float)hud_row_1;\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9046052631578947,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0100",
+      "source_sha256": "38883a3c1f8ef19594a0a8f24969a9a699bd16d65327ed488038a370cb5e9118",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_6;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_6 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_6 *= 0.13f;\n                draw_value_6 += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_6 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_6 * 16.0f,\n                    draw_value_6 * 256.0f,\n                    draw_value_6 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9210526315789473,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0101",
+      "source_sha256": "c968f337a2613b5c74c40430795f48c7b7522672ca3ae578c24941ecab954995",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_6;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 470,
+          "stop": 471,
+          "old": "            hud_y = 158;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_6 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_6 *= 0.13f;\n                draw_value_6 += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_6 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_6 * 16.0f,\n                    draw_value_6 * 256.0f,\n                    draw_value_6 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    float bonus_y = (float)hud_row_1;\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9429824561403509,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0110",
+      "source_sha256": "b4998d5768af7da632830e464f70bdd402853ccf85a5338622893af61e8be185",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_7;\n    float draw_value_6;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_7 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_7 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_7 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_7);\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_6 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_6 *= 0.13f;\n                draw_value_6 += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_6 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_6 * 16.0f,\n                    draw_value_6 * 256.0f,\n                    draw_value_6 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9199561403508771,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-0111",
+      "source_sha256": "d6d64cc22285d2e64731173b3ff25362ecf4971589901c3b3338eb2204f76c65",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade"
+          ],
+          [
+            "bonus_y"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_fade"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_7;\n    float draw_value_6;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_7 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_7 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_7, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_7 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_7);\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 470,
+          "stop": 471,
+          "old": "            hud_y = 158;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_6 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_6 *= 0.13f;\n                draw_value_6 += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_6 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_6 * 16.0f,\n                    draw_value_6 * 256.0f,\n                    draw_value_6 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_6 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_6);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    float bonus_y = (float)hud_row_1;\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9418859649122807,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1000",
+      "source_sha256": "7396e74362c869d113fc9389fe587219d364d88acdda04dad5887ca9ddea54c2",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_y;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    int text_y = (int)draw_value_2 + 1;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9342105263157895,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1001",
+      "source_sha256": "1aa762a3160f90033bc0e0f1a7de41fe3b358c78f6fb98cbec1d5a686c0f6ca9",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 470,
+          "stop": 473,
+          "old": "            hud_y = 158;\n\n            float banner_fade;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_row_1;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)draw_value_2 + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9358552631578947,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1010",
+      "source_sha256": "3dc039e374bfd6eef4f41edaae6622a7ac2f9cc0de6b7d46d76b8419e4858d64",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_5;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_5 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_5 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_5 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_5);\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_y;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    int text_y = (int)draw_value_2 + 1;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9364035087719298,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1011",
+      "source_sha256": "90d47a98322f8e0a5e42b89aa6e8e10827716e9540f3aa475094114e6ab2f2d6",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "quest_clock_alpha"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ],
+          [
+            "timer_clock_alpha"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_5;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_5 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_5 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_5 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_5);\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 470,
+          "stop": 473,
+          "old": "            hud_y = 158;\n\n            float banner_fade;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_row_1;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)draw_value_2 + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9380482456140351,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1100",
+      "source_sha256": "92685dd247236e1aada213d9e998c68c74933b49a041e7e19f92a90013153cd7",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_4;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_4 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_4 *= 0.13f;\n                draw_value_4 += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_4 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_4 * 16.0f,\n                    draw_value_4 * 256.0f,\n                    draw_value_4 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_y;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    int text_y = (int)draw_value_2 + 1;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9254385964912281,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1101",
+      "source_sha256": "5da6ad0b738e3d5948dfacbf9d3249d6db7b3a6554b09cc37a03198639f69975",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "multi_pulse_value"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_4;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 470,
+          "stop": 473,
+          "old": "            hud_y = 158;\n\n            float banner_fade;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_4 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_4 *= 0.13f;\n                draw_value_4 += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_4 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_4 * 16.0f,\n                    draw_value_4 * 256.0f,\n                    draw_value_4 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_row_1;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)draw_value_2 + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9605263157894737,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1110",
+      "source_sha256": "ddf23d090993f9b39126874c671cbeae6b1a0efd95614171e90898320a220072",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        0
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_value_5;\n    float draw_value_4;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_5 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_5 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_5 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_5);\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_4 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_4 *= 0.13f;\n                draw_value_4 += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_4 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_4 * 16.0f,\n                    draw_value_4 * 256.0f,\n                    draw_value_4 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_y;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    int text_y = (int)draw_value_2 + 1;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9265350877192983,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-reversion-1111",
+      "source_sha256": "f7f01f7a16a03dc2475d6b9ec53869e99e7d525d0637e9e0b79c858ce9528f4c",
+      "state": [
+        [
+          [
+            "background_alpha"
+          ],
+          [
+            "banner_alpha"
+          ],
+          [
+            "banner_fade",
+            "bonus_y",
+            "complete_fade"
+          ],
+          [
+            "clock_x"
+          ],
+          [
+            "complete_scale",
+            "quest_clock_alpha",
+            "timer_clock_alpha"
+          ],
+          [
+            "fill_alpha",
+            "multi_pulse_value"
+          ],
+          [
+            "health_ratio"
+          ],
+          [
+            "name_scale"
+          ],
+          [
+            "name_x"
+          ],
+          [
+            "name_y"
+          ],
+          [
+            "panel_alpha"
+          ],
+          [
+            "player_two_speed"
+          ],
+          [
+            "popup_fade"
+          ],
+          [
+            "progress_ratio"
+          ],
+          [
+            "pulse"
+          ],
+          [
+            "pulse_speed"
+          ],
+          [
+            "single_pulse_value"
+          ],
+          [
+            "slide_x"
+          ],
+          [
+            "stage_scale"
+          ],
+          [
+            "stage_x"
+          ]
+        ],
+        3
+      ],
+      "edits": [
+        {
+          "start": 83,
+          "stop": 84,
+          "old": "    int hud_y;\n",
+          "new": "    int hud_row_1;\n    float draw_value_5;\n    float draw_value_4;\n    float draw_value_2;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                draw_value_5 =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                draw_value_5 = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)draw_value_5, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                draw_value_5 = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, draw_value_5);\n"
+        },
+        {
+          "start": 372,
+          "stop": 373,
+          "old": "        hud_y = 78;\n",
+          "new": "        hud_row_1 = 78;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 470,
+          "stop": 473,
+          "old": "            hud_y = 158;\n\n            float banner_fade;\n",
+          "new": "            hud_row_1 = 158;\n"
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                draw_value_2 =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (draw_value_2 > 1.0f) {\n                draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = draw_value_2 * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (draw_value_2 >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    draw_value_2 = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    draw_value_2 =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (draw_value_2 > 1.0f) {\n                    draw_value_2 = 1.0f;\n                } else if (draw_value_2 < 0.0f) {\n                    draw_value_2 = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_value_4 =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_value_4 *= 0.13f;\n                draw_value_4 += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    draw_value_2 * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_value_4 * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_value_4 * 16.0f,\n                    draw_value_4 * 256.0f,\n                    draw_value_4 * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_value_4 = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_value_4);\n"
+        },
+        {
+          "start": 656,
+          "stop": 657,
+          "old": "            (float)(hud_y - 18),\n",
+          "new": "            (float)(hud_row_1 - 18),\n"
+        },
+        {
+          "start": 707,
+          "stop": 708,
+          "old": "            4.0f, (float)hud_y, \"Xp\");\n",
+          "new": "            4.0f, (float)hud_row_1, \"Xp\");\n"
+        },
+        {
+          "start": 710,
+          "stop": 711,
+          "old": "            (float)(hud_y - 4),\n",
+          "new": "            (float)(hud_row_1 - 4),\n"
+        },
+        {
+          "start": 718,
+          "stop": 719,
+          "old": "            (float)(hud_y + 1),\n",
+          "new": "            (float)(hud_row_1 + 1),\n"
+        },
+        {
+          "start": 737,
+          "stop": 738,
+          "old": "            26.0f, (float)(hud_y + 13));\n",
+          "new": "            26.0f, (float)(hud_row_1 + 13));\n"
+        },
+        {
+          "start": 755,
+          "stop": 756,
+          "old": "        hud_y += 43;\n",
+          "new": "        hud_row_1 += 43;\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "    float bonus_y = (float)hud_y;\n",
+          "new": "    draw_value_2 = (float)hud_row_1;\n"
+        },
+        {
+          "start": 763,
+          "stop": 764,
+          "old": "            &bonus_y, slot_index, transition_alpha);\n",
+          "new": "            &draw_value_2, slot_index, transition_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_row_1 = (int)draw_value_2 + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_row_1 - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_row_1 - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_row_1,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_row_1 += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9627192982456141,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    }
+  ]
+}
