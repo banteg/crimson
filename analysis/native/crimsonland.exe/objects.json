@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "829afcd416990f0c4e4ba7312d76bcc87019f98961892329966b1b011542fdda",
+  "audit_digest": "087f131528c8d52de0e570f9c2da3de2f2bb8c1a8e9bfacc5ad7399a2e45e66c",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -5423,21 +5423,6 @@
           "symbols": [
             "?ui_element_table_end@@3PAUui_element_t@@A",
             "_ui_element_table_end"
-          ]
-        },
-        {
-          "address": 4780396,
-          "alignment": 4,
-          "initializer_target": null,
-          "kind": "definition",
-          "name": "ui_element_table_slot_01_main_menu_aux",
-          "section_number": 293,
-          "section_offset": 4,
-          "size": 4,
-          "storage_address": 4780396,
-          "storage_name": "ui_element_table_slot_01_main_menu_aux",
-          "symbols": [
-            "_ui_element_table_slot_01_main_menu_aux"
           ]
         },
         {
@@ -11036,9 +11021,9 @@
         "repository_relative": true,
         "sha256": "aa67a621050e3cc2dac3393e2950f56b39e4367809b4decef794b9c6c708b02e"
       },
-      "emitted_symbol_count": 753,
+      "emitted_symbol_count": 752,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-      "object_sha256": "2cbb81aaf550f02eddb90e1e0b841c30196cd7a8f7bb4c5cf8cdf0adac0d864d",
+      "object_sha256": "f9fe611d1e83841100b4be023c12dedafd170e2079580a5546e6bb53e8a06d51",
       "regions": [
         {
           "address": 4650988,
@@ -15151,10 +15136,6 @@
             {
               "address": 4780392,
               "name": "ui_element_table_end"
-            },
-            {
-              "address": 4780396,
-              "name": "ui_element_table_slot_01_main_menu_aux"
             }
           ],
           "relocations": [],
@@ -86635,7 +86616,7 @@
         {
           "path": "tools/match/scratches/ui_menu_layout_init/scratch.cpp",
           "repository_relative": true,
-          "sha256": "c02bd6e440c7461b2a80b5fad8718315930c2e4c2febdab2638781cc25d00d1a"
+          "sha256": "b96c2b7b9d5c68f07d67a26acae40736144794debd612f3cf4511170d8fc8a33"
         },
         {
           "path": "tools/match/scratches/ui_menu_layout_init/scratch.conf",
@@ -86701,13 +86682,13 @@
           "canonical_config_sha256": "c816cc821b12b0e9b5ba905b8a5197d65665a365ccdddb479f8069890f36973b",
           "canonical_scratch": "tools/match/scratches/ui_menu_layout_init",
           "canonical_source": "tools/match/scratches/ui_menu_layout_init/scratch.cpp",
-          "canonical_source_sha256": "c02bd6e440c7461b2a80b5fad8718315930c2e4c2febdab2638781cc25d00d1a",
+          "canonical_source_sha256": "b96c2b7b9d5c68f07d67a26acae40736144794debd612f3cf4511170d8fc8a33",
           "effective_end": 4528373,
           "end": 4528373,
-          "experiment_epoch": "c9eff429f31ee45c51a59f340f986b5236a3dc905c758474468b9ba09198743b",
+          "experiment_epoch": "392009aa6964ceb7c7e0546ba4d3daf39f0bedacca8d471ad5c1e5f1f92b5d28",
           "function": "ui_menu_layout_init",
           "match": {
-            "body_byte_exact": false,
+            "body_byte_exact": true,
             "candidate_instructions": 1422,
             "masked_mismatches": 0,
             "masked_ok": 538,
@@ -86726,7 +86707,7 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 1422,
         "masked_mismatches": 0,
         "masked_ok": 538,
@@ -86742,10 +86723,10 @@
       },
       "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
       "object_function_symbol": "_ui_menu_layout_init",
-      "object_sha256": "f786cbf5171dcea2c355661939ddeb0df1bae8ebd32acd084c835ecd6039fe39",
+      "object_sha256": "0d34200d7a486ed4a59dda94fcc71368323ceb3819d38ab8ec63f1dd20c004b0",
       "scratch": "tools/match/scratches/ui_menu_layout_init",
       "source": "tools/match/scratches/ui_menu_layout_init/scratch.cpp",
-      "source_sha256": "c02bd6e440c7461b2a80b5fad8718315930c2e4c2febdab2638781cc25d00d1a",
+      "source_sha256": "b96c2b7b9d5c68f07d67a26acae40736144794debd612f3cf4511170d8fc8a33",
       "target_size": 7237,
       "translation_unit": {
         "kind": "isolated",

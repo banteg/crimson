@@ -177,6 +177,9 @@ void ui_callback_noop(void);
 #define CRIMSONLAND_USE_ORIGINAL_GFXS_OWNER
 #include "crimsonland_gfxs_owner.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER
+#include "crimsonland_ui_state_owner.h"
+
 static __forceinline void copy_layer(
     ui_layout_element_t &element, const ui_menu_item_subtemplate_block_t &layer)
 {
@@ -205,46 +208,47 @@ static __forceinline void transform_layers(
     ui_layout_element_t **element_ref, float scale, float shift_x, float shift_y)
 {
     for (int i = 0; i < 4; ++i) {
-        ui_menu_item_subtemplate_slot_t *slot
-            = (&(*element_ref)->layers[0].slot_00) + i;
+        ui_element_vertex_t *slot
+            = (*element_ref)->vertices + i;
         slot->x *= scale;
         slot->y *= scale;
-        slot = (&(*element_ref)->layers[2].slot_00) + i;
+        slot = (*element_ref)->enabled_overlay_vertices + i;
         slot->x *= scale;
         slot->y *= scale;
-        slot = (&(*element_ref)->layers[1].slot_00) + i;
+        slot = (*element_ref)->overlay_vertices + i;
         slot->x *= scale;
         slot->y *= scale;
 
-        (&(*element_ref)->layers[0].slot_00)[i].x += shift_x;
-        (&(*element_ref)->layers[2].slot_00)[i].x += shift_x;
-        (&(*element_ref)->layers[1].slot_00)[i].x += shift_x;
-        (&(*element_ref)->layers[0].slot_00)[i].y -= shift_y;
-        (&(*element_ref)->layers[2].slot_00)[i].y -= shift_y;
-        (&(*element_ref)->layers[1].slot_00)[i].y -= shift_y;
+        (*element_ref)->vertices[i].x += shift_x;
+        (*element_ref)->enabled_overlay_vertices[i].x += shift_x;
+        (*element_ref)->overlay_vertices[i].x += shift_x;
+        (*element_ref)->vertices[i].y -= shift_y;
+        (*element_ref)->enabled_overlay_vertices[i].y -= shift_y;
+        (*element_ref)->overlay_vertices[i].y -= shift_y;
     }
 }
 
 static __forceinline void transform_narrow_main_menu(void)
 {
+    const float menu_scale = 0.8f;
     for (int i = 0; i < 4; ++i) {
-        ui_menu_item_subtemplate_slot_t *slot
-            = (&ui_element_table_end->layers[0].slot_00) + i;
-        slot->x *= 0.8f;
-        slot->y *= 0.8f;
-        slot = (&ui_element_table_end->layers[2].slot_00) + i;
-        slot->x *= 0.8f;
-        slot->y *= 0.8f;
-        slot = (&ui_element_table_end->layers[1].slot_00) + i;
-        slot->x *= 0.8f;
-        slot->y *= 0.8f;
+        ui_element_vertex_t *slot
+            = ui_element_table_end->vertices + i;
+        slot->x *= menu_scale;
+        slot->y *= menu_scale;
+        slot = ui_element_table_end->enabled_overlay_vertices + i;
+        slot->x *= menu_scale;
+        slot->y *= menu_scale;
+        slot = ui_element_table_end->overlay_vertices + i;
+        slot->x *= menu_scale;
+        slot->y *= menu_scale;
 
-        (&ui_element_table_end->layers[0].slot_00)[i].x += 10.0f;
-        (&ui_element_table_end->layers[2].slot_00)[i].x += 10.0f;
-        (&ui_element_table_end->layers[1].slot_00)[i].x += 10.0f;
-        (&ui_element_table_slot_01_main_menu_aux->layers[0].slot_00)[i].y -= 14.0f;
-        (&ui_element_table_slot_01_main_menu_aux->layers[2].slot_00)[i].y -= 14.0f;
-        (&ui_element_table_slot_01_main_menu_aux->layers[1].slot_00)[i].y -= 14.0f;
+        ui_element_table_end->vertices[i].x += 10.0f;
+        ui_element_table_end->enabled_overlay_vertices[i].x += 10.0f;
+        ui_element_table_end->overlay_vertices[i].x += 10.0f;
+        ui_element_table_slot_01_main_menu_aux->vertices[i].y -= 14.0f;
+        ui_element_table_slot_01_main_menu_aux->enabled_overlay_vertices[i].y -= 14.0f;
+        ui_element_table_slot_01_main_menu_aux->overlay_vertices[i].y -= 14.0f;
     }
 }
 
@@ -257,9 +261,6 @@ static __forceinline void translate_layer(
         slot->y += y;
     }
 }
-
-#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER
-#include "crimsonland_ui_state_owner.h"
 
 extern "C" void ui_menu_layout_init(void)
 {
@@ -611,9 +612,39 @@ extern "C" void ui_menu_layout_init(void)
 
     for (i = 22; i <= 25; ++i) {
         if (config_screen_width <= 640) {
-            transform_layers(&ui_element_table[i], 0.8f, 0.0f, (float)((i - 23) * 11));
+            for (int vertex_index = 0; vertex_index < 4; ++vertex_index) {
+                ui_element_vertex_t *slot = ui_element_table[i]->vertices + vertex_index;
+                slot->x *= 0.8f;
+                slot->y *= 0.8f;
+                slot = ui_element_table[i]->enabled_overlay_vertices + vertex_index;
+                slot->x *= 0.8f;
+                slot->y *= 0.8f;
+                slot = ui_element_table[i]->overlay_vertices + vertex_index;
+                slot->x *= 0.8f;
+                slot->y *= 0.8f;
+
+                ui_element_table[i]->vertices[vertex_index].y -= (float)((i - 23) * 11);
+                ui_element_table[i]->enabled_overlay_vertices[vertex_index].y
+                    -= (float)((i - 23) * 11);
+                ui_element_table[i]->overlay_vertices[vertex_index].y -= (float)((i - 23) * 11);
+            }
         } else if (config_screen_width <= 800) {
-            transform_layers(&ui_element_table[i], 0.9f, 0.0f, (float)((i - 23) * 5));
+            for (int vertex_index = 0; vertex_index < 4; ++vertex_index) {
+                ui_element_vertex_t *slot = ui_element_table[i]->vertices + vertex_index;
+                slot->x *= 0.9f;
+                slot->y *= 0.9f;
+                slot = ui_element_table[i]->enabled_overlay_vertices + vertex_index;
+                slot->x *= 0.9f;
+                slot->y *= 0.9f;
+                slot = ui_element_table[i]->overlay_vertices + vertex_index;
+                slot->x *= 0.9f;
+                slot->y *= 0.9f;
+
+                ui_element_table[i]->vertices[vertex_index].y -= (float)((i - 23) * 5);
+                ui_element_table[i]->enabled_overlay_vertices[vertex_index].y
+                    -= (float)((i - 23) * 5);
+                ui_element_table[i]->overlay_vertices[vertex_index].y -= (float)((i - 23) * 5);
+            }
         }
     }
 

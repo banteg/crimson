@@ -1,6 +1,6 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **798/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **799/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
@@ -20,7 +20,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 570 | 28 | passed | yes | yes | no | 0 | 1269 | 97 |
+| crimsonland.exe | current | 671 | 570 | 28 | passed | yes | yes | no | 0 | 1268 | 97 |
 | grim.dll | current | 139 | 132 | 4 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |

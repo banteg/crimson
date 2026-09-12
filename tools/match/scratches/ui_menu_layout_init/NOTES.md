@@ -1,5 +1,63 @@
 # `ui_menu_layout_init`
 
+## Encoded-body exact (2026-09-12)
+
+The retained source now matches all **7,237 encoded bytes** after audited
+relocation handling, with **1,422/1,422** instructions, prefix **1,422**,
+references **538/0/0**, and no terminal padding. The compiler and flags remain
+`msvc6.5 /O2 /GB /W3 /GR-`.
+
+The preceding normalized-exact source had 66 differing SIB bytes in its
+responsive transforms. The encoded-byte diagnostic added in the preceding
+matching commit identifies those differences even though the normalized diff
+is empty. They commute scale-one base/index registers without changing the
+effective address; this recovery does not claim a runtime layout correction.
+
+Four source changes recover the encodings together:
+
+- Both transform helpers use the element's existing `vertices`,
+  `enabled_overlay_vertices`, and `overlay_vertices` arrays, whose union view
+  has the same layout as the corresponding template layers.
+- The original UI-owner declaration precedes the helpers as well as the main
+  function. Previously the narrow helper saw separate extern declarations;
+  it now sees the same aggregate owner as its caller. The compiled object no
+  longer needs the separate `ui_element_table_slot_01_main_menu_aux` alias.
+- The narrow main-menu helper uses a named `const float menu_scale = 0.8f`
+  binding. It retains the original separate owners for the X and Y translations.
+- Both pause-menu width branches have explicit vertex loops and direct
+  Y-only translations. Their scale/store/reload order is retained.
+
+The narrow-menu helper is retained. These are ordinary typed source forms,
+with no artificial zero-X operations, extra scope blocks, forced memory
+accesses, or compiler overrides. This is a verified reconstruction, not a
+claim that the exact original source spelling has been identified.
+
+`vertex-transform-owner-scope-2026-09-12.json` applies directly to the retained
+source. Its 15 reversion controls, together with the canonical baseline,
+exhaust all combinations of the four changes above. All 15 compile, retain
+100% normalized identity and 538 clean references, and lose encoded identity.
+Only the complete canonical combination is encoded exact. The standard tool
+reports `encoded-body-identity-lost` for every control.
+
+The earlier `vertex-transform-ownership-2026-09-12.json` preserves a five-case
+forward matrix for a second exact source that expanded the narrow helper into
+the caller. Its two reversion probes restore 66 differences for the original
+source and 18 for a direct scale literal. That source is superseded by the
+cleaner owner-scope recovery, which keeps the helper. Both complete sweeps and
+the probes remain in `experiments.jsonl`; their source hashes distinguish them.
+
+The original source SHA-256 is
+`c02bd6e440c7461b2a80b5fad8718315930c2e4c2febdab2638781cc25d00d1a`
+from commit `245e12351`. The retained source SHA-256 is
+`b96c2b7b9d5c68f07d67a26acae40736144794debd612f3cf4511170d8fc8a33`.
+
+```sh
+.venv/bin/crimson match scratch tools/match/scratches/ui_menu_layout_init --json
+.venv/bin/crimson match mutate tools/match/scratches/ui_menu_layout_init \
+  --spec tools/match/scratches/ui_menu_layout_init/vertex-transform-owner-scope-2026-09-12.json \
+  --max-changes 2 --max-variants 15 --jobs 6
+```
+
 Native target: `crimsonland.exe` at `0x0044fcb0` (7,237 bytes).
 
 Live Binary Ninja and the audited data map recover the complete menu-layout

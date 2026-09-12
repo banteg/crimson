@@ -1202,7 +1202,19 @@ byte-shaped source.
 
 `match checkpoint` compares the checked-in native manifests against `HEAD` by
 `(image, address)`, in addition to checking freshness and metadata. Regenerate
-both images' native audits after changing matching inputs, then run:
+the affected images' native artifacts after changing matching inputs. For images
+with tracked structural link receipts, use `native link`: it refreshes the audit
+and linked artifacts together. Running `native audit` alone leaves the old
+`link/link.json` audit digest stale, which the native-link integration tests
+reject. Do not repair that digest by hand. When shared matching inputs change,
+refresh both images:
+
+```sh
+uv run crimson native link --image crimsonland.exe
+uv run crimson native link --image grim.dll
+```
+
+Then run:
 
 ```sh
 uv run crimson match checkpoint --base HEAD -j 8
