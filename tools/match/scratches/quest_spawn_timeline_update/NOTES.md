@@ -295,9 +295,9 @@ but none reproduces the dead pointer home store. A plain C translation of the
 same logic compiles to 78.07% with a different prologue schedule.
 
 Scanning the 31 cached native listings for `lea reg, [base+disp]` followed by
-`mov [esp+X], reg` then `mov [esp+X], other` finds the idiom only here, so no
-in-image positive control exists. Ordinary C++ spellings of the pointer appear
-exhausted; the residual remains classified as the traced `C2+0x306c1` folding.
+`mov [esp+X], reg` then `mov [esp+X], other` finds the idiom only here within
+that listing set. These tested C++ spellings do not explain the pointer home;
+they do not establish source exhaustion.
 Replay from the repository root:
 
 ```sh
@@ -306,3 +306,48 @@ python3 tools/match/scratches/quest_spawn_timeline_update/source-shape-controls-
 .venv/bin/crimson match mutate tools/match/scratches/quest_spawn_timeline_update \
   --spec /private/tmp/quest-timeline-source-shapes.json --jobs 8
 ```
+
+## Second pointer-removal route (2026-09-12)
+
+An [isolated diagnostic replay](../../evidence/vc6-timeline-late-removal-2026-09-12/README.md)
+changes exactly one template-pointer eligibility return at `C2+0x309bb`.
+The LEA then survives `0x306c1`, but is removed inside the later `0x32216`:
+its node identity disappears and the ID load is rebased to the entry. Additional
+observation hooks preserve each parent COFF, apart from timestamps.
+
+The intervened output has 113 instructions, 84.210526% agreement, and no dead
+pointer home. It is diagnostic evidence, not a source match. Preventing the
+first folding decision alone is insufficient for this candidate. The later
+routine's address-substitution conditions are a concrete next investigation
+target; the memory write and frame-slot overlap remain unexplained.
+
+A broader adjacent-store screen across both original executable sections finds
+only the timeline pair and three known dxdiag zeroing pairs. Canonical source,
+flags, 91.228070% agreement, 113/115 instructions, prefix 51, and 13 clean
+references are unchanged.
+
+## Rematerialization and actual cursor motion (2026-09-12)
+
+The [follow-up trace and source controls](../../evidence/vc6-timeline-rematerialization-2026-09-12/README.md)
+identify the late path as `0x32216 -> 0x526d3 -> 0x527b2 -> 0x1f578`.
+For the surviving canonical LEA, the candidate collector succeeds and the late
+predicate accepts substitution. Under the pinned `/O2` profile, its use-cost
+and definition-cost helpers return 0 and 1, with the size-cost branch bypassed.
+
+Rejecting both the early and late substitutions retains `lea edi, [esi+0xc]`
+and the ID load through EDI, but produces no pointer home store (114
+instructions, 85.589520%, prefix 14, 12 clean aligned references). Intervening
+at the early base-conflict check instead gives the same result. These are
+diagnostic compiler interventions, not candidate matches. They show that
+retaining this pointer alone does not automatically generate its native home.
+
+The earlier `ptr-bump-restore` control actually used `template_id += 0`.
+Its source and label remain stable; its misleading generator comment is fixed.
+Twelve real cursor-motion controls and eight reference/pointer counterparts
+now exercise sequenced increments/decrements. A float-value control keeps EDI
+and emits an unused heading home, but its trace starts with a memory-class
+float store and later rewrites the float load/store pair to integer copies.
+It does not produce the native pointer-valued overwrite. No control improves
+the canonical source. Six source/context controls and ten successful debug/
+exception/incremental-profile controls reproduce baseline instructions;
+two `/ZI` controls fail because `/ZI` conflicts with `/O2`.

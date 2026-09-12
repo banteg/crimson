@@ -513,7 +513,9 @@ def batch_memclass(s, add):
         ),
     )
 
-    # pointer modified in loop (post-increment then re-decrement) -> induction candidate
+    # This recorded control adds zero; it does not test increment/decrement.
+    # Keep its historical label and source stable. Real cursor-motion controls
+    # are in evidence/vc6-timeline-rematerialization-2026-09-12/cursor_probes.py.
     add(
         "ptr-bump-restore",
         s.replace(
