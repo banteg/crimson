@@ -378,7 +378,7 @@ extern "C" void player_render_overlays(void)
             shield_strength * 0.4f);
 
         half_size =
-            sinf(game_time_s * 3.0f) + 17.5f;
+            (float)sin(game_time_s * 3.0f) + 17.5f;
         float effect_heading =
             player_state_table[render_overlay_player_index].aim_heading
             - 1.5707964f;
@@ -403,7 +403,7 @@ extern "C" void player_render_overlays(void)
             1.0f,
             shield_strength * 0.3f);
         half_size =
-            sinf(game_time_s * 3.0f) * 4.0f + 24.0f;
+            (float)sin(game_time_s * 3.0f) * 4.0f + 24.0f;
         grim_interface_ptr->grim_set_rotation(game_time_s * -2.0f);
         grim_interface_ptr->grim_draw_quad(
             camera_offset.x
@@ -519,9 +519,10 @@ extern "C" void player_render_overlays(void)
                             [line_player->auto_target]
                                 .position)
                     <= 80.0f) {
-                    render_delta = player_render_vec2_t(
-                        target_position.x - line_player->pos_x,
-                        target_position.y - line_player->pos_y);
+                    render_delta.x =
+                        target_position.x - line_player->pos_x;
+                    render_delta.y =
+                        target_position.y - line_player->pos_y;
                     player_render_vec2_t normalized = render_delta;
                     float distance = (float)sqrt(
                         render_delta.y * render_delta.y

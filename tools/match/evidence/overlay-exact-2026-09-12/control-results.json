@@ -1,0 +1,3661 @@
+{
+  "before_sha256": "322be4d21391ba19a4ad893e033f2d08238e6393acdafaac2e96b64dc8632172",
+  "controls_sha256": "5ec8a61c9726d16655ec40dd0d955200cbc7483e689b2d9149dc4abbcd2af73d",
+  "verifier_sha256": "26a7379ff7816bc072bdd0255000ad87d4b115af96a915118e93c32819567ba0",
+  "parent_sha256": "086cad7a4fb0b3cfe2c41360c547fc1ece53c4b51abc263f2e1478544f3c70c0",
+  "rows": [
+    {
+      "name": "math-consumers-0001",
+      "source_sha256": "32d614c833b482c8da25f307d97b2def46b36b771a1588410064094f511d8be0",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-0010",
+      "source_sha256": "95f2e662af85eaf885f3d91aceb8e5822723703bb1ab716ba0ac318d8fed08a0",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-0011",
+      "source_sha256": "e1c6bddb9b4af605ac00d94a6d1427f0eaa7f9afa70fc8b3f49eb60a83880e26",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-0100",
+      "source_sha256": "8f3ae3773c6ca51be8d4938b821926c6417de4e50fd1b501ddf4f49e4fa0499d",
+      "observed": {
+        "ratio": 0.9912891986062717,
+        "instructions": 1148,
+        "refs_ok": 336,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-0101",
+      "source_sha256": "252f2979156772ed1ff3b6c98411071c681357d246d2d55bfc5c701e203f54db",
+      "observed": {
+        "ratio": 0.9912891986062717,
+        "instructions": 1148,
+        "refs_ok": 336,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-0110",
+      "source_sha256": "3a5130258ed45a2d789ac6e37a45978abc0ce45d8269b881a605a3f3b8843068",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-0111",
+      "source_sha256": "2abd67f234afb753bafe6aadb4bffb4dc36e8d89baea235286bd27bc8cec8113",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1000",
+      "source_sha256": "40ff82c13f4aec3c41e70f3a2207a6c1ff19eed540a3f8f3855ddea1263a589e",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1001",
+      "source_sha256": "85e2aa5d9767052c3536e5547ef88dcccfe18c5a404cd9a1ab4f4fab60e3d48f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1010",
+      "source_sha256": "fc301aae7ab60574fe27b96ffd50072ee76a60c8c5fd298f969474cbac45ca6a",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1011",
+      "source_sha256": "b2f0261a0b8b2cdad19c6f6d68130d054013b9fbded112d2889f668e9b235a29",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1100",
+      "source_sha256": "4156db03257b9ab60ba7a06de1aa467555f2f4435f1e1a39295d44d3b6b10431",
+      "observed": {
+        "ratio": 0.9912891986062717,
+        "instructions": 1148,
+        "refs_ok": 336,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1101",
+      "source_sha256": "70c685c1b3b122a7b9307fb8b6b276c22601e9875eaf6e5a852752721fa9df00",
+      "observed": {
+        "ratio": 0.9912891986062717,
+        "instructions": 1148,
+        "refs_ok": 336,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1110",
+      "source_sha256": "df186fd90d49608887e17ce6799eca289bb205c23daad91c094c2103fd2f1b3c",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-consumers-1111",
+      "source_sha256": "636b49871b9c957be9d1f0072a4e3dab37648117fd9d524dbc88c8013b2afcaa",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 513,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-1",
+      "source_sha256": "40ff82c13f4aec3c41e70f3a2207a6c1ff19eed540a3f8f3855ddea1263a589e",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-2",
+      "source_sha256": "cdd91b2978afc9fa6d4999b45a945c56d5dbf14a81570cce25e7ea03ad3e8860",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-3",
+      "source_sha256": "58933d7c3b3c2385ed6747385ee7afe34bd988f5fcd736d9b0f89deefc3fdbde",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-4",
+      "source_sha256": "7ce7d44c2046c7e9dc05a36a77642e9ce1730c7075f462df0215cb62ba5d9e0d",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-5",
+      "source_sha256": "93f603698844f48e3d0d8fe8add68cffbb266d93862335556035bcc122bc206c",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-6",
+      "source_sha256": "84bdb9fd67493acd48e747be008962801f1c9272489989134b7fd1cb7e3495c2",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-7",
+      "source_sha256": "6807fc68e1f65de58bf364f09d6787118f12f430be87b6af97bc0ee9ee326365",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-8",
+      "source_sha256": "9d1ba54ac982d6e0a1ddd5f7e162899edafaaf3ee8510066a8573fd0f53c4c52",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-9",
+      "source_sha256": "2d5be07c40a267b30f871c4fb8af072cfc4468f852f01ecac49b726ba624ea88",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-10",
+      "source_sha256": "dc1bee8e5fe1f2028acd7c0d1b86590c29ef11a6ccd44f7c92ca8c6acb865a7a",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-11",
+      "source_sha256": "2bb944da5728fef1a5b2d87785fe3f663061c2b6c88a4a8ee45d899e8dc89729",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-12",
+      "source_sha256": "f328ecc8c52ae690fc19e0000a109a4d7f0c6e3890467f1a94096f85e2d47104",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-13",
+      "source_sha256": "0316ace282b6bbc1214cf9a818f6557b031ea9a907c55b2d0bbb4daed2a956f8",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-14",
+      "source_sha256": "c866d79705951783b35ba76e92472f8dc1dce007d05dc170b8bf5d3c88fb476a",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-15",
+      "source_sha256": "8f9252acaa222818055f47934f0c72a29375f293b8eeb689afe8ed81d4d857e4",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-16",
+      "source_sha256": "456280b6a3426728c94f0191f0efb028b8f888fa584ad3adab013c0cdda070a1",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-17",
+      "source_sha256": "d39e331c29821810323c5e4da8291176d031a28f81b9ff6e759856b4a0867a0f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-18",
+      "source_sha256": "9ac9e00b91beb140a0210f232af47aa2d8a2a1a7d0f062e423748bf6ca53f120",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-19",
+      "source_sha256": "556163596126522f76a09946bf100b8dcf24a3f707a0d6cf20a935876ce88343",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-20",
+      "source_sha256": "8df3fdf80f803a1c42e56d47438b9cbe4f435862e50835a8a697818813b71a5a",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-21",
+      "source_sha256": "8dc237db3e3aff506b3a93e2074036265da92c531a770454947434de7ec38647",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-22",
+      "source_sha256": "ba2903dc6469f68ca40fa3e9d0831455dac11246b73d87474e8dfc5916886520",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-23",
+      "source_sha256": "fe8185501329b03e8a12aa111d0847f40cb545d7116192384093abf4cbe7d8c7",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-24",
+      "source_sha256": "d88f060dfa4c527451866914ba71e0f44bce7c7a1451c39deecdc1b166635c09",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-25",
+      "source_sha256": "498c734bf6f89a6ab1109f20478aa34f6a7ec3a64a328c9ebbccdaabfc106d61",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-26",
+      "source_sha256": "63079627dca6efa505e0b360e4fc683af484cb82590fc9078d52c8534b179279",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-27",
+      "source_sha256": "d02cd33c3c1339bfb88b6b2eee2ea398127e5c61dd1a99addc3a7d6ecb8dd0f9",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-28",
+      "source_sha256": "9dcc858d692f140fd42d046e22d7ba1dcfd72074664f112dfc13287ea039ebe2",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-29",
+      "source_sha256": "a232c09aaab5405c455d0a61bbae54f687bbb07df687a0ee5ff3871e7a340dee",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-30",
+      "source_sha256": "d727f03df76edb266e94cc85679f57a7c083ed49e4a17df463b533b37aedd283",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-31",
+      "source_sha256": "4d08fec7161afb2922d2752ed9c2b6a2e7c2f326392b2046dabd665315c0da82",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-32",
+      "source_sha256": "d1bca5780d6086690ba7efd7c946123a8fb0fbdd679c63afaf224bb3f37681e0",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-33",
+      "source_sha256": "0b50047b0cb25d928fbda06503e164b9d965587a2e945402d056e52d601c70dd",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-34",
+      "source_sha256": "a2a69413bb51b3414e68b0b887a1ad2f7f1f052dabb1bd171b54448d2e7284cf",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-35",
+      "source_sha256": "0b8874de76693290e33e7cbbe67c0b6f7e86273a79e0cce163cb0338546977c7",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-36",
+      "source_sha256": "d7e2ea88dd6e2faa1b23949baf17a479dc41c9d5aacd264b523d602d339cc2eb",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-37",
+      "source_sha256": "8dd0f4ac2535f82a6c8f04b9fa56a78d62f91592a629d5f4d084592601edba72",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-38",
+      "source_sha256": "d5c83c1a574eb46689f3db198a6c06a6f221534b13fb4fdfa086a6d12cbd0149",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-39",
+      "source_sha256": "2e7b3791f679e121652d3d2bf566be16467a1cb1b892c46a56f8c8ea583d54ce",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-40",
+      "source_sha256": "46786fbb6f2b8b40c0a802d8cd3c920021f2719dede940cf6ab95f39fd3b676e",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-41",
+      "source_sha256": "0fce555bebcf47740086d38f119dc939332697551ee3f065ff1bd6d6432dd39b",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-42",
+      "source_sha256": "889904ee469709fac78cc0a1b5bc51813262117828361b71b3b96cf86b3251cd",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-43",
+      "source_sha256": "b65b47d9078e822338e430646c707aaec9a5a9ec3dbc3d7f22e7d5d74a8f484c",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-44",
+      "source_sha256": "b48cbd6dcee9f5445d437beb182d52f2934a2e82eda485efe8938fdd93c6728d",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-45",
+      "source_sha256": "844603802df6d5dc111c3724285a9f76a8c103b2c1e0c2b7111e9a972ae1b68c",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-46",
+      "source_sha256": "b906a7ed1be86d4f07c6c44d8dcbfdda6b56aa09768ffaac7987cd883358927f",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-47",
+      "source_sha256": "e555464fbb91e23a768b8b12d8618c513c740c6ff342ff63658345ab39d247dc",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-48",
+      "source_sha256": "64dcab5519a019df83bda77ce78ed9629e392312d194374e77c73014ebb670de",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-49",
+      "source_sha256": "ed0ec7ee3e3ef9cf8aae2c8e4ca3ad5e01205e1d763ac7d865e6e78cb2214c3f",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-50",
+      "source_sha256": "4707010b9bbb3acd770cf8993f714fe074ce24f9287f0453d43975be9b39e123",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-51",
+      "source_sha256": "686b1fa5aecd0a682fe08fb30587970717dd688a224c67f5cf01db1f6c480be2",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-52",
+      "source_sha256": "d9946a268bb01c8472f9d383f29dfeeaf643f8343d507a5b7797c8347cd1b67a",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-53",
+      "source_sha256": "55e340f0049bbba201e5ef40431a44e722096899a22845a84870bbbadc132054",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-54",
+      "source_sha256": "a7fb97fd8b685b3de8138df4c6dab9c6a70b8a527c0cb38515acdae1a514d979",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-55",
+      "source_sha256": "1b0020764b214beed7ac37ecce00998eb55cc194f2dcf9b00a3fa7f2e128af82",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-56",
+      "source_sha256": "17b9d4a26597c8b9bc7c32dc6788429b14ebdb6fa9ad84322f5e245a8125a18d",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-57",
+      "source_sha256": "497cca7154585ce48942093b92a6d7f7be21d37a16c738a7f458198ccc473c24",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-58",
+      "source_sha256": "31a0822f4d708e65e6a81af351d7f4a1f0367b93f675f6701398861515dcf41f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-59",
+      "source_sha256": "9b66f248e8ab82b55a7f2c246007b8922bdba8be4cdea208592ac481350bc83b",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-60",
+      "source_sha256": "b1d0468b435383d9ec63cd26d70d20d680d8235d363aa748fb8576a800ce5e03",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-61",
+      "source_sha256": "e77053431e73db6ff770d6344ebeb30dcb598aa2173b8274668a40c78a8476ce",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-62",
+      "source_sha256": "d0f1b918ecf7f3efcbc5c1f0c38174e7b4db3f946f3be6a883a8dd4596161708",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-63",
+      "source_sha256": "ab53ef57bc318fb22d5f1134c949adc50ec12db77d56038f373750abab30ce5a",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-64",
+      "source_sha256": "a03aae2791b1c85a4ab8ca41c207e95429ffcb362970c03d2ace279859d59be0",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-65",
+      "source_sha256": "2dbd66d6360a96bcf767acfc29d75360db9fe0c499a5581ffca36daa1b7e0d89",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-66",
+      "source_sha256": "b739a2d9fa508a5218c28c0c1b90a9ffbea05b5e71503a0c9ea948cd2d07fc9a",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-67",
+      "source_sha256": "4f28faa98c4f2a8c9fe035acf35b8b89b9da2b5d6f75091d60fcc28018db95b1",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-68",
+      "source_sha256": "b9e4ae261cb0792136d2b9ea768abb4c20ff18db63841bfc2171dd6f735c3cab",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-69",
+      "source_sha256": "e42eeebe82c0013a5f6bba5c6e8d9e3122616cedc21093a917f6066d98d1b0bd",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-70",
+      "source_sha256": "bb49bf8f08cdb464358fd0d66073a8204d73b8313aa6bfee59d7d4a538f93e4e",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-71",
+      "source_sha256": "f41da87fe060cfd399722856bd704412c6460fe1248d5179154a6e8006f35801",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-72",
+      "source_sha256": "4ca93f7e741b72b36b739397ead46238e0e7c119cef92071f1a93c05de925a2e",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-73",
+      "source_sha256": "d80dde2fb4a8e4bfca090909fd1f802d00bf59d973db9ef814671b2ea540c28b",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-74",
+      "source_sha256": "ae01355af1491f69c5ca517a8bdeca58e5a31da8b493d1825f1376953658fdf1",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-75",
+      "source_sha256": "cc9345678f24f7dc9971706eb145c17fa06458be16145e89752debd93a4de136",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-76",
+      "source_sha256": "7bce7cee050fa8c1498ef7f513b6ea42b78d12cb07383a87f16e2ac7b66a3c1a",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-77",
+      "source_sha256": "7cdd2c3df9d2f290f5c948bcb0b4297704bd6fd8e1d321be1f6e7e666b7003ba",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-78",
+      "source_sha256": "9f990b4f73b0f4be90594f9f401a39d2dc3fd4f28994611b3651c2cdf3b93087",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-79",
+      "source_sha256": "67b1c007d6c655a380344c4820d613239f5f3c45bead34c9196a2ae245cf64ec",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-80",
+      "source_sha256": "07a4dee82fdcf7f3e141156ae7ee2e01b128ce8499b9bf8757df5116c6eb4d7a",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-81",
+      "source_sha256": "d0cdf9a694975a7297dab213981d4cb9b5cc771aceff42c539eae6f5a859db6f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-82",
+      "source_sha256": "da74ec2c436e29356515e84e713c1894aadd242a45f46691a8798543cfff9eb8",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-83",
+      "source_sha256": "e4013ce910b2398c505508e1421f44fe103adb4bab2caf98833c5fe8928fd284",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-84",
+      "source_sha256": "2014dddd2a037755dad752c7b29633a1b31dcf91ee6b20b6ac7df7599208238a",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-85",
+      "source_sha256": "88a5506c6ce6165e434e13c41366f86e40ebc8bb2a5db92e21e208aec2dccd0d",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-86",
+      "source_sha256": "371622d441614e31025f0df9f4d5a59e3fb4e1af53352c56e0dbc978ecc3706b",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-87",
+      "source_sha256": "38b0e6b1ad361f5c3c60173b4290899c0a1f177a3a2ae11ce479e504308c5ae1",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-88",
+      "source_sha256": "90910f3c136b6dbfb718b846e24a9490c99b979912cd50506f8b5ab1fdf6b6aa",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-89",
+      "source_sha256": "6519bbbdbe1eba2d613fe2b3140acc52e88e69a2f0d265d810346452d1e05190",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-90",
+      "source_sha256": "e943943b1c5392bfa53ce36aa248d6e06a96852179287ccff58305387c878c40",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-91",
+      "source_sha256": "d0298f0aa88b313d13884521f3db7763068a23f762a0a84703bbba1562e8a4c3",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-92",
+      "source_sha256": "953ddd50e16c9888d5542c9deac51b92cb261b29b18d1d0c75ce6c9dff972075",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-93",
+      "source_sha256": "9ba8df63c8556d1084bade1cf8dd796275fe89d9fce98d4df9cd2a3aca31491f",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-94",
+      "source_sha256": "a9797423fb1ca5928daa1ff0414bfc76e050811f2639625186610a59dbb44b49",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-95",
+      "source_sha256": "5b0665c8b35f217cf367f4f47e7879849f2b4b5af3c5884ad6cf747b800ebe69",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-96",
+      "source_sha256": "0661b02837ef8dd4f04d520f44580982f1c53376c25df4b94a71fa76a7db909b",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-97",
+      "source_sha256": "6dfc6f50f05770e1e9b9c4ce98da262edf9bd8ed0c84aa57e14cdbc53adbc559",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-98",
+      "source_sha256": "c6ac7087eb8093c799914e3be7f7b31bbf883d93ed2f0b8e0f9968c5d5713f20",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-99",
+      "source_sha256": "20d13b893ba7edd0b7bdfeb63897210e3bec825b794f73b87c204031878712bc",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-100",
+      "source_sha256": "a13999ae3f915dad96250ed8158041a30363473d73da71c4b5c5b5ede5a330d7",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-101",
+      "source_sha256": "95bf5b92ae48b771d9b0765479f741c162b691b9d3b7df36289df2583e618cfc",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-102",
+      "source_sha256": "baa836ea3ae1811bb4ae1486d7bad7eb36e26adf70beb68b0ac4a0d7bb2ce8ca",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-103",
+      "source_sha256": "79826ecd84f767c5a73da6499611af2c1122ee04eef3a5f41463b302326f1be2",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-104",
+      "source_sha256": "f0b24b85817593540304005cfb8864c0fa77b49bb19585cd6ff80442c8c4cb5c",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-105",
+      "source_sha256": "dcda2a6687b2f3436de18985fbb00c6372b8a5145e2707dea68482cb1df988a3",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-106",
+      "source_sha256": "f0971b5f5dc2ae379a1952be43e9b7b15c28fd2a72e37e28742db1407da04eb7",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-107",
+      "source_sha256": "ae330e8bcf2d83eb0c10676c2ff9db9891f46a5fd67b718cc8a13015fa00bc9d",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-108",
+      "source_sha256": "10b1a9db730d42c04a8137fec513756eeb76456f6695e24e957e4951d73f7616",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-109",
+      "source_sha256": "3a42ca16a2dfc54b1fba87feb28753e6f4c72b55c923ee9feb4b1200c8189679",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-110",
+      "source_sha256": "82d9a9e03f310fd4e5ea42869ac4d16b7d961ba45b95e39091b22c4adaeb238f",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-111",
+      "source_sha256": "29428524207068b3b0def08fa0668cddc4b01e69ec9c4fdd425a34ba32449407",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-112",
+      "source_sha256": "eaeff55d8429bca1ae5f6199f725506b9bc5c92da2910a6e3d58a7cdb53404da",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-113",
+      "source_sha256": "9ff69a83633ed1a81c5b1a42e29c3d25c2cef1f2e2ba69f1aaa4413507ce2aa8",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-114",
+      "source_sha256": "8dbb3f60dc5530328b4ff7272e137ecaf2f7605648ec368229e77cf647ab397c",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-115",
+      "source_sha256": "40d0742a88841d28f24e500dad8158e58dc58d8398258a73544ca67fdfbb2e67",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-116",
+      "source_sha256": "39e04ee07d2b159e5b3942602c07f2e59bf51ac8f33ce8749e9950ed50d44eef",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-117",
+      "source_sha256": "90657e904bd60684aaab762c06c0c8b7920748940c8f523768835e173abc8efa",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-118",
+      "source_sha256": "0abfc885976be7a6955e57509a50c80b09977a0d4d3d1be69a056a2810a8beba",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-119",
+      "source_sha256": "2d2d1ea93380dc5888129cf42bea04512a37a365b87e146c3d15e26a1864a0b6",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-120",
+      "source_sha256": "7372f6c0cd5a225c35155dd591af908fefaf7abf4e62f91932bfe10908b88de3",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-121",
+      "source_sha256": "6bf4b92fcd6042ac9dcf25a4608fdae17cccee738df532991aac7e40f6ad397c",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-122",
+      "source_sha256": "31dd4af0321d29d5641214d77aec6a0d711911838986f046406ef6201bfd5e2d",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-123",
+      "source_sha256": "1ebc520b82e70855d9f388f83f5b6e8f0ff50a8512e910872564d04e31b071b9",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-124",
+      "source_sha256": "5726df028d1754cd605a89d83d8bc6453074d03aeccb8a70872d1d3dee70ec73",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-125",
+      "source_sha256": "33c38aea1daa6f58471405a327d5f7caa6f3dec581c306dda06dd42087a62a58",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-126",
+      "source_sha256": "deca04eefa40bd389b2659b6a861a34eb7310003736a3e7e1ab2dae95134642d",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-127",
+      "source_sha256": "fd1574664e52da3c4417244845eca86af897c5967639d61ca5cea5ae83573847",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-128",
+      "source_sha256": "bf1ad8b2a3413405c84daa7a62c9fb3629d6cd1ebc110935e827ec49d6bd799b",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-129",
+      "source_sha256": "eac6b093da0f891e3bdf3c172b1982eb3ec4928e5a59cec54cb700d42a45f1cb",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-130",
+      "source_sha256": "5d37d307672c95fb19b581cc48bc65379c3517142f1d658b572ac61a2f7920e2",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-131",
+      "source_sha256": "6e0e0bad45d77527d9d7c551072e5f85f6c5af9a7c7fc4dd9e46727f678e7fb1",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-132",
+      "source_sha256": "4285883e86108fc3a70da5c25653c366bbbd562ecf190e6b6c467a4b87edeeb5",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-133",
+      "source_sha256": "86fc840044e93c0d64ea50e9a767df16c57d2edd82b29b85ba478711b787572b",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-134",
+      "source_sha256": "fcc751c849f3ebab7fdf808ee27d29d0dcf8348ced4fc34800391fd00262dafa",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-135",
+      "source_sha256": "af246f2f3850c8419f6ad17bb0bbd0ac3c6fdd6a26cefdc58fd36f91dc5a2097",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-136",
+      "source_sha256": "22e4f1c86c76bd9e306542e72298669a0df504420b0ef9f325fa896c3932c483",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-137",
+      "source_sha256": "d901bb25da1b8d8381065735c3e974daab003d91fde2f0b0e47323a5fe5aa642",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-138",
+      "source_sha256": "cd2cd4cfbc01206776bd545f7216d7b20860273f0d038ff2fb8132369fb687e4",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-139",
+      "source_sha256": "6520a7aa237b6fda90fcee4488aa3e5cf7286000a6ddc14231602e433d0bc61b",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-140",
+      "source_sha256": "4cf66ca6d42582a971d319215ba6166d97bfc179e1d2fd781148f8c53ebb90fe",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-141",
+      "source_sha256": "67adc2959d3cc34e82bfafff1f81e9c6843ccc5694ffd396b9c367bd20d75a3d",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-142",
+      "source_sha256": "7dd2b8aaa731778df5c9777d4a2b06028748cc970ae92d645ee358c7cea6ccef",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-143",
+      "source_sha256": "3d524e6f54fb1a5e436a5471c09e07d21f80abe4b7b23c7ac1946f31ce6905b7",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-144",
+      "source_sha256": "6c599645f2ce29ee3267abf8a68ff8324069f3588b7e3d0cbab2a4381fb1b9e8",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-145",
+      "source_sha256": "5afed250bf08fa1384a59171a77b40eb6d0a952ef24aefe2e58de20f7f3cbf08",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-146",
+      "source_sha256": "383def675afe989bca42321b74193e464e4030750933ea9b339a82137c69ac4c",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-147",
+      "source_sha256": "375377b9de1a07745d7c4bee35e00025c168f8f531b7f6005a876e707346206a",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-148",
+      "source_sha256": "ea96d91a9bf6be4c55c37f0074b43f52a0950bec9bb00eb7706520ffa0d41363",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-149",
+      "source_sha256": "2da2731d887bfef1001810f1ed3d25491780acbdf00c55f4ad4dac190b91c140",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-150",
+      "source_sha256": "86dd0125f40d2c78470f16ef02e11c9a671a4cea9338ccf2fe9c36b47d12c8d9",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-151",
+      "source_sha256": "7e815b125141f0840a8b7b27aa0bfa4bc9a5fb4ac5130b7fa780048d205cd7e7",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-152",
+      "source_sha256": "5be6cdc05f6f80cf4a34a3d16ee0e4c6715d6bb5a21223bf05465a9854e8db98",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-153",
+      "source_sha256": "664c1345c538619f2275fce0aa1747e7e5e54c543ca5134af720034672975087",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-154",
+      "source_sha256": "0ae4d16d990d671319da39c02dccdaac59da510d8b8268b032b44432e9b87495",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-155",
+      "source_sha256": "346ca36f7792c7344e4ed4807ca7bd2f73c3b47a0151d52c25acf7369ad4ce5b",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-156",
+      "source_sha256": "b6dbdef0b9b1fa3168a53b8f7dc9e9c3dc6e040b684df758660aa0df12dcbd5c",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-157",
+      "source_sha256": "8f7c36f2ad2f1698ec94a416363b212b887d55fe845f1dc33e3d4d8429375fd0",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-158",
+      "source_sha256": "eb16e3e31864e8fc00c33878e6ce4ba2b2a167c9c68e6cc0b9dcaf837fcd3b91",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-159",
+      "source_sha256": "862d406a46c232422babc351d87fa2906c8919b63793d447d292c17f2841e38c",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-160",
+      "source_sha256": "916cb07e92cf633cd7f20307b4f35ce1d7119482a354f1821553612eadfef789",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-161",
+      "source_sha256": "bf06fc2d097d0ba05a313755b11933ae154ce0027fc8d36611ac16e3707e060c",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-162",
+      "source_sha256": "1f959be1d259359c5c145a761620c4e6421cb261d2f4408790dce3fe098a5a13",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-163",
+      "source_sha256": "775593f35991dff94a1a9e6fd2ba6ec13a6765356b4d5a3f66d69562731c60ad",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-164",
+      "source_sha256": "8def57c65208dbced91d0cfde3507a9b4adc75aa3f3d530f32929af917fc8e3c",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-165",
+      "source_sha256": "f1160dd3591cad1e7ff3a7592ff4bbed9b4df5a2892a90e48ed8ab40a9d22a21",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-166",
+      "source_sha256": "87bc4ce2632db4b8f14975985ca6159fcab1a7cb9b5f65d6913def90dfdde38f",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-167",
+      "source_sha256": "48253e55d03c703e7f039b9a72b965b8e42a94e85cb40ce09d6365f4bd606cfb",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-168",
+      "source_sha256": "03414d765ca53ccf6c7f9aad3a1f5010abbd07ef26d43f60555b2432eef1b58d",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-169",
+      "source_sha256": "eadb710ef67dad7bd765a718c76a7b51cd5207dcc89738199eb7c7bce019a2fb",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-170",
+      "source_sha256": "9626bdebe603dbc12154ee0ecf8fb626d5ff9cffd4ffb4e999f7af0c40829c9c",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-171",
+      "source_sha256": "23ffc14b5ec524473d31c6b6eb1aa563ecb501a9a5f82b1828eec0315dd1cfb4",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-172",
+      "source_sha256": "91ebf5b0bc0f5434586e81aa26e3339605e04039432b6c165dc982405392297b",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-173",
+      "source_sha256": "a7ff9f071aba75cd75492c89fba886a45d49cce2a06aabbdbe8d6f6b887e3a05",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-174",
+      "source_sha256": "dbd2fcaa3202a9b5110981c2aa5c44961e84be1039f275ea536200fd594c8193",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-175",
+      "source_sha256": "d6ce648154fb5de9030252d087db8b0341f7c0d623961421f6e6900e497c7c89",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-176",
+      "source_sha256": "1a9c858b9b690b96b2b85a26a561b526bb18af986e11cc7f84145ad14a454bee",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-177",
+      "source_sha256": "4e257eb06ac12c4d0fa23218de2f25736f0152e9a4f0b1625034fc58347d3acc",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-178",
+      "source_sha256": "0245273c6ac40b1ae9da303e407e648d41fec7919123373e67fec2ef701a3eec",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-179",
+      "source_sha256": "7e27299887fd94c9b8416c37107f9256f835c651453410b4c534e478de709c7b",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-180",
+      "source_sha256": "048cb22fb112e63d3f7ad86f8d86f1c97e0b835a5b73419d4eedb01ec2729231",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-181",
+      "source_sha256": "d2cab97384dbf4e2887ffafaf04efa396f46aff215f728e887aca986e1d4e98f",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-182",
+      "source_sha256": "9935d50a9a4b17f8bb624ffab68333ff4a021b6d9a8acc51b3c8d17b2c7fb525",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-183",
+      "source_sha256": "fdb9c689255ef73a5053c93be039bef58cfba676b5f24bcd5d02a5d9a21249a8",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-184",
+      "source_sha256": "4221e4a47412692aaa7139556bda9ab5085beaf172f63b93b52f3ccec8a04350",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-185",
+      "source_sha256": "b664570d5f2d4d391d5f19c85f25090c4409a8fe0cdb0ce19d95e15ccf353daf",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-186",
+      "source_sha256": "bed0e6c8a4846d9ba22cde4eacfa13898894ac89d54204cbf3a174f1a207ce24",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-187",
+      "source_sha256": "27cf8c0ccf746a6c4373afa97bb3a76be2bf6ec06f5961bb1bb81baa46334135",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-188",
+      "source_sha256": "6304ea96724c27a116d1b62de5e446692771b0989eb6e65c97dda7a402940330",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-189",
+      "source_sha256": "e62475fe6d595a7840f3642c746fdf21c8f82e445a362498f8b64303a557e189",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-190",
+      "source_sha256": "8c60d74665847c461371048378302314f272ca90005266a623d90af1b02f9768",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-191",
+      "source_sha256": "90e2f9223a7b02f07513e2c1d81548644a0dba086ab32e6203bdbcbad453ffb9",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-192",
+      "source_sha256": "35800d8b531b7205ccedc9c72ac33df87014f7f7c6359bcd0e62e512829b7ce5",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-193",
+      "source_sha256": "3c7b470e4c930d88a45d5024ac4d65cf66f1be68609c7ebd2006bf52ed021fca",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-194",
+      "source_sha256": "cf737ca8e1e66325d8383ac980a6c4ba3b0ac650f00142c1ae07538a20244aa7",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-195",
+      "source_sha256": "fcba2ca27516307badcb8e0d4a44bf65db0e8ee9f7bfd1105e706f115ea91135",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-196",
+      "source_sha256": "80f1dc3bbd3aaeaada6853ee508b9dfd165acac53b0e00935e49ba3c6ca91337",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-197",
+      "source_sha256": "59735fe6a5bf5bf781c20ae74c278c2a20b5c58659dc67cbe91cd80a464fae24",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-198",
+      "source_sha256": "9a19dc4d7f0f5c0be8bc44f8c5f55a18eb26a2b13243191690261cec8d06d122",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-199",
+      "source_sha256": "8d91eb7006602598ba75026fa1e6757de110601ab20a8f57af5610600da45669",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-200",
+      "source_sha256": "0c89b1b5f88c602b121fedecf9d7a94e55a9585d52e2a3441cd53da2c3b86279",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-201",
+      "source_sha256": "42307c1a6431ceed43411b76ef6bee87debeb13af71845acc0b0e4b8bbcc3887",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-202",
+      "source_sha256": "90dc5d484bb6adf7861da32197aef4d6756bbc9ed6d4b06a8ffd0ab922af70a7",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-203",
+      "source_sha256": "a962b84153a5ecb98e18eb684507af53d59f16cd61e050f803de56070c5ea9cf",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-204",
+      "source_sha256": "6096f43cbc75abe17c5753edbcfbf46d2d462ced8bbbcc2e915b61c353fefe8e",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-205",
+      "source_sha256": "4460ce9fd2ee099deab1c79c30eacfabdc8b85002560bc8fbb2f84e912e9940b",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-206",
+      "source_sha256": "3a4940e9c24e9ffbc7a8fd59a62c11a57434ac5d0ec2534305674cb62b2e1b75",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-207",
+      "source_sha256": "d56942acae589cf808e660c59a6f4f62050eb21f562c34ca072eb8511fd5ebfd",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-208",
+      "source_sha256": "367a95a30bbcd4ac3792890afd3165623629313dad341adb37188fe6ea8bafad",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-209",
+      "source_sha256": "3cd1965f4b96c1e2c38d07481d682890fdcf1f1ab5cb4e9439e996c60bf2a5d6",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-210",
+      "source_sha256": "d7d60005110d35b1f066fdb41fbb6bb3d04a78b872332fe2885ae7afb50d8c36",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-211",
+      "source_sha256": "12f844a738ca1e44c63fad38db6ee420c36b69fec54ec26329bfe8a7930ec535",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-212",
+      "source_sha256": "cea76dcfd0c0ffbda7d1558ad7546852ef468b008238ded526738f5bcd6f22a7",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-213",
+      "source_sha256": "44745ef798c94c5fec117558404a70ab5133fba6e97bf60b840c2e52c9774d13",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-214",
+      "source_sha256": "047f3d4a21b07e697975de6776361aedf675ac7b3798ca6591082fe044a938f5",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-215",
+      "source_sha256": "01f421877fd8f0de2de3d7685b8ffc90b47b3539b904b15e510c542c6748f845",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-216",
+      "source_sha256": "7c956dfa0aa716fee99ef2a88ae34ae14fc3349ea9583b6f76ca47e56b2b84d2",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-217",
+      "source_sha256": "08ef0febfcd544c7f018777d5e1e75cf3327ee8dd67356e8465721f8f9c9a810",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-218",
+      "source_sha256": "cdc36e89a482372e5f03f60a8050264cf870c9efd7bc765f299bb9e5acdecf1c",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-219",
+      "source_sha256": "d67a2504048ac50bb82cc2e4e2aaba4d5ffb769519e1152c1fbd77cf52c1cafd",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-220",
+      "source_sha256": "da70ff285d6cc153a95510443042f99eadceeabfa5e14ad8b888ed42f685a9a0",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-221",
+      "source_sha256": "3402fec51bad73fb3fcc07f282db4a7d1e5288190baf2ba18fe067f691b7a65b",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-222",
+      "source_sha256": "f517d8666ee6d00b2971435e72eb270a8db00379bff6dbc27fd14f460b205a4d",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-223",
+      "source_sha256": "36e197b4925ebca5c3c97262fec4b243cd26de32ee5ade7fbff77ecdb2889ba1",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-224",
+      "source_sha256": "5f053d658ffce538801d7830d948ca61be038cc214fccd611d7cba4a68310b8f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-225",
+      "source_sha256": "4ea2194056667be3bada267c31cbbc33a02e157f50702aad207c4edc2a098b3f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-226",
+      "source_sha256": "9eb3c1557ee4e2e97b08ae19454854f3f5d6de87424a8f0898f0c95ef4469bbd",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-227",
+      "source_sha256": "de1158e924e86c21b3f0e660fc1e984356be8ab58a141eff3958efe7be14bf1e",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-228",
+      "source_sha256": "29b2e0d548ab2b413e6bd868711fc5b01a29a34d8d066e06094519559a1bf90f",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-229",
+      "source_sha256": "b7282bbf750d98b01ccb0a3a2de1a45f7ebd9591a967c260e85074ef04307e91",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 784,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-230",
+      "source_sha256": "a97feea4f9c67307ff4de123b840c86c073d6ea9187c130487395a0c70a10c86",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-231",
+      "source_sha256": "f74f93f723555addb8bcce229c3575ce92e73d6849ecd8eb6128db2344892cb8",
+      "observed": {
+        "ratio": 0.9921602787456446,
+        "instructions": 1148,
+        "refs_ok": 338,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-232",
+      "source_sha256": "70a6a1bf56ca2dfff823d24dd86f5d0ee89f611c17c50b24493f441b33b8a9ff",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-233",
+      "source_sha256": "b9211012ef5673c2fd5cc40f2e62c73e4371d6dde7a69530ae55fa5b5e53ba72",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-234",
+      "source_sha256": "8958234b9d1743328e948424c52e6710a7e6086f036acf05022885dd0d5cb857",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-235",
+      "source_sha256": "e00ce05ba20c23a8bdb23105bccfde08a8a526b0bfcce0a748005fafd93b2c2d",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-236",
+      "source_sha256": "71bcff6d32491033d85510e34a0f5651b6e647f1896d4355dcd34fb028caa774",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-237",
+      "source_sha256": "61810355e6bf73886faa8e13c6606db7fcdcc2ef87ccdd99eb8435f7de188a60",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-238",
+      "source_sha256": "da8c9443038f814d826d9c553232cdc2efa8002849458eb964e8f5c31381dc1a",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-239",
+      "source_sha256": "3ddd5c621185f7b5e99bd8b9a8b471c3a7b3a40383f9a3fe0e5582903ebd429a",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-240",
+      "source_sha256": "0c5ace78906c43500e8176cdfb94ffb9a63866a71264df7b8f0fcfd7dc16b402",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-241",
+      "source_sha256": "94311e8b5bb3b4a0d4af75c59a0fc0103f871f99e125fcb087cb1511a4f1e537",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-242",
+      "source_sha256": "5ec2f62d677a55f2cff354326dba4bf3daa9513632508dc357b460df65e4c7d9",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-243",
+      "source_sha256": "64dcfec92a295601c846cebb084ee8154daa902c8b75e7df91f80a45d9fcd93f",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-244",
+      "source_sha256": "19e37443a4e9bf75035fe420bd6b34093219dba3d887cf1023a696652d01da8e",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-245",
+      "source_sha256": "9c64f25a0e0edb5019616404d058f56430a8de58be5edcd82db12e0c8bd1a6f3",
+      "observed": {
+        "ratio": 0.9947735191637631,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1064,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-246",
+      "source_sha256": "3ca3cecccee47fb930618f2d8f06d6b5103e057e3dfc7ec025cee0b9ed304677",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-247",
+      "source_sha256": "dfd3a52fd300127f814aea014bcfbc65ce7f8be34ced482c54ee6258f600243d",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-248",
+      "source_sha256": "7d4bd2af225704fa8228016779177f4c30c762a9482e72e6ccdf7c1d57ea4a6f",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-249",
+      "source_sha256": "25fbd5b440b5a34d08044afb061f9a16be117a42b31f23fb1c4ec904507b7c89",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-250",
+      "source_sha256": "9dd1bd51ac27c284e4a8c88ff0ac5f55900960e3d62797b993833657d9ec8dd4",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-251",
+      "source_sha256": "d7bea1e5819b18dcc3983d6e630bf297b2676c67df86e3e117a83ae7632be3ed",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-252",
+      "source_sha256": "67411f45be9baddaaa8ba2776632e69e2f4e3b4cbd79fae739cb4cdd93e41444",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-253",
+      "source_sha256": "655c1233531c0ebd4dc6b45bd48c84e86f4d2e6cf78c9963236d964c99ccc1c4",
+      "observed": {
+        "ratio": 0.9939024390243902,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 783,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-254",
+      "source_sha256": "8286040291cc2f21c119289d91cefcace494e5ae2ca2dd77a328c2ab97469b66",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "math-sine-255",
+      "source_sha256": "cb421536205f9687ec2a220f2c3e36856a78662a8f2b5649b7920a015bb5a774",
+      "observed": {
+        "ratio": 0.9930313588850174,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 512,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "trail-value-construct",
+      "source_sha256": "65d68ea33428839c51bb31f012fb69ac3382bdb21aed9ca49274acbe5ad54bf8",
+      "observed": {
+        "ratio": 1.0,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1148,
+        "exact": true,
+        "body_byte_exact": true
+      }
+    },
+    {
+      "name": "trail-value-local-construct",
+      "source_sha256": "ed9ca01145d33c7f1d338565210cd0bac8a13302f3a752ca4aacdd9163cd06f5",
+      "observed": {
+        "ratio": 1.0,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1148,
+        "exact": true,
+        "body_byte_exact": true
+      }
+    },
+    {
+      "name": "trail-value-operator",
+      "source_sha256": "6b9de088b1fb281f7504e88d4b0a76674497c77c4dbfb322b03f4d6f5a1272a9",
+      "observed": {
+        "ratio": 0.9825783972125436,
+        "instructions": 1148,
+        "refs_ok": 339,
+        "refs_problems": 1,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "trail-value-local-operator",
+      "source_sha256": "f5c9adb1d5a91620c9301bc0cb9cdd70e48d00fdaa1b1fad1e306753fd96668c",
+      "observed": {
+        "ratio": 0.9825783972125436,
+        "instructions": 1148,
+        "refs_ok": 339,
+        "refs_problems": 1,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "trail-value-compound",
+      "source_sha256": "d0175f332e89f47535047a88f9da153ccc3f878e4eb50927ced28703a0f89f3d",
+      "observed": {
+        "ratio": 0.96,
+        "instructions": 1152,
+        "refs_ok": 337,
+        "refs_problems": 1,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "trail-value-local-compound",
+      "source_sha256": "50a5344327b828a9f008545436a7a316e021b6001128200c8b4f382ece847b11",
+      "observed": {
+        "ratio": 0.96,
+        "instructions": 1152,
+        "refs_ok": 337,
+        "refs_problems": 1,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "trail-value-named",
+      "source_sha256": "9bbea7f84e6947871694273d2b5ca14516dc1c7143f88edafef71d827174f983",
+      "observed": {
+        "ratio": 1.0,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1148,
+        "exact": true,
+        "body_byte_exact": true
+      }
+    },
+    {
+      "name": "trail-value-local-named",
+      "source_sha256": "4de8a12ee985a7e77e642f371468d60df166354c3e92858e89fcdeaa26398dc1",
+      "observed": {
+        "ratio": 1.0,
+        "instructions": 1148,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 1148,
+        "exact": true,
+        "body_byte_exact": true
+      }
+    },
+    {
+      "name": "sdk-length-False-True",
+      "source_sha256": "0d6a7d2006b7988549106aee0356af017485d4137f14187e5c1fedab26e89c93",
+      "observed": {
+        "ratio": 0.9834638816362054,
+        "instructions": 1150,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "sdk-length-True-False",
+      "source_sha256": "df48a0c333dac56cc3f6279a954350243f08af81a42d4591765706a8dcc6b172",
+      "observed": {
+        "ratio": 0.9834638816362054,
+        "instructions": 1150,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "sdk-length-True-True",
+      "source_sha256": "a1d78438691f0d1ded20712d30d19f92efe68ca2604a8cd525a54b805ac71de1",
+      "observed": {
+        "ratio": 0.9826086956521739,
+        "instructions": 1152,
+        "refs_ok": 340,
+        "refs_problems": 0,
+        "prefix": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    }
+  ]
+}

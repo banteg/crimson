@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "inner-shield-float-sine",
+      "find": "sinf(game_time_s * 3.0f) + 17.5f",
+      "replacements": [
+        {
+          "name": "revert",
+          "text": "(float)sin(game_time_s * 3.0f) + 17.5f"
+        }
+      ]
+    },
+    {
+      "name": "outer-shield-float-sine",
+      "find": "sinf(game_time_s * 3.0f) * 4.0f + 24.0f",
+      "replacements": [
+        {
+          "name": "revert",
+          "text": "(float)sin(game_time_s * 3.0f) * 4.0f + 24.0f"
+        }
+      ]
+    },
+    {
+      "name": "trail-vector-value",
+      "find": "                    render_delta = player_render_vec2_t(\n                        target_position.x - line_player->pos_x,\n                        target_position.y - line_player->pos_y);",
+      "replacements": [
+        {
+          "name": "revert",
+          "text": "                    render_delta.x =\n                        target_position.x - line_player->pos_x;\n                    render_delta.y =\n                        target_position.y - line_player->pos_y;"
+        }
+      ]
+    }
+  ]
+}

@@ -3,7 +3,23 @@
 Native target: `crimsonland.exe` at `0x00428390` (4,582-byte manifest extent,
 1,148 instructions in the current Binary Ninja analysis).
 
-## Current recovery (2026-09-12)
+## Exact recovery (2026-09-12)
+
+The [float-sine and vector-value proof](../../evidence/overlay-exact-2026-09-12/README.md)
+closes both remaining scheduling differences: **1,148/1,148 instructions,
+4,582/4,582 encoded body bytes, and 340/0/0 references**. Both normalized and
+encoded-body exactness are true.
+
+The shield radii use VC6's `sinf` wrapper, and the trail displacement is assigned
+from a constructed vector value. All 851 native/before/current fixtures agree;
+all 202 observed stack homes remain correct. The proof retains 281 source
+controls and the complete seven-case reversion matrix. The outer-radius wrapper
+alone is neutral; the inner-radius wrapper and trail value construction are
+required within that matrix. Compiler flags, aliases and matcher rules are
+unchanged. Current source SHA-256:
+`8a403a6a4c6c7bf63cc276950e407adb8bf2d1f7cac6d56d228950dde6941181`.
+
+## Preceding ownership recovery (2026-09-12)
 
 The [size and target-position ownership proof](../../evidence/overlay-render-owners-2026-09-12/README.md)
 raises alignment from **97.431432% to 99.303136%**, restores instruction parity
