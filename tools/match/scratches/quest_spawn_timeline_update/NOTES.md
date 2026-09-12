@@ -351,3 +351,28 @@ It does not produce the native pointer-valued overwrite. No control improves
 the canonical source. Six source/context controls and ten successful debug/
 exception/incremental-profile controls reproduce baseline instructions;
 two `/ZI` controls fail because `/ZI` conflicts with `/O2`.
+
+## Source-produced dead pointer store (2026-09-12)
+
+The [next witness](../../evidence/vc6-timeline-pointer-home-2026-09-12/README.md)
+reproduces `lea edi, [esi+0xc]; mov [esp+0x10], edi; mov [esp+0x10], ebx`
+with the stock compiler. A byte loop copies a two-pointer object, but only the
+last copied member is used. Global optimization recognizes a copy intrinsic;
+late lowering emits both member stores. The used member becomes a temporary,
+while the unused member remains a memory store with the same node and symbol
+through the remaining observed passes. The final stores are adjacent, so the
+pointer-valued memory write is dead.
+
+This is a diagnostic source witness, not recovered original source. Its
+115 instructions have 71.304348% agreement, prefix 1, 12 clean references, and
+a non-exact body. It reserves 32 stack bytes instead of 28, and zero-register
+sharing/count tests differ. Canonical source and flags remain unchanged at
+91.228070%, 113/115 instructions, prefix 51, and 13 clean references.
+
+The witness demonstrates that the write need not be a spill of the live pointer:
+an unused copied member can hold the same value. Replacing the loop with
+`memcpy` or assignment, or reducing it to a wholly unused scalar copy, removes
+the witness. The full 119-variant follow-up yields no match. Three preserving
+traces verify whole-COFF equivalence except timestamps and reject missing
+streams. An overlapping-byte-range audit rejects six partial-read false
+positives from the historical equal-slot screen; the adjacent witness passes.

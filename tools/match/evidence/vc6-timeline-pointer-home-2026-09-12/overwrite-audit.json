@@ -1,0 +1,468 @@
+{
+  "native_positive_control": [
+    "mov dword [esp+0x10], edi",
+    "mov dword [esp+0x10], ebx"
+  ],
+  "rejected_hits": 6,
+  "findings": [
+    {
+      "label": "memory/split-2-2",
+      "first_index": 54,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov word [esp+0x14], ax",
+        "mov ax, word [esp+0x12]",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [
+        {
+          "index": 2,
+          "instruction": "mov ax, word [esp+0x12]",
+          "offset": 18,
+          "width": 2
+        }
+      ],
+      "passes_direct_frame_read_check": false
+    },
+    {
+      "label": "memory/split-2-2-relative",
+      "first_index": 54,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov word [esp+0x14], ax",
+        "mov ax, word [esp+0x12]",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [
+        {
+          "index": 2,
+          "instruction": "mov ax, word [esp+0x12]",
+          "offset": 18,
+          "width": 2
+        }
+      ],
+      "passes_direct_frame_read_check": false
+    },
+    {
+      "label": "memory/split-3-1",
+      "first_index": 54,
+      "second_index": 62,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov dl, byte [esp+0x12]",
+        "mov cx, ax",
+        "mov al, byte [esp+0x13]",
+        "mov word [esp+0x14], cx",
+        "mov byte [esp+0x16], dl",
+        "mov byte [esp+0x17], al",
+        "mov edi, dword [esp+0x14]",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [
+        {
+          "index": 1,
+          "instruction": "mov dl, byte [esp+0x12]",
+          "offset": 18,
+          "width": 1
+        },
+        {
+          "index": 3,
+          "instruction": "mov al, byte [esp+0x13]",
+          "offset": 19,
+          "width": 1
+        }
+      ],
+      "passes_direct_frame_read_check": false
+    },
+    {
+      "label": "memory/split-3-1-relative",
+      "first_index": 54,
+      "second_index": 62,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov dl, byte [esp+0x12]",
+        "mov cx, ax",
+        "mov al, byte [esp+0x13]",
+        "mov word [esp+0x14], cx",
+        "mov byte [esp+0x16], dl",
+        "mov byte [esp+0x17], al",
+        "mov edi, dword [esp+0x14]",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [
+        {
+          "index": 1,
+          "instruction": "mov dl, byte [esp+0x12]",
+          "offset": 18,
+          "width": 1
+        },
+        {
+          "index": 3,
+          "instruction": "mov al, byte [esp+0x13]",
+          "offset": 19,
+          "width": 1
+        }
+      ],
+      "passes_direct_frame_read_check": false
+    },
+    {
+      "label": "memory/bytes-unrolled",
+      "first_index": 54,
+      "second_index": 61,
+      "context": [
+        "mov dword [esp+0x14], eax",
+        "mov byte [esp+0x10], al",
+        "mov al, byte [esp+0x16]",
+        "mov cl, byte [esp+0x17]",
+        "mov byte [esp+0x11], ah",
+        "mov byte [esp+0x12], al",
+        "mov byte [esp+0x13], cl",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [
+        {
+          "index": 2,
+          "instruction": "mov al, byte [esp+0x16]",
+          "offset": 22,
+          "width": 1
+        },
+        {
+          "index": 3,
+          "instruction": "mov cl, byte [esp+0x17]",
+          "offset": 23,
+          "width": 1
+        }
+      ],
+      "passes_direct_frame_read_check": false
+    },
+    {
+      "label": "memory/bytes-unrolled-relative",
+      "first_index": 54,
+      "second_index": 61,
+      "context": [
+        "mov dword [esp+0x14], eax",
+        "mov byte [esp+0x10], al",
+        "mov al, byte [esp+0x16]",
+        "mov cl, byte [esp+0x17]",
+        "mov byte [esp+0x11], ah",
+        "mov byte [esp+0x12], al",
+        "mov byte [esp+0x13], cl",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [
+        {
+          "index": 2,
+          "instruction": "mov al, byte [esp+0x16]",
+          "offset": 22,
+          "width": 1
+        },
+        {
+          "index": 3,
+          "instruction": "mov cl, byte [esp+0x17]",
+          "offset": 23,
+          "width": 1
+        }
+      ],
+      "passes_direct_frame_read_check": false
+    },
+    {
+      "label": "loop/reversed",
+      "first_index": 55,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov edi, ecx",
+        "mov dword [esp+0x10], eax"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "loop/reversed-relative",
+      "first_index": 54,
+      "second_index": 56,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "lea edi, dword [esi+0xc]",
+        "mov dword [esp+0x10], eax"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "loop/reversed-scoped",
+      "first_index": 55,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov edi, ecx",
+        "mov dword [esp+0x10], eax"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "loop/reversed-scoped-relative",
+      "first_index": 54,
+      "second_index": 56,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "lea edi, dword [esi+0xc]",
+        "mov dword [esp+0x10], eax"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "pair/same-loop-last",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "pair/same-loop-last-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "pair/count-loop-last",
+      "first_index": 57,
+      "second_index": 59,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "lea edi, dword [esi+-0x8]",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "pair/count-loop-last-relative",
+      "first_index": 57,
+      "second_index": 59,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "lea edi, dword [esi+-0x8]",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/less",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/less-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/signed",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/signed-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/body-forward",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/body-forward-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/body-reverse",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/body-reverse-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/body-copy",
+      "first_index": 54,
+      "second_index": 56,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov edi, eax",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/body-copy-relative",
+      "first_index": 54,
+      "second_index": 55,
+      "context": [
+        "mov dword [esp+0x10], edi",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/while",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/while-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/do",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], esi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "shape/do-relative",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "lifetime/offset-in-guard-before",
+      "first_index": 53,
+      "second_index": 56,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov dword [esp+0x1c], edx",
+        "mov edi, eax",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "lifetime/offset-in-guard-after",
+      "first_index": 53,
+      "second_index": 56,
+      "context": [
+        "mov dword [esp+0x10], eax",
+        "mov edi, eax",
+        "mov dword [esp+0x1c], edx",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "lifetime/direct-field-same",
+      "first_index": 56,
+      "second_index": 57,
+      "context": [
+        "mov dword [esp+0x14], edi",
+        "mov dword [esp+0x14], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    },
+    {
+      "label": "lifetime/direct-field-copy",
+      "first_index": 54,
+      "second_index": 55,
+      "context": [
+        "mov dword [esp+0x10], edi",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "overlapping_reads": [],
+      "passes_direct_frame_read_check": true
+    }
+  ]
+}
