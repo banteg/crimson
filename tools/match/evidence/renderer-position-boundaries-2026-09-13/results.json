@@ -1,0 +1,975 @@
+{
+  "source_sha256": "a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31",
+  "verifier_sha256": "d6908bd102d8aa696e46a60e5be04e24e71e941fa11afa8ab3b8b9d41a627cff",
+  "fire_proof_sha256": "4d23c95688b50c2c422af1ca035f135011f7fa61bcaca0574ea2f0de370f8c31",
+  "controls_sha256": "95dd8a279beef7e629dc0af7d6eb3bb6d5fb6fd7cdffa0a8a4d33cbc7fc201f5",
+  "executor_sha256": "929478efa3db26233c39cdd158186831e482263ee1c16a8df0d4ec56ba4aa0f4",
+  "engine_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "unicorn_version": "2.1.4",
+  "fixtures": {
+    "count": 656,
+    "sha256": "6518201a7219c9ea8dee0a04b3c0373e5824b2961de991c9a45507450aa7c2e0"
+  },
+  "failures": {
+    "retained": [],
+    "before": [
+      49,
+      169,
+      243,
+      253,
+      333,
+      361,
+      415,
+      485,
+      497,
+      505,
+      518,
+      519,
+      520,
+      521,
+      522,
+      523,
+      578,
+      579,
+      580,
+      581,
+      582,
+      583,
+      609,
+      611,
+      613,
+      615,
+      617,
+      619,
+      621,
+      623,
+      625,
+      627,
+      629,
+      631,
+      633,
+      635,
+      637,
+      639,
+      641,
+      643,
+      645,
+      647,
+      649,
+      651,
+      653,
+      655
+    ],
+    "no-reload": []
+  },
+  "callbacks": [
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 127
+      },
+      "to_type": 4,
+      "expected": [
+        1121910784,
+        1128464384,
+        1090519040,
+        1090519040
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          1,
+          4
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "05ad8f6de1049c2455c7873670dfe430a611909cb074838eef8872bb9a5064b1",
+      "wrong_trace_sha256": "391429f592b2141f0481af410aab1af55745847ece82bb5e99c23973c8d1d231"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 895
+      },
+      "to_type": 4,
+      "expected": [
+        1121910784,
+        1128464384,
+        1090519040,
+        1090519040
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          1,
+          4
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "05ad8f6de1049c2455c7873670dfe430a611909cb074838eef8872bb9a5064b1",
+      "wrong_trace_sha256": "391429f592b2141f0481af410aab1af55745847ece82bb5e99c23973c8d1d231"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 127
+      },
+      "to_type": 29,
+      "expected": [
+        1122172928,
+        1128595456,
+        1082130432,
+        1082130432
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          1,
+          29
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "51e1cea2ab8508f8e17fab14f56d1bdf635baae6379d498090cc180458fb887b",
+      "wrong_trace_sha256": "391429f592b2141f0481af410aab1af55745847ece82bb5e99c23973c8d1d231"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 1,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 895
+      },
+      "to_type": 29,
+      "expected": [
+        1122172928,
+        1128595456,
+        1082130432,
+        1082130432
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          1,
+          29
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "51e1cea2ab8508f8e17fab14f56d1bdf635baae6379d498090cc180458fb887b",
+      "wrong_trace_sha256": "391429f592b2141f0481af410aab1af55745847ece82bb5e99c23973c8d1d231"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 4,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 127
+      },
+      "to_type": 1,
+      "expected": [
+        1122041856,
+        1128529920,
+        1086324736,
+        1086324736
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          4,
+          1
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "158a1e57d4c65f6db83213c2b761dfc5e2edb50bc5a5c3eb77132d292e075b27",
+      "wrong_trace_sha256": "9cb85c65887d05eb5cc52a94c4930695cbda9defb4c75c194058b9f4bf8a26aa"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 4,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 895
+      },
+      "to_type": 1,
+      "expected": [
+        1122041856,
+        1128529920,
+        1086324736,
+        1086324736
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          4,
+          1
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "158a1e57d4c65f6db83213c2b761dfc5e2edb50bc5a5c3eb77132d292e075b27",
+      "wrong_trace_sha256": "9cb85c65887d05eb5cc52a94c4930695cbda9defb4c75c194058b9f4bf8a26aa"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 4,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 127
+      },
+      "to_type": 29,
+      "expected": [
+        1122172928,
+        1128595456,
+        1082130432,
+        1082130432
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          4,
+          29
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "9e19029aef62c4e3fd0da44c10c550069063a74292b030170f3e4e3218ec24f8",
+      "wrong_trace_sha256": "9cb85c65887d05eb5cc52a94c4930695cbda9defb4c75c194058b9f4bf8a26aa"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 4,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 895
+      },
+      "to_type": 29,
+      "expected": [
+        1122172928,
+        1128595456,
+        1082130432,
+        1082130432
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          4,
+          29
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "9e19029aef62c4e3fd0da44c10c550069063a74292b030170f3e4e3218ec24f8",
+      "wrong_trace_sha256": "9cb85c65887d05eb5cc52a94c4930695cbda9defb4c75c194058b9f4bf8a26aa"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 29,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 127
+      },
+      "to_type": 1,
+      "expected": [
+        1122041856,
+        1128529920,
+        1086324736,
+        1086324736
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          29,
+          1
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "973af96f55a2b5b88020e300607aba8405bb594cf5aa9c6c08a291d6e6266957",
+      "wrong_trace_sha256": "8cb47e5cfdca05268d54267024b15b86cd7fcdd9985eee62e54cf2c6e4430dcd"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 29,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 895
+      },
+      "to_type": 1,
+      "expected": [
+        1122041856,
+        1128529920,
+        1086324736,
+        1086324736
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          29,
+          1
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "973af96f55a2b5b88020e300607aba8405bb594cf5aa9c6c08a291d6e6266957",
+      "wrong_trace_sha256": "8cb47e5cfdca05268d54267024b15b86cd7fcdd9985eee62e54cf2c6e4430dcd"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 29,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 127
+      },
+      "to_type": 4,
+      "expected": [
+        1121910784,
+        1128464384,
+        1090519040,
+        1090519040
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          29,
+          4
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "edf8c07bcdef277ddaf98321d0b1ac5c3227aff80e041bd62f42f4787b351bb3",
+      "wrong_trace_sha256": "8cb47e5cfdca05268d54267024b15b86cd7fcdd9985eee62e54cf2c6e4430dcd"
+    },
+    {
+      "case": {
+        "records": [
+          {
+            "index": 3,
+            "type_id": 29,
+            "active": 1,
+            "position": [
+              111.25,
+              208.5
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 0.33000001311302185,
+            "life": 0.4000000059604645
+          },
+          {
+            "index": 95,
+            "type_id": 1,
+            "active": 0,
+            "position": [
+              0.0,
+              0.0
+            ],
+            "origin": [
+              0.0,
+              0.0
+            ],
+            "velocity": [
+              1.0,
+              2.0
+            ],
+            "angle": 1.25,
+            "life": 0.4000000059604645
+          }
+        ],
+        "camera": [
+          4.25,
+          -9.5
+        ],
+        "alpha": 0.699999988079071,
+        "glow": 0,
+        "fpcw": 895
+      },
+      "to_type": 4,
+      "expected": [
+        1121910784,
+        1128464384,
+        1090519040,
+        1090519040
+      ],
+      "events": [
+        [
+          "rotation-type-change",
+          29,
+          4
+        ],
+        [
+          "restore-after-draw"
+        ]
+      ],
+      "native_trace_sha256": "edf8c07bcdef277ddaf98321d0b1ac5c3227aff80e041bd62f42f4787b351bb3",
+      "wrong_trace_sha256": "8cb47e5cfdca05268d54267024b15b86cd7fcdd9985eee62e54cf2c6e4430dcd"
+    }
+  ],
+  "programs": {
+    "retained": {
+      "source_sha256": "a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31",
+      "body_sha256": "d86658b662b3c2fa2ec5055bfea9924cb4b3ad68c06f8ec4edbb5b77e940cd72",
+      "object_sha256": "3d93ed93480e8eab6d88799c1e570c00ab31f7bf1b86c630e9ff08c737dae1ad",
+      "metrics": {
+        "ratio": 0.6293449197860963,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 487,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      },
+      "frame": {
+        "target_prologue_allocation_bytes": 412,
+        "candidate_prologue_allocation_bytes": 388,
+        "target_minus_candidate_bytes": 24,
+        "classification": "native-frame-larger",
+        "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+      }
+    },
+    "before": {
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "body_sha256": "519e5de58da88f7dbb5d6566925de1f3eee899821780387b9798d8047f414bae",
+      "object_sha256": "4c548a4f95486e685291f5e6e52eaa5b237682af6f64c86120f59dc37e41ba64",
+      "metrics": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false
+      },
+      "frame": {
+        "target_prologue_allocation_bytes": 412,
+        "candidate_prologue_allocation_bytes": 388,
+        "target_minus_candidate_bytes": 24,
+        "classification": "native-frame-larger",
+        "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+      }
+    },
+    "no-reload": {
+      "source_sha256": "9abc73069d2e30463943ad9daa5c39c1ad941a1f7566801a7647194ff122378e",
+      "body_sha256": "8abdf9948444d8f74660f74188b5613819780759e9fd0defc48a00ef8dd4c9c3",
+      "object_sha256": "11884419ff124f97ec72e2625900bcaf3c34c955aa60e1aee8b7f79d9d7c379b",
+      "metrics": {
+        "ratio": 0.6244359017215444,
+        "ins": 2962,
+        "prefix": 0,
+        "refs": 487,
+        "problems": 6,
+        "exact": false,
+        "body": false
+      },
+      "frame": {
+        "target_prologue_allocation_bytes": 412,
+        "candidate_prologue_allocation_bytes": 388,
+        "target_minus_candidate_bytes": 24,
+        "classification": "native-frame-larger",
+        "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+      }
+    }
+  },
+  "scope": "Finite native caller fixtures with unchanged baseline external contracts; callback controls temporarily alter type during billboard rotation and restore it at draw. No assertion that real Grim performs this mutation, no GPU or all-input proof."
+}

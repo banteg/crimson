@@ -1439,3 +1439,31 @@ The expression is not promoted: its whole-body alignment is 53.589958% with
 controls pin the recovered arithmetic while leaving shared position-object
 lifetimes as the next allocation problem. Canonical source and exact credit
 remain unchanged; the experiment is labeled diagnostic.
+
+## Retained position expressions and billboard reload (2026-09-13)
+
+The complete Fire expression now improves whole-body alignment when combined
+with complete expressions in all three conventional billboard branches and
+all three secondary rocket bodies. Native preserves a separate Y-sum temporary
+before subtracting the half-size; X stays wide until its final store. The
+billboard type is explicitly reloaded after the rotation callback, matching
+the load at `0x42552f`. Secondary positions remain computed before the color
+callback. Fire's slot-95 type gate is unchanged.
+
+The [position-boundary proof](../../evidence/renderer-position-boundaries-2026-09-13/README.md)
+preserves 83 bounded experiments plus the formatted retained control. All 656
+focused native cases pass, including 48 new billboard rounding witnesses. The
+old source fails 22 Fire and 24 billboard cases, all at PC64. Twelve transient
+callback controls distinguish the retained reload from a separately compiled
+no-reload source; they model a callback dependency without claiming real Grim
+changes type. All 11,854 historical renderer fixtures retain their native call
+and state evidence.
+
+Alignment improves **60.726846% -> 62.934492%**, gaining **277.081594**
+fuzzy-weighted bytes. Instructions move **2950 -> 2963** against native's 3021;
+references improve **479/0/8 -> 487/0/6**. Prefix remains zero and frame remains
+388/412 bytes. Both exactness flags remain false. These are positional
+reference pairings, not independent runtime access fixes. Compiler flags,
+aliases and native extent are unchanged. Recovery remains incomplete.
+Current source SHA-256:
+`a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31`.

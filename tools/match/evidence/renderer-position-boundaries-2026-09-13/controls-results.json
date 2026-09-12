@@ -1,0 +1,2200 @@
+{
+  "controls": [
+    {
+      "name": "boundaries/0000",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "body_sha256": "519e5de58da88f7dbb5d6566925de1f3eee899821780387b9798d8047f414bae",
+      "object_sha256": "5bb0cdfe96cd18c651d02f20440c1e29b3b98b4620f2b08ef287713fb9c039d7",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0001",
+      "source_sha256": "d01b534125879e810678d7b4039ac3039fcb62bdff0d8b64f2c0709a31a3d8ad",
+      "body_sha256": "29648744c55b62e7cb956b382b33f126d777aba2d00c2fa429f03f0caddefa99",
+      "object_sha256": "53f9543f2e3c1751e4ed2ddd84e8c0866a6ef342f12657cba340043f023b8fff",
+      "observed": {
+        "ratio": 0.6079383687824484,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0010",
+      "source_sha256": "582a288b70388546b25fc75196b3538e0b75df1f0f21637e2fcef5f32d8aecc7",
+      "body_sha256": "02b2ca4bc064dd775bd1ff6daa5e2f39913e8be6227295f1183bcde30d3f67c7",
+      "object_sha256": "a3c56da219d5cddc41ce9af245ae51ceef9ef2d2b451eb3fd166ed3571d494e7",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 477,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0011",
+      "source_sha256": "7443180f4aaf3d2dc24f11716c2586c82a1fa053e1020ebfa803bdf5ac8e89fd",
+      "body_sha256": "acd692f80fdf54e31dc7f50476be75b30ddcc6f3cdae5193454530d504fc2724",
+      "object_sha256": "a2d7151dd72374fa8d92f96ca8c34913db06759ef8e251d56c42832a615effd8",
+      "observed": {
+        "ratio": 0.6089432255903534,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0100",
+      "source_sha256": "42168ab721b0f449a98d5d6d1da5b2d7a4b136f9234277bf4541d85cb37dc50a",
+      "body_sha256": "3e39b051e641af0d7d944a826d6ab5b70b6dc632857d257dc87d0e2102e77914",
+      "object_sha256": "401a7bbd47efa50d15bf078f4922af95aa076d69ba2f0bcf16e76a0b0e05e465",
+      "observed": {
+        "ratio": 0.5938703734717803,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 463,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0101",
+      "source_sha256": "859444587151c92fc97a0ef282ec7eef66b76f0518f014371f69dbac7de9d21b",
+      "body_sha256": "bfdc593cb8dede5ed0bbf78a0229e0cbefde0a979b8bf67a458e126003ab9dac",
+      "object_sha256": "618d6ac49718756fb5861bba782390edb3f036cecc8ee4882f89edf9f54769eb",
+      "observed": {
+        "ratio": 0.6076034165131469,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0110",
+      "source_sha256": "5ffbaa2dd5e9cf329c11c38a5cedf541f3c3433520b241e41731a0077a00f306",
+      "body_sha256": "691c114bf7c4d2ff2bdd0691bab4a0ef90cd6b008141dc39f7bc587f2e502375",
+      "object_sha256": "6571d8f283dcda15f3659778640639963750909a00c670200f18178cddb8f637",
+      "observed": {
+        "ratio": 0.5952101825489867,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 465,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/0111",
+      "source_sha256": "888007eb5ba60dc37fd093b8fac9857cb04708dd263d1e9d9886980b6cd03a60",
+      "body_sha256": "fbabb265947aacebfad6afc5340b5bc135fb51885b1eeb11205ea9758f08d4a3",
+      "object_sha256": "22041e60001d8c5daad2466f0ffef425900f80532da905776a1b800ddeb3d3ae",
+      "observed": {
+        "ratio": 0.5911907553173673,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 459,
+        "problems": 11,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1000",
+      "source_sha256": "712883995a6e3cda21c5bb7fd8abbfaf08cf8472f802869265709bb6a00e25e7",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "a4611fe0960fe45fdf610261e1da9168b1062e663f5869ac7d64a31da729f8b2",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1001",
+      "source_sha256": "7ef1c7ca41bdb12634562637bd2963bad80e15ae0a90c7da026de1f183b42c32",
+      "body_sha256": "74a7a96db9018b60c58f1575a3ab75bc0c07149e578319c5c636a7a0702491fb",
+      "object_sha256": "89f6d6e03a238aadbaff87b2fc8d72f6bf2330389ded697e870c44bb958f87a4",
+      "observed": {
+        "ratio": 0.5488029465930019,
+        "ins": 2952,
+        "prefix": 0,
+        "refs": 418,
+        "problems": 18,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1010",
+      "source_sha256": "8a64a6dc413313cc034867273d927b6d31b5c93f194e52949c185c27ed826d34",
+      "body_sha256": "27689ac22b1e69e49912c9e42952c358490697e9e81bda67a3e9a317e9600da5",
+      "object_sha256": "1bab892737a7067db84061d6e09b4b9b908f4b643d5890790d6ce6fed211b42b",
+      "observed": {
+        "ratio": 0.5484681064791562,
+        "ins": 2952,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 20,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1011",
+      "source_sha256": "7fa3f4095ff4006a0010bc3d47837e241d937e56f7099ccabfdfa4b4564dbd4e",
+      "body_sha256": "dd61e7cda94a1ffe0929c5b3d6cb82e234eb9dacff542ecf9d8e199b10f19e32",
+      "object_sha256": "78ca7fbcb95285825d546cb0e536b1f6745d0340fec72721e3b170e91b6679d9",
+      "observed": {
+        "ratio": 0.5385774058577406,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1100",
+      "source_sha256": "d634df3c4a6535890c676e08049f84d938b912d31325fd746cca8e6b48a222dd",
+      "body_sha256": "ea71503c732aad5e12f1205ed098a7b9458b12472d1ec26e4ffe0a160ff7ba62",
+      "object_sha256": "7328097f59b067a9a16c60bebc85a1e324f4707370940c38f1b4544c93d1c476",
+      "observed": {
+        "ratio": 0.5488029465930019,
+        "ins": 2952,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 18,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1101",
+      "source_sha256": "2e250066c9337ab4f39f718ddd857136e8dcca62c05ea716e27cbe1df1f0fbfc",
+      "body_sha256": "44a69a9d35a2dc36c5dd8614752cf230bd9a40bf4a837be23a2cecd8df8a300d",
+      "object_sha256": "ecc0e51b1f8d93f729091dc18be1230a2d02d528bcb5d33a472e10c1949fe6f8",
+      "observed": {
+        "ratio": 0.5382426778242678,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1110",
+      "source_sha256": "27300e63fdd88c2375923e6567e68c1a96c10532d1911bdb8d45d1d692a3d4fb",
+      "body_sha256": "e373aca1f8f9562c75e239bb98c030886f8e69713c9efd522a598c1d357a349e",
+      "object_sha256": "d1cacf9312609050e3fb2975222e782ef8f37609df71427df477cdd5aa0a52e8",
+      "observed": {
+        "ratio": 0.5382426778242678,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "boundaries/1111",
+      "source_sha256": "de3c4d6d1c3443bb568902e5b23a105cbbd6984c75d7a6739bdec5b1b8fd3c22",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "a912c11089f473c33d55646214a7409aee7de748259ed115205b0f233e55a4c6",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/000-0",
+      "source_sha256": "712883995a6e3cda21c5bb7fd8abbfaf08cf8472f802869265709bb6a00e25e7",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "51cb993e4cc7b53661a15b8f743a0dbbf00849c2e0e75c288f32bbb40f5df009",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/000-1",
+      "source_sha256": "de3c4d6d1c3443bb568902e5b23a105cbbd6984c75d7a6739bdec5b1b8fd3c22",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "2777285f02e811c0d3a33c21c7ed27f8b62a92c7ab2b4fcd733af7aef69ea560",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/001-0",
+      "source_sha256": "54586d23f192201196332e40a3c37dfc8e630c237a39ba084520f22e68cea6d5",
+      "body_sha256": "e37fefc5c7e31ecf2789b858461f8f33b2e61b27c41d3772ef93cac0a46bd636",
+      "object_sha256": "e80f3d7cb74fcba18c91af814d65f7e0be4530158f684c8540163d938680764e",
+      "observed": {
+        "ratio": 0.5496234309623431,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 418,
+        "problems": 18,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/001-1",
+      "source_sha256": "3c67b235ac23b32543988c4a1b4fba8cdebc4e1bb54addc85aae3ad0bdaef938",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "d3b5d4650c6e753aa26e6514c4f4bb92fa68ce6c4ac5b8f4ec84876ef7697d18",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/010-0",
+      "source_sha256": "0d57fff0187a8b260696ab7adce83ea8a10ae148b148ae96172a509a05776e2a",
+      "body_sha256": "3e908eb28e46de2a7748a50a0c21a27738cc4ff034a8a8a042097f3ee9479977",
+      "object_sha256": "47e3ec74c14fdfcbd425a2edf51db9559eecc5d608cfaa313a99d70ceb908dd8",
+      "observed": {
+        "ratio": 0.5492887029288703,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 20,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/010-1",
+      "source_sha256": "5689c6d5c0241349c68390c5bfc000fb27c9cdb7332e1e8ca2423ccfd7ac3f3d",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "fee60fb54292bc3647d343d147afc652a85ce9eb16279bb5d647fc022fe8b416",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/011-0",
+      "source_sha256": "20830578ae1808a7be92f240f8b1cc58d6d76e3b951b4bee6f0feec97a2c771e",
+      "body_sha256": "dd61e7cda94a1ffe0929c5b3d6cb82e234eb9dacff542ecf9d8e199b10f19e32",
+      "object_sha256": "4899ef8da773503c026f4f26f3de6bf7f310fcb77d7cbfe83772e194b9dc7fa7",
+      "observed": {
+        "ratio": 0.5385774058577406,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/011-1",
+      "source_sha256": "5742cd1ea712438892a38e2f31d66c8c02ae6dd8d594faacb5d184bfa6135477",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "8146742ce081b3dab1389909d345f4b757c4dba099d5b54e90c810250f35fb6e",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/100-0",
+      "source_sha256": "806c2bbff5363c23bec7a4fde64197c3e1409d95c7438a2242e260129b840343",
+      "body_sha256": "b44653f5cf4de4097403813be1e603835513a7be21d3707d0237672d5e7707e4",
+      "object_sha256": "1bff884a74209a96499e62629078395697f4783e1e8f558c10985c077bf331ee",
+      "observed": {
+        "ratio": 0.5496234309623431,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 416,
+        "problems": 18,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/100-1",
+      "source_sha256": "039366025dcfa02b3d642ecb7dda22558025e3f1a1b62fd1ac07165b60612429",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "33fb4d681df4a9ae70ea5e48c7ba169de818813239fe62c8989a4a8c332f6a63",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/101-0",
+      "source_sha256": "5645932789cc356fdc3806e194dcfdf3c9d48d5b239bd6498bd0cf532398e988",
+      "body_sha256": "44a69a9d35a2dc36c5dd8614752cf230bd9a40bf4a837be23a2cecd8df8a300d",
+      "object_sha256": "b510bafc4ffbea50f86b80270b49a613163e5723d030b46aedfff73756b30b57",
+      "observed": {
+        "ratio": 0.5382426778242678,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/101-1",
+      "source_sha256": "59d96a82df04a1c7ce63afa45d7ca176aa29880b1a96105254404b0858bc212d",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "dcbbe5d2785d4a760cb510aae931d2ee92aee94dc743fe667bb52c060301584f",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/110-0",
+      "source_sha256": "f36e6d68d1efa67f91fdc81ddc8533ea85a7994d969f8724a7741eb51bb891ca",
+      "body_sha256": "e373aca1f8f9562c75e239bb98c030886f8e69713c9efd522a598c1d357a349e",
+      "object_sha256": "177302d5d55cf5415a65942d1a1fcfc6b2328718239c77582ab10d54478dad0e",
+      "observed": {
+        "ratio": 0.5382426778242678,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/110-1",
+      "source_sha256": "25433108b17efb21738aff774e5f4642a57d3b84424278e43b3ff70da6da60d6",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "d8b99fdca72fb83a33f796a76223cae3e0acfcace0b096a45912a2c61d9bb498",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/111-0",
+      "source_sha256": "7c5f61e424c4da675a3164d4fa52080010a2f84234dbb847d7bd50378eacdbb1",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "d8b99fdca72fb83a33f796a76223cae3e0acfcace0b096a45912a2c61d9bb498",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "shared/111-1",
+      "source_sha256": "7c5f61e424c4da675a3164d4fa52080010a2f84234dbb847d7bd50378eacdbb1",
+      "body_sha256": "2e51e393bb6207e8f585fc91793eff6ebde2ec2a822ba706c2933343243dd092",
+      "object_sha256": "9fe8b3d1423f8eac89384aa2a6e9422b095dd49a8520754547c2cf981c870be3",
+      "observed": {
+        "ratio": 0.5459414225941422,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/copy-0-function",
+      "source_sha256": "246df419f3ac1ba9d8ea59c1ef7bca4da7784a95d84d697f203e614ab25beefd",
+      "body_sha256": "414f2eb0031c07205fd91a6bb2f846d80fe48526de75afa5f165cea8307bdd6d",
+      "object_sha256": "327a0b5682f2fa057d560cf2e82476d3b852941e3b84fa52f8035e33e652444d",
+      "observed": {
+        "ratio": 0.5992973063409738,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/copy-0-pass",
+      "source_sha256": "2923a30f40efc9132268b62fb497bd81a82489dd0d768516d17833c0d3c0855d",
+      "body_sha256": "414f2eb0031c07205fd91a6bb2f846d80fe48526de75afa5f165cea8307bdd6d",
+      "object_sha256": "327a0b5682f2fa057d560cf2e82476d3b852941e3b84fa52f8035e33e652444d",
+      "observed": {
+        "ratio": 0.5992973063409738,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/copy-1-function",
+      "source_sha256": "1a8ecc4f704ef709fc9f216d6b0c90c6d31a836531bef16381c33e05ddec97b2",
+      "body_sha256": "bd3d6052c8f1c5e91990f25eb6ea6a4cbc876f6d9df8e6f6d87f4bdadfc6a840",
+      "object_sha256": "53e8a345d9b093288b2f3f1303ab28c36c9e8108f2489bc1c552336c1a105149",
+      "observed": {
+        "ratio": 0.5313492726968735,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 410,
+        "problems": 15,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/copy-1-pass",
+      "source_sha256": "f28fe0905110440646353ee053c1b88ead848d050352accca96af975ac4bb4b7",
+      "body_sha256": "bd3d6052c8f1c5e91990f25eb6ea6a4cbc876f6d9df8e6f6d87f4bdadfc6a840",
+      "object_sha256": "53e8a345d9b093288b2f3f1303ab28c36c9e8108f2489bc1c552336c1a105149",
+      "observed": {
+        "ratio": 0.5313492726968735,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 410,
+        "problems": 15,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/projectile-0-function",
+      "source_sha256": "efac89ee84b7d8dd61bcd319623fc26707b821124f0c705bdf8ef3f241b8317d",
+      "body_sha256": "414f2eb0031c07205fd91a6bb2f846d80fe48526de75afa5f165cea8307bdd6d",
+      "object_sha256": "dbc0068710a25f29dc0710a37fe699f6e6b54966df4ac2c4f4fb7534dac5a4ae",
+      "observed": {
+        "ratio": 0.5992973063409738,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/projectile-0-pass",
+      "source_sha256": "6a9880aa4df9b50e8ba47dbaf1b2623c4c5b4e20eb0e85a54d174563171cb7a8",
+      "body_sha256": "414f2eb0031c07205fd91a6bb2f846d80fe48526de75afa5f165cea8307bdd6d",
+      "object_sha256": "dbc0068710a25f29dc0710a37fe699f6e6b54966df4ac2c4f4fb7534dac5a4ae",
+      "observed": {
+        "ratio": 0.5992973063409738,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 471,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/projectile-1-function",
+      "source_sha256": "12268a17807f8568723bcc0cf2b5afb79bee8579f997aabf6fd00194bd88737f",
+      "body_sha256": "bd3d6052c8f1c5e91990f25eb6ea6a4cbc876f6d9df8e6f6d87f4bdadfc6a840",
+      "object_sha256": "468c5ac47bce4eb6618420e2dac30cc82e34ba5d9900284ac5533c2e2b797854",
+      "observed": {
+        "ratio": 0.5313492726968735,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 410,
+        "problems": 15,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/projectile-1-pass",
+      "source_sha256": "050c27e4d85fef6875575a05bded98f8d7de310d953de92d8d39aff6bf91e11d",
+      "body_sha256": "bd3d6052c8f1c5e91990f25eb6ea6a4cbc876f6d9df8e6f6d87f4bdadfc6a840",
+      "object_sha256": "468c5ac47bce4eb6618420e2dac30cc82e34ba5d9900284ac5533c2e2b797854",
+      "observed": {
+        "ratio": 0.5313492726968735,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 410,
+        "problems": 15,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/tail-0-function",
+      "source_sha256": "fb9faf45691f5c28754575f0e1b58311ce9c5ee4d85e5b1b831171f502d50a24",
+      "body_sha256": "d2325aeb223061354b08904bdff5300c13f75843faf2858ffa4980a8c834393b",
+      "object_sha256": "52ad1f7c806000287e8cedc9ec993719808d45e2f3495a618d0c1ffce130cba3",
+      "observed": {
+        "ratio": 0.5993975903614458,
+        "ins": 2955,
+        "prefix": 0,
+        "refs": 468,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/tail-0-pass",
+      "source_sha256": "d999be3fe39eed41517c1d104031d3226bb0cb7e0d3e62dbf8f7fdabfd88e587",
+      "body_sha256": "d2325aeb223061354b08904bdff5300c13f75843faf2858ffa4980a8c834393b",
+      "object_sha256": "52ad1f7c806000287e8cedc9ec993719808d45e2f3495a618d0c1ffce130cba3",
+      "observed": {
+        "ratio": 0.5993975903614458,
+        "ins": 2955,
+        "prefix": 0,
+        "refs": 468,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/tail-1-function",
+      "source_sha256": "7f47052bc7ad2f456d95d73fa67824c098bb9d2cab8b7a4d8dc341920cf2e6dc",
+      "body_sha256": "d6af4f65a43cfab38f5040a410b029834d8d92d01687af755adca20c4c459e62",
+      "object_sha256": "d36b9d45cfe4e2576212614ae53819fbfc731321d12594ffc30e2b55fa8c1934",
+      "observed": {
+        "ratio": 0.5310356366069935,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 410,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "owner/tail-1-pass",
+      "source_sha256": "dc75060bbdb567cd9b60864d1110553d47fbabe0448062073f0d541b9ad5e8a7",
+      "body_sha256": "d6af4f65a43cfab38f5040a410b029834d8d92d01687af755adca20c4c459e62",
+      "object_sha256": "d36b9d45cfe4e2576212614ae53819fbfc731321d12594ffc30e2b55fa8c1934",
+      "observed": {
+        "ratio": 0.5310356366069935,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 410,
+        "problems": 14,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/const-local",
+      "source_sha256": "a08b32b7c49a7f13deee7cd6ff76b1041611c1687926f32770bdb629c538b21e",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "fe1469e957224ec2c6eeb3da4f189121fa978ed4d7f164279ae7cb25b26e3902",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/const-reference",
+      "source_sha256": "878421f69dbb6f64e95135dcc64c14ec88080927dd32d55c0184fa47c8cb839d",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "fcaddf596ccb4b154b186123ac8bfcac7efb161d9f3bf297d9e9adb9d2484875",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/duplicate",
+      "source_sha256": "c233f7bf77db5cac498567ac23f99a06b70769c1942116088805df1ededdaf91",
+      "body_sha256": "c96034f8140720c566f5d6d3635bb6bcd018e4c9a5a816414fc309e8fba49b56",
+      "object_sha256": "a35d713081d640dd4dd5dd0060ea7b9aabd570635b3cc18d4beb179125f4c0a6",
+      "observed": {
+        "ratio": 0.5397622635191696,
+        "ins": 2952,
+        "prefix": 0,
+        "refs": 415,
+        "problems": 13,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/plain-result",
+      "source_sha256": "712c68df7d98482e4a28be896e2bb24131d67eb8e7cc77f80305b680e10ef864",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "fcaddf596ccb4b154b186123ac8bfcac7efb161d9f3bf297d9e9adb9d2484875",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/pointer",
+      "source_sha256": "a028b36e8f6619e3a70702f596d3877372d6588ff55e68721c63792019ff40d4",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "880b0d757e5b2ea2efc37393dbfdf7a4a47ab0de5fa54f5125082aff8e3afc99",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/position-size-reference",
+      "source_sha256": "aa81cc9733cf0ee39103dd2b6e07069840f0f3c02370a0d5729cd5d2d5320783",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "d62bd63efeb038480f09fe5a9e5f5037f0c6053f02d73d0e4efa6e972e04c204",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/position-size-value",
+      "source_sha256": "7f4061cca7169c13d26f507bdab40933d46e1ad6e4a450806118d917c854b4dd",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "d62bd63efeb038480f09fe5a9e5f5037f0c6053f02d73d0e4efa6e972e04c204",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/renamed",
+      "source_sha256": "5f103f9bac3c035196c2cbb70608f4faa9f8caab47e24f74411b10efc11eb870",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "d62bd63efeb038480f09fe5a9e5f5037f0c6053f02d73d0e4efa6e972e04c204",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/size-position-reference",
+      "source_sha256": "71d0a93825c82b66abf04b19c22148a54fcc3e0d96952a4baba52ea2c5081e14",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "7be6135511046363f5105978c3b5162bdd481d10ee368c6d5b250befe1576cc3",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "call-temporary/value",
+      "source_sha256": "2a27483b36124c65d23762d2d35cbad4ddfdc82810870f14c60249d431ea8d30",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "1fbf2b262900b9751fb3c746083417fda0e1c91d5ba1650cb6eef8eca6afbbae",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0000",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "body_sha256": "519e5de58da88f7dbb5d6566925de1f3eee899821780387b9798d8047f414bae",
+      "object_sha256": "dc5c303fcc5a751128eb2d44cfae4b2baa14842e3899c585f3c0fd95be1a7d29",
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0001",
+      "source_sha256": "e1dffb3d7a520327892dc68069db5ab6429acf136c58a77b499cc1a8357ca7c3",
+      "body_sha256": "6c49d9524ab12f926b494ac41aa4033d98fef1ce5b8407ed3e1e5c598547d0b0",
+      "object_sha256": "e9083a54f40cc2cd76d5275b478d05cc814b21fd398445bacfe176d4e80004c9",
+      "observed": {
+        "ratio": 0.5329541652726665,
+        "ins": 2957,
+        "prefix": 0,
+        "refs": 412,
+        "problems": 15,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0010",
+      "source_sha256": "b50ddf14cdd45f5283f7b1ea3d530761ccb60b065bc8d8c0604043bfc5a00350",
+      "body_sha256": "34dcc3b742b24db5ade0b40b7f19649273feb5e0e37611d3fadb841e7815401f",
+      "object_sha256": "635ea47b05a82100e526f33b84c40c43206e442aa42be147c2147235d9a173f8",
+      "observed": {
+        "ratio": 0.5319504851120777,
+        "ins": 2957,
+        "prefix": 0,
+        "refs": 413,
+        "problems": 13,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0011",
+      "source_sha256": "dc93750c2199daeec541f6a972e2d4b9181cbea4619aa55e8c8551f11f411b23",
+      "body_sha256": "50d72658775b832cb178e4467be17c02595f827f37252abda65349cb4b05eb5b",
+      "object_sha256": "657f596440a43f5368f110195f3faf61a25022253f30c2cad7acc06359349e6d",
+      "observed": {
+        "ratio": 0.6026434666220511,
+        "ins": 2956,
+        "prefix": 0,
+        "refs": 478,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0100",
+      "source_sha256": "f1790720664f6dd2fc238bc2dcc8f9bfb45331ec384f940258724d3b0012c402",
+      "body_sha256": "a35f1243408da2cfd46c2088927e019961fd6b507867c952a907920158729294",
+      "object_sha256": "0eaeea5de1d05a7dabd473229945b2e16b9de9b03a9231e51f933ea1deb66833",
+      "observed": {
+        "ratio": 0.5319504851120777,
+        "ins": 2957,
+        "prefix": 0,
+        "refs": 413,
+        "problems": 13,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0101",
+      "source_sha256": "6a153c1d7c1df3989172cc6edfd21e8f333e77efef98dd9e0c1578c2b3b8e2a6",
+      "body_sha256": "5bfe9a316019e49503f9541c041ccf53c5eb00c1f60b8868b0c74ee8f33c368a",
+      "object_sha256": "90462d7e68bba00612418366ba27ae0e7928f8667ed0d87c57ddf0e174d3d27f",
+      "observed": {
+        "ratio": 0.5990305866622095,
+        "ins": 2962,
+        "prefix": 0,
+        "refs": 476,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0110",
+      "source_sha256": "47cf7e88c9a836b760c5b88a4f6c038f2661a6aaf2279ade5eb35641518e3cd6",
+      "body_sha256": "74c590c00cd59f709119cfef2584bd365fba27954600a150792a28c64c3d9737",
+      "object_sha256": "f3d1d294e85f4e017ca1045a7757c89f59133f43bc6f7819136691c9c9edba52",
+      "observed": {
+        "ratio": 0.59956529008527,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 479,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/0111",
+      "source_sha256": "726359d0b96e9ce0ecc8d239c4e0847bb861697367bc2d21fcc1c2f8dcf38753",
+      "body_sha256": "33333252913eccab626903eea80158a335b33262f6dafac8d55f3b55db02f985",
+      "object_sha256": "c8e4a52a39b4a35a9d82e89281be69148be26744cd9858d1ddb6ecad312e140f",
+      "observed": {
+        "ratio": 0.5298544907175113,
+        "ins": 2958,
+        "prefix": 0,
+        "refs": 402,
+        "problems": 19,
+        "exact": false,
+        "body": false,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1000",
+      "source_sha256": "712883995a6e3cda21c5bb7fd8abbfaf08cf8472f802869265709bb6a00e25e7",
+      "body_sha256": "264f707cc035e6d0a45046f705ef3ec34d8ab1ecd24080019881375a5d182eb4",
+      "object_sha256": "282f4deac2e309a03b7b60d8deeb0934d140baf1cdf98fde2906c057b84eef6f",
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "prefix": 0,
+        "refs": 419,
+        "problems": 10,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1001",
+      "source_sha256": "a9763d29ac01ea4792feed14d3a581fdd85a32c49bf11b75583653cd9b5606da",
+      "body_sha256": "775addaf279c0ca5347f11ee9eb62efba9c516b0b9510f2728daf3b8ea1af12a",
+      "object_sha256": "3204ce5d99b6c56148660b0925e96bf152808315257a16181d5c9b8ad15d9936",
+      "observed": {
+        "ratio": 0.6031427616181879,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 469,
+        "problems": 11,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1010",
+      "source_sha256": "9e76eb522e567c1afb6d63225e6702bc7959905502f71deec8108bcc37208e17",
+      "body_sha256": "2b3460ee024654ac0d4060296c17a3ca1e62cd09a854b5f7c3cd7b027576a564",
+      "object_sha256": "8e1f052a13544a27fa5a1c45cc57f6c2d97e2fdfde958d7bc3d41e23c3d6ade7",
+      "observed": {
+        "ratio": 0.6031427616181879,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 472,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1011",
+      "source_sha256": "39be40f10f39f15e02bdc7a6943ca098930cdbbd34845692d7708f25a87c49a0",
+      "body_sha256": "5cfce43ed9403800d054ff0ecd41c877ff816a85105f368fc80ddb6b878bb96a",
+      "object_sha256": "c7558b5e015bba60a65d55b83777caa6493a44f399bfaba2681c54b2e0efa022",
+      "observed": {
+        "ratio": 0.5366995485704732,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 417,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1100",
+      "source_sha256": "616898decf368fa04ac83a2ad04e3db1dd62473b35b9af2d053ec0c9fa59d831",
+      "body_sha256": "2c4f470139bfd090f3352245cd9de3ea1ad4b4386e02a5df02ce2d8fa12fc7d6",
+      "object_sha256": "53b83b127fc4f3425b97a7653213a1ce6dd9a1630425fb013ee3dfdb1cd672a2",
+      "observed": {
+        "ratio": 0.6034770979605483,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 473,
+        "problems": 8,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1101",
+      "source_sha256": "73b3be238d01cef6ea08f21ac7699da4db38fa71a9a228598620fb13637ce77d",
+      "body_sha256": "1c4665c0d32f075507fc5e1bc6dcfb5605c25f303c9489422cd6c1d1bc34aa17",
+      "object_sha256": "a90859964b9014e3dfdc8f29ee4a8d70ec8b2ef06a4192f233c197f0e6f1474e",
+      "observed": {
+        "ratio": 0.5371638550192083,
+        "ins": 2966,
+        "prefix": 0,
+        "refs": 421,
+        "problems": 12,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1110",
+      "source_sha256": "e42acd6eabb2f8254777f4d1ac7973c34f306248f706bf1f8c0e024587885f7a",
+      "body_sha256": "c9c569c3ed75763ad39d50555cdb4e587dec2b020424c918c64d95133b5a5e38",
+      "object_sha256": "b02ede1d4a9a6cd6c9aea03c34aafc187c50277feed25ad91e4e543655be0457",
+      "observed": {
+        "ratio": 0.5370091896407686,
+        "ins": 2964,
+        "prefix": 0,
+        "refs": 420,
+        "problems": 13,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "billboards/1111",
+      "source_sha256": "053a6d6095c2d2c346d5628de25c5fe09edffa7d2e00efd639f1ec279fadeae6",
+      "body_sha256": "ca7c6ed50eebe9444e7305f5a8f80ddff35afb230d81b2984d5e9aea265089f9",
+      "object_sha256": "dcd33433b44268d34f8a6c6c5f4556a2fff05a284c455324e40deafb7815e719",
+      "observed": {
+        "ratio": 0.6116034108008694,
+        "ins": 2960,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "reload/direct-field",
+      "source_sha256": "f04c706edf89b6bff0874700f3bb4937f034d615efd175052e40fa628377eb48",
+      "body_sha256": "f33a74feaa00b1f02eaffd98988f595589f0ad5b29a4d6c025b59df49bac3241",
+      "object_sha256": "fdb9491daeeb4e0d5d30d177f1eaac06188afc9170e69ae427cf9bbf7abd9623",
+      "observed": {
+        "ratio": 0.6165162153126045,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "reload/fresh-local",
+      "source_sha256": "3bb35d31f3f965885b6dcbd6856b9cceba5722faa143456708ac598750ff86bb",
+      "body_sha256": "f33a74feaa00b1f02eaffd98988f595589f0ad5b29a4d6c025b59df49bac3241",
+      "object_sha256": "fdb9491daeeb4e0d5d30d177f1eaac06188afc9170e69ae427cf9bbf7abd9623",
+      "observed": {
+        "ratio": 0.6165162153126045,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "reload/indexed",
+      "source_sha256": "d0d84abd63e9b894baa57ee47efa362d7c994b3adef9df18fa71a7f705ed3b4d",
+      "body_sha256": "f33a74feaa00b1f02eaffd98988f595589f0ad5b29a4d6c025b59df49bac3241",
+      "object_sha256": "fa9c68f55f8716df19730fa43eed4781c7193eadafce345cb48d084c3c151d08",
+      "observed": {
+        "ratio": 0.6165162153126045,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "reload/reassign",
+      "source_sha256": "e060feccc22f4361646272436a502ef37fbfd20f9777e257dd59e5b30accb399",
+      "body_sha256": "f33a74feaa00b1f02eaffd98988f595589f0ad5b29a4d6c025b59df49bac3241",
+      "object_sha256": "fd554458e15750aa9cdfefd24bb62105455bc2411de63723dbd8145c710901fb",
+      "observed": {
+        "ratio": 0.6165162153126045,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "reload/reference",
+      "source_sha256": "4b723ae7d4b340af696464c6ab5f9306aa11237ac41ad399fd26ccb65adc4913",
+      "body_sha256": "d171adccea2464708fc98798bbe6f97b2a03f51c10cc285518e8fe48a532fe49",
+      "object_sha256": "e4f376ab7fdae509c55dab7c8206bad056203c6f6fda9b104bdccf0323f946dd",
+      "observed": {
+        "ratio": 0.6138415245737212,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 486,
+        "problems": 9,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0000",
+      "source_sha256": "e060feccc22f4361646272436a502ef37fbfd20f9777e257dd59e5b30accb399",
+      "body_sha256": "f33a74feaa00b1f02eaffd98988f595589f0ad5b29a4d6c025b59df49bac3241",
+      "object_sha256": "68c9b9ac9d718ea1262f3269152c1a69a303f5b2538bf316c4912a626cacbb1a",
+      "observed": {
+        "ratio": 0.6165162153126045,
+        "ins": 2961,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 7,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0001",
+      "source_sha256": "ffb7be8cf4f499c5d44c4d7e87d2728a07a38ffafbcc9a7abf4611d56827080e",
+      "body_sha256": "cc01a0941d679020ca0332cd8672b304a2f60db59767704a0cca2fa15f39a3b6",
+      "object_sha256": "2ee5461a762cba0549b6b92a2ea7fbe48f68dad440708c720cbe22e1cada54f0",
+      "observed": {
+        "ratio": 0.6263368983957219,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 492,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0010",
+      "source_sha256": "9947c44a7456ddff32c88aa99d792d5c13a4a27fe92e913db6627dc1ad80d564",
+      "body_sha256": "b978b2923c729ec25e50672a0bc1c2e4a631f49e85f2632b84f41bacb9e7caa3",
+      "object_sha256": "451ffc012a4a985e41b4da8b64d4af0fef9ab263a8e5c646c2292279949e251d",
+      "observed": {
+        "ratio": 0.6263368983957219,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 492,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0011",
+      "source_sha256": "b8f035f09a2db80d52737c85b2785bf4f2dcb36482060de2c7e107d430f57a1c",
+      "body_sha256": "df2213619cca3f25b52b8535d95ef71c8d1c336183dda5968acb706938fbc1c2",
+      "object_sha256": "0c02639bfd5aa5a956329ede5597a14dfff58ddb47bad62b57eafccb92aeff3f",
+      "observed": {
+        "ratio": 0.6186497326203209,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 482,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0100",
+      "source_sha256": "256a2ebb0baa2055274df5311d166245a0fed6328738af11982bad969e2043ea",
+      "body_sha256": "11ab358458b67297d7db7a274fcdcf303d0ed34f1bdb7ad648353ec060fb1516",
+      "object_sha256": "f4656bc017cfe28ce5f8388e283b1b712f7c0dc8517af0f1d8a793c2175a4401",
+      "observed": {
+        "ratio": 0.6276737967914439,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 492,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0101",
+      "source_sha256": "9f583c7325c35d26e0de3f12ca8e0b7790cd3cdaf5ee3f525ca495c38f94d6e5",
+      "body_sha256": "b4f25149fe1297e9dda356a68a25d90776ae2f639e5e47b0a17960ba4af95f1c",
+      "object_sha256": "9885255352cfd24bc8e8331cec67cbed5eea20df5d0ed3e5e81c82ee3e960183",
+      "observed": {
+        "ratio": 0.61798128342246,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 482,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0110",
+      "source_sha256": "398ced78e7902f5489d2943b0ccb24c15de778f1dd3c5b50455637ea893737d5",
+      "body_sha256": "99d7640b5275dfbaebe3f3be1ee2bb6f02e4ab504184e80b43db4206c47d9bfc",
+      "object_sha256": "0f8e9d669a14e6d60d27ab39aa3bac08aa056288a08ca5f0096bc7b50f136d47",
+      "observed": {
+        "ratio": 0.6253342245989305,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 488,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "final-secondary/boundaries/0111",
+      "source_sha256": "9cacef1166a94b392f3c611cb4d288685d81b27975712e48b51599ddd731e19d",
+      "body_sha256": "d86658b662b3c2fa2ec5055bfea9924cb4b3ad68c06f8ec4edbb5b77e940cd72",
+      "object_sha256": "79ce99bab23bbd0882a2b0cefc4eec1934824572379e8c8d9380ce004a6d7e55",
+      "observed": {
+        "ratio": 0.6293449197860963,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 487,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    },
+    {
+      "name": "retained",
+      "source_sha256": "a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31",
+      "body_sha256": "d86658b662b3c2fa2ec5055bfea9924cb4b3ad68c06f8ec4edbb5b77e940cd72",
+      "object_sha256": "44251dafca3c19a3b66ebf6b2c3f95d6cb324ff040b0cb73046b2995244673be",
+      "observed": {
+        "ratio": 0.6293449197860963,
+        "ins": 2963,
+        "prefix": 0,
+        "refs": 487,
+        "problems": 6,
+        "exact": false,
+        "body": false,
+        "failed": [],
+        "frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        }
+      }
+    }
+  ],
+  "baseline_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+  "controls_sha256": "95dd8a279beef7e629dc0af7d6eb3bb6d5fb6fd7cdffa0a8a4d33cbc7fc201f5",
+  "verifier_sha256": "3a9bbcbb042441445bf980e3a645c54832739f52191ab8840eed83476222b8c1",
+  "fire_proof_sha256": "4d23c95688b50c2c422af1ca035f135011f7fa61bcaca0574ea2f0de370f8c31",
+  "reconstruction_sha256": "d8a87d438cba89434fe9b8bde598a4ea32630ad64c6d73bc478930449c943ebc",
+  "executor_sha256": "929478efa3db26233c39cdd158186831e482263ee1c16a8df0d4ec56ba4aa0f4",
+  "engine_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "unicorn_version": "2.1.4",
+  "scope": "Bounded source controls and 26 Fire witnesses per control. No exact-match credit."
+}
