@@ -402,3 +402,24 @@ shape that retains the dead pointer store with a four-byte storage owner.
 Twenty-eight source variants plus the two controls produce no new match.
 Canonical source, flags, 91.228070%, prefix 51, and 13 clean references remain
 unchanged. Explicit gate checks and full replay evidence are retained.
+
+## Zero splitting and counter-lifetime witness (2026-09-12)
+
+The [allocation follow-up](../../evidence/vc6-timeline-zero-splitting-2026-09-12/README.md)
+follows replacement zero temporaries instead of assuming the initial seed's
+arena address stays meaningful. Preserving replays show canonical eventually
+retaining an eight-use zero in EBX. The pointer-copy witness splits its nine-use
+replacement into six/three, then one/four/two-use groups, and ultimately
+replaces these zeros with constants. Matching its initial queue priorities to
+canonical changes nothing. Changing only the four-use scan zero's cost from
+-1 to +1, combined with the known extent control, restores native's normalized
+48-instruction prefix and retains the pointer triplet. This is diagnostic only.
+
+A new stock-source witness hoists `spawn_index` just outside the outer loop and
+resets it at the end. It retains the EDI triplet and shared EBX zero tests and
+clears together. Its other register choices differ, its frame is still 32 bytes,
+and its agreement is only 64.347826% with eight clean aligned references. It is
+not a candidate improvement. The remaining source constraints are the four-byte
+dead-store owner and native zero lifetimes/register selection. All 121 source
+builds and 25 priority/cost/extent modes are retained; no exact body was found.
+Canonical source, flags, and native metrics remain unchanged.
