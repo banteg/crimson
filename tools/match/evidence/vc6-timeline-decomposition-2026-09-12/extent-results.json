@@ -1,0 +1,73 @@
+{
+  "source_sha256": "5ad0be6a087969c28411fe3658c58a1dd2863f4611f4e843d684210f0a257cf9",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "diagnostic_only": true,
+  "only_frame_reservation_and_local_displacements_change": true,
+  "descriptor_and_both_whole_coff_equal_except_timestamp": true,
+  "modes": [
+    {
+      "mode": "control",
+      "whole_coff_equal_except_timestamp": true,
+      "field_writes": 0,
+      "normalized_coff_sha256": "388b576463cbddef1d5c95c5ff34678da310e93cf68fd0f798102351def453b7",
+      "metrics": {
+        "ratio": 0.7130434782608696,
+        "target_instructions": 115,
+        "candidate_instructions": 115,
+        "prefix_instructions": 1,
+        "references_ok": 12,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "mode": "descriptor",
+      "whole_coff_equal_except_timestamp": false,
+      "field_writes": 1,
+      "normalized_coff_sha256": "7961d8c8753cc9fb6bee5e461ae5be5cd71ee3ac0d03216bf5e80d2e20d517cc",
+      "metrics": {
+        "ratio": 0.8695652173913043,
+        "target_instructions": 115,
+        "candidate_instructions": 115,
+        "prefix_instructions": 14,
+        "references_ok": 12,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "mode": "definition",
+      "whole_coff_equal_except_timestamp": true,
+      "field_writes": 1,
+      "normalized_coff_sha256": "388b576463cbddef1d5c95c5ff34678da310e93cf68fd0f798102351def453b7",
+      "metrics": {
+        "ratio": 0.7130434782608696,
+        "target_instructions": 115,
+        "candidate_instructions": 115,
+        "prefix_instructions": 1,
+        "references_ok": 12,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "mode": "both",
+      "whole_coff_equal_except_timestamp": false,
+      "field_writes": 2,
+      "normalized_coff_sha256": "7961d8c8753cc9fb6bee5e461ae5be5cd71ee3ac0d03216bf5e80d2e20d517cc",
+      "metrics": {
+        "ratio": 0.8695652173913043,
+        "target_instructions": 115,
+        "candidate_instructions": 115,
+        "prefix_instructions": 14,
+        "references_ok": 12,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    }
+  ]
+}

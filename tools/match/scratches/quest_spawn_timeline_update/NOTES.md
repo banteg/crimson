@@ -376,3 +376,29 @@ the witness. The full 119-variant follow-up yields no match. Three preserving
 traces verify whole-COFF equivalence except timestamps and reject missing
 streams. An overlapping-byte-range audit rejects six partial-read false
 positives from the historical equal-slot screen; the adjacent witness passes.
+
+## Residual decomposition and stack owner (2026-09-12)
+
+The [decomposition controls](../../evidence/vc6-timeline-decomposition-2026-09-12/README.md)
+separate pointer behavior, frame layout, and zero-register choices. A preserving
+trace of `0x33b7b` shows that `copied` reserves eight bytes at allocator offset
+-32, sharing its start with four-byte `spread`. The next vector starts at -24.
+The extra four bytes belong to the copied object's full storage extent.
+
+Changing only that descriptor's extent at `+0x20` from eight to four immediately
+before allocation reduces the frame to 28 bytes. The observer verifies that
+only the frame reservation and corresponding local displacements change;
+the pointer triplet and EDI field loads remain. Changing the underlying
+definition's size at `+0x10` alone has no effect. These compiler interventions
+are diagnostic and are never installed or credited as source matches.
+
+The extent-adjusted native diff contains only zero materialization/reuse and
+resulting branch offsets. Canonical and witness traces both retain one shared
+zero pseudo-definition with 12 users through `0x306c1`; its original identity
+is gone by the snapshot before `0x336f4`. Follow that later allocation/rewriting
+interval next, holding the pointer witness fixed. Separately, seek a source
+shape that retains the dead pointer store with a four-byte storage owner.
+
+Twenty-eight source variants plus the two controls produce no new match.
+Canonical source, flags, 91.228070%, prefix 51, and 13 clean references remain
+unchanged. Explicit gate checks and full replay evidence are retained.

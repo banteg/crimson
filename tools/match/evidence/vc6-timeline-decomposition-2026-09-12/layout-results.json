@@ -1,0 +1,431 @@
+{
+  "source_sha256": "5ad0be6a087969c28411fe3658c58a1dd2863f4611f4e843d684210f0a257cf9",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "whole_coff_equal_except_timestamp": true,
+  "copied_parent": 1813473664,
+  "spread_parent": 1813473916,
+  "frame_owner_sizes_and_offsets_verified": true,
+  "objects": [
+    {
+      "parent": 1813472908,
+      "size": 8,
+      "assigned_displacement": -16,
+      "source_lines": [
+        {
+          "relative_line": 34,
+          "text": "quest_timeline_vec2_t zero_offset(0.0f, 0.0f);"
+        },
+        {
+          "relative_line": 37,
+          "text": "quest_timeline_vec2_t offset = zero_offset;"
+        }
+      ],
+      "before_descriptor": [
+        1813500160,
+        131588,
+        1813472908,
+        1813475008,
+        20488,
+        0,
+        0,
+        6,
+        8,
+        0,
+        0,
+        0,
+        1814154212,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "after_descriptor": [
+        1813500160,
+        131588,
+        1813472908,
+        1813475008,
+        20488,
+        0,
+        0,
+        6,
+        8,
+        0,
+        0,
+        1813474252,
+        1813473160,
+        4,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "before_definition": [
+        0,
+        1,
+        1813472908,
+        4294967280,
+        8,
+        2304,
+        1813454352,
+        0
+      ],
+      "after_definition": [
+        0,
+        1,
+        1813472908,
+        4294967280,
+        8,
+        2304,
+        1813454352,
+        0
+      ]
+    },
+    {
+      "parent": 1813473160,
+      "size": 8,
+      "assigned_displacement": -24,
+      "source_lines": [
+        {
+          "relative_line": 37,
+          "text": "quest_timeline_vec2_t offset = zero_offset;"
+        },
+        {
+          "relative_line": 47,
+          "text": "offset.y = (float)spread;"
+        },
+        {
+          "relative_line": 49,
+          "text": "offset.y = -offset.y;"
+        },
+        {
+          "relative_line": 52,
+          "text": "offset.x = (float)spread;"
+        },
+        {
+          "relative_line": 54,
+          "text": "offset.x = -offset.x;"
+        },
+        {
+          "relative_line": 60,
+          "text": "offset.y + entry->position.y);"
+        }
+      ],
+      "before_descriptor": [
+        1813500844,
+        133636,
+        1813473160,
+        1814188180,
+        20488,
+        0,
+        0,
+        9,
+        8,
+        0,
+        0,
+        0,
+        1814154356,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "after_descriptor": [
+        1813500844,
+        133636,
+        1813473160,
+        1814188180,
+        20488,
+        0,
+        0,
+        9,
+        8,
+        0,
+        0,
+        1813472908,
+        1813473916,
+        10,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "before_definition": [
+        0,
+        1,
+        1813473160,
+        4294967252,
+        8,
+        2304,
+        1813454444,
+        0
+      ],
+      "after_definition": [
+        0,
+        1,
+        1813473160,
+        4294967272,
+        8,
+        2304,
+        1813454444,
+        0
+      ]
+    },
+    {
+      "parent": 1813473664,
+      "size": 8,
+      "assigned_displacement": -32,
+      "source_lines": [
+        {
+          "relative_line": 40,
+          "text": "int *template_id; { pointer_pair selected; selected.last = &entry->template_id; selected.first = selected.last; pointer_pair copied; for (unsigned int k = 0; k != sizeof copied; ++k) ((unsigned char *)&copied)[k] = ((unsigned char *)&selected)[k]; template_id = copied.last; }"
+        }
+      ],
+      "before_descriptor": [
+        1813501108,
+        131588,
+        1813473664,
+        1814188264,
+        20488,
+        0,
+        0,
+        15,
+        8,
+        0,
+        0,
+        0,
+        1814154548,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "after_descriptor": [
+        1813501108,
+        131588,
+        1813473664,
+        1814188264,
+        20488,
+        0,
+        0,
+        15,
+        8,
+        0,
+        0,
+        0,
+        1813474252,
+        1,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "before_definition": [
+        0,
+        1,
+        1813473664,
+        4294967236,
+        8,
+        2304,
+        1813454476,
+        0
+      ],
+      "after_definition": [
+        0,
+        1,
+        1813473664,
+        4294967264,
+        8,
+        2304,
+        1813454476,
+        0
+      ]
+    },
+    {
+      "parent": 1813473916,
+      "size": 4,
+      "assigned_displacement": -32,
+      "source_lines": [
+        {
+          "relative_line": 43,
+          "text": "spread = 0;"
+        },
+        {
+          "relative_line": 47,
+          "text": "offset.y = (float)spread;"
+        },
+        {
+          "relative_line": 52,
+          "text": "offset.x = (float)spread;"
+        },
+        {
+          "relative_line": 67,
+          "text": "spread += 0x28;"
+        }
+      ],
+      "before_descriptor": [
+        1813501024,
+        133124,
+        1813473916,
+        0,
+        4100,
+        0,
+        0,
+        18,
+        4,
+        0,
+        0,
+        1813473832,
+        1814154596,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "after_descriptor": [
+        1813501024,
+        133124,
+        1813473916,
+        0,
+        4100,
+        0,
+        0,
+        18,
+        4,
+        0,
+        0,
+        1813473160,
+        0,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "before_definition": [
+        0,
+        1,
+        1813473916,
+        4294967244,
+        4,
+        2304,
+        1813454468,
+        0
+      ],
+      "after_definition": [
+        0,
+        1,
+        1813473916,
+        4294967264,
+        4,
+        2304,
+        1813454468,
+        0
+      ]
+    },
+    {
+      "parent": 1813474252,
+      "size": 8,
+      "assigned_displacement": -8,
+      "source_lines": [
+        {
+          "relative_line": 60,
+          "text": "offset.y + entry->position.y);"
+        }
+      ],
+      "before_descriptor": [
+        1813501360,
+        132612,
+        1813474252,
+        1813474924,
+        20488,
+        0,
+        0,
+        22,
+        8,
+        0,
+        0,
+        0,
+        1814154716,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "after_descriptor": [
+        1813501360,
+        132612,
+        1813474252,
+        1813474924,
+        20488,
+        0,
+        0,
+        22,
+        8,
+        0,
+        0,
+        1813473664,
+        1813472908,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "before_definition": [
+        0,
+        1,
+        1813474252,
+        4294967216,
+        8,
+        2304,
+        1813454500,
+        0
+      ],
+      "after_definition": [
+        0,
+        1,
+        1813474252,
+        4294967288,
+        8,
+        2304,
+        1813454500,
+        0
+      ]
+    }
+  ]
+}

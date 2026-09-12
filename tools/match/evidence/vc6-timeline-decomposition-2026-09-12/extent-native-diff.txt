@@ -1,0 +1,133 @@
+--- target
++++ candidate
+@@ -1,115 +1,115 @@
+ mov dl, byte [ADDR]
+ sub esp, 0x1c
+ test dl, dl
+ push ebx
+ push ebp
+ push esi
+ push edi
+ je L20
+ mov esi, dword [ADDR]
+ mov eax, dword [ADDR]
+ add esi, eax
+ jmp L22
+ xor esi, esi
+ mov edi, dword [ADDR]
+-xor ebx, ebx
+ xor ebp, ebp
+-cmp edi, ebx
++test edi, edi
+ mov dword [ADDR], esi
+ jle L66
+ mov ecx, dword [ADDR]
+ mov eax, ADDR
+-cmp dword [eax+0x4], ebx
++mov ebx, dword [eax+0x4]
++test ebx, ebx
+ jle L5e
+ cmp dword [eax], ecx
+ jl L6e
+ test dl, dl
+ je L5e
+ cmp esi, 0xbb8
+ jle L5e
+ cmp ecx, 0x6a4
+ jg L6e
+ inc ebp
+ add eax, 0x18
+ cmp ebp, edi
+-jl L41
++jl L3f
+ pop edi
+ pop esi
+ pop ebp
+ pop ebx
+ add esp, 0x1c
+ ret
+ lea eax, dword [ebp+ebp*2]
+ mov dword [esp+0x1c], 0x0
+ mov dword [esp+0x20], 0x0
+ lea esi, dword [eax*8+ADDR]
+ mov eax, dword [esi+0x14]
+ mov ecx, dword [esp+0x1c]
+ mov edx, dword [esp+0x20]
+-cmp eax, ebx
++xor ebx, ebx
++test eax, eax
+ mov dword [esp+0x14], ecx
+ mov dword [esp+0x18], edx
+-jle L143
++jle L145
+ lea edi, dword [esi+0xc]
+ mov dword [esp+0x10], edi
+ mov dword [esp+0x10], ebx
+ fld dword [esi]
+ fcomp dword [ADDR]
+ fnstsw ax
+ test ah, 0x1
+-jne Le6
++jne Le8
+ fild dword [ADDR]
+ fcomp dword [esi]
+ fnstsw ax
+ test ah, 0x1
+-jne Le6
++jne Le8
+ fild dword [esp+0x10]
+ test bl, 0x1
+ fstp dword [esp+0x14]
+-je Lfd
++je Lff
+ fld dword [esp+0x14]
+ fchs
+ fstp dword [esp+0x14]
+-jmp Lfd
++jmp Lff
+ fild dword [esp+0x10]
+ test bl, 0x1
+ fstp dword [esp+0x18]
+-je Lfd
++je Lff
+ fld dword [esp+0x18]
+ fchs
+ fstp dword [esp+0x18]
+ fld dword [esp+0x14]
+ fadd dword [esi]
+ mov eax, dword [edi+-0x4]
+ mov edx, dword [edi]
+ lea ecx, dword [esp+0x24]
+ push eax
+ fstp dword [esp+0x28]
+ fld dword [esp+0x1c]
+ fadd dword [esi+0x4]
+ push ecx
+ push edx
+ fstp dword [esp+0x34]
+ call ADDR
+ mov ecx, dword [esp+0x1c]
+ mov eax, dword [esi+0x14]
+ add esp, 0xc
+ inc ebx
+ add ecx, 0x28
+ cmp ebx, eax
+ mov dword [esp+0x10], ecx
+-jl Laf
++jl Lb1
+ mov edi, dword [ADDR]
+ lea eax, dword [edi+-0x1]
+-xor ebx, ebx
++mov dword [esi+0x14], 0x0
+ cmp ebp, eax
+-mov dword [esi+0x14], ebx
+-mov byte [ADDR], bl
++mov byte [ADDR], 0x0
+ jge L66
+ mov ecx, dword [esi+0x10]
+ mov eax, dword [esi+0x28]
+ cmp ecx, eax
+ jne L66
+ inc ebp
+ add esi, 0x18
+ jmp L89
