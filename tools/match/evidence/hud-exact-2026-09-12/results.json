@@ -1,0 +1,6936 @@
+{
+  "kind": "hud-exact-source-and-reference-proof",
+  "source_sha256": "32bbe80fa55747d431ab5be9b004b157af9f94a5b7b8feea5c6cf80763eab5ca",
+  "before_source_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "reference_aliases": [
+    [
+      "?$S1@?EP@??ui_render_hud@@9@4EA",
+      "ui_hud_init_flags"
+    ],
+    [
+      "?progress_color@?EP@??ui_render_hud@@9@4Uhud_render_color_t@@A",
+      "quest_progress_bar_color_r"
+    ],
+    [
+      "$E2",
+      "ui_hud_progress_color_destroy"
+    ]
+  ],
+  "current_object_sha256": "381b32146abe2666e3fdca4f2a5094c6e25ea2189e308734c3483f104534a24c",
+  "current": {
+    "exact": true,
+    "body_byte_exact": true,
+    "body_byte_mismatches": [],
+    "padding_bytes": {
+      "target": 0,
+      "candidate": 0
+    },
+    "match_ratio": 1.0,
+    "prefix_instructions": 1824,
+    "target_instructions": 1824,
+    "candidate_instructions": 1824,
+    "references": {
+      "ok": 393,
+      "unresolved": 0,
+      "mismatch": 0
+    },
+    "stack_frame": {
+      "target_prologue_allocation_bytes": 52,
+      "candidate_prologue_allocation_bytes": 52,
+      "target_minus_candidate_bytes": 0,
+      "classification": "same-prologue-allocation",
+      "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+    },
+    "regions": [],
+    "cfg_alignment": {
+      "method": "diagnostic-only: unique exact normalized block contents and outgoing shape, followed by greedy structurally identical pairs with at least 55% instruction similarity; edges are checked only against a monotonic backbone of unique exact pairs within 5% normalized order distance; predecessor counts never make duplicate blocks unique",
+      "summary": {
+        "target_blocks": 132,
+        "candidate_blocks": 132,
+        "exact_pairs": 111,
+        "exact_ambiguous_pairs": 21,
+        "similar_pairs": 0,
+        "edge_anchor_pairs": 111,
+        "unmatched_target": 0,
+        "unmatched_candidate": 0,
+        "edge_consistent_pairs": 102,
+        "edge_conflicts": 0,
+        "heuristic_edge_consistent_pairs": 17,
+        "heuristic_edge_conflicts": 0,
+        "edge_unchecked_pairs": 13
+      },
+      "pairs": [
+        {
+          "target_block": 0,
+          "candidate_block": 0,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 0,
+            "instructions": {
+              "start": 0,
+              "end": 11,
+              "count": 11
+            },
+            "bytes": {
+              "start": 0,
+              "end": 29
+            },
+            "addresses": {
+              "start": 4304592,
+              "end": 4304621
+            },
+            "terminator": "jne",
+            "successors": [
+              3,
+              1
+            ]
+          },
+          "candidate": {
+            "index": 0,
+            "instructions": {
+              "start": 0,
+              "end": 11,
+              "count": 11
+            },
+            "bytes": {
+              "start": 0,
+              "end": 29
+            },
+            "addresses": {
+              "start": 0,
+              "end": 29
+            },
+            "terminator": "jne",
+            "successors": [
+              3,
+              1
+            ]
+          }
+        },
+        {
+          "target_block": 1,
+          "candidate_block": 1,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 1,
+            "instructions": {
+              "start": 11,
+              "end": 16,
+              "count": 5
+            },
+            "bytes": {
+              "start": 29,
+              "end": 45
+            },
+            "addresses": {
+              "start": 4304621,
+              "end": 4304637
+            },
+            "terminator": "je",
+            "successors": [
+              3,
+              2
+            ]
+          },
+          "candidate": {
+            "index": 1,
+            "instructions": {
+              "start": 11,
+              "end": 16,
+              "count": 5
+            },
+            "bytes": {
+              "start": 29,
+              "end": 45
+            },
+            "addresses": {
+              "start": 29,
+              "end": 45
+            },
+            "terminator": "je",
+            "successors": [
+              3,
+              2
+            ]
+          }
+        },
+        {
+          "target_block": 2,
+          "candidate_block": 2,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 2,
+            "instructions": {
+              "start": 16,
+              "end": 19,
+              "count": 3
+            },
+            "bytes": {
+              "start": 45,
+              "end": 56
+            },
+            "addresses": {
+              "start": 4304637,
+              "end": 4304648
+            },
+            "terminator": "fstp",
+            "successors": [
+              3
+            ]
+          },
+          "candidate": {
+            "index": 2,
+            "instructions": {
+              "start": 16,
+              "end": 19,
+              "count": 3
+            },
+            "bytes": {
+              "start": 45,
+              "end": 56
+            },
+            "addresses": {
+              "start": 45,
+              "end": 56
+            },
+            "terminator": "fstp",
+            "successors": [
+              3
+            ]
+          }
+        },
+        {
+          "target_block": 3,
+          "candidate_block": 3,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 3,
+            "instructions": {
+              "start": 19,
+              "end": 91,
+              "count": 72
+            },
+            "bytes": {
+              "start": 56,
+              "end": 354
+            },
+            "addresses": {
+              "start": 4304648,
+              "end": 4304946
+            },
+            "terminator": "je",
+            "successors": [
+              18,
+              4
+            ]
+          },
+          "candidate": {
+            "index": 3,
+            "instructions": {
+              "start": 19,
+              "end": 91,
+              "count": 72
+            },
+            "bytes": {
+              "start": 56,
+              "end": 354
+            },
+            "addresses": {
+              "start": 56,
+              "end": 354
+            },
+            "terminator": "je",
+            "successors": [
+              18,
+              4
+            ]
+          }
+        },
+        {
+          "target_block": 4,
+          "candidate_block": 4,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 4,
+            "instructions": {
+              "start": 91,
+              "end": 100,
+              "count": 9
+            },
+            "bytes": {
+              "start": 354,
+              "end": 386
+            },
+            "addresses": {
+              "start": 4304946,
+              "end": 4304978
+            },
+            "terminator": "jne",
+            "successors": [
+              6,
+              5
+            ]
+          },
+          "candidate": {
+            "index": 4,
+            "instructions": {
+              "start": 91,
+              "end": 100,
+              "count": 9
+            },
+            "bytes": {
+              "start": 354,
+              "end": 386
+            },
+            "addresses": {
+              "start": 354,
+              "end": 386
+            },
+            "terminator": "jne",
+            "successors": [
+              6,
+              5
+            ]
+          }
+        },
+        {
+          "target_block": 5,
+          "candidate_block": 5,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 5,
+            "instructions": {
+              "start": 100,
+              "end": 107,
+              "count": 7
+            },
+            "bytes": {
+              "start": 386,
+              "end": 420
+            },
+            "addresses": {
+              "start": 4304978,
+              "end": 4305012
+            },
+            "terminator": "jmp",
+            "successors": [
+              7
+            ]
+          },
+          "candidate": {
+            "index": 5,
+            "instructions": {
+              "start": 100,
+              "end": 107,
+              "count": 7
+            },
+            "bytes": {
+              "start": 386,
+              "end": 420
+            },
+            "addresses": {
+              "start": 386,
+              "end": 420
+            },
+            "terminator": "jmp",
+            "successors": [
+              7
+            ]
+          }
+        },
+        {
+          "target_block": 6,
+          "candidate_block": 6,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 6,
+            "instructions": {
+              "start": 107,
+              "end": 113,
+              "count": 6
+            },
+            "bytes": {
+              "start": 420,
+              "end": 452
+            },
+            "addresses": {
+              "start": 4305012,
+              "end": 4305044
+            },
+            "terminator": "mov",
+            "successors": [
+              7
+            ]
+          },
+          "candidate": {
+            "index": 6,
+            "instructions": {
+              "start": 107,
+              "end": 113,
+              "count": 6
+            },
+            "bytes": {
+              "start": 420,
+              "end": 452
+            },
+            "addresses": {
+              "start": 420,
+              "end": 452
+            },
+            "terminator": "mov",
+            "successors": [
+              7
+            ]
+          }
+        },
+        {
+          "target_block": 7,
+          "candidate_block": 7,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 7,
+            "instructions": {
+              "start": 113,
+              "end": 155,
+              "count": 42
+            },
+            "bytes": {
+              "start": 452,
+              "end": 636
+            },
+            "addresses": {
+              "start": 4305044,
+              "end": 4305228
+            },
+            "terminator": "jne",
+            "successors": [
+              11,
+              8
+            ]
+          },
+          "candidate": {
+            "index": 7,
+            "instructions": {
+              "start": 113,
+              "end": 155,
+              "count": 42
+            },
+            "bytes": {
+              "start": 452,
+              "end": 636
+            },
+            "addresses": {
+              "start": 452,
+              "end": 636
+            },
+            "terminator": "jne",
+            "successors": [
+              11,
+              8
+            ]
+          }
+        },
+        {
+          "target_block": 8,
+          "candidate_block": 8,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 8,
+            "instructions": {
+              "start": 155,
+              "end": 157,
+              "count": 2
+            },
+            "bytes": {
+              "start": 636,
+              "end": 641
+            },
+            "addresses": {
+              "start": 4305228,
+              "end": 4305233
+            },
+            "terminator": "je",
+            "successors": [
+              10,
+              9
+            ]
+          },
+          "candidate": {
+            "index": 8,
+            "instructions": {
+              "start": 155,
+              "end": 157,
+              "count": 2
+            },
+            "bytes": {
+              "start": 636,
+              "end": 641
+            },
+            "addresses": {
+              "start": 636,
+              "end": 641
+            },
+            "terminator": "je",
+            "successors": [
+              10,
+              9
+            ]
+          }
+        },
+        {
+          "target_block": 9,
+          "candidate_block": 9,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 9,
+            "instructions": {
+              "start": 157,
+              "end": 158,
+              "count": 1
+            },
+            "bytes": {
+              "start": 641,
+              "end": 649
+            },
+            "addresses": {
+              "start": 4305233,
+              "end": 4305241
+            },
+            "terminator": "mov",
+            "successors": [
+              10
+            ]
+          },
+          "candidate": {
+            "index": 9,
+            "instructions": {
+              "start": 157,
+              "end": 158,
+              "count": 1
+            },
+            "bytes": {
+              "start": 641,
+              "end": 649
+            },
+            "addresses": {
+              "start": 641,
+              "end": 649
+            },
+            "terminator": "mov",
+            "successors": [
+              10
+            ]
+          }
+        },
+        {
+          "target_block": 10,
+          "candidate_block": 10,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 10,
+            "instructions": {
+              "start": 158,
+              "end": 177,
+              "count": 19
+            },
+            "bytes": {
+              "start": 649,
+              "end": 721
+            },
+            "addresses": {
+              "start": 4305241,
+              "end": 4305313
+            },
+            "terminator": "jmp",
+            "successors": [
+              17
+            ]
+          },
+          "candidate": {
+            "index": 10,
+            "instructions": {
+              "start": 158,
+              "end": 177,
+              "count": 19
+            },
+            "bytes": {
+              "start": 649,
+              "end": 721
+            },
+            "addresses": {
+              "start": 649,
+              "end": 721
+            },
+            "terminator": "jmp",
+            "successors": [
+              17
+            ]
+          }
+        },
+        {
+          "target_block": 11,
+          "candidate_block": 11,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 11,
+            "instructions": {
+              "start": 177,
+              "end": 179,
+              "count": 2
+            },
+            "bytes": {
+              "start": 721,
+              "end": 726
+            },
+            "addresses": {
+              "start": 4305313,
+              "end": 4305318
+            },
+            "terminator": "je",
+            "successors": [
+              13,
+              12
+            ]
+          },
+          "candidate": {
+            "index": 11,
+            "instructions": {
+              "start": 177,
+              "end": 179,
+              "count": 2
+            },
+            "bytes": {
+              "start": 721,
+              "end": 726
+            },
+            "addresses": {
+              "start": 721,
+              "end": 726
+            },
+            "terminator": "je",
+            "successors": [
+              13,
+              12
+            ]
+          }
+        },
+        {
+          "target_block": 12,
+          "candidate_block": 12,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 12,
+            "instructions": {
+              "start": 179,
+              "end": 180,
+              "count": 1
+            },
+            "bytes": {
+              "start": 726,
+              "end": 734
+            },
+            "addresses": {
+              "start": 4305318,
+              "end": 4305326
+            },
+            "terminator": "mov",
+            "successors": [
+              13
+            ]
+          },
+          "candidate": {
+            "index": 12,
+            "instructions": {
+              "start": 179,
+              "end": 180,
+              "count": 1
+            },
+            "bytes": {
+              "start": 726,
+              "end": 734
+            },
+            "addresses": {
+              "start": 726,
+              "end": 734
+            },
+            "terminator": "mov",
+            "successors": [
+              13
+            ]
+          }
+        },
+        {
+          "target_block": 13,
+          "candidate_block": 13,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 13,
+            "instructions": {
+              "start": 180,
+              "end": 212,
+              "count": 32
+            },
+            "bytes": {
+              "start": 734,
+              "end": 848
+            },
+            "addresses": {
+              "start": 4305326,
+              "end": 4305440
+            },
+            "terminator": "je",
+            "successors": [
+              15,
+              14
+            ]
+          },
+          "candidate": {
+            "index": 13,
+            "instructions": {
+              "start": 180,
+              "end": 212,
+              "count": 32
+            },
+            "bytes": {
+              "start": 734,
+              "end": 848
+            },
+            "addresses": {
+              "start": 734,
+              "end": 848
+            },
+            "terminator": "je",
+            "successors": [
+              15,
+              14
+            ]
+          }
+        },
+        {
+          "target_block": 14,
+          "candidate_block": 14,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 14,
+            "instructions": {
+              "start": 212,
+              "end": 214,
+              "count": 2
+            },
+            "bytes": {
+              "start": 848,
+              "end": 856
+            },
+            "addresses": {
+              "start": 4305440,
+              "end": 4305448
+            },
+            "terminator": "jmp",
+            "successors": [
+              16
+            ]
+          },
+          "candidate": {
+            "index": 14,
+            "instructions": {
+              "start": 212,
+              "end": 214,
+              "count": 2
+            },
+            "bytes": {
+              "start": 848,
+              "end": 856
+            },
+            "addresses": {
+              "start": 848,
+              "end": 856
+            },
+            "terminator": "jmp",
+            "successors": [
+              16
+            ]
+          }
+        },
+        {
+          "target_block": 15,
+          "candidate_block": 15,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 15,
+            "instructions": {
+              "start": 214,
+              "end": 215,
+              "count": 1
+            },
+            "bytes": {
+              "start": 856,
+              "end": 860
+            },
+            "addresses": {
+              "start": 4305448,
+              "end": 4305452
+            },
+            "terminator": "fld",
+            "successors": [
+              16
+            ]
+          },
+          "candidate": {
+            "index": 15,
+            "instructions": {
+              "start": 214,
+              "end": 215,
+              "count": 1
+            },
+            "bytes": {
+              "start": 856,
+              "end": 860
+            },
+            "addresses": {
+              "start": 856,
+              "end": 860
+            },
+            "terminator": "fld",
+            "successors": [
+              16
+            ]
+          }
+        },
+        {
+          "target_block": 16,
+          "candidate_block": 16,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 16,
+            "instructions": {
+              "start": 215,
+              "end": 238,
+              "count": 23
+            },
+            "bytes": {
+              "start": 860,
+              "end": 949
+            },
+            "addresses": {
+              "start": 4305452,
+              "end": 4305541
+            },
+            "terminator": "fadd",
+            "successors": [
+              17
+            ]
+          },
+          "candidate": {
+            "index": 16,
+            "instructions": {
+              "start": 215,
+              "end": 238,
+              "count": 23
+            },
+            "bytes": {
+              "start": 860,
+              "end": 949
+            },
+            "addresses": {
+              "start": 860,
+              "end": 949
+            },
+            "terminator": "fadd",
+            "successors": [
+              17
+            ]
+          }
+        },
+        {
+          "target_block": 17,
+          "candidate_block": 17,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 17,
+            "instructions": {
+              "start": 238,
+              "end": 249,
+              "count": 11
+            },
+            "bytes": {
+              "start": 949,
+              "end": 985
+            },
+            "addresses": {
+              "start": 4305541,
+              "end": 4305577
+            },
+            "terminator": "call",
+            "successors": [
+              18
+            ]
+          },
+          "candidate": {
+            "index": 17,
+            "instructions": {
+              "start": 238,
+              "end": 249,
+              "count": 11
+            },
+            "bytes": {
+              "start": 949,
+              "end": 985
+            },
+            "addresses": {
+              "start": 949,
+              "end": 985
+            },
+            "terminator": "call",
+            "successors": [
+              18
+            ]
+          }
+        },
+        {
+          "target_block": 18,
+          "candidate_block": 18,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 18,
+            "instructions": {
+              "start": 249,
+              "end": 259,
+              "count": 10
+            },
+            "bytes": {
+              "start": 985,
+              "end": 1018
+            },
+            "addresses": {
+              "start": 4305577,
+              "end": 4305610
+            },
+            "terminator": "je",
+            "successors": [
+              23,
+              19
+            ]
+          },
+          "candidate": {
+            "index": 18,
+            "instructions": {
+              "start": 249,
+              "end": 259,
+              "count": 10
+            },
+            "bytes": {
+              "start": 985,
+              "end": 1018
+            },
+            "addresses": {
+              "start": 985,
+              "end": 1018
+            },
+            "terminator": "je",
+            "successors": [
+              23,
+              19
+            ]
+          }
+        },
+        {
+          "target_block": 19,
+          "candidate_block": 19,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 19,
+            "instructions": {
+              "start": 259,
+              "end": 285,
+              "count": 26
+            },
+            "bytes": {
+              "start": 1018,
+              "end": 1121
+            },
+            "addresses": {
+              "start": 4305610,
+              "end": 4305713
+            },
+            "terminator": "jne",
+            "successors": [
+              21,
+              20
+            ]
+          },
+          "candidate": {
+            "index": 19,
+            "instructions": {
+              "start": 259,
+              "end": 285,
+              "count": 26
+            },
+            "bytes": {
+              "start": 1018,
+              "end": 1121
+            },
+            "addresses": {
+              "start": 1018,
+              "end": 1121
+            },
+            "terminator": "jne",
+            "successors": [
+              21,
+              20
+            ]
+          }
+        },
+        {
+          "target_block": 20,
+          "candidate_block": 20,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 20,
+            "instructions": {
+              "start": 285,
+              "end": 300,
+              "count": 15
+            },
+            "bytes": {
+              "start": 1121,
+              "end": 1172
+            },
+            "addresses": {
+              "start": 4305713,
+              "end": 4305764
+            },
+            "terminator": "jmp",
+            "successors": [
+              22
+            ]
+          },
+          "candidate": {
+            "index": 20,
+            "instructions": {
+              "start": 285,
+              "end": 300,
+              "count": 15
+            },
+            "bytes": {
+              "start": 1121,
+              "end": 1172
+            },
+            "addresses": {
+              "start": 1121,
+              "end": 1172
+            },
+            "terminator": "jmp",
+            "successors": [
+              22
+            ]
+          }
+        },
+        {
+          "target_block": 21,
+          "candidate_block": 21,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 21,
+            "instructions": {
+              "start": 300,
+              "end": 334,
+              "count": 34
+            },
+            "bytes": {
+              "start": 1172,
+              "end": 1296
+            },
+            "addresses": {
+              "start": 4305764,
+              "end": 4305888
+            },
+            "terminator": "mov",
+            "successors": [
+              22
+            ]
+          },
+          "candidate": {
+            "index": 21,
+            "instructions": {
+              "start": 300,
+              "end": 334,
+              "count": 34
+            },
+            "bytes": {
+              "start": 1172,
+              "end": 1296
+            },
+            "addresses": {
+              "start": 1172,
+              "end": 1296
+            },
+            "terminator": "mov",
+            "successors": [
+              22
+            ]
+          }
+        },
+        {
+          "target_block": 22,
+          "candidate_block": 22,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 22,
+            "instructions": {
+              "start": 334,
+              "end": 346,
+              "count": 12
+            },
+            "bytes": {
+              "start": 1296,
+              "end": 1349
+            },
+            "addresses": {
+              "start": 4305888,
+              "end": 4305941
+            },
+            "terminator": "call",
+            "successors": [
+              23
+            ]
+          },
+          "candidate": {
+            "index": 22,
+            "instructions": {
+              "start": 334,
+              "end": 346,
+              "count": 12
+            },
+            "bytes": {
+              "start": 1296,
+              "end": 1349
+            },
+            "addresses": {
+              "start": 1296,
+              "end": 1349
+            },
+            "terminator": "call",
+            "successors": [
+              23
+            ]
+          }
+        },
+        {
+          "target_block": 23,
+          "candidate_block": 23,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 23,
+            "instructions": {
+              "start": 346,
+              "end": 356,
+              "count": 10
+            },
+            "bytes": {
+              "start": 1349,
+              "end": 1386
+            },
+            "addresses": {
+              "start": 4305941,
+              "end": 4305978
+            },
+            "terminator": "je",
+            "successors": [
+              35,
+              24
+            ]
+          },
+          "candidate": {
+            "index": 23,
+            "instructions": {
+              "start": 346,
+              "end": 356,
+              "count": 10
+            },
+            "bytes": {
+              "start": 1349,
+              "end": 1386
+            },
+            "addresses": {
+              "start": 1349,
+              "end": 1386
+            },
+            "terminator": "je",
+            "successors": [
+              35,
+              24
+            ]
+          }
+        },
+        {
+          "target_block": 24,
+          "candidate_block": 24,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 24,
+            "instructions": {
+              "start": 356,
+              "end": 368,
+              "count": 12
+            },
+            "bytes": {
+              "start": 1386,
+              "end": 1431
+            },
+            "addresses": {
+              "start": 4305978,
+              "end": 4306023
+            },
+            "terminator": "jne",
+            "successors": [
+              26,
+              25
+            ]
+          },
+          "candidate": {
+            "index": 24,
+            "instructions": {
+              "start": 356,
+              "end": 368,
+              "count": 12
+            },
+            "bytes": {
+              "start": 1386,
+              "end": 1431
+            },
+            "addresses": {
+              "start": 1386,
+              "end": 1431
+            },
+            "terminator": "jne",
+            "successors": [
+              26,
+              25
+            ]
+          }
+        },
+        {
+          "target_block": 25,
+          "candidate_block": 25,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 25,
+            "instructions": {
+              "start": 368,
+              "end": 374,
+              "count": 6
+            },
+            "bytes": {
+              "start": 1431,
+              "end": 1461
+            },
+            "addresses": {
+              "start": 4306023,
+              "end": 4306053
+            },
+            "terminator": "jmp",
+            "successors": [
+              27
+            ]
+          },
+          "candidate": {
+            "index": 25,
+            "instructions": {
+              "start": 368,
+              "end": 374,
+              "count": 6
+            },
+            "bytes": {
+              "start": 1431,
+              "end": 1461
+            },
+            "addresses": {
+              "start": 1431,
+              "end": 1461
+            },
+            "terminator": "jmp",
+            "successors": [
+              27
+            ]
+          }
+        },
+        {
+          "target_block": 26,
+          "candidate_block": 26,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 26,
+            "instructions": {
+              "start": 374,
+              "end": 379,
+              "count": 5
+            },
+            "bytes": {
+              "start": 1461,
+              "end": 1489
+            },
+            "addresses": {
+              "start": 4306053,
+              "end": 4306081
+            },
+            "terminator": "mov",
+            "successors": [
+              27
+            ]
+          },
+          "candidate": {
+            "index": 26,
+            "instructions": {
+              "start": 374,
+              "end": 379,
+              "count": 5
+            },
+            "bytes": {
+              "start": 1461,
+              "end": 1489
+            },
+            "addresses": {
+              "start": 1461,
+              "end": 1489
+            },
+            "terminator": "mov",
+            "successors": [
+              27
+            ]
+          }
+        },
+        {
+          "target_block": 27,
+          "candidate_block": 27,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 27,
+            "instructions": {
+              "start": 379,
+              "end": 382,
+              "count": 3
+            },
+            "bytes": {
+              "start": 1489,
+              "end": 1507
+            },
+            "addresses": {
+              "start": 4306081,
+              "end": 4306099
+            },
+            "terminator": "jle",
+            "successors": [
+              34,
+              28
+            ]
+          },
+          "candidate": {
+            "index": 27,
+            "instructions": {
+              "start": 379,
+              "end": 382,
+              "count": 3
+            },
+            "bytes": {
+              "start": 1489,
+              "end": 1507
+            },
+            "addresses": {
+              "start": 1489,
+              "end": 1507
+            },
+            "terminator": "jle",
+            "successors": [
+              34,
+              28
+            ]
+          }
+        },
+        {
+          "target_block": 28,
+          "candidate_block": 28,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 28,
+            "instructions": {
+              "start": 382,
+              "end": 390,
+              "count": 8
+            },
+            "bytes": {
+              "start": 1507,
+              "end": 1543
+            },
+            "addresses": {
+              "start": 4306099,
+              "end": 4306135
+            },
+            "terminator": "mov",
+            "successors": [
+              29
+            ]
+          },
+          "candidate": {
+            "index": 28,
+            "instructions": {
+              "start": 382,
+              "end": 390,
+              "count": 8
+            },
+            "bytes": {
+              "start": 1507,
+              "end": 1543
+            },
+            "addresses": {
+              "start": 1507,
+              "end": 1543
+            },
+            "terminator": "mov",
+            "successors": [
+              29
+            ]
+          }
+        },
+        {
+          "target_block": 29,
+          "candidate_block": 29,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 29,
+            "instructions": {
+              "start": 390,
+              "end": 428,
+              "count": 38
+            },
+            "bytes": {
+              "start": 1543,
+              "end": 1694
+            },
+            "addresses": {
+              "start": 4306135,
+              "end": 4306286
+            },
+            "terminator": "jne",
+            "successors": [
+              31,
+              30
+            ]
+          },
+          "candidate": {
+            "index": 29,
+            "instructions": {
+              "start": 390,
+              "end": 428,
+              "count": 38
+            },
+            "bytes": {
+              "start": 1543,
+              "end": 1694
+            },
+            "addresses": {
+              "start": 1543,
+              "end": 1694
+            },
+            "terminator": "jne",
+            "successors": [
+              31,
+              30
+            ]
+          }
+        },
+        {
+          "target_block": 30,
+          "candidate_block": 30,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 30,
+            "instructions": {
+              "start": 428,
+              "end": 430,
+              "count": 2
+            },
+            "bytes": {
+              "start": 1694,
+              "end": 1704
+            },
+            "addresses": {
+              "start": 4306286,
+              "end": 4306296
+            },
+            "terminator": "jmp",
+            "successors": [
+              33
+            ]
+          },
+          "candidate": {
+            "index": 30,
+            "instructions": {
+              "start": 428,
+              "end": 430,
+              "count": 2
+            },
+            "bytes": {
+              "start": 1694,
+              "end": 1704
+            },
+            "addresses": {
+              "start": 1694,
+              "end": 1704
+            },
+            "terminator": "jmp",
+            "successors": [
+              33
+            ]
+          }
+        },
+        {
+          "target_block": 31,
+          "candidate_block": 31,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 31,
+            "instructions": {
+              "start": 430,
+              "end": 435,
+              "count": 5
+            },
+            "bytes": {
+              "start": 1704,
+              "end": 1721
+            },
+            "addresses": {
+              "start": 4306296,
+              "end": 4306313
+            },
+            "terminator": "je",
+            "successors": [
+              33,
+              32
+            ]
+          },
+          "candidate": {
+            "index": 31,
+            "instructions": {
+              "start": 430,
+              "end": 435,
+              "count": 5
+            },
+            "bytes": {
+              "start": 1704,
+              "end": 1721
+            },
+            "addresses": {
+              "start": 1704,
+              "end": 1721
+            },
+            "terminator": "je",
+            "successors": [
+              33,
+              32
+            ]
+          }
+        },
+        {
+          "target_block": 32,
+          "candidate_block": 32,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 32,
+            "instructions": {
+              "start": 435,
+              "end": 436,
+              "count": 1
+            },
+            "bytes": {
+              "start": 1721,
+              "end": 1729
+            },
+            "addresses": {
+              "start": 4306313,
+              "end": 4306321
+            },
+            "terminator": "mov",
+            "successors": [
+              33
+            ]
+          },
+          "candidate": {
+            "index": 32,
+            "instructions": {
+              "start": 435,
+              "end": 436,
+              "count": 1
+            },
+            "bytes": {
+              "start": 1721,
+              "end": 1729
+            },
+            "addresses": {
+              "start": 1721,
+              "end": 1729
+            },
+            "terminator": "mov",
+            "successors": [
+              33
+            ]
+          }
+        },
+        {
+          "target_block": 33,
+          "candidate_block": 33,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 33,
+            "instructions": {
+              "start": 436,
+              "end": 473,
+              "count": 37
+            },
+            "bytes": {
+              "start": 1729,
+              "end": 1871
+            },
+            "addresses": {
+              "start": 4306321,
+              "end": 4306463
+            },
+            "terminator": "jl",
+            "successors": [
+              29,
+              34
+            ]
+          },
+          "candidate": {
+            "index": 33,
+            "instructions": {
+              "start": 436,
+              "end": 473,
+              "count": 37
+            },
+            "bytes": {
+              "start": 1729,
+              "end": 1871
+            },
+            "addresses": {
+              "start": 1729,
+              "end": 1871
+            },
+            "terminator": "jl",
+            "successors": [
+              29,
+              34
+            ]
+          }
+        },
+        {
+          "target_block": 34,
+          "candidate_block": 34,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 34,
+            "instructions": {
+              "start": 473,
+              "end": 476,
+              "count": 3
+            },
+            "bytes": {
+              "start": 1871,
+              "end": 1885
+            },
+            "addresses": {
+              "start": 4306463,
+              "end": 4306477
+            },
+            "terminator": "call",
+            "successors": [
+              35
+            ]
+          },
+          "candidate": {
+            "index": 34,
+            "instructions": {
+              "start": 473,
+              "end": 476,
+              "count": 3
+            },
+            "bytes": {
+              "start": 1871,
+              "end": 1885
+            },
+            "addresses": {
+              "start": 1871,
+              "end": 1885
+            },
+            "terminator": "call",
+            "successors": [
+              35
+            ]
+          }
+        },
+        {
+          "target_block": 35,
+          "candidate_block": 35,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 35,
+            "instructions": {
+              "start": 476,
+              "end": 479,
+              "count": 3
+            },
+            "bytes": {
+              "start": 1885,
+              "end": 1898
+            },
+            "addresses": {
+              "start": 4306477,
+              "end": 4306490
+            },
+            "terminator": "je",
+            "successors": [
+              58,
+              36
+            ]
+          },
+          "candidate": {
+            "index": 35,
+            "instructions": {
+              "start": 476,
+              "end": 479,
+              "count": 3
+            },
+            "bytes": {
+              "start": 1885,
+              "end": 1898
+            },
+            "addresses": {
+              "start": 1885,
+              "end": 1898
+            },
+            "terminator": "je",
+            "successors": [
+              58,
+              36
+            ]
+          }
+        },
+        {
+          "target_block": 36,
+          "candidate_block": 36,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 36,
+            "instructions": {
+              "start": 479,
+              "end": 493,
+              "count": 14
+            },
+            "bytes": {
+              "start": 1898,
+              "end": 1952
+            },
+            "addresses": {
+              "start": 4306490,
+              "end": 4306544
+            },
+            "terminator": "jne",
+            "successors": [
+              38,
+              37
+            ]
+          },
+          "candidate": {
+            "index": 36,
+            "instructions": {
+              "start": 479,
+              "end": 493,
+              "count": 14
+            },
+            "bytes": {
+              "start": 1898,
+              "end": 1952
+            },
+            "addresses": {
+              "start": 1898,
+              "end": 1952
+            },
+            "terminator": "jne",
+            "successors": [
+              38,
+              37
+            ]
+          }
+        },
+        {
+          "target_block": 37,
+          "candidate_block": 37,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 37,
+            "instructions": {
+              "start": 493,
+              "end": 499,
+              "count": 6
+            },
+            "bytes": {
+              "start": 1952,
+              "end": 1982
+            },
+            "addresses": {
+              "start": 4306544,
+              "end": 4306574
+            },
+            "terminator": "jmp",
+            "successors": [
+              39
+            ]
+          },
+          "candidate": {
+            "index": 37,
+            "instructions": {
+              "start": 493,
+              "end": 499,
+              "count": 6
+            },
+            "bytes": {
+              "start": 1952,
+              "end": 1982
+            },
+            "addresses": {
+              "start": 1952,
+              "end": 1982
+            },
+            "terminator": "jmp",
+            "successors": [
+              39
+            ]
+          }
+        },
+        {
+          "target_block": 38,
+          "candidate_block": 38,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 38,
+            "instructions": {
+              "start": 499,
+              "end": 504,
+              "count": 5
+            },
+            "bytes": {
+              "start": 1982,
+              "end": 2010
+            },
+            "addresses": {
+              "start": 4306574,
+              "end": 4306602
+            },
+            "terminator": "mov",
+            "successors": [
+              39
+            ]
+          },
+          "candidate": {
+            "index": 38,
+            "instructions": {
+              "start": 499,
+              "end": 504,
+              "count": 5
+            },
+            "bytes": {
+              "start": 1982,
+              "end": 2010
+            },
+            "addresses": {
+              "start": 1982,
+              "end": 2010
+            },
+            "terminator": "mov",
+            "successors": [
+              39
+            ]
+          }
+        },
+        {
+          "target_block": 39,
+          "candidate_block": 39,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 39,
+            "instructions": {
+              "start": 504,
+              "end": 509,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2010,
+              "end": 2029
+            },
+            "addresses": {
+              "start": 4306602,
+              "end": 4306621
+            },
+            "terminator": "jle",
+            "successors": [
+              58,
+              40
+            ]
+          },
+          "candidate": {
+            "index": 39,
+            "instructions": {
+              "start": 504,
+              "end": 509,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2010,
+              "end": 2029
+            },
+            "addresses": {
+              "start": 2010,
+              "end": 2029
+            },
+            "terminator": "jle",
+            "successors": [
+              58,
+              40
+            ]
+          }
+        },
+        {
+          "target_block": 40,
+          "candidate_block": 40,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 40,
+            "instructions": {
+              "start": 509,
+              "end": 519,
+              "count": 10
+            },
+            "bytes": {
+              "start": 2029,
+              "end": 2063
+            },
+            "addresses": {
+              "start": 4306621,
+              "end": 4306655
+            },
+            "terminator": "jne",
+            "successors": [
+              42,
+              41
+            ]
+          },
+          "candidate": {
+            "index": 40,
+            "instructions": {
+              "start": 509,
+              "end": 519,
+              "count": 10
+            },
+            "bytes": {
+              "start": 2029,
+              "end": 2063
+            },
+            "addresses": {
+              "start": 2029,
+              "end": 2063
+            },
+            "terminator": "jne",
+            "successors": [
+              42,
+              41
+            ]
+          }
+        },
+        {
+          "target_block": 41,
+          "candidate_block": 41,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 41,
+            "instructions": {
+              "start": 519,
+              "end": 524,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2063,
+              "end": 2080
+            },
+            "addresses": {
+              "start": 4306655,
+              "end": 4306672
+            },
+            "terminator": "jmp",
+            "successors": [
+              47
+            ]
+          },
+          "candidate": {
+            "index": 41,
+            "instructions": {
+              "start": 519,
+              "end": 524,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2063,
+              "end": 2080
+            },
+            "addresses": {
+              "start": 2063,
+              "end": 2080
+            },
+            "terminator": "jmp",
+            "successors": [
+              47
+            ]
+          }
+        },
+        {
+          "target_block": 42,
+          "candidate_block": 42,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 42,
+            "instructions": {
+              "start": 524,
+              "end": 526,
+              "count": 2
+            },
+            "bytes": {
+              "start": 2080,
+              "end": 2084
+            },
+            "addresses": {
+              "start": 4306672,
+              "end": 4306676
+            },
+            "terminator": "jne",
+            "successors": [
+              44,
+              43
+            ]
+          },
+          "candidate": {
+            "index": 42,
+            "instructions": {
+              "start": 524,
+              "end": 526,
+              "count": 2
+            },
+            "bytes": {
+              "start": 2080,
+              "end": 2084
+            },
+            "addresses": {
+              "start": 2080,
+              "end": 2084
+            },
+            "terminator": "jne",
+            "successors": [
+              44,
+              43
+            ]
+          }
+        },
+        {
+          "target_block": 43,
+          "candidate_block": 43,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 43,
+            "instructions": {
+              "start": 526,
+              "end": 531,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2084,
+              "end": 2100
+            },
+            "addresses": {
+              "start": 4306676,
+              "end": 4306692
+            },
+            "terminator": "jmp",
+            "successors": [
+              47
+            ]
+          },
+          "candidate": {
+            "index": 43,
+            "instructions": {
+              "start": 526,
+              "end": 531,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2084,
+              "end": 2100
+            },
+            "addresses": {
+              "start": 2084,
+              "end": 2100
+            },
+            "terminator": "jmp",
+            "successors": [
+              47
+            ]
+          }
+        },
+        {
+          "target_block": 44,
+          "candidate_block": 44,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 44,
+            "instructions": {
+              "start": 531,
+              "end": 533,
+              "count": 2
+            },
+            "bytes": {
+              "start": 2100,
+              "end": 2105
+            },
+            "addresses": {
+              "start": 4306692,
+              "end": 4306697
+            },
+            "terminator": "jne",
+            "successors": [
+              46,
+              45
+            ]
+          },
+          "candidate": {
+            "index": 44,
+            "instructions": {
+              "start": 531,
+              "end": 533,
+              "count": 2
+            },
+            "bytes": {
+              "start": 2100,
+              "end": 2105
+            },
+            "addresses": {
+              "start": 2100,
+              "end": 2105
+            },
+            "terminator": "jne",
+            "successors": [
+              46,
+              45
+            ]
+          }
+        },
+        {
+          "target_block": 45,
+          "candidate_block": 45,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 45,
+            "instructions": {
+              "start": 533,
+              "end": 538,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2105,
+              "end": 2122
+            },
+            "addresses": {
+              "start": 4306697,
+              "end": 4306714
+            },
+            "terminator": "jmp",
+            "successors": [
+              47
+            ]
+          },
+          "candidate": {
+            "index": 45,
+            "instructions": {
+              "start": 533,
+              "end": 538,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2105,
+              "end": 2122
+            },
+            "addresses": {
+              "start": 2105,
+              "end": 2122
+            },
+            "terminator": "jmp",
+            "successors": [
+              47
+            ]
+          }
+        },
+        {
+          "target_block": 46,
+          "candidate_block": 46,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 46,
+            "instructions": {
+              "start": 538,
+              "end": 543,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2122,
+              "end": 2140
+            },
+            "addresses": {
+              "start": 4306714,
+              "end": 4306732
+            },
+            "terminator": "mov",
+            "successors": [
+              47
+            ]
+          },
+          "candidate": {
+            "index": 46,
+            "instructions": {
+              "start": 538,
+              "end": 543,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2122,
+              "end": 2140
+            },
+            "addresses": {
+              "start": 2122,
+              "end": 2140
+            },
+            "terminator": "mov",
+            "successors": [
+              47
+            ]
+          }
+        },
+        {
+          "target_block": 47,
+          "candidate_block": 47,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 47,
+            "instructions": {
+              "start": 543,
+              "end": 559,
+              "count": 16
+            },
+            "bytes": {
+              "start": 2140,
+              "end": 2205
+            },
+            "addresses": {
+              "start": 4306732,
+              "end": 4306797
+            },
+            "terminator": "jle",
+            "successors": [
+              49,
+              48
+            ]
+          },
+          "candidate": {
+            "index": 47,
+            "instructions": {
+              "start": 543,
+              "end": 559,
+              "count": 16
+            },
+            "bytes": {
+              "start": 2140,
+              "end": 2205
+            },
+            "addresses": {
+              "start": 2140,
+              "end": 2205
+            },
+            "terminator": "jle",
+            "successors": [
+              49,
+              48
+            ]
+          }
+        },
+        {
+          "target_block": 48,
+          "candidate_block": 48,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 48,
+            "instructions": {
+              "start": 559,
+              "end": 560,
+              "count": 1
+            },
+            "bytes": {
+              "start": 2205,
+              "end": 2210
+            },
+            "addresses": {
+              "start": 4306797,
+              "end": 4306802
+            },
+            "terminator": "mov",
+            "successors": [
+              49
+            ]
+          },
+          "candidate": {
+            "index": 48,
+            "instructions": {
+              "start": 559,
+              "end": 560,
+              "count": 1
+            },
+            "bytes": {
+              "start": 2205,
+              "end": 2210
+            },
+            "addresses": {
+              "start": 2205,
+              "end": 2210
+            },
+            "terminator": "mov",
+            "successors": [
+              49
+            ]
+          }
+        },
+        {
+          "target_block": 49,
+          "candidate_block": 49,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 49,
+            "instructions": {
+              "start": 560,
+              "end": 573,
+              "count": 13
+            },
+            "bytes": {
+              "start": 2210,
+              "end": 2261
+            },
+            "addresses": {
+              "start": 4306802,
+              "end": 4306853
+            },
+            "terminator": "jle",
+            "successors": [
+              55,
+              50
+            ]
+          },
+          "candidate": {
+            "index": 49,
+            "instructions": {
+              "start": 560,
+              "end": 573,
+              "count": 13
+            },
+            "bytes": {
+              "start": 2210,
+              "end": 2261
+            },
+            "addresses": {
+              "start": 2210,
+              "end": 2261
+            },
+            "terminator": "jle",
+            "successors": [
+              55,
+              50
+            ]
+          }
+        },
+        {
+          "target_block": 50,
+          "candidate_block": 50,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 50,
+            "instructions": {
+              "start": 573,
+              "end": 574,
+              "count": 1
+            },
+            "bytes": {
+              "start": 2261,
+              "end": 2265
+            },
+            "addresses": {
+              "start": 4306853,
+              "end": 4306857
+            },
+            "terminator": "mov",
+            "successors": [
+              51
+            ]
+          },
+          "candidate": {
+            "index": 50,
+            "instructions": {
+              "start": 573,
+              "end": 574,
+              "count": 1
+            },
+            "bytes": {
+              "start": 2261,
+              "end": 2265
+            },
+            "addresses": {
+              "start": 2261,
+              "end": 2265
+            },
+            "terminator": "mov",
+            "successors": [
+              51
+            ]
+          }
+        },
+        {
+          "target_block": 51,
+          "candidate_block": 51,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 51,
+            "instructions": {
+              "start": 574,
+              "end": 578,
+              "count": 4
+            },
+            "bytes": {
+              "start": 2265,
+              "end": 2277
+            },
+            "addresses": {
+              "start": 4306857,
+              "end": 4306869
+            },
+            "terminator": "jge",
+            "successors": [
+              53,
+              52
+            ]
+          },
+          "candidate": {
+            "index": 51,
+            "instructions": {
+              "start": 574,
+              "end": 578,
+              "count": 4
+            },
+            "bytes": {
+              "start": 2265,
+              "end": 2277
+            },
+            "addresses": {
+              "start": 2265,
+              "end": 2277
+            },
+            "terminator": "jge",
+            "successors": [
+              53,
+              52
+            ]
+          }
+        },
+        {
+          "target_block": 52,
+          "candidate_block": 52,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 52,
+            "instructions": {
+              "start": 578,
+              "end": 581,
+              "count": 3
+            },
+            "bytes": {
+              "start": 2277,
+              "end": 2284
+            },
+            "addresses": {
+              "start": 4306869,
+              "end": 4306876
+            },
+            "terminator": "jmp",
+            "successors": [
+              54
+            ]
+          },
+          "candidate": {
+            "index": 52,
+            "instructions": {
+              "start": 578,
+              "end": 581,
+              "count": 3
+            },
+            "bytes": {
+              "start": 2277,
+              "end": 2284
+            },
+            "addresses": {
+              "start": 2277,
+              "end": 2284
+            },
+            "terminator": "jmp",
+            "successors": [
+              54
+            ]
+          }
+        },
+        {
+          "target_block": 53,
+          "candidate_block": 53,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 53,
+            "instructions": {
+              "start": 581,
+              "end": 585,
+              "count": 4
+            },
+            "bytes": {
+              "start": 2284,
+              "end": 2298
+            },
+            "addresses": {
+              "start": 4306876,
+              "end": 4306890
+            },
+            "terminator": "fstp",
+            "successors": [
+              54
+            ]
+          },
+          "candidate": {
+            "index": 53,
+            "instructions": {
+              "start": 581,
+              "end": 585,
+              "count": 4
+            },
+            "bytes": {
+              "start": 2284,
+              "end": 2298
+            },
+            "addresses": {
+              "start": 2284,
+              "end": 2298
+            },
+            "terminator": "fstp",
+            "successors": [
+              54
+            ]
+          }
+        },
+        {
+          "target_block": 54,
+          "candidate_block": 54,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 54,
+            "instructions": {
+              "start": 585,
+              "end": 613,
+              "count": 28
+            },
+            "bytes": {
+              "start": 2298,
+              "end": 2407
+            },
+            "addresses": {
+              "start": 4306890,
+              "end": 4306999
+            },
+            "terminator": "jl",
+            "successors": [
+              51,
+              55
+            ]
+          },
+          "candidate": {
+            "index": 54,
+            "instructions": {
+              "start": 585,
+              "end": 613,
+              "count": 28
+            },
+            "bytes": {
+              "start": 2298,
+              "end": 2407
+            },
+            "addresses": {
+              "start": 2298,
+              "end": 2407
+            },
+            "terminator": "jl",
+            "successors": [
+              51,
+              55
+            ]
+          }
+        },
+        {
+          "target_block": 55,
+          "candidate_block": 55,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 55,
+            "instructions": {
+              "start": 613,
+              "end": 618,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2407,
+              "end": 2429
+            },
+            "addresses": {
+              "start": 4306999,
+              "end": 4307021
+            },
+            "terminator": "jle",
+            "successors": [
+              57,
+              56
+            ]
+          },
+          "candidate": {
+            "index": 55,
+            "instructions": {
+              "start": 613,
+              "end": 618,
+              "count": 5
+            },
+            "bytes": {
+              "start": 2407,
+              "end": 2429
+            },
+            "addresses": {
+              "start": 2407,
+              "end": 2429
+            },
+            "terminator": "jle",
+            "successors": [
+              57,
+              56
+            ]
+          }
+        },
+        {
+          "target_block": 56,
+          "candidate_block": 56,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 56,
+            "instructions": {
+              "start": 618,
+              "end": 659,
+              "count": 41
+            },
+            "bytes": {
+              "start": 2429,
+              "end": 2578
+            },
+            "addresses": {
+              "start": 4307021,
+              "end": 4307170
+            },
+            "terminator": "add",
+            "successors": [
+              57
+            ]
+          },
+          "candidate": {
+            "index": 56,
+            "instructions": {
+              "start": 618,
+              "end": 659,
+              "count": 41
+            },
+            "bytes": {
+              "start": 2429,
+              "end": 2578
+            },
+            "addresses": {
+              "start": 2429,
+              "end": 2578
+            },
+            "terminator": "add",
+            "successors": [
+              57
+            ]
+          }
+        },
+        {
+          "target_block": 57,
+          "candidate_block": 57,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 57,
+            "instructions": {
+              "start": 659,
+              "end": 665,
+              "count": 6
+            },
+            "bytes": {
+              "start": 2578,
+              "end": 2603
+            },
+            "addresses": {
+              "start": 4307170,
+              "end": 4307195
+            },
+            "terminator": "jl",
+            "successors": [
+              40,
+              58
+            ]
+          },
+          "candidate": {
+            "index": 57,
+            "instructions": {
+              "start": 659,
+              "end": 665,
+              "count": 6
+            },
+            "bytes": {
+              "start": 2578,
+              "end": 2603
+            },
+            "addresses": {
+              "start": 2578,
+              "end": 2603
+            },
+            "terminator": "jl",
+            "successors": [
+              40,
+              58
+            ]
+          }
+        },
+        {
+          "target_block": 58,
+          "candidate_block": 58,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 58,
+            "instructions": {
+              "start": 665,
+              "end": 692,
+              "count": 27
+            },
+            "bytes": {
+              "start": 2603,
+              "end": 2707
+            },
+            "addresses": {
+              "start": 4307195,
+              "end": 4307299
+            },
+            "terminator": "je",
+            "successors": [
+              95,
+              59
+            ]
+          },
+          "candidate": {
+            "index": 58,
+            "instructions": {
+              "start": 665,
+              "end": 692,
+              "count": 27
+            },
+            "bytes": {
+              "start": 2603,
+              "end": 2707
+            },
+            "addresses": {
+              "start": 2603,
+              "end": 2707
+            },
+            "terminator": "je",
+            "successors": [
+              95,
+              59
+            ]
+          }
+        },
+        {
+          "target_block": 59,
+          "candidate_block": 59,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 59,
+            "instructions": {
+              "start": 692,
+              "end": 730,
+              "count": 38
+            },
+            "bytes": {
+              "start": 2707,
+              "end": 2861
+            },
+            "addresses": {
+              "start": 4307299,
+              "end": 4307453
+            },
+            "terminator": "jge",
+            "successors": [
+              61,
+              60
+            ]
+          },
+          "candidate": {
+            "index": 59,
+            "instructions": {
+              "start": 692,
+              "end": 730,
+              "count": 38
+            },
+            "bytes": {
+              "start": 2707,
+              "end": 2861
+            },
+            "addresses": {
+              "start": 2707,
+              "end": 2861
+            },
+            "terminator": "jge",
+            "successors": [
+              61,
+              60
+            ]
+          }
+        },
+        {
+          "target_block": 60,
+          "candidate_block": 60,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 60,
+            "instructions": {
+              "start": 730,
+              "end": 736,
+              "count": 6
+            },
+            "bytes": {
+              "start": 2861,
+              "end": 2886
+            },
+            "addresses": {
+              "start": 4307453,
+              "end": 4307478
+            },
+            "terminator": "fstp",
+            "successors": [
+              61
+            ]
+          },
+          "candidate": {
+            "index": 60,
+            "instructions": {
+              "start": 730,
+              "end": 736,
+              "count": 6
+            },
+            "bytes": {
+              "start": 2861,
+              "end": 2886
+            },
+            "addresses": {
+              "start": 2861,
+              "end": 2886
+            },
+            "terminator": "fstp",
+            "successors": [
+              61
+            ]
+          }
+        },
+        {
+          "target_block": 61,
+          "candidate_block": 61,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 61,
+            "instructions": {
+              "start": 736,
+              "end": 888,
+              "count": 152
+            },
+            "bytes": {
+              "start": 2886,
+              "end": 3491
+            },
+            "addresses": {
+              "start": 4307478,
+              "end": 4308083
+            },
+            "terminator": "jge",
+            "successors": [
+              63,
+              62
+            ]
+          },
+          "candidate": {
+            "index": 61,
+            "instructions": {
+              "start": 736,
+              "end": 888,
+              "count": 152
+            },
+            "bytes": {
+              "start": 2886,
+              "end": 3491
+            },
+            "addresses": {
+              "start": 2886,
+              "end": 3491
+            },
+            "terminator": "jge",
+            "successors": [
+              63,
+              62
+            ]
+          }
+        },
+        {
+          "target_block": 62,
+          "candidate_block": 62,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 62,
+            "instructions": {
+              "start": 888,
+              "end": 897,
+              "count": 9
+            },
+            "bytes": {
+              "start": 3491,
+              "end": 3513
+            },
+            "addresses": {
+              "start": 4308083,
+              "end": 4308105
+            },
+            "terminator": "jmp",
+            "successors": [
+              64
+            ]
+          },
+          "candidate": {
+            "index": 62,
+            "instructions": {
+              "start": 888,
+              "end": 897,
+              "count": 9
+            },
+            "bytes": {
+              "start": 3491,
+              "end": 3513
+            },
+            "addresses": {
+              "start": 3491,
+              "end": 3513
+            },
+            "terminator": "jmp",
+            "successors": [
+              64
+            ]
+          }
+        },
+        {
+          "target_block": 63,
+          "candidate_block": 63,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 63,
+            "instructions": {
+              "start": 897,
+              "end": 905,
+              "count": 8
+            },
+            "bytes": {
+              "start": 3513,
+              "end": 3533
+            },
+            "addresses": {
+              "start": 4308105,
+              "end": 4308125
+            },
+            "terminator": "push",
+            "successors": [
+              64
+            ]
+          },
+          "candidate": {
+            "index": 63,
+            "instructions": {
+              "start": 897,
+              "end": 905,
+              "count": 8
+            },
+            "bytes": {
+              "start": 3513,
+              "end": 3533
+            },
+            "addresses": {
+              "start": 3513,
+              "end": 3533
+            },
+            "terminator": "push",
+            "successors": [
+              64
+            ]
+          }
+        },
+        {
+          "target_block": 64,
+          "candidate_block": 64,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 64,
+            "instructions": {
+              "start": 905,
+              "end": 931,
+              "count": 26
+            },
+            "bytes": {
+              "start": 3533,
+              "end": 3627
+            },
+            "addresses": {
+              "start": 4308125,
+              "end": 4308219
+            },
+            "terminator": "jne",
+            "successors": [
+              66,
+              65
+            ]
+          },
+          "candidate": {
+            "index": 64,
+            "instructions": {
+              "start": 905,
+              "end": 931,
+              "count": 26
+            },
+            "bytes": {
+              "start": 3533,
+              "end": 3627
+            },
+            "addresses": {
+              "start": 3533,
+              "end": 3627
+            },
+            "terminator": "jne",
+            "successors": [
+              66,
+              65
+            ]
+          }
+        },
+        {
+          "target_block": 65,
+          "candidate_block": 65,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 65,
+            "instructions": {
+              "start": 931,
+              "end": 941,
+              "count": 10
+            },
+            "bytes": {
+              "start": 3627,
+              "end": 3691
+            },
+            "addresses": {
+              "start": 4308219,
+              "end": 4308283
+            },
+            "terminator": "add",
+            "successors": [
+              66
+            ]
+          },
+          "candidate": {
+            "index": 65,
+            "instructions": {
+              "start": 931,
+              "end": 941,
+              "count": 10
+            },
+            "bytes": {
+              "start": 3627,
+              "end": 3691
+            },
+            "addresses": {
+              "start": 3627,
+              "end": 3691
+            },
+            "terminator": "add",
+            "successors": [
+              66
+            ]
+          }
+        },
+        {
+          "target_block": 66,
+          "candidate_block": 66,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 66,
+            "instructions": {
+              "start": 941,
+              "end": 949,
+              "count": 8
+            },
+            "bytes": {
+              "start": 3691,
+              "end": 3729
+            },
+            "addresses": {
+              "start": 4308283,
+              "end": 4308321
+            },
+            "terminator": "jle",
+            "successors": [
+              69,
+              67
+            ]
+          },
+          "candidate": {
+            "index": 66,
+            "instructions": {
+              "start": 941,
+              "end": 949,
+              "count": 8
+            },
+            "bytes": {
+              "start": 3691,
+              "end": 3729
+            },
+            "addresses": {
+              "start": 3691,
+              "end": 3729
+            },
+            "terminator": "jle",
+            "successors": [
+              69,
+              67
+            ]
+          }
+        },
+        {
+          "target_block": 67,
+          "candidate_block": 67,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 67,
+            "instructions": {
+              "start": 949,
+              "end": 950,
+              "count": 1
+            },
+            "bytes": {
+              "start": 3729,
+              "end": 3734
+            },
+            "addresses": {
+              "start": 4308321,
+              "end": 4308326
+            },
+            "terminator": "mov",
+            "successors": [
+              68
+            ]
+          },
+          "candidate": {
+            "index": 67,
+            "instructions": {
+              "start": 949,
+              "end": 950,
+              "count": 1
+            },
+            "bytes": {
+              "start": 3729,
+              "end": 3734
+            },
+            "addresses": {
+              "start": 3729,
+              "end": 3734
+            },
+            "terminator": "mov",
+            "successors": [
+              68
+            ]
+          }
+        },
+        {
+          "target_block": 68,
+          "candidate_block": 68,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 68,
+            "instructions": {
+              "start": 950,
+              "end": 955,
+              "count": 5
+            },
+            "bytes": {
+              "start": 3734,
+              "end": 3744
+            },
+            "addresses": {
+              "start": 4308326,
+              "end": 4308336
+            },
+            "terminator": "jne",
+            "successors": [
+              68,
+              69
+            ]
+          },
+          "candidate": {
+            "index": 68,
+            "instructions": {
+              "start": 950,
+              "end": 955,
+              "count": 5
+            },
+            "bytes": {
+              "start": 3734,
+              "end": 3744
+            },
+            "addresses": {
+              "start": 3734,
+              "end": 3744
+            },
+            "terminator": "jne",
+            "successors": [
+              68,
+              69
+            ]
+          }
+        },
+        {
+          "target_block": 69,
+          "candidate_block": 69,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 69,
+            "instructions": {
+              "start": 955,
+              "end": 976,
+              "count": 21
+            },
+            "bytes": {
+              "start": 3744,
+              "end": 3842
+            },
+            "addresses": {
+              "start": 4308336,
+              "end": 4308434
+            },
+            "terminator": "jge",
+            "successors": [
+              82,
+              70
+            ]
+          },
+          "candidate": {
+            "index": 69,
+            "instructions": {
+              "start": 955,
+              "end": 976,
+              "count": 21
+            },
+            "bytes": {
+              "start": 3744,
+              "end": 3842
+            },
+            "addresses": {
+              "start": 3744,
+              "end": 3842
+            },
+            "terminator": "jge",
+            "successors": [
+              82,
+              70
+            ]
+          }
+        },
+        {
+          "target_block": 70,
+          "candidate_block": 70,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 70,
+            "instructions": {
+              "start": 976,
+              "end": 980,
+              "count": 4
+            },
+            "bytes": {
+              "start": 3842,
+              "end": 3859
+            },
+            "addresses": {
+              "start": 4308434,
+              "end": 4308451
+            },
+            "terminator": "fmul",
+            "successors": [
+              71
+            ]
+          },
+          "candidate": {
+            "index": 70,
+            "instructions": {
+              "start": 976,
+              "end": 980,
+              "count": 4
+            },
+            "bytes": {
+              "start": 3842,
+              "end": 3859
+            },
+            "addresses": {
+              "start": 3842,
+              "end": 3859
+            },
+            "terminator": "fmul",
+            "successors": [
+              71
+            ]
+          }
+        },
+        {
+          "target_block": 71,
+          "candidate_block": 71,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 71,
+            "instructions": {
+              "start": 980,
+              "end": 986,
+              "count": 6
+            },
+            "bytes": {
+              "start": 3859,
+              "end": 3880
+            },
+            "addresses": {
+              "start": 4308451,
+              "end": 4308472
+            },
+            "terminator": "jne",
+            "successors": [
+              73,
+              72
+            ]
+          },
+          "candidate": {
+            "index": 71,
+            "instructions": {
+              "start": 980,
+              "end": 986,
+              "count": 6
+            },
+            "bytes": {
+              "start": 3859,
+              "end": 3880
+            },
+            "addresses": {
+              "start": 3859,
+              "end": 3880
+            },
+            "terminator": "jne",
+            "successors": [
+              73,
+              72
+            ]
+          }
+        },
+        {
+          "target_block": 72,
+          "candidate_block": 72,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 72,
+            "instructions": {
+              "start": 986,
+              "end": 987,
+              "count": 1
+            },
+            "bytes": {
+              "start": 3880,
+              "end": 3888
+            },
+            "addresses": {
+              "start": 4308472,
+              "end": 4308480
+            },
+            "terminator": "mov",
+            "successors": [
+              73
+            ]
+          },
+          "candidate": {
+            "index": 72,
+            "instructions": {
+              "start": 986,
+              "end": 987,
+              "count": 1
+            },
+            "bytes": {
+              "start": 3880,
+              "end": 3888
+            },
+            "addresses": {
+              "start": 3880,
+              "end": 3888
+            },
+            "terminator": "mov",
+            "successors": [
+              73
+            ]
+          }
+        },
+        {
+          "target_block": 73,
+          "candidate_block": 73,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 73,
+            "instructions": {
+              "start": 987,
+              "end": 1003,
+              "count": 16
+            },
+            "bytes": {
+              "start": 3888,
+              "end": 3955
+            },
+            "addresses": {
+              "start": 4308480,
+              "end": 4308547
+            },
+            "terminator": "jne",
+            "successors": [
+              79,
+              74
+            ]
+          },
+          "candidate": {
+            "index": 73,
+            "instructions": {
+              "start": 987,
+              "end": 1003,
+              "count": 16
+            },
+            "bytes": {
+              "start": 3888,
+              "end": 3955
+            },
+            "addresses": {
+              "start": 3888,
+              "end": 3955
+            },
+            "terminator": "jne",
+            "successors": [
+              79,
+              74
+            ]
+          }
+        },
+        {
+          "target_block": 74,
+          "candidate_block": 74,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 74,
+            "instructions": {
+              "start": 1003,
+              "end": 1020,
+              "count": 17
+            },
+            "bytes": {
+              "start": 3955,
+              "end": 4020
+            },
+            "addresses": {
+              "start": 4308547,
+              "end": 4308612
+            },
+            "terminator": "jg",
+            "successors": [
+              76,
+              75
+            ]
+          },
+          "candidate": {
+            "index": 74,
+            "instructions": {
+              "start": 1003,
+              "end": 1020,
+              "count": 17
+            },
+            "bytes": {
+              "start": 3955,
+              "end": 4020
+            },
+            "addresses": {
+              "start": 3955,
+              "end": 4020
+            },
+            "terminator": "jg",
+            "successors": [
+              76,
+              75
+            ]
+          }
+        },
+        {
+          "target_block": 75,
+          "candidate_block": 75,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 75,
+            "instructions": {
+              "start": 1020,
+              "end": 1021,
+              "count": 1
+            },
+            "bytes": {
+              "start": 4020,
+              "end": 4028
+            },
+            "addresses": {
+              "start": 4308612,
+              "end": 4308620
+            },
+            "terminator": "mov",
+            "successors": [
+              76
+            ]
+          },
+          "candidate": {
+            "index": 75,
+            "instructions": {
+              "start": 1020,
+              "end": 1021,
+              "count": 1
+            },
+            "bytes": {
+              "start": 4020,
+              "end": 4028
+            },
+            "addresses": {
+              "start": 4020,
+              "end": 4028
+            },
+            "terminator": "mov",
+            "successors": [
+              76
+            ]
+          }
+        },
+        {
+          "target_block": 76,
+          "candidate_block": 76,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 76,
+            "instructions": {
+              "start": 1021,
+              "end": 1085,
+              "count": 64
+            },
+            "bytes": {
+              "start": 4028,
+              "end": 4253
+            },
+            "addresses": {
+              "start": 4308620,
+              "end": 4308845
+            },
+            "terminator": "jle",
+            "successors": [
+              78,
+              77
+            ]
+          },
+          "candidate": {
+            "index": 76,
+            "instructions": {
+              "start": 1021,
+              "end": 1085,
+              "count": 64
+            },
+            "bytes": {
+              "start": 4028,
+              "end": 4253
+            },
+            "addresses": {
+              "start": 4028,
+              "end": 4253
+            },
+            "terminator": "jle",
+            "successors": [
+              78,
+              77
+            ]
+          }
+        },
+        {
+          "target_block": 77,
+          "candidate_block": 77,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 77,
+            "instructions": {
+              "start": 1085,
+              "end": 1090,
+              "count": 5
+            },
+            "bytes": {
+              "start": 4253,
+              "end": 4274
+            },
+            "addresses": {
+              "start": 4308845,
+              "end": 4308866
+            },
+            "terminator": "mov",
+            "successors": [
+              78
+            ]
+          },
+          "candidate": {
+            "index": 77,
+            "instructions": {
+              "start": 1085,
+              "end": 1090,
+              "count": 5
+            },
+            "bytes": {
+              "start": 4253,
+              "end": 4274
+            },
+            "addresses": {
+              "start": 4253,
+              "end": 4274
+            },
+            "terminator": "mov",
+            "successors": [
+              78
+            ]
+          }
+        },
+        {
+          "target_block": 78,
+          "candidate_block": 78,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 78,
+            "instructions": {
+              "start": 1090,
+              "end": 1137,
+              "count": 47
+            },
+            "bytes": {
+              "start": 4274,
+              "end": 4437
+            },
+            "addresses": {
+              "start": 4308866,
+              "end": 4309029
+            },
+            "terminator": "add",
+            "successors": [
+              79
+            ]
+          },
+          "candidate": {
+            "index": 78,
+            "instructions": {
+              "start": 1090,
+              "end": 1137,
+              "count": 47
+            },
+            "bytes": {
+              "start": 4274,
+              "end": 4437
+            },
+            "addresses": {
+              "start": 4274,
+              "end": 4437
+            },
+            "terminator": "add",
+            "successors": [
+              79
+            ]
+          }
+        },
+        {
+          "target_block": 79,
+          "candidate_block": 79,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 79,
+            "instructions": {
+              "start": 1137,
+              "end": 1140,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4437,
+              "end": 4450
+            },
+            "addresses": {
+              "start": 4309029,
+              "end": 4309042
+            },
+            "terminator": "jle",
+            "successors": [
+              95,
+              80
+            ]
+          },
+          "candidate": {
+            "index": 79,
+            "instructions": {
+              "start": 1137,
+              "end": 1140,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4437,
+              "end": 4450
+            },
+            "addresses": {
+              "start": 4437,
+              "end": 4450
+            },
+            "terminator": "jle",
+            "successors": [
+              95,
+              80
+            ]
+          }
+        },
+        {
+          "target_block": 80,
+          "candidate_block": 80,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 80,
+            "instructions": {
+              "start": 1140,
+              "end": 1142,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4450,
+              "end": 4457
+            },
+            "addresses": {
+              "start": 4309042,
+              "end": 4309049
+            },
+            "terminator": "jge",
+            "successors": [
+              86,
+              81
+            ]
+          },
+          "candidate": {
+            "index": 80,
+            "instructions": {
+              "start": 1140,
+              "end": 1142,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4450,
+              "end": 4457
+            },
+            "addresses": {
+              "start": 4450,
+              "end": 4457
+            },
+            "terminator": "jge",
+            "successors": [
+              86,
+              81
+            ]
+          }
+        },
+        {
+          "target_block": 81,
+          "candidate_block": 81,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 81,
+            "instructions": {
+              "start": 1142,
+              "end": 1145,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4457,
+              "end": 4471
+            },
+            "addresses": {
+              "start": 4309049,
+              "end": 4309063
+            },
+            "terminator": "jmp",
+            "successors": [
+              90
+            ]
+          },
+          "candidate": {
+            "index": 81,
+            "instructions": {
+              "start": 1142,
+              "end": 1145,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4457,
+              "end": 4471
+            },
+            "addresses": {
+              "start": 4457,
+              "end": 4471
+            },
+            "terminator": "jmp",
+            "successors": [
+              90
+            ]
+          }
+        },
+        {
+          "target_block": 82,
+          "candidate_block": 82,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 82,
+            "instructions": {
+              "start": 1145,
+              "end": 1147,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4471,
+              "end": 4482
+            },
+            "addresses": {
+              "start": 4309063,
+              "end": 4309074
+            },
+            "terminator": "jl",
+            "successors": [
+              72,
+              83
+            ]
+          },
+          "candidate": {
+            "index": 82,
+            "instructions": {
+              "start": 1145,
+              "end": 1147,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4471,
+              "end": 4482
+            },
+            "addresses": {
+              "start": 4471,
+              "end": 4482
+            },
+            "terminator": "jl",
+            "successors": [
+              72,
+              83
+            ]
+          }
+        },
+        {
+          "target_block": 83,
+          "candidate_block": 83,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 83,
+            "instructions": {
+              "start": 1147,
+              "end": 1149,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4482,
+              "end": 4489
+            },
+            "addresses": {
+              "start": 4309074,
+              "end": 4309081
+            },
+            "terminator": "jge",
+            "successors": [
+              85,
+              84
+            ]
+          },
+          "candidate": {
+            "index": 83,
+            "instructions": {
+              "start": 1147,
+              "end": 1149,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4482,
+              "end": 4489
+            },
+            "addresses": {
+              "start": 4482,
+              "end": 4489
+            },
+            "terminator": "jge",
+            "successors": [
+              85,
+              84
+            ]
+          }
+        },
+        {
+          "target_block": 84,
+          "candidate_block": 84,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 84,
+            "instructions": {
+              "start": 1149,
+              "end": 1155,
+              "count": 6
+            },
+            "bytes": {
+              "start": 4489,
+              "end": 4521
+            },
+            "addresses": {
+              "start": 4309081,
+              "end": 4309113
+            },
+            "terminator": "jmp",
+            "successors": [
+              71
+            ]
+          },
+          "candidate": {
+            "index": 84,
+            "instructions": {
+              "start": 1149,
+              "end": 1155,
+              "count": 6
+            },
+            "bytes": {
+              "start": 4489,
+              "end": 4521
+            },
+            "addresses": {
+              "start": 4489,
+              "end": 4521
+            },
+            "terminator": "jmp",
+            "successors": [
+              71
+            ]
+          }
+        },
+        {
+          "target_block": 85,
+          "candidate_block": 85,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 85,
+            "instructions": {
+              "start": 1155,
+              "end": 1158,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4521,
+              "end": 4539
+            },
+            "addresses": {
+              "start": 4309113,
+              "end": 4309131
+            },
+            "terminator": "jmp",
+            "successors": [
+              73
+            ]
+          },
+          "candidate": {
+            "index": 85,
+            "instructions": {
+              "start": 1155,
+              "end": 1158,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4521,
+              "end": 4539
+            },
+            "addresses": {
+              "start": 4521,
+              "end": 4539
+            },
+            "terminator": "jmp",
+            "successors": [
+              73
+            ]
+          }
+        },
+        {
+          "target_block": 86,
+          "candidate_block": 86,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 86,
+            "instructions": {
+              "start": 1158,
+              "end": 1160,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4539,
+              "end": 4546
+            },
+            "addresses": {
+              "start": 4309131,
+              "end": 4309138
+            },
+            "terminator": "jge",
+            "successors": [
+              88,
+              87
+            ]
+          },
+          "candidate": {
+            "index": 86,
+            "instructions": {
+              "start": 1158,
+              "end": 1160,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4539,
+              "end": 4546
+            },
+            "addresses": {
+              "start": 4539,
+              "end": 4546
+            },
+            "terminator": "jge",
+            "successors": [
+              88,
+              87
+            ]
+          }
+        },
+        {
+          "target_block": 87,
+          "candidate_block": 87,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 87,
+            "instructions": {
+              "start": 1160,
+              "end": 1162,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4546,
+              "end": 4556
+            },
+            "addresses": {
+              "start": 4309138,
+              "end": 4309148
+            },
+            "terminator": "jmp",
+            "successors": [
+              94
+            ]
+          },
+          "candidate": {
+            "index": 87,
+            "instructions": {
+              "start": 1160,
+              "end": 1162,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4546,
+              "end": 4556
+            },
+            "addresses": {
+              "start": 4546,
+              "end": 4556
+            },
+            "terminator": "jmp",
+            "successors": [
+              94
+            ]
+          }
+        },
+        {
+          "target_block": 88,
+          "candidate_block": 88,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 88,
+            "instructions": {
+              "start": 1162,
+              "end": 1164,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4556,
+              "end": 4563
+            },
+            "addresses": {
+              "start": 4309148,
+              "end": 4309155
+            },
+            "terminator": "jge",
+            "successors": [
+              93,
+              89
+            ]
+          },
+          "candidate": {
+            "index": 88,
+            "instructions": {
+              "start": 1162,
+              "end": 1164,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4556,
+              "end": 4563
+            },
+            "addresses": {
+              "start": 4556,
+              "end": 4563
+            },
+            "terminator": "jge",
+            "successors": [
+              93,
+              89
+            ]
+          }
+        },
+        {
+          "target_block": 89,
+          "candidate_block": 89,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 89,
+            "instructions": {
+              "start": 1164,
+              "end": 1170,
+              "count": 6
+            },
+            "bytes": {
+              "start": 4563,
+              "end": 4590
+            },
+            "addresses": {
+              "start": 4309155,
+              "end": 4309182
+            },
+            "terminator": "fadd",
+            "successors": [
+              90
+            ]
+          },
+          "candidate": {
+            "index": 89,
+            "instructions": {
+              "start": 1164,
+              "end": 1170,
+              "count": 6
+            },
+            "bytes": {
+              "start": 4563,
+              "end": 4590
+            },
+            "addresses": {
+              "start": 4563,
+              "end": 4590
+            },
+            "terminator": "fadd",
+            "successors": [
+              90
+            ]
+          }
+        },
+        {
+          "target_block": 90,
+          "candidate_block": 90,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 90,
+            "instructions": {
+              "start": 1170,
+              "end": 1176,
+              "count": 6
+            },
+            "bytes": {
+              "start": 4590,
+              "end": 4611
+            },
+            "addresses": {
+              "start": 4309182,
+              "end": 4309203
+            },
+            "terminator": "jne",
+            "successors": [
+              92,
+              91
+            ]
+          },
+          "candidate": {
+            "index": 90,
+            "instructions": {
+              "start": 1170,
+              "end": 1176,
+              "count": 6
+            },
+            "bytes": {
+              "start": 4590,
+              "end": 4611
+            },
+            "addresses": {
+              "start": 4590,
+              "end": 4611
+            },
+            "terminator": "jne",
+            "successors": [
+              92,
+              91
+            ]
+          }
+        },
+        {
+          "target_block": 91,
+          "candidate_block": 91,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 91,
+            "instructions": {
+              "start": 1176,
+              "end": 1178,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4611,
+              "end": 4621
+            },
+            "addresses": {
+              "start": 4309203,
+              "end": 4309213
+            },
+            "terminator": "jmp",
+            "successors": [
+              94
+            ]
+          },
+          "candidate": {
+            "index": 91,
+            "instructions": {
+              "start": 1176,
+              "end": 1178,
+              "count": 2
+            },
+            "bytes": {
+              "start": 4611,
+              "end": 4621
+            },
+            "addresses": {
+              "start": 4611,
+              "end": 4621
+            },
+            "terminator": "jmp",
+            "successors": [
+              94
+            ]
+          }
+        },
+        {
+          "target_block": 92,
+          "candidate_block": 92,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 92,
+            "instructions": {
+              "start": 1178,
+              "end": 1183,
+              "count": 5
+            },
+            "bytes": {
+              "start": 4621,
+              "end": 4638
+            },
+            "addresses": {
+              "start": 4309213,
+              "end": 4309230
+            },
+            "terminator": "je",
+            "successors": [
+              94,
+              93
+            ]
+          },
+          "candidate": {
+            "index": 92,
+            "instructions": {
+              "start": 1178,
+              "end": 1183,
+              "count": 5
+            },
+            "bytes": {
+              "start": 4621,
+              "end": 4638
+            },
+            "addresses": {
+              "start": 4621,
+              "end": 4638
+            },
+            "terminator": "je",
+            "successors": [
+              94,
+              93
+            ]
+          }
+        },
+        {
+          "target_block": 93,
+          "candidate_block": 93,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 93,
+            "instructions": {
+              "start": 1183,
+              "end": 1184,
+              "count": 1
+            },
+            "bytes": {
+              "start": 4638,
+              "end": 4646
+            },
+            "addresses": {
+              "start": 4309230,
+              "end": 4309238
+            },
+            "terminator": "mov",
+            "successors": [
+              94
+            ]
+          },
+          "candidate": {
+            "index": 93,
+            "instructions": {
+              "start": 1183,
+              "end": 1184,
+              "count": 1
+            },
+            "bytes": {
+              "start": 4638,
+              "end": 4646
+            },
+            "addresses": {
+              "start": 4638,
+              "end": 4646
+            },
+            "terminator": "mov",
+            "successors": [
+              94
+            ]
+          }
+        },
+        {
+          "target_block": 94,
+          "candidate_block": 94,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 94,
+            "instructions": {
+              "start": 1184,
+              "end": 1255,
+              "count": 71
+            },
+            "bytes": {
+              "start": 4646,
+              "end": 4913
+            },
+            "addresses": {
+              "start": 4309238,
+              "end": 4309505
+            },
+            "terminator": "call",
+            "successors": [
+              95
+            ]
+          },
+          "candidate": {
+            "index": 94,
+            "instructions": {
+              "start": 1184,
+              "end": 1255,
+              "count": 71
+            },
+            "bytes": {
+              "start": 4646,
+              "end": 4913
+            },
+            "addresses": {
+              "start": 4646,
+              "end": 4913
+            },
+            "terminator": "call",
+            "successors": [
+              95
+            ]
+          }
+        },
+        {
+          "target_block": 95,
+          "candidate_block": 95,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 95,
+            "instructions": {
+              "start": 1255,
+              "end": 1258,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4913,
+              "end": 4926
+            },
+            "addresses": {
+              "start": 4309505,
+              "end": 4309518
+            },
+            "terminator": "je",
+            "successors": [
+              97,
+              96
+            ]
+          },
+          "candidate": {
+            "index": 95,
+            "instructions": {
+              "start": 1255,
+              "end": 1258,
+              "count": 3
+            },
+            "bytes": {
+              "start": 4913,
+              "end": 4926
+            },
+            "addresses": {
+              "start": 4913,
+              "end": 4926
+            },
+            "terminator": "je",
+            "successors": [
+              97,
+              96
+            ]
+          }
+        },
+        {
+          "target_block": 96,
+          "candidate_block": 96,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 96,
+            "instructions": {
+              "start": 1258,
+              "end": 1405,
+              "count": 147
+            },
+            "bytes": {
+              "start": 4926,
+              "end": 5511
+            },
+            "addresses": {
+              "start": 4309518,
+              "end": 4310103
+            },
+            "terminator": "add",
+            "successors": [
+              97
+            ]
+          },
+          "candidate": {
+            "index": 96,
+            "instructions": {
+              "start": 1258,
+              "end": 1405,
+              "count": 147
+            },
+            "bytes": {
+              "start": 4926,
+              "end": 5511
+            },
+            "addresses": {
+              "start": 4926,
+              "end": 5511
+            },
+            "terminator": "add",
+            "successors": [
+              97
+            ]
+          }
+        },
+        {
+          "target_block": 97,
+          "candidate_block": 97,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 97,
+            "instructions": {
+              "start": 1405,
+              "end": 1408,
+              "count": 3
+            },
+            "bytes": {
+              "start": 5511,
+              "end": 5524
+            },
+            "addresses": {
+              "start": 4310103,
+              "end": 4310116
+            },
+            "terminator": "je",
+            "successors": [
+              117,
+              98
+            ]
+          },
+          "candidate": {
+            "index": 97,
+            "instructions": {
+              "start": 1405,
+              "end": 1408,
+              "count": 3
+            },
+            "bytes": {
+              "start": 5511,
+              "end": 5524
+            },
+            "addresses": {
+              "start": 5511,
+              "end": 5524
+            },
+            "terminator": "je",
+            "successors": [
+              117,
+              98
+            ]
+          }
+        },
+        {
+          "target_block": 98,
+          "candidate_block": 98,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 98,
+            "instructions": {
+              "start": 1408,
+              "end": 1452,
+              "count": 44
+            },
+            "bytes": {
+              "start": 5524,
+              "end": 5702
+            },
+            "addresses": {
+              "start": 4310116,
+              "end": 4310294
+            },
+            "terminator": "jne",
+            "successors": [
+              100,
+              99
+            ]
+          },
+          "candidate": {
+            "index": 98,
+            "instructions": {
+              "start": 1408,
+              "end": 1452,
+              "count": 44
+            },
+            "bytes": {
+              "start": 5524,
+              "end": 5702
+            },
+            "addresses": {
+              "start": 5524,
+              "end": 5702
+            },
+            "terminator": "jne",
+            "successors": [
+              100,
+              99
+            ]
+          }
+        },
+        {
+          "target_block": 99,
+          "candidate_block": 99,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 99,
+            "instructions": {
+              "start": 1452,
+              "end": 1454,
+              "count": 2
+            },
+            "bytes": {
+              "start": 5702,
+              "end": 5713
+            },
+            "addresses": {
+              "start": 4310294,
+              "end": 4310305
+            },
+            "terminator": "jmp",
+            "successors": [
+              114
+            ]
+          },
+          "candidate": {
+            "index": 99,
+            "instructions": {
+              "start": 1452,
+              "end": 1454,
+              "count": 2
+            },
+            "bytes": {
+              "start": 5702,
+              "end": 5713
+            },
+            "addresses": {
+              "start": 5702,
+              "end": 5713
+            },
+            "terminator": "jmp",
+            "successors": [
+              114
+            ]
+          }
+        },
+        {
+          "target_block": 100,
+          "candidate_block": 100,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 100,
+            "instructions": {
+              "start": 1454,
+              "end": 1457,
+              "count": 3
+            },
+            "bytes": {
+              "start": 5713,
+              "end": 5723
+            },
+            "addresses": {
+              "start": 4310305,
+              "end": 4310315
+            },
+            "terminator": "jge",
+            "successors": [
+              107,
+              101
+            ]
+          },
+          "candidate": {
+            "index": 100,
+            "instructions": {
+              "start": 1454,
+              "end": 1457,
+              "count": 3
+            },
+            "bytes": {
+              "start": 5713,
+              "end": 5723
+            },
+            "addresses": {
+              "start": 5713,
+              "end": 5723
+            },
+            "terminator": "jge",
+            "successors": [
+              107,
+              101
+            ]
+          }
+        },
+        {
+          "target_block": 101,
+          "candidate_block": 101,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": null,
+          "target": {
+            "index": 101,
+            "instructions": {
+              "start": 1457,
+              "end": 1464,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5723,
+              "end": 5739
+            },
+            "addresses": {
+              "start": 4310315,
+              "end": 4310331
+            },
+            "terminator": "jg",
+            "successors": [
+              103,
+              102
+            ]
+          },
+          "candidate": {
+            "index": 101,
+            "instructions": {
+              "start": 1457,
+              "end": 1464,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5723,
+              "end": 5739
+            },
+            "addresses": {
+              "start": 5723,
+              "end": 5739
+            },
+            "terminator": "jg",
+            "successors": [
+              103,
+              102
+            ]
+          }
+        },
+        {
+          "target_block": 102,
+          "candidate_block": 102,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": null,
+          "target": {
+            "index": 102,
+            "instructions": {
+              "start": 1464,
+              "end": 1465,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5739,
+              "end": 5744
+            },
+            "addresses": {
+              "start": 4310331,
+              "end": 4310336
+            },
+            "terminator": "mov",
+            "successors": [
+              103
+            ]
+          },
+          "candidate": {
+            "index": 102,
+            "instructions": {
+              "start": 1464,
+              "end": 1465,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5739,
+              "end": 5744
+            },
+            "addresses": {
+              "start": 5739,
+              "end": 5744
+            },
+            "terminator": "mov",
+            "successors": [
+              103
+            ]
+          }
+        },
+        {
+          "target_block": 103,
+          "candidate_block": 103,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 103,
+            "instructions": {
+              "start": 1465,
+              "end": 1473,
+              "count": 8
+            },
+            "bytes": {
+              "start": 5744,
+              "end": 5763
+            },
+            "addresses": {
+              "start": 4310336,
+              "end": 4310355
+            },
+            "terminator": "jle",
+            "successors": [
+              105,
+              104
+            ]
+          },
+          "candidate": {
+            "index": 103,
+            "instructions": {
+              "start": 1465,
+              "end": 1473,
+              "count": 8
+            },
+            "bytes": {
+              "start": 5744,
+              "end": 5763
+            },
+            "addresses": {
+              "start": 5744,
+              "end": 5763
+            },
+            "terminator": "jle",
+            "successors": [
+              105,
+              104
+            ]
+          }
+        },
+        {
+          "target_block": 104,
+          "candidate_block": 104,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 104,
+            "instructions": {
+              "start": 1473,
+              "end": 1480,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5763,
+              "end": 5783
+            },
+            "addresses": {
+              "start": 4310355,
+              "end": 4310375
+            },
+            "terminator": "imul",
+            "successors": [
+              105
+            ]
+          },
+          "candidate": {
+            "index": 104,
+            "instructions": {
+              "start": 1473,
+              "end": 1480,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5763,
+              "end": 5783
+            },
+            "addresses": {
+              "start": 5763,
+              "end": 5783
+            },
+            "terminator": "imul",
+            "successors": [
+              105
+            ]
+          }
+        },
+        {
+          "target_block": 105,
+          "candidate_block": 105,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 105,
+            "instructions": {
+              "start": 1480,
+              "end": 1484,
+              "count": 4
+            },
+            "bytes": {
+              "start": 5783,
+              "end": 5795
+            },
+            "addresses": {
+              "start": 4310375,
+              "end": 4310387
+            },
+            "terminator": "jle",
+            "successors": [
+              114,
+              106
+            ]
+          },
+          "candidate": {
+            "index": 105,
+            "instructions": {
+              "start": 1480,
+              "end": 1484,
+              "count": 4
+            },
+            "bytes": {
+              "start": 5783,
+              "end": 5795
+            },
+            "addresses": {
+              "start": 5783,
+              "end": 5795
+            },
+            "terminator": "jle",
+            "successors": [
+              114,
+              106
+            ]
+          }
+        },
+        {
+          "target_block": 106,
+          "candidate_block": 106,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 106,
+            "instructions": {
+              "start": 1484,
+              "end": 1485,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5795,
+              "end": 5797
+            },
+            "addresses": {
+              "start": 4310387,
+              "end": 4310389
+            },
+            "terminator": "jmp",
+            "successors": [
+              113
+            ]
+          },
+          "candidate": {
+            "index": 106,
+            "instructions": {
+              "start": 1484,
+              "end": 1485,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5795,
+              "end": 5797
+            },
+            "addresses": {
+              "start": 5795,
+              "end": 5797
+            },
+            "terminator": "jmp",
+            "successors": [
+              113
+            ]
+          }
+        },
+        {
+          "target_block": 107,
+          "candidate_block": 107,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 107,
+            "instructions": {
+              "start": 1485,
+              "end": 1486,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5797,
+              "end": 5799
+            },
+            "addresses": {
+              "start": 4310389,
+              "end": 4310391
+            },
+            "terminator": "jle",
+            "successors": [
+              114,
+              108
+            ]
+          },
+          "candidate": {
+            "index": 107,
+            "instructions": {
+              "start": 1485,
+              "end": 1486,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5797,
+              "end": 5799
+            },
+            "addresses": {
+              "start": 5797,
+              "end": 5799
+            },
+            "terminator": "jle",
+            "successors": [
+              114,
+              108
+            ]
+          }
+        },
+        {
+          "target_block": 108,
+          "candidate_block": 108,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": null,
+          "target": {
+            "index": 108,
+            "instructions": {
+              "start": 1486,
+              "end": 1493,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5799,
+              "end": 5815
+            },
+            "addresses": {
+              "start": 4310391,
+              "end": 4310407
+            },
+            "terminator": "jg",
+            "successors": [
+              110,
+              109
+            ]
+          },
+          "candidate": {
+            "index": 108,
+            "instructions": {
+              "start": 1486,
+              "end": 1493,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5799,
+              "end": 5815
+            },
+            "addresses": {
+              "start": 5799,
+              "end": 5815
+            },
+            "terminator": "jg",
+            "successors": [
+              110,
+              109
+            ]
+          }
+        },
+        {
+          "target_block": 109,
+          "candidate_block": 109,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": null,
+          "target": {
+            "index": 109,
+            "instructions": {
+              "start": 1493,
+              "end": 1494,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5815,
+              "end": 5820
+            },
+            "addresses": {
+              "start": 4310407,
+              "end": 4310412
+            },
+            "terminator": "mov",
+            "successors": [
+              110
+            ]
+          },
+          "candidate": {
+            "index": 109,
+            "instructions": {
+              "start": 1493,
+              "end": 1494,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5815,
+              "end": 5820
+            },
+            "addresses": {
+              "start": 5815,
+              "end": 5820
+            },
+            "terminator": "mov",
+            "successors": [
+              110
+            ]
+          }
+        },
+        {
+          "target_block": 110,
+          "candidate_block": 110,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 110,
+            "instructions": {
+              "start": 1494,
+              "end": 1502,
+              "count": 8
+            },
+            "bytes": {
+              "start": 5820,
+              "end": 5839
+            },
+            "addresses": {
+              "start": 4310412,
+              "end": 4310431
+            },
+            "terminator": "jle",
+            "successors": [
+              112,
+              111
+            ]
+          },
+          "candidate": {
+            "index": 110,
+            "instructions": {
+              "start": 1494,
+              "end": 1502,
+              "count": 8
+            },
+            "bytes": {
+              "start": 5820,
+              "end": 5839
+            },
+            "addresses": {
+              "start": 5820,
+              "end": 5839
+            },
+            "terminator": "jle",
+            "successors": [
+              112,
+              111
+            ]
+          }
+        },
+        {
+          "target_block": 111,
+          "candidate_block": 111,
+          "kind": "exact-ambiguous",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": false,
+          "edge_consistent": true,
+          "target": {
+            "index": 111,
+            "instructions": {
+              "start": 1502,
+              "end": 1509,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5839,
+              "end": 5859
+            },
+            "addresses": {
+              "start": 4310431,
+              "end": 4310451
+            },
+            "terminator": "imul",
+            "successors": [
+              112
+            ]
+          },
+          "candidate": {
+            "index": 111,
+            "instructions": {
+              "start": 1502,
+              "end": 1509,
+              "count": 7
+            },
+            "bytes": {
+              "start": 5839,
+              "end": 5859
+            },
+            "addresses": {
+              "start": 5839,
+              "end": 5859
+            },
+            "terminator": "imul",
+            "successors": [
+              112
+            ]
+          }
+        },
+        {
+          "target_block": 112,
+          "candidate_block": 112,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 112,
+            "instructions": {
+              "start": 1509,
+              "end": 1513,
+              "count": 4
+            },
+            "bytes": {
+              "start": 5859,
+              "end": 5871
+            },
+            "addresses": {
+              "start": 4310451,
+              "end": 4310463
+            },
+            "terminator": "jge",
+            "successors": [
+              114,
+              113
+            ]
+          },
+          "candidate": {
+            "index": 112,
+            "instructions": {
+              "start": 1509,
+              "end": 1513,
+              "count": 4
+            },
+            "bytes": {
+              "start": 5859,
+              "end": 5871
+            },
+            "addresses": {
+              "start": 5859,
+              "end": 5871
+            },
+            "terminator": "jge",
+            "successors": [
+              114,
+              113
+            ]
+          }
+        },
+        {
+          "target_block": 113,
+          "candidate_block": 113,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 113,
+            "instructions": {
+              "start": 1513,
+              "end": 1514,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5871,
+              "end": 5877
+            },
+            "addresses": {
+              "start": 4310463,
+              "end": 4310469
+            },
+            "terminator": "mov",
+            "successors": [
+              114
+            ]
+          },
+          "candidate": {
+            "index": 113,
+            "instructions": {
+              "start": 1513,
+              "end": 1514,
+              "count": 1
+            },
+            "bytes": {
+              "start": 5871,
+              "end": 5877
+            },
+            "addresses": {
+              "start": 5871,
+              "end": 5877
+            },
+            "terminator": "mov",
+            "successors": [
+              114
+            ]
+          }
+        },
+        {
+          "target_block": 114,
+          "candidate_block": 114,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 114,
+            "instructions": {
+              "start": 1514,
+              "end": 1588,
+              "count": 74
+            },
+            "bytes": {
+              "start": 5877,
+              "end": 6167
+            },
+            "addresses": {
+              "start": 4310469,
+              "end": 4310759
+            },
+            "terminator": "jne",
+            "successors": [
+              116,
+              115
+            ]
+          },
+          "candidate": {
+            "index": 114,
+            "instructions": {
+              "start": 1514,
+              "end": 1588,
+              "count": 74
+            },
+            "bytes": {
+              "start": 5877,
+              "end": 6167
+            },
+            "addresses": {
+              "start": 5877,
+              "end": 6167
+            },
+            "terminator": "jne",
+            "successors": [
+              116,
+              115
+            ]
+          }
+        },
+        {
+          "target_block": 115,
+          "candidate_block": 115,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 115,
+            "instructions": {
+              "start": 1588,
+              "end": 1589,
+              "count": 1
+            },
+            "bytes": {
+              "start": 6167,
+              "end": 6169
+            },
+            "addresses": {
+              "start": 4310759,
+              "end": 4310761
+            },
+            "terminator": "xor",
+            "successors": [
+              116
+            ]
+          },
+          "candidate": {
+            "index": 115,
+            "instructions": {
+              "start": 1588,
+              "end": 1589,
+              "count": 1
+            },
+            "bytes": {
+              "start": 6167,
+              "end": 6169
+            },
+            "addresses": {
+              "start": 6167,
+              "end": 6169
+            },
+            "terminator": "xor",
+            "successors": [
+              116
+            ]
+          }
+        },
+        {
+          "target_block": 116,
+          "candidate_block": 116,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 116,
+            "instructions": {
+              "start": 1589,
+              "end": 1625,
+              "count": 36
+            },
+            "bytes": {
+              "start": 6169,
+              "end": 6323
+            },
+            "addresses": {
+              "start": 4310761,
+              "end": 4310915
+            },
+            "terminator": "mov",
+            "successors": [
+              117
+            ]
+          },
+          "candidate": {
+            "index": 116,
+            "instructions": {
+              "start": 1589,
+              "end": 1625,
+              "count": 36
+            },
+            "bytes": {
+              "start": 6169,
+              "end": 6323
+            },
+            "addresses": {
+              "start": 6169,
+              "end": 6323
+            },
+            "terminator": "mov",
+            "successors": [
+              117
+            ]
+          }
+        },
+        {
+          "target_block": 117,
+          "candidate_block": 117,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 117,
+            "instructions": {
+              "start": 1625,
+              "end": 1636,
+              "count": 11
+            },
+            "bytes": {
+              "start": 6323,
+              "end": 6361
+            },
+            "addresses": {
+              "start": 4310915,
+              "end": 4310953
+            },
+            "terminator": "fstp",
+            "successors": [
+              118
+            ]
+          },
+          "candidate": {
+            "index": 117,
+            "instructions": {
+              "start": 1625,
+              "end": 1636,
+              "count": 11
+            },
+            "bytes": {
+              "start": 6323,
+              "end": 6361
+            },
+            "addresses": {
+              "start": 6323,
+              "end": 6361
+            },
+            "terminator": "fstp",
+            "successors": [
+              118
+            ]
+          }
+        },
+        {
+          "target_block": 118,
+          "candidate_block": 118,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 118,
+            "instructions": {
+              "start": 1636,
+              "end": 1645,
+              "count": 9
+            },
+            "bytes": {
+              "start": 6361,
+              "end": 6382
+            },
+            "addresses": {
+              "start": 4310953,
+              "end": 4310974
+            },
+            "terminator": "jl",
+            "successors": [
+              118,
+              119
+            ]
+          },
+          "candidate": {
+            "index": 118,
+            "instructions": {
+              "start": 1636,
+              "end": 1645,
+              "count": 9
+            },
+            "bytes": {
+              "start": 6361,
+              "end": 6382
+            },
+            "addresses": {
+              "start": 6361,
+              "end": 6382
+            },
+            "terminator": "jl",
+            "successors": [
+              118,
+              119
+            ]
+          }
+        },
+        {
+          "target_block": 119,
+          "candidate_block": 119,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 119,
+            "instructions": {
+              "start": 1645,
+              "end": 1655,
+              "count": 10
+            },
+            "bytes": {
+              "start": 6382,
+              "end": 6419
+            },
+            "addresses": {
+              "start": 4310974,
+              "end": 4311011
+            },
+            "terminator": "jle",
+            "successors": [
+              131,
+              120
+            ]
+          },
+          "candidate": {
+            "index": 119,
+            "instructions": {
+              "start": 1645,
+              "end": 1655,
+              "count": 10
+            },
+            "bytes": {
+              "start": 6382,
+              "end": 6419
+            },
+            "addresses": {
+              "start": 6382,
+              "end": 6419
+            },
+            "terminator": "jle",
+            "successors": [
+              131,
+              120
+            ]
+          }
+        },
+        {
+          "target_block": 120,
+          "candidate_block": 120,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 120,
+            "instructions": {
+              "start": 1655,
+              "end": 1657,
+              "count": 2
+            },
+            "bytes": {
+              "start": 6419,
+              "end": 6426
+            },
+            "addresses": {
+              "start": 4311011,
+              "end": 4311018
+            },
+            "terminator": "mov",
+            "successors": [
+              121
+            ]
+          },
+          "candidate": {
+            "index": 120,
+            "instructions": {
+              "start": 1655,
+              "end": 1657,
+              "count": 2
+            },
+            "bytes": {
+              "start": 6419,
+              "end": 6426
+            },
+            "addresses": {
+              "start": 6419,
+              "end": 6426
+            },
+            "terminator": "mov",
+            "successors": [
+              121
+            ]
+          }
+        },
+        {
+          "target_block": 121,
+          "candidate_block": 121,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 121,
+            "instructions": {
+              "start": 1657,
+              "end": 1662,
+              "count": 5
+            },
+            "bytes": {
+              "start": 6426,
+              "end": 6450
+            },
+            "addresses": {
+              "start": 4311018,
+              "end": 4311042
+            },
+            "terminator": "jne",
+            "successors": [
+              130,
+              122
+            ]
+          },
+          "candidate": {
+            "index": 121,
+            "instructions": {
+              "start": 1657,
+              "end": 1662,
+              "count": 5
+            },
+            "bytes": {
+              "start": 6426,
+              "end": 6450
+            },
+            "addresses": {
+              "start": 6426,
+              "end": 6450
+            },
+            "terminator": "jne",
+            "successors": [
+              130,
+              122
+            ]
+          }
+        },
+        {
+          "target_block": 122,
+          "candidate_block": 122,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 122,
+            "instructions": {
+              "start": 1662,
+              "end": 1668,
+              "count": 6
+            },
+            "bytes": {
+              "start": 6450,
+              "end": 6476
+            },
+            "addresses": {
+              "start": 4311042,
+              "end": 4311068
+            },
+            "terminator": "je",
+            "successors": [
+              124,
+              123
+            ]
+          },
+          "candidate": {
+            "index": 122,
+            "instructions": {
+              "start": 1662,
+              "end": 1668,
+              "count": 6
+            },
+            "bytes": {
+              "start": 6450,
+              "end": 6476
+            },
+            "addresses": {
+              "start": 6450,
+              "end": 6476
+            },
+            "terminator": "je",
+            "successors": [
+              124,
+              123
+            ]
+          }
+        },
+        {
+          "target_block": 123,
+          "candidate_block": 123,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 123,
+            "instructions": {
+              "start": 1668,
+              "end": 1670,
+              "count": 2
+            },
+            "bytes": {
+              "start": 6476,
+              "end": 6484
+            },
+            "addresses": {
+              "start": 4311068,
+              "end": 4311076
+            },
+            "terminator": "jmp",
+            "successors": [
+              125
+            ]
+          },
+          "candidate": {
+            "index": 123,
+            "instructions": {
+              "start": 1668,
+              "end": 1670,
+              "count": 2
+            },
+            "bytes": {
+              "start": 6476,
+              "end": 6484
+            },
+            "addresses": {
+              "start": 6476,
+              "end": 6484
+            },
+            "terminator": "jmp",
+            "successors": [
+              125
+            ]
+          }
+        },
+        {
+          "target_block": 124,
+          "candidate_block": 124,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 124,
+            "instructions": {
+              "start": 1670,
+              "end": 1671,
+              "count": 1
+            },
+            "bytes": {
+              "start": 6484,
+              "end": 6490
+            },
+            "addresses": {
+              "start": 4311076,
+              "end": 4311082
+            },
+            "terminator": "fmul",
+            "successors": [
+              125
+            ]
+          },
+          "candidate": {
+            "index": 124,
+            "instructions": {
+              "start": 1670,
+              "end": 1671,
+              "count": 1
+            },
+            "bytes": {
+              "start": 6484,
+              "end": 6490
+            },
+            "addresses": {
+              "start": 6484,
+              "end": 6490
+            },
+            "terminator": "fmul",
+            "successors": [
+              125
+            ]
+          }
+        },
+        {
+          "target_block": 125,
+          "candidate_block": 125,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 125,
+            "instructions": {
+              "start": 1671,
+              "end": 1677,
+              "count": 6
+            },
+            "bytes": {
+              "start": 6490,
+              "end": 6517
+            },
+            "addresses": {
+              "start": 4311082,
+              "end": 4311109
+            },
+            "terminator": "jne",
+            "successors": [
+              127,
+              126
+            ]
+          },
+          "candidate": {
+            "index": 125,
+            "instructions": {
+              "start": 1671,
+              "end": 1677,
+              "count": 6
+            },
+            "bytes": {
+              "start": 6490,
+              "end": 6517
+            },
+            "addresses": {
+              "start": 6490,
+              "end": 6517
+            },
+            "terminator": "jne",
+            "successors": [
+              127,
+              126
+            ]
+          }
+        },
+        {
+          "target_block": 126,
+          "candidate_block": 126,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 126,
+            "instructions": {
+              "start": 1677,
+              "end": 1678,
+              "count": 1
+            },
+            "bytes": {
+              "start": 6517,
+              "end": 6523
+            },
+            "addresses": {
+              "start": 4311109,
+              "end": 4311115
+            },
+            "terminator": "fsubr",
+            "successors": [
+              127
+            ]
+          },
+          "candidate": {
+            "index": 126,
+            "instructions": {
+              "start": 1677,
+              "end": 1678,
+              "count": 1
+            },
+            "bytes": {
+              "start": 6517,
+              "end": 6523
+            },
+            "addresses": {
+              "start": 6517,
+              "end": 6523
+            },
+            "terminator": "fsubr",
+            "successors": [
+              127
+            ]
+          }
+        },
+        {
+          "target_block": 127,
+          "candidate_block": 127,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 127,
+            "instructions": {
+              "start": 1678,
+              "end": 1682,
+              "count": 4
+            },
+            "bytes": {
+              "start": 6523,
+              "end": 6536
+            },
+            "addresses": {
+              "start": 4311115,
+              "end": 4311128
+            },
+            "terminator": "je",
+            "successors": [
+              129,
+              128
+            ]
+          },
+          "candidate": {
+            "index": 127,
+            "instructions": {
+              "start": 1678,
+              "end": 1682,
+              "count": 4
+            },
+            "bytes": {
+              "start": 6523,
+              "end": 6536
+            },
+            "addresses": {
+              "start": 6523,
+              "end": 6536
+            },
+            "terminator": "je",
+            "successors": [
+              129,
+              128
+            ]
+          }
+        },
+        {
+          "target_block": 128,
+          "candidate_block": 128,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 128,
+            "instructions": {
+              "start": 1682,
+              "end": 1684,
+              "count": 2
+            },
+            "bytes": {
+              "start": 6536,
+              "end": 6544
+            },
+            "addresses": {
+              "start": 4311128,
+              "end": 4311136
+            },
+            "terminator": "fld",
+            "successors": [
+              129
+            ]
+          },
+          "candidate": {
+            "index": 128,
+            "instructions": {
+              "start": 1682,
+              "end": 1684,
+              "count": 2
+            },
+            "bytes": {
+              "start": 6536,
+              "end": 6544
+            },
+            "addresses": {
+              "start": 6536,
+              "end": 6544
+            },
+            "terminator": "fld",
+            "successors": [
+              129
+            ]
+          }
+        },
+        {
+          "target_block": 129,
+          "candidate_block": 129,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 129,
+            "instructions": {
+              "start": 1684,
+              "end": 1805,
+              "count": 121
+            },
+            "bytes": {
+              "start": 6544,
+              "end": 7019
+            },
+            "addresses": {
+              "start": 4311136,
+              "end": 4311611
+            },
+            "terminator": "mov",
+            "successors": [
+              130
+            ]
+          },
+          "candidate": {
+            "index": 129,
+            "instructions": {
+              "start": 1684,
+              "end": 1805,
+              "count": 121
+            },
+            "bytes": {
+              "start": 6544,
+              "end": 7019
+            },
+            "addresses": {
+              "start": 6544,
+              "end": 7019
+            },
+            "terminator": "mov",
+            "successors": [
+              130
+            ]
+          }
+        },
+        {
+          "target_block": 130,
+          "candidate_block": 130,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": true,
+          "target": {
+            "index": 130,
+            "instructions": {
+              "start": 1805,
+              "end": 1810,
+              "count": 5
+            },
+            "bytes": {
+              "start": 7019,
+              "end": 7039
+            },
+            "addresses": {
+              "start": 4311611,
+              "end": 4311631
+            },
+            "terminator": "jl",
+            "successors": [
+              121,
+              131
+            ]
+          },
+          "candidate": {
+            "index": 130,
+            "instructions": {
+              "start": 1805,
+              "end": 1810,
+              "count": 5
+            },
+            "bytes": {
+              "start": 7019,
+              "end": 7039
+            },
+            "addresses": {
+              "start": 7019,
+              "end": 7039
+            },
+            "terminator": "jl",
+            "successors": [
+              121,
+              131
+            ]
+          }
+        },
+        {
+          "target_block": 131,
+          "candidate_block": 131,
+          "kind": "exact",
+          "match_ratio": 1.0,
+          "structure_match": true,
+          "edge_anchor": true,
+          "edge_consistent": null,
+          "target": {
+            "index": 131,
+            "instructions": {
+              "start": 1810,
+              "end": 1824,
+              "count": 14
+            },
+            "bytes": {
+              "start": 7039,
+              "end": 7081
+            },
+            "addresses": {
+              "start": 4311631,
+              "end": 4311673
+            },
+            "terminator": "ret",
+            "successors": []
+          },
+          "candidate": {
+            "index": 131,
+            "instructions": {
+              "start": 1810,
+              "end": 1824,
+              "count": 14
+            },
+            "bytes": {
+              "start": 7039,
+              "end": 7081
+            },
+            "addresses": {
+              "start": 7039,
+              "end": 7081
+            },
+            "terminator": "ret",
+            "successors": []
+          }
+        }
+      ],
+      "unmatched_target": [],
+      "unmatched_candidate": []
+    },
+    "encoded_body_bytes": 7081,
+    "native_start": 4304592,
+    "native_end": 4311673
+  },
+  "before": {
+    "ratio": 0.9221491228070176,
+    "ins": 1824,
+    "prefix": 42,
+    "refs": 393,
+    "problems": 0,
+    "exact": false,
+    "body": false
+  },
+  "controls": [
+    {
+      "name": "hud-clean-0000",
+      "source_sha256": "8012d9eeae5010a444964b1549b920ff608c10a2117dbb7318386319e1a5b374",
+      "observed": {
+        "ratio": 0.9084429824561403,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0001",
+      "source_sha256": "528021d11cfcfcfdce7daeedf56ce9a21b722e965e8286f6281ec0a4b02d516a",
+      "observed": {
+        "ratio": 0.9073464912280702,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0010",
+      "source_sha256": "e96efe4607bd60022590c4e7931879810d93c4140648035650521ec5120a667e",
+      "observed": {
+        "ratio": 0.9073464912280702,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0011",
+      "source_sha256": "f6a9d580fdd33ee753f6d613630231d2608bcd1cba681e720049066351a24f31",
+      "observed": {
+        "ratio": 0.90625,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0100",
+      "source_sha256": "c328eb8401311f1de0006ad485e32320a264a92032ec68480ce677e66f3f902f",
+      "observed": {
+        "ratio": 0.975328947368421,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0101",
+      "source_sha256": "de596cde0bdead6e0c630d63f219312bf212707dc1dba9295cde087330377e7f",
+      "observed": {
+        "ratio": 0.9775219298245614,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0110",
+      "source_sha256": "c7afbfffd000661e162a7774f6e2d3fcadac3665a65635e5a4eb305d990ce274",
+      "observed": {
+        "ratio": 0.9742324561403509,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0111",
+      "source_sha256": "62b31a21b222c637922e92adeaf3ea3bfa6edf17aea695db1b060b0d39663503",
+      "observed": {
+        "ratio": 0.9764254385964912,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1000",
+      "source_sha256": "b290d4681eb67743fd2b4a5a2b30abf7edd23ad08cef1af68be48a7362d1e722",
+      "observed": {
+        "ratio": 0.8848684210526315,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1001",
+      "source_sha256": "0516f48378b8ba1ea0f89dd3809780490ccc9ee8064128011ce6204e59e7c7bd",
+      "observed": {
+        "ratio": 0.8848684210526315,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1010",
+      "source_sha256": "a8a7d79af41cbfa16790fa890d716fd174e8b9030d5c64da9dfb263f9a4dc01c",
+      "observed": {
+        "ratio": 0.9292763157894737,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1011",
+      "source_sha256": "45b3437fe4eb65da51ef51857e1925c0109ac9cd982603f6893edf4df0747474",
+      "observed": {
+        "ratio": 0.9281798245614035,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1100",
+      "source_sha256": "1db43798d4d822c6695c9d1a46b3422be1ecbd5b29dbb52fac11d98a4d2ef015",
+      "observed": {
+        "ratio": 0.9703947368421053,
+        "ins": 1824,
+        "prefix": 151,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1101",
+      "source_sha256": "e285e24bb3efeaeb18e57774d7667cfe6c8db07907420a5a1d6372492e552969",
+      "observed": {
+        "ratio": 0.9725877192982456,
+        "ins": 1824,
+        "prefix": 151,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1110",
+      "source_sha256": "8d2a32bd4b70fba985b59585da6ed16653d5951a6f59efec0d0501cffa1ce23b",
+      "observed": {
+        "ratio": 0.9978070175438597,
+        "ins": 1824,
+        "prefix": 384,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1111",
+      "source_sha256": "510547da9edfa9504c9de832f5674f9a9b11965f63c8bf2d005641eeb248c8b3",
+      "observed": {
+        "ratio": 1.0,
+        "ins": 1824,
+        "prefix": 1824,
+        "refs": 393,
+        "problems": 0,
+        "exact": true,
+        "body": true
+      }
+    },
+    {
+      "name": "hud-revert-quest-position-scope",
+      "source_sha256": "01848f3fd9975f2adebc29e6446a053111c46275a6733be9d14d9cfc401d3b49",
+      "observed": {
+        "ratio": 0.9544956140350878,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-revert-heart-ammo-position",
+      "source_sha256": "a1c70a19b57f43f33a5dc943fe9969d936ee994536e5bf1382aa7d7d6990ab89",
+      "observed": {
+        "ratio": 0.8958333333333334,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    }
+  ],
+  "negative_panel_width": {
+    "ratio": 0.9994517543859649,
+    "ins": 1824,
+    "prefix": 80,
+    "refs": 393,
+    "problems": 0,
+    "exact": false,
+    "body": false
+  },
+  "negative_withheld_references": {
+    "ratio": 1.0,
+    "ins": 1824,
+    "prefix": 1824,
+    "refs": 384,
+    "problems": 9,
+    "exact": false,
+    "body": false
+  },
+  "controls_sha256": "ab52b0a9c46a2f69495369f29ba14b73104e1732cf865d498a91440d5edb0f25",
+  "verifier_sha256": "d01d713474650a6697cee47dbf8b67edfdde2bb8d6e6d4b60aa070f4628df05d",
+  "scope": "Native code and reference identity; no new GPU or finite execution claim."
+}

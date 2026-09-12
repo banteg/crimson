@@ -2,6 +2,12 @@
 
 Native target: `crimsonland.exe` at `0x0041aed0` (7,081 bytes).
 
+Current result (2026-09-12): **1,824/1,824 instructions, 7,081/7,081 encoded
+body bytes, and 393/0/0 references**. The ordinary compiler configuration is
+unchanged. See the [exact recovery proof](../../evidence/hud-exact-2026-09-12/README.md).
+
+## Earlier recovery notes
+
 Live Binary Ninja evidence recovers the complete gameplay-facing HUD callback:
 top frame, pulsing player hearts, weapon icons, health and ammo bars, Quest
 clock/progress and stage banners, Rush/Typ-o-Shooter timer, smoothed Survival
@@ -396,3 +402,21 @@ prefix **100**, and **393/0/0 references**. Three float-local groups and the
 HUD/popup row lifetime interact to change stack coloring. The candidate remains
 non-exact; the source identities are hypotheses, not deductions from shared
 native stack offsets. Canonical source and configuration are unchanged.
+
+## Exact HUD recovery (2026-09-12)
+
+The [exact recovery proof](../../evidence/hud-exact-2026-09-12/README.md)
+reproduces **1,824/1,824 instructions, all 7,081 encoded body bytes, prefix
+1,824, and 393/0/0 references**, with no padding difference. Native compiler
+settings, reference aliases, math expressions, call order, and target extent
+are unchanged. The compiler residual declaration is removed.
+
+Heart and ammunition positions have separate lifetimes. The quest progress
+position ends before the banner text; the bonus cursor remains an independent
+float. A shared HUD/popup row and three disjoint float-use groups complete the
+native stack allocation. The proof retains the complete 16-way scalar-reuse
+reversion matrix and two position-scope reversions; only the full scalar
+combination is exact, and both position reversions lose exactness.
+
+The preceding 92.214912% source is pinned as `before.cpp`. The 96.271930% and
+96.929825% investigation candidates were partial steps, not exact credit.

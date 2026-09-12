@@ -1,8 +1,10 @@
 # HUD local-reuse controls
 
-A temporary candidate improves normalized similarity from **92.214912% to
+A historical temporary candidate improves normalized similarity from **92.214912% to
 96.271930%**, retaining **1,824 instructions and 393/0/0 references**. It is
-not normalized or encoded exact. The canonical HUD source remains unchanged.
+not normalized or encoded exact and was not promoted. The later
+[exact HUD recovery](../hud-exact-2026-09-12/README.md) preserves this baseline
+as `before.cpp`.
 
 The saved 16-way matrix crosses three float-local reuse groups with one integer
 row group. Each float group has nonoverlapping lexical use spans:
@@ -26,6 +28,7 @@ possible source lifetime or every temporary experiment.
 
 ```sh
 uv run --no-sync python tools/match/evidence/hud-local-reuse-2026-09-12/verify.py \
+  --baseline tools/match/evidence/hud-exact-2026-09-12/before.cpp \
   --out /private/tmp/hud-local-reuse-proof
 ```
 

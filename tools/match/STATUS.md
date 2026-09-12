@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **801/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **802/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**801/810** functions matched exactly (**98.9%**), **269387/341992** code bytes (**78.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**802/810** functions matched exactly (**99.0%**), **276468/341992** code bytes (**80.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **321927/341992** code bytes (**94.1%**).
+Fuzzy-weighted alignment is **322478/341992** code bytes (**94.3%**).
 
-Remaining exact-match debt is **9 functions**, **72605 code bytes**, and **20065 fuzzy-gap bytes**.
+Remaining exact-match debt is **8 functions**, **65524 code bytes**, and **19514 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**9** non-exact scratch-backed functions hold **20065 fuzzy-gap bytes**. The top 5 hold **88.7%** of that gap; the top 10 hold **100.0%**.
+**8** non-exact scratch-backed functions hold **19514 fuzzy-gap bytes**. The top 5 hold **91.2%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **9 / 20065** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 32 gap bytes**; **7 / 19482** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -44,9 +44,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 4 | crimsonland.exe | creature_update_all | 2401 | semantic-complete | compiler,references | historical-only | 0/25 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 5 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 6 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/44 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 7 | crimsonland.exe | ui_render_hud | 551 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 8 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 9 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/9 | 0 | variant-errors,historical-only |
+| 7 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
+| 8 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/10 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -116,12 +115,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 662/671 | 248222/320827 | 77.4% | 300762/320827 | 93.7% | 671/671 | 320827/320827 | 100.0% | 662/671 |
+| crimsonland.exe | 663/671 | 255303/320827 | 79.6% | 301313/320827 | 93.9% | 671/671 | 320827/320827 | 100.0% | 663/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**662/671** functions (**98.7%**), **248222/320827** bytes (**77.4%**), **300762/320827** fuzzy-weighted bytes (**93.7%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **662/671** scratches verified.
+**663/671** functions (**98.8%**), **255303/320827** bytes (**79.6%**), **301313/320827** fuzzy-weighted bytes (**93.9%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **663/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -367,7 +366,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | bonus_hud_slot_table_global_init | 0x0041a7d0 | 56 | 56/56 | 0 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | bonus-hud-slot-table-global-constructor |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 159/159 | 0 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
 | match | bonus_hud_slot_update_and_render | 0x0041a8b0 | 1566 | 1566/1566 | 0 | 405/405 | 100.00% | 405/405 | 80/0/0 |  | bonus-hud-slot-animation-and-rendering |
-| wip | ui_render_hud | 0x0041aed0 | 7081 | 6530/7081 | 551 | 1824/1824 | 92.21% | 42/1824 | 393/0/0 |  | gameplay-hud-health-ammo-quest-xp-and-bonus-overlay |
+| match | ui_render_hud | 0x0041aed0 | 7081 | 7081/7081 | 0 | 1824/1824 | 100.00% | 1824/1824 | 393/0/0 |  | gameplay-hud-health-ammo-quest-xp-and-bonus-overlay |
 | match | ui_hud_progress_color_destroy | 0x0041ca80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-hud-static-progress-color-destructor |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 531/531 | 0 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
 | match | grim_load_interface | 0x0041dc80 | 83 | 83/83 | 0 | 36/36 | 100.00% | 36/36 | 5/0/0 |  | grim-interface-loader |

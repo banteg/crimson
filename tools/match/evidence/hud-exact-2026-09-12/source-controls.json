@@ -1,0 +1,3692 @@
+{
+  "baseline_commit": "8f3e3d672b3ff21a52652dc7d25aebc8d450399f",
+  "baseline_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "controls": [
+    {
+      "name": "hud-clean-0000",
+      "source_sha256": "8012d9eeae5010a444964b1549b920ff608c10a2117dbb7318386319e1a5b374",
+      "edits": [
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9084429824561403,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0001",
+      "source_sha256": "528021d11cfcfcfdce7daeedf56ce9a21b722e965e8286f6281ec0a4b02d516a",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9073464912280702,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0010",
+      "source_sha256": "e96efe4607bd60022590c4e7931879810d93c4140648035650521ec5120a667e",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_factor;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9073464912280702,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0011",
+      "source_sha256": "f6a9d580fdd33ee753f6d613630231d2608bcd1cba681e720049066351a24f31",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float draw_factor;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.90625,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0100",
+      "source_sha256": "c328eb8401311f1de0006ad485e32320a264a92032ec68480ce677e66f3f902f",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.975328947368421,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0101",
+      "source_sha256": "de596cde0bdead6e0c630d63f219312bf212707dc1dba9295cde087330377e7f",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9775219298245614,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0110",
+      "source_sha256": "c7afbfffd000661e162a7774f6e2d3fcadac3665a65635e5a4eb305d990ce274",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_factor;\n    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9742324561403509,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-0111",
+      "source_sha256": "62b31a21b222c637922e92adeaf3ea3bfa6edf17aea695db1b060b0d39663503",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float draw_factor;\n    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9764254385964912,
+        "ins": 1824,
+        "prefix": 42,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1000",
+      "source_sha256": "b290d4681eb67743fd2b4a5a2b30abf7edd23ad08cef1af68be48a7362d1e722",
+      "edits": [
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.8848684210526315,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1001",
+      "source_sha256": "0516f48378b8ba1ea0f89dd3809780490ccc9ee8064128011ce6204e59e7c7bd",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.8848684210526315,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1010",
+      "source_sha256": "a8a7d79af41cbfa16790fa890d716fd174e8b9030d5c64da9dfb263f9a4dc01c",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_factor;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9292763157894737,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1011",
+      "source_sha256": "45b3437fe4eb65da51ef51857e1925c0109ac9cd982603f6893edf4df0747474",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float draw_factor;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9281798245614035,
+        "ins": 1824,
+        "prefix": 100,
+        "refs": 392,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1100",
+      "source_sha256": "1db43798d4d822c6695c9d1a46b3422be1ecbd5b29dbb52fac11d98a4d2ef015",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9703947368421053,
+        "ins": 1824,
+        "prefix": 151,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1101",
+      "source_sha256": "e285e24bb3efeaeb18e57774d7667cfe6c8db07907420a5a1d6372492e552969",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            float quest_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, quest_clock_alpha);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        float timer_clock_alpha = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, timer_clock_alpha);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9725877192982456,
+        "ins": 1824,
+        "prefix": 151,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1110",
+      "source_sha256": "8d2a32bd4b70fba985b59585da6ed16653d5951a6f59efec0d0501cffa1ce23b",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float draw_factor;\n    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                float multi_pulse_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                multi_pulse_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)multi_pulse_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9978070175438597,
+        "ins": 1824,
+        "prefix": 384,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-clean-1111",
+      "source_sha256": "510547da9edfa9504c9de832f5674f9a9b11965f63c8bf2d005641eeb248c8b3",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float draw_factor;\n    float fade;\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 132,
+          "stop": 133,
+          "old": "                float pulse_value =\n",
+          "new": "                float single_pulse_value =\n"
+        },
+        {
+          "start": 135,
+          "stop": 136,
+          "old": "                    (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;\n",
+          "new": "                    (float)pow((double)single_pulse_value, 4.0) * 4.0f + 14.0f;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 471,
+          "stop": 473,
+          "old": "\n            float banner_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 1.0,
+        "ins": 1824,
+        "prefix": 1824,
+        "refs": 393,
+        "problems": 0,
+        "exact": true,
+        "body": true
+      }
+    },
+    {
+      "name": "hud-revert-quest-position-scope",
+      "source_sha256": "01848f3fd9975f2adebc29e6446a053111c46275a6733be9d14d9cfc401d3b49",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float draw_factor;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "\n"
+        },
+        {
+          "start": 106,
+          "stop": 107,
+          "old": "        hud_render_vec2_t position;\n",
+          "new": ""
+        },
+        {
+          "start": 108,
+          "stop": 108,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 270,
+          "stop": 270,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 458,
+          "old": "",
+          "new": "            hud_render_vec2_t position;\n"
+        },
+        {
+          "start": 472,
+          "stop": 473,
+          "old": "            float banner_fade;\n",
+          "new": "            float fade;\n"
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.9544956140350878,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    },
+    {
+      "name": "hud-revert-heart-ammo-position",
+      "source_sha256": "a1c70a19b57f43f33a5dc943fe9969d936ee994536e5bf1382aa7d7d6990ab89",
+      "edits": [
+        {
+          "start": 83,
+          "stop": 83,
+          "old": "",
+          "new": "    float render_value;\n    float draw_factor;\n"
+        },
+        {
+          "start": 84,
+          "stop": 84,
+          "old": "",
+          "new": "\n"
+        },
+        {
+          "start": 145,
+          "stop": 146,
+          "old": "                float pulse_value =\n",
+          "new": "                render_value =\n"
+        },
+        {
+          "start": 148,
+          "stop": 149,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 160,
+          "stop": 161,
+          "old": "                pulse_value = (float)sin(\n",
+          "new": "                render_value = (float)sin(\n"
+        },
+        {
+          "start": 163,
+          "stop": 164,
+          "old": "                    ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)\n",
+          "new": "                    ((float)pow((double)render_value, 4.0) * 4.0f + 14.0f)\n"
+        },
+        {
+          "start": 231,
+          "stop": 232,
+          "old": "                float fill_alpha = transition_alpha * 0.8f;\n",
+          "new": "                render_value = transition_alpha * 0.8f;\n"
+        },
+        {
+          "start": 254,
+          "stop": 255,
+          "old": "                        1.0f, 1.0f, 1.0f, fill_alpha);\n",
+          "new": "                        1.0f, 1.0f, 1.0f, render_value);\n"
+        },
+        {
+          "start": 394,
+          "stop": 395,
+          "old": "            float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "            draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 396,
+          "stop": 397,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 409,
+          "stop": 410,
+          "old": "                1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "                1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 458,
+          "stop": 470,
+          "old": "            int total_creatures =\n                queued_creatures + creature_spawned_count;\n            position.x = 10.0f;\n            position.y = 139.0f;\n            quest_kill_progress_ratio =\n                (float)(int)highscore_active_record.creature_kill_count\n                / (float)total_creatures;\n            ui_draw_progress_bar(\n                (float *)&position,\n                70.0f,\n                quest_kill_progress_ratio,\n                (float *)&progress_color);\n",
+          "new": "            {\n                hud_render_vec2_t position;\n                int total_creatures =\n                    queued_creatures + creature_spawned_count;\n                position.x = 10.0f;\n                position.y = 139.0f;\n                quest_kill_progress_ratio =\n                    (float)(int)highscore_active_record.creature_kill_count\n                    / (float)total_creatures;\n                ui_draw_progress_bar(\n                    (float *)&position,\n                    70.0f,\n                    quest_kill_progress_ratio,\n                    (float *)&progress_color);\n            }\n"
+        },
+        {
+          "start": 472,
+          "stop": 473,
+          "old": "            float banner_fade;\n",
+          "new": "            float fade;\n"
+        },
+        {
+          "start": 474,
+          "stop": 475,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 477,
+          "stop": 478,
+          "old": "                banner_fade = 1.0f;\n",
+          "new": "                fade = 1.0f;\n"
+        },
+        {
+          "start": 479,
+          "stop": 480,
+          "old": "                banner_fade =\n",
+          "new": "                fade =\n"
+        },
+        {
+          "start": 485,
+          "stop": 486,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 487,
+          "stop": 488,
+          "old": "                banner_fade = 0.0f;\n",
+          "new": "                fade = 0.0f;\n"
+        },
+        {
+          "start": 489,
+          "stop": 491,
+          "old": "            if (banner_fade > 1.0f) {\n                banner_fade = 1.0f;\n",
+          "new": "            if (fade > 1.0f) {\n                fade = 1.0f;\n"
+        },
+        {
+          "start": 493,
+          "stop": 494,
+          "old": "            float banner_alpha = banner_fade * transition_alpha;\n",
+          "new": "            float banner_alpha = fade * transition_alpha;\n"
+        },
+        {
+          "start": 496,
+          "stop": 497,
+          "old": "            if (banner_fade >= 0.0f) {\n",
+          "new": "            if (fade >= 0.0f) {\n"
+        },
+        {
+          "start": 560,
+          "stop": 561,
+          "old": "                float complete_fade;\n",
+          "new": ""
+        },
+        {
+          "start": 562,
+          "stop": 563,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 565,
+          "stop": 566,
+          "old": "                    complete_fade = 1.0f;\n",
+          "new": "                    fade = 1.0f;\n"
+        },
+        {
+          "start": 567,
+          "stop": 568,
+          "old": "                    complete_fade =\n",
+          "new": "                    fade =\n"
+        },
+        {
+          "start": 573,
+          "stop": 574,
+          "old": "                    complete_fade = 0.0f;\n",
+          "new": "                    fade = 0.0f;\n"
+        },
+        {
+          "start": 575,
+          "stop": 579,
+          "old": "                if (complete_fade > 1.0f) {\n                    complete_fade = 1.0f;\n                } else if (complete_fade < 0.0f) {\n                    complete_fade = 0.0f;\n",
+          "new": "                if (fade > 1.0f) {\n                    fade = 1.0f;\n                } else if (fade < 0.0f) {\n                    fade = 0.0f;\n"
+        },
+        {
+          "start": 582,
+          "stop": 583,
+          "old": "                float complete_scale =\n",
+          "new": "                draw_factor =\n"
+        },
+        {
+          "start": 585,
+          "stop": 587,
+          "old": "                complete_scale *= 0.13f;\n                complete_scale += 0.95;\n",
+          "new": "                draw_factor *= 0.13f;\n                draw_factor += 0.95;\n"
+        },
+        {
+          "start": 591,
+          "stop": 592,
+          "old": "                    complete_fade * transition_alpha);\n",
+          "new": "                    fade * transition_alpha);\n"
+        },
+        {
+          "start": 598,
+          "stop": 599,
+          "old": "                        - complete_scale * 128.0f,\n",
+          "new": "                        - draw_factor * 128.0f,\n"
+        },
+        {
+          "start": 600,
+          "stop": 603,
+          "old": "                        - complete_scale * 16.0f,\n                    complete_scale * 256.0f,\n                    complete_scale * 32.0f);\n",
+          "new": "                        - draw_factor * 16.0f,\n                    draw_factor * 256.0f,\n                    draw_factor * 32.0f);\n"
+        },
+        {
+          "start": 610,
+          "stop": 611,
+          "old": "        float clock_alpha = transition_alpha * 0.9f;\n",
+          "new": "        draw_factor = transition_alpha * 0.9f;\n"
+        },
+        {
+          "start": 612,
+          "stop": 613,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 624,
+          "stop": 625,
+          "old": "            1.0f, 1.0f, 1.0f, clock_alpha);\n",
+          "new": "            1.0f, 1.0f, 1.0f, draw_factor);\n"
+        },
+        {
+          "start": 767,
+          "stop": 768,
+          "old": "    int text_y = (int)bonus_y + 1;\n",
+          "new": "    hud_y = (int)bonus_y + 1;\n"
+        },
+        {
+          "start": 803,
+          "stop": 804,
+          "old": "                    (float)((text_y - 6) - 12),\n",
+          "new": "                    (float)((hud_y - 6) - 12),\n"
+        },
+        {
+          "start": 822,
+          "stop": 823,
+          "old": "                    (float)(text_y - 6),\n",
+          "new": "                    (float)(hud_y - 6),\n"
+        },
+        {
+          "start": 832,
+          "stop": 833,
+          "old": "                    (float)text_y,\n",
+          "new": "                    (float)hud_y,\n"
+        },
+        {
+          "start": 838,
+          "stop": 839,
+          "old": "                text_y += 32;\n",
+          "new": "                hud_y += 32;\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.8958333333333334,
+        "ins": 1824,
+        "prefix": 1,
+        "refs": 393,
+        "problems": 0,
+        "exact": false,
+        "body": false
+      }
+    }
+  ]
+}

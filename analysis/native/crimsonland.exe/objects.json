@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "4a4401f2eca46c513005652596a5d00e7f31ab0c6f417e893bef1601a94ea4dc",
+  "audit_digest": "addf83b927dd21b047fd7341784ed92605caa90db85a6bb7019239e11ac4b5e5",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -42788,12 +42788,12 @@
         {
           "path": "tools/match/scratches/ui_render_hud/scratch.cpp",
           "repository_relative": true,
-          "sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5"
+          "sha256": "32bbe80fa55747d431ab5be9b004b157af9f94a5b7b8feea5c6cf80763eab5ca"
         },
         {
           "path": "tools/match/scratches/ui_render_hud/scratch.conf",
           "repository_relative": true,
-          "sha256": "a9d011a5ecc747deaa23bde615a7f8457c36f2c7f5a8184be3f490c445513117"
+          "sha256": "ffa27c2d83aa3109c38c5f6aa9f70016809a716a9c5e320b17fa5bb4360f52ee"
         },
         {
           "path": "tools/match/cl.sh",
@@ -42833,7 +42833,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/ui_render_hud/scratch.conf",
-      "config_sha256": "a9d011a5ecc747deaa23bde615a7f8457c36f2c7f5a8184be3f490c445513117",
+      "config_sha256": "ffa27c2d83aa3109c38c5f6aa9f70016809a716a9c5e320b17fa5bb4360f52ee",
       "effective_end": 4311673,
       "end": 4311673,
       "function": "ui_render_hud",
@@ -42841,16 +42841,16 @@
         {
           "address": 4304592,
           "canonical_config": "tools/match/scratches/ui_render_hud/scratch.conf",
-          "canonical_config_sha256": "a9d011a5ecc747deaa23bde615a7f8457c36f2c7f5a8184be3f490c445513117",
+          "canonical_config_sha256": "ffa27c2d83aa3109c38c5f6aa9f70016809a716a9c5e320b17fa5bb4360f52ee",
           "canonical_scratch": "tools/match/scratches/ui_render_hud",
           "canonical_source": "tools/match/scratches/ui_render_hud/scratch.cpp",
-          "canonical_source_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+          "canonical_source_sha256": "32bbe80fa55747d431ab5be9b004b157af9f94a5b7b8feea5c6cf80763eab5ca",
           "effective_end": 4311673,
           "end": 4311673,
-          "experiment_epoch": "4343b5f1b0acfe733dfd574645739d4557e26772affa76031fabde5c6d39300f",
+          "experiment_epoch": "fda2c08dcde611da9d6751e43b299f4e37aaed921bfd63a08054af6568d1f4bb",
           "function": "ui_render_hud",
           "match": {
-            "body_byte_exact": false,
+            "body_byte_exact": true,
             "candidate_instructions": 1824,
             "masked_mismatches": 0,
             "masked_ok": 393,
@@ -42859,9 +42859,9 @@
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 42,
-            "ratio": 0.9221491228070176,
-            "state": "wip",
+            "prefix_instructions": 1824,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 1824
           },
           "object_function_symbol": "_ui_render_hud",
@@ -42898,7 +42898,7 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 1824,
         "masked_mismatches": 0,
         "masked_ok": 393,
@@ -42907,17 +42907,17 @@
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 42,
-        "ratio": 0.9221491228070176,
-        "state": "wip",
+        "prefix_instructions": 1824,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 1824
       },
       "object": "tools/match/scratches/ui_render_hud/build/msvc6.5/dee0d20d14b5cebb/scratch.obj",
       "object_function_symbol": "_ui_render_hud",
-      "object_sha256": "4d49048a26c746b8a37317707bf1299f21525ec25d815b1594261e14f102b74b",
+      "object_sha256": "75bcfb6a9fb78b86c843d3a0274ae46dec941e1e7c6afa300676613d6afe9c28",
       "scratch": "tools/match/scratches/ui_render_hud",
       "source": "tools/match/scratches/ui_render_hud/scratch.cpp",
-      "source_sha256": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
+      "source_sha256": "32bbe80fa55747d431ab5be9b004b157af9f94a5b7b8feea5c6cf80763eab5ca",
       "target_size": 7081,
       "translation_unit": {
         "config": "tools/native/translation_units/crimsonland.exe.json",
@@ -87509,8 +87509,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 662,
-    "wip": 9
+    "match": 663,
+    "wip": 8
   },
   "translation_units": {
     "cluster_count": 28,
