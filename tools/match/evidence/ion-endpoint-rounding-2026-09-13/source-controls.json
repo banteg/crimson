@@ -1,0 +1,103 @@
+{
+  "baseline_commit": "9e629bbe53128d73fcc72b2ee82d750609d9776f",
+  "baseline_sha256": "a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "reference_aliases": [
+    [
+      "camera_offset",
+      "camera_offset_x"
+    ]
+  ],
+  "controls": [
+    {
+      "name": "before",
+      "source_sha256": "a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31",
+      "edits": []
+    },
+    {
+      "name": "endpoint-reload",
+      "source_sha256": "2fe2084afc11c39589bdafdbfce233c7bc1852ea646c13beb986640d938b69ae",
+      "edits": [
+        {
+          "start": 926,
+          "stop": 928,
+          "old": "                        end.x - half_size,\n                        end.y - half_size,\n",
+          "new": "                        camera_offset_x + creature_pool[creature_index].pos_x\n                            - half_size,\n                        camera_offset_y + creature_pool[creature_index].pos_y\n                            - half_size,\n"
+        }
+      ]
+    },
+    {
+      "name": "endpoint-pointer",
+      "source_sha256": "8ef61ee647b46a5b056d749454fbd2430d8f95f58427062288a54174fe2d3970",
+      "edits": [
+        {
+          "start": 925,
+          "stop": 925,
+          "old": "",
+          "new": "                    const float *endpoint = &creature_pool[creature_index].pos_x;\n"
+        },
+        {
+          "start": 926,
+          "stop": 928,
+          "old": "                        end.x - half_size,\n                        end.y - half_size,\n",
+          "new": "                        camera_offset_x + endpoint[0] - half_size,\n                        camera_offset_y + endpoint[1] - half_size,\n"
+        }
+      ]
+    },
+    {
+      "name": "endpoint-ctor",
+      "source_sha256": "4b77a8dbcbdc48d731e981f946ca111abdcb1db68685339f7984d4cb762f0f14",
+      "edits": [
+        {
+          "start": 925,
+          "stop": 925,
+          "old": "",
+          "new": "                    projectile_render_vec2_t glow_position(\n                        camera_offset_x + creature_pool[creature_index].pos_x - half_size,\n                        camera_offset_y + creature_pool[creature_index].pos_y - half_size);\n"
+        },
+        {
+          "start": 926,
+          "stop": 928,
+          "old": "                        end.x - half_size,\n                        end.y - half_size,\n",
+          "new": "                        glow_position.x,\n                        glow_position.y,\n"
+        }
+      ]
+    },
+    {
+      "name": "repeated",
+      "source_sha256": "af8207bd72f021fff810c19741dbf3070622fbe9bb25be6f9d48bcc7cb95ef4d",
+      "edits": [
+        {
+          "start": 907,
+          "stop": 914,
+          "old": "                    projectile_render_vec2_t widen_result =\n                        arc * effect_scale * 4.0f;\n                    projectile_render_vec2_t widen = widen_result;\n                    strip0 -= widen;\n                    strip1 += widen;\n                    strip2 += widen;\n                    strip3 -= widen;\n",
+          "new": "                    strip0 -= arc * effect_scale * 4.0f;\n                    strip1 += arc * effect_scale * 4.0f;\n                    strip2 += arc * effect_scale * 4.0f;\n                    strip3 -= arc * effect_scale * 4.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "native-order",
+      "source_sha256": "54e51aafcdf7890e01f514988588d3fcda585644051fb15d1f9dc57bceba3d21",
+      "edits": [
+        {
+          "start": 907,
+          "stop": 914,
+          "old": "                    projectile_render_vec2_t widen_result =\n                        arc * effect_scale * 4.0f;\n                    projectile_render_vec2_t widen = widen_result;\n                    strip0 -= widen;\n                    strip1 += widen;\n                    strip2 += widen;\n                    strip3 -= widen;\n",
+          "new": "                    strip2 += arc * effect_scale * 4.0f;\n                    strip3 -= arc * effect_scale * 4.0f;\n                    strip0 -= arc * effect_scale * 4.0f;\n                    strip1 += arc * effect_scale * 4.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "wrong-widen",
+      "source_sha256": "fca696f0247338b042117c92dd956bea3db71e571094439ac08be25215b7e75b",
+      "edits": [
+        {
+          "start": 908,
+          "stop": 909,
+          "old": "                        arc * effect_scale * 4.0f;\n",
+          "new": "                        arc * effect_scale * 3.0f;\n"
+        }
+      ]
+    }
+  ]
+}

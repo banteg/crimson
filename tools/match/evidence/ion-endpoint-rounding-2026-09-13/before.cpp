@@ -924,10 +924,8 @@ extern "C" void projectile_render(float transition_alpha)
                     grim_interface_ptr->grim_set_atlas_frame(4, 2);
                     float half_size = effect_scale * 16.0f;
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + creature_pool[creature_index].pos_x
-                            - half_size,
-                        camera_offset_y + creature_pool[creature_index].pos_y
-                            - half_size,
+                        end.x - half_size,
+                        end.y - half_size,
                         size,
                         size);
                     creature_index = creature_find_in_radius(

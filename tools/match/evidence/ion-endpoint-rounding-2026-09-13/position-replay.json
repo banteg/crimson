@@ -1,0 +1,20 @@
+{
+  "source_sha256": "2fe2084afc11c39589bdafdbfce233c7bc1852ea646c13beb986640d938b69ae",
+  "object_sha256": "7fdd498b44a91ac27266d5178905ea300eba070b2be69db92616d9faef100e97",
+  "body_sha256": "2661c5e088d022e07675b0be1b705ae53c563ff89d3b33b78ccee1cb6ac4b71e",
+  "verifier_sha256": "6f85f552ab00a24e64c0c8504db702bf4d27b3aa9494a18f349070e5800c4d2b",
+  "previous_verifier_sha256": "d6908bd102d8aa696e46a60e5be04e24e71e941fa11afa8ab3b8b9d41a627cff",
+  "previous_receipt_sha256": "78f5a0f124445a463056dbc07f8333fd876b7ace0a853e69dcf30e4d67670649",
+  "fire_proof_sha256": "4d23c95688b50c2c422af1ca035f135011f7fa61bcaca0574ea2f0de370f8c31",
+  "executor_sha256": "929478efa3db26233c39cdd158186831e482263ee1c16a8df0d4ec56ba4aa0f4",
+  "engine_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "fixtures_sha256": "6518201a7219c9ea8dee0a04b3c0373e5824b2961de991c9a45507450aa7c2e0",
+  "fixture_count": 656,
+  "ordered_trace_sha256": "24dd2d8912db9495f75593249653630ab541ba1f42194d488fc1655cfa267a62",
+  "callback_count": 12,
+  "callback_trace_sha256": "5a7506128c74401ef3daa2f89cae7332f85fd51cff3dd6bea7212a68f8df6dbe",
+  "no_reload_source_sha256": "0ce3f3accd765cccae77cabd12b3227e591f66d30d34cdcdd39791b6ccaa659c",
+  "unicorn_version": "2.1.4"
+}

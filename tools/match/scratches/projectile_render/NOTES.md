@@ -1467,3 +1467,33 @@ reference pairings, not independent runtime access fixes. Compiler flags,
 aliases and native extent are unchanged. Recovery remains incomplete.
 Current source SHA-256:
 `a51887e6e550d8b414d5f109e6e046cc7f25b86f024a10eedf4f87a899adcc31`.
+
+## Isolated ion endpoint reload (2026-09-13)
+
+Testing the widened second ion strip across varied geometry exposed no strip
+difference, but found a separate endpoint draw defect. Reusing `end.x/end.y`
+rounds the camera-plus-creature sum before subtracting the half-size. Native
+`0x424f44..0x424f86` reloads those coordinates after the atlas callback and
+keeps each sum wide until subtraction. Only the endpoint draw's two coordinate
+arguments change; the widening expressions and corner updates remain intact.
+
+The [endpoint proof](../../evidence/ion-endpoint-rounding-2026-09-13/README.md)
+passes 524 native cases: 256 random geometries at PC24/PC64 and twelve small
+axis/weapon controls. The previous source fails 69 cases, all PC64 and all
+exclusively at the endpoint. Both strips agree throughout. For Ion Minigun,
+target X `0.8f` and camera X `16`, native submits `0x35500000` and the old
+cached sum produces zero. A wrong-widening control fails every second strip,
+showing the original hypothesis was actually exercised. Seven checked source
+controls preserve the rejected widening and endpoint alternatives.
+
+All 11,854 historical renderer cases, 656 Fire/billboard cases and twelve
+type-reload callback controls still pass. Alignment changes **62.934492% ->
+62.358049%**, instructions **2963 -> 2967** against 3021, and references
+**487/0/6 -> 495/0/7**. The six prior mismatch addresses persist; the added
+pairing at `0x422e22` aligns native camera Y with candidate camera X in the
+unchanged laser code. The 5,040 laser-trig cases pass, including camera
+variation. The base-bound exception records this verified arithmetic fix and
+keeps every reference problem visible. Prefix remains zero, frame remains
+388/412 bytes, both exactness flags remain false, and recovery is incomplete.
+Current source SHA-256:
+`2fe2084afc11c39589bdafdbfce233c7bc1852ea646c13beb986640d938b69ae`.

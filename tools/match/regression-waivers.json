@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "base_commit": "ad9d1b402bc497cf54fbfd6366dc61a5af3cfc43",
+  "base_commit": "9e629bbe53128d73fcc72b2ee82d750609d9776f",
   "waivers": [
     {
       "image": "crimsonland.exe",
       "address": 4336752,
       "check": "mismatches-increased",
-      "reason": "Correct the Sharpshooter near-end cosine and width-sine store boundaries, proven by tools/match/evidence/laser-trig-rounding-2026-09-11/verify.py: 5040 native/candidate fixtures agree, including 2520 independently checked PC24 cases, while the previous source fails 19 cases (9 PC24 and 10 PC64). All 6814 earlier renderer fixtures retain native call and pool hashes. The WIP positional reference audit retains its previous 12 mismatch addresses and adds one pairing at 0x00422e22, where native camera Y aligns with candidate camera X. Changing-camera native execution confirms the actual coordinate arguments. All 13 mismatches remain reported; no aliases, compiler settings, or exactness acceptance are relaxed. This exception applies only against the named base commit."
+      "reason": "Correct only the ion endpoint draw's coordinate reload and rounding boundary, proven by tools/match/evidence/ion-endpoint-rounding-2026-09-13/verify.py: all 524 native/candidate traces agree, including 262 PC24 cases, while the previous source fails 69 PC64 cases exclusively at this endpoint. Both strips agree throughout and widening is unchanged. All 11854 historical renderer cases, 656 Fire/billboard cases and 12 callback controls retain their native evidence. The WIP positional audit retains its six previous mismatch addresses and adds 0x00422e22, pairing native camera Y with candidate camera X in unchanged laser code; all 5040 laser-trig fixtures including varying cameras pass. All seven mismatches remain visible. No aliases, compiler settings, extents or exactness acceptance are relaxed. This exception applies only against the named base commit."
     }
   ]
 }
