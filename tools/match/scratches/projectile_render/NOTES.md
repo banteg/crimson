@@ -1410,3 +1410,32 @@ matrix. They remain diagnostic. The package preserves the witnesses and explicit
 rather than hiding it behind the passing historical fixture matrix.
 Current source SHA-256:
 `48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750`.
+
+## Fire overlay result and copy boundaries (2026-09-13)
+
+The [Fire lifetime proof](../../evidence/fire-overlay-lifetimes-2026-09-13/README.md)
+combines the earlier ten Y witnesses with the aggregate-copy control's three
+X witnesses. The complete `camera_offset + position - 32.0f` vector expression
+and explicit member-copy forms recover both coordinate words. Aggregate copies
+round X too early; scalar draw-argument subtraction leaves Y too wide. Scope
+alone is not the decisive rule.
+
+The complete expression reproduces the 19-instruction, 86-byte native draw
+window at `0x4253eb..0x425441` with explicit cursor/stack substitutions and all
+five reference pairs clean. It retains a separate Y-sum compiler temporary,
+matching native's store/reload sequence. This is a diagnostic window comparison,
+not normalized or encoded whole-function exactness.
+
+Thirty-five reconstructible controls check all 26 combined witnesses. The
+selected expression passes a 608-case matrix with independent float, gate,
+rotation and slot-order oracles, plus all 11,854 historical renderer fixtures.
+The scalar source fails 22 PC64 cases and the aggregate-copy control fails
+three; all PC24 cases agree. Compiler-listing generation independently verifies
+object-function equivalence before reporting aliases.
+
+The expression is not promoted: its whole-body alignment is 53.589958% with
+2,954/3,021 instructions and 419/0/10 references, versus the canonical
+60.726846%, 2,950/3,021 and 479/0/8. The frame remains 388/412 bytes. The new
+controls pin the recovered arithmetic while leaving shared position-object
+lifetimes as the next allocation problem. Canonical source and exact credit
+remain unchanged; the experiment is labeled diagnostic.

@@ -31145,7 +31145,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 254,
-        "candidate_object_sha256": "1fc487f33d6b847ff677614235904dec3604a9d0f5c49ef46287218b4859395f",
+        "candidate_object_sha256": "af96970f1047f0d44ed019881386c54434ba1a747f5a94bfabe02d97684fd2ca",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -31417,7 +31417,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 343,
-        "candidate_object_sha256": "0fcd9cd31a9842b2dd70481b87c73af9297e1d120c47132f3808129ac3249acc",
+        "candidate_object_sha256": "0f7270422498a550e6febb3679d3dcd843d437b3ec4c58852447cb686ae86cc3",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -34001,7 +34001,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 292,
-        "candidate_object_sha256": "08ae2dddbf7c23bef080156ec17497d828e0e0ebdf5e88b6ce49c5197011ca83",
+        "candidate_object_sha256": "19b142c64e8e4aa866c9c180ca455e51a9a2edfc1481f49fdf99665324c435f3",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -34137,7 +34137,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1168,
-        "candidate_object_sha256": "c4add7f594c4d2480767a04fa0de1d2e3a0439102c1f77d140052ab4afdc38f7",
+        "candidate_object_sha256": "cfb2f6fe2e1dac387908a2347f6eaae03189a11de5117c61439a49fde8c014b4",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -36585,7 +36585,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1824,
-        "candidate_object_sha256": "db12a00ae60a3b8cb5a767f0bd3402eb70c1c614d96d838882dca049e34f51a7",
+        "candidate_object_sha256": "4cba8a1ed61fecddf28f36acb9cd096c8e825b1f58d4379f05cba56c750e65d6",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -47261,7 +47261,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 153,
-        "candidate_object_sha256": "2fd233c1e9ab94a3c516622a0cbdf3c9599299e51233b566e191a0e98a441bb6",
+        "candidate_object_sha256": "7dc9ead8de92832280bdd8753f486768499730dab0a0630ae0c16b9a2152df31",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -47465,7 +47465,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 676,
-        "candidate_object_sha256": "7ec851bf8d76cd3843c3d512ccd569a02f884ef125ad91c9e799917087fe465f",
+        "candidate_object_sha256": "f217dcc5f0f4ad2e66d9eafd8f14f0c339e1bb4401f03894c364027afe5b228e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -48179,7 +48179,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 156,
-        "candidate_object_sha256": "aba3d611bb30489760b3299c57de6936381363a9fa650ee81ef1565f651db72f",
+        "candidate_object_sha256": "493c53f6a1371e416b1a969e3b4737fe9128f0a1cecaea39df24789cf277c829",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -48587,7 +48587,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 261,
-        "candidate_object_sha256": "27d2a08aa96cf117aab452691a695bbfe6491a080f9bcca3de062dfead27e8a8",
+        "candidate_object_sha256": "18d29aa7fee1c8d1453b7eab8f586c31d5096d8fb412942d074515fba188c9b0",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -49029,7 +49029,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 508,
-        "candidate_object_sha256": "ec402992fc9da577317773db08c237635190c8e7550828b8e2bb1adf17b6f674",
+        "candidate_object_sha256": "4d7ddb4be453ca6ecb26a4ffa6ea3536234d96738c4a321485a6ec75905ce646",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -50083,7 +50083,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 803,
-        "candidate_object_sha256": "88eeb955186378ac8dca2dc2465f707db7e2c5a082fb929e7477a7750e020d87",
+        "candidate_object_sha256": "ab30511ec8be7f196fc02e3319b314d4009a7d976784de6e0c15234d4428f9d3",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -111129,6 +111129,8 @@
     "tools/match/evidence/creature-state-publication-2026-09-11/recover.py": "667f62f1413569207b97a4fe4db098b035bb81d70f816b33f92b9bc41d42005e",
     "tools/match/evidence/creature-state-publication-2026-09-11/verify.py": "d898f662f82e940266fcfa79e69fbb3e90b9a9a684e658bca4fcb53225156166",
     "tools/match/evidence/diagnostic-alignments-2026-09-11/verify.py": "b4a440c14c3e7307d18e366a69b111b01290e2c84dc437afca4679267a30fd41",
+    "tools/match/evidence/fire-overlay-lifetimes-2026-09-13/before.cpp": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+    "tools/match/evidence/fire-overlay-lifetimes-2026-09-13/verify.py": "4d23c95688b50c2c422af1ca035f135011f7fa61bcaca0574ea2f0de370f8c31",
     "tools/match/evidence/highscore-cursor-2026-09-09/verify.py": "36814310b9c9e5cb62ef267e363f2f584b1689be8673f46ce9f76b9fce4cf09c",
     "tools/match/evidence/hud-exact-2026-09-12/before.cpp": "6838b5e0e2c4989e5af8ba404fcb888b996ed84c611807f90d6814d54bf248a5",
     "tools/match/evidence/hud-exact-2026-09-12/verify.py": "d01d713474650a6697cee47dbf8b67edfdde2bb8d6e6d4b60aa070f4628df05d",

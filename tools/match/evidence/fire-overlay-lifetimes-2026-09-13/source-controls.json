@@ -1,0 +1,1317 @@
+{
+  "baseline_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "reference_aliases": [
+    [
+      "camera_offset",
+      "camera_offset_x"
+    ]
+  ],
+  "controls": [
+    {
+      "name": "arguments/baseline-inner",
+      "source_sha256": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
+      "edits": [],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 479,
+        "problems": 8,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/old-vector-loop",
+      "source_sha256": "664adb1e4c801ce7a734bfb620ae886d4f95526b30b6bb933c712d87fbf1143b",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "refs": 477,
+        "problems": 8,
+        "failed": [
+          10,
+          11,
+          12
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/sum-inner",
+      "source_sha256": "fd73c2c55f12e22680f40237a9c7bc31f5ff3f7f58efb5ef582d7a0ae73aabf4",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 481,
+        "problems": 7,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/sum-loop",
+      "source_sha256": "727376335920a354e514427e6484302f38e19bc59d27a81da58837c3e049af7f",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 481,
+        "problems": 7,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/ctor-inner",
+      "source_sha256": "2cfe22e66870668c7bc2107bb141a5cfc9aafd58995779be75392605d93cccfb",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = projectile_render_vec2_t(camera_offset_x + projectile->pos_x, camera_offset_y + projectile->pos.pos_y);\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 480,
+        "problems": 7,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/ctor-loop",
+      "source_sha256": "6079fcf50bb185250e16bc6494b73808fafa84157b18c757b752a8ba29821ed6",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = projectile_render_vec2_t(camera_offset_x + projectile->pos_x, camera_offset_y + projectile->pos.pos_y);\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 480,
+        "problems": 7,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/compound-inner",
+      "source_sha256": "d4f6273519ca9e92a712fa4ec5a2bf70cb43b1f5a1644e4d6ff28d8121c97669",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos += camera_offset;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5322175732217573,
+        "ins": 2954,
+        "refs": 414,
+        "problems": 10,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/compound-loop",
+      "source_sha256": "16f08d3943eacc878556d7cff00c2011d7f833d04ad9681753f804c4207ef25a",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos += camera_offset;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5322175732217573,
+        "ins": 2954,
+        "refs": 414,
+        "problems": 10,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/reverse-inner",
+      "source_sha256": "8acebd1a31fc911d9c3d2fc35a732bff94ce021f947dc1f04a3a6c377947d3e9",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = *(projectile_render_vec2_t *)&projectile->position + camera_offset;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 481,
+        "problems": 7,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "arguments/reverse-loop",
+      "source_sha256": "b685ca627ce96b8f6b60280eb595f3749c47c89f27836d046b18c04c343590ef",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = *(projectile_render_vec2_t *)&projectile->position + camera_offset;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x - 32.0f,\n                draw_pos.y - 32.0f,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.6072684642438453,
+        "ins": 2950,
+        "refs": 481,
+        "problems": 7,
+        "failed": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "prior/compound",
+      "source_sha256": "b180e5acfb902409f840d304a833a35e066480a43c191be95733d830f8ab7aa3",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "refs": 417,
+        "problems": 11,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "prior/expression",
+      "source_sha256": "3ab4e82791f3719f7e59978bbd0053e4de312637a25a0f7b2341821ec94ab8ec",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "prior/assign",
+      "source_sha256": "0e5df6c6a667f0bf3c4dce54fb534549a1eca5d12ebff371a5aefb064c429e65",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos;\n            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "prior/constructor",
+      "source_sha256": "17c7bdb27e99a0cd4ee4527af51c7ada9756d30323ab88d79c44919aa9886233",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos(camera_offset_x + projectile->pos_x, camera_offset_y + projectile->pos.pos_y);\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5389121338912134,
+        "ins": 2954,
+        "refs": 416,
+        "problems": 11,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "prior/vector-offset",
+      "source_sha256": "b917c573603a5695ed3abc31ace078d3405d073724fc5d1663073e2a4d4eb7d4",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - projectile_render_vec2_t(32.0f, 32.0f);\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/members-inner",
+      "source_sha256": "2e506489f2c2a996c7edadb6518fdf8e14e67a216421f67635b91385b5ee63ea",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t draw_pos;\n            draw_pos.x = screen_result.x;\n            draw_pos.y = screen_result.y;\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/members-loop",
+      "source_sha256": "8ddb527ab41e503904ee36d5a35e437315684c259c97db76761237f55fb6464e",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos.x = screen_result.x;\n            draw_pos.y = screen_result.y;\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/aggregate-inner",
+      "source_sha256": "e0a530988ad052395fabaa918b9630838bc9c86194d08d320888c6e75ab09634",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t draw_pos = screen_result;\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "refs": 477,
+        "problems": 8,
+        "failed": [
+          10,
+          11,
+          12
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/aggregate-loop",
+      "source_sha256": "171769635124bcd765b8cca24e7d6cd1320abc9b83debb874acfd05c119fdac1",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos = screen_result;\n            draw_pos -= 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "refs": 477,
+        "problems": 8,
+        "failed": [
+          10,
+          11,
+          12
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/difference-inner",
+      "source_sha256": "2128a3e10d3210181cda84aee725b9fd3785a282f04f1f0fbdbfae32ea67fcbe",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t draw_pos = screen_result - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/difference-loop",
+      "source_sha256": "81f2e2113bd9cb1c4e0c940e6d03bae4fa586008ca1d92eda2dfe288565aa391",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos = screen_result - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/members-final-inner",
+      "source_sha256": "d82901697d3e5dbcd17b3e9883d823f256c23b935c0387612773b51da2459841",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t draw_pos;\n            draw_pos.x = screen_result.x - 32.0f;\n            draw_pos.y = screen_result.y - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/members-final-loop",
+      "source_sha256": "2658599f3a616260967e54a53382f3eef7a626f23b9c419bc3372fce04328b6d",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos.x = screen_result.x - 32.0f;\n            draw_pos.y = screen_result.y - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5358995815899582,
+        "ins": 2954,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/vector-compound-inner",
+      "source_sha256": "a232c274d091c8798d36e3ca17cf0ff98113db80cb4b71d2f6bfe863e1c4d6c8",
+      "edits": [
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t draw_pos = screen_result;\n            draw_pos -= projectile_render_vec2_t(32.0f, 32.0f);\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "refs": 477,
+        "problems": 8,
+        "failed": [
+          10,
+          11,
+          12
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "copies/vector-compound-loop",
+      "source_sha256": "8868e6c3c77b23e50dbe9991abd3664239441658330a6513eac8a49cf6de1694",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            projectile_render_vec2_t screen_result = camera_offset + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos = screen_result;\n            draw_pos -= projectile_render_vec2_t(32.0f, 32.0f);\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5992308978431701,
+        "ins": 2960,
+        "refs": 477,
+        "problems": 8,
+        "failed": [
+          10,
+          11,
+          12
+        ],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/loop",
+      "source_sha256": "c4eb76a15bc211b3570a15d8138af73727561ded72b47aec511a5a131567cce6",
+      "edits": [
+        {
+          "start": 1037,
+          "stop": 1037,
+          "old": "",
+          "new": "        projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/pass",
+      "source_sha256": "d05eb40b8d6acf6142a4abfd8d2373d0e17297578ca99181c539f2a542addd23",
+      "edits": [
+        {
+          "start": 1033,
+          "stop": 1033,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/000",
+      "source_sha256": "8090d33747eb6f1b6f909cb7cb645a219773740c75d71fe6cb33369b1d160c54",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/001",
+      "source_sha256": "00f81d65286c25aee191f527dee196898d931a1a9ab966933d9d1c56ff88ca00",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1210,
+          "stop": 1211,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1226,
+          "stop": 1227,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1242,
+          "stop": 1243,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/010",
+      "source_sha256": "5c782af6633bf787a38c5a1392bca8bc32cf48c77a2abe81d5ab1127b6ba4335",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1149,
+          "stop": 1150,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1161,
+          "stop": 1162,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1173,
+          "stop": 1174,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.581453634085213,
+        "ins": 2964,
+        "refs": 469,
+        "problems": 8,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/011",
+      "source_sha256": "c0bdf776e5c19479eff7f610651ba8d2b8b0fd36819b9b9e3c6bf357b65fcfac",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1149,
+          "stop": 1150,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1161,
+          "stop": 1162,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1173,
+          "stop": 1174,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1210,
+          "stop": 1211,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1226,
+          "stop": 1227,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1242,
+          "stop": 1243,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.581453634085213,
+        "ins": 2964,
+        "refs": 469,
+        "problems": 8,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/100",
+      "source_sha256": "975b4529392c51ce5b395b10bb9878865013747054137a57e9540c79cd73f420",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1110,
+          "stop": 1111,
+          "old": "                projectile_render_vec2_t draw_pos =\n",
+          "new": "                draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/101",
+      "source_sha256": "d4a80035e82a1506bdbc36510c622df513a96c71c7648b78481997ad5b6b6fde",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1110,
+          "stop": 1111,
+          "old": "                projectile_render_vec2_t draw_pos =\n",
+          "new": "                draw_pos =\n"
+        },
+        {
+          "start": 1210,
+          "stop": 1211,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1226,
+          "stop": 1227,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1242,
+          "stop": 1243,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.5354093420391763,
+        "ins": 2952,
+        "refs": 419,
+        "problems": 10,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/110",
+      "source_sha256": "d7a76b0cfdc29dd8aaba774858adacfc6fde60e615fbc0b770ff2fe1f071a25b",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1110,
+          "stop": 1111,
+          "old": "                projectile_render_vec2_t draw_pos =\n",
+          "new": "                draw_pos =\n"
+        },
+        {
+          "start": 1149,
+          "stop": 1150,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1161,
+          "stop": 1162,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1173,
+          "stop": 1174,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.581453634085213,
+        "ins": 2964,
+        "refs": 469,
+        "problems": 8,
+        "failed": [],
+        "cases": 26
+      }
+    },
+    {
+      "name": "scope/111",
+      "source_sha256": "6f47a805836bc5317968db89283492ac0e1491901a22e3e8c1617fab50db700f",
+      "edits": [
+        {
+          "start": 103,
+          "stop": 103,
+          "old": "",
+          "new": "    projectile_render_vec2_t draw_pos;\n"
+        },
+        {
+          "start": 1043,
+          "stop": 1043,
+          "old": "",
+          "new": "            draw_pos = camera_offset + *(projectile_render_vec2_t *)&projectile->position - 32.0f;\n"
+        },
+        {
+          "start": 1044,
+          "stop": 1046,
+          "old": "                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n",
+          "new": "                draw_pos.x,\n                draw_pos.y,\n"
+        },
+        {
+          "start": 1110,
+          "stop": 1111,
+          "old": "                projectile_render_vec2_t draw_pos =\n",
+          "new": "                draw_pos =\n"
+        },
+        {
+          "start": 1149,
+          "stop": 1150,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1161,
+          "stop": 1162,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1173,
+          "stop": 1174,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1210,
+          "stop": 1211,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1226,
+          "stop": 1227,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        },
+        {
+          "start": 1242,
+          "stop": 1243,
+          "old": "            projectile_render_vec2_t draw_pos =\n",
+          "new": "            draw_pos =\n"
+        }
+      ],
+      "observed": {
+        "ratio": 0.581453634085213,
+        "ins": 2964,
+        "refs": 469,
+        "problems": 8,
+        "failed": [],
+        "cases": 26
+      }
+    }
+  ]
+}
