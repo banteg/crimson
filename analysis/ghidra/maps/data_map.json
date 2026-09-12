@@ -2881,16 +2881,6 @@
       "type": "wchar_t *"
     },
     {
-      "address": "0x0047b67e",
-      "aliases": [
-        "_log2max"
-      ],
-      "comment": "VC6 87tran.obj x87 80-bit _log2max constant. Its ten bytes match the pinned SP6 archive at .data+0x1e and the native fld tword operand in crt_ffexpm1. See tools/match/evidence/crt-ffexpm1-2026-09-12/README.md.",
-      "name": "crt_x87_log2max",
-      "program": "crimsonland.exe",
-      "type": "unsigned char[10]"
-    },
-    {
       "address": "0x0047b6f0",
       "aliases": [
         "___tlsindex"

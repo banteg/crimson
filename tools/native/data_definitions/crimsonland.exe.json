@@ -858,11 +858,6 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each member VA",
       "members": [
         [
-          "0x0047b67e",
-          "crt_x87_log2max",
-          "000000000000ffff0d40"
-        ],
-        [
           "0x0047dcb8",
           "crt_x87_overflow_value",
           "00000000000000801044"
