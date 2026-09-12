@@ -207,25 +207,25 @@ extern "C" void player_render_overlays(void)
             - player_render_vec2_t(
                 player_state_table[render_overlay_player_index].size * 0.5f,
                 player_state_table[render_overlay_player_index].size * 0.5f);
-        float dead_sprite_size =
+        sprite_size =
             player_state_table[render_overlay_player_index].size * 1.03f;
         grim_interface_ptr->grim_draw_quad(
             render_scratch_f0.x + 1.0f,
             render_scratch_f0.y + 1.0f,
-            dead_sprite_size,
-            dead_sprite_size);
+            sprite_size,
+            sprite_size);
         grim_interface_ptr->grim_end_batch();
 
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 6u);
         player_render_set_tint(transition_alpha);
         grim_interface_ptr->grim_begin_batch();
-        dead_sprite_size = player_state_table[render_overlay_player_index].size;
+        sprite_size = player_state_table[render_overlay_player_index].size;
         grim_interface_ptr->grim_draw_quad(
             render_scratch_f0.x,
             render_scratch_f0.y,
-            dead_sprite_size,
-            dead_sprite_size);
+            sprite_size,
+            sprite_size);
         grim_interface_ptr->grim_end_batch();
         return;
     }
@@ -301,7 +301,6 @@ extern "C" void player_render_overlays(void)
         player_state_table[render_overlay_player_index].heading);
     player_render_set_uv(effect_uv8, frame);
 
-    sprite_size = player_state_table[render_overlay_player_index].size;
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
@@ -313,8 +312,8 @@ extern "C" void player_render_overlays(void)
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x,
         render_scratch_f0.y,
-        sprite_size,
-        sprite_size);
+        player_state_table[render_overlay_player_index].size,
+        player_state_table[render_overlay_player_index].size);
 
     player_render_tint_t tint(1.0f, 1.0f, 1.0f, transition_alpha);
     grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a);
@@ -334,8 +333,6 @@ extern "C" void player_render_overlays(void)
     player_render_set_uv(player_overlay_torso_uv8, frame);
     grim_interface_ptr->grim_set_rotation(
         player_state_table[render_overlay_player_index].aim_heading);
-
-    sprite_size = player_state_table[render_overlay_player_index].size;
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
@@ -348,8 +345,8 @@ extern "C" void player_render_overlays(void)
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x,
         render_scratch_f0.y,
-        sprite_size,
-        sprite_size);
+        player_state_table[render_overlay_player_index].size,
+        player_state_table[render_overlay_player_index].size);
     grim_interface_ptr->grim_end_batch();
 
     if (player_state_table[render_overlay_player_index].shield_timer > 0.0f) {
@@ -453,13 +450,13 @@ extern "C" void player_render_overlays(void)
         grim_interface_ptr->grim_set_rotation(
             player_state_table[render_overlay_player_index].aim_heading);
 
+        sprite_size =
+            player_state_table[render_overlay_player_index].size;
         if ((weapon_table[
                  player_state_table[render_overlay_player_index].weapon_id]
                  .flags
              & 4)
             != 0) {
-            sprite_size =
-                player_state_table[render_overlay_player_index].size;
             player_render_vec2_t small_muzzle_size(
                 sprite_size * 0.25f, sprite_size * 0.25f);
             render_scratch_f0 =
@@ -477,8 +474,6 @@ extern "C" void player_render_overlays(void)
                 small_flash_size,
                 small_flash_size);
         } else {
-            sprite_size =
-                player_state_table[render_overlay_player_index].size;
             player_render_vec2_t muzzle_size(
                 sprite_size * 0.5f, sprite_size * 0.5f);
             sprite_size =
@@ -511,8 +506,6 @@ extern "C" void player_render_overlays(void)
              player_index < config_player_count;
             ++player_index, ++line_player) {
             if (line_player->player_reserved_98 > 0.25f) {
-                const vec2f_t &target_position =
-                    creature_pool[line_player->auto_target].position;
                 if (player_render_distance(
                         *(player_render_vec2_t *)&line_player->position,
                         *(player_render_vec2_t *)&creature_pool
@@ -520,9 +513,11 @@ extern "C" void player_render_overlays(void)
                                 .position)
                     <= 80.0f) {
                     render_delta.x =
-                        target_position.x - line_player->pos_x;
+                        creature_pool[line_player->auto_target].pos_x
+                        - line_player->pos_x;
                     render_delta.y =
-                        target_position.y - line_player->pos_y;
+                        creature_pool[line_player->auto_target].pos_y
+                        - line_player->pos_y;
                     player_render_vec2_t normalized = render_delta;
                     float distance = (float)sqrt(
                         render_delta.y * render_delta.y

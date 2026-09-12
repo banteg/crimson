@@ -1,0 +1,42 @@
+--- target
++++ candidate
+@@ -782,11 +782,11 @@
+ fld dword [ADDR]
+ fmul dword [ADDR]
+ fsin
+-mov ecx, dword [ADDR]
+-push ecx
+-mov eax, dword [ecx]
+-fmul dword [ADDR]
+-fadd dword [ADDR]
++fmul dword [ADDR]
++fadd dword [ADDR]
++mov ecx, dword [ADDR]
++push ecx
++mov eax, dword [ecx]
+ fstp dword [esp+0x18]
+ fld dword [ADDR]
+ fmul dword [ADDR]
+@@ -1062,14 +1062,14 @@
+ lea ecx, dword [esp+0x34]
+ mov dword [esp+0x34], edx
+ lea edx, dword [esp+0x34]
+-fstp dword [esp+0x30]
+-fld dword [esp+0x30]
+-fmul dword [esp+0x30]
+-fld dword [esp+0x2c]
+-fmul dword [esp+0x2c]
+-mov eax, dword [esp+0x30]
+-push ecx
+-push edx
++push ecx
++push edx
++fstp dword [esp+0x38]
++fld dword [esp+0x38]
++fmul dword [esp+0x38]
++fld dword [esp+0x34]
++fmul dword [esp+0x34]
++mov eax, dword [esp+0x38]
+ mov dword [esp+0x40], eax
+ faddp st(1)
+ fsqrt

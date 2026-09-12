@@ -3,6 +3,31 @@
 Native target: `crimsonland.exe` at `0x00428390` (4,582-byte manifest extent,
 1,148 instructions in the current Binary Ninja analysis).
 
+## Current recovery (2026-09-12)
+
+The [size and target-position ownership proof](../../evidence/overlay-render-owners-2026-09-12/README.md)
+raises alignment from **97.431432% to 99.303136%**, restores instruction parity
+at **1,148/1,148**, grows the exact prefix from 9 to **784**, and increases
+clean references from 333 to **338**. Both exactness flags remain false; the
+remaining fuzzy gap is **31.930314 bytes**.
+
+The dead-player size is branch-local; living shadow/body/muzzle dimensions
+share their existing scalar. Each muzzle arm loads its input size, and target
+trail displacement reads use the existing position member by reference.
+The combined changes restore all four remaining body-size stack homes, muzzle
+load scheduling, and native's scaled target-coordinate addressing.
+
+All 851 native/before/current execution fixtures agree, and all 202 paired
+stack accesses now use their native homes, with zero displaced accesses.
+The proof includes 78 reconstructible owner controls and a complete 15-case
+reversion sweep recorded in `experiments.jsonl`. The two remaining differences
+are shield-radius/rotation scheduling and trail-length/normalization argument
+scheduling. No compiler flag, matching rule, alias or gameplay-source changes
+are retained. Source SHA-256:
+`322be4d21391ba19a4ad893e033f2d08238e6393acdafaac2e96b64dc8632172`.
+
+## Earlier reconstruction history
+
 This scratch is an evidence-led reconstruction of the complete per-player
 render callback. It retains the early suppression and transition/state gates,
 Radioactive aura, dead and alive trooper sprite passes, multiplayer tints,
