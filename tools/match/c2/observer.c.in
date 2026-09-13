@@ -1,0 +1,90 @@
+#include <windows.h>
+#include "replay_settings.h"
+
+typedef int (__stdcall *invoke_t)(int, char **, void *);
+typedef BOOL (__stdcall *protect_t)(LPVOID, DWORD, DWORD, PDWORD);
+static HANDLE trace_file;
+static unsigned long targets[HOOK_COUNT], returns[HOOK_COUNT], active[HOOK_COUNT], saved_function;
+/* GENERATED_PROFILE */
+
+static void write_block(void *data, unsigned long size)
+{
+    DWORD written;
+    if (!WriteFile(trace_file, data, size, &written, 0) || written != size)
+        ExitProcess(99);
+}
+
+
+/* Capture the seven common operand words and every operand-chain element.
+   Raw flags are retained without assigning undocumented meanings. */
+static void __cdecl observe(unsigned long phase, unsigned long *registers)
+{
+    unsigned long *function;
+    unsigned long first, node, count = 0, record[742], op, side, j, k, at;
+    if (phase < 12) saved_function = registers[6];
+    function = (unsigned long *)saved_function;
+    first = *(unsigned long *)(*(unsigned long *)function[2] + 0x1c);
+    node = first;
+    while (node && count < 4096) { ++count; node = *(unsigned long *)node; }
+    if (node) ExitProcess(97);
+    write_block(&phase, 4);
+    write_block(&saved_function, 4);
+    write_block(&count, 4);
+    for (node = first; node; node = *(unsigned long *)node) {
+        for (j=0;j<742;++j) record[j]=0;
+        record[0]=node; record[1]=*(unsigned long *)(node+4);
+        record[2]=*(unsigned short *)(node+0x10); record[3]=*(unsigned long *)(node+8);
+        if (*(unsigned char *)(node+9)&1) {
+            for (side=0;side<2;++side) {
+                op=*(unsigned long *)(node+0x18+side*4);
+                at=4+side*369;
+                for (k=0;op && k<16;++k) {
+                    for (j=0;j<7;++j) record[at+1+k*23+j]=*(unsigned long *)(op+j*4);
+                    if (*(unsigned char *)(op+8)==1) {
+                        unsigned long temp=*(unsigned long *)(op+0x18), q;
+                        if (temp) for(q=0;q<16;++q) record[at+1+k*23+7+q]=*(unsigned long *)(temp+q*4);
+                    }
+                    op=*(unsigned long *)op;
+                }
+                if(op) ExitProcess(98);
+                record[at]=k;
+            }
+        }
+        write_block(record,sizeof(record));
+    }
+}
+/* GENERATED_HOOKS */
+void __stdcall start(void)
+{
+    HMODULE module;
+    invoke_t invoke;
+    protect_t protect;
+    unsigned char *base, *site;
+    unsigned long i;
+    DWORD old;
+    int result;
+    unsigned long header[3];
+    if (!LoadLibraryA(pdb_path)) ExitProcess(90);
+    module = LoadLibraryA(backend_path);
+    if (!module) ExitProcess(91);
+    invoke = (invoke_t)GetProcAddress(module, "_InvokeCompilerPass@12");
+    if (!invoke) ExitProcess(92);
+    base = (unsigned char *)invoke - INVOKE_RVA;
+    protect = (protect_t)GetProcAddress(LoadLibraryA("kernel32.dll"), "VirtualProtect");
+    if (!protect) ExitProcess(93);
+    trace_file = CreateFileA("phases.bin", GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
+    if (trace_file == INVALID_HANDLE_VALUE) ExitProcess(94);
+    header[0]=0x43325431; header[1]=1; header[2]=(unsigned long)base;
+    write_block(header,sizeof(header));
+    for (i = 0; i < HOOK_COUNT; ++i) {
+        site = base + sites[i];
+        targets[i] = (unsigned long)base + offsets[i];
+        if (site[0] != 0xe8 || (unsigned long)(site + 5) + *(long *)(site + 1) != targets[i])
+            ExitProcess(95);
+        if (!protect(site, 5, PAGE_EXECUTE_READWRITE, &old)) ExitProcess(96);
+        *(long *)(site + 1) = (long)hooks[i] - (long)site - 5;
+    }
+    result = invoke(sizeof(arguments) / sizeof(arguments[0]), arguments, 0);
+    CloseHandle(trace_file);
+    ExitProcess(result);
+}

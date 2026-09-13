@@ -2750,3 +2750,57 @@ def cmd_match_audit(
         for scratch, entry in rows:
             _echo_audit_entry(entry, prefix=f"{scratch.config.image}:{scratch.config.function}: ")
         typer.echo(f"entries={len(rows)}")
+
+
+@match_app.command("c2-trace")
+def cmd_c2_trace(
+    scratch: Path = typer.Argument(..., help="Scratch directory using the pinned msvc6.5 compiler"),
+    out: Path = typer.Option(..., "--out", help="New short ASCII output directory"),
+) -> None:
+    """Capture, replay and observe C2 with whole-object preservation controls."""
+    from .. import match_c2
+
+    try:
+        result = match_c2.trace(scratch, out)
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
+        typer.echo(f"C2 trace failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(f"{result['events']} events; whole COFF preserved; missing-stream control rejected; {out}")
+
+
+@match_app.command("c2-inspect")
+def cmd_c2_inspect(
+    trace: Path = typer.Argument(..., help="Verified c2-trace output directory"),
+    line: int | None = typer.Option(
+        None, "--line", min=1, help="Source line whose nodes and current temporary users to select",
+    ),
+    out: Path = typer.Option(..., "--out", help="Inspection JSON output"),
+) -> None:
+    """Inspect operands and temporary descriptors at each compiler event."""
+    from .. import match_c2
+
+    try:
+        rows = match_c2.summarize(match_c2.read_verified(trace), line)
+        out.write_text(json.dumps(rows, indent=2) + "\n")
+    except (OSError, ValueError, KeyError) as exc:
+        typer.echo(f"C2 inspection failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(f"{len(rows)} events; event-local identities only; {out}")
+
+
+@match_app.command("c2-compare")
+def cmd_c2_compare(
+    left: Path = typer.Argument(...),
+    right: Path = typer.Argument(...),
+    out: Path = typer.Option(..., "--out", help="Diagnostic shape comparison JSON output"),
+) -> None:
+    """Locate the first observed IR shape difference between verified traces."""
+    from .. import match_c2
+
+    try:
+        result = match_c2.compare(match_c2.read_verified(left), match_c2.read_verified(right))
+        out.write_text(json.dumps(result, indent=2) + "\n")
+    except (OSError, ValueError, KeyError) as exc:
+        typer.echo(f"C2 comparison failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(f"first shape difference: {result['first_shape_difference']}; {out}")

@@ -1349,3 +1349,15 @@ uv run crimson match audit --exact-only --status all --json
 Use `--all-scores` when investigating references inside partially matching
 functions. `crimson match diff` and `crimson match scratch` exit nonzero for
 either an instruction mismatch or masked-reference debt.
+
+## Reusable C2 tracing
+
+Use `crimson match c2-trace <scratch-directory> --out <new-short-path>` for
+preserving frontend capture, standalone replay, and internal C2 observations.
+`c2-inspect` selects a source line and its current temporary users;
+`c2-compare` locates differences between observed signatures. See the
+[C2 tracing guide](c2/README.md) for the pinned profile, verification controls,
+and limits. These commands are diagnostic and do not change matching credit.
+
+The bounded [Rebrew comparison](evidence/rebrew-comparison-2026-09-13/README.md)
+records whether its near-match classifier adds useful information to this workflow.

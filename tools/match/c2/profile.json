@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "name": "msvc6.5-c2-d50100ac",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "invoke_rva": 357444,
+  "hooks": [
+    {
+      "site": 360942,
+      "target": 78027,
+      "return": false
+    },
+    {
+      "site": 360956,
+      "target": 64730,
+      "return": false
+    },
+    {
+      "site": 361033,
+      "target": 164301,
+      "return": false
+    },
+    {
+      "site": 361185,
+      "target": 168719,
+      "return": false
+    },
+    {
+      "site": 361232,
+      "target": 169233,
+      "return": false
+    },
+    {
+      "site": 361246,
+      "target": 169694,
+      "return": false
+    },
+    {
+      "site": 361356,
+      "target": 159093,
+      "return": false
+    },
+    {
+      "site": 361375,
+      "target": 194812,
+      "return": false
+    },
+    {
+      "site": 195504,
+      "target": 197384,
+      "return": false
+    },
+    {
+      "site": 195517,
+      "target": 198337,
+      "return": false
+    },
+    {
+      "site": 195524,
+      "target": 199232,
+      "return": false
+    },
+    {
+      "site": 361413,
+      "target": 210676,
+      "return": false
+    },
+    {
+      "site": 195555,
+      "target": 196338,
+      "return": true
+    },
+    {
+      "site": 195564,
+      "target": 194812,
+      "return": true
+    },
+    {
+      "site": 195571,
+      "target": 199313,
+      "return": true
+    },
+    {
+      "site": 195614,
+      "target": 199351,
+      "return": true
+    },
+    {
+      "site": 195632,
+      "target": 150309,
+      "return": true
+    },
+    {
+      "site": 195649,
+      "target": 154434,
+      "return": true
+    },
+    {
+      "site": 195693,
+      "target": 210281,
+      "return": true
+    },
+    {
+      "site": 195767,
+      "target": 231667,
+      "return": true
+    },
+    {
+      "site": 196173,
+      "target": 205334,
+      "return": true
+    },
+    {
+      "site": 196191,
+      "target": 208764,
+      "return": true
+    },
+    {
+      "site": 196211,
+      "target": 209456,
+      "return": true
+    },
+    {
+      "site": 196309,
+      "target": 204065,
+      "return": true
+    },
+    {
+      "site": 196328,
+      "target": 405322,
+      "return": true
+    },
+    {
+      "site": 195901,
+      "target": 132310,
+      "return": true
+    },
+    {
+      "site": 195938,
+      "target": 150309,
+      "return": true
+    },
+    {
+      "site": 195972,
+      "target": 136591,
+      "return": true
+    },
+    {
+      "site": 196039,
+      "target": 204801,
+      "return": true
+    }
+  ]
+}

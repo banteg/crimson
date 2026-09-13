@@ -1,0 +1,839 @@
+{
+  "kind": "c2-generalization-validation",
+  "runs": {
+    "timeline": {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "quest_spawn_timeline_update",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/c2-validation-final/timeline/source/scratch.cpp",
+            "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9"
+          ],
+          [
+            "/private/tmp/c2-validation-final/timeline/source/scratch.conf",
+            "309f46e5f59c2639925d502620a95cb067b7f5d73065c99f34084f8c49e3f7cb"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ],
+          [
+            "include/crimsonland_terrain_owner.h",
+            "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "87fee363b0575d8157e178be67790d3058c47a997156e3099c39236278f5c06d",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "d049064c90ddc8e14554aa5ff0b081e595c5b4a888c665d8d559690d74bb17e7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "75837f1ed136a3fd9082740c9beb1ae4ebcf14e9b89726c57f8d53c02ae60b6f",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "39e2c4696c9d2e8578927ba0581a713e8f438eeda729fc73130ab3a039e0a9e6",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "baace62ef7ccccf34bbc88bc257bae8ce1c140692d13cd08fbbf343144932930",
+        "gl": "a0b3f648be71dea242bb838bcd6776c21631e1663eab6756db42a40d6cc8bacd"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "metrics": {
+        "ratio": 0.9122807017543859,
+        "target_instructions": 115,
+        "candidate_instructions": 113,
+        "prefix_instructions": 51,
+        "references_ok": 13,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "events": 116,
+      "object_paths": [
+        "source/build/msvc6.5/8c80fb59cf21a5c8/scratch.obj",
+        "captured-source/build/msvc6.5/fa172f7b6fcadd36/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+      "trace_sha256": "a8afa02dc67e41c5cec5f35b4f93fa1a039124bd8c27b688684668fe43bcdb1e",
+      "snapshots_sha256": "5629d4144d8e8a060a7a97a83b539096a0cc9c6fa30a412a106cf935c8308e13"
+    },
+    "repeat": {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "quest_spawn_timeline_update",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/c2-validation-final/repeat/source/scratch.cpp",
+            "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9"
+          ],
+          [
+            "/private/tmp/c2-validation-final/repeat/source/scratch.conf",
+            "309f46e5f59c2639925d502620a95cb067b7f5d73065c99f34084f8c49e3f7cb"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ],
+          [
+            "include/crimsonland_terrain_owner.h",
+            "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "87fee363b0575d8157e178be67790d3058c47a997156e3099c39236278f5c06d",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "d049064c90ddc8e14554aa5ff0b081e595c5b4a888c665d8d559690d74bb17e7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "75837f1ed136a3fd9082740c9beb1ae4ebcf14e9b89726c57f8d53c02ae60b6f",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "39e2c4696c9d2e8578927ba0581a713e8f438eeda729fc73130ab3a039e0a9e6",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "baace62ef7ccccf34bbc88bc257bae8ce1c140692d13cd08fbbf343144932930",
+        "gl": "a0b3f648be71dea242bb838bcd6776c21631e1663eab6756db42a40d6cc8bacd"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "metrics": {
+        "ratio": 0.9122807017543859,
+        "target_instructions": 115,
+        "candidate_instructions": 113,
+        "prefix_instructions": 51,
+        "references_ok": 13,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "events": 116,
+      "object_paths": [
+        "source/build/msvc6.5/8c80fb59cf21a5c8/scratch.obj",
+        "captured-source/build/msvc6.5/9cc065e027212668/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+      "trace_sha256": "16a711bafe4e2d6304618fee83d9e307bdf838f5bd7c89dfb0a4f46e2ae68c71",
+      "snapshots_sha256": "be4a2086339c0b281286386133291c3ed4a83eda3401241e801638e733076e86"
+    },
+    "c-exact": {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "plaguebearer_spread_infection",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "2a9b3298ae44614f909381f0183f7e5f0a1640efaef95435e0756c458fb19e6f",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/c2-validation-final/c-exact/source/scratch.cpp",
+            "2a9b3298ae44614f909381f0183f7e5f0a1640efaef95435e0756c458fb19e6f"
+          ],
+          [
+            "/private/tmp/c2-validation-final/c-exact/source/scratch.conf",
+            "96051cf8fc430fbc12516741d9ce2fd0acf197ededc18cdcaf8dda3527d00c9b"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "87fee363b0575d8157e178be67790d3058c47a997156e3099c39236278f5c06d",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "d049064c90ddc8e14554aa5ff0b081e595c5b4a888c665d8d559690d74bb17e7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "75837f1ed136a3fd9082740c9beb1ae4ebcf14e9b89726c57f8d53c02ae60b6f",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "2ec8e09e65890b2d40a9772c8ebff2c25204b8147bd56a8f0e5dee542cd9b9b4",
+        "in": "677a32688e8526719a98f3893959006f95046a37d1f394e24e0f5b93a11bad1c",
+        "sy": "cfde85390d155a35ac4cbabc85c576852de5437659389fb87cb3b1d57986bb14",
+        "gl": "efb12e54aa22d78d1cdc00ee78b68fcc564e270ddba4d624471bfc439ebcb8df"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "ce13441f4755b8c7f7138cb86b0837bd478f28c841e86694017413d51f421095",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "metrics": {
+        "ratio": 1.0,
+        "target_instructions": 64,
+        "candidate_instructions": 64,
+        "prefix_instructions": 64,
+        "references_ok": 14,
+        "reference_problems": 0,
+        "exact": true,
+        "body_byte_exact": true
+      },
+      "events": 74,
+      "object_paths": [
+        "source/build/msvc6.5/d26234c789177f85/scratch.obj",
+        "captured-source/build/msvc6.5/c44add4d7e583fdb/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+      "trace_sha256": "47718c51deb69cbba97bfb1a4a27b64c7a61632e9e045eb227dd8a27ae0e8b7a",
+      "snapshots_sha256": "9a7e5dcaa15609ae5b103e89826cefabfee8d3323117ead9922ac081636b40aa"
+    },
+    "cpp-exact": {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "statistics_update_check_worker",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "beef8b390caf3f9bbc41ff5eb68a4101d397a3a5b68701f21362b47e2eacc7c1",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/c2-validation-final/cpp-exact/source/scratch.cpp",
+            "beef8b390caf3f9bbc41ff5eb68a4101d397a3a5b68701f21362b47e2eacc7c1"
+          ],
+          [
+            "/private/tmp/c2-validation-final/cpp-exact/source/scratch.conf",
+            "ddde30b9964eee584c3332fe326eded9ed61803f6fc8ce8833d638beeb8fd461"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "87fee363b0575d8157e178be67790d3058c47a997156e3099c39236278f5c06d",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "d049064c90ddc8e14554aa5ff0b081e595c5b4a888c665d8d559690d74bb17e7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "75837f1ed136a3fd9082740c9beb1ae4ebcf14e9b89726c57f8d53c02ae60b6f",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "7ca2731fabb34b654150a51f7a32673baf267ad811d8f95e07176f481d3f98c9",
+        "in": "9969ed8e1a6d5f3b69712621680fa4ffff3d1040ee33b28a2076544703409c01",
+        "sy": "b90780998631a981ea2f00b8675023527c651fd0320256307eba5e6a436b6d9e",
+        "gl": "f9ec097123537a34c1d0d5b3654fb3bdcb0157d39629b129adcdcaa7460abd81"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "b94aeb854125eb00afed7d7a9425a5e2d45f677f3c5dddfe9aff9b0cb2c63f65",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "metrics": {
+        "ratio": 1.0,
+        "target_instructions": 367,
+        "candidate_instructions": 367,
+        "prefix_instructions": 367,
+        "references_ok": 120,
+        "reference_problems": 0,
+        "exact": true,
+        "body_byte_exact": true
+      },
+      "events": 296,
+      "object_paths": [
+        "source/build/msvc6.5/7b103e09a3170e6e/scratch.obj",
+        "captured-source/build/msvc6.5/3ec130a9a51bbb25/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+      "trace_sha256": "bc59d38b4d0894a32b7044000d5f29f440a9d4b3c85aa7a9d07ca3d0175646cc",
+      "snapshots_sha256": "f55583a9c7140862b997e33419a050bee172aaac71b8bec1842d4056c0e9ee0a"
+    },
+    "multi-function": {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "plaguebearer_spread_infection",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "e7b9e83966ced046d185997f7b345f646efc7aa9be32ed51b9ac8b72d4468ff4",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/c2-validation-final/multi-function/source/scratch.cpp",
+            "e7b9e83966ced046d185997f7b345f646efc7aa9be32ed51b9ac8b72d4468ff4"
+          ],
+          [
+            "/private/tmp/c2-validation-final/multi-function/source/scratch.conf",
+            "96051cf8fc430fbc12516741d9ce2fd0acf197ededc18cdcaf8dda3527d00c9b"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "87fee363b0575d8157e178be67790d3058c47a997156e3099c39236278f5c06d",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "d049064c90ddc8e14554aa5ff0b081e595c5b4a888c665d8d559690d74bb17e7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "75837f1ed136a3fd9082740c9beb1ae4ebcf14e9b89726c57f8d53c02ae60b6f",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "6ebc807357ed7e3dac4c3c5f080cda9ffef05bba5640f0d3e3791cbdc17f657c",
+        "in": "66f283dac712050c11d64b599e639a614a8f162820616a00076dc6887811e45a",
+        "sy": "f45cac81f5a8772010a5d5ea51ece2c400148a6ead2856fe7cc1d98405dac4bf",
+        "gl": "32b6ecf4eb260617909cde5289e7dbd8fb217035c6c0847b382635d773396a0e"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "5a561ddd892a1c5cf2020decd89f1e53b07e9428533c7813f2cd23081488f783",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "metrics": {
+        "ratio": 1.0,
+        "target_instructions": 64,
+        "candidate_instructions": 64,
+        "prefix_instructions": 64,
+        "references_ok": 14,
+        "reference_problems": 0,
+        "exact": true,
+        "body_byte_exact": true
+      },
+      "events": 102,
+      "object_paths": [
+        "source/build/msvc6.5/d26234c789177f85/scratch.obj",
+        "captured-source/build/msvc6.5/5f785450de6243e6/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+      "trace_sha256": "286437c12d3f6880c09e569832df391fef80144787ea0523e6a7e8de0f33f339",
+      "snapshots_sha256": "981ff7f8d4cc093ea75cc80a0cb070a36948a277d552f1f515d31ad2f6a85cc8"
+    },
+    "relative-heading": {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "quest_spawn_timeline_update",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "225c0b89bb3d5039daa644a089811014ac3ee946d7e3ed544ddc658970ca0152",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/c2-validation-final/relative-heading/source/scratch.cpp",
+            "225c0b89bb3d5039daa644a089811014ac3ee946d7e3ed544ddc658970ca0152"
+          ],
+          [
+            "/private/tmp/c2-validation-final/relative-heading/source/scratch.conf",
+            "309f46e5f59c2639925d502620a95cb067b7f5d73065c99f34084f8c49e3f7cb"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ],
+          [
+            "include/crimsonland_terrain_owner.h",
+            "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "87fee363b0575d8157e178be67790d3058c47a997156e3099c39236278f5c06d",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "d049064c90ddc8e14554aa5ff0b081e595c5b4a888c665d8d559690d74bb17e7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "75837f1ed136a3fd9082740c9beb1ae4ebcf14e9b89726c57f8d53c02ae60b6f",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "7f714aea37a7f2a9b687a62b5236ef1af39f2f0286e715ec157e1c17c5e3caa5",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "1feb2d9eff1783b87b186b74bf358fabc1ba868f6c1cd0701c703f81bbbdce8a",
+        "gl": "58b3e3463b81b3ecde66553f367f492497f7f9954fa9f842771e484650b25b90"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "metrics": {
+        "ratio": 0.9122807017543859,
+        "target_instructions": 115,
+        "candidate_instructions": 113,
+        "prefix_instructions": 51,
+        "references_ok": 13,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "events": 116,
+      "object_paths": [
+        "source/build/msvc6.5/8c80fb59cf21a5c8/scratch.obj",
+        "captured-source/build/msvc6.5/5ed0bd5d3865c4f4/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+      "trace_sha256": "b16a3968c643bf99abeeec2b35fc57dc98c6bd39d87fcfeb72c9667f0efcbc85",
+      "snapshots_sha256": "6a4680e96d4413eaf7c33141e9e38d16c3b4a20127dd5da2590f46375c2db913"
+    }
+  },
+  "repeat_comparison": {
+    "kind": "c2-shape-comparison",
+    "first_shape_difference": null,
+    "differences": [],
+    "limitations": "Pairs function ordinals and hook occurrences. Compares opcode, line, flags, operand kinds, kind-7 payloads, event-local temporary relationships and selected descriptor fields (+04,+0c,+10,+24,+3c) only at the allocation callsites (hook indices 12+). Other operands remain opaque. Equal signatures do not establish semantic equivalence; descriptor field meanings are phase-dependent. Arena IDs may be recycled even within one trace."
+  },
+  "variant_comparison": {
+    "kind": "c2-shape-comparison",
+    "first_shape_difference": {
+      "function_ordinal": 0,
+      "phase": 0,
+      "occurrence": 0,
+      "left_event": 0,
+      "right_event": 0,
+      "left_nodes": 154,
+      "right_nodes": 154
+    },
+    "differences": [
+      {
+        "function_ordinal": 0,
+        "phase": 0,
+        "occurrence": 0,
+        "left_event": 0,
+        "right_event": 0,
+        "left_nodes": 154,
+        "right_nodes": 154
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 1,
+        "occurrence": 0,
+        "left_event": 1,
+        "right_event": 1,
+        "left_nodes": 147,
+        "right_nodes": 147
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 2,
+        "occurrence": 0,
+        "left_event": 2,
+        "right_event": 2,
+        "left_nodes": 146,
+        "right_nodes": 146
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 3,
+        "occurrence": 0,
+        "left_event": 3,
+        "right_event": 3,
+        "left_nodes": 155,
+        "right_nodes": 155
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 4,
+        "occurrence": 0,
+        "left_event": 4,
+        "right_event": 4,
+        "left_nodes": 140,
+        "right_nodes": 140
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 5,
+        "occurrence": 0,
+        "left_event": 5,
+        "right_event": 5,
+        "left_nodes": 158,
+        "right_nodes": 158
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 6,
+        "occurrence": 0,
+        "left_event": 6,
+        "right_event": 6,
+        "left_nodes": 153,
+        "right_nodes": 153
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 7,
+        "occurrence": 0,
+        "left_event": 7,
+        "right_event": 7,
+        "left_nodes": 172,
+        "right_nodes": 172
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 8,
+        "occurrence": 0,
+        "left_event": 8,
+        "right_event": 8,
+        "left_nodes": 172,
+        "right_nodes": 172
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 9,
+        "occurrence": 0,
+        "left_event": 9,
+        "right_event": 9,
+        "left_nodes": 170,
+        "right_nodes": 169
+      }
+    ],
+    "limitations": "Pairs function ordinals and hook occurrences. Compares opcode, line, flags, operand kinds, kind-7 payloads, event-local temporary relationships and selected descriptor fields (+04,+0c,+10,+24,+3c) only at the allocation callsites (hook indices 12+). Other operands remain opaque. Equal signatures do not establish semantic equivalence; descriptor field meanings are phase-dependent. Arena IDs may be recycled even within one trace."
+  },
+  "bad_hook_rejected": true,
+  "functions_observed": {
+    "timeline": 1,
+    "repeat": 1,
+    "c-exact": 1,
+    "cpp-exact": 1,
+    "multi-function": 2,
+    "relative-heading": 1
+  },
+  "new_source_matches": 0,
+  "verification_script_sha256": "904322c6f231ca39492fec2c3450e102db076f8cdc82f74fa753ffd1279c721b"
+}

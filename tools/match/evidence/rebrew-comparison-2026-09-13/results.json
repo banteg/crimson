@@ -1,0 +1,5763 @@
+{
+  "rebrew_commit": "e3eeaf452c319bbf26db87009d339e146e6c1f86",
+  "interface": "rebrew.near_diag.analyze; no relocation masking; independently materialized candidate references",
+  "dependencies": {
+    "capstone": "5.0.9",
+    "lief": "0.17.6",
+    "typer": "0.27.2",
+    "rich": "15.0.0",
+    "tomlkit": "0.15.1"
+  },
+  "controls": {
+    "identical": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 3,
+      "categories": {
+        "match": {
+          "bytes": 3,
+          "percent": 100.0
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 0,
+          "percent": 0.0
+        }
+      },
+      "verdict": "MATCH",
+      "suggestion": "Bytes are identical.",
+      "mutations": [],
+      "first_mismatch": null,
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "alternate-mov-encoding": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 3,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 33.3
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 2,
+          "percent": 66.7
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 0,
+          "percent": 0.0
+        }
+      },
+      "verdict": "ENCODING-ONLY (same instructions, different opcode bytes)",
+      "suggestion": "Every differing byte is the same instruction re-encoded with a different opcode form \u2014 semantically identical, but NOT byte-identical.  Byte-identity needs the original compiler version's encodings, or 'rebrew prove' for PROVEN equivalence.",
+      "mutations": [],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "encoding",
+        "target": "mov eax, ebx",
+        "compiled": "mov eax, ebx"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "different-return-constant": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 3,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 33.3
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "equivalent": {
+          "bytes": 2,
+          "percent": 66.7
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 0,
+          "percent": 0.0
+        }
+      },
+      "verdict": "EQUIVALENT (100% of delta)",
+      "suggestion": "Instruction selection differs \u2014 try alternative C constructs (e.g. pointer arithmetic vs indexing, cast-based masking).",
+      "mutations": [
+        "mut_array_to_ptr_arith",
+        "mut_ptr_arith_to_array",
+        "mut_change_array_index_order",
+        "mut_struct_vs_ptr_access",
+        "mut_add_cast",
+        "mut_remove_cast",
+        "mut_toggle_signedness",
+        "mut_if_false_to_bitand",
+        "mut_fold_constant_add",
+        "mut_unfold_constant_add",
+        "mut_combine_ptr_arith",
+        "mut_decouple_index_math"
+      ],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "equivalent",
+        "target": "xor eax, eax",
+        "compiled": "mov eax, 1"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 50.0,
+        "edge_sim": 100.0,
+        "overall": 75.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "different-return-register": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 3,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 33.3
+        },
+        "register": {
+          "bytes": 2,
+          "percent": 66.7
+        },
+        "encoding": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 0,
+          "percent": 0.0
+        }
+      },
+      "verdict": "EFFECTIVE (matches modulo register allocation)",
+      "suggestion": "Every differing byte is a register-allocation difference \u2014 the same instructions, different registers.  reccmp counts this as a 100% effective match, but it is NOT byte-identical: 'rebrew prove' can establish semantic equivalence (PROVEN), or try register-nudging C tweaks (reorder expressions, swap loop counters) if byte-identity is required.",
+      "mutations": [
+        "mut_reorder_register_vars",
+        "mut_swap_register_keywords",
+        "mut_add_register_keyword",
+        "mut_toggle_volatile",
+        "mut_hoist_repeated_deref",
+        "mut_inject_dummy_var",
+        "mut_inject_dummy_array",
+        "mut_scope_variable",
+        "mut_reorder_declarations",
+        "mut_swap_adjacent_stmts"
+      ],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "register",
+        "target": "mov eax, ebx",
+        "compiled": "mov ecx, ebx"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "changed-immediate": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 6,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 16.7
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 5,
+          "percent": 83.3
+        }
+      },
+      "verdict": "STRUCTURAL (100% of delta)",
+      "suggestion": "Control flow / block layout differs \u2014 try restructuring loops or if/else; may need a compiler-pattern workaround.",
+      "mutations": [
+        "mut_swap_if_else",
+        "mut_guard_clause",
+        "mut_hoist_return",
+        "mut_sink_return",
+        "mut_return_to_goto",
+        "mut_while_to_dowhile",
+        "mut_dowhile_to_while",
+        "mut_for_to_while",
+        "mut_while_to_for",
+        "mut_invert_loop_direction",
+        "mut_duplicate_loop_body",
+        "mut_hoist_common_tail",
+        "mut_sink_common_tail",
+        "mut_invert_if_else",
+        "mut_if_to_ternary",
+        "mut_ternary_to_if"
+      ],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "structural",
+        "target": "mov eax, 1",
+        "compiled": "mov eax, 2"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "changed-call-target": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 6,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 16.7
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 5,
+          "percent": 83.3
+        }
+      },
+      "verdict": "STRUCTURAL (100% of delta)",
+      "suggestion": "Control flow / block layout differs \u2014 try restructuring loops or if/else; may need a compiler-pattern workaround.",
+      "mutations": [
+        "mut_swap_if_else",
+        "mut_guard_clause",
+        "mut_hoist_return",
+        "mut_sink_return",
+        "mut_return_to_goto",
+        "mut_while_to_dowhile",
+        "mut_dowhile_to_while",
+        "mut_for_to_while",
+        "mut_while_to_for",
+        "mut_invert_loop_direction",
+        "mut_duplicate_loop_body",
+        "mut_hoist_common_tail",
+        "mut_sink_common_tail",
+        "mut_invert_if_else",
+        "mut_if_to_ternary",
+        "mut_ternary_to_if"
+      ],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "structural",
+        "target": "call 0x2005",
+        "compiled": "call 0x3005"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "stack-slot": {
+      "va": "0x00001000",
+      "target_insns": 2,
+      "compiled_insns": 2,
+      "bytes": 5,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 20.0
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 4,
+          "percent": 80.0
+        }
+      },
+      "verdict": "STRUCTURAL (100% of delta)",
+      "suggestion": "Control flow / block layout differs \u2014 try restructuring loops or if/else; may need a compiler-pattern workaround.",
+      "mutations": [
+        "mut_swap_if_else",
+        "mut_guard_clause",
+        "mut_hoist_return",
+        "mut_sink_return",
+        "mut_return_to_goto",
+        "mut_while_to_dowhile",
+        "mut_dowhile_to_while",
+        "mut_for_to_while",
+        "mut_while_to_for",
+        "mut_invert_loop_direction",
+        "mut_duplicate_loop_body",
+        "mut_hoist_common_tail",
+        "mut_sink_common_tail",
+        "mut_invert_if_else",
+        "mut_if_to_ternary",
+        "mut_ternary_to_if"
+      ],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "structural",
+        "target": "mov eax, dword ptr [esp + 4]",
+        "compiled": "mov eax, dword ptr [esp + 8]"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    },
+    "same-call-shifted": {
+      "va": "0x00001000",
+      "target_insns": 3,
+      "compiled_insns": 3,
+      "bytes": 7,
+      "categories": {
+        "match": {
+          "bytes": 1,
+          "percent": 14.3
+        },
+        "register": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "encoding": {
+          "bytes": 6,
+          "percent": 85.7
+        },
+        "equivalent": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "reloc": {
+          "bytes": 0,
+          "percent": 0.0
+        },
+        "structural": {
+          "bytes": 0,
+          "percent": 0.0
+        }
+      },
+      "verdict": "ENCODING-ONLY (same instructions, different opcode bytes)",
+      "suggestion": "Every differing byte is the same instruction re-encoded with a different opcode form \u2014 semantically identical, but NOT byte-identical.  Byte-identity needs the original compiler version's encodings, or 'rebrew prove' for PROVEN equivalence.",
+      "mutations": [],
+      "first_mismatch": {
+        "offset": 4096,
+        "category": "encoding",
+        "target": "nop",
+        "compiled": "nop"
+      },
+      "frame": {
+        "frame_match": true,
+        "diffs": [],
+        "hints": [],
+        "slots": {
+          "target": [],
+          "compiled": []
+        }
+      },
+      "cfg": {
+        "node_sim": 100.0,
+        "edge_sim": 100.0,
+        "overall": 100.0,
+        "target_blocks": 1,
+        "candidate_blocks": 1,
+        "matched_blocks": 1
+      }
+    }
+  },
+  "functions": {
+    "projectile_render": {
+      "input_evidence": {
+        "va": 4336752,
+        "source_sha256": "2fe2084afc11c39589bdafdbfce233c7bc1852ea646c13beb986640d938b69ae",
+        "object_sha256": "0e6dc5b9f155b958fab9970570b024d9c4833dfaaaeda8dc4e74ba63d819c22c",
+        "target_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+        "candidate_sha256": "09c8fcbb2648d7c76f5e92a1fb07904bb9970d5638a263ff6d35b3a9a61e4589",
+        "patches": [
+          {
+            "offset": 8,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 47,
+            "symbol": "__real@4@3ffe8000000000000000",
+            "address": 4649548,
+            "before": "00000000",
+            "after": "4cf24600"
+          },
+          {
+            "offset": 53,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 92,
+            "symbol": "__real@4@3ffccccccd0000000000",
+            "address": 4649532,
+            "before": "00000000",
+            "after": "3cf24600"
+          },
+          {
+            "offset": 98,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 129,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 152,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 157,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782056,
+            "before": "50000000",
+            "after": "e8f74800"
+          },
+          {
+            "offset": 174,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 201,
+            "symbol": "_config_blob",
+            "address": 4719452,
+            "before": "14000000",
+            "after": "5c034800"
+          },
+          {
+            "offset": 216,
+            "symbol": "_player_state_table",
+            "address": 4787120,
+            "before": "00030000",
+            "after": "b00b4900"
+          },
+          {
+            "offset": 228,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 247,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 300,
+            "symbol": "__real@4@40088000000000000000",
+            "address": 4650092,
+            "before": "00000000",
+            "after": "6cf44600"
+          },
+          {
+            "offset": 313,
+            "symbol": "__real@4@40088000000000000000",
+            "address": 4650092,
+            "before": "00000000",
+            "after": "6cf44600"
+          },
+          {
+            "offset": 355,
+            "symbol": "__real@4@3ffc9a89760000000000",
+            "address": 4650288,
+            "before": "00000000",
+            "after": "30f54600"
+          },
+          {
+            "offset": 365,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 377,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 427,
+            "symbol": "__real@4@3fff8ccccd0000000000",
+            "address": 4650336,
+            "before": "00000000",
+            "after": "60f54600"
+          },
+          {
+            "offset": 437,
+            "symbol": "__real@4@3fff8ccccd0000000000",
+            "address": 4650336,
+            "before": "00000000",
+            "after": "60f54600"
+          },
+          {
+            "offset": 451,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 461,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 519,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 532,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 537,
+            "symbol": "_perk_id_sharpshooter",
+            "address": 4991816,
+            "before": "00000000",
+            "after": "482b4c00"
+          },
+          {
+            "offset": 552,
+            "symbol": "_player_state_table",
+            "address": 4786536,
+            "before": "b8000000",
+            "after": "68094900"
+          },
+          {
+            "offset": 627,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 638,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 659,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 724,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 751,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 761,
+            "symbol": "_config_blob",
+            "address": 4719452,
+            "before": "14000000",
+            "after": "5c034800"
+          },
+          {
+            "offset": 782,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 815,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 861,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 885,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 895,
+            "symbol": "_projectile_pool",
+            "address": 4794068,
+            "before": "1c000000",
+            "after": "d4264900"
+          },
+          {
+            "offset": 939,
+            "symbol": "__real@4@3fff8000000000000000",
+            "address": 4649508,
+            "before": "00000000",
+            "after": "24f24600"
+          },
+          {
+            "offset": 964,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 1004,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 1044,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 1088,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 1099,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 1185,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 1194,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 1319,
+            "symbol": "__real@4@3fff99999a0000000000",
+            "address": 4650484,
+            "before": "00000000",
+            "after": "f4f54600"
+          },
+          {
+            "offset": 1331,
+            "symbol": "__real@4@3fff99999a0000000000",
+            "address": 4650484,
+            "before": "00000000",
+            "after": "f4f54600"
+          },
+          {
+            "offset": 1345,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 1356,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 1480,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 1493,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 1661,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 1693,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 1728,
+            "symbol": "__real@4@3fff8ccccd0000000000",
+            "address": 4650336,
+            "before": "00000000",
+            "after": "60f54600"
+          },
+          {
+            "offset": 1743,
+            "symbol": "__real@4@3fff8ccccd0000000000",
+            "address": 4650336,
+            "before": "00000000",
+            "after": "60f54600"
+          },
+          {
+            "offset": 1760,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 1771,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 1931,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 1944,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 2090,
+            "symbol": "__real@4@3ffeb333330000000000",
+            "address": 4649780,
+            "before": "00000000",
+            "after": "34f34600"
+          },
+          {
+            "offset": 2105,
+            "symbol": "__real@4@3ffeb333330000000000",
+            "address": 4649780,
+            "before": "00000000",
+            "after": "34f34600"
+          },
+          {
+            "offset": 2122,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 2133,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 2281,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 2294,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 2449,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2469,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2488,
+            "symbol": "_projectile_pool",
+            "address": 4800212,
+            "before": "1c180000",
+            "after": "d43e4900"
+          },
+          {
+            "offset": 2500,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2527,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2551,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2562,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2568,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782060,
+            "before": "54000000",
+            "after": "ecf74800"
+          },
+          {
+            "offset": 2586,
+            "symbol": "_effect_select_texture",
+            "address": 4382880,
+            "before": "00000000",
+            "after": "12aa0000"
+          },
+          {
+            "offset": 2592,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2610,
+            "symbol": "_render_overlay_player_index",
+            "address": 4894476,
+            "before": "00000000",
+            "after": "0caf4a00"
+          },
+          {
+            "offset": 2625,
+            "symbol": "_player_state_table",
+            "address": 4786352,
+            "before": "00000000",
+            "after": "b0084900"
+          },
+          {
+            "offset": 2637,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 2660,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 2666,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2673,
+            "symbol": "__real@4@3ffc9a89760000000000",
+            "address": 4650288,
+            "before": "00000000",
+            "after": "30f54600"
+          },
+          {
+            "offset": 2685,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 2697,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 2744,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2757,
+            "symbol": "_render_overlay_player_index",
+            "address": 4894476,
+            "before": "00000000",
+            "after": "0caf4a00"
+          },
+          {
+            "offset": 2763,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2795,
+            "symbol": "_player_state_table",
+            "address": 4786376,
+            "before": "18000000",
+            "after": "c8084900"
+          },
+          {
+            "offset": 2801,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 2807,
+            "symbol": "__real@4@4005a000000000000000",
+            "address": 4649616,
+            "before": "00000000",
+            "after": "90f24600"
+          },
+          {
+            "offset": 2820,
+            "symbol": "_player_state_table",
+            "address": 4786372,
+            "before": "14000000",
+            "after": "c4084900"
+          },
+          {
+            "offset": 2827,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 2833,
+            "symbol": "__real@4@4005a000000000000000",
+            "address": 4649616,
+            "before": "00000000",
+            "after": "90f24600"
+          },
+          {
+            "offset": 2848,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2862,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 2875,
+            "symbol": "_projectile_pool",
+            "address": 4794084,
+            "before": "2c000000",
+            "after": "e4264900"
+          },
+          {
+            "offset": 2973,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "43d80300"
+          },
+          {
+            "offset": 2981,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 2988,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "34d80300"
+          },
+          {
+            "offset": 3016,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 3022,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3037,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 3051,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 3068,
+            "symbol": "__real@4@3ffdcccccd0000000000",
+            "address": 4649764,
+            "before": "00000000",
+            "after": "24f34600"
+          },
+          {
+            "offset": 3112,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3140,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 3146,
+            "symbol": "__real@4@4002b000000000000000",
+            "address": 4650360,
+            "before": "00000000",
+            "after": "78f54600"
+          },
+          {
+            "offset": 3163,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 3169,
+            "symbol": "__real@4@4002b000000000000000",
+            "address": 4650360,
+            "before": "00000000",
+            "after": "78f54600"
+          },
+          {
+            "offset": 3200,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3206,
+            "symbol": "__real@4@3ffde666660000000000",
+            "address": 4650600,
+            "before": "00000000",
+            "after": "68f64600"
+          },
+          {
+            "offset": 3239,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 3248,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3265,
+            "symbol": "__real@4@4003e000000000000000",
+            "address": 4649696,
+            "before": "00000000",
+            "after": "e0f24600"
+          },
+          {
+            "offset": 3276,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 3286,
+            "symbol": "__real@4@4003e000000000000000",
+            "address": 4649696,
+            "before": "00000000",
+            "after": "e0f24600"
+          },
+          {
+            "offset": 3308,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3314,
+            "symbol": "__real@4@3ffd99999a0000000000",
+            "address": 4649560,
+            "before": "00000000",
+            "after": "58f24600"
+          },
+          {
+            "offset": 3367,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "b9d60300"
+          },
+          {
+            "offset": 3375,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 3382,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "aad60300"
+          },
+          {
+            "offset": 3410,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 3416,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3431,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 3445,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 3462,
+            "symbol": "__real@4@3ffdcccccd0000000000",
+            "address": 4649764,
+            "before": "00000000",
+            "after": "24f34600"
+          },
+          {
+            "offset": 3506,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3534,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 3540,
+            "symbol": "__real@4@4001c000000000000000",
+            "address": 4649604,
+            "before": "00000000",
+            "after": "84f24600"
+          },
+          {
+            "offset": 3557,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 3563,
+            "symbol": "__real@4@4001c000000000000000",
+            "address": 4649604,
+            "before": "00000000",
+            "after": "84f24600"
+          },
+          {
+            "offset": 3591,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3621,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 3630,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3647,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 3658,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 3668,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 3690,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3696,
+            "symbol": "__real@4@3ffc99999a0000000000",
+            "address": 4650508,
+            "before": "00000000",
+            "after": "0cf64600"
+          },
+          {
+            "offset": 3764,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "2cd50300"
+          },
+          {
+            "offset": 3772,
+            "symbol": "__real@4@4000e000000000000000",
+            "address": 4649516,
+            "before": "00000000",
+            "after": "2cf24600"
+          },
+          {
+            "offset": 3779,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "1dd50300"
+          },
+          {
+            "offset": 3807,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 3813,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3827,
+            "symbol": "__real@4@4000a666660000000000",
+            "address": 4650592,
+            "before": "00000000",
+            "after": "60f64600"
+          },
+          {
+            "offset": 3844,
+            "symbol": "__real@4@4000a666660000000000",
+            "address": 4650592,
+            "before": "00000000",
+            "after": "60f64600"
+          },
+          {
+            "offset": 3861,
+            "symbol": "__real@4@3ffdcccccd0000000000",
+            "address": 4649764,
+            "before": "00000000",
+            "after": "24f34600"
+          },
+          {
+            "offset": 3911,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 3939,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 3945,
+            "symbol": "__real@4@4003b000000000000000",
+            "address": 4649632,
+            "before": "00000000",
+            "after": "a0f24600"
+          },
+          {
+            "offset": 3965,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 3971,
+            "symbol": "__real@4@4003b000000000000000",
+            "address": 4649632,
+            "before": "00000000",
+            "after": "a0f24600"
+          },
+          {
+            "offset": 4002,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4008,
+            "symbol": "__real@4@3ffde666660000000000",
+            "address": 4650600,
+            "before": "00000000",
+            "after": "68f64600"
+          },
+          {
+            "offset": 4041,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 4050,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4067,
+            "symbol": "__real@4@4004a800000000000000",
+            "address": 4650164,
+            "before": "00000000",
+            "after": "b4f44600"
+          },
+          {
+            "offset": 4078,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 4088,
+            "symbol": "__real@4@4004a800000000000000",
+            "address": 4650164,
+            "before": "00000000",
+            "after": "b4f44600"
+          },
+          {
+            "offset": 4103,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4132,
+            "symbol": "_config_blob",
+            "address": 4719448,
+            "before": "10000000",
+            "after": "58034800"
+          },
+          {
+            "offset": 4146,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 4155,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4172,
+            "symbol": "__real@4@40068000000000000000",
+            "address": 4649656,
+            "before": "00000000",
+            "after": "b8f24600"
+          },
+          {
+            "offset": 4183,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 4193,
+            "symbol": "__real@4@40068000000000000000",
+            "address": 4649656,
+            "before": "00000000",
+            "after": "b8f24600"
+          },
+          {
+            "offset": 4249,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "47d30300"
+          },
+          {
+            "offset": 4257,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 4264,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "38d30300"
+          },
+          {
+            "offset": 4292,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 4298,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4313,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 4327,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 4344,
+            "symbol": "__real@4@3ffdcccccd0000000000",
+            "address": 4649764,
+            "before": "00000000",
+            "after": "24f34600"
+          },
+          {
+            "offset": 4388,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4416,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 4422,
+            "symbol": "__real@4@4001c000000000000000",
+            "address": 4649604,
+            "before": "00000000",
+            "after": "84f24600"
+          },
+          {
+            "offset": 4439,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 4445,
+            "symbol": "__real@4@4001c000000000000000",
+            "address": 4649604,
+            "before": "00000000",
+            "after": "84f24600"
+          },
+          {
+            "offset": 4473,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4503,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 4512,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4529,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 4540,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 4550,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 4572,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4578,
+            "symbol": "__real@4@3ffc99999a0000000000",
+            "address": 4650508,
+            "before": "00000000",
+            "after": "0cf64600"
+          },
+          {
+            "offset": 4641,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "bfd10300"
+          },
+          {
+            "offset": 4649,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 4656,
+            "symbol": "__ftol",
+            "address": 4591700,
+            "before": "00000000",
+            "after": "b0d10300"
+          },
+          {
+            "offset": 4684,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 4690,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4705,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 4719,
+            "symbol": "__real@4@40008666660000000000",
+            "address": 4650596,
+            "before": "00000000",
+            "after": "64f64600"
+          },
+          {
+            "offset": 4736,
+            "symbol": "__real@4@3ffdcccccd0000000000",
+            "address": 4649764,
+            "before": "00000000",
+            "after": "24f34600"
+          },
+          {
+            "offset": 4780,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4808,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 4814,
+            "symbol": "__real@4@4001c000000000000000",
+            "address": 4649604,
+            "before": "00000000",
+            "after": "84f24600"
+          },
+          {
+            "offset": 4831,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 4837,
+            "symbol": "__real@4@4001c000000000000000",
+            "address": 4649604,
+            "before": "00000000",
+            "after": "84f24600"
+          },
+          {
+            "offset": 4865,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4895,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 4904,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4921,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 4932,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 4942,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 4964,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 4970,
+            "symbol": "__real@4@3ffc99999a0000000000",
+            "address": 4650508,
+            "before": "00000000",
+            "after": "0cf64600"
+          },
+          {
+            "offset": 5002,
+            "symbol": "_config_blob",
+            "address": 4719448,
+            "before": "10000000",
+            "after": "58034800"
+          },
+          {
+            "offset": 5016,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 5025,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5042,
+            "symbol": "__real@4@4004f000000000000000",
+            "address": 4649860,
+            "before": "00000000",
+            "after": "84f34600"
+          },
+          {
+            "offset": 5053,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 5062,
+            "symbol": "__real@4@4004f000000000000000",
+            "address": 4649860,
+            "before": "00000000",
+            "after": "84f34600"
+          },
+          {
+            "offset": 5076,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 5082,
+            "symbol": "__real@4@3fff8000000000000000",
+            "address": 4649508,
+            "before": "00000000",
+            "after": "24f24600"
+          },
+          {
+            "offset": 5097,
+            "symbol": "__real@4@3fff8000000000000000",
+            "address": 4649508,
+            "before": "00000000",
+            "after": "24f24600"
+          },
+          {
+            "offset": 5105,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 5120,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 5126,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5166,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 5175,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5192,
+            "symbol": "__real@4@4003e000000000000000",
+            "address": 4649696,
+            "before": "00000000",
+            "after": "e0f24600"
+          },
+          {
+            "offset": 5203,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 5212,
+            "symbol": "__real@4@4003e000000000000000",
+            "address": 4649696,
+            "before": "00000000",
+            "after": "e0f24600"
+          },
+          {
+            "offset": 5231,
+            "symbol": "_projectile_pool",
+            "address": 4800228,
+            "before": "2c180000",
+            "after": "e43e4900"
+          },
+          {
+            "offset": 5243,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5257,
+            "symbol": "_perk_id_ion_gun_master",
+            "address": 4992012,
+            "before": "00000000",
+            "after": "0c2c4c00"
+          },
+          {
+            "offset": 5271,
+            "symbol": "_perk_count_get",
+            "address": 4390128,
+            "before": "00000000",
+            "after": "e5bb0000"
+          },
+          {
+            "offset": 5292,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5297,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782036,
+            "before": "3c000000",
+            "after": "d4f74800"
+          },
+          {
+            "offset": 5314,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5342,
+            "symbol": "_projectile_pool",
+            "address": 4794072,
+            "before": "20000000",
+            "after": "d8264900"
+          },
+          {
+            "offset": 5414,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5434,
+            "symbol": "__real@4@3ff8a3d70a0000000000",
+            "address": 4649728,
+            "before": "00000000",
+            "after": "00f34600"
+          },
+          {
+            "offset": 5450,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5475,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5481,
+            "symbol": "__real@4@3ffeb333330000000000",
+            "address": 4649780,
+            "before": "00000000",
+            "after": "34f34600"
+          },
+          {
+            "offset": 5518,
+            "symbol": "__real@4@40038000000000000000",
+            "address": 4649520,
+            "before": "00000000",
+            "after": "30f24600"
+          },
+          {
+            "offset": 5524,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5540,
+            "symbol": "__real@4@40028000000000000000",
+            "address": 4649576,
+            "before": "00000000",
+            "after": "68f24600"
+          },
+          {
+            "offset": 5550,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 5567,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 5602,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 5608,
+            "symbol": "__real@4@3fff8000000000000000",
+            "address": 4649508,
+            "before": "00000000",
+            "after": "24f24600"
+          },
+          {
+            "offset": 5636,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 5671,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5689,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5714,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5754,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 5763,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5780,
+            "symbol": "__real@4@4003e000000000000000",
+            "address": 4649696,
+            "before": "00000000",
+            "after": "e0f24600"
+          },
+          {
+            "offset": 5791,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 5801,
+            "symbol": "__real@4@4003e000000000000000",
+            "address": 4649696,
+            "before": "00000000",
+            "after": "e0f24600"
+          },
+          {
+            "offset": 5875,
+            "symbol": "__real@4@4003a000000000000000",
+            "address": 4649652,
+            "before": "00000000",
+            "after": "b4f24600"
+          },
+          {
+            "offset": 5896,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5914,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5932,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5962,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 5976,
+            "symbol": "__real@4@3ffe8000000000000000",
+            "address": 4649548,
+            "before": "00000000",
+            "after": "4cf24600"
+          },
+          {
+            "offset": 6043,
+            "symbol": "__real@4@4003a000000000000000",
+            "address": 4649652,
+            "before": "00000000",
+            "after": "b4f24600"
+          },
+          {
+            "offset": 6068,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6075,
+            "symbol": "__real@4@3ffbcccccd0000000000",
+            "address": 4649724,
+            "before": "00000000",
+            "after": "fcf24600"
+          },
+          {
+            "offset": 6081,
+            "symbol": "_quest_spawn_timeline",
+            "address": 4747216,
+            "before": "00000000",
+            "after": "d06f4800"
+          },
+          {
+            "offset": 6089,
+            "symbol": "__real@4@3ffbcccccd0000000000",
+            "address": 4649724,
+            "before": "00000000",
+            "after": "fcf24600"
+          },
+          {
+            "offset": 6106,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6124,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6154,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6168,
+            "symbol": "__real@4@3ffe8000000000000000",
+            "address": 4649548,
+            "before": "00000000",
+            "after": "4cf24600"
+          },
+          {
+            "offset": 6269,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6392,
+            "symbol": "_D3DXVec2Normalize@8",
+            "address": 4534058,
+            "before": "00000000",
+            "after": "bee90200"
+          },
+          {
+            "offset": 6401,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6462,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6484,
+            "symbol": "__real@4@40038000000000000000",
+            "address": 4649520,
+            "before": "00000000",
+            "after": "30f24600"
+          },
+          {
+            "offset": 6513,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 6533,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 6557,
+            "symbol": "__real@4@40078000000000000000",
+            "address": 4649648,
+            "before": "00000000",
+            "after": "b0f24600"
+          },
+          {
+            "offset": 6574,
+            "symbol": "__real@4@40078000000000000000",
+            "address": 4649648,
+            "before": "00000000",
+            "after": "b0f24600"
+          },
+          {
+            "offset": 6599,
+            "symbol": "__real@4@4000c666660000000000",
+            "address": 4650588,
+            "before": "00000000",
+            "after": "5cf64600"
+          },
+          {
+            "offset": 6609,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 6634,
+            "symbol": "__real@4@40048000000000000000",
+            "address": 4649664,
+            "before": "00000000",
+            "after": "c0f24600"
+          },
+          {
+            "offset": 6692,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6777,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6853,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6878,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6908,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 6917,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6935,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 6963,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 6981,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7006,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 7012,
+            "symbol": "__real@4@3fff8000000000000000",
+            "address": 4649508,
+            "before": "00000000",
+            "after": "24f24600"
+          },
+          {
+            "offset": 7040,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 7156,
+            "symbol": "_D3DXVec2Normalize@8",
+            "address": 4534058,
+            "before": "00000000",
+            "after": "c2e60200"
+          },
+          {
+            "offset": 7228,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7253,
+            "symbol": "__real@4@40038000000000000000",
+            "address": 4649520,
+            "before": "00000000",
+            "after": "30f24600"
+          },
+          {
+            "offset": 7285,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 7303,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 7327,
+            "symbol": "__real@4@40078000000000000000",
+            "address": 4649648,
+            "before": "00000000",
+            "after": "b0f24600"
+          },
+          {
+            "offset": 7344,
+            "symbol": "__real@4@40078000000000000000",
+            "address": 4649648,
+            "before": "00000000",
+            "after": "b0f24600"
+          },
+          {
+            "offset": 7372,
+            "symbol": "__real@4@4000c666660000000000",
+            "address": 4650588,
+            "before": "00000000",
+            "after": "5cf64600"
+          },
+          {
+            "offset": 7382,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 7410,
+            "symbol": "__real@4@40048000000000000000",
+            "address": 4649664,
+            "before": "00000000",
+            "after": "c0f24600"
+          },
+          {
+            "offset": 7464,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7560,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7650,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7694,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 7703,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7720,
+            "symbol": "__real@4@40038000000000000000",
+            "address": 4649520,
+            "before": "00000000",
+            "after": "30f24600"
+          },
+          {
+            "offset": 7734,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 7743,
+            "symbol": "__real@4@40038000000000000000",
+            "address": 4649520,
+            "before": "00000000",
+            "after": "30f24600"
+          },
+          {
+            "offset": 7758,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7803,
+            "symbol": "__real@4@4004a000000000000000",
+            "address": 4649708,
+            "before": "00000000",
+            "after": "ecf24600"
+          },
+          {
+            "offset": 7826,
+            "symbol": "_creature_find_in_radius",
+            "address": 4327072,
+            "before": "00000000",
+            "after": "9abbffff"
+          },
+          {
+            "offset": 7857,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7880,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7906,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7932,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 7969,
+            "symbol": "_creature_pool",
+            "address": 4833100,
+            "before": "14000000",
+            "after": "4cbf4900"
+          },
+          {
+            "offset": 7981,
+            "symbol": "_creature_pool",
+            "address": 4833104,
+            "before": "18000000",
+            "after": "50bf4900"
+          },
+          {
+            "offset": 8014,
+            "symbol": "_D3DXVec2Normalize@8",
+            "address": 4534058,
+            "before": "00000000",
+            "after": "68e30200"
+          },
+          {
+            "offset": 8045,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 8060,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 8114,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8127,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8179,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8201,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8223,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8271,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 8277,
+            "symbol": "_creature_pool",
+            "address": 4833100,
+            "before": "14000000",
+            "after": "4cbf4900"
+          },
+          {
+            "offset": 8287,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 8293,
+            "symbol": "_creature_pool",
+            "address": 4833104,
+            "before": "18000000",
+            "after": "50bf4900"
+          },
+          {
+            "offset": 8305,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8318,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8360,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8373,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 8499,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8514,
+            "symbol": "__real@4@40018000000000000000",
+            "address": 4649564,
+            "before": "00000000",
+            "after": "5cf24600"
+          },
+          {
+            "offset": 8527,
+            "symbol": "__real@4@40018000000000000000",
+            "address": 4649564,
+            "before": "00000000",
+            "after": "5cf24600"
+          },
+          {
+            "offset": 8709,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8727,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 8733,
+            "symbol": "_creature_pool",
+            "address": 4833104,
+            "before": "18000000",
+            "after": "50bf4900"
+          },
+          {
+            "offset": 8743,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8761,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 8767,
+            "symbol": "_creature_pool",
+            "address": 4833100,
+            "before": "14000000",
+            "after": "4cbf4900"
+          },
+          {
+            "offset": 8794,
+            "symbol": "_creature_find_in_radius",
+            "address": 4327072,
+            "before": "00000000",
+            "after": "d2b7ffff"
+          },
+          {
+            "offset": 8829,
+            "symbol": "_projectile_pool",
+            "address": 4800216,
+            "before": "20180000",
+            "after": "d83e4900"
+          },
+          {
+            "offset": 8845,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8859,
+            "symbol": "_survival_elapsed_ms",
+            "address": 4747360,
+            "before": "00000000",
+            "after": "60704800"
+          },
+          {
+            "offset": 8870,
+            "symbol": "__real@4@3ff583126f0000000000",
+            "address": 4649740,
+            "before": "00000000",
+            "after": "0cf34600"
+          },
+          {
+            "offset": 8882,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8892,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 8921,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8932,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 8953,
+            "symbol": "_projectile_pool",
+            "address": 4794052,
+            "before": "0c000000",
+            "after": "c4264900"
+          },
+          {
+            "offset": 8998,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9028,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9036,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9053,
+            "symbol": "__real@4@4003f000000000000000",
+            "address": 4650160,
+            "before": "00000000",
+            "after": "b0f44600"
+          },
+          {
+            "offset": 9064,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9074,
+            "symbol": "__real@4@4003f000000000000000",
+            "address": 4650160,
+            "before": "00000000",
+            "after": "b0f44600"
+          },
+          {
+            "offset": 9092,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 9098,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9121,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 9127,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9135,
+            "symbol": "__real@4@4003f000000000000000",
+            "address": 4650160,
+            "before": "00000000",
+            "after": "b0f44600"
+          },
+          {
+            "offset": 9149,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 9155,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9164,
+            "symbol": "__real@4@4003f000000000000000",
+            "address": 4650160,
+            "before": "00000000",
+            "after": "b0f44600"
+          },
+          {
+            "offset": 9185,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9229,
+            "symbol": "__real@4@4002b000000000000000",
+            "address": 4650360,
+            "before": "00000000",
+            "after": "78f54600"
+          },
+          {
+            "offset": 9235,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9243,
+            "symbol": "__real@4@4003f800000000000000",
+            "address": 4650584,
+            "before": "00000000",
+            "after": "58f64600"
+          },
+          {
+            "offset": 9254,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9264,
+            "symbol": "__real@4@4003f800000000000000",
+            "address": 4650584,
+            "before": "00000000",
+            "after": "58f64600"
+          },
+          {
+            "offset": 9294,
+            "symbol": "__real@4@4000860a920000000000",
+            "address": 4650580,
+            "before": "00000000",
+            "after": "54f64600"
+          },
+          {
+            "offset": 9300,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9321,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9335,
+            "symbol": "__real@4@4003f800000000000000",
+            "address": 4650584,
+            "before": "00000000",
+            "after": "58f64600"
+          },
+          {
+            "offset": 9345,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 9359,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 9365,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9374,
+            "symbol": "__real@4@4003f800000000000000",
+            "address": 4650584,
+            "before": "00000000",
+            "after": "58f64600"
+          },
+          {
+            "offset": 9398,
+            "symbol": "__real@4@4001860a920000000000",
+            "address": 4650576,
+            "before": "00000000",
+            "after": "50f64600"
+          },
+          {
+            "offset": 9404,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9431,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9439,
+            "symbol": "__real@4@4003f800000000000000",
+            "address": 4650584,
+            "before": "00000000",
+            "after": "58f64600"
+          },
+          {
+            "offset": 9453,
+            "symbol": "__real@4@4002a000000000000000",
+            "address": 4649568,
+            "before": "00000000",
+            "after": "60f24600"
+          },
+          {
+            "offset": 9459,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9468,
+            "symbol": "__real@4@4003f800000000000000",
+            "address": 4650584,
+            "before": "00000000",
+            "after": "58f64600"
+          },
+          {
+            "offset": 9493,
+            "symbol": "__real@4@4000a000000000000000",
+            "address": 4650532,
+            "before": "00000000",
+            "after": "24f64600"
+          },
+          {
+            "offset": 9499,
+            "symbol": "__real@4@3fff8000000000000000",
+            "address": 4649508,
+            "before": "00000000",
+            "after": "24f24600"
+          },
+          {
+            "offset": 9524,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 9557,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9601,
+            "symbol": "__real@4@4004a000000000000000",
+            "address": 4649708,
+            "before": "00000000",
+            "after": "ecf24600"
+          },
+          {
+            "offset": 9607,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9613,
+            "symbol": "__real@4@40048000000000000000",
+            "address": 4649664,
+            "before": "00000000",
+            "after": "c0f24600"
+          },
+          {
+            "offset": 9632,
+            "symbol": "__real@4@4003a000000000000000",
+            "address": 4649652,
+            "before": "00000000",
+            "after": "b4f24600"
+          },
+          {
+            "offset": 9647,
+            "symbol": "__real@4@40038000000000000000",
+            "address": 4649520,
+            "before": "00000000",
+            "after": "30f24600"
+          },
+          {
+            "offset": 9653,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9667,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9698,
+            "symbol": "_projectile_pool",
+            "address": 4800196,
+            "before": "0c180000",
+            "after": "c43e4900"
+          },
+          {
+            "offset": 9714,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9728,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9769,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9793,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9804,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9810,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782060,
+            "before": "54000000",
+            "after": "ecf74800"
+          },
+          {
+            "offset": 9828,
+            "symbol": "_effect_select_texture",
+            "address": 4382880,
+            "before": "00000000",
+            "after": "c88d0000"
+          },
+          {
+            "offset": 9834,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9867,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9880,
+            "symbol": "_projectile_pool",
+            "address": 4794076,
+            "before": "24000000",
+            "after": "dc264900"
+          },
+          {
+            "offset": 9898,
+            "symbol": "_projectile_pool",
+            "address": 4800152,
+            "before": "e0170000",
+            "after": "983e4900"
+          },
+          {
+            "offset": 9910,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9928,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 9937,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 9946,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 9971,
+            "symbol": "__real@4@40048000000000000000",
+            "address": 4649664,
+            "before": "00000000",
+            "after": "c0f24600"
+          },
+          {
+            "offset": 9988,
+            "symbol": "__real@4@40048000000000000000",
+            "address": 4649664,
+            "before": "00000000",
+            "after": "c0f24600"
+          },
+          {
+            "offset": 10017,
+            "symbol": "_projectile_pool",
+            "address": 4800220,
+            "before": "24180000",
+            "after": "dc3e4900"
+          },
+          {
+            "offset": 10029,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10056,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10080,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10098,
+            "symbol": "__real@4@3ffee666660000000000",
+            "address": 4649804,
+            "before": "00000000",
+            "after": "4cf34600"
+          },
+          {
+            "offset": 10104,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10148,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10154,
+            "symbol": "_projectile_bullet_texture",
+            "address": 4832048,
+            "before": "00000000",
+            "after": "30bb4900"
+          },
+          {
+            "offset": 10171,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10184,
+            "symbol": "_projectile_pool",
+            "address": 4794052,
+            "before": "0c000000",
+            "after": "c4264900"
+          },
+          {
+            "offset": 10240,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10266,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 10275,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 10283,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10308,
+            "symbol": "__real@4@4000c000000000000000",
+            "address": 4649544,
+            "before": "00000000",
+            "after": "48f24600"
+          },
+          {
+            "offset": 10325,
+            "symbol": "__real@4@4000c000000000000000",
+            "address": 4649544,
+            "before": "00000000",
+            "after": "48f24600"
+          },
+          {
+            "offset": 10349,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 10358,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 10378,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10389,
+            "symbol": "__real@4@40018000000000000000",
+            "address": 4649564,
+            "before": "00000000",
+            "after": "5cf24600"
+          },
+          {
+            "offset": 10413,
+            "symbol": "__real@4@40018000000000000000",
+            "address": 4649564,
+            "before": "00000000",
+            "after": "5cf24600"
+          },
+          {
+            "offset": 10441,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10452,
+            "symbol": "__real@4@40008000000000000000",
+            "address": 4649528,
+            "before": "00000000",
+            "after": "38f24600"
+          },
+          {
+            "offset": 10476,
+            "symbol": "__real@4@40008000000000000000",
+            "address": 4649528,
+            "before": "00000000",
+            "after": "38f24600"
+          },
+          {
+            "offset": 10505,
+            "symbol": "_projectile_pool",
+            "address": 4800196,
+            "before": "0c180000",
+            "after": "c43e4900"
+          },
+          {
+            "offset": 10517,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10530,
+            "symbol": "_config_blob",
+            "address": 4719448,
+            "before": "10000000",
+            "after": "58034800"
+          },
+          {
+            "offset": 10557,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10581,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10592,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10598,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782060,
+            "before": "54000000",
+            "after": "ecf74800"
+          },
+          {
+            "offset": 10616,
+            "symbol": "_effect_select_texture",
+            "address": 4382880,
+            "before": "00000000",
+            "after": "b48a0000"
+          },
+          {
+            "offset": 10622,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10638,
+            "symbol": "_secondary_projectile_pool",
+            "address": 4807388,
+            "before": "04000000",
+            "after": "dc5a4900"
+          },
+          {
+            "offset": 10662,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10668,
+            "symbol": "__real@4@3ffdf5c28f0000000000",
+            "address": 4650208,
+            "before": "00000000",
+            "after": "e0f44600"
+          },
+          {
+            "offset": 10703,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 10709,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10747,
+            "symbol": "__real@4@4001a000000000000000",
+            "address": 4649608,
+            "before": "00000000",
+            "after": "88f24600"
+          },
+          {
+            "offset": 10760,
+            "symbol": "__real@4@4001a000000000000000",
+            "address": 4649608,
+            "before": "00000000",
+            "after": "88f24600"
+          },
+          {
+            "offset": 10766,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 10775,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 10819,
+            "symbol": "__real@4@40058c00000000000000",
+            "address": 4650176,
+            "before": "00000000",
+            "after": "c0f44600"
+          },
+          {
+            "offset": 10829,
+            "symbol": "__real@4@40058c00000000000000",
+            "address": 4650176,
+            "before": "00000000",
+            "after": "c0f44600"
+          },
+          {
+            "offset": 10858,
+            "symbol": "_secondary_projectile_pool",
+            "address": 4810204,
+            "before": "040b0000",
+            "after": "dc654900"
+          },
+          {
+            "offset": 10870,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10897,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10921,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10945,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10956,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10986,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 10991,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782036,
+            "before": "3c000000",
+            "after": "d4f74800"
+          },
+          {
+            "offset": 11008,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11030,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11043,
+            "symbol": "_secondary_projectile_pool",
+            "address": 4807400,
+            "before": "10000000",
+            "after": "e85a4900"
+          },
+          {
+            "offset": 11069,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11095,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 11104,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 11112,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11143,
+            "symbol": "__real@4@4001e000000000000000",
+            "address": 4649592,
+            "before": "00000000",
+            "after": "78f24600"
+          },
+          {
+            "offset": 11160,
+            "symbol": "__real@4@4001e000000000000000",
+            "address": 4649592,
+            "before": "00000000",
+            "after": "78f24600"
+          },
+          {
+            "offset": 11176,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11213,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 11222,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 11230,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11261,
+            "symbol": "__real@4@4001a000000000000000",
+            "address": 4649608,
+            "before": "00000000",
+            "after": "88f24600"
+          },
+          {
+            "offset": 11278,
+            "symbol": "__real@4@4001a000000000000000",
+            "address": 4649608,
+            "before": "00000000",
+            "after": "88f24600"
+          },
+          {
+            "offset": 11298,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11335,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 11344,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 11352,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11383,
+            "symbol": "__real@4@40018000000000000000",
+            "address": 4649564,
+            "before": "00000000",
+            "after": "5cf24600"
+          },
+          {
+            "offset": 11400,
+            "symbol": "__real@4@40018000000000000000",
+            "address": 4649564,
+            "before": "00000000",
+            "after": "5cf24600"
+          },
+          {
+            "offset": 11416,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11453,
+            "symbol": "_secondary_projectile_pool",
+            "address": 4810216,
+            "before": "100b0000",
+            "after": "e8654900"
+          },
+          {
+            "offset": 11465,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11478,
+            "symbol": "_config_blob",
+            "address": 4719448,
+            "before": "10000000",
+            "after": "58034800"
+          },
+          {
+            "offset": 11505,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11529,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11540,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11545,
+            "symbol": "_ui_cursor_texture",
+            "address": 4782060,
+            "before": "54000000",
+            "after": "ecf74800"
+          },
+          {
+            "offset": 11563,
+            "symbol": "_effect_select_texture",
+            "address": 4382880,
+            "before": "00000000",
+            "after": "01870000"
+          },
+          {
+            "offset": 11569,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11585,
+            "symbol": "_secondary_projectile_pool",
+            "address": 4807400,
+            "before": "10000000",
+            "after": "e85a4900"
+          },
+          {
+            "offset": 11621,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11627,
+            "symbol": "__real@4@3ffca1cac10000000000",
+            "address": 4650572,
+            "before": "00000000",
+            "after": "4cf64600"
+          },
+          {
+            "offset": 11663,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 11669,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11707,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 11720,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 11726,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 11735,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 11778,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 11788,
+            "symbol": "__real@4@4002f000000000000000",
+            "address": 4649824,
+            "before": "00000000",
+            "after": "60f34600"
+          },
+          {
+            "offset": 11828,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11834,
+            "symbol": "__real@4@3ffeae147b0000000000",
+            "address": 4650568,
+            "before": "00000000",
+            "after": "48f64600"
+          },
+          {
+            "offset": 11870,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 11876,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 11914,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 11927,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 11933,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 11942,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 11985,
+            "symbol": "__real@4@4003f000000000000000",
+            "address": 4650160,
+            "before": "00000000",
+            "after": "b0f44600"
+          },
+          {
+            "offset": 11995,
+            "symbol": "__real@4@4003f000000000000000",
+            "address": 4650160,
+            "before": "00000000",
+            "after": "b0f44600"
+          },
+          {
+            "offset": 12042,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 12048,
+            "symbol": "__real@4@3ffe947ae10000000000",
+            "address": 4650564,
+            "before": "00000000",
+            "after": "44f64600"
+          },
+          {
+            "offset": 12084,
+            "symbol": "__real@4@3fffc90fdb0000000000",
+            "address": 4649504,
+            "before": "00000000",
+            "after": "20f24600"
+          },
+          {
+            "offset": 12090,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 12128,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 12141,
+            "symbol": "__real@4@40029000000000000000",
+            "address": 4649624,
+            "before": "00000000",
+            "after": "98f24600"
+          },
+          {
+            "offset": 12147,
+            "symbol": "_camera_offset",
+            "address": 4739016,
+            "before": "00000000",
+            "after": "c84f4800"
+          },
+          {
+            "offset": 12156,
+            "symbol": "_camera_offset",
+            "address": 4739020,
+            "before": "04000000",
+            "after": "cc4f4800"
+          },
+          {
+            "offset": 12199,
+            "symbol": "__real@4@4003a000000000000000",
+            "address": 4649652,
+            "before": "00000000",
+            "after": "b4f24600"
+          },
+          {
+            "offset": 12209,
+            "symbol": "__real@4@4003a000000000000000",
+            "address": 4649652,
+            "before": "00000000",
+            "after": "b4f24600"
+          },
+          {
+            "offset": 12238,
+            "symbol": "_secondary_projectile_pool",
+            "address": 4810216,
+            "before": "100b0000",
+            "after": "e8654900"
+          },
+          {
+            "offset": 12250,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          },
+          {
+            "offset": 12277,
+            "symbol": "_grim_interface_ptr",
+            "address": 4720700,
+            "before": "00000000",
+            "after": "3c084800"
+          }
+        ],
+        "unresolved": [],
+        "crimson_exact": false,
+        "crimson_body_byte_exact": false,
+        "crimson_ratio": 0.6235804943219773,
+        "clean_references": 495,
+        "reference_problems": 7,
+        "candidate_terminal_bytes_excluded": 0,
+        "resolved_bytes_equal": false
+      },
+      "self_control": {
+        "va": "0x00422c70",
+        "target_insns": 3021,
+        "compiled_insns": 3021,
+        "bytes": 12551,
+        "categories": {
+          "match": {
+            "bytes": 12551,
+            "percent": 100.0
+          },
+          "register": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "encoding": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "equivalent": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "reloc": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "structural": {
+            "bytes": 0,
+            "percent": 0.0
+          }
+        },
+        "verdict": "MATCH",
+        "suggestion": "Bytes are identical.",
+        "mutations": [],
+        "first_mismatch": null,
+        "frame": {
+          "frame_match": true,
+          "diffs": [],
+          "hints": [],
+          "slots": {
+            "target": [
+              4,
+              312
+            ],
+            "compiled": [
+              4,
+              312
+            ]
+          }
+        },
+        "cfg": {
+          "node_sim": 100.0,
+          "edge_sim": 100.0,
+          "overall": 100.0,
+          "target_blocks": 155,
+          "candidate_blocks": 155,
+          "matched_blocks": 155
+        }
+      },
+      "diagnosis": {
+        "va": "0x00422c70",
+        "target_insns": 3021,
+        "compiled_insns": 2967,
+        "bytes": 12957,
+        "categories": {
+          "match": {
+            "bytes": 7219,
+            "percent": 55.7
+          },
+          "register": {
+            "bytes": 259,
+            "percent": 2.0
+          },
+          "encoding": {
+            "bytes": 112,
+            "percent": 0.9
+          },
+          "equivalent": {
+            "bytes": 3,
+            "percent": 0.0
+          },
+          "reloc": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "structural": {
+            "bytes": 5364,
+            "percent": 41.4
+          }
+        },
+        "verdict": "STRUCTURAL (93% of delta)",
+        "suggestion": "Control flow / block layout differs \u2014 try restructuring loops or if/else; may need a compiler-pattern workaround.",
+        "mutations": [
+          "mut_swap_if_else",
+          "mut_guard_clause",
+          "mut_hoist_return",
+          "mut_sink_return",
+          "mut_return_to_goto",
+          "mut_while_to_dowhile",
+          "mut_dowhile_to_while",
+          "mut_for_to_while",
+          "mut_while_to_for",
+          "mut_invert_loop_direction",
+          "mut_duplicate_loop_body",
+          "mut_hoist_common_tail",
+          "mut_sink_common_tail",
+          "mut_invert_if_else",
+          "mut_if_to_ternary",
+          "mut_ternary_to_if"
+        ],
+        "first_mismatch": {
+          "offset": 4336752,
+          "category": "structural",
+          "target": "sub esp, 0x19c",
+          "compiled": "sub esp, 0x184"
+        },
+        "frame": {
+          "frame_match": false,
+          "diffs": [
+            "frame size: target 0xa78 vs compiled 0xa58"
+          ],
+          "hints": [
+            "local layout differs \u2014 /O1 vs /O2, a missing/extra local, or a /Gs stack probe; compare the [ebp\u00b1N] slots below"
+          ],
+          "slots": {
+            "target": [
+              4,
+              312
+            ],
+            "compiled": [
+              -32,
+              -28,
+              -24,
+              -20,
+              -16,
+              -12,
+              4,
+              312
+            ]
+          }
+        },
+        "cfg": {
+          "node_sim": 98.2,
+          "edge_sim": 27.6,
+          "overall": 62.9,
+          "target_blocks": 155,
+          "candidate_blocks": 157,
+          "matched_blocks": 155
+        }
+      },
+      "crimson": {
+        "match_ratio": 0.6235804943219773,
+        "body_byte_exact": false,
+        "target_instructions": 3021,
+        "candidate_instructions": 2967,
+        "references": {
+          "ok": 495,
+          "unresolved": 0,
+          "mismatch": 7
+        },
+        "stack_frame": {
+          "target_prologue_allocation_bytes": 412,
+          "candidate_prologue_allocation_bytes": 388,
+          "target_minus_candidate_bytes": 24,
+          "classification": "native-frame-larger",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        },
+        "residual_summary": {
+          "aligned_pairs": 2554,
+          "identical_pairs": 1871,
+          "stack_displacement_pairs": 537,
+          "branch_offset_pairs": 85,
+          "ambiguous_pairs": 578,
+          "remaining_spans": 320,
+          "remaining_target_instructions": 528,
+          "remaining_candidate_instructions": 474,
+          "stack_relationships": 234,
+          "conflicting_stack_relationships": 218,
+          "reference_problems": 7
+        }
+      }
+    },
+    "quest_spawn_timeline_update": {
+      "input_evidence": {
+        "va": 4407888,
+        "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+        "object_sha256": "3c0337faeb8c49e599676efa606a7834c689242b4e8e39cc65d5cdb8b476377a",
+        "target_sha256": "6b84f0beddbfe368fac092a5faf71d40ed2b1e611f1deb0c600382731bd655a7",
+        "candidate_sha256": "ca4742ada3f8c1cc04a532eebe7551ecca09f51557e9569f4f6c8f5122db469b",
+        "patches": [
+          {
+            "offset": 2,
+            "symbol": "_creatures_any_active_flag",
+            "address": 4747276,
+            "before": "00000000",
+            "after": "0c704800"
+          },
+          {
+            "offset": 19,
+            "symbol": "_quest_spawn_stall_timer_ms",
+            "address": 4994644,
+            "before": "00000000",
+            "after": "54364c00"
+          },
+          {
+            "offset": 24,
+            "symbol": "_frame_dt_ms",
+            "address": 4720708,
+            "before": "00000000",
+            "after": "44084800"
+          },
+          {
+            "offset": 36,
+            "symbol": "_quest_spawn_count",
+            "address": 4729608,
+            "before": "00000000",
+            "after": "082b4800"
+          },
+          {
+            "offset": 48,
+            "symbol": "_quest_spawn_stall_timer_ms",
+            "address": 4994644,
+            "before": "00000000",
+            "after": "54364c00"
+          },
+          {
+            "offset": 56,
+            "symbol": "_quest_spawn_timeline",
+            "address": 4747216,
+            "before": "00000000",
+            "after": "d06f4800"
+          },
+          {
+            "offset": 61,
+            "symbol": "_quest_spawn_table",
+            "address": 4741048,
+            "before": "10000000",
+            "after": "b8574800"
+          },
+          {
+            "offset": 133,
+            "symbol": "_quest_spawn_table",
+            "address": 4741032,
+            "before": "00000000",
+            "after": "a8574800"
+          },
+          {
+            "offset": 172,
+            "symbol": "__real@4@00000000000000000000",
+            "address": 4649512,
+            "before": "00000000",
+            "after": "28f24600"
+          },
+          {
+            "offset": 185,
+            "symbol": "_terrain_render_target",
+            "address": 4781364,
+            "before": "04000000",
+            "after": "34f54800"
+          },
+          {
+            "offset": 281,
+            "symbol": "_creature_spawn_template",
+            "address": 4393712,
+            "before": "00000000",
+            "after": "83c7ffff"
+          },
+          {
+            "offset": 313,
+            "symbol": "_quest_spawn_count",
+            "address": 4729608,
+            "before": "00000000",
+            "after": "082b4800"
+          },
+          {
+            "offset": 329,
+            "symbol": "_creatures_any_active_flag",
+            "address": 4747276,
+            "before": "00000000",
+            "after": "0c704800"
+          }
+        ],
+        "unresolved": [],
+        "crimson_exact": false,
+        "crimson_body_byte_exact": false,
+        "crimson_ratio": 0.9122807017543859,
+        "clean_references": 13,
+        "reference_problems": 0,
+        "candidate_terminal_bytes_excluded": 0,
+        "resolved_bytes_equal": false
+      },
+      "self_control": {
+        "va": "0x00434250",
+        "target_insns": 115,
+        "compiled_insns": 115,
+        "bytes": 368,
+        "categories": {
+          "match": {
+            "bytes": 368,
+            "percent": 100.0
+          },
+          "register": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "encoding": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "equivalent": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "reloc": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "structural": {
+            "bytes": 0,
+            "percent": 0.0
+          }
+        },
+        "verdict": "MATCH",
+        "suggestion": "Bytes are identical.",
+        "mutations": [],
+        "first_mismatch": null,
+        "frame": {
+          "frame_match": true,
+          "diffs": [],
+          "hints": [],
+          "slots": {
+            "target": [],
+            "compiled": []
+          }
+        },
+        "cfg": {
+          "node_sim": 100.0,
+          "edge_sim": 100.0,
+          "overall": 100.0,
+          "target_blocks": 20,
+          "candidate_blocks": 20,
+          "matched_blocks": 20
+        }
+      },
+      "diagnosis": {
+        "va": "0x00434250",
+        "target_insns": 115,
+        "compiled_insns": 113,
+        "bytes": 368,
+        "categories": {
+          "match": {
+            "bytes": 322,
+            "percent": 87.5
+          },
+          "register": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "encoding": {
+            "bytes": 22,
+            "percent": 6.0
+          },
+          "equivalent": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "reloc": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "structural": {
+            "bytes": 24,
+            "percent": 6.5
+          }
+        },
+        "verdict": "STRUCTURAL (52% of delta)",
+        "suggestion": "Control flow / block layout differs \u2014 try restructuring loops or if/else; may need a compiler-pattern workaround. Also: encoding choice differs.",
+        "mutations": [
+          "mut_swap_if_else",
+          "mut_guard_clause",
+          "mut_hoist_return",
+          "mut_sink_return",
+          "mut_return_to_goto",
+          "mut_while_to_dowhile",
+          "mut_dowhile_to_while",
+          "mut_for_to_while",
+          "mut_while_to_for",
+          "mut_invert_loop_direction",
+          "mut_duplicate_loop_body",
+          "mut_hoist_common_tail",
+          "mut_sink_common_tail",
+          "mut_invert_if_else",
+          "mut_if_to_ternary",
+          "mut_ternary_to_if"
+        ],
+        "first_mismatch": {
+          "offset": 4408046,
+          "category": "structural",
+          "target": "jle 0x434393",
+          "compiled": "jle 0x43438d"
+        },
+        "frame": {
+          "frame_match": true,
+          "diffs": [],
+          "hints": [],
+          "slots": {
+            "target": [],
+            "compiled": []
+          }
+        },
+        "cfg": {
+          "node_sim": 99.3,
+          "edge_sim": 100.0,
+          "overall": 99.7,
+          "target_blocks": 20,
+          "candidate_blocks": 20,
+          "matched_blocks": 20
+        }
+      },
+      "crimson": {
+        "match_ratio": 0.9122807017543859,
+        "body_byte_exact": false,
+        "target_instructions": 115,
+        "candidate_instructions": 113,
+        "references": {
+          "ok": 13,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "stack_frame": {
+          "target_prologue_allocation_bytes": 28,
+          "candidate_prologue_allocation_bytes": 28,
+          "target_minus_candidate_bytes": 0,
+          "classification": "same-prologue-allocation",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        },
+        "residual_summary": {
+          "aligned_pairs": 111,
+          "identical_pairs": 104,
+          "stack_displacement_pairs": 0,
+          "branch_offset_pairs": 7,
+          "ambiguous_pairs": 0,
+          "remaining_spans": 2,
+          "remaining_target_instructions": 4,
+          "remaining_candidate_instructions": 2,
+          "stack_relationships": 0,
+          "conflicting_stack_relationships": 0,
+          "reference_problems": 0
+        }
+      }
+    },
+    "statistics_update_check_worker": {
+      "input_evidence": {
+        "va": 4380832,
+        "source_sha256": "beef8b390caf3f9bbc41ff5eb68a4101d397a3a5b68701f21362b47e2eacc7c1",
+        "object_sha256": "68f0ca8b30cee0964c1014c662259783587fd50027109c16f71e4725af15e503",
+        "target_sha256": "c17ea22ab2adfa33e8ee4fb18cfaa3687e59e7b1077d91e1164f2f23987e5d6f",
+        "candidate_sha256": "c17ea22ab2adfa33e8ee4fb18cfaa3687e59e7b1077d91e1164f2f23987e5d6f",
+        "patches": [
+          {
+            "offset": 11,
+            "symbol": "??_C@_0CA@IIEL@beginthread?5?$CI?$CJ?5?$CIversion?5check?$CJ?6?$AA@",
+            "address": 4675008,
+            "before": "00000000",
+            "after": "c0554700"
+          },
+          {
+            "offset": 16,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 22,
+            "symbol": "?online_sync_status@@3HA",
+            "address": 5050864,
+            "before": "00000000",
+            "after": "f0114d00"
+          },
+          {
+            "offset": 31,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "ad3ffdff"
+          },
+          {
+            "offset": 39,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 44,
+            "symbol": "??_C@_0M@INMK@console?4log?$AA@",
+            "address": 4669480,
+            "before": "00000000",
+            "after": "28404700"
+          },
+          {
+            "offset": 49,
+            "symbol": "?flush_log@console_queue_t@@QAEEPAD@Z",
+            "address": 4204640,
+            "before": "00000000",
+            "after": "8b4ffdff"
+          },
+          {
+            "offset": 54,
+            "symbol": "??_C@_0FF@CGGJ@Content?9Disposition?3?5inline?$DL?5fil@",
+            "address": 4674324,
+            "before": "00000000",
+            "after": "14534700"
+          },
+          {
+            "offset": 92,
+            "symbol": "??_C@_09LLND@image?1gif?$AA@",
+            "address": 4674312,
+            "before": "00000000",
+            "after": "08534700"
+          },
+          {
+            "offset": 100,
+            "symbol": "??_C@_0BA@FIHJ@image?1x?9xbitmap?$AA@",
+            "address": 4674296,
+            "before": "00000000",
+            "after": "f8524700"
+          },
+          {
+            "offset": 108,
+            "symbol": "??_C@_0L@JAMC@image?1jpeg?$AA@",
+            "address": 4674284,
+            "before": "00000000",
+            "after": "ec524700"
+          },
+          {
+            "offset": 119,
+            "symbol": "??_C@_0M@JBAG@image?1pjpeg?$AA@",
+            "address": 4674272,
+            "before": "00000000",
+            "after": "e0524700"
+          },
+          {
+            "offset": 130,
+            "symbol": "??_C@_0BO@CIKP@application?1vnd?4ms?9powerpoint?$AA@",
+            "address": 4674240,
+            "before": "00000000",
+            "after": "c0524700"
+          },
+          {
+            "offset": 141,
+            "symbol": "??_C@_0BJ@OHKN@application?1vnd?4ms?9excel?$AA@",
+            "address": 4674212,
+            "before": "00000000",
+            "after": "a4524700"
+          },
+          {
+            "offset": 152,
+            "symbol": "??_C@_0BD@KDKM@application?1msword?$AA@",
+            "address": 4674192,
+            "before": "00000000",
+            "after": "90524700"
+          },
+          {
+            "offset": 163,
+            "symbol": "??_C@_0BE@GCCI@application?1x?9comet?$AA@",
+            "address": 4674172,
+            "before": "00000000",
+            "after": "7c524700"
+          },
+          {
+            "offset": 174,
+            "symbol": "??_C@_0BJ@HNFG@application?1octet?9stream?$AA@",
+            "address": 4673376,
+            "before": "00000000",
+            "after": "604f4700"
+          },
+          {
+            "offset": 185,
+            "symbol": "??_C@_03CEGI@?$CK?1?$CK?$AA@",
+            "address": 4674168,
+            "before": "00000000",
+            "after": "78524700"
+          },
+          {
+            "offset": 201,
+            "symbol": "??2@YAPAXI@Z",
+            "address": 4591739,
+            "before": "00000000",
+            "after": "0e370300"
+          },
+          {
+            "offset": 224,
+            "symbol": "??_C@_0M@NHIC@Crimsonland?$AA@",
+            "address": 4664668,
+            "before": "00000000",
+            "after": "5c2d4700"
+          },
+          {
+            "offset": 232,
+            "symbol": "__imp__InternetOpenA@20",
+            "address": 4649400,
+            "before": "00000000",
+            "after": "b8f14600"
+          },
+          {
+            "offset": 245,
+            "symbol": "??_C@_0CF@KAGL@Version?5Check?3?5InternetOpen?5fail@",
+            "address": 4674968,
+            "before": "00000000",
+            "after": "98554700"
+          },
+          {
+            "offset": 272,
+            "symbol": "??_C@_0BE@EOAC@www?4crimsonland?4com?$AA@",
+            "address": 4674948,
+            "before": "00000000",
+            "after": "84554700"
+          },
+          {
+            "offset": 320,
+            "symbol": "?s_empty_string@@3DA",
+            "address": 4715736,
+            "before": "00000000",
+            "after": "d8f44700"
+          },
+          {
+            "offset": 325,
+            "symbol": "??_C@_05HBGG@guest?$AA@",
+            "address": 4674052,
+            "before": "00000000",
+            "after": "04524700"
+          },
+          {
+            "offset": 339,
+            "symbol": "__imp__InternetConnectA@32",
+            "address": 4649412,
+            "before": "00000000",
+            "after": "c4f14600"
+          },
+          {
+            "offset": 461,
+            "symbol": "??_C@_04KIKH@none?$AA@",
+            "address": 4674044,
+            "before": "00000000",
+            "after": "fc514700"
+          },
+          {
+            "offset": 470,
+            "symbol": "??_C@_08NOAE@HTTP?11?41?$AA@",
+            "address": 4674032,
+            "before": "00000000",
+            "after": "f0514700"
+          },
+          {
+            "offset": 476,
+            "symbol": "??_C@_04PHMF@POST?$AA@",
+            "address": 4674024,
+            "before": "00000000",
+            "after": "e8514700"
+          },
+          {
+            "offset": 483,
+            "symbol": "__imp__HttpOpenRequestA@32",
+            "address": 4649416,
+            "before": "00000000",
+            "after": "c8f14600"
+          },
+          {
+            "offset": 506,
+            "symbol": "??_C@_0FF@CGGJ@Content?9Disposition?3?5inline?$DL?5fil@",
+            "address": 4674324,
+            "before": "00000000",
+            "after": "14534700"
+          },
+          {
+            "offset": 513,
+            "symbol": "__imp__HttpSendRequestA@20",
+            "address": 4649396,
+            "before": "00000000",
+            "after": "b4f14600"
+          },
+          {
+            "offset": 518,
+            "symbol": "??_C@_0BG@OCG@Connecting?5server?4?4?4?6?$AA@",
+            "address": 4674924,
+            "before": "00000000",
+            "after": "6c554700"
+          },
+          {
+            "offset": 523,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 530,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "ba3dfdff"
+          },
+          {
+            "offset": 542,
+            "symbol": "??_C@_0CI@JOAB@Version?5Check?3?5HttpSendRequest?5f@",
+            "address": 4674884,
+            "before": "00000000",
+            "after": "44554700"
+          },
+          {
+            "offset": 552,
+            "symbol": "??_C@_0BD@LAM@Receiving?5data?4?4?4?6?$AA@",
+            "address": 4674864,
+            "before": "00000000",
+            "after": "30554700"
+          },
+          {
+            "offset": 557,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 562,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "9a3dfdff"
+          },
+          {
+            "offset": 582,
+            "symbol": "__imp__InternetReadFile@16",
+            "address": 4649404,
+            "before": "00000000",
+            "after": "bcf14600"
+          },
+          {
+            "offset": 664,
+            "symbol": "??_C@_0CJ@JHGF@Version?5Check?3?5InternetReadFile?5@",
+            "address": 4674820,
+            "before": "00000000",
+            "after": "04554700"
+          },
+          {
+            "offset": 669,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 674,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "2a3dfdff"
+          },
+          {
+            "offset": 683,
+            "symbol": "__imp__GetLastError@0",
+            "address": 4649004,
+            "before": "00000000",
+            "after": "2cf04600"
+          },
+          {
+            "offset": 689,
+            "symbol": "??_C@_0M@HMHC@Reason?3?5?$CFd?6?$AA@",
+            "address": 4673892,
+            "before": "00000000",
+            "after": "64514700"
+          },
+          {
+            "offset": 694,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 699,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "113dfdff"
+          },
+          {
+            "offset": 730,
+            "symbol": "__imp__InternetGetLastResponseInfoA@12",
+            "address": 4649408,
+            "before": "00000000",
+            "after": "c0f14600"
+          },
+          {
+            "offset": 736,
+            "symbol": "??_C@_07CPBB@Or?3?5?$CFs?6?$AA@",
+            "address": 4673884,
+            "before": "00000000",
+            "after": "5c514700"
+          },
+          {
+            "offset": 741,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 746,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "e23cfdff"
+          },
+          {
+            "offset": 759,
+            "symbol": "??_C@_0DC@OGDG@Warning?3?5receiving?5too?5much?5data@",
+            "address": 4673832,
+            "before": "00000000",
+            "after": "28514700"
+          },
+          {
+            "offset": 764,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 769,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "cb3cfdff"
+          },
+          {
+            "offset": 777,
+            "symbol": "??_C@_0CK@CDMF@Version?5Check?3?5Beginning?5to?5pars@",
+            "address": 4674776,
+            "before": "00000000",
+            "after": "d8544700"
+          },
+          {
+            "offset": 782,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 787,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "b93cfdff"
+          },
+          {
+            "offset": 795,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 800,
+            "symbol": "??_C@_0M@INMK@console?4log?$AA@",
+            "address": 4669480,
+            "before": "00000000",
+            "after": "28404700"
+          },
+          {
+            "offset": 805,
+            "symbol": "?flush_log@console_queue_t@@QAEEPAD@Z",
+            "address": 4204640,
+            "before": "00000000",
+            "after": "974cfdff"
+          },
+          {
+            "offset": 810,
+            "symbol": "??_C@_07BFNI@?$DMa?5href?$AA@",
+            "address": 4674768,
+            "before": "00000000",
+            "after": "d0544700"
+          },
+          {
+            "offset": 816,
+            "symbol": "_strstr",
+            "address": 4598560,
+            "before": "00000000",
+            "after": "4c4f0300"
+          },
+          {
+            "offset": 832,
+            "symbol": "??_C@_0BA@OCEA@Data?5seems?5ok?4?6?$AA@",
+            "address": 4674752,
+            "before": "00000000",
+            "after": "c0544700"
+          },
+          {
+            "offset": 837,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 842,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "823cfdff"
+          },
+          {
+            "offset": 854,
+            "symbol": "_strchr",
+            "address": 4591344,
+            "before": "00000000",
+            "after": "f6320300"
+          },
+          {
+            "offset": 876,
+            "symbol": "_strchr",
+            "address": 4591344,
+            "before": "00000000",
+            "after": "e0320300"
+          },
+          {
+            "offset": 899,
+            "symbol": "_strchr",
+            "address": 4591344,
+            "before": "00000000",
+            "after": "c9320300"
+          },
+          {
+            "offset": 920,
+            "symbol": "_strchr",
+            "address": 4591344,
+            "before": "00000000",
+            "after": "b4320300"
+          },
+          {
+            "offset": 941,
+            "symbol": "_strdup_malloc",
+            "address": 4647156,
+            "before": "00000000",
+            "after": "a30c0400"
+          },
+          {
+            "offset": 953,
+            "symbol": "?update_notice_url@@3PADA",
+            "address": 5050868,
+            "before": "00000000",
+            "after": "f4114d00"
+          },
+          {
+            "offset": 969,
+            "symbol": "??_C@_0BG@GOO@Crimsonland?5?$CFd?4?$CFd?4?$CFd?$DM?$AA@",
+            "address": 4674728,
+            "before": "00000000",
+            "after": "a8544700"
+          },
+          {
+            "offset": 975,
+            "symbol": "_sscanf",
+            "address": 4598688,
+            "before": "00000000",
+            "after": "2d4f0300"
+          },
+          {
+            "offset": 1011,
+            "symbol": "?update_notice_url@@3PADA",
+            "address": 5050868,
+            "before": "00000000",
+            "after": "f4114d00"
+          },
+          {
+            "offset": 1025,
+            "symbol": "??_C@_0DB@FECL@There?5is?5a?5newer?5version?5availab@",
+            "address": 4674676,
+            "before": "00000000",
+            "after": "74544700"
+          },
+          {
+            "offset": 1030,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1035,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "c13bfdff"
+          },
+          {
+            "offset": 1043,
+            "symbol": "??_C@_0M@INMK@console?4log?$AA@",
+            "address": 4669480,
+            "before": "00000000",
+            "after": "28404700"
+          },
+          {
+            "offset": 1048,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1053,
+            "symbol": "?flush_log@console_queue_t@@QAEEPAD@Z",
+            "address": 4204640,
+            "before": "00000000",
+            "after": "9f4bfdff"
+          },
+          {
+            "offset": 1059,
+            "symbol": "??_C@_0M@KOO@Link?3?5?8?$CFs?8?6?$AA@",
+            "address": 4674664,
+            "before": "00000000",
+            "after": "68544700"
+          },
+          {
+            "offset": 1064,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1069,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "9f3bfdff"
+          },
+          {
+            "offset": 1078,
+            "symbol": "??_C@_0BG@FPEL@Newest?5Version?3?5?8?$CFs?8?6?$AA@",
+            "address": 4674640,
+            "before": "00000000",
+            "after": "50544700"
+          },
+          {
+            "offset": 1083,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1088,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "8c3bfdff"
+          },
+          {
+            "offset": 1096,
+            "symbol": "??_C@_0BD@MED@Crimsonland?51?49?493?$AA@",
+            "address": 4657860,
+            "before": "00000000",
+            "after": "c4124700"
+          },
+          {
+            "offset": 1101,
+            "symbol": "??_C@_0BF@FKEH@Local?5Version?3?5?8?$CFs?8?6?$AA@",
+            "address": 4674616,
+            "before": "00000000",
+            "after": "38544700"
+          },
+          {
+            "offset": 1109,
+            "symbol": "??_C@_0O@PCCN@Data?5not?5ok?4?6?$AA@",
+            "address": 4674600,
+            "before": "00000000",
+            "after": "28544700"
+          },
+          {
+            "offset": 1114,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1119,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "6d3bfdff"
+          },
+          {
+            "offset": 1128,
+            "symbol": "??_C@_0BA@HLAL@Received?3?5?8?$CFs?8?6?$AA@",
+            "address": 4674584,
+            "before": "00000000",
+            "after": "18544700"
+          },
+          {
+            "offset": 1133,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1138,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "5a3bfdff"
+          },
+          {
+            "offset": 1146,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1151,
+            "symbol": "??_C@_0M@INMK@console?4log?$AA@",
+            "address": 4669480,
+            "before": "00000000",
+            "after": "28404700"
+          },
+          {
+            "offset": 1156,
+            "symbol": "?flush_log@console_queue_t@@QAEEPAD@Z",
+            "address": 4204640,
+            "before": "00000000",
+            "after": "384bfdff"
+          },
+          {
+            "offset": 1163,
+            "symbol": "??_C@_0CI@IOAF@Version?5Check?3?5HttpOpenRequest?5f@",
+            "address": 4674544,
+            "before": "00000000",
+            "after": "f0534700"
+          },
+          {
+            "offset": 1170,
+            "symbol": "??_C@_0CI@CNCP@Version?5Check?3?5InternetConnect?5f@",
+            "address": 4674504,
+            "before": "00000000",
+            "after": "c8534700"
+          },
+          {
+            "offset": 1175,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1180,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "303bfdff"
+          },
+          {
+            "offset": 1188,
+            "symbol": "??_C@_0BI@MPPA@Version?5Check?3?5CleanUp?6?$AA@",
+            "address": 4674480,
+            "before": "00000000",
+            "after": "b0534700"
+          },
+          {
+            "offset": 1193,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1198,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "1e3bfdff"
+          },
+          {
+            "offset": 1204,
+            "symbol": "??3@YAXPAX@Z",
+            "address": 4591047,
+            "before": "00000000",
+            "after": "6f300300"
+          },
+          {
+            "offset": 1210,
+            "symbol": "__imp__InternetCloseHandle@4",
+            "address": 4649420,
+            "before": "00000000",
+            "after": "ccf14600"
+          },
+          {
+            "offset": 1261,
+            "symbol": "__imp__Sleep@4",
+            "address": 4649188,
+            "before": "00000000",
+            "after": "e4f04600"
+          },
+          {
+            "offset": 1274,
+            "symbol": "?online_sync_status@@3HA",
+            "address": 5050864,
+            "before": "00000000",
+            "after": "f0114d00"
+          },
+          {
+            "offset": 1286,
+            "symbol": "?online_sync_status@@3HA",
+            "address": 5050864,
+            "before": "00000000",
+            "after": "f0114d00"
+          },
+          {
+            "offset": 1296,
+            "symbol": "?update_notice_pending@@3EA",
+            "address": 5050872,
+            "before": "00000000",
+            "after": "f8114d00"
+          },
+          {
+            "offset": 1305,
+            "symbol": "__imp__Sleep@4",
+            "address": 4649188,
+            "before": "00000000",
+            "after": "e4f04600"
+          },
+          {
+            "offset": 1311,
+            "symbol": "?online_sync_status@@3HA",
+            "address": 5050864,
+            "before": "00000000",
+            "after": "f0114d00"
+          },
+          {
+            "offset": 1321,
+            "symbol": "?update_notice_pending@@3EA",
+            "address": 5050872,
+            "before": "00000000",
+            "after": "f8114d00"
+          },
+          {
+            "offset": 1327,
+            "symbol": "??_C@_0BP@GEMH@endthread?5?$CI?$CJ?5?5?$CIversion?5check?$CJ?6?$AA@",
+            "address": 4674448,
+            "before": "00000000",
+            "after": "90534700"
+          },
+          {
+            "offset": 1332,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1337,
+            "symbol": "_console_printf",
+            "address": 4200560,
+            "before": "00000000",
+            "after": "933afdff"
+          },
+          {
+            "offset": 1345,
+            "symbol": "?console_log_queue@@3Uconsole_queue_t@@A",
+            "address": 4714144,
+            "before": "00000000",
+            "after": "a0ee4700"
+          },
+          {
+            "offset": 1350,
+            "symbol": "??_C@_0M@INMK@console?4log?$AA@",
+            "address": 4669480,
+            "before": "00000000",
+            "after": "28404700"
+          },
+          {
+            "offset": 1355,
+            "symbol": "?flush_log@console_queue_t@@QAEEPAD@Z",
+            "address": 4204640,
+            "before": "00000000",
+            "after": "714afdff"
+          },
+          {
+            "offset": 1360,
+            "symbol": "_crt_endthread",
+            "address": 4596595,
+            "before": "00000000",
+            "after": "7f450300"
+          }
+        ],
+        "unresolved": [],
+        "crimson_exact": true,
+        "crimson_body_byte_exact": true,
+        "crimson_ratio": 1.0,
+        "clean_references": 120,
+        "reference_problems": 0,
+        "candidate_terminal_bytes_excluded": 0,
+        "resolved_bytes_equal": true
+      },
+      "self_control": {
+        "va": "0x0042d8a0",
+        "target_insns": 367,
+        "compiled_insns": 367,
+        "bytes": 1375,
+        "categories": {
+          "match": {
+            "bytes": 1375,
+            "percent": 100.0
+          },
+          "register": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "encoding": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "equivalent": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "reloc": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "structural": {
+            "bytes": 0,
+            "percent": 0.0
+          }
+        },
+        "verdict": "MATCH",
+        "suggestion": "Bytes are identical.",
+        "mutations": [],
+        "first_mismatch": null,
+        "frame": {
+          "frame_match": true,
+          "diffs": [],
+          "hints": [],
+          "slots": {
+            "target": [],
+            "compiled": []
+          }
+        },
+        "cfg": {
+          "node_sim": 100.0,
+          "edge_sim": 100.0,
+          "overall": 100.0,
+          "target_blocks": 29,
+          "candidate_blocks": 29,
+          "matched_blocks": 29
+        }
+      },
+      "diagnosis": {
+        "va": "0x0042d8a0",
+        "target_insns": 367,
+        "compiled_insns": 367,
+        "bytes": 1375,
+        "categories": {
+          "match": {
+            "bytes": 1375,
+            "percent": 100.0
+          },
+          "register": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "encoding": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "equivalent": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "reloc": {
+            "bytes": 0,
+            "percent": 0.0
+          },
+          "structural": {
+            "bytes": 0,
+            "percent": 0.0
+          }
+        },
+        "verdict": "MATCH",
+        "suggestion": "Bytes are identical.",
+        "mutations": [],
+        "first_mismatch": null,
+        "frame": {
+          "frame_match": true,
+          "diffs": [],
+          "hints": [],
+          "slots": {
+            "target": [],
+            "compiled": []
+          }
+        },
+        "cfg": {
+          "node_sim": 100.0,
+          "edge_sim": 100.0,
+          "overall": 100.0,
+          "target_blocks": 29,
+          "candidate_blocks": 29,
+          "matched_blocks": 29
+        }
+      },
+      "crimson": {
+        "match_ratio": 1.0,
+        "body_byte_exact": true,
+        "target_instructions": 367,
+        "candidate_instructions": 367,
+        "references": {
+          "ok": 120,
+          "unresolved": 0,
+          "mismatch": 0
+        },
+        "stack_frame": {
+          "target_prologue_allocation_bytes": 144,
+          "candidate_prologue_allocation_bytes": 144,
+          "target_minus_candidate_bytes": 0,
+          "classification": "same-prologue-allocation",
+          "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+        },
+        "residual_summary": {
+          "aligned_pairs": 367,
+          "identical_pairs": 367,
+          "stack_displacement_pairs": 0,
+          "branch_offset_pairs": 0,
+          "ambiguous_pairs": 0,
+          "remaining_spans": 0,
+          "remaining_target_instructions": 0,
+          "remaining_candidate_instructions": 0,
+          "stack_relationships": 0,
+          "conflicting_stack_relationships": 0,
+          "reference_problems": 0
+        }
+      }
+    }
+  },
+  "script_hashes": {
+    "export.py": "016fb6a4d6578bfb6523dc340eed900d89bab8797ba2d311dcaff5f4c0997249",
+    "analyze.py": "bef62b65cd034525927be36c6d7ad03298873ccc6927a3745e28026e4e8cebfb"
+  }
+}
