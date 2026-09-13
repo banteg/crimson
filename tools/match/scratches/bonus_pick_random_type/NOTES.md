@@ -1,5 +1,21 @@
 # bonus_pick_random_type WIP
 
+## Preserving block-layout trace (2026-09-13)
+
+[The late-pass replay](../../evidence/bonus-pick-layout-trace-2026-09-13/README.md)
+locates the motion in the duplicated-filter controls at C2+0x3663c, through
+the range-move helper called at C2+0x367ce. Canonical source does not invoke that
+move. Its stage-4 skip destination has a conditional predecessor; the controls
+supply an unconditional predecessor and move both stages 4 and 5. Duplicating
+only the Freeze filter still retains five extra instructions and moves too much.
+All three preserving traces reproduce their ordinary whole COFFs, apart from
+timestamp, and retain 20 clean reference instructions.
+
+This gives a concrete compiler gate for the next source hypothesis: recover a
+stage-5-only movable range without retaining duplicate filters or sharing the
+native stage-4 comparison. It does not establish the original source spelling;
+canonical source, flags, and exactness remain unchanged.
+
 ## Instruction-graph proof (2026-09-11)
 
 The independently replayable comparison in

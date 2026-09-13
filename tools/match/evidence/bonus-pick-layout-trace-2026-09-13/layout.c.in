@@ -1,0 +1,26 @@
+static HANDLE layout_file;
+static void layout_observe(unsigned long phase, unsigned long first, unsigned long *registers)
+{
+    unsigned long node, n=0, rec[12], h[5], j, op;
+    DWORD written;
+    for(node=first;node && n<MAX_NODES;node=*(unsigned long *)node)++n;
+    if(node)ExitProcess(97);
+    h[0]=phase;h[1]=n;
+    h[2]=phase==26?registers[6]:0;
+    h[3]=phase==26?registers[5]:0;
+    h[4]=phase==26?registers[10]:0;
+    if(!WriteFile(layout_file,h,sizeof(h),&written,0)||written!=sizeof(h))ExitProcess(79);
+    for(node=first;node;node=*(unsigned long *)node) {
+        for(j=0;j<12;++j)rec[j]=0;
+        rec[0]=node;
+        for(j=0;j<9;++j)rec[1+j]=*(unsigned long *)(node+4*j);
+        if((*(unsigned char *)(node+8)==0x11 || *(unsigned char *)(node+8)==0x10 || *(unsigned char *)(node+8)==0xe) && (*(unsigned char *)(node+9)&1)) {
+            op=*(unsigned long *)(node+0x18);
+            if(op && *(unsigned char *)(op+8)==4) {
+                rec[10]=*(unsigned long *)(op+0x14);
+                rec[11]=*(unsigned long *)(rec[10]+0x32);
+            }
+        }
+        if(!WriteFile(layout_file,rec,sizeof(rec),&written,0)||written!=sizeof(rec))ExitProcess(79);
+    }
+}

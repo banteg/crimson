@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "compiler_decisions_modified": false,
+  "rows": [
+    {
+      "name": "baseline",
+      "historical_control": null,
+      "source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+      "metrics": {
+        "ratio": 0.7592592592592593,
+        "target_instructions": 162,
+        "candidate_instructions": 162,
+        "prefix_instructions": 55,
+        "references_ok": 20,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "finding": {
+        "before": {
+          "nodes": 193,
+          "stage_four": 105,
+          "stage_five": 115
+        },
+        "after": {
+          "nodes": 198,
+          "stage_four": 105,
+          "stage_five": 115
+        },
+        "stage_four_skip_destination_predecessor": {
+          "opcode": 15,
+          "flags": 65809,
+          "has_condition": true,
+          "line": 76,
+          "unconditional": false
+        },
+        "range_moves": []
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "manifest_sha256": "daa6822c44b0b647fb5e77f7bd4d4e50eedb7608973cbe78db2d3690962991a0",
+      "layout_sha256": "19638eac8f59b3a00962cf681410795a33ff129e59a6a05b82496545a49b6d3d",
+      "trace_sha256": "f726d01a2e72a42331a0668acab664dfbbdebb45990d502043cd5e13b801a7f3"
+    },
+    {
+      "name": "freeze-prefix",
+      "historical_control": "common-prefix-controls/five-1",
+      "source_sha256": "204828355bb5565d0cdf98e2f95b20abb2014ec68f14a689edfabb1a9a9bc681",
+      "metrics": {
+        "ratio": 0.7781155015197568,
+        "target_instructions": 162,
+        "candidate_instructions": 167,
+        "prefix_instructions": 55,
+        "references_ok": 20,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "finding": {
+        "before": {
+          "nodes": 201,
+          "stage_four": 103,
+          "stage_five": 111
+        },
+        "after": {
+          "nodes": 205,
+          "stage_four": 163,
+          "stage_five": 171
+        },
+        "stage_four_skip_destination_predecessor": {
+          "opcode": 16,
+          "flags": 273,
+          "has_condition": false,
+          "line": 110,
+          "unconditional": true
+        },
+        "range_moves": [
+          {
+            "insert_before": 187,
+            "first": 102,
+            "last": 125,
+            "contains_stage_four": true,
+            "contains_stage_five": true,
+            "first_comparisons": [
+              66,
+              67,
+              68,
+              75,
+              76,
+              76
+            ]
+          }
+        ]
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "manifest_sha256": "620bd27861b9c96ead6171f277b11fc862553eaf8832d9e0f8e2b957a0a1f54a",
+      "layout_sha256": "66693afa386004cde54f5115d4ec91f112d99bdc7525bd1856d1532bd3f791cd",
+      "trace_sha256": "c517a1883c15745bbec1700a6657e98827a330b42b1db1f68b21c30dfc0b3425"
+    },
+    {
+      "name": "full-filters",
+      "historical_control": "duplicated-tail/stage-five-only",
+      "source_sha256": "f4b6a01429448ccd7afc4fd73e73f99a64e125915843758d6bee8268172eb067",
+      "metrics": {
+        "ratio": 0.547945205479452,
+        "target_instructions": 162,
+        "candidate_instructions": 203,
+        "prefix_instructions": 16,
+        "references_ok": 20,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "finding": {
+        "before": {
+          "nodes": 243,
+          "stage_four": 103,
+          "stage_five": 111
+        },
+        "after": {
+          "nodes": 247,
+          "stage_four": 163,
+          "stage_five": 171
+        },
+        "stage_four_skip_destination_predecessor": {
+          "opcode": 16,
+          "flags": 273,
+          "has_condition": false,
+          "line": 100,
+          "unconditional": true
+        },
+        "range_moves": [
+          {
+            "insert_before": 229,
+            "first": 102,
+            "last": 167,
+            "contains_stage_four": true,
+            "contains_stage_five": true,
+            "first_comparisons": [
+              66,
+              67,
+              68,
+              75,
+              76,
+              76
+            ]
+          }
+        ]
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "manifest_sha256": "fbf66fd0f3a3f67cdcc5855ab5c4b3edb233fbce76c6b0eca873bdbac0ecf026",
+      "layout_sha256": "67415b67df95104db27525faa9dcf467aa87f35ccf42d99382ec3618c8e80b8e",
+      "trace_sha256": "28f92276968a931bc2837b9a3c9d4dc59d09f639950a981479eddae7eedde31e"
+    }
+  ],
+  "harness_sha256": {
+    "verify.py": "5740c240f4a2e37c549ca417f2eb1748b87ecb9e6415ea6c9ca40805dbb148d9",
+    "profile.json": "d22029ed44ea5a6e00e0cdbc2191bd4f801ebedb27be738477f2f17535b562e4",
+    "layout.c.in": "2ebcc3e160f6c09ef29aae573b3dd1cdb6d5a476c34ba673746a4e7b58e62884"
+  },
+  "controls_sha256": "dac972919867cc569defcd568b67f7c86adc0e7237c2e90a6dea7afc351697be"
+}
