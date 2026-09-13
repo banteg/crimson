@@ -1,0 +1,1628 @@
+{
+  "schema": 1,
+  "function": "player_update",
+  "baseline_commit": "7811c5e2a64cd29545536f924ec2d2ad21c5167e",
+  "baseline_source_sha256": "a178f826e48456c76972fa8ebe96cee53edadbe2d22e52200a3b73228320ab4a",
+  "baseline_config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+  "baseline": {
+    "name": "baseline",
+    "parent": null,
+    "source_sha256": "a178f826e48456c76972fa8ebe96cee53edadbe2d22e52200a3b73228320ab4a",
+    "body_sha256": "8f868400f17db480997a20f7aa931a5a2fd80062862f082543c9c67a41da4a82",
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 4060,
+    "target": 4206,
+    "prefix": 7,
+    "refs": [
+      805,
+      0,
+      2
+    ],
+    "ratio": 0.6404548753931769
+  },
+  "selected": "cough-expression-initial-False",
+  "build": {
+    "compiler": "msvc6.5",
+    "cflags": "/O2 /GB /W3 /GR-",
+    "toolchain": {
+      "compiler_trees": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      },
+      "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+      "runner_mode": 493,
+      "cl_environment": {
+        "CL": null,
+        "_CL_": null
+      }
+    },
+    "dependencies": {
+      "tools/match/scratches/player_update/scratch.conf": "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9",
+      "tools/match/cl.sh": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8",
+      "tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+      "third_party/headers/crimsonland_types.h": "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9",
+      "tools/match/include/crimsonland_console.h": "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a",
+      "tools/match/include/crimsonland_gameplay.h": "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502",
+      "tools/match/include/crimsonland_terrain_owner.h": "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1",
+      "tools/match/include/grim2d_cpp.h": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+    }
+  },
+  "fixture_dependencies": {
+    "tools/match/evidence/player-aim-direction-2026-09-11/runner.py": "f16a034623c30637a525f1b692addeb284e96deeb89198f01307d4678601835a",
+    "tools/match/evidence/player-aim-direction-2026-09-11/fixtures.py": "579960c5acc8689d868d54d6dd9932ef806f30815cd0333cb16ae3ea6a6e2b88",
+    "tools/match/evidence/player-aim-direction-2026-09-11/layout.py": "7c8efda1fd6a0387bc0ec296a3ce6042a6ced5b706f03e44d995e0609c3c5661",
+    "tools/match/evidence/player-point-frame-2026-09-11/fixtures.py": "0285dcf0861fa3652f1a02a0f3af4bf11b617cc7405297e2c33432935a6f2e84",
+    "tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify.py": "0feda236cad0d813ab26523fefeb09e2224348c99cd6668ec89daeb711f96493",
+    "tools/match/evidence/plasma-head-alpha-2026-09-10/verify.py": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+    "tools/match/evidence/player-frame-controls-2026-09-14/frame_map.py": "bc0c04b1c908c96b1ebad4734304cd2f81c2a8d54e579e6267e2f4dea04b01eb",
+    "tools/match/evidence/player-point-frame-2026-09-11/results.json": "edd4d5c0c6ef75d7c12c3af7e4674b07602fa11e59edbd8001a9609fbd5298d3"
+  },
+  "controls": [
+    {
+      "name": "angle-float-all-named",
+      "edits": [
+        {
+          "start": 292,
+          "stop": 293,
+          "old": "                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "                atan2f(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n"
+        },
+        {
+          "start": 442,
+          "stop": 443,
+          "old": "                        (float)atan2(scratch_pos.y, scratch_pos.x)\n",
+          "new": "                        atan2f(scratch_pos.y, scratch_pos.x)\n"
+        },
+        {
+          "start": 501,
+          "stop": 502,
+          "old": "                    (float)atan2(movement_input.y, movement_input.x)\n",
+          "new": "                    atan2f(movement_input.y, movement_input.x)\n"
+        },
+        {
+          "start": 739,
+          "stop": 740,
+          "old": "            movement_heading = (float)atan2(\n",
+          "new": "            movement_heading = atan2f(\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "            movement_heading = (float)atan2(\n",
+          "new": "            movement_heading = atan2f(\n"
+        },
+        {
+          "start": 928,
+          "stop": 929,
+          "old": "                    (float)atan2(movement_input.y, movement_input.x)\n",
+          "new": "                    atan2f(movement_input.y, movement_input.x)\n"
+        },
+        {
+          "start": 1018,
+          "stop": 1019,
+          "old": "        (float)atan2(\n",
+          "new": "        atan2f(\n"
+        },
+        {
+          "start": 1169,
+          "stop": 1170,
+          "old": "        angle_step = (float)atan2(\n",
+          "new": "        angle_step = atan2f(\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "angle-float-all-named",
+        "parent": "baseline",
+        "source_sha256": "63b81223d1b14bd459aa650ef875cf88218b6627be2b3fe407f3d3fe7bc6296b",
+        "body_sha256": "936af467cbfa96c598c5c4b94664c61ec81360b39c56e13b2d9e36015eff2917",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4060,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6404548753931769
+      }
+    },
+    {
+      "name": "angle-float-all-returned",
+      "edits": [
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 293,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n"
+        },
+        {
+          "start": 442,
+          "stop": 443,
+          "old": "                        (float)atan2(scratch_pos.y, scratch_pos.x)\n",
+          "new": "                        atan2f(scratch_pos.y, scratch_pos.x)\n"
+        },
+        {
+          "start": 501,
+          "stop": 502,
+          "old": "                    (float)atan2(movement_input.y, movement_input.x)\n",
+          "new": "                    atan2f(movement_input.y, movement_input.x)\n"
+        },
+        {
+          "start": 739,
+          "stop": 740,
+          "old": "            movement_heading = (float)atan2(\n",
+          "new": "            movement_heading = atan2f(\n"
+        },
+        {
+          "start": 759,
+          "stop": 760,
+          "old": "            movement_heading = (float)atan2(\n",
+          "new": "            movement_heading = atan2f(\n"
+        },
+        {
+          "start": 928,
+          "stop": 929,
+          "old": "                    (float)atan2(movement_input.y, movement_input.x)\n",
+          "new": "                    atan2f(movement_input.y, movement_input.x)\n"
+        },
+        {
+          "start": 1018,
+          "stop": 1019,
+          "old": "        (float)atan2(\n",
+          "new": "        atan2f(\n"
+        },
+        {
+          "start": 1169,
+          "stop": 1170,
+          "old": "        angle_step = (float)atan2(\n",
+          "new": "        angle_step = atan2f(\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "angle-float-all-returned",
+        "parent": "baseline",
+        "source_sha256": "2f1dcd735f9d2ed66f9ca7f20d10e07998e5a72e0666d89d797a86c33ec7f5c2",
+        "body_sha256": "2253e9739deb645b198fd7c29e8e5efe8179a084d2e67867a1ad505472de2968",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4060,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          779,
+          0,
+          2
+        ],
+        "ratio": 0.6298088555528671
+      }
+    },
+    {
+      "name": "angle-float-named",
+      "edits": [
+        {
+          "start": 292,
+          "stop": 293,
+          "old": "                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "                atan2f(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "angle-float-named",
+        "parent": "baseline",
+        "source_sha256": "6445ef7da4c7517c798886c026383a41e5fd0144f7669dd3813f20f9da529de7",
+        "body_sha256": "687c2504205e58a262abc70aabb46fbde3b01644dfd2583d73ff55e413deaffd",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4061,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6394097012217249
+      }
+    },
+    {
+      "name": "angle-float-returned",
+      "edits": [
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 293,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "angle-float-returned",
+        "parent": "baseline",
+        "source_sha256": "a72d3a3860204b18d9ce49aeead9a077e85697c4ff2729ef3b3c571dd296e7d4",
+        "body_sha256": "965cbb855f439a391a282320190841ab7732f13170307ecb5a8b10b79ee78448",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4062,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400580551523948
+      }
+    },
+    {
+      "name": "angle-float-returned-helper",
+      "edits": [
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "\nstatic __inline float player_vector_angle(const vec2_t &v) { return atan2f(v.y, v.x); }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 293,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "            float shot_heading = player_vector_angle(*(vec2_t *)shot_delta) - 1.5707964f;\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "angle-float-returned-helper",
+        "parent": "baseline",
+        "source_sha256": "be3c8ef18225b20e9bfdb48800cbd2e146a0c927c599f4566ae15bb1ba2a8f18",
+        "body_sha256": "965cbb855f439a391a282320190841ab7732f13170307ecb5a8b10b79ee78448",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4062,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400580551523948
+      }
+    },
+    {
+      "name": "cough-angle-declare-early",
+      "edits": [
+        {
+          "start": 266,
+          "stop": 266,
+          "old": "",
+          "new": "            float shot_heading;\n"
+        },
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-angle-declare-early",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "70bd11e84a02b07226937ed1a975555a9fc6c28f0df6cd97afff9eff9045a88b",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-angle-declare-radius",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n            float shot_heading;\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-angle-declare-radius",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "be2d90ac4913897649d14be514b651d28872a41322ac21ed51b0dc19946b2000",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-angle-reuse-angle_step",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            angle_step = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 298,
+          "old": "                &movement_input,\n                shot_heading,\n",
+          "new": "                &move_delta,\n                angle_step,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-angle-reuse-angle_step",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "bca70daeb75fed8079f5c29c80fcd38da01ce4124263fd8c4ae0be6ee78d6c4a",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-angle-reuse-scalar",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            scalar = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 298,
+          "old": "                &movement_input,\n                shot_heading,\n",
+          "new": "                &move_delta,\n                scalar,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-angle-reuse-scalar",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "3b072f068a3510cefb3a7f07ef22c9da978a95f9a5f8b9a3caba317d1a642c4d",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-angle-reuse-spread_angle",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            spread_angle = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 298,
+          "old": "                &movement_input,\n                shot_heading,\n",
+          "new": "                &move_delta,\n                spread_angle,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-angle-reuse-spread_angle",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "15d8799a89689ecd17793a51042ead3704d364cfc6f59f5c43da9efcfcc6bf9d",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-angle-reuse-spread_radius",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            spread_radius = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 298,
+          "old": "                &movement_input,\n                shot_heading,\n",
+          "new": "                &move_delta,\n                spread_radius,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-angle-reuse-spread_radius",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "2a193d5cae4b4a92846ef5118d03fe7e1ac05b55866ec60bafe535950d3d0c61",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-distance-double-local",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        },
+        {
+          "start": 403,
+          "stop": 404,
+          "old": "                float distance = (float)sqrt(\n",
+          "new": "                double distance = sqrt(\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-distance-double-local",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "4531a27e97cb70a7f6d50b6df2908abd1fcbe387ce8146af8224a4f4a8a578bd",
+        "body_sha256": "faf4fc10bc38139bece431fa2bd790c171839286f3924326d7ac21dcb97e5de1",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          803,
+          0,
+          2
+        ],
+        "ratio": 0.6386270244138265
+      }
+    },
+    {
+      "name": "cough-distance-sqrtf",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        },
+        {
+          "start": 403,
+          "stop": 404,
+          "old": "                float distance = (float)sqrt(\n",
+          "new": "                float distance = sqrtf(\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-distance-sqrtf",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "4083ffa29c9cff661f2f66b55de0e707ab4f4a7f4a48bdb2049f6266ffee49fc",
+        "body_sha256": "7beb9bd90372b3a9dd5012f2f8c905ee3edf60025ab0d1e393d939acd4820f8f",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-distance-square-local",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        },
+        {
+          "start": 403,
+          "stop": 404,
+          "old": "                float distance = (float)sqrt(\n",
+          "new": "                float squared = (\n"
+        },
+        {
+          "start": 408,
+          "stop": 408,
+          "old": "",
+          "new": "                float distance = sqrtf(squared);\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-distance-square-local",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "ba8347ee548a00775a6416c267929f65d46ee3c412597716866c512c5efb15a9",
+        "body_sha256": "8947be4ef6d65004e27cb096049c43c247d4c5f529c4f3ab0f1e9bbbc48202df",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4067,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          779,
+          0,
+          2
+        ],
+        "ratio": 0.6287924573915146
+      }
+    },
+    {
+      "name": "cough-expression-initial-False",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-expression-initial-False",
+        "parent": "cough-expression-temporaries",
+        "source_sha256": "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1",
+        "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-expression-initial-True",
+      "edits": [
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)&fire_player->position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-expression-initial-True",
+        "parent": "cough-expression-selected",
+        "source_sha256": "060958ec1888f9d15f9a014d2a555bdca692e92193ce3a6c936d823cf2aa3f0a",
+        "body_sha256": "f5c3e9a33d42e04dc2aaecd32e291446fc52d13553b67c2ceb99d0da8d825229",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4071,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          798,
+          0,
+          4
+        ],
+        "ratio": 0.6364624864081189
+      }
+    },
+    {
+      "name": "cough-expression-owner-early",
+      "edits": [
+        {
+          "start": 266,
+          "stop": 266,
+          "old": "",
+          "new": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n"
+        },
+        {
+          "start": 271,
+          "stop": 273,
+          "old": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n",
+          "new": ""
+        },
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)&fire_player->position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-expression-owner-early",
+        "parent": "cough-expression-initial-True",
+        "source_sha256": "d0f7426de8abcac0859c482448fa8ba0df293900500f0f836c4724414290c4b5",
+        "body_sha256": "f5c3e9a33d42e04dc2aaecd32e291446fc52d13553b67c2ceb99d0da8d825229",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4071,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          798,
+          0,
+          4
+        ],
+        "ratio": 0.6364624864081189
+      }
+    },
+    {
+      "name": "cough-expression-selected",
+      "edits": [
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)&fire_player->position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-expression-selected",
+        "parent": "cough-expression-temporaries",
+        "source_sha256": "787842f349b969dc4c58ffbfaac216f12154f757228410d83d32254881575708",
+        "body_sha256": "bf0c706fd1d85a782a09d97aacf65285815a9f1372b684e71be12377b72909fb",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4071,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          798,
+          0,
+          4
+        ],
+        "ratio": 0.6364624864081189
+      }
+    },
+    {
+      "name": "cough-expression-temporaries",
+      "edits": [
+        {
+          "start": 288,
+          "stop": 289,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n",
+          "new": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n"
+        },
+        {
+          "start": 291,
+          "stop": 295,
+          "old": "            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-expression-temporaries",
+        "parent": "angle-float-returned",
+        "source_sha256": "1ec029a691ecf43f33c6a316a033744a89b9b4d9ca42f0a29f8e3bd52479019c",
+        "body_sha256": "b9751adce661ca1c338e5c7087f922ebb82d205233fa0d3c0e46c1d5b26aae0b",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 7,
+        "refs": [
+          805,
+          0,
+          2
+        ],
+        "ratio": 0.6400773507372493
+      }
+    },
+    {
+      "name": "cough-nested-constructor-heading-first",
+      "edits": [
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            float shot_heading = cough_vector_angle(*(vec2_t *)((vec2_t *)player_position)->vec2_sub(&scratch_pos.x, &random_offset.x)) - 1.5707964f;\n            cough_projectile(cough_vec_t(movement_input.x + player_position->x, movement_input.y + player_position->y),shot_heading,PROJECTILE_TYPE_FIRE_BULLETS,owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-nested-constructor-heading-first",
+        "parent": "baseline",
+        "source_sha256": "bcf059709b4549e61050268f33fcb85aac5fbca199baf6d6509df9092b6d722c",
+        "body_sha256": "4e924b0b6f0bc0f4c42d6281540a6cb9d32976113429e6b3fe88ea170a600182",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4067,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          760,
+          0,
+          13
+        ],
+        "ratio": 0.5802006527257343
+      }
+    },
+    {
+      "name": "cough-nested-constructor-nested",
+      "edits": [
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            cough_projectile(cough_vec_t(movement_input.x + player_position->x, movement_input.y + player_position->y),\n                cough_vector_angle(*(vec2_t *)((vec2_t *)player_position)->vec2_sub(&scratch_pos.x, &random_offset.x)) - 1.5707964f, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-nested-constructor-nested",
+        "parent": "baseline",
+        "source_sha256": "fdfd58212a5acc5fb0eb813396ee9f345bd8b4e98fca9ae6b8b8b6d10fe2a922",
+        "body_sha256": "d5597b08d15cf4dcb792b02ae860134a10c34d35352eedbc11e539f4d35b1c24",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          760,
+          0,
+          13
+        ],
+        "ratio": 0.5806139714769156
+      }
+    },
+    {
+      "name": "cough-nested-constructor-point-first",
+      "edits": [
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            cough_vec_t shot_point = cough_vec_t(movement_input.x + player_position->x, movement_input.y + player_position->y);\n            cough_projectile(shot_point,cough_vector_angle(*(vec2_t *)((vec2_t *)player_position)->vec2_sub(&scratch_pos.x, &random_offset.x)) - 1.5707964f,PROJECTILE_TYPE_FIRE_BULLETS,owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-nested-constructor-point-first",
+        "parent": "baseline",
+        "source_sha256": "34c6c9e96f613265299e6fa3abc28f40f2d15189ccbf48719c2adf5061b2fa25",
+        "body_sha256": "3a2478e26c2e494e4ec53994b662679bb4c5abd872df71b187b2ea1db214583a",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4066,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          731,
+          0,
+          13
+        ],
+        "ratio": 0.5698742746615088
+      }
+    },
+    {
+      "name": "cough-nested-operator-heading-first",
+      "edits": [
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            float shot_heading = cough_vector_angle(*(vec2_t *)((vec2_t *)player_position)->vec2_sub(&scratch_pos.x, &random_offset.x)) - 1.5707964f;\n            cough_projectile(*(cough_vec_t *)&movement_input + *(cough_vec_t *)player_position,shot_heading,PROJECTILE_TYPE_FIRE_BULLETS,owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-nested-operator-heading-first",
+        "parent": "baseline",
+        "source_sha256": "a4a50848e7ba1230f3959a750e473edf8153ec0332561a87215504389ff14290",
+        "body_sha256": "4e924b0b6f0bc0f4c42d6281540a6cb9d32976113429e6b3fe88ea170a600182",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4067,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          760,
+          0,
+          13
+        ],
+        "ratio": 0.5802006527257343
+      }
+    },
+    {
+      "name": "cough-nested-operator-nested",
+      "edits": [
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            cough_projectile(*(cough_vec_t *)&movement_input + *(cough_vec_t *)player_position,\n                cough_vector_angle(*(vec2_t *)((vec2_t *)player_position)->vec2_sub(&scratch_pos.x, &random_offset.x)) - 1.5707964f, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-nested-operator-nested",
+        "parent": "baseline",
+        "source_sha256": "5fa3af6eaa75df128961c7fc1ee0f73222b44975037c1ed0e9273f5b715ed305",
+        "body_sha256": "d5597b08d15cf4dcb792b02ae860134a10c34d35352eedbc11e539f4d35b1c24",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          760,
+          0,
+          13
+        ],
+        "ratio": 0.5806139714769156
+      }
+    },
+    {
+      "name": "cough-nested-operator-point-first",
+      "edits": [
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            cough_vec_t shot_point = *(cough_vec_t *)&movement_input + *(cough_vec_t *)player_position;\n            cough_projectile(shot_point,cough_vector_angle(*(vec2_t *)((vec2_t *)player_position)->vec2_sub(&scratch_pos.x, &random_offset.x)) - 1.5707964f,PROJECTILE_TYPE_FIRE_BULLETS,owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-nested-operator-point-first",
+        "parent": "baseline",
+        "source_sha256": "5e7c30ecd70eb15c56320d7262630ae976258e158d3fe8252408c1292c6c850f",
+        "body_sha256": "429c15cc33a3321e2431b567dc397c99a5b6c0a5884f29243e93d83204a12215",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4067,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          712,
+          0,
+          18
+        ],
+        "ratio": 0.5601353801523027
+      }
+    },
+    {
+      "name": "cough-sret-float-False-nested",
+      "edits": [
+        {
+          "start": 15,
+          "stop": 15,
+          "old": "",
+          "new": "    vec2_t operator-(const vec2_t &rhs);\n"
+        },
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            cough_projectile(*(cough_vec_t *)&movement_input + *(cough_vec_t *)player_position,\n                cough_vector_angle((*(vec2_t *)player_position - *(vec2_t *)&random_offset)) - 1.5707964f, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub,??Gvec2_t@@QAE?AU0@ABU0@@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-sret-float-False-nested",
+        "parent": "cough-nested-operator-nested",
+        "source_sha256": "36e3a36b72e13f1386e549c73bc585bed8a8a6a97d11a89f5b56ec13c2e2de8e",
+        "body_sha256": "f5b16ebd204c316010599b4eb44300f030a72a8b26a9f6a31ed6fc819a8aafce",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          668,
+          0,
+          9
+        ],
+        "ratio": 0.48271694464587867
+      }
+    },
+    {
+      "name": "cough-sret-float-False-plain",
+      "edits": [
+        {
+          "start": 15,
+          "stop": 15,
+          "old": "",
+          "new": "    vec2_t operator-(const vec2_t &rhs);\n"
+        },
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\n"
+        },
+        {
+          "start": 288,
+          "stop": 293,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "            float shot_heading = cough_vector_angle(\n                *(vec2_t *)player_position - *(vec2_t *)&random_offset) - 1.5707964f;\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub,??Gvec2_t@@QAE?AU0@ABU0@@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-sret-float-False-plain",
+        "parent": "angle-float-returned",
+        "source_sha256": "e928a796f6f5a6e4c9f4138b6bf2246566c789ad068b3c204b256ca4051ff07f",
+        "body_sha256": "2184e2bfd6f599a0f5d7233a090849b1420627ee4233dcec3ec8a95d6183ab86",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4062,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          764,
+          0,
+          12
+        ],
+        "ratio": 0.5822447992259313
+      }
+    },
+    {
+      "name": "cough-sret-float-False-temporary",
+      "edits": [
+        {
+          "start": 15,
+          "stop": 15,
+          "old": "",
+          "new": "    vec2_t operator-(const vec2_t &rhs);\n"
+        },
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\n"
+        },
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 295,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = cough_vector_angle(\n                *(vec2_t *)player_position - *(vec2_t *)&random_offset) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub,??Gvec2_t@@QAE?AU0@ABU0@@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-sret-float-False-temporary",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "3d802d5ab7ed637aa8c62c8ba8239a0f34785818d3e89061c3581f3baa701b48",
+        "body_sha256": "c82878893a84dde4a9d3167f3616ee5f6f3a86fabe8acd480a87d98e18393d3c",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          760,
+          0,
+          13
+        ],
+        "ratio": 0.5806139714769156
+      }
+    },
+    {
+      "name": "cough-sret-float-True-nested",
+      "edits": [
+        {
+          "start": 15,
+          "stop": 15,
+          "old": "",
+          "new": "    vec2_t operator-(const vec2_t &rhs) const;\n"
+        },
+        {
+          "start": 121,
+          "stop": 121,
+          "old": "",
+          "new": "}\n\n\nstruct cough_vec_t {\n    float x, y;\n    cough_vec_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    cough_vec_t operator+(const cough_vec_t &rhs) const {\n        return cough_vec_t(x+rhs.x, y+rhs.y);\n    }\n};\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\nstatic __inline int cough_projectile(const cough_vec_t &pos, float angle, projectile_type_id_t type, int owner) {\n    return projectile_spawn((const vec2f_t *)&pos, angle, type, owner);\n"
+        },
+        {
+          "start": 288,
+          "stop": 300,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n",
+          "new": "            cough_projectile(*(cough_vec_t *)&movement_input + *(cough_vec_t *)player_position,\n                cough_vector_angle((*(vec2_t *)player_position - *(vec2_t *)&random_offset)) - 1.5707964f, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x += player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub,??Gvec2_t@@QBE?AU0@ABU0@@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-sret-float-True-nested",
+        "parent": "cough-nested-operator-nested",
+        "source_sha256": "d35074d4864bdc2b19c6a7a7d183a261d91fcaba0e8fa335327c0af46d805e21",
+        "body_sha256": "f5b16ebd204c316010599b4eb44300f030a72a8b26a9f6a31ed6fc819a8aafce",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          668,
+          0,
+          9
+        ],
+        "ratio": 0.48271694464587867
+      }
+    },
+    {
+      "name": "cough-sret-float-True-plain",
+      "edits": [
+        {
+          "start": 15,
+          "stop": 15,
+          "old": "",
+          "new": "    vec2_t operator-(const vec2_t &rhs) const;\n"
+        },
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\n"
+        },
+        {
+          "start": 288,
+          "stop": 293,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n",
+          "new": "            float shot_heading = cough_vector_angle(\n                *(vec2_t *)player_position - *(vec2_t *)&random_offset) - 1.5707964f;\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub,??Gvec2_t@@QBE?AU0@ABU0@@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-sret-float-True-plain",
+        "parent": "angle-float-returned",
+        "source_sha256": "e96dece85d0fd39d798bbcdad4dad073b8f440420e475cfeee2bbba83b30366e",
+        "body_sha256": "2184e2bfd6f599a0f5d7233a090849b1420627ee4233dcec3ec8a95d6183ab86",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4062,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          764,
+          0,
+          12
+        ],
+        "ratio": 0.5822447992259313
+      }
+    },
+    {
+      "name": "cough-sret-float-True-temporary",
+      "edits": [
+        {
+          "start": 15,
+          "stop": 15,
+          "old": "",
+          "new": "    vec2_t operator-(const vec2_t &rhs) const;\n"
+        },
+        {
+          "start": 16,
+          "stop": 16,
+          "old": "",
+          "new": "\nstatic __inline float cough_vector_angle(const vec2_t &v) { return atan2f(v.y,v.x); }\n"
+        },
+        {
+          "start": 275,
+          "stop": 277,
+          "old": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n",
+          "new": "            {\n                float y = random_offset.y - fire_player->position.y;\n                move_delta.x = random_offset.x - fire_player->position.x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 288,
+          "stop": 295,
+          "old": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n",
+          "new": "            float shot_heading = cough_vector_angle(\n                *(vec2_t *)player_position - *(vec2_t *)&random_offset) - 1.5707964f;\n            {\n                float y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = y;\n            }\n"
+        },
+        {
+          "start": 296,
+          "stop": 297,
+          "old": "                &movement_input,\n",
+          "new": "                &move_delta,\n"
+        },
+        {
+          "start": 303,
+          "stop": 303,
+          "old": "",
+          "new": "            {\n                float y = movement_input.y + player_position->y;\n                movement_input.x = movement_input.x + player_position->x;\n                movement_input.y = y;\n            }\n"
+        }
+      ],
+      "config": "IMAGE=crimsonland.exe\nFUNCTION=player_update\nSYMBOL=player_update\nSOURCE=scratch.cpp\nNOTE=core-player-simulation\nRECOVERY=semantic-complete\nRESIDUAL=compiler,references\nREFERENCE_ALIASES='?vec2_sub@vec2_t@@QAEPAMPAM0@Z:vec2_sub,??Gvec2_t@@QBE?AU0@ABU0@@Z:vec2_sub'\n",
+      "observed": {
+        "name": "cough-sret-float-True-temporary",
+        "parent": "cough-expression-initial-False",
+        "source_sha256": "07c5a296a3b9c475e7396f2c0a7074d7091211bdb09c6d2dc8f4dbbe502612a8",
+        "body_sha256": "c82878893a84dde4a9d3167f3616ee5f6f3a86fabe8acd480a87d98e18393d3c",
+        "exact": false,
+        "body_byte_exact": false,
+        "instructions": 4068,
+        "target": 4206,
+        "prefix": 1,
+        "refs": [
+          760,
+          0,
+          13
+        ],
+        "ratio": 0.5806139714769156
+      }
+    }
+  ]
+}

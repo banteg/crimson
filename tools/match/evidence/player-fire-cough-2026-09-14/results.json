@@ -1,0 +1,718 @@
+{
+  "schema": 1,
+  "controls_sha256": "48bf9d708640c3b8e12c1b96b0dee7b72cfef8bb432deb0578e7d7ab340d2c18",
+  "verifier_sha256": "dcfaea1987464f02d04d866ac0c21f2cf84b779f17b7b5eaf8a6922cbc0c46e8",
+  "compiler_controls": [
+    {
+      "name": "baseline",
+      "source_sha256": "a178f826e48456c76972fa8ebe96cee53edadbe2d22e52200a3b73228320ab4a",
+      "body_sha256": "8f868400f17db480997a20f7aa931a5a2fd80062862f082543c9c67a41da4a82",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4060,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6404548753931769
+    },
+    {
+      "name": "angle-float-all-named",
+      "source_sha256": "63b81223d1b14bd459aa650ef875cf88218b6627be2b3fe407f3d3fe7bc6296b",
+      "body_sha256": "936af467cbfa96c598c5c4b94664c61ec81360b39c56e13b2d9e36015eff2917",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4060,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6404548753931769
+    },
+    {
+      "name": "angle-float-all-returned",
+      "source_sha256": "2f1dcd735f9d2ed66f9ca7f20d10e07998e5a72e0666d89d797a86c33ec7f5c2",
+      "body_sha256": "2253e9739deb645b198fd7c29e8e5efe8179a084d2e67867a1ad505472de2968",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4060,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        779,
+        0,
+        2
+      ],
+      "ratio": 0.6298088555528671
+    },
+    {
+      "name": "angle-float-named",
+      "source_sha256": "6445ef7da4c7517c798886c026383a41e5fd0144f7669dd3813f20f9da529de7",
+      "body_sha256": "687c2504205e58a262abc70aabb46fbde3b01644dfd2583d73ff55e413deaffd",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4061,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6394097012217249
+    },
+    {
+      "name": "angle-float-returned",
+      "source_sha256": "a72d3a3860204b18d9ce49aeead9a077e85697c4ff2729ef3b3c571dd296e7d4",
+      "body_sha256": "965cbb855f439a391a282320190841ab7732f13170307ecb5a8b10b79ee78448",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4062,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400580551523948
+    },
+    {
+      "name": "angle-float-returned-helper",
+      "source_sha256": "be3c8ef18225b20e9bfdb48800cbd2e146a0c927c599f4566ae15bb1ba2a8f18",
+      "body_sha256": "965cbb855f439a391a282320190841ab7732f13170307ecb5a8b10b79ee78448",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4062,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400580551523948
+    },
+    {
+      "name": "cough-angle-declare-early",
+      "source_sha256": "70bd11e84a02b07226937ed1a975555a9fc6c28f0df6cd97afff9eff9045a88b",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-angle-declare-radius",
+      "source_sha256": "be2d90ac4913897649d14be514b651d28872a41322ac21ed51b0dc19946b2000",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-angle-reuse-angle_step",
+      "source_sha256": "bca70daeb75fed8079f5c29c80fcd38da01ce4124263fd8c4ae0be6ee78d6c4a",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-angle-reuse-scalar",
+      "source_sha256": "3b072f068a3510cefb3a7f07ef22c9da978a95f9a5f8b9a3caba317d1a642c4d",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-angle-reuse-spread_angle",
+      "source_sha256": "15d8799a89689ecd17793a51042ead3704d364cfc6f59f5c43da9efcfcc6bf9d",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-angle-reuse-spread_radius",
+      "source_sha256": "2a193d5cae4b4a92846ef5118d03fe7e1ac05b55866ec60bafe535950d3d0c61",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-distance-double-local",
+      "source_sha256": "4531a27e97cb70a7f6d50b6df2908abd1fcbe387ce8146af8224a4f4a8a578bd",
+      "body_sha256": "faf4fc10bc38139bece431fa2bd790c171839286f3924326d7ac21dcb97e5de1",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        803,
+        0,
+        2
+      ],
+      "ratio": 0.6386270244138265
+    },
+    {
+      "name": "cough-distance-sqrtf",
+      "source_sha256": "4083ffa29c9cff661f2f66b55de0e707ab4f4a7f4a48bdb2049f6266ffee49fc",
+      "body_sha256": "7beb9bd90372b3a9dd5012f2f8c905ee3edf60025ab0d1e393d939acd4820f8f",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-distance-square-local",
+      "source_sha256": "ba8347ee548a00775a6416c267929f65d46ee3c412597716866c512c5efb15a9",
+      "body_sha256": "8947be4ef6d65004e27cb096049c43c247d4c5f529c4f3ab0f1e9bbbc48202df",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        779,
+        0,
+        2
+      ],
+      "ratio": 0.6287924573915146
+    },
+    {
+      "name": "cough-expression-initial-False",
+      "source_sha256": "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-expression-initial-True",
+      "source_sha256": "060958ec1888f9d15f9a014d2a555bdca692e92193ce3a6c936d823cf2aa3f0a",
+      "body_sha256": "f5c3e9a33d42e04dc2aaecd32e291446fc52d13553b67c2ceb99d0da8d825229",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4071,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        798,
+        0,
+        4
+      ],
+      "ratio": 0.6364624864081189
+    },
+    {
+      "name": "cough-expression-owner-early",
+      "source_sha256": "d0f7426de8abcac0859c482448fa8ba0df293900500f0f836c4724414290c4b5",
+      "body_sha256": "f5c3e9a33d42e04dc2aaecd32e291446fc52d13553b67c2ceb99d0da8d825229",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4071,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        798,
+        0,
+        4
+      ],
+      "ratio": 0.6364624864081189
+    },
+    {
+      "name": "cough-expression-selected",
+      "source_sha256": "787842f349b969dc4c58ffbfaac216f12154f757228410d83d32254881575708",
+      "body_sha256": "bf0c706fd1d85a782a09d97aacf65285815a9f1372b684e71be12377b72909fb",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4071,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        798,
+        0,
+        4
+      ],
+      "ratio": 0.6364624864081189
+    },
+    {
+      "name": "cough-expression-temporaries",
+      "source_sha256": "1ec029a691ecf43f33c6a316a033744a89b9b4d9ca42f0a29f8e3bd52479019c",
+      "body_sha256": "b9751adce661ca1c338e5c7087f922ebb82d205233fa0d3c0e46c1d5b26aae0b",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "cough-nested-constructor-heading-first",
+      "source_sha256": "bcf059709b4549e61050268f33fcb85aac5fbca199baf6d6509df9092b6d722c",
+      "body_sha256": "4e924b0b6f0bc0f4c42d6281540a6cb9d32976113429e6b3fe88ea170a600182",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        760,
+        0,
+        13
+      ],
+      "ratio": 0.5802006527257343
+    },
+    {
+      "name": "cough-nested-constructor-nested",
+      "source_sha256": "fdfd58212a5acc5fb0eb813396ee9f345bd8b4e98fca9ae6b8b8b6d10fe2a922",
+      "body_sha256": "d5597b08d15cf4dcb792b02ae860134a10c34d35352eedbc11e539f4d35b1c24",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        760,
+        0,
+        13
+      ],
+      "ratio": 0.5806139714769156
+    },
+    {
+      "name": "cough-nested-constructor-point-first",
+      "source_sha256": "34c6c9e96f613265299e6fa3abc28f40f2d15189ccbf48719c2adf5061b2fa25",
+      "body_sha256": "3a2478e26c2e494e4ec53994b662679bb4c5abd872df71b187b2ea1db214583a",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4066,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        731,
+        0,
+        13
+      ],
+      "ratio": 0.5698742746615088
+    },
+    {
+      "name": "cough-nested-operator-heading-first",
+      "source_sha256": "a4a50848e7ba1230f3959a750e473edf8153ec0332561a87215504389ff14290",
+      "body_sha256": "4e924b0b6f0bc0f4c42d6281540a6cb9d32976113429e6b3fe88ea170a600182",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        760,
+        0,
+        13
+      ],
+      "ratio": 0.5802006527257343
+    },
+    {
+      "name": "cough-nested-operator-nested",
+      "source_sha256": "5fa3af6eaa75df128961c7fc1ee0f73222b44975037c1ed0e9273f5b715ed305",
+      "body_sha256": "d5597b08d15cf4dcb792b02ae860134a10c34d35352eedbc11e539f4d35b1c24",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        760,
+        0,
+        13
+      ],
+      "ratio": 0.5806139714769156
+    },
+    {
+      "name": "cough-nested-operator-point-first",
+      "source_sha256": "5e7c30ecd70eb15c56320d7262630ae976258e158d3fe8252408c1292c6c850f",
+      "body_sha256": "429c15cc33a3321e2431b567dc397c99a5b6c0a5884f29243e93d83204a12215",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        712,
+        0,
+        18
+      ],
+      "ratio": 0.5601353801523027
+    },
+    {
+      "name": "cough-sret-float-False-nested",
+      "source_sha256": "36e3a36b72e13f1386e549c73bc585bed8a8a6a97d11a89f5b56ec13c2e2de8e",
+      "body_sha256": "f5b16ebd204c316010599b4eb44300f030a72a8b26a9f6a31ed6fc819a8aafce",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        668,
+        0,
+        9
+      ],
+      "ratio": 0.48271694464587867
+    },
+    {
+      "name": "cough-sret-float-False-plain",
+      "source_sha256": "e928a796f6f5a6e4c9f4138b6bf2246566c789ad068b3c204b256ca4051ff07f",
+      "body_sha256": "2184e2bfd6f599a0f5d7233a090849b1420627ee4233dcec3ec8a95d6183ab86",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4062,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        764,
+        0,
+        12
+      ],
+      "ratio": 0.5822447992259313
+    },
+    {
+      "name": "cough-sret-float-False-temporary",
+      "source_sha256": "3d802d5ab7ed637aa8c62c8ba8239a0f34785818d3e89061c3581f3baa701b48",
+      "body_sha256": "c82878893a84dde4a9d3167f3616ee5f6f3a86fabe8acd480a87d98e18393d3c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        760,
+        0,
+        13
+      ],
+      "ratio": 0.5806139714769156
+    },
+    {
+      "name": "cough-sret-float-True-nested",
+      "source_sha256": "d35074d4864bdc2b19c6a7a7d183a261d91fcaba0e8fa335327c0af46d805e21",
+      "body_sha256": "f5b16ebd204c316010599b4eb44300f030a72a8b26a9f6a31ed6fc819a8aafce",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        668,
+        0,
+        9
+      ],
+      "ratio": 0.48271694464587867
+    },
+    {
+      "name": "cough-sret-float-True-plain",
+      "source_sha256": "e96dece85d0fd39d798bbcdad4dad073b8f440420e475cfeee2bbba83b30366e",
+      "body_sha256": "2184e2bfd6f599a0f5d7233a090849b1420627ee4233dcec3ec8a95d6183ab86",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4062,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        764,
+        0,
+        12
+      ],
+      "ratio": 0.5822447992259313
+    },
+    {
+      "name": "cough-sret-float-True-temporary",
+      "source_sha256": "07c5a296a3b9c475e7396f2c0a7074d7091211bdb09c6d2dc8f4dbbe502612a8",
+      "body_sha256": "c82878893a84dde4a9d3167f3616ee5f6f3a86fabe8acd480a87d98e18393d3c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        760,
+        0,
+        13
+      ],
+      "ratio": 0.5806139714769156
+    }
+  ],
+  "frames": {
+    "baseline": {
+      "native": {
+        "instructions": 4206,
+        "reached": 4206,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4205,
+            0
+          ]
+        ]
+      },
+      "candidate": {
+        "instructions": 4060,
+        "reached": 4060,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4059,
+            0
+          ]
+        ]
+      }
+    },
+    "cough-expression-initial-False": {
+      "native": {
+        "instructions": 4206,
+        "reached": 4206,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4205,
+            0
+          ]
+        ]
+      },
+      "candidate": {
+        "instructions": 4068,
+        "reached": 4068,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4067,
+            0
+          ]
+        ]
+      }
+    }
+  },
+  "execution": {
+    "cases": 3827,
+    "differences": 0,
+    "cases_sha256": "5c626d3d1ce52a76181d527f9f0777dbf61eb4201b7ad7f53129b3a478fb2086",
+    "observations_sha256": "fc1583fa495e450919aedb09c7c0b9e47626628d398823f28e3f9922de173361",
+    "layout": {
+      "sizeof(player_state_t)": 864,
+      "sizeof(creature_t)": 152,
+      "sizeof(creature_spawn_slot_t)": 24,
+      "sizeof(projectile_t)": 64,
+      "sizeof(projectile_pool_t)": 6144,
+      "sizeof(sprite_effect_t)": 44,
+      "sizeof(particle_t)": 56,
+      "sizeof(effect_template_t)": 60,
+      "sizeof(weapon_stats_t)": 124,
+      "offsetof(cvar_float_t, value)": 12,
+      "offsetof(player_state_t, death_timer)": 16,
+      "offsetof(player_state_t, pos_x)": 20,
+      "offsetof(player_state_t, pos_y)": 24,
+      "offsetof(player_state_t, health)": 36,
+      "offsetof(player_state_t, heading)": 44,
+      "offsetof(player_state_t, size)": 52,
+      "offsetof(player_state_t, speed_multiplier)": 92,
+      "offsetof(player_state_t, move_speed)": 104,
+      "offsetof(player_state_t, move_phase)": 148,
+      "offsetof(player_state_t, spread_heat)": 696,
+      "offsetof(player_state_t, clip_size)": 708,
+      "offsetof(player_state_t, ammo)": 716,
+      "offsetof(player_state_t, reload_timer)": 720,
+      "offsetof(player_state_t, shot_cooldown)": 724,
+      "offsetof(player_state_t, reload_timer_max)": 728,
+      "offsetof(player_state_t, muzzle_flash_alpha)": 764,
+      "offsetof(player_state_t, aim_heading)": 768,
+      "offsetof(player_state_t, turn_speed)": 772,
+      "offsetof(player_state_t, low_health_timer)": 784,
+      "offsetof(player_state_t, speed_bonus_timer)": 788,
+      "offsetof(player_state_t, man_bomb_timer)": 160,
+      "offsetof(player_state_t, living_fortress_timer)": 164,
+      "offsetof(player_state_t, fire_cough_timer)": 168,
+      "offsetof(player_state_t, hot_tempered_timer)": 156,
+      "offsetof(player_state_t, fire_bullets_timer)": 796,
+      "offsetof(player_state_t, alt_clip_size)": 736,
+      "offsetof(player_state_t, alt_ammo)": 744,
+      "offsetof(player_state_t, alt_reload_timer)": 748,
+      "offsetof(player_state_t, alt_shot_cooldown)": 752,
+      "offsetof(player_state_t, alt_reload_timer_max)": 756,
+      "offsetof(player_state_t, move_target_x)": 804,
+      "offsetof(player_state_t, move_target_y)": 808,
+      "offsetof(player_state_t, aim)": 80,
+      "offsetof(player_state_t, experience)": 172,
+      "offsetof(player_state_t, perk_counts)": 184,
+      "offsetof(player_state_t, weapon_id)": 704,
+      "offsetof(player_state_t, reload_active)": 712,
+      "offsetof(player_state_t, alt_weapon_id)": 732,
+      "offsetof(player_state_t, alt_reload_active)": 740,
+      "offsetof(player_state_t, auto_target)": 800,
+      "offsetof(player_state_t, input)": 812,
+      "offsetof(player_input_t, move_key_forward)": 0,
+      "offsetof(player_input_t, move_key_backward)": 4,
+      "offsetof(player_input_t, turn_key_left)": 8,
+      "offsetof(player_input_t, turn_key_right)": 12,
+      "offsetof(player_input_t, fire_key)": 16,
+      "offsetof(player_input_t, key_reserved_0)": 20,
+      "offsetof(player_input_t, key_reserved_1)": 24,
+      "offsetof(player_input_t, aim_key_left)": 28,
+      "offsetof(player_input_t, aim_key_right)": 32,
+      "offsetof(player_input_t, axis_aim_x)": 36,
+      "offsetof(player_input_t, axis_aim_y)": 40,
+      "offsetof(player_input_t, axis_move_x)": 44,
+      "offsetof(player_input_t, axis_move_y)": 48,
+      "offsetof(creature_t, active)": 0,
+      "offsetof(creature_t, pos_x)": 20,
+      "offsetof(creature_t, pos_y)": 24,
+      "offsetof(creature_t, health)": 36,
+      "offsetof(creature_t, size)": 52,
+      "offsetof(weapon_stats_t, shot_cooldown)": 72,
+      "offsetof(weapon_stats_t, reload_time)": 76,
+      "offsetof(weapon_stats_t, spread_heat)": 80,
+      "offsetof(weapon_stats_t, shot_sfx_base_id)": 88,
+      "offsetof(weapon_stats_t, shot_sfx_variant_count)": 92,
+      "offsetof(weapon_stats_t, reload_sfx_id)": 96,
+      "offsetof(weapon_stats_t, flags)": 104,
+      "offsetof(weapon_stats_t, pellet_count)": 116
+    },
+    "coverage": {
+      "native": {
+        "count": 4198,
+        "offsets_sha256": "db40596ee9c622ef3eec042aab47a61191e579fb81424b1d767e9b5387198faf"
+      },
+      "before": {
+        "count": 4053,
+        "offsets_sha256": "9f7546844039df651d13a8b9fa98617541fe4640a71e720dc2ab23272c35128c"
+      },
+      "after": {
+        "count": 4061,
+        "offsets_sha256": "4ac0328976ea81d64926284b02c21c98841128a296148050cfb1758140cb5d49"
+      }
+    },
+    "missing_native": [
+      {
+        "offset": 1446,
+        "text": "dec eax"
+      },
+      {
+        "offset": 1447,
+        "text": "or eax, 0xfffffffc"
+      },
+      {
+        "offset": 1450,
+        "text": "inc eax"
+      },
+      {
+        "offset": 1681,
+        "text": "dec eax"
+      },
+      {
+        "offset": 1682,
+        "text": "or eax, 0xfffffff8"
+      },
+      {
+        "offset": 1685,
+        "text": "inc eax"
+      },
+      {
+        "offset": 2680,
+        "text": "fstp st(0)"
+      },
+      {
+        "offset": 2682,
+        "text": "fstp st(0)"
+      }
+    ]
+  }
+}

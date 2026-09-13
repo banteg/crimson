@@ -1466,3 +1466,31 @@ See `tools/match/evidence/player-point-frame-2026-09-11/` for the exact source
 transformation, generated inputs, pinned hashes, coverage, and reproduction
 command. The existing aim negative control remains different in 46/3,738
 cases; current aim and shortcut receipts are refreshed to this body.
+
+## Fire Cough return consumer and position lifetimes (2026-09-14)
+
+The retained source consumes `vec2_sub`'s returned pointer through `atan2f`,
+forms the initial spread vector with Y-before-X arithmetic, and keeps the
+relative muzzle offset intact across `projectile_spawn`. A separate projectile
+point occupies the same −16/−12 entry-relative homes later reused for smoke
+velocity. The offset is translated for the smoke call after that reuse, as in
+native `0x00413ba2..0x00413c06`.
+
+Native's angle consumer loads X then Y through EAX and uses `fxch`; the float
+wrapper recovers that order. Its early angle spill remains unresolved, as do
+the selected-player subtraction receiver and other vector homes. One x87
+square/sum sequence in the nearest-target loop also changes as a compiler
+side effect; execution checks cover it, but it is not claimed as an improvement.
+
+Candidate instructions increase from 4,060 to 4,068 against 4,206 native.
+Prefix 7 and references 805/0/2 are unchanged. Ratio decreases from
+64.0454875393% to 64.0077350737%; the source is retained for the specific native
+data-flow and storage recovery, not score. Both exactness flags remain false.
+Source SHA is `9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1`;
+body SHA is `dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa`.
+
+See `tools/match/evidence/player-fire-cough-2026-09-14/` for 31 reconstructible
+compiler controls and the native/before/after execution proof. These are
+bounded observations, not a new whole-function match or newly demonstrated
+gameplay bug. The previous-source overlay is recorded separately in the
+canonical experiment ledger as `fire-cough-original-lifetimes-control`.

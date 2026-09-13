@@ -273,8 +273,11 @@ extern "C" void player_update(void)
                 &player_state_table[render_overlay_player_index];
             random_offset.x = fire_player->aim.x;
             random_offset.y = fire_player->aim.y;
-            move_delta.x = random_offset.x - fire_player->position.x;
-            move_delta.y = random_offset.y - fire_player->position.y;
+            {
+                float y = random_offset.y - fire_player->position.y;
+                move_delta.x = random_offset.x - fire_player->position.x;
+                move_delta.y = y;
+            }
             float spread_radius = vec2_length(&move_delta) * 0.5f;
             float spread_angle =
                 (float)(crt_rand() & 0x1ff) * 0.012271847f;
@@ -286,21 +289,28 @@ extern "C" void player_update(void)
             random_offset.y = (float)sin(spread_angle) * spread_radius
                 + random_offset.y;
 
-            ((vec2_t *)player_position)->vec2_sub(
+            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(
                 &scratch_pos.x,
                 &random_offset.x);
-            float shot_heading =
-                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;
-            movement_input.x = movement_input.x + player_position->x;
-            movement_input.y = movement_input.y + player_position->y;
+            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;
+            {
+                float y = movement_input.y + player_position->y;
+                move_delta.x = movement_input.x + player_position->x;
+                move_delta.y = y;
+            }
             projectile_spawn(
-                &movement_input,
+                &move_delta,
                 shot_heading,
                 PROJECTILE_TYPE_FIRE_BULLETS,
                 owner_id);
 
             move_delta.x = (float)cos(aim_heading) * 25.0f;
             move_delta.y = (float)sin(aim_heading) * 25.0f;
+            {
+                float y = movement_input.y + player_position->y;
+                movement_input.x = movement_input.x + player_position->x;
+                movement_input.y = y;
+            }
             int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);
             effect_color_t &effect_color =
                 sprite_effect_pool[effect_index].color;
