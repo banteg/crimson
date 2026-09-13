@@ -1,0 +1,2968 @@
+{
+  "schema": 1,
+  "kind": "diagnostic-source-controls",
+  "base_commit": "8e65f70a404a86b12e6372ff1ad6280f229bc229",
+  "baseline": {
+    "name": "baseline",
+    "parent": null,
+    "source_sha256": "dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8",
+    "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 1969,
+    "target": 2004,
+    "prefix": 45,
+    "refs": [
+      594,
+      0,
+      4
+    ],
+    "ratio": 0.784293984394664
+  },
+  "controls": [
+    {
+      "name": "count-bound",
+      "parent": null,
+      "source_sha256": "f735dd504e5d50a9b961992b3f3aeb93f54e25b5084779b44832149f964da249",
+      "body_sha256": "ae9149acafc9d723755e90be995cee93cb0e53f046d982f64bc6b361b43ee4b8",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1968,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        593,
+        0,
+        4
+      ],
+      "ratio": 0.7824773413897281,
+      "edits": [
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    } while (score_count < 100);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "count-bound-if",
+      "parent": null,
+      "source_sha256": "409f9888feec021610a0e4999b6e543843c7a50dd7765b2b540181b44c56f81e",
+      "body_sha256": "9fb0dfb41d97395a2d932076f532f6177058b7827340ad78b858f065d3da8195",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1972,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        593,
+        0,
+        4
+      ],
+      "ratio": 0.7821931589537223,
+      "edits": [
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    } while (score_count < 100);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-label",
+      "parent": null,
+      "source_sha256": "d47651780c17dfb2b55297d9605913a0f619d8860b29d8e72581dfe84b0718db",
+      "body_sha256": "ba37777b893d1b4db01dc63b9d6ff956d2c4e4d3334f3a3cc572ee80a4698662",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1971,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        598,
+        0,
+        3
+      ],
+      "ratio": 0.7763522012578616,
+      "edits": [
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-label-double",
+      "parent": null,
+      "source_sha256": "6451d723a1c36b70b5c6474d9d209c75cf39ceeaa7db4c6efd88e94f09317e2a",
+      "body_sha256": "ca209f63fa375ce9d17707a1e733215d5083f05171c163f7d375e42e7d63e995",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1970,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7845998993457474,
+      "edits": [
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0 - 14.0,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-round",
+      "parent": null,
+      "source_sha256": "1628a54d2c8b8343d3908558484fd78c76cd35740aa9f22d167ca2215bc1d186",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 624,
+          "end": 625,
+          "lines": [
+            "                (float)right_panel.x, (float)(right_panel.y + 70.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-signed",
+      "parent": null,
+      "source_sha256": "acdab50a9479c2f84ff6864d58223ab8f1cbc286684897baed5be7e0b8d10550",
+      "body_sha256": "c3e803f1d3a3bf98fda0765f36b9cc18d8048b4132d81ff0068400f89922d7f5",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1968,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7849949647532729,
+      "edits": [
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-signed-local",
+      "parent": null,
+      "source_sha256": "d94adc3f5f314a982cc0cc2d3e58fe2139dc6686c8e95d5e72e378847ae1899d",
+      "body_sha256": "c3e803f1d3a3bf98fda0765f36b9cc18d8048b4132d81ff0068400f89922d7f5",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1968,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7849949647532729,
+      "edits": [
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        signed char date_mode = (signed char)config_blob.highscore_date_mode;\n",
+            "        date_filter_list.selected_index = date_mode;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-signed-lvalue",
+      "parent": null,
+      "source_sha256": "459fd059c27aab0263c8a95057950f1cfa5c05cea2cb80333859d665dbf2456a",
+      "body_sha256": "c3e803f1d3a3bf98fda0765f36b9cc18d8048b4132d81ff0068400f89922d7f5",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1968,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7849949647532729,
+      "edits": [
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        date_filter_list.selected_index = *(signed char *)&config_blob.highscore_date_mode;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-temporary",
+      "parent": null,
+      "source_sha256": "a3ed44ce3a9e092f14f2d07ce1b080c2524ccb6415a56362397f67cdb6053bab",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 623,
+          "end": 625,
+          "lines": []
+        },
+        {
+          "start": 626,
+          "end": 627,
+          "lines": [
+            "                (float *)&highscore_vec2_t(\n",
+            "                right_panel.x, right_panel.y + 70.0f),\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "date-vector-sum",
+      "parent": null,
+      "source_sha256": "7ede1df7a2c5f852418daafad633103e1d4d5114651b68b5df47b23405dfb3bb",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 623,
+          "end": 625,
+          "lines": [
+            "            highscore_vec2_t date_position = right_panel + highscore_vec2_t(0.0f, 70.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filter-label-x",
+      "parent": null,
+      "source_sha256": "fa2ddc71e82316f23aef3fa714c3a0d0832ae2fa02aa72b560e4ac1400ee90b4",
+      "body_sha256": "a72461c1bc6e59934e078b8f938c8d1dfc71ea27c2ea5130017e83245d026c82",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1987,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        596,
+        0,
+        8
+      ],
+      "ratio": 0.7712352793786018,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 548,
+          "end": 553,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 555,
+          "end": 557,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 608,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n",
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 609,
+          "end": 610,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 613,
+          "end": 614,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 661,
+          "end": 662,
+          "lines": [
+            "                player_count_x, right_panel.y + 28.0f);\n"
+          ]
+        },
+        {
+          "start": 724,
+          "end": 725,
+          "lines": [
+            "            game_mode_x, right_panel.y + 28.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filter-x",
+      "parent": null,
+      "source_sha256": "2c78bdf88c40efa6274d7e4d5d754e2907a578ff5f6bc14935f6c28294b09124",
+      "body_sha256": "dbef49c28e901345accfb3de136c081293004951635189d1f7cef732107d5b8c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1987,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        591,
+        0,
+        6
+      ],
+      "ratio": 0.762214983713355,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 548,
+          "end": 553,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 555,
+          "end": 557,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 565,
+          "end": 565,
+          "lines": [
+            "        float filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 568,
+          "end": 569,
+          "lines": [
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 624,
+          "end": 625,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-assign-components",
+      "parent": null,
+      "source_sha256": "cffc8b77d6b3868be95e587e8db17c141cce288043d5f8f7f4b0cbd8d348969f",
+      "body_sha256": "32e214cc2a37fc2bfbd3e58d1e6e2115cbb11f87012bce74a6bbe53b927ac3e0",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1972,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        565,
+        0,
+        11
+      ],
+      "ratio": 0.6996981891348089,
+      "edits": [
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        right_panel.x += 130.0f;\n",
+            "        right_panel.y += 28.0f;\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-assign-components-labels",
+      "parent": null,
+      "source_sha256": "4d441f09293235e00dfdb1de2b81b8cd21d4138f888971b7f71b798c50d102fe",
+      "body_sha256": "bbc7ff578e27016a2105b2cf6e91f4d2cd9a68ef4e9003f2092845d4cad2737e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1974,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        567,
+        0,
+        10
+      ],
+      "ratio": 0.7003519356460532,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        right_panel.x += 130.0f;\n",
+            "        right_panel.y += 28.0f;\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-assign-sum",
+      "parent": null,
+      "source_sha256": "e73a12fd527df249af3b9a810ea5660e83bba78638a528e912645f56275f2067",
+      "body_sha256": "83c0dd5fc006f98aad371b4057875e63b706602ff9a61a03ed0732d22dd8237c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1976,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        565,
+        0,
+        11
+      ],
+      "ratio": 0.700502512562814,
+      "edits": [
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        right_panel = right_panel + highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-assign-sum-labels",
+      "parent": null,
+      "source_sha256": "56889af5b5b4ee9f34e494efdbc28b0d4e7c76fbab0dda39e115ba49bfa60e00",
+      "body_sha256": "a1bc42ebf4926e6510f8f410060758264ba98dc44ab62a5c3f129f3118d247f3",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1978,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        567,
+        0,
+        10
+      ],
+      "ratio": 0.7011551983927674,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        right_panel = right_panel + highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-in-place",
+      "parent": null,
+      "source_sha256": "0d0853193f168bd6b10ed04e2dd6001d4986e64b0bd838eaecff174155e891c8",
+      "body_sha256": "32e214cc2a37fc2bfbd3e58d1e6e2115cbb11f87012bce74a6bbe53b927ac3e0",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1972,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        565,
+        0,
+        11
+      ],
+      "ratio": 0.6996981891348089,
+      "edits": [
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        right_panel += highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-in-place-labels",
+      "parent": null,
+      "source_sha256": "9b89e4dad94195474d42ec8b0d7506b718ce3bfd54a295b78f994f931b05adaa",
+      "body_sha256": "bbc7ff578e27016a2105b2cf6e91f4d2cd9a68ef4e9003f2092845d4cad2737e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1974,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        567,
+        0,
+        10
+      ],
+      "ratio": 0.7003519356460532,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        right_panel += highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-mode-vector-sum",
+      "parent": null,
+      "source_sha256": "2cbc0615b12ff3d41dc7f8e513a8838da861c7977016770cadafdc2aa9cafac4",
+      "body_sha256": "1bb3625b92e3988ae48d62a6a8e256530b3e33a310889af859e65c1e5b6f7860",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1970,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        584,
+        0,
+        5
+      ],
+      "ratio": 0.774031202818319,
+      "edits": [
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        highscore_vec2_t game_mode_position = right_panel + highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game-round",
+      "parent": null,
+      "source_sha256": "a71838c98d3db8afbda0f4688a75f6e662d2b1b151d4f0caf13b4beade0cac52",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 724,
+          "end": 725,
+          "lines": [
+            "            (float)(right_panel.x + 130.0f), (float)(right_panel.y + 28.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game_mode-temporary",
+      "parent": null,
+      "source_sha256": "3beb5a0afd18c81078172061dcb43fe3483ac233214faae7425a92083c87bc54",
+      "body_sha256": "37a2c6591d64ad7898e3434ab9bae4bb10a38251cfa8f536f4b998caed676fa3",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        577,
+        0,
+        11
+      ],
+      "ratio": 0.7012333249433678,
+      "edits": [
+        {
+          "start": 723,
+          "end": 725,
+          "lines": []
+        },
+        {
+          "start": 726,
+          "end": 727,
+          "lines": [
+            "            (float *)&highscore_vec2_t(\n",
+            "            right_panel.x + 130.0f, right_panel.y + 28.0f),\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "indexed-record-if",
+      "parent": null,
+      "source_sha256": "4effa9e2a95edfd0a15968951d0cbeb6a08697b877bcba343fd877bdd1547f63",
+      "body_sha256": "dfed1d09cc5c046557519fac0273ae8fa6232eacfbb1794553ccf0887123e2da",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7835051546391752,
+      "edits": [
+        {
+          "start": 362,
+          "end": 363,
+          "lines": []
+        },
+        {
+          "start": 367,
+          "end": 368,
+          "lines": [
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 374,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 409,
+          "end": 410,
+          "lines": []
+        }
+      ]
+    },
+    {
+      "name": "indexed-record-switch",
+      "parent": null,
+      "source_sha256": "d267557991570b10808a85d81a18d05ccd71405f0fab52fb689e2aa969869440",
+      "body_sha256": "c022821ebe728a5d2c3b217cc8529cc6da397a93eed212094e4c4e7bfa20e673",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1966,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        592,
+        0,
+        4
+      ],
+      "ratio": 0.7743073047858942,
+      "edits": [
+        {
+          "start": 362,
+          "end": 363,
+          "lines": []
+        },
+        {
+          "start": 367,
+          "end": 368,
+          "lines": [
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 374,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 388,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 397,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 405,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 409,
+          "end": 410,
+          "lines": []
+        }
+      ]
+    },
+    {
+      "name": "indexed-rows-if",
+      "parent": null,
+      "source_sha256": "d560015087565cc1d201645f6486447410a53e7b05a29fc8a2dbbef0631b31b2",
+      "body_sha256": "0820269ed85ae7932d839c4bfe832518833818e0680147fff1807ec6ca89cfa8",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1974,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.783308195072901,
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 364,
+          "lines": []
+        },
+        {
+          "start": 365,
+          "end": 368,
+          "lines": [
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    } while (score_count < 100);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "indexed-rows-switch",
+      "parent": null,
+      "source_sha256": "aeb3efd7f0440f6642b177631875b5f130247897f6a8a40628d9757a7fbe5fd3",
+      "body_sha256": "9212ae5f3c4a6fa21bc073bb5d9f837924aa722f0660d57b4a79d5dc89068092",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        592,
+        0,
+        4
+      ],
+      "ratio": 0.7741123142785192,
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 364,
+          "lines": []
+        },
+        {
+          "start": 365,
+          "end": 368,
+          "lines": [
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 388,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 397,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 405,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    } while (score_count < 100);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "labels-double",
+      "parent": null,
+      "source_sha256": "b1f3cfe0ffcb532942e56c2db0272e205a266027860d803774f32bf96ba7f363",
+      "body_sha256": "11d29f00260653fbc6d01793bef4249fbfb8e70369d6a4a01a66de9a196c5943",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1972,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        585,
+        0,
+        4
+      ],
+      "ratio": 0.7852112676056338,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0 - 14.0,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 608,
+          "lines": [
+            "        float option_label_y = right_panel.y + 28.0 - 14.0;\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0 - 14.0,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "labels-wide-y",
+      "parent": null,
+      "source_sha256": "559e5a39e538bdadf00e1258a3474efc1f250bfdf93743674ea91d52a381c713",
+      "body_sha256": "ffe0900836f19ae52a2bca4d7aa7b3cf91e76ee120f1feafc06f809d78fdf16e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1971,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7849056603773585,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                (double)right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            (double)right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "native-dataflow",
+      "parent": null,
+      "source_sha256": "19f2ae0d2ca508496e060655a409624b16370418b0f7f75d6c52dd897938749f",
+      "body_sha256": "17bb04fe6753d1d5011091f52350133efbb582aff32898d7674b6f84d0be007d",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1987,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        599,
+        0,
+        6
+      ],
+      "ratio": 0.7712352793786018,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 548,
+          "end": 553,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 555,
+          "end": 557,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "option-label-double",
+      "parent": null,
+      "source_sha256": "01c81c22f59776599a37c6a8c9e468629de106cc2f4470eb4dded4d241930f4b",
+      "body_sha256": "ea8b406ca171ff6769ef767d727ac1b1b77e56e5bd0b2b685804c8de4c8c25bb",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1970,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        585,
+        0,
+        4
+      ],
+      "ratio": 0.7845998993457474,
+      "edits": [
+        {
+          "start": 607,
+          "end": 608,
+          "lines": [
+            "        float option_label_y = right_panel.y + 28.0 - 14.0;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "player-count-vector-sum",
+      "parent": null,
+      "source_sha256": "f212720ef7cfc788159775417b9cd765577e5c1c02938afe18bf1388440947ea",
+      "body_sha256": "9b1b4d207b84f09f58ad415531bd4c462bdefe80bc7014a922a7977bd5df38bb",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1970,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        587,
+        0,
+        4
+      ],
+      "ratio": 0.7866129843985908,
+      "edits": [
+        {
+          "start": 660,
+          "end": 662,
+          "lines": [
+            "            highscore_vec2_t player_count_position = right_panel + highscore_vec2_t(2.0f, 28.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "player-round",
+      "parent": null,
+      "source_sha256": "6427e870841dcc602278364125434bf8b6385c890d2a0d0f452630b99dd968ee",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 661,
+          "end": 662,
+          "lines": [
+            "                (float)(right_panel.x + 2.0f), (float)(right_panel.y + 28.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "player_count-temporary",
+      "parent": null,
+      "source_sha256": "2f975b108e83ff92e729509cc197a08a89f5a7a3691ea94ec4166ef2287b04c1",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 660,
+          "end": 662,
+          "lines": []
+        },
+        {
+          "start": 663,
+          "end": 664,
+          "lines": [
+            "                (float *)&highscore_vec2_t(\n",
+            "                right_panel.x + 2.0f, right_panel.y + 28.0f),\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "position-to-right-yx",
+      "parent": null,
+      "source_sha256": "102bbf2469892a796bc359ffd7c2325a112edd509d75237b0f5b7221668b3a61",
+      "body_sha256": "d983463a3a951bbdefc6f33cf39b4963867a6c85123f1248d38d8553edf4c5d9",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1975,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        578,
+        0,
+        8
+      ],
+      "ratio": 0.764513696908771,
+      "edits": [
+        {
+          "start": 555,
+          "end": 557,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-label",
+      "parent": null,
+      "source_sha256": "9d11d7bd8e6a561271e43fe8b086a3024b8090f1e135b87a349b965fc439fbf1",
+      "body_sha256": "2b80b77d1090931edfd3831841e71424e7eb90d2a71f999117304faa060c9193",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1971,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        591,
+        0,
+        8
+      ],
+      "ratio": 0.7738364779874214,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-label-double",
+      "parent": null,
+      "source_sha256": "a5895f4a8275220b465dc3375d5be07c8a0d41e20acdd45d16989d1e1a0b16cb",
+      "body_sha256": "93c8533271fa1383320d48c6a7382adf9b06cfdb8481de7b6f45970b87f85566",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1970,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7845998993457474,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0 - 14.0,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-round",
+      "parent": null,
+      "source_sha256": "f3e43d3223fbdea5eb679b07147e9984f4fb96f6e610491428da77169e78989c",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "                (float)right_panel.x, (float)(right_panel.y + 114.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-temporary",
+      "parent": null,
+      "source_sha256": "968352eaffad20f751fdc6e8f24e68648d629e4f75688f859aecde92f7f64668",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 598,
+          "end": 600,
+          "lines": []
+        },
+        {
+          "start": 601,
+          "end": 602,
+          "lines": [
+            "                (float *)&highscore_vec2_t(\n",
+            "                right_panel.x, right_panel.y + 114.0f), ui_profile_menu_enabled);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-vector-sum",
+      "parent": null,
+      "source_sha256": "5aa85191bfba5478dfcf9f0b5706c0e27b41e3fbf590cd6260c5a6a121820373",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 598,
+          "end": 600,
+          "lines": [
+            "            highscore_vec2_t profile_position = right_panel + highscore_vec2_t(0.0f, 114.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rank-bound",
+      "parent": null,
+      "source_sha256": "76725701a28532ad63281cbf5997326a47dca6b71b92c768225d95ff9f07e7ee",
+      "body_sha256": "9667e688981f2c87635e784e805de1f9e7e387a85d52afe642d24263a201d4dd",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1968,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        593,
+        0,
+        4
+      ],
+      "ratio": 0.7824773413897281,
+      "edits": [
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    } while (score_number <= 100);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rank-bound-if",
+      "parent": null,
+      "source_sha256": "5f29a2256af35121db5bd70746b9c65a41583f3f50ac63c8cf4ae7bf8be2d8e2",
+      "body_sha256": "4b6816c4b39ed9379031cab92e2fdff3013490b26063b4eef145bedb834dc600",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1972,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        593,
+        0,
+        4
+      ],
+      "ratio": 0.7821931589537223,
+      "edits": [
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    } while (score_number <= 100);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right-dataflow",
+      "parent": null,
+      "source_sha256": "5fea6d61fb55f9c4f7c1777b1d1ecf7981ad4fda3aa1f47acab71a859e42969b",
+      "body_sha256": "516ca03de74ca59828a81e0857a09cde535964bc38eb56e83b852809acf6d6c4",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1979,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        591,
+        0,
+        3
+      ],
+      "ratio": 0.7712779312076324,
+      "edits": [
+        {
+          "start": 548,
+          "end": 553,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 555,
+          "end": 557,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 604,
+          "end": 605,
+          "lines": [
+            "        date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right-sum",
+      "parent": null,
+      "source_sha256": "4678730723ec6ef250f7f56c0806acd1e08b3a6bc47af25ecfc19962217ffa9f",
+      "body_sha256": "8645fa0c9f40089f14a94f5abe475b1316029bcd0e959fa4626e1df6be0b61c2",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        593,
+        0,
+        4
+      ],
+      "ratio": 0.7722124339290208,
+      "edits": [
+        {
+          "start": 548,
+          "end": 550,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right-to-position",
+      "parent": null,
+      "source_sha256": "a22a2133f4a85020d9285311b0707a9c3a6a93c9666f7ec5c0d9053b9fdd2655",
+      "body_sha256": "f999ececc4ddc97407874afa9261fdfc6b7fad3a2c7c358bc7a142fe1f7398b5",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1975,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        578,
+        0,
+        8
+      ],
+      "ratio": 0.7655189746167379,
+      "edits": [
+        {
+          "start": 550,
+          "end": 553,
+          "lines": [
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-for-count",
+      "parent": null,
+      "source_sha256": "c224b17aad3c39f1464e170d936909718bc9f64ebdde99daad4fdeac9c0645a3",
+      "body_sha256": "ec57f9b5191643ef7a4d4ebe13f8b0cdc49f1127b672c89f0313c0b17f3203e2",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        5
+      ],
+      "ratio": 0.7992948879375472,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    for (; score_count < 100; ++score_count) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 407,
+          "end": 408,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-for-index",
+      "parent": null,
+      "source_sha256": "a33bf9abc62d8d06bbf7dd96e672333d119800049a332c615b76adb9865cd392",
+      "body_sha256": "079ed8e08e7ab6cbe9e7c25f18fd821dfac92542f93ce59b5a6d24f5fceccfb4",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1968,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        590,
+        0,
+        5
+      ],
+      "ratio": 0.7925478348439073,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    for (int row_index = 0; row_index < 100; ++row_index) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-if",
+      "parent": null,
+      "source_sha256": "c72f83aaa368bb2b6dfa1afec314826772888593985d412642f1f6231edd5642",
+      "body_sha256": "046853e0773ba060aa1f3153f4963197c25c00b680f1393d0da1dd4171ce395e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7840080462660297,
+      "edits": [
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        }
+      ]
+    },
+    {
+      "name": "row-signed-buffer",
+      "parent": null,
+      "source_sha256": "5fff77e8b418c4017695eafdb3f6021bb6c64e8d225c9a0bc4bfa0eb34f4bf87",
+      "body_sha256": "920e59ef1fff14cdcaa30cfb1658e4288afe818ccf5e1c17b34e9f2833d13fc4",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.7840080462660297,
+      "edits": [
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    } while ((int)score_line_buffer < (int)(score_line_buffers + 100));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-while-count",
+      "parent": null,
+      "source_sha256": "937e7f7cec0a6abd7690babc56e069c3e4f89c5819c833478d04747d7961ba78",
+      "body_sha256": "50c377b59a1f50110ef32d666f4ec682a6fb86d5c2ccdaeeefaa53e5b95022b1",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        5
+      ],
+      "ratio": 0.7997985394107278,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_count < 100) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-while-count-prefix",
+      "parent": null,
+      "source_sha256": "c9cd7912744fd47cc03d46667d35eaebb9e67d77d0b0b2bfa35cea7aa9f85e55",
+      "body_sha256": "007e0f5ec6be0ecfcd3621cf9254229e9232f6cb051a301dd2a2fa40146c2d09",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        5
+      ],
+      "ratio": 0.7997985394107278,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_count < 100) {\n"
+          ]
+        },
+        {
+          "start": 367,
+          "end": 367,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 370,
+          "end": 372,
+          "lines": []
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-while-pointer",
+      "parent": null,
+      "source_sha256": "144120a10ab515cf13da8a0a512af9281c36f345e6540c679870de8c1e229450",
+      "body_sha256": "94323dae28df57131b8e33326e4f085d47a3db0d8182f5a3f08e551ccb699a4b",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        595,
+        0,
+        5
+      ],
+      "ratio": 0.80181314530345,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_line_buffer < score_line_buffers + 100) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-while-pointer-prefix",
+      "parent": null,
+      "source_sha256": "cb0918990bbbe2dc0a7e8599e42f3fd954306222d17afa4ed5448fdbb89d5ca7",
+      "body_sha256": "a071adf63c483a75d11eff73e16d66ebda0186d64a02be63fdd70bea09f3ff96",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        595,
+        0,
+        5
+      ],
+      "ratio": 0.80181314530345,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_line_buffer < score_line_buffers + 100) {\n"
+          ]
+        },
+        {
+          "start": 367,
+          "end": 367,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 370,
+          "end": 372,
+          "lines": []
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-while-signed-pointer",
+      "parent": null,
+      "source_sha256": "f3d998189febe64f903bdcb3a70d1cb7975b2943b48ecce50fabd0d701c9ea3f",
+      "body_sha256": "86634fb98a2c1d924418f3307425dee2413cb19863f69fcf9044fbeba15d385a",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        595,
+        0,
+        5
+      ],
+      "ratio": 0.80181314530345,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while ((int)score_line_buffer < (int)(score_line_buffers + 100)) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "row-while-signed-pointer-prefix",
+      "parent": null,
+      "source_sha256": "b7e90935994ffa7d0902e79acb460aa9794d361f25ef3cfe7bbe0c81af78a220",
+      "body_sha256": "0ed52cd6b7aa47f51f2ba5f53699382a08bdb5cdfb2da9545d875e66eada6cbe",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1967,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        595,
+        0,
+        5
+      ],
+      "ratio": 0.80181314530345,
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while ((int)score_line_buffer < (int)(score_line_buffers + 100)) {\n"
+          ]
+        },
+        {
+          "start": 367,
+          "end": 367,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 370,
+          "end": 372,
+          "lines": []
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scalar-tooltip",
+      "parent": null,
+      "source_sha256": "dd9ca30263223a6f66f6007b0a9ddcad7d3e8503904cb98a21be944da18612fe",
+      "body_sha256": "635a5ed38fc8d92b0ae044b565099cd7cd14c930edd8e8ebaba8a04c47726fdc",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        577,
+        0,
+        7
+      ],
+      "ratio": 0.7460357412534608,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    float tooltip_x = position.x - 32.0f;\n",
+            "    float tooltip_y = position.y + 32.0f;\n"
+          ]
+        },
+        {
+          "start": 754,
+          "end": 756,
+          "lines": []
+        }
+      ]
+    },
+    {
+      "name": "sdk-current",
+      "parent": null,
+      "source_sha256": "c347dd858d24044291ccbd2205a85471d97392b11cbca2ae6cd0ae348a1f3fcc",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 15,
+          "end": 17,
+          "lines": [
+            "    union {\n",
+            "        struct { float x, y; };\n",
+            "        float v[2];\n",
+            "    };\n"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 21,
+          "lines": [
+            "    {\n",
+            "        x = x_value;\n",
+            "        y = y_value;\n",
+            "    }\n"
+          ]
+        },
+        {
+          "start": 22,
+          "end": 23,
+          "lines": [
+            "    highscore_vec2_t operator+(const highscore_vec2_t &other)\n"
+          ]
+        },
+        {
+          "start": 44,
+          "end": 45,
+          "lines": [
+            "    {\n",
+            "        r = red;\n",
+            "        g = green;\n",
+            "        b = blue;\n",
+            "        a = alpha;\n",
+            "    }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sdk-labels",
+      "parent": null,
+      "source_sha256": "ff8fe12b7bd92c560fc3a374b05dd5165c0f82c5aeb71a7f9b55c4607e088bb8",
+      "body_sha256": "4f78b37439a5036b7773c7165cbc35a60c531df8469988164506113696fb4538",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        601,
+        0,
+        3
+      ],
+      "ratio": 0.7759617802363591,
+      "edits": [
+        {
+          "start": 15,
+          "end": 17,
+          "lines": [
+            "    union {\n",
+            "        struct { float x, y; };\n",
+            "        float v[2];\n",
+            "    };\n"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 21,
+          "lines": [
+            "    {\n",
+            "        x = x_value;\n",
+            "        y = y_value;\n",
+            "    }\n"
+          ]
+        },
+        {
+          "start": 22,
+          "end": 23,
+          "lines": [
+            "    highscore_vec2_t operator+(const highscore_vec2_t &other)\n"
+          ]
+        },
+        {
+          "start": 44,
+          "end": 45,
+          "lines": [
+            "    {\n",
+            "        r = red;\n",
+            "        g = green;\n",
+            "        b = blue;\n",
+            "        a = alpha;\n",
+            "    }\n"
+          ]
+        },
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "separate-tooltip",
+      "parent": null,
+      "source_sha256": "00deae02b7982efd14115bfe434e995d527c4da4bc095d27a10f975fa87cdb0a",
+      "body_sha256": "6ee99445cbea32c7aac7442343345b6900bf72f23cd999eb3376b88762360fe2",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 43,
+      "refs": [
+        579,
+        0,
+        12
+      ],
+      "ratio": 0.7681852504404731,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    highscore_vec2_t tooltip_position;\n",
+            "    tooltip_position.x = position.x - 32.0f;\n",
+            "    tooltip_position.y = position.y + 32.0f;\n"
+          ]
+        },
+        {
+          "start": 754,
+          "end": 756,
+          "lines": [
+            "    float tooltip_x = tooltip_position.x;\n",
+            "    float tooltip_y = tooltip_position.y;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tooltip-copy-components",
+      "parent": null,
+      "source_sha256": "9b43cddc84abe36c586f0892c7a55641983b3001238d09b5736e9ac304f116f4",
+      "body_sha256": "364877b5ffc7f9fca1b0a87ba4d0b269f50d9e69ccdad9fc57f6df770eb20c2a",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        579,
+        0,
+        10
+      ],
+      "ratio": 0.7684184058335428,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tooltip-copy-vector",
+      "parent": null,
+      "source_sha256": "12cff26a3c98ce019c38a2843479bbcdc701a6426a21eaf001afef2e1fd2a8d0",
+      "body_sha256": "f302030bff747c66f8e3c0ddf4c15c4b7f945802786c81ac24e9de71e3c0bfb8",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        579,
+        0,
+        10
+      ],
+      "ratio": 0.7684184058335428,
+      "edits": [
+        {
+          "start": 502,
+          "end": 504,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel += highscore_vec2_t(-32.0f, 32.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widget-labels",
+      "parent": null,
+      "source_sha256": "0feb01ad7b87da3bfc2b2b1f0c94127e344abf2d539b825b4713394e863bb8fb",
+      "body_sha256": "4f78b37439a5036b7773c7165cbc35a60c531df8469988164506113696fb4538",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        601,
+        0,
+        3
+      ],
+      "ratio": 0.7759617802363591,
+      "edits": [
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widget-round",
+      "parent": null,
+      "source_sha256": "987abee855d99a3bad66dd2abe07a88e260a5a250496201de51a2bb2967a18ae",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 568,
+          "end": 569,
+          "lines": [
+            "            highscore_vec2_t widget_position((float)right_panel.x, (float)right_panel.y);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widget-temporary",
+      "parent": null,
+      "source_sha256": "84d9ac15d1afeb9e68bce90f2a4211ff3e091599f78022172325429fbc1d61ec",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 568,
+          "end": 569,
+          "lines": []
+        },
+        {
+          "start": 572,
+          "end": 573,
+          "lines": [
+            "                    (float *)&highscore_vec2_t(right_panel.x, right_panel.y),\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widget-vector-sum",
+      "parent": null,
+      "source_sha256": "86c87b0d135a366b412562369507af52deb9c713f5d0e721eca6644dd85cf9e1",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 568,
+          "end": 569,
+          "lines": [
+            "            highscore_vec2_t widget_position = right_panel + highscore_vec2_t(0.0f, 0.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widgets-round",
+      "parent": null,
+      "source_sha256": "f41abe1e55120690445b7b623955fffd35932f814e5fb59da7acdbafd736eefb",
+      "body_sha256": "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1969,
+      "target": 2004,
+      "prefix": 45,
+      "refs": [
+        594,
+        0,
+        4
+      ],
+      "ratio": 0.784293984394664,
+      "edits": [
+        {
+          "start": 568,
+          "end": 569,
+          "lines": [
+            "            highscore_vec2_t widget_position((float)right_panel.x, (float)right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "                (float)right_panel.x, (float)(right_panel.y + 114.0f));\n"
+          ]
+        },
+        {
+          "start": 624,
+          "end": 625,
+          "lines": [
+            "                (float)right_panel.x, (float)(right_panel.y + 70.0f));\n"
+          ]
+        },
+        {
+          "start": 661,
+          "end": 662,
+          "lines": [
+            "                (float)(right_panel.x + 2.0f), (float)(right_panel.y + 28.0f));\n"
+          ]
+        },
+        {
+          "start": 724,
+          "end": 725,
+          "lines": [
+            "            (float)(right_panel.x + 130.0f), (float)(right_panel.y + 28.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widgets-round-labels",
+      "parent": null,
+      "source_sha256": "de6a469b0d86894ef1c452c52eef03c4968c8ebe0faa5438b29460b1a609d890",
+      "body_sha256": "4f78b37439a5036b7773c7165cbc35a60c531df8469988164506113696fb4538",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1973,
+      "target": 2004,
+      "prefix": 8,
+      "refs": [
+        601,
+        0,
+        3
+      ],
+      "ratio": 0.7759617802363591,
+      "edits": [
+        {
+          "start": 568,
+          "end": 569,
+          "lines": [
+            "            highscore_vec2_t widget_position((float)right_panel.x, (float)right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 596,
+          "end": 597,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "                (float)right_panel.x, (float)(right_panel.y + 114.0f));\n"
+          ]
+        },
+        {
+          "start": 618,
+          "end": 619,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 624,
+          "end": 625,
+          "lines": [
+            "                (float)right_panel.x, (float)(right_panel.y + 70.0f));\n"
+          ]
+        },
+        {
+          "start": 661,
+          "end": 662,
+          "lines": [
+            "                (float)(right_panel.x + 2.0f), (float)(right_panel.y + 28.0f));\n"
+          ]
+        },
+        {
+          "start": 724,
+          "end": 725,
+          "lines": [
+            "            (float)(right_panel.x + 130.0f), (float)(right_panel.y + 28.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widgets-vector-sum",
+      "parent": null,
+      "source_sha256": "c738baa9a3ed5369f9bd8ec29ad0f66f1b7e7bc11be0793d65afd21bf9bbe4d0",
+      "body_sha256": "7dafedabc9d722ccc9121be5dcc1a71f6f27dfed4457cbceff2a952d92b6ccc9",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 1971,
+      "target": 2004,
+      "prefix": 1,
+      "refs": [
+        594,
+        0,
+        3
+      ],
+      "ratio": 0.7808805031446541,
+      "edits": [
+        {
+          "start": 568,
+          "end": 569,
+          "lines": [
+            "            highscore_vec2_t widget_position = right_panel + highscore_vec2_t(0.0f, 0.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 600,
+          "lines": [
+            "            highscore_vec2_t profile_position = right_panel + highscore_vec2_t(0.0f, 114.0f);\n"
+          ]
+        },
+        {
+          "start": 623,
+          "end": 625,
+          "lines": [
+            "            highscore_vec2_t date_position = right_panel + highscore_vec2_t(0.0f, 70.0f);\n"
+          ]
+        },
+        {
+          "start": 660,
+          "end": 662,
+          "lines": [
+            "            highscore_vec2_t player_count_position = right_panel + highscore_vec2_t(2.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 723,
+          "end": 725,
+          "lines": [
+            "        highscore_vec2_t game_mode_position = right_panel + highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        }
+      ]
+    }
+  ],
+  "limitations": "Bounded tested forms only; these results do not prove that a source family cannot match. Scores and instruction counts are not exactness proofs. No rejected controls are promoted."
+}

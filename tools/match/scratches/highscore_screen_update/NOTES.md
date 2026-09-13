@@ -588,3 +588,27 @@ The whole-function score remains 78.429398%, 1,969/2,004 instructions, prefix
 45, and 594/0/4 references. These are local branch recoveries; neither normalized
 nor encoded exactness is claimed. Retained source SHA-256:
 `dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8`.
+
+## Residual decomposition and signed date selection (2026-09-13)
+
+A fresh pass separates row-loop entry and dispatch, panel copies, filter
+arithmetic, and stack ownership. The [reproducible evidence](../../evidence/highscore-residual-decomposition-2026-09-13/README.md)
+retains 66 bounded source controls and a preserving C2 allocator trace. A
+pretested loop restores the native entry layout and earlier shared Quest
+constant, but its higher score still has an extra reference mismatch and a
+non-native row body. It is not promoted. This interaction is new evidence;
+the earlier isolated dispatch experiments did not prove that source family
+exhausted.
+
+One independent source correction is retained: sign-extend the configured
+date-filter byte. Native interprets `0xff` as -1, while the previous source
+produced 255. All 256 byte inputs now agree with the native conversion in an
+execution test; valid selections 0..3 are unchanged. Every one of the 7,848
+encoded bytes and 643 relocations outside the 46-byte conversion/color-setup
+window is unchanged. That window is behaviorally verified, not instruction
+exact: scheduling and register differences remain.
+
+The canonical source reaches 78.499496%, 1,968/2,004 instructions, prefix 45,
+references 594/0/4, and the unchanged 132-byte frame. Both normalized and
+encoded exactness remain false. Source SHA-256:
+`acdab50a9479c2f84ff6864d58223ab8f1cbc286684897baed5be7e0b8d10550`.

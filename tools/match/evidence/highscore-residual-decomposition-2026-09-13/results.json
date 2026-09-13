@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "verified": true,
+  "base_commit": "8e65f70a404a86b12e6372ff1ad6280f229bc229",
+  "source_sha256": [
+    "dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8",
+    "acdab50a9479c2f84ff6864d58223ab8f1cbc286684897baed5be7e0b8d10550"
+  ],
+  "body_sha256": [
+    "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c",
+    "c3e803f1d3a3bf98fda0765f36b9cc18d8048b4132d81ff0068400f89922d7f5"
+  ],
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "0c2abec760415c6b747e34542eead6236fbe4ea805d6d8ac6e3607caf71557a4",
+  "candidate_window": [
+    4117,
+    4163
+  ],
+  "native_window": [
+    4469853,
+    4469894
+  ],
+  "body_bytes": 7894,
+  "outside_window_bytes_unchanged": 7848,
+  "outside_relocations_unchanged": 643,
+  "exhaustive_byte_inputs": 256,
+  "corrected_inputs": 128,
+  "color_arguments_and_this_preserved": true,
+  "normalized_exact": false,
+  "body_byte_exact": false,
+  "unicorn_version": "2.1.4",
+  "limitations": "Executes the date conversion and color-call setup only; excludes the call and the rest of the UI."
+}

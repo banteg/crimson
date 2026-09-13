@@ -602,7 +602,7 @@ play_game_done:
                 (float *)&profile_position, ui_profile_menu_enabled);
         }
 
-        date_filter_list.selected_index = config_blob.highscore_date_mode;
+        date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.800000012f);
         float option_label_y = right_panel.y + 28.0f - 14.0f;
