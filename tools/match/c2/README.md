@@ -18,6 +18,11 @@ Create the variant in a separate scratch directory containing `scratch.conf`,
 its source and local headers, then trace it into another new output directory.
 Source-line selection refers to that frozen source, not a native address.
 
+For large functions, add `--passes-only` to retain the 12 pass boundaries while
+omitting the repeated allocation callsites. The receipt records this narrower
+observation scope; whole-object preservation and missing-stream controls still
+apply. The observer and decoder share the same 16384-node limit.
+
 The output must be a new, short ASCII path outside the input scratch. The
 existing `msvc6.5` compiler, wibo, and generated Kernel32 import inputs from
 `crimson native link --image crimsonland.exe` are required. Another compiler
@@ -41,7 +46,7 @@ MSVC-version decoder.
 
 The observer preserves registers and flags. It validates every patched CALL's
 opcode and original destination, and rejects reentrant use of its return-hook
-slots. It limits a snapshot to 4096 nodes and each operand chain to 16 elements;
+slots. It limits a snapshot to 16384 nodes and each operand chain to 16 elements;
 exceeding these limits fails instead of silently truncating evidence. Only the
 loaded diagnostic process is instrumented.
 
@@ -94,3 +99,10 @@ these commands instead of importing dated scripts or modifying observer strings.
 [Generalization validation](../evidence/c2-trace-generalization-2026-09-13/README.md)
 covers an exact C control, an exact C++ control, repeated timeline compilation,
 a changed-source trace, and a deliberately wrong hook destination.
+
+[Spawn alias-budget recovery](../evidence/spawn-exact-2026-09-13/README.md)
+shows why a small instruction residual can have a distant cause. Additional
+value temporaries exhausted field-alias capacity and introduced scheduler
+store dependencies. That package extends the pinned observations to the actual
+alias classes and scheduler graph; the ordinary operand signatures alone do
+not include those fields.

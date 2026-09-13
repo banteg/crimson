@@ -25,7 +25,7 @@ static void __cdecl observe(unsigned long phase, unsigned long *registers)
     function = (unsigned long *)saved_function;
     first = *(unsigned long *)(*(unsigned long *)function[2] + 0x1c);
     node = first;
-    while (node && count < 4096) { ++count; node = *(unsigned long *)node; }
+    while (node && count < MAX_NODES) { ++count; node = *(unsigned long *)node; }
     if (node) ExitProcess(97);
     write_block(&phase, 4);
     write_block(&saved_function, 4);

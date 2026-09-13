@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "kind": "preserving-c2-trace",
+  "profile": "msvc6.5-c2-d50100ac",
+  "function": "creature_spawn_template",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "source_sha256": "7e06761cd2ed01570971b49a51c4e6c892ac1267ced51cf926b0594616ef35aa",
+  "build_key": {
+    "toolchain": {
+      "compiler_trees": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      },
+      "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+      "runner_mode": 493,
+      "cl_environment": {
+        "CL": null,
+        "_CL_": null
+      }
+    },
+    "pipeline_sha256": [
+      "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+      "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+      "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+    ],
+    "compiler": "msvc6.5",
+    "argv": [
+      "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+      "/c",
+      "/O2",
+      "/GB",
+      "/W3",
+      "/GR-",
+      "scratch.cpp"
+    ],
+    "auto_inline_off": [],
+    "dependencies": [
+      [
+        "/private/tmp/spawn-final-passes/source/scratch.cpp",
+        "7e06761cd2ed01570971b49a51c4e6c892ac1267ced51cf926b0594616ef35aa"
+      ],
+      [
+        "/private/tmp/spawn-final-passes/source/scratch.conf",
+        "2a28ff47de1abcae0705ce76b73f7d104516908466c9a7a63e923c68cadf1e9a"
+      ],
+      [
+        "cl.sh",
+        "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+      ],
+      [
+        "compilers/msvc6.5/Bin/CL.EXE",
+        "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+      ],
+      [
+        "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+        "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+      ],
+      [
+        "include/crimsonland_console.h",
+        "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+      ],
+      [
+        "include/crimsonland_gameplay.h",
+        "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+      ]
+    ]
+  },
+  "input_hashes": {
+    "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+    "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0",
+    "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "64585e7d8041e6e90f6055ae939836fbab2082e0d1600c4dc558fc49ad3b890f",
+    "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+    "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+    "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+    "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+    "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+    "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+    "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+    "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+    "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+    "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+    "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+    "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+    "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+    "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+  },
+  "stream_hashes": {
+    "ex": "c54ee6e4f98236fa9c947c6fdda9d009886beca3432ec05a353e25ef4b284047",
+    "in": "3c1993c728c93270dc64da9417e0366b626596205d365fd0d4c0f769bce5102e",
+    "sy": "7efcf4e12a5c50c38288ea91ac8f93fc264bd5984f7685b9a7683f17c7664750",
+    "gl": "713ad18b547d8f47a7501720d7de22ce0bba3a8c706de2f9ea640443cb9dfc4c"
+  },
+  "whole_coff_equal_except_timestamp": true,
+  "normalized_coff_sha256": "e81c9f5eaf63c6b7d160fbd26e36d267201db1203d19e13fa9b328e42d7b3728",
+  "missing_stream_rejected": true,
+  "compiler_decisions_modified": false,
+  "passes_only": true,
+  "metrics": {
+    "ratio": 1.0,
+    "target_instructions": 3159,
+    "candidate_instructions": 3159,
+    "prefix_instructions": 3159,
+    "references_ok": 363,
+    "reference_problems": 0,
+    "exact": true,
+    "body_byte_exact": true
+  },
+  "events": 12,
+  "object_paths": [
+    "source/build/msvc6.5/5e4a09ff02f61a15/scratch.obj",
+    "captured-source/build/msvc6.5/2fe185afe4051f65/scratch.obj",
+    "replay/replay.obj",
+    "observed/replay.obj"
+  ],
+  "profile_sha256": "556661cb87612adfbe0155be66c344b3147a05731dabfb8df244ee2fc0934284",
+  "trace_sha256": "ed19b29c3682ebbcedce027b2f05c0db15fd7865bbde1ef88821c074b95cf079",
+  "snapshots_sha256": "3f833b2dc23bfe97317377a4ea145711916d23f9bda3a8440ae37bb4665d6502"
+}

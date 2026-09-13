@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **803/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **804/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**803/810** functions matched exactly (**99.1%**), **284877/341992** code bytes (**83.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**804/810** functions matched exactly (**99.3%**), **298976/341992** code bytes (**87.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **325767/341992** code bytes (**95.3%**).
+Fuzzy-weighted alignment is **327333/341992** code bytes (**95.7%**).
 
-Remaining exact-match debt is **7 functions**, **57115 code bytes**, and **16225 fuzzy-gap bytes**.
+Remaining exact-match debt is **6 functions**, **43016 code bytes**, and **14659 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**7** non-exact scratch-backed functions hold **16225 fuzzy-gap bytes**. The top 5 hold **99.1%** of that gap; the top 10 hold **100.0%**.
+**6** non-exact scratch-backed functions hold **14659 fuzzy-gap bytes**. The top 5 hold **99.8%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **1 functions / 32 gap bytes**; **6 / 16193** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **1 functions / 32 gap bytes**; **5 / 14627** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -42,9 +42,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | creature_update_all | 2209 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/30 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 5 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/44 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 6 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
-| 7 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/10 | 1 | repeated-variants,variant-errors |
+| 5 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
+| 6 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/10 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -114,12 +113,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 664/671 | 263712/320827 | 82.2% | 304602/320827 | 94.9% | 671/671 | 320827/320827 | 100.0% | 664/671 |
+| crimsonland.exe | 665/671 | 277811/320827 | 86.6% | 306168/320827 | 95.4% | 671/671 | 320827/320827 | 100.0% | 665/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**664/671** functions (**99.0%**), **263712/320827** bytes (**82.2%**), **304602/320827** fuzzy-weighted bytes (**94.9%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **664/671** scratches verified.
+**665/671** functions (**99.1%**), **277811/320827** bytes (**86.6%**), **306168/320827** fuzzy-weighted bytes (**95.4%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **665/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -535,7 +534,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | perks_init_database | 0x0042fd90 | 3211 | 3211/3211 | 0 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |
 | match | quest_meta_init_entry | 0x00430a20 | 170 | 170/170 | 0 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | quest-metadata-initialization |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 30/30 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
-| wip | creature_spawn_template | 0x00430af0 | 14099 | 12533/14099 | 1566 | 3161/3159 | 88.89% | 23/3159 | 357/0/1 |  | gameplay-spawn-switch |
+| match | creature_spawn_template | 0x00430af0 | 14099 | 14099/14099 | 0 | 3159/3159 | 100.00% | 3159/3159 | 363/0/0 |  | gameplay-spawn-switch |
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 39/39 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
 | wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |

@@ -1,0 +1,58 @@
+
+static HANDLE graph_file, alias_file;
+static unsigned long compiler_base;
+static void graph_write(void *p, unsigned long size) {
+    DWORD written;
+    if (!WriteFile(graph_file,p,size,&written,0) || written!=size) ExitProcess(86);
+}
+static void graph_observe(unsigned long phase, unsigned long *registers) {
+    unsigned long *graph=(unsigned long *)registers[6], first=graph[0], last=graph[1];
+    unsigned long node=first, count=0, selected=0, ins, op, edge, edges, header[3], zero[8], j;
+    while (node && count<512) {
+        ++count;
+        ins=*(unsigned long *)(node+0x1c);
+        if(ins && (*(unsigned char *)(ins+9)&1)) {
+            op=*(unsigned long *)(ins+0x18);
+            for(j=0;op && j<16;++j,op=*(unsigned long *)op)
+                if(*(unsigned char *)(op+8)==7 && *(unsigned long *)(op+0x18)==0x42fa0000)selected=1;
+        }
+        if(node==last)break;
+        node=*(unsigned long *)node;
+    }
+    if(!selected)return;
+    if(node!=last)ExitProcess(85);
+    header[0]=phase;header[1]=registers[6];header[2]=count;
+    graph_write(header,sizeof(header));
+    for(j=0;j<8;++j)zero[j]=0;
+    node=first;
+    while(node) {
+        graph_write(&node,4);
+        graph_write((void *)node,60);
+        ins=*(unsigned long *)(node+0x1c);
+        graph_write(ins?(void *)ins:(void *)zero,32);
+        { unsigned long side, p, k, rec[17];
+          for(side=0;side<2;++side) {
+            p=ins?*(unsigned long *)(ins+0x18+side*4):0;
+            k=0;
+            while(p && k<16) {
+                if(*(unsigned char *)(p+8)==6) {
+                    unsigned long q;
+                    rec[0]=phase;rec[1]=ins;rec[2]=*(unsigned short *)(ins+0x10);rec[3]=side;rec[4]=p;
+                    for(q=0;q<12;++q)rec[5+q]=*(unsigned long *)(p+q*4);
+                    {DWORD w;if(!WriteFile(alias_file,rec,sizeof(rec),&w,0)||w!=sizeof(rec))ExitProcess(81);}
+                }
+                p=*(unsigned long *)p;++k;
+            }
+            if(p)ExitProcess(79);
+          }
+        }
+
+        edge=*(unsigned long *)(node+0xc);edges=0;
+        for(op=edge;op && edges<512;op=*(unsigned long *)op)++edges;
+        if(op)ExitProcess(84);
+        graph_write(&edges,4);
+        for(;edge;edge=*(unsigned long *)edge)graph_write((void *)edge,24);
+        if(node==last)break;
+        node=*(unsigned long *)node;
+    }
+}

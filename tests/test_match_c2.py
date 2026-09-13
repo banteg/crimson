@@ -40,6 +40,17 @@ def test_recycled_function_address_starts_new_ordinal():
     assert [event["function_ordinal"] for event in events] == [0, 1]
 
 
+def test_large_function_snapshot_and_node_limit():
+    count = 4097
+    single = trace_bytes()
+    header = struct.pack("<6I", 0x43325431, 1, 0x10000000, 0, 0x2000, count)
+    events = c2.decode_trace(header + single[24:] * count, PROFILE)
+    assert len(events[0]["nodes"]) == count
+    oversized = struct.pack("<6I", 0x43325431, 1, 0x10000000, 0, 0x2000, c2.MAX_NODES + 1)
+    with pytest.raises(ValueError, match="node limit"):
+        c2.decode_trace(oversized, PROFILE)
+
+
 def test_compare_renames_arena_addresses_but_detects_value_and_cost_changes():
     left = c2.decode_trace(trace_bytes(), PROFILE)
     right = c2.decode_trace(trace_bytes(temp=0x9876), PROFILE)
@@ -95,3 +106,25 @@ def test_observer_guards_before_restoring_flags():
     assert "mov dword ptr [active+0],1\n popad\n popfd" in source
     assert "site[0] != 0xe8" in source
     assert "recursive_call:" in source
+    assert f"#define MAX_NODES {c2.MAX_NODES}" in source
+    assert "count < MAX_NODES" in source
+
+
+@pytest.mark.parametrize("options, expected", [([], False), (["--passes-only"], True)])
+def test_trace_cli_selects_observation_scope(monkeypatch, tmp_path, options, expected):
+    from typer.testing import CliRunner
+
+    from crimson.cli.match import match_app
+
+    scratch, out = tmp_path / "scratch", tmp_path / "trace"
+    calls = []
+
+    def trace(source, destination, *, passes_only=False):
+        calls.append((source, destination, passes_only))
+        return {"events": 12 if passes_only else 46}
+
+    monkeypatch.setattr(c2, "trace", trace)
+    result = CliRunner().invoke(match_app, ["c2-trace", str(scratch), "--out", str(out), *options])
+    assert result.exit_code == 0, result.output
+    assert calls == [(scratch, out, expected)]
+    assert "whole COFF preserved" in result.output

@@ -2756,12 +2756,13 @@ def cmd_match_audit(
 def cmd_c2_trace(
     scratch: Path = typer.Argument(..., help="Scratch directory using the pinned msvc6.5 compiler"),
     out: Path = typer.Option(..., "--out", help="New short ASCII output directory"),
+    passes_only: bool = typer.Option(False, "--passes-only", help="Omit repeated allocation callsites for large functions"),
 ) -> None:
     """Capture, replay and observe C2 with whole-object preservation controls."""
     from .. import match_c2
 
     try:
-        result = match_c2.trace(scratch, out)
+        result = match_c2.trace(scratch, out, passes_only=passes_only)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         typer.echo(f"C2 trace failed: {exc}", err=True)
         raise typer.Exit(code=2) from exc

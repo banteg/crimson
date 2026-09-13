@@ -1056,3 +1056,26 @@ are corrected and have regression checks for allocation count/order, every
 cell position, RNG consumption, phase seeds and the final child. Python also
 now uses the native float32 `0.01` literal for random sentinel headings.
 A separate verifier checks 100 PC24 grid witnesses against both real ports.
+
+## 2026-09-13: complete native match
+
+The [exact recovery package](../../evidence/spawn-exact-2026-09-13/README.md)
+reconstructs the full source progression and 254 compiling controls. Both
+normalized and relocation-aware encoded-body exactness now pass: 3,159
+instructions, 14,099 bytes, 363 references, zero residuals and zero padding.
+Both returns, every CFG node, all four retry-table destinations and every
+stack access are checked positionally. The canonical source SHA-256 is
+`7e06761cd2ed01570971b49a51c4e6c892ac1267ced51cf926b0594616ef35aa`.
+
+SDK arithmetic and tint publication, POD zero storage, formation-local lifetimes,
+integer RNG staging and chain induction recover the native frame and schedule.
+The three delayed constant loads expose VC6's 1,024-class alias budget: excessive
+value temporaries collapse distinct creature fields and serialize their stores.
+Preserving compiler traces verify that cause and the restored distinctions.
+The final grid-offset reference and local chain-position value recover the last
+x87 operand-order pairs. No compiler or matcher decisions are patched.
+
+All 2,928 native execution cases now also agree in ordered writes, closing the
+explicit debt from the September 11 package. Changed stride and missing-row
+controls fail. Runtime port behavior was already corrected in that package;
+this change adds exact source and reproducible proof.

@@ -17,7 +17,7 @@ from . import match_c2_replay as replay
 
 ASSETS = match.DEFAULT_MATCH_ROOT / "c2"
 NODE_WORDS = 742
-MAX_NODES = 4096
+MAX_NODES = 16384
 
 
 def require(condition: bool, message: str) -> None:
@@ -59,7 +59,11 @@ def load_profile() -> dict[str, Any]:
 def observer_source(profile: dict[str, Any]) -> str:
     """Generate callsite wrappers from the checked-in profile, without editing compiler files."""
     hooks = profile["hooks"]
-    declarations = [f"#define HOOK_COUNT {len(hooks)}", f"#define INVOKE_RVA {profile['invoke_rva']}"]
+    declarations = [
+        f"#define HOOK_COUNT {len(hooks)}",
+        f"#define INVOKE_RVA {profile['invoke_rva']}",
+        f"#define MAX_NODES {MAX_NODES}",
+    ]
     wrappers = []
     for index, hook in enumerate(hooks):
         slot = index * 4
@@ -289,8 +293,10 @@ def compare(left: list[dict[str, Any]], right: list[dict[str, Any]]) -> dict[str
     }
 
 
-def trace(scratch: Path, out: Path) -> dict[str, Any]:
+def trace(scratch: Path, out: Path, *, passes_only: bool = False) -> dict[str, Any]:
     profile = load_profile()
+    if passes_only:
+        profile = {**profile, "hooks": profile["hooks"][:12]}
     config = match.load_scratch_config(scratch.resolve())
     require(config.compiler == "msvc6.5", "Only the pinned msvc6.5 profile is supported")
     require(not out.exists(), "Output directory must be new, to exclude stale traces and objects")
@@ -392,6 +398,7 @@ def trace(scratch: Path, out: Path) -> dict[str, Any]:
         "normalized_coff_sha256": replay.sha(normalized),
         "missing_stream_rejected": True,
         "compiler_decisions_modified": False,
+        "passes_only": passes_only,
         "metrics": metrics,
         "events": len(snapshots),
         "object_paths": [str(p.relative_to(out)) for p in objects],
