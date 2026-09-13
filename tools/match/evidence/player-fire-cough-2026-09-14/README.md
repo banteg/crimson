@@ -93,3 +93,40 @@ Use a fresh output directory. Omit `--all-controls` to compile only before and
 retained sources. `--controls-only` skips execution. Inputs and dependencies
 are pinned; the verifier expects the canonical source at this recovery
 revision, so use that checkout after later matching changes.
+
+## Follow-up: angle storage and receiver controls
+
+Twelve additional controls start from the retained source at `11e5371aa`.
+None is selected. Assigning the angle to the subtraction output's X component
+restores an early spill, but reverses the returned-vector loads and removes
+native's `fxch`. Splitting the assignment and subtraction, or naming the loaded
+X/Y values, produces the same body. Reference, returned-pointer, Y-component,
+second-use and diagnostic volatile forms do not recover the complete sequence.
+The volatile control is not proposed as recovered source.
+
+Four index/position controls separate the reselected player's array index from
+its position pointer. The index form restores native's scaled offset in EBP
+and position address in EBX, but other stores, homes and schedules still differ.
+The simple selected-receiver control's two additional positional mismatches
+are outside Fire Cough: native `0x415799` and `0x4157ab` become paired with
+neighboring perk loads. That alignment artifact is not evidence of incorrect
+Fire Cough reference ownership. The actual remaining `this`-pointer difference
+is still established by the native instructions; it is not resolved by the
+retained source.
+
+`followup-controls.json` retains all twelve source recipes and measurements.
+`followup.py` reconstructs them, force-compiles, and checks native matcher
+results. It does not execute the non-selected controls or extend the original
+3,827-case claim. The canonical source and its tested body are unchanged.
+
+The baseline and X-component controls also passed `c2-trace --passes-only`:
+normal, captured, replayed and observed whole objects agree, and both missing-
+stream controls fail as required. Their first differing observed signature is
+phase 1, before `C2+0xfcda`. This narrows observation, not the causal compiler
+decision; the signatures do not model all operand structures. The preserving
+replay receipts and comparison are in `followup-results.json`.
+
+```sh
+uv run --no-sync python tools/match/evidence/player-fire-cough-2026-09-14/followup.py \
+  --out /tmp/player-spill-proof --trace
+```

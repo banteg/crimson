@@ -35599,7 +35599,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 4068,
-        "candidate_object_sha256": "a0b7ab1d92094c11f71d017768da27bfb46b1519e66c56f324462ad946864c0e",
+        "candidate_object_sha256": "546b4073ccc1ab72d4ae0381d9a440eef23a0b776c3cb3352891459f93fece77",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -111211,6 +111211,7 @@
     "tools/match/evidence/player-aim-direction-2026-09-11/verify_ports.py": "d353ca73057f37efc10d88d03bddf2372900355fd5d01633af04b156ddfbd6f7",
     "tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify.py": "0feda236cad0d813ab26523fefeb09e2224348c99cd6668ec89daeb711f96493",
     "tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify_ports.py": "fe5172454109b715166ea3d11450dcf735e5dc058e7ae5d21ad43ae17648c967",
+    "tools/match/evidence/player-fire-cough-2026-09-14/followup.py": "59ec0bd4176af9c345875d1cd0896acd216f0b26b3acac7ee1601f7d8a3a3422",
     "tools/match/evidence/player-fire-cough-2026-09-14/verify.py": "dcfaea1987464f02d04d866ac0c21f2cf84b779f17b7b5eaf8a6922cbc0c46e8",
     "tools/match/evidence/player-frame-controls-2026-09-14/frame_map.py": "bc0c04b1c908c96b1ebad4734304cd2f81c2a8d54e579e6267e2f4dea04b01eb",
     "tools/match/evidence/player-frame-controls-2026-09-14/replay.py": "65dbdd546d978b5e39c4c1364e531e74a12cc52d0244394889271c84ee33fbfa",

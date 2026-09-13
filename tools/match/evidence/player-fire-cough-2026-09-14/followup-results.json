@@ -1,0 +1,586 @@
+{
+  "controls_sha256": "b4e88b3eb2bf1e9fe1c2fd4c53ca5fb868b15c72f2e7374b9ce8ae7b7121f65e",
+  "verifier_sha256": "59ec0bd4176af9c345875d1cd0896acd216f0b26b3acac7ee1601f7d8a3a3422",
+  "shared_verifier_sha256": "dcfaea1987464f02d04d866ac0c21f2cf84b779f17b7b5eaf8a6922cbc0c46e8",
+  "compiler_controls": [
+    {
+      "name": "baseline",
+      "source_sha256": "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-slot-loaded",
+      "source_sha256": "47f543e3f232f3251a1e9b5a2901ecb35df4ba0d1e394ccec8b5b6f7ac100ba3",
+      "body_sha256": "539abe963efd657f25224dafd1c6e6e2cd2f63baae1c6a214153d8475e7a4b7e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        804,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-slot-second-use",
+      "source_sha256": "5f24a3d13b43c61f4f610e9fa4a4a4b98013177108aa35594978c5dd2b2a0c40",
+      "body_sha256": "749f3366d1aecf5db4bc863f2637756439222c5ecf0cc73727de5a0ac4bd2201",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4069,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        798,
+        0,
+        2
+      ],
+      "ratio": 0.6378247734138973
+    },
+    {
+      "name": "angle-slot-split",
+      "source_sha256": "0dd00089527c3643403610f85757fde98b260b5211e66fc5e8b6de34f38a51e1",
+      "body_sha256": "539abe963efd657f25224dafd1c6e6e2cd2f63baae1c6a214153d8475e7a4b7e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        804,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-slot-y-member",
+      "source_sha256": "cf9e501423b8b961590b3a1cf3627d920ef042490267178c9bb5fc04664e4178",
+      "body_sha256": "1e21639693d2fe76a8256ca8c0990e82a03797c886e6a521a5be101d1c236fc8",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        804,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-storage-return-member",
+      "source_sha256": "838788b5e8514727e6b97444e91ad0c079338f88315d281f6ec92d8fb3d41825",
+      "body_sha256": "315300437917653396da25f14f4760705dd4d32c2ac806e204d495022b65ab17",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        804,
+        0,
+        2
+      ],
+      "ratio": 0.6395939086294417
+    },
+    {
+      "name": "angle-storage-scratch-member",
+      "source_sha256": "b565fe7a5e07ebf6797a4bda966346dcd3333d872c08cfc642fa70c3a2a4c9a3",
+      "body_sha256": "539abe963efd657f25224dafd1c6e6e2cd2f63baae1c6a214153d8475e7a4b7e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        804,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-storage-scratch-reference",
+      "source_sha256": "4a7789583e2d3d3492bbea08c4bf60bf52fd0e5a5a081a0ea88bcd6ad2e5e478",
+      "body_sha256": "7a616993f2208db954ddfbb6f46bcfd855e1a4769f31bad04f5e645df51da4bb",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        778,
+        0,
+        2
+      ],
+      "ratio": 0.6287924573915146
+    },
+    {
+      "name": "angle-storage-volatile-diagnostic",
+      "source_sha256": "b012483773d18a835c248e081450a6af1203db3d8008e47bce6c4747cac82de8",
+      "body_sha256": "4e854d3e77a7150f3501f7dba52c3bb380eb14a6e7da31d85025c6be4754299f",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4069,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        799,
+        0,
+        2
+      ],
+      "ratio": 0.6373413897280967
+    },
+    {
+      "name": "cough-index-False",
+      "source_sha256": "3191963a5801f7d7c3194473a1df3036acaa7e83435f96f347bc66d5a9435e4e",
+      "body_sha256": "3731ba6f93a8d50726351cc81bc082be5b77c4fe8ffdfebf1ec909cf5124eace",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        801,
+        0,
+        2
+      ],
+      "ratio": 0.6384624682702768
+    },
+    {
+      "name": "cough-index-True",
+      "source_sha256": "4e8ebe11d44e0dd72a4fc1d37d54ea75a00f5f0637fc4f8ff09d42cfe7059b3e",
+      "body_sha256": "a90c9e106c2c3e734b4d3ee394410023dec982bfb2f42258ce85592d5cd4d2c2",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4070,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        801,
+        0,
+        4
+      ],
+      "ratio": 0.6391976800386661
+    },
+    {
+      "name": "cough-index-position",
+      "source_sha256": "c662085b58971707941860eb4e0cb15d04d1316e8abb7ce4f1abe7ce2bf2171c",
+      "body_sha256": "e16035fccc076c9fdda1a77905c97987fb4b8f84688da3556974dc1d06146248",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4069,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        776,
+        0,
+        4
+      ],
+      "ratio": 0.6269486404833837
+    },
+    {
+      "name": "cough-index-position-yx",
+      "source_sha256": "7c2febfd8115eb2e633fa181d467abfc2a5bf54c558682151c61ebf84044751e",
+      "body_sha256": "20adb867f3284bf43cbcd5a142f72ae6b23f46bd652b1f4cf378868d07c01e2c",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4069,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        774,
+        0,
+        5
+      ],
+      "ratio": 0.6267069486404834
+    }
+  ],
+  "execution": "Not run: no follow-up control is selected; canonical body is unchanged.",
+  "traces": [
+    {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "player_update",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/player-spill-proof/trace-base/source/scratch.cpp",
+            "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1"
+          ],
+          [
+            "/private/tmp/player-spill-proof/trace-base/source/scratch.conf",
+            "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ],
+          [
+            "include/crimsonland_terrain_owner.h",
+            "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
+          ],
+          [
+            "include/grim2d_cpp.h",
+            "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "40ef1e54e8ffc6eea032f95bbfb1930d67ca80eabff71b026a5dbb5981bb8031",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "027696ffb693f821e8c7ce28ad68e49daa965aea22d72a96920a70215a82a144",
+        "in": "1bb3f0842484e5cec0894cf332340e1b64c6e1f53aea89ac9051721997665425",
+        "sy": "e31ce17940af6f26031a05bdb81d14335926c75fe147edf186bcf98131d23de1",
+        "gl": "8e149ac52a19218443c2c99d11b762a695605f6e347c06b355b10061fab2630e"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "9b8c4c92507f8524955e27195112d898618ecabf8b3868c162f427f4b47aed08",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "passes_only": true,
+      "metrics": {
+        "ratio": 0.6400773507372493,
+        "target_instructions": 4206,
+        "candidate_instructions": 4068,
+        "prefix_instructions": 7,
+        "references_ok": 805,
+        "reference_problems": 2,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "events": 12,
+      "object_paths": [
+        "source/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+        "captured-source/build/msvc6.5/e7ecd51242d6f9bb/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "556661cb87612adfbe0155be66c344b3147a05731dabfb8df244ee2fc0934284",
+      "trace_sha256": "0e4852b279eb47aa0b803e6feff669b120b24428fd2c9dbf7dd12e351be05f44",
+      "snapshots_sha256": "542b4a30220da2e96490609f9fe198daedd7e61a557e24af33876399cf47a3ce"
+    },
+    {
+      "schema_version": 1,
+      "kind": "preserving-c2-trace",
+      "profile": "msvc6.5-c2-d50100ac",
+      "function": "player_update",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "source_sha256": "b565fe7a5e07ebf6797a4bda966346dcd3333d872c08cfc642fa70c3a2a4c9a3",
+      "build_key": {
+        "toolchain": {
+          "compiler_trees": {
+            "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+            "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+          },
+          "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "runner_mode": 493,
+          "cl_environment": {
+            "CL": null,
+            "_CL_": null
+          }
+        },
+        "pipeline_sha256": [
+          "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+          "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+          "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+        ],
+        "compiler": "msvc6.5",
+        "argv": [
+          "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+          "/c",
+          "/O2",
+          "/GB",
+          "/W3",
+          "/GR-",
+          "scratch.cpp"
+        ],
+        "auto_inline_off": [],
+        "dependencies": [
+          [
+            "/private/tmp/player-spill-proof/trace-member/source/scratch.cpp",
+            "b565fe7a5e07ebf6797a4bda966346dcd3333d872c08cfc642fa70c3a2a4c9a3"
+          ],
+          [
+            "/private/tmp/player-spill-proof/trace-member/source/scratch.conf",
+            "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9"
+          ],
+          [
+            "cl.sh",
+            "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          ],
+          [
+            "compilers/msvc6.5/Bin/CL.EXE",
+            "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+          ],
+          [
+            "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+            "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          ],
+          [
+            "include/crimsonland_console.h",
+            "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+          ],
+          [
+            "include/crimsonland_gameplay.h",
+            "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          ],
+          [
+            "include/crimsonland_terrain_owner.h",
+            "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
+          ],
+          [
+            "include/grim2d_cpp.h",
+            "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+          ]
+        ]
+      },
+      "input_hashes": {
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "40ef1e54e8ffc6eea032f95bbfb1930d67ca80eabff71b026a5dbb5981bb8031",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+        "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+        "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+        "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+        "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+        "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+      },
+      "stream_hashes": {
+        "ex": "3f9a9c6e07da874e96997c0bb72ba122296b3256efee42857e5573ad0b386010",
+        "in": "1bb3f0842484e5cec0894cf332340e1b64c6e1f53aea89ac9051721997665425",
+        "sy": "44348ce714964bb639702afd3bb1cf63be95788c0efb670e0f89fbbdbbee6652",
+        "gl": "a3df2e30540e3f742d5966c0a95962790d0a4bf7e43baed84096a4e478419d8b"
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "normalized_coff_sha256": "712b023a39c9cfcceb3c3e2b786a8e7a2782cbae28e6bbd83aed0f1d1b329496",
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "passes_only": true,
+      "metrics": {
+        "ratio": 0.6400773507372493,
+        "target_instructions": 4206,
+        "candidate_instructions": 4068,
+        "prefix_instructions": 7,
+        "references_ok": 804,
+        "reference_problems": 2,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "events": 12,
+      "object_paths": [
+        "source/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+        "captured-source/build/msvc6.5/3bebdc894c74f8ab/scratch.obj",
+        "replay/replay.obj",
+        "observed/replay.obj"
+      ],
+      "profile_sha256": "556661cb87612adfbe0155be66c344b3147a05731dabfb8df244ee2fc0934284",
+      "trace_sha256": "48226b84da4949d5ff6c0574c233bcb988552495492f7e70fc7b4bffa2b6dc13",
+      "snapshots_sha256": "7b3a24c03907820adc635d376205d520dd865b96e6445d7ca41b1ab08e67663e"
+    }
+  ],
+  "comparison": {
+    "kind": "c2-shape-comparison",
+    "first_shape_difference": {
+      "function_ordinal": 0,
+      "phase": 1,
+      "occurrence": 0,
+      "left_event": 1,
+      "right_event": 1,
+      "left_nodes": 4359,
+      "right_nodes": 4359
+    },
+    "differences": [
+      {
+        "function_ordinal": 0,
+        "phase": 1,
+        "occurrence": 0,
+        "left_event": 1,
+        "right_event": 1,
+        "left_nodes": 4359,
+        "right_nodes": 4359
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 2,
+        "occurrence": 0,
+        "left_event": 2,
+        "right_event": 2,
+        "left_nodes": 4345,
+        "right_nodes": 4345
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 3,
+        "occurrence": 0,
+        "left_event": 3,
+        "right_event": 3,
+        "left_nodes": 4791,
+        "right_nodes": 4791
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 4,
+        "occurrence": 0,
+        "left_event": 4,
+        "right_event": 4,
+        "left_nodes": 4320,
+        "right_nodes": 4320
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 5,
+        "occurrence": 0,
+        "left_event": 5,
+        "right_event": 5,
+        "left_nodes": 5450,
+        "right_nodes": 5448
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 6,
+        "occurrence": 0,
+        "left_event": 6,
+        "right_event": 6,
+        "left_nodes": 5420,
+        "right_nodes": 5418
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 7,
+        "occurrence": 0,
+        "left_event": 7,
+        "right_event": 7,
+        "left_nodes": 5773,
+        "right_nodes": 5771
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 8,
+        "occurrence": 0,
+        "left_event": 8,
+        "right_event": 8,
+        "left_nodes": 5773,
+        "right_nodes": 5771
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 9,
+        "occurrence": 0,
+        "left_event": 9,
+        "right_event": 9,
+        "left_nodes": 5738,
+        "right_nodes": 5736
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 10,
+        "occurrence": 0,
+        "left_event": 10,
+        "right_event": 10,
+        "left_nodes": 5622,
+        "right_nodes": 5620
+      },
+      {
+        "function_ordinal": 0,
+        "phase": 11,
+        "occurrence": 0,
+        "left_event": 11,
+        "right_event": 11,
+        "left_nodes": 5189,
+        "right_nodes": 5187
+      }
+    ],
+    "limitations": "Pairs function ordinals and hook occurrences. Compares opcode, line, flags, operand kinds, kind-7 payloads, event-local temporary relationships and selected descriptor fields (+04,+0c,+10,+24,+3c) only at the allocation callsites (hook indices 12+). Other operands remain opaque. Equal signatures do not establish semantic equivalence; descriptor field meanings are phase-dependent. Arena IDs may be recycled even within one trace."
+  }
+}

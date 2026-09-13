@@ -1494,3 +1494,15 @@ compiler controls and the native/before/after execution proof. These are
 bounded observations, not a new whole-function match or newly demonstrated
 gameplay bug. The previous-source overlay is recorded separately in the
 canonical experiment ledger as `fire-cough-original-lifetimes-control`.
+
+The same package retains twelve further non-selected angle-storage and
+index/receiver controls in `followup-controls.json`. Writing the angle into
+the subtraction output recovers the early spill but loses native's X/Y load
+order and `fxch`; splitting that assignment or naming the loaded values is
+byte-neutral. Preserving C2 traces of the canonical and X-component forms
+first differ in the observed phase-1 signature, not a proven causal decision.
+The receiver control's two added positional mismatches occur in the later
+perk block at native `0x415799`/`0x4157ab`, paired with neighboring perk loads.
+Their count alone is not a reason to reject native receiver ownership. The
+index forms recover EBP's scaled offset and EBX's position address, while
+other schedules remain different. No follow-up source is promoted.
