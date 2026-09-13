@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "before": {
+    "name": "baseline",
+    "parent": "55c36d4d8",
+    "source_sha256": "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1",
+    "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 4068,
+    "target": 4206,
+    "prefix": 7,
+    "refs": [
+      805,
+      0,
+      2
+    ],
+    "ratio": 0.6400773507372493
+  },
+  "after": {
+    "name": "hot-branches-receiver-True",
+    "parent": "55c36d4d8",
+    "source_sha256": "c982bef1d0b1aa82f7aa2f2488fbe0df72959e8d9ffa31f9a69f89762234a72c",
+    "body_sha256": "5fe8187cade5f80168078f7bd4dccd8ec573924a6919e5b322f1a4300adc6473",
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 4070,
+    "target": 4206,
+    "prefix": 7,
+    "refs": [
+      807,
+      0,
+      2
+    ],
+    "ratio": 0.6449975833736105
+  },
+  "fixture_dependencies": {
+    "tools/match/evidence/player-aim-direction-2026-09-11/runner.py": "f16a034623c30637a525f1b692addeb284e96deeb89198f01307d4678601835a",
+    "tools/match/evidence/player-aim-direction-2026-09-11/fixtures.py": "579960c5acc8689d868d54d6dd9932ef806f30815cd0333cb16ae3ea6a6e2b88",
+    "tools/match/evidence/player-aim-direction-2026-09-11/layout.py": "7c8efda1fd6a0387bc0ec296a3ce6042a6ced5b706f03e44d995e0609c3c5661",
+    "tools/match/evidence/player-point-frame-2026-09-11/fixtures.py": "0285dcf0861fa3652f1a02a0f3af4bf11b617cc7405297e2c33432935a6f2e84",
+    "tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify.py": "0feda236cad0d813ab26523fefeb09e2224348c99cd6668ec89daeb711f96493",
+    "tools/match/evidence/plasma-head-alpha-2026-09-10/verify.py": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+    "tools/match/evidence/player-frame-controls-2026-09-14/frame_map.py": "bc0c04b1c908c96b1ebad4734304cd2f81c2a8d54e579e6267e2f4dea04b01eb",
+    "tools/match/evidence/player-point-frame-2026-09-11/results.json": "edd4d5c0c6ef75d7c12c3af7e4674b07602fa11e59edbd8001a9609fbd5298d3",
+    "tools/match/evidence/player-fire-cough-2026-09-14/verify.py": "dcfaea1987464f02d04d866ac0c21f2cf84b779f17b7b5eaf8a6922cbc0c46e8"
+  },
+  "execution": {
+    "cases": 3827,
+    "differences": 0,
+    "cases_sha256": "5c626d3d1ce52a76181d527f9f0777dbf61eb4201b7ad7f53129b3a478fb2086",
+    "observations_sha256": "fc1583fa495e450919aedb09c7c0b9e47626628d398823f28e3f9922de173361",
+    "layout": {
+      "sizeof(player_state_t)": 864,
+      "sizeof(creature_t)": 152,
+      "sizeof(creature_spawn_slot_t)": 24,
+      "sizeof(projectile_t)": 64,
+      "sizeof(projectile_pool_t)": 6144,
+      "sizeof(sprite_effect_t)": 44,
+      "sizeof(particle_t)": 56,
+      "sizeof(effect_template_t)": 60,
+      "sizeof(weapon_stats_t)": 124,
+      "offsetof(cvar_float_t, value)": 12,
+      "offsetof(player_state_t, death_timer)": 16,
+      "offsetof(player_state_t, pos_x)": 20,
+      "offsetof(player_state_t, pos_y)": 24,
+      "offsetof(player_state_t, health)": 36,
+      "offsetof(player_state_t, heading)": 44,
+      "offsetof(player_state_t, size)": 52,
+      "offsetof(player_state_t, speed_multiplier)": 92,
+      "offsetof(player_state_t, move_speed)": 104,
+      "offsetof(player_state_t, move_phase)": 148,
+      "offsetof(player_state_t, spread_heat)": 696,
+      "offsetof(player_state_t, clip_size)": 708,
+      "offsetof(player_state_t, ammo)": 716,
+      "offsetof(player_state_t, reload_timer)": 720,
+      "offsetof(player_state_t, shot_cooldown)": 724,
+      "offsetof(player_state_t, reload_timer_max)": 728,
+      "offsetof(player_state_t, muzzle_flash_alpha)": 764,
+      "offsetof(player_state_t, aim_heading)": 768,
+      "offsetof(player_state_t, turn_speed)": 772,
+      "offsetof(player_state_t, low_health_timer)": 784,
+      "offsetof(player_state_t, speed_bonus_timer)": 788,
+      "offsetof(player_state_t, man_bomb_timer)": 160,
+      "offsetof(player_state_t, living_fortress_timer)": 164,
+      "offsetof(player_state_t, fire_cough_timer)": 168,
+      "offsetof(player_state_t, hot_tempered_timer)": 156,
+      "offsetof(player_state_t, fire_bullets_timer)": 796,
+      "offsetof(player_state_t, alt_clip_size)": 736,
+      "offsetof(player_state_t, alt_ammo)": 744,
+      "offsetof(player_state_t, alt_reload_timer)": 748,
+      "offsetof(player_state_t, alt_shot_cooldown)": 752,
+      "offsetof(player_state_t, alt_reload_timer_max)": 756,
+      "offsetof(player_state_t, move_target_x)": 804,
+      "offsetof(player_state_t, move_target_y)": 808,
+      "offsetof(player_state_t, aim)": 80,
+      "offsetof(player_state_t, experience)": 172,
+      "offsetof(player_state_t, perk_counts)": 184,
+      "offsetof(player_state_t, weapon_id)": 704,
+      "offsetof(player_state_t, reload_active)": 712,
+      "offsetof(player_state_t, alt_weapon_id)": 732,
+      "offsetof(player_state_t, alt_reload_active)": 740,
+      "offsetof(player_state_t, auto_target)": 800,
+      "offsetof(player_state_t, input)": 812,
+      "offsetof(player_input_t, move_key_forward)": 0,
+      "offsetof(player_input_t, move_key_backward)": 4,
+      "offsetof(player_input_t, turn_key_left)": 8,
+      "offsetof(player_input_t, turn_key_right)": 12,
+      "offsetof(player_input_t, fire_key)": 16,
+      "offsetof(player_input_t, key_reserved_0)": 20,
+      "offsetof(player_input_t, key_reserved_1)": 24,
+      "offsetof(player_input_t, aim_key_left)": 28,
+      "offsetof(player_input_t, aim_key_right)": 32,
+      "offsetof(player_input_t, axis_aim_x)": 36,
+      "offsetof(player_input_t, axis_aim_y)": 40,
+      "offsetof(player_input_t, axis_move_x)": 44,
+      "offsetof(player_input_t, axis_move_y)": 48,
+      "offsetof(creature_t, active)": 0,
+      "offsetof(creature_t, pos_x)": 20,
+      "offsetof(creature_t, pos_y)": 24,
+      "offsetof(creature_t, health)": 36,
+      "offsetof(creature_t, size)": 52,
+      "offsetof(weapon_stats_t, shot_cooldown)": 72,
+      "offsetof(weapon_stats_t, reload_time)": 76,
+      "offsetof(weapon_stats_t, spread_heat)": 80,
+      "offsetof(weapon_stats_t, shot_sfx_base_id)": 88,
+      "offsetof(weapon_stats_t, shot_sfx_variant_count)": 92,
+      "offsetof(weapon_stats_t, reload_sfx_id)": 96,
+      "offsetof(weapon_stats_t, flags)": 104,
+      "offsetof(weapon_stats_t, pellet_count)": 116
+    },
+    "coverage": {
+      "native": {
+        "count": 4198,
+        "offsets_sha256": "db40596ee9c622ef3eec042aab47a61191e579fb81424b1d767e9b5387198faf"
+      },
+      "before": {
+        "count": 4061,
+        "offsets_sha256": "4ac0328976ea81d64926284b02c21c98841128a296148050cfb1758140cb5d49"
+      },
+      "after": {
+        "count": 4063,
+        "offsets_sha256": "918644e7f683dd9b4e812133d9b2dc2f589d0dcfa26163a2321f27f7b4e9e022"
+      }
+    },
+    "missing_native": [
+      {
+        "offset": 1446,
+        "text": "dec eax"
+      },
+      {
+        "offset": 1447,
+        "text": "or eax, 0xfffffffc"
+      },
+      {
+        "offset": 1450,
+        "text": "inc eax"
+      },
+      {
+        "offset": 1681,
+        "text": "dec eax"
+      },
+      {
+        "offset": 1682,
+        "text": "or eax, 0xfffffff8"
+      },
+      {
+        "offset": 1685,
+        "text": "inc eax"
+      },
+      {
+        "offset": 2680,
+        "text": "fstp st(0)"
+      },
+      {
+        "offset": 2682,
+        "text": "fstp st(0)"
+      }
+    ]
+  }
+}

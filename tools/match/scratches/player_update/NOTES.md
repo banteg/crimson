@@ -1506,3 +1506,31 @@ perk block at native `0x415799`/`0x4157ab`, paired with neighboring perk loads.
 Their count alone is not a reason to reject native receiver ownership. The
 index forms recover EBP's scaled offset and EBX's position address, while
 other schedules remain different. No follow-up source is promoted.
+
+## Hot Tempered branches and selected Fire Cough receiver (2026-09-14)
+
+Separate odd/even projectile calls recover native Hot Tempered's conditional
+argument pushes and EBX loop counter. VC6 merges their common tail. Combined
+with subtraction through `fire_player->position`, this restores the native
+Fire Cough receiver and improves references from 805/0/2 to 807/0/2. The
+receiver-only control's later perk alignment mismatches disappear with this
+combination; no waiver or alias change is needed.
+
+Native `0x413cca..0x413d0e` and candidate offsets `0x613..0x657` agree over
+24 instructions / 68 bytes after three positional external-reference audits.
+Branch bytes and full-function stack depths agree. Corruption controls reject
+wrong parity, type, branch displacement and call ownership. This is a bounded
+region recovery, not full-function exactness. Candidate instructions are 4,070
+against 4,206; ratio is 64.4997583374%, prefix 7, and both exactness flags remain
+false. Source SHA is `c982bef1d0b1aa82f7aa2f2488fbe0df72959e8d9ffa31f9a69f89762234a72c`;
+body SHA is `5fe8187cade5f80168078f7bd4dccd8ec573924a6919e5b322f1a4300adc6473`.
+
+See `tools/match/evidence/player-hot-tempered-2026-09-14/` for thirteen controls,
+the 3,827-case native/before/after execution receipt (zero differences), frame
+checks and preserving C2 traces. The tracer's raw labels are function-relative
+here: seven blank lines before the function move physical lines but leave all
+observed labels and signatures unchanged. Angle arithmetic moves after the
+position adds between phases 0 and 1, before allocation. The early field-store
+control still loses native operand loading, so angle scheduling and vector
+homes remain open residuals. The previous source is recorded in the ledger
+as `hot-tempered-original-ternary-receiver-control`.

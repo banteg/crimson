@@ -1354,7 +1354,8 @@ either an instruction mismatch or masked-reference debt.
 
 Use `crimson match c2-trace <scratch-directory> --out <new-short-path>` for
 preserving frontend capture, standalone replay, and internal C2 observations.
-`c2-inspect` selects a source line and its current temporary users;
+`c2-inspect` selects a raw C2 line label and its current temporary users (labels
+may be function-relative rather than absolute file lines);
 `c2-compare` locates differences between observed signatures. See the
 [C2 tracing guide](c2/README.md) for the pinned profile, verification controls,
 and limits. These commands are diagnostic and do not change matching credit.

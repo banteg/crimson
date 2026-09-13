@@ -16,7 +16,11 @@ uv run crimson match c2-compare /private/tmp/c2-timeline /private/tmp/c2-variant
 
 Create the variant in a separate scratch directory containing `scratch.conf`,
 its source and local headers, then trace it into another new output directory.
-Source-line selection refers to that frozen source, not a native address.
+`--line` selects the raw C2 line label recorded in a node. It is not a native
+address or necessarily an absolute line in the frozen source. In the pinned
+`player_update` trace, labels are relative to the function definition; adding
+blank lines before that definition leaves them unchanged. Establish the mapping
+for the function and inline context being inspected; the tool does not infer it.
 
 For large functions, add `--passes-only` to retain the 12 pass boundaries while
 omitting the repeated allocation callsites. The receipt records this narrower
@@ -36,7 +40,7 @@ MSVC-version decoder.
 - Standalone replay and an observer generated from [profile.json](profile.json)
   and [observer.c.in](observer.c.in). The profile contains the 12 existing pass
   boundaries and 17 allocation callsites with entry/return hooks.
-- Every instruction node, its opcode, source line, raw flags, complete source
+- Every instruction node, its opcode, raw C2 line label, raw flags, complete source
   and destination operand chains, and 16 descriptor words for temporary operands.
 - Function ordinals, hook occurrence order, the loaded C2 base, and raw node /
   temporary addresses scoped to each event. Function-entry events start new
@@ -62,7 +66,7 @@ Inspect/compare validate the saved object, profile, raw trace and decoded
 snapshot digests. Decoded snapshots are independently checked against the raw
 trace. These are reproducibility checks, not cryptographic authentication.
 
-Inspection follows the selected line's current temporary operands to all of
+Inspection follows the selected line label's current temporary operands to all of
 their users in each snapshot, including users on other lines. The selected
 descriptor fields are shown as raw values and C2-relative register-descriptor
 addresses. Their interpretation depends on the compiler phase.
@@ -77,7 +81,7 @@ excluded: a field used as priority later can contain an arena pointer earlier.
 
 `first_shape_difference` is the first differing observed signature, **not the
 first causal compiler decision**. It includes allocation descriptors at the
-supported hooks, but leaves other operand structures opaque. Source-line changes
+supported hooks, but leaves other operand structures opaque. C2 line-label changes
 can produce a difference. Equal signatures do not prove semantic equivalence;
 function ordinals can pair different functions if source variants alter emission
 order. Arena addresses can be recycled between events, so this tool never

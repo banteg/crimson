@@ -2773,7 +2773,7 @@ def cmd_c2_trace(
 def cmd_c2_inspect(
     trace: Path = typer.Argument(..., help="Verified c2-trace output directory"),
     line: int | None = typer.Option(
-        None, "--line", min=1, help="Source line whose nodes and current temporary users to select",
+        None, "--line", min=1, help="Raw C2 line label to select; may be function-relative, not a file line",
     ),
     out: Path = typer.Option(..., "--out", help="Inspection JSON output"),
 ) -> None:

@@ -289,7 +289,7 @@ extern "C" void player_update(void)
             random_offset.y = (float)sin(spread_angle) * spread_radius
                 + random_offset.y;
 
-            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(
+            float *shot_delta = ((vec2_t *)&fire_player->position)->vec2_sub(
                 &scratch_pos.x,
                 &random_offset.x);
             float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;
@@ -340,13 +340,15 @@ extern "C" void player_update(void)
 
             int projectile_index = 0;
             do {
-                projectile_spawn(
-                    player_position,
-                    (float)projectile_index * 0.7853982f,
-                    (projectile_index & 1) != 0
-                        ? PROJECTILE_TYPE_PLASMA_RIFLE
-                        : PROJECTILE_TYPE_PLASMA_MINIGUN,
-                    owner_id);
+                if ((projectile_index & 1) != 0) {
+                    projectile_spawn(player_position,
+                        (float)projectile_index * 0.7853982f,
+                        PROJECTILE_TYPE_PLASMA_RIFLE, owner_id);
+                } else {
+                    projectile_spawn(player_position,
+                        (float)projectile_index * 0.7853982f,
+                        PROJECTILE_TYPE_PLASMA_MINIGUN, owner_id);
+                }
                 ++projectile_index;
             } while (projectile_index < 8);
 

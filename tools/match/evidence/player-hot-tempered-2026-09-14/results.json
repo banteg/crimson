@@ -1,0 +1,354 @@
+{
+  "controls_sha256": "d53d0e3df25edf17a82319e619b802392baf9729a52751fa101c96ce9b71f993",
+  "verifier_sha256": "43d4f914c06bd4e77c0d9ec11420554f4f330011a93ff4c2b13549b2aea6be26",
+  "compiler_controls": [
+    {
+      "name": "baseline",
+      "source_sha256": "9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-const-reference",
+      "source_sha256": "6e048b3422e2dc1feb1084e26593ea8c60f526914ce7bacb6d4849b79c40722f",
+      "body_sha256": "0aced316eec77cce73050cab601b9f2c8c4bf985232c59595239158ffd1d2daa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4070,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        797,
+        0,
+        2
+      ],
+      "ratio": 0.6435476075398744
+    },
+    {
+      "name": "angle-value-scalars-member",
+      "source_sha256": "1889c6fd705229321fffc8c4774fe9e1c5bba24b7de622e4560ea3ac9dcdfb81",
+      "body_sha256": "539abe963efd657f25224dafd1c6e6e2cd2f63baae1c6a214153d8475e7a4b7e",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        804,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "angle-value-scalars-scalar",
+      "source_sha256": "ca9177ba4317ccb029fe5886028901086e0e11b6584f80f154f8899f08d6c407",
+      "body_sha256": "152ae2214b7b680976a82d655fdc5de925f1a3401e7d547b8340f95db13a8862",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6396712196301221
+    },
+    {
+      "name": "angle-value-vector-member",
+      "source_sha256": "49a8baee0a0778cd87dbd5cab1c2b422aeeb732518a62b365da647d0c22c2e52",
+      "body_sha256": "9f5534c27023ba0cf979222cc2c2c2712a0d77b3e708a77a1fbfa3c7dc2fe68b",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4071,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        779,
+        0,
+        2
+      ],
+      "ratio": 0.5596230518303733
+    },
+    {
+      "name": "angle-value-vector-scalar",
+      "source_sha256": "a9f9fbb0bb713a342aa08eafce080cc62b58a144c3f1960005eda2a0c7085c17",
+      "body_sha256": "cb8109994bdbb9b342eec39fdb3af6e55fcb48bc61b906a867b04ff6c059a1b3",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4071,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.5692883895131086
+    },
+    {
+      "name": "cough-color-aggregate",
+      "source_sha256": "3c55a716479e589e3064f3c50b72f23d2bf7157964bb65b34a0a2bfdd1bfb334",
+      "body_sha256": "48c4bc9ceab9191704d49e94a5180df1140b2d451c9b619075055310da400deb",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4056,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        687,
+        0,
+        5
+      ],
+      "ratio": 0.5214233841684822
+    },
+    {
+      "name": "cough-color-flat",
+      "source_sha256": "09eae2dc06d346a3ca208eb218e0758cb6d79beb88f3be3ec29307f547057a40",
+      "body_sha256": "48c4bc9ceab9191704d49e94a5180df1140b2d451c9b619075055310da400deb",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4056,
+      "target": 4206,
+      "prefix": 1,
+      "refs": [
+        687,
+        0,
+        5
+      ],
+      "ratio": 0.5214233841684822
+    },
+    {
+      "name": "hot-branches-receiver-False",
+      "source_sha256": "f5217afbc34d914263ee891fbe63367996e97481bf80870b5ae1b28291def767",
+      "body_sha256": "044e32a4c83970c53c68b5fa72f872c768e344e13270906b6eb659fb86d2928f",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4067,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6428139731657199
+    },
+    {
+      "name": "hot-branches-receiver-True",
+      "source_sha256": "c982bef1d0b1aa82f7aa2f2488fbe0df72959e8d9ffa31f9a69f89762234a72c",
+      "body_sha256": "5fe8187cade5f80168078f7bd4dccd8ec573924a6919e5b322f1a4300adc6473",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4070,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        807,
+        0,
+        2
+      ],
+      "ratio": 0.6449975833736105
+    },
+    {
+      "name": "hot-type-local-receiver-False",
+      "source_sha256": "f7af6825c2b9f6dd9cca0c3b281916b31b4c708f35a8e93beda41dd585f1b63c",
+      "body_sha256": "e0f6cd30b802e76274f5283b0b12887ab5737e319b544cc86204c0a87147211d",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4069,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6421752265861027
+    },
+    {
+      "name": "hot-type-local-receiver-True",
+      "source_sha256": "dc30f523f01e61635993bdfc325feb0f6c6f3276ec825a8dbe9cc12595adac3d",
+      "body_sha256": "bf455ac236b299084481cc5cf8d69d68c41fc28de0dabf38fb51d5071c30a1bd",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4072,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        797,
+        0,
+        2
+      ],
+      "ratio": 0.6378352258999759
+    },
+    {
+      "name": "line-shift",
+      "source_sha256": "40d6c2a0cf72532acbf778d6ad86f3f6787291192c121f5f1a8b44d128c16032",
+      "body_sha256": "dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4068,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        805,
+        0,
+        2
+      ],
+      "ratio": 0.6400773507372493
+    },
+    {
+      "name": "receiver-only",
+      "source_sha256": "060958ec1888f9d15f9a014d2a555bdca692e92193ce3a6c936d823cf2aa3f0a",
+      "body_sha256": "f5c3e9a33d42e04dc2aaecd32e291446fc52d13553b67c2ceb99d0da8d825229",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 4071,
+      "target": 4206,
+      "prefix": 7,
+      "refs": [
+        798,
+        0,
+        4
+      ],
+      "ratio": 0.6364624864081189
+    }
+  ],
+  "frames": {
+    "baseline": {
+      "native": {
+        "instructions": 4206,
+        "reached": 4206,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4205,
+            0
+          ]
+        ]
+      },
+      "candidate": {
+        "instructions": 4068,
+        "reached": 4068,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4067,
+            0
+          ]
+        ]
+      }
+    },
+    "hot-branches-receiver-True": {
+      "native": {
+        "instructions": 4206,
+        "reached": 4206,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4205,
+            0
+          ]
+        ]
+      },
+      "candidate": {
+        "instructions": 4070,
+        "reached": 4070,
+        "conflicts": [],
+        "returns": [
+          [
+            35,
+            0
+          ],
+          [
+            4069,
+            0
+          ]
+        ]
+      }
+    }
+  },
+  "ring": {
+    "bytes": 68,
+    "instructions": 24,
+    "references": [
+      {
+        "offset": 1,
+        "keys": [
+          "address:0x004aaf0c",
+          "name:render_overlay_player_index"
+        ],
+        "coff_type": 6
+      },
+      {
+        "offset": 42,
+        "keys": [
+          "bytes4:db0f493f"
+        ],
+        "coff_type": 6
+      },
+      {
+        "offset": 51,
+        "keys": [
+          "address:0x00420440",
+          "name:projectile_spawn"
+        ],
+        "coff_type": 20
+      }
+    ],
+    "branches": [
+      {
+        "offset": 10,
+        "target": 17
+      },
+      {
+        "offset": 27,
+        "target": 33
+      },
+      {
+        "offset": 31,
+        "target": 35
+      },
+      {
+        "offset": 66,
+        "target": 23
+      }
+    ],
+    "native_sha256": "2f606817b74e8cc927b0b56f1dd6e69d8040d849d696c1d6defbdedf1ebcaeed",
+    "candidate_sha256": "b9d45ccfc580165ad4a435b934721135957dd367394bc4a0d1e64e7ab6b7b407",
+    "masked_sha256": "b9d45ccfc580165ad4a435b934721135957dd367394bc4a0d1e64e7ab6b7b407",
+    "entry_esp_depth": 88,
+    "all_positional_esp_depths_equal": true,
+    "negative_controls_rejected": [
+      "parity-mask",
+      "odd-projectile-type",
+      "branch-displacement",
+      "wrong-call-reference"
+    ]
+  }
+}
