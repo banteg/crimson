@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "canonical_source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+  "rows": [
+    {
+      "compiler": "msvc6.0",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": null,
+      "source_recipe": "canonical picker source",
+      "source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "f21ee9aff768313fd03f7c507ea439955a24cac68dbc1e1b99afe91f39e915c9",
+        "Include": "ef9a0dc0f9ed0260eea8e0b4b9d60a5054e5ceafb0348335be5e31abcda08b9e"
+      }
+    },
+    {
+      "compiler": "msvc6.3",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": null,
+      "source_recipe": "canonical picker source",
+      "source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "42cb250a64e4056bd125e1bc8a668604ff4dfd53278b353c0bab3fb27d8dedc1",
+        "Include": "2e640d56eec1bf414618da644db9a0fd9503c2ee77fcbafd5a4b19e9a6275f0f"
+      }
+    },
+    {
+      "compiler": "msvc6.4",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": null,
+      "source_recipe": "canonical picker source",
+      "source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "e382cd666f76057aa74c9a28d4e9468a5698b7746d6915338e23ebe7930705f6",
+        "Include": "07b69ec41ceb640a4576a5d44a5a02ecb247b4a443d11270e844d68edcc8a252"
+      }
+    },
+    {
+      "compiler": "msvc6.5",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": "bonus_apply",
+      "source_recipe": "prefix scratch source, newline, canonical picker source",
+      "source_sha256": "130eee58ee8ab9fb1ea51e22d058ce11a07ac5c1bfd6987c2420df7bd1a69066",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      }
+    },
+    {
+      "compiler": "msvc6.5",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": "bonus_render",
+      "source_recipe": "prefix scratch source, newline, canonical picker source",
+      "source_sha256": "20035f11b88c857903175bdf5babad4186053e4cc058ea322aa4869b399ff52e",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      }
+    },
+    {
+      "compiler": "msvc6.5",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": "bonus_spawn_at_pos",
+      "source_recipe": "prefix scratch source, newline, canonical picker source",
+      "source_sha256": "635ca8e381989a0ae9d8da752ca65d44e342028f3f2ccabc49252d00dbc3971f",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      }
+    },
+    {
+      "compiler": "msvc6.5",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": "bonus_try_spawn_on_kill",
+      "source_recipe": "prefix scratch source, newline, canonical picker source",
+      "source_sha256": "8f9fcb3abbab7b243fcb6aceb306fdb8a70d63a2fc76af5974cc7fbea6c90f2e",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      }
+    },
+    {
+      "compiler": "msvc6.5",
+      "cflags": "/O2 /GB /W3 /GR-",
+      "prefix_function": "bonus_update",
+      "source_recipe": "prefix scratch source, newline, canonical picker source",
+      "source_sha256": "204abe584dedf062e789c46f5b31a7e361bc69d536ed0ea1459c3bef271c0fad",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "instructions": 162,
+      "references": [
+        20,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "compiler_tree_sha256": {
+        "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+        "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+      }
+    }
+  ]
+}

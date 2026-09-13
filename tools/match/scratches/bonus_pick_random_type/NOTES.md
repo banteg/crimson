@@ -1,5 +1,20 @@
 # bonus_pick_random_type WIP
 
+## Stage-five-only diagnostic and early ordering (2026-09-13)
+
+The [preserving path follow-up](../../evidence/bonus-pick-layout-trace-2026-09-13/README.md#isolating-stage-5-and-locating-the-early-reorder)
+now isolates a stage-5-only range move. Inverting the outer hardcore-stage-2
+guard in the duplicated-Freeze-prefix control prevents stage 4 from moving with
+it. The control remains non-exact: 169 instructions, seven extra filter
+instructions, and the wrong hardcore rejection edge direction. It is retained
+as a compiler-path diagnostic, outside the canonical scratches.
+
+A separate preserving trace establishes that C2+0x12d16 pulls an explicitly
+placed stage-5 tail back ahead of the retry condition, before global optimization
+and allocation. The emitted body then equals canonical source byte-for-byte.
+Manual source order therefore does not bypass the residual. The canonical
+162-instruction source, compiler flags, and exactness remain unchanged.
+
 ## Preserving block-layout trace (2026-09-13)
 
 [The late-pass replay](../../evidence/bonus-pick-layout-trace-2026-09-13/README.md)

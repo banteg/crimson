@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "compiler_decisions_modified": false,
+  "canonical_source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+  "rows": [
+    {
+      "name": "explicit-stage-five-tail",
+      "source_sha256": "eb41fd1e64e0470f5316a4a6ac49b836e7e82482dfb2db989c4f7c44cb94dd72",
+      "body_sha256": "c4cb6604f582d306a8531efbe51aff37ca6f5f3d47450d6dfd7c96d00e8158e7",
+      "metrics": {
+        "ratio": 0.7592592592592593,
+        "target_instructions": 162,
+        "candidate_instructions": 162,
+        "prefix_instructions": 55,
+        "references_ok": 20,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "finding": {
+        "reordering_callee_rva": "0x12d16",
+        "positions": [
+          {
+            "phase": 1,
+            "stage_five": 252,
+            "retry_limit": 244
+          },
+          {
+            "phase": 101,
+            "stage_five": 187,
+            "retry_limit": 275
+          }
+        ]
+      },
+      "trace_sha256": "105afcf8f5d02daba232a11f0ceab04eff10fa3e40574218af3e8a354fc991e6",
+      "manifest_sha256": "5e926bb04d4989814869cfca33acbe01a1a71ed34f634562c438364ccdbe6026"
+    },
+    {
+      "name": "inverted-hardcore-prefix",
+      "source_sha256": "a376494276b4217258bb8dc2e44e742ba0d313bd13f1869d2b25f39b8501903b",
+      "body_sha256": "927183d9fefe61187294cdee2951266ae4b08f57678c8f6813b99fb06a18df1b",
+      "metrics": {
+        "ratio": 0.797583081570997,
+        "target_instructions": 162,
+        "candidate_instructions": 169,
+        "prefix_instructions": 55,
+        "references_ok": 20,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "finding": {
+        "range_moves": [
+          {
+            "insert_before": 188,
+            "first": 114,
+            "last": 129,
+            "contains_stage_four": false,
+            "contains_stage_five": true
+          }
+        ]
+      },
+      "trace_sha256": "aa74a535cdd621b434d86e7e4576677447387678cace090f620eb021aeca2335",
+      "manifest_sha256": "cda02b57697cc69a2cad8831e6afb338836a209e556811c510ecac7d5d0fa0ab"
+    }
+  ],
+  "harness_sha256": {
+    "verify_paths.py": "e8d89d38cb1f4e8d6f4f7053c780121aa96548484756fe1fefe747068dd255e8",
+    "verify.py": "5740c240f4a2e37c549ca417f2eb1748b87ecb9e6415ea6c9ca40805dbb148d9",
+    "profile.json": "d22029ed44ea5a6e00e0cdbc2191bd4f801ebedb27be738477f2f17535b562e4",
+    "layout.c.in": "2ebcc3e160f6c09ef29aae573b3dd1cdb6d5a476c34ba673746a4e7b58e62884"
+  }
+}
