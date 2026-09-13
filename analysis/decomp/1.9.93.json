@@ -40256,8 +40256,8 @@
       "name": "creature_update_all",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 1303,
-        "candidate_object_sha256": "cec6aee47f039c6094abb67de413057d2ea3934e2fd95c72cf70b324e44c313a",
+        "candidate_instructions": 1306,
+        "candidate_object_sha256": "c09b13a4527868358f6faff2e80cb16885f694da801652b524db3be274484053",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -40268,7 +40268,7 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 1,
-          "ok": 228,
+          "ok": 226,
           "positional": false,
           "unresolved": 0
         },
@@ -40277,7 +40277,7 @@
         "target_size": 5330,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.5785687239681939,
+      "ratio": 0.5854765506807866,
       "size": 5330,
       "source": "tools/match/scratches/creature_update_all/scratch.cpp"
     },
@@ -111129,6 +111129,9 @@
     "tools/match/evidence/creature-render-exact-2026-09-12/verify_controls.py": "43c3aa7f7f802fbd9784fef9eef8ba294a4328575b46c05c878117657c32a810",
     "tools/match/evidence/creature-render-execution-2026-09-09/verify.py": "34bd1380f39c3b49aa2d9876dc62444e18d93720311ceef7e2aa169d4cd4f9db",
     "tools/match/evidence/creature-render-execution-2026-09-09/verify_cursors.py": "d6c3ad416ffd7e03988a3104bbcbb792cac5eeba34634e62cdfb6a4bbd3584ca",
+    "tools/match/evidence/creature-retarget-distance-2026-09-13/before.cpp": "d7136f28e4aae58932dd6368b837d5769f2d13f1388faada97e571bc06b14d4f",
+    "tools/match/evidence/creature-retarget-distance-2026-09-13/recover.py": "17b672f9d9be3858cbbe4a407031e4bcc9c7e5cf717eef30a091b0f964624658",
+    "tools/match/evidence/creature-retarget-distance-2026-09-13/verify.py": "5065d78e269d77905c6cc0e605dea6961363d9a9047c682f92733db2148dd476",
     "tools/match/evidence/creature-state-publication-2026-09-11/before.cpp": "854a1dcf34a2b8e21695af7dfa23ade204da4172a3004ad4cd8adcd44636cb17",
     "tools/match/evidence/creature-state-publication-2026-09-11/execute.py": "346179df64483cd1e6d84667a4dd10a2d7820f9612c5b9fdf5382c2b52d8cb3b",
     "tools/match/evidence/creature-state-publication-2026-09-11/fixtures.py": "8160909302cb3b0979e3e0d8e02bedac94ae3a7b81941155b3d4564adc1da9d0",
@@ -111603,7 +111606,7 @@
     "tools/match/scratches/creature_spawn_tinted/scratch.c": "219b5dd54644c309be30ead5248d0d6f54cbcb4fc865e7fab6dba56e0d36cb72",
     "tools/match/scratches/creature_spawn_tinted/scratch.conf": "bc5d6e9a0ea7002726d1ec0f8792bced440d8f4a6b265fb42673ee77f4a55ed4",
     "tools/match/scratches/creature_update_all/scratch.conf": "3cbeda336daa54241d5776fbae9ffef0ca84dbd09881a755b7ca1f4ce085d518",
-    "tools/match/scratches/creature_update_all/scratch.cpp": "d7136f28e4aae58932dd6368b837d5769f2d13f1388faada97e571bc06b14d4f",
+    "tools/match/scratches/creature_update_all/scratch.cpp": "b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae",
     "tools/match/scratches/creatures_apply_radius_damage/scratch.conf": "ce0a7022936a30a471bd28a533c163ffbe65f8b75f4b4b56de5dcae156d66d72",
     "tools/match/scratches/creatures_apply_radius_damage/scratch.cpp": "68dd2dfc6d0c94abcb3fd91b428fbc51eb180574f450074d1af43491c8c5d99d",
     "tools/match/scratches/creatures_none_active/scratch.conf": "8ab5409f24e3c0951ede0a6bc3064ede2f3408ca57c98581e68217020de45e68",

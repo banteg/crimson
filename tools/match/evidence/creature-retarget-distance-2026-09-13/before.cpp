@@ -40,16 +40,6 @@ struct creature_vec2_t {
 
 };
 
-static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
-{
-    float dx = lhs->x - rhs->x;
-    float dy = lhs->y - rhs->y;
-    float distance_sq = dx * dx;
-    distance_sq += dy * dy;
-    float distance = (float)sqrt(distance_sq);
-    return distance;
-}
-
 inline float creature_vec2_length(creature_vec2_t &value)
 {
     float length = (float)sqrt(value.x * value.x + value.y * value.y);
@@ -184,9 +174,11 @@ extern "C" void creature_update_all(void)
                     int current_player_index = (int)current_player;
                     vec2f_t *position =
                         &creature_pool[creature_index].position;
-                    distance = vec2_distance(
-                        &player_state_table[current_player_index].position,
-                        position);
+                    distance = creature_vec2_length(
+                        *(creature_vec2_t *)&player_state_table[
+                            current_player_index
+                        ].position
+                        - *(creature_vec2_t *)position);
                     float dx;
                     float dy;
 
@@ -195,7 +187,9 @@ extern "C" void creature_update_all(void)
                             if (player_state_table[1 - current_player].health > 0.0f) {
                                 vec2f_t *alternate_pos =
                                     &player_state_table[1 - current_player].position;
-                                alternate_distance = vec2_distance(alternate_pos, position);
+                                dx = alternate_pos->x - position->x;
+                                dy = alternate_pos->y - position->y;
+                                alternate_distance = (float)sqrt(dx * dx + dy * dy);
                                 if (alternate_distance < distance) {
                                     creature_pool[creature_index].target_player =
                                         1 - current_player;
@@ -203,19 +197,19 @@ extern "C" void creature_update_all(void)
                                 }
                             }
                         } else {
-                            alternate_distance = vec2_distance(
-                                &player_state_table[0].position,
-                                position);
+                            dx = player_state_table[0].position.x - position->x;
+                            dy = player_state_table[0].position.y - position->y;
+                            alternate_distance = (float)sqrt(dx * dx + dy * dy);
                         }
 
                         current_player =
                             creature_pool[creature_index].target_player;
                         current_player_index = (int)current_player;
-                        if (alternate_distance < vec2_distance(
-                                &player_state_table[0].position,
-                                &creature_pool[
-                                    player_state_table[current_player_index].auto_target
-                                ].position)) {
+                        dx = player_state_table[0].position.x
+                            - creature_pool[player_state_table[current_player_index].auto_target].pos_x;
+                        dy = player_state_table[0].position.y
+                            - creature_pool[player_state_table[current_player_index].auto_target].pos_y;
+                        if (alternate_distance < (float)sqrt(dx * dx + dy * dy)) {
                             player_state_table[current_player_index].auto_target = creature_index;
                         }
                     }

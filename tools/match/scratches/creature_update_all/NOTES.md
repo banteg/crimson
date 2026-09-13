@@ -748,3 +748,30 @@ now has the native `0x7c` size; local positions and field-pointer lifetimes
 still differ. Neither exactness flag is true, and no compiler, reference-alias,
 extent, or matcher-rule change is included. Source SHA-256 is
 `d7136f28e4aae58932dd6368b837d5769f2d13f1388faada97e571bc06b14d4f`.
+
+## Target-selection distance helper (2026-09-13)
+
+The four early distance kernels use accumulated squares, matching the helper
+already recovered in exact `creature_find_nearest` and
+`plaguebearer_spread_infection`. The later interaction kernel uses the existing
+direct-sum vector length. Keeping these helpers separate recovers native x87
+operand order without changing the interaction boundary.
+
+The alternate-player comparison exposes a behavioral witness: with both players
+at `(0, 0)` and the creature at `(1, 2)`, extended-precision native compares the
+retained square root of 5 against the rounded initial distance and switches
+targets. The previous scalar source popped and reloaded the rounded alternate
+distance, losing that comparison boundary. Mirrored player positions provide
+separate-position witnesses of the same effect.
+
+Evidence in `../../evidence/creature-retarget-distance-2026-09-13/` records all
+five source stages. The old source and initial-distance-only control each fail
+28/768 boundary cases; the alternate-distance stage and both later stages pass
+all 768. The retained source also passes 2,472 historical native receipts, 192
+interaction boundaries, 48 corpse-size boundaries, and 12 callback controls.
+
+The result is 1,306/1,338 instructions, 58.547655068079% agreement, prefix 10,
+frame `0x7c`, and references `226/0/1`. Both exact flags remain false. Source
+SHA-256: `b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae`.
+The remaining address, field-pointer, and local-lifetime differences are not
+resolved by this recovery.
