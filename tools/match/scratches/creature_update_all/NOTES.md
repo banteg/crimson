@@ -703,3 +703,26 @@ outside its 0..32767 callback model. It checks complete fixture state, callback
 argument words, write order, compiled layout, and calling-convention invariants.
 Shared callback models and finite inputs bound this evidence. This does not
 prove whole-function equivalence or remove the remaining compiler/reference work.
+
+## Interaction distance and contact reload (2026-09-13)
+
+The [interaction proof](../../evidence/creature-interaction-boundaries-2026-09-13/README.md)
+revisits the later distance with the corrected direct-float length helper.
+The earlier SDK sweep used the subsequently disproven reciprocal helper, so
+its negative results did not answer this source form. Native stores with
+`fst` before the first radius comparison, retaining the wider x87 result;
+the old scalar form popped and reloaded float 100 for points just inside the
+radius at PC64. A distinct interaction-distance local and the native selected-
+player reload after damage complete the retained source slice.
+
+All 192 new boundary and 2,472 historical cases agree with native. The prior
+source fails 96 PC64 boundary cases, with no PC24 difference. Twelve transient
+callback witnesses and their disabled-adapter controls distinguish the contact
+reload. These remain finite observations under explicit callback models.
+
+Alignment rises from **54.952562% to 57.316149%**, instructions from 1,297 to
+1,300 against 1,338, and references from `225/0/2` to `228/0/1`, with
+125.979183 additional fuzzy-weighted bytes. Frame `0x6c` versus native `0x7c`,
+prefix zero and both false exactness flags remain. No compiler flag, alias or
+native extent changes. The other contact reload sites and wider allocation
+remain open.

@@ -564,13 +564,11 @@ extern "C" void creature_update_all(void)
                         signed char *target_player =
                             &creature_pool[creature_index].target_player;
                         current_player_index = (int)*target_player;
-                        float interaction_distance = creature_vec2_length(
-                            *(creature_vec2_t *)position
-                            - *(creature_vec2_t *)&player_state_table[
-                                current_player_index
-                            ].position);
+                        dx = position->x - player_state_table[current_player_index].position.x;
+                        dy = position->y - player_state_table[current_player_index].position.y;
+                        distance = (float)sqrt(dx * dx + dy * dy);
 
-                        if (interaction_distance < 100.0f
+                        if (distance < 100.0f
                             && perk_count_get(perk_id_radioactive) != 0) {
                             creature_pool[creature_index].collision_timer -=
                                 frame_dt * 1.5f;
@@ -578,7 +576,7 @@ extern "C" void creature_update_all(void)
                                 && *health > 0.0f) {
                                 creature_pool[creature_index].collision_timer = 0.5f;
                                 creature_pool[creature_index].state_flag = 1;
-                                *health -= (100.0f - interaction_distance) * 0.3f;
+                                *health -= (100.0f - distance) * 0.3f;
                                 if (*health < 0.0f) {
                                     if (creature_pool[creature_index].type_id
                                         == CREATURE_TYPE_LIZARD) {
@@ -594,7 +592,7 @@ extern "C" void creature_update_all(void)
                             }
                         }
 
-                        if (interaction_distance > 64.0f) {
+                        if (distance > 64.0f) {
                             if ((creature_pool[creature_index].flags
                                     & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0
                                 && *attack_cooldown <= 0.0f) {
@@ -627,7 +625,7 @@ extern "C" void creature_update_all(void)
                             }
                         }
 
-                        if (interaction_distance < 20.0f) {
+                        if (distance < 20.0f) {
                             position->x -= creature_pool[creature_index].vel_x;
                             position->y -= creature_pool[creature_index].vel_y;
                             if (creature_pool[creature_index].max_health < 380.0f
@@ -649,7 +647,7 @@ extern "C" void creature_update_all(void)
                         }
 
                         if (creature_pool[creature_index].size > 16.0f) {
-                            if (interaction_distance < 30.0f
+                            if (distance < 30.0f
                                 && player_state_table[
                                     (int)*target_player
                                 ].health > 0.0f
@@ -684,7 +682,7 @@ extern "C" void creature_update_all(void)
                                         creature_pool[creature_index].contact_damage);
                                     creature_vec2_t contact_delta =
                                         *(creature_vec2_t *)&player_state_table[
-                                            (int)*target_player
+                                            current_player_index
                                         ].position
                                         - *(creature_vec2_t *)position;
                                     D3DXVec2Normalize(
@@ -708,7 +706,7 @@ extern "C" void creature_update_all(void)
                             }
                         }
 
-                        if (interaction_distance < 30.0f
+                        if (distance < 30.0f
                             && creature_pool[creature_index].size <= 30.0f) {
                             *health = 0.0f;
                             *lifecycle_stage -= frame_dt;
