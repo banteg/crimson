@@ -1,0 +1,2286 @@
+{
+  "schema_version": 1,
+  "function": "projectile_update",
+  "native_image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_extent": {
+    "start": "0x420b90",
+    "end": "0x422c69",
+    "bytes": 8409,
+    "instructions": 2203
+  },
+  "regions": [
+    {
+      "name": "primary-projectiles",
+      "native_start": "0x420b90",
+      "native_end": "0x421a0d"
+    },
+    {
+      "name": "secondary-projectiles",
+      "native_start": "0x421a0d",
+      "native_end": "0x42246a"
+    },
+    {
+      "name": "sprite-effects",
+      "native_start": "0x42246a",
+      "native_end": "0x4224e8"
+    },
+    {
+      "name": "particle-movement",
+      "native_start": "0x4224e8",
+      "native_end": "0x4226af"
+    },
+    {
+      "name": "particle-expiry",
+      "native_start": "0x4226af",
+      "native_end": "0x422767"
+    },
+    {
+      "name": "particle-steering-age",
+      "native_start": "0x422767",
+      "native_end": "0x42287d"
+    },
+    {
+      "name": "particle-collision-attachment",
+      "native_start": "0x42287d",
+      "native_end": "0x4228e4"
+    },
+    {
+      "name": "particle-impact-geometry",
+      "native_start": "0x4228e4",
+      "native_end": "0x4229e1"
+    },
+    {
+      "name": "particle-damage",
+      "native_start": "0x4229e1",
+      "native_end": "0x422ab1"
+    },
+    {
+      "name": "particle-clamp",
+      "native_start": "0x422ab1",
+      "native_end": "0x422b93"
+    },
+    {
+      "name": "particle-effects-displacement",
+      "native_start": "0x422b93",
+      "native_end": "0x422c46"
+    },
+    {
+      "name": "loop-epilogue",
+      "native_start": "0x422c46",
+      "native_end": "0x422c69"
+    }
+  ],
+  "rows": [
+    {
+      "steps": [],
+      "source_sha256": "90b9bb4a39f0efd852395367bd11f71113b8812b15144301b4914f18423ac730",
+      "body_sha256": "83ab20fde04ca82d064ef5d4cd3e36ce8563e62db2fd5a9fb3e97ed057c101cd",
+      "object_sha256": "a8ed508c7d358aefdb99499caf624f033807cb0e1a13f7f54d2dffad0c5e65a3",
+      "instructions": 2192,
+      "frame": "sub esp, 0xcc",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 437,
+      "reference_problems": 8,
+      "residual_summary": {
+        "aligned_pairs": 1845,
+        "identical_pairs": 1439,
+        "stack_displacement_pairs": 225,
+        "branch_offset_pairs": 125,
+        "ambiguous_pairs": 236,
+        "remaining_spans": 291,
+        "remaining_target_instructions": 414,
+        "remaining_candidate_instructions": 403,
+        "stack_relationships": 141,
+        "conflicting_stack_relationships": 139,
+        "reference_problems": 8
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5606,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5834,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6057,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4335289,
+          "candidate_offset": 6838,
+          "instruction": "fcomp dword [ADDR]",
+          "target_keys": [
+            [
+              "address:0x0046f228",
+              "local:+0x4e698",
+              "bytes4:00000000"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "bytes4:cdcc4c3f"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4335315,
+          "candidate_offset": 6862,
+          "instruction": "fcomp dword [ADDR]",
+          "target_keys": [
+            [
+              "address:0x0046f2a4",
+              "local:+0x4e714",
+              "bytes4:cdcc4c3f"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "bytes4:00000000"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches"
+      ],
+      "source_sha256": "252984a8aa97607a0db4cb1de2e5ecf47eb6aff0abaf5475fad9ebebd83a1d5b",
+      "body_sha256": "8d8876b190bd8c4d5cf12703e8c33144b9f6d7940088895efe3038fe5b3de24c",
+      "object_sha256": "3bbb5300792317a09472517e43ed9ed85e944edfbb1a43ae63cf7fdffc7ebf19",
+      "instructions": 2191,
+      "frame": "sub esp, 0xcc",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 419,
+      "reference_problems": 11,
+      "residual_summary": {
+        "aligned_pairs": 1821,
+        "identical_pairs": 1418,
+        "stack_displacement_pairs": 225,
+        "branch_offset_pairs": 123,
+        "ambiguous_pairs": 232,
+        "remaining_spans": 283,
+        "remaining_target_instructions": 437,
+        "remaining_candidate_instructions": 425,
+        "stack_relationships": 141,
+        "conflicting_stack_relationships": 139,
+        "reference_problems": 11
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5606,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5834,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6057,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4335289,
+          "candidate_offset": 6566,
+          "instruction": "fcomp dword [ADDR]",
+          "target_keys": [
+            [
+              "address:0x0046f228",
+              "local:+0x4e698",
+              "bytes4:00000000"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "bytes4:cdcc4c3f"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 8005,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x44",
+              "address:0x0049bf7c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336375,
+          "candidate_offset": 8044,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf78",
+              "name:creature_tint_g",
+              "local:+0x7b3e8"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x48",
+              "address:0x0049bf80"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336402,
+          "candidate_offset": 8071,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf78",
+              "name:creature_tint_g",
+              "local:+0x7b3e8"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x48",
+              "address:0x0049bf80"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336427,
+          "candidate_offset": 8098,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf7c",
+              "name:creature_tint_b",
+              "local:+0x7b3ec"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x48",
+              "address:0x0049bf80"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload"
+      ],
+      "source_sha256": "0d6cc5fccc25a8ceb0eb2854892c5dc1fb1c5f691fd858fe7e5ed2d6137a450c",
+      "body_sha256": "66a7ebb0715fb1f1b4f83b8327131a7fa7b6615ca746ff781383382eddc122fb",
+      "object_sha256": "3ce7fe246abc31ac8f6e5f46d3bef938122e942f684944458abf179d092c0040",
+      "instructions": 2188,
+      "frame": "sub esp, 0xcc",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 426,
+      "reference_problems": 8,
+      "residual_summary": {
+        "aligned_pairs": 1850,
+        "identical_pairs": 1432,
+        "stack_displacement_pairs": 235,
+        "branch_offset_pairs": 123,
+        "ambiguous_pairs": 228,
+        "remaining_spans": 290,
+        "remaining_target_instructions": 413,
+        "remaining_candidate_instructions": 398,
+        "stack_relationships": 140,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 8
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5606,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5834,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6057,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336402,
+          "candidate_offset": 8058,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf78",
+              "name:creature_tint_g",
+              "local:+0x7b3e8"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x48",
+              "address:0x0049bf80"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336427,
+          "candidate_offset": 8085,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf7c",
+              "name:creature_tint_b",
+              "local:+0x7b3ec"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x48",
+              "address:0x0049bf80"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound"
+      ],
+      "source_sha256": "c0e728784e632efeca4fdef74ca9b5b1c97fec086e07c0ef32d6327d69845cab",
+      "body_sha256": "6250d6a2e564fa82627ee8d384cc4b0eb8a50858772f9c58401e43b43b839829",
+      "object_sha256": "3547b3c2b7c4fec1d5876b67465770cdad69b5444cfb70a489ac0664b6238165",
+      "instructions": 2191,
+      "frame": "sub esp, 0xcc",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 439,
+      "reference_problems": 6,
+      "residual_summary": {
+        "aligned_pairs": 1862,
+        "identical_pairs": 1444,
+        "stack_displacement_pairs": 235,
+        "branch_offset_pairs": 124,
+        "ambiguous_pairs": 222,
+        "remaining_spans": 283,
+        "remaining_target_instructions": 400,
+        "remaining_candidate_instructions": 388,
+        "stack_relationships": 140,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 6
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5606,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5834,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6057,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry"
+      ],
+      "source_sha256": "a6a0cd6a7b48d6ea8fde672a7edb35df6594bd9fed8a166f0e6021858f164bc3",
+      "body_sha256": "ff311f71c9c9188c1fbbef13238ae3274f29c093c1bb145d4b45cee37928abb5",
+      "object_sha256": "e6d332790196747236926c7efde7505c6f5a2d544cc175335350e3144e774d38",
+      "instructions": 2186,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 421,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1838,
+        "identical_pairs": 1427,
+        "stack_displacement_pairs": 229,
+        "branch_offset_pairs": 125,
+        "ambiguous_pairs": 229,
+        "remaining_spans": 291,
+        "remaining_target_instructions": 422,
+        "remaining_candidate_instructions": 405,
+        "stack_relationships": 137,
+        "conflicting_stack_relationships": 137,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332337,
+          "candidate_offset": 4168,
+          "instruction": "fmul dword [ADDR]",
+          "target_keys": [
+            [
+              "address:0x0046f2fc",
+              "local:+0x4e76c",
+              "bytes4:cdcccc3d"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "bytes4:00004040"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332536,
+          "candidate_offset": 4202,
+          "instruction": "fcomp dword [ADDR]",
+          "target_keys": [
+            [
+              "address:0x0046f2d4",
+              "local:+0x4e744",
+              "bytes4:0000fa43"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "bytes4:00001644"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5603,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5831,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6054,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position"
+      ],
+      "source_sha256": "b7ccd7647110e39b29b314da7179a8ed083a65e443f2a94ab6dd79a22dd83846",
+      "body_sha256": "f3a8807512e1c43f22d3e11eb2a0a3ed6a333a6abd857276f83d26144b65314d",
+      "object_sha256": "33a1bd2b90a84d69bd00d0976e108a1c6f3fc1d346f804889f3f2f53b7f18c6b",
+      "instructions": 2190,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 442,
+      "reference_problems": 6,
+      "residual_summary": {
+        "aligned_pairs": 1855,
+        "identical_pairs": 1454,
+        "stack_displacement_pairs": 219,
+        "branch_offset_pairs": 133,
+        "ambiguous_pairs": 219,
+        "remaining_spans": 273,
+        "remaining_target_instructions": 397,
+        "remaining_candidate_instructions": 384,
+        "stack_relationships": 138,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 6
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5609,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5837,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6060,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position",
+        "clamp"
+      ],
+      "source_sha256": "7a859c002379ba101c81c1912f6573a124e9ba9e5e14a1076181abdc5995145c",
+      "body_sha256": "f319d0bf194495854513ea5ec54cc20c8d96dd3280a02a224827935f5d31a006",
+      "object_sha256": "fee8c800793af107c5324aa51c37071ecefbf230fef8974cd8d7a9b3186f6dfe",
+      "instructions": 2182,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 443,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1863,
+        "identical_pairs": 1463,
+        "stack_displacement_pairs": 219,
+        "branch_offset_pairs": 142,
+        "ambiguous_pairs": 187,
+        "remaining_spans": 258,
+        "remaining_target_instructions": 379,
+        "remaining_candidate_instructions": 358,
+        "stack_relationships": 138,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5609,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5837,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6060,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 7943,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x40",
+              "address:0x0049bf78"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position",
+        "clamp",
+        "bubble-copy"
+      ],
+      "source_sha256": "ad4633261e50276a91f34398f2e9b39e05eedf88d2ab61e365f32b752ddd51dc",
+      "body_sha256": "a746e3ce359d7375c81e0d134dd84c28847d6c34cbf4bcc54937b983ad93e7d9",
+      "object_sha256": "aed8310773e5bac3bb4b9ae49888fec334dfe804b4c08627c5fb3e12db056d8b",
+      "instructions": 2182,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 443,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1866,
+        "identical_pairs": 1466,
+        "stack_displacement_pairs": 219,
+        "branch_offset_pairs": 142,
+        "ambiguous_pairs": 187,
+        "remaining_spans": 257,
+        "remaining_target_instructions": 376,
+        "remaining_candidate_instructions": 355,
+        "stack_relationships": 138,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5609,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5837,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6060,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 7943,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x40",
+              "address:0x0049bf78"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "window_found": false
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position",
+        "clamp",
+        "bubble-copy",
+        "age"
+      ],
+      "source_sha256": "9ee1d6f74e2e55327ea9267fca60cc779e30989045e12e0d1fc51165847d5afd",
+      "body_sha256": "24c89836263fc9297b2876b1816ee0e324938fda5574a9088ba6240116415193",
+      "object_sha256": "552d0e357d49bb85037cfb2e8fe8a7707ec3508a811ae9afc762d35c5d676a85",
+      "instructions": 2182,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 444,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1870,
+        "identical_pairs": 1469,
+        "stack_displacement_pairs": 219,
+        "branch_offset_pairs": 144,
+        "ambiguous_pairs": 184,
+        "remaining_spans": 254,
+        "remaining_target_instructions": 371,
+        "remaining_candidate_instructions": 350,
+        "stack_relationships": 138,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5609,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5837,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6060,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 7942,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x40",
+              "address:0x0049bf78"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "candidate_start": 7211,
+        "candidate_end": 7241,
+        "window_found": true,
+        "instructions": 9,
+        "bytes": 30,
+        "audited_address_fields": [
+          {
+            "offset": 5,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          },
+          {
+            "offset": 18,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          }
+        ],
+        "remaining_encoded_bytes_equal": true,
+        "masked_bytes_sha256": "5c94ac3da5bc29984c2857c00b6d37165d0a2169e67c7e1024fe435c9dea8b85",
+        "branches": "Both destinations stay inside this window; relative displacements are compared as encoded.",
+        "scope": "Instruction-window diagnostic only. Does not establish whole-function exactness or award matching credit."
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position",
+        "clamp",
+        "bubble-copy",
+        "age",
+        "angle-branches"
+      ],
+      "source_sha256": "ad9d8b89e68cda55adff39f7864938883e10c53e89c8e3ab2ee29b4b18eaaf23",
+      "body_sha256": "b1a84ca6f45a10ab12a77fecb1fd3b9a70a8590066480ce348699386e11cac18",
+      "object_sha256": "027c4d4d27d06d3c7a8472f47f178aa4914a7404dd2d50b841a4fe3d71c3351a",
+      "instructions": 2178,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 449,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1887,
+        "identical_pairs": 1481,
+        "stack_displacement_pairs": 219,
+        "branch_offset_pairs": 151,
+        "ambiguous_pairs": 178,
+        "remaining_spans": 243,
+        "remaining_target_instructions": 352,
+        "remaining_candidate_instructions": 327,
+        "stack_relationships": 138,
+        "conflicting_stack_relationships": 138,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5609,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5837,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6060,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 7934,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x40",
+              "address:0x0049bf78"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "candidate_start": 7211,
+        "candidate_end": 7241,
+        "window_found": true,
+        "instructions": 9,
+        "bytes": 30,
+        "audited_address_fields": [
+          {
+            "offset": 5,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          },
+          {
+            "offset": 18,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          }
+        ],
+        "remaining_encoded_bytes_equal": true,
+        "masked_bytes_sha256": "5c94ac3da5bc29984c2857c00b6d37165d0a2169e67c7e1024fe435c9dea8b85",
+        "branches": "Both destinations stay inside this window; relative displacements are compared as encoded.",
+        "scope": "Instruction-window diagnostic only. Does not establish whole-function exactness or award matching credit."
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position",
+        "clamp",
+        "bubble-copy",
+        "age",
+        "angle-branches",
+        "displacement"
+      ],
+      "source_sha256": "26924acb704f995de68733f128bea36095968d0dd1c0d037ab104087f8258d7a",
+      "body_sha256": "2f783b85985e9cb35bb16950725a98f82ea73c4de21bc1078baea47fc2725d56",
+      "object_sha256": "0ac2dbf9778feccfd898f3af2dbc80b5b2afd62dfa2cf0868b805f9fcfe3c884",
+      "instructions": 2182,
+      "frame": "sub esp, 0xd0",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 450,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1892,
+        "identical_pairs": 1483,
+        "stack_displacement_pairs": 222,
+        "branch_offset_pairs": 144,
+        "ambiguous_pairs": 176,
+        "remaining_spans": 248,
+        "remaining_target_instructions": 354,
+        "remaining_candidate_instructions": 333,
+        "stack_relationships": 139,
+        "conflicting_stack_relationships": 139,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1872,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5609,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5837,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6060,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 7934,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x40",
+              "address:0x0049bf78"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "candidate_start": 7211,
+        "candidate_end": 7241,
+        "window_found": true,
+        "instructions": 9,
+        "bytes": 30,
+        "audited_address_fields": [
+          {
+            "offset": 5,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          },
+          {
+            "offset": 18,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          }
+        ],
+        "remaining_encoded_bytes_equal": true,
+        "masked_bytes_sha256": "5c94ac3da5bc29984c2857c00b6d37165d0a2169e67c7e1024fe435c9dea8b85",
+        "branches": "Both destinations stay inside this window; relative displacements are compared as encoded.",
+        "scope": "Instruction-window diagnostic only. Does not establish whole-function exactness or award matching credit."
+      }
+    },
+    {
+      "steps": [
+        "expiry-branches",
+        "expiry-reload",
+        "expiry-sound",
+        "geometry",
+        "hit-position",
+        "clamp",
+        "bubble-copy",
+        "age",
+        "angle-branches",
+        "displacement",
+        "rng-value"
+      ],
+      "source_sha256": "3e861d92088ed043dfbfc701acd86d251b67921e7a9ef8271769acce0ff59a93",
+      "body_sha256": "223f9383676027b5b70b48ecdca73e7470ba66ac061333fab04f16f77c95c871",
+      "object_sha256": "473a3481847cda685bf2b9540b8f51644a06f1c363b653dd570afefdd337a49f",
+      "instructions": 2182,
+      "frame": "sub esp, 0xcc",
+      "exact": false,
+      "body_byte_exact": false,
+      "references_ok": 446,
+      "reference_problems": 7,
+      "residual_summary": {
+        "aligned_pairs": 1894,
+        "identical_pairs": 1474,
+        "stack_displacement_pairs": 233,
+        "branch_offset_pairs": 144,
+        "ambiguous_pairs": 175,
+        "remaining_spans": 246,
+        "remaining_target_instructions": 352,
+        "remaining_candidate_instructions": 331,
+        "stack_relationships": 142,
+        "conflicting_stack_relationships": 141,
+        "reference_problems": 7
+      },
+      "reference_details": [
+        {
+          "status": "mismatch",
+          "target_address": 4330197,
+          "candidate_offset": 1866,
+          "instruction": "lea eax, dword [edx*8+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool",
+              "address:0x0049bf38"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332209,
+          "candidate_offset": 3829,
+          "instruction": "mov edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x0049bf50",
+              "name:creature_pos_y",
+              "local:+0x7b3c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x14",
+              "address:0x0049bf4c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4332445,
+          "candidate_offset": 4060,
+          "instruction": "cmp edi, ADDR",
+          "target_keys": [
+            [
+              "address:0x004aa350",
+              "local:+0x897c0"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0xe414",
+              "address:0x004aa34c"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334010,
+          "candidate_offset": 5606,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334243,
+          "candidate_offset": 5834,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4334478,
+          "candidate_offset": 6057,
+          "instruction": "fadd dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf4c",
+              "name:creature_pos_x",
+              "local:+0x7b3bc"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x18",
+              "address:0x0049bf50"
+            ]
+          ]
+        },
+        {
+          "status": "mismatch",
+          "target_address": 4336334,
+          "candidate_offset": 7931,
+          "instruction": "fld dword [edi+ADDR]",
+          "target_keys": [
+            [
+              "address:0x0049bf74",
+              "name:creature_tint_r",
+              "local:+0x7b3e4"
+            ]
+          ],
+          "candidate_keys": [
+            [
+              "name:creature_pool+0x40",
+              "address:0x0049bf78"
+            ]
+          ]
+        }
+      ],
+      "age_window": {
+        "native_start": "0x42283f",
+        "native_end": "0x42285d",
+        "candidate_start": 7208,
+        "candidate_end": 7238,
+        "window_found": true,
+        "instructions": 9,
+        "bytes": 30,
+        "audited_address_fields": [
+          {
+            "offset": 5,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          },
+          {
+            "offset": 18,
+            "size": 4,
+            "constant": "0000803f",
+            "native_address": "0x46f224"
+          }
+        ],
+        "remaining_encoded_bytes_equal": true,
+        "masked_bytes_sha256": "5c94ac3da5bc29984c2857c00b6d37165d0a2169e67c7e1024fe435c9dea8b85",
+        "branches": "Both destinations stay inside this window; relative displacements are compared as encoded.",
+        "scope": "Instruction-window diagnostic only. Does not establish whole-function exactness or award matching credit."
+      }
+    }
+  ],
+  "new_exact_matches": 0,
+  "caveat": "Residual spans and stack relationships are heuristic navigation, not distinct bugs or proven variable mappings. Every candidate is non-exact; canonical matching credit is unchanged.",
+  "harness_sha256": {
+    "audit.py": "f6fdbaf2a394259262cdadc936d60dcd7b0e24cb83c5d31d5cb5097d23e289dd",
+    "recover.py": "208cd572a5f48d79a7bd11fab00f0581bf6fa5c3778c18b94e49bd675b1e1d11"
+  }
+}
