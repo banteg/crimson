@@ -42,7 +42,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | projectile_update | 2835 | semantic-complete | compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | creature_update_all | 2275 | semantic-complete | compiler,references | historical-only | 0/27 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 5 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 5 | crimsonland.exe | highscore_screen_update | 1731 | semantic-complete | compiler,references | historical-only | 0/30 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 6 | crimsonland.exe | creature_spawn_template | 1566 | semantic-complete | compiler,references | historical-only | 0/44 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 7 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 8 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/10 | 1 | repeated-variants,variant-errors |

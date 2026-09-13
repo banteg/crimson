@@ -575,3 +575,16 @@ spec SHA-256 is
 `d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
 the 23-record ledger SHA-256 is
 `253b79e2cae95e8b4701df483304925c1565c27b1f7ea18e7672088fec77ef7f`.
+
+## Signed pool reset loops (2026-09-13)
+
+The five native pool reset loops use signed branches. Replacing the
+reconstructed pointer walks with one shared signed index produces exactly five
+`jb` to `jl` opcode changes. The [locality proof](../../evidence/highscore-reset-loops-2026-09-13/README.md)
+verifies all other encoded bytes and relocations are unchanged, and compares
+the complete 25-instruction native window with all ten positional references.
+
+The whole-function score remains 78.429398%, 1,969/2,004 instructions, prefix
+45, and 594/0/4 references. These are local branch recoveries; neither normalized
+nor encoded exactness is claimed. Retained source SHA-256:
+`dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8`.

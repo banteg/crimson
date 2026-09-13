@@ -511,31 +511,22 @@ play_game_done:
         if (ui_button_update(
                 (float *)&back_position, (ui_button_t *)&back_button)) {
             if (highscore_return_latch) {
-                bonus_entry_t *bonus = bonus_pool;
-                do {
-                    bonus->bonus_id = BONUS_ID_NONE;
-                    ++bonus;
-                } while (bonus < bonus_pool + 16);
-                projectile_t *projectile = projectile_pool;
-                do {
-                    projectile->active = 0;
-                    ++projectile;
-                } while (projectile < projectile_pool + 0x60);
-                sprite_effect_t *sprite = sprite_effect_pool;
-                do {
-                    sprite->active = 0;
-                    ++sprite;
-                } while (sprite < sprite_effect_pool + 0x180);
-                secondary_projectile_t *secondary = secondary_projectile_pool;
-                do {
-                    secondary->active = 0;
-                    ++secondary;
-                } while (secondary < secondary_projectile_pool + 0x40);
-                creature_t *creature = creature_pool;
-                do {
-                    creature->active = 0;
-                    ++creature;
-                } while (creature < creature_pool + 384);
+                int reset_index;
+                for (reset_index = 0; reset_index < 16; ++reset_index) {
+                    bonus_pool[reset_index].bonus_id = BONUS_ID_NONE;
+                }
+                for (reset_index = 0; reset_index < 0x60; ++reset_index) {
+                    projectile_pool[reset_index].active = 0;
+                }
+                for (reset_index = 0; reset_index < 0x180; ++reset_index) {
+                    sprite_effect_pool[reset_index].active = 0;
+                }
+                for (reset_index = 0; reset_index < 0x40; ++reset_index) {
+                    secondary_projectile_pool[reset_index].active = 0;
+                }
+                for (reset_index = 0; reset_index < 384; ++reset_index) {
+                    creature_pool[reset_index].active = 0;
+                }
                 quest_stage_minor = highscore_return_quest_stage_minor;
                 quest_stage_major = highscore_return_quest_stage_major;
                 player_overlay_suppressed_latch = 1;

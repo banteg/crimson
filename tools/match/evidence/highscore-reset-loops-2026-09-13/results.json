@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "kind": "highscore-reset-loop-locality",
+  "base_commit": "89dcf708447b44d35cf4f791427a78e2f0ec877e",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "source_sha256": [
+    "8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be",
+    "dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8"
+  ],
+  "body_sha256": [
+    "7a5e8ae52f4a665fff48f51a28a62db5d2687f77fef7847e6ad729076f04526b",
+    "03ab18958ee037aaf38d1e712d5cda0c12a405bc0df89ac397c758d438baae1c"
+  ],
+  "body_bytes": 7894,
+  "candidate_instructions": 1969,
+  "native_instructions": 2004,
+  "changed_opcode_offsets": [
+    3322,
+    3340,
+    3358,
+    3376,
+    3396
+  ],
+  "before_opcode": "jb",
+  "after_opcode": "jl",
+  "outside_bytes_unchanged": 7889,
+  "all_relocations_unchanged": true,
+  "native_window": [
+    3373,
+    3464
+  ],
+  "candidate_window": [
+    3307,
+    3398
+  ],
+  "window_instructions": 25,
+  "window_positional_references": 10,
+  "normalized_exact": false,
+  "body_byte_exact": false,
+  "verified": true,
+  "verifier_sha256": "177d43da69ad67847e4375e2c302fa27b81da0a68a1f29ca6e77fff5c667c6b2"
+}

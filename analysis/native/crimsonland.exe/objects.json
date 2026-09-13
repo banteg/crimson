@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "3c99bd63755ea3b57375aef89e155ae0cfa3ef3519f455fa2f2b220ac71b1785",
+  "audit_digest": "b39b3d166abcd2eba6ae2c4ca29e86a67e764b3a97b1361912630fc632b49177",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -79712,7 +79712,7 @@
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be"
+          "sha256": "dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8"
         },
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.conf",
@@ -79773,10 +79773,10 @@
           "canonical_config_sha256": "539a1b82db4443514aa0899f3e47e7652f8701395fb02a43fdcf8a3b14ca0651",
           "canonical_scratch": "tools/match/scratches/highscore_screen_update",
           "canonical_source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-          "canonical_source_sha256": "8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be",
+          "canonical_source_sha256": "dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8",
           "effective_end": 4473642,
           "end": 4473642,
-          "experiment_epoch": "f21b3f9b3cc2287aa38db696048cecfa6bb4e62dd8666280e87dda0912d4ce04",
+          "experiment_epoch": "9272d84eba722bc4f12921df9971c9382b62239c345892d46858114e46f1f8d7",
           "function": "highscore_screen_update",
           "match": {
             "body_byte_exact": false,
@@ -80075,10 +80075,10 @@
       },
       "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
       "object_function_symbol": "_highscore_screen_update",
-      "object_sha256": "ab67feb52820adf870837c9b1e9ab647df989c3cc1405da53215781eafca38d9",
+      "object_sha256": "8661d270eaafd93747fb9e33df3414d6c7d6881a0a277e165eee5f4a0a6d26bd",
       "scratch": "tools/match/scratches/highscore_screen_update",
       "source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-      "source_sha256": "8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be",
+      "source_sha256": "dc1444f6c8cf15c278b69ee880bf0100150f9085d8c3c7c72e6afea0f0154ca8",
       "target_size": 8026,
       "translation_unit": {
         "config": "tools/native/translation_units/crimsonland.exe.json",
