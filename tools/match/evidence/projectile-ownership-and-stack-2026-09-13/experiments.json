@@ -1,0 +1,1723 @@
+{
+  "schema_version": 1,
+  "before_source_sha256": "a51cbf5d23486f87dc6aaab6133adb0e9a7c73e9dafac1ffc98c7e70f2d3f298",
+  "before_body_sha256": "640dda74b56ca70297ae15f58db0fa2740a5ca1651fc4ecb06529ee63dfc096f",
+  "final": "primary-q1-chained-zero",
+  "recovered_path": [
+    "secondary-h1-speed-staged",
+    "secondary-h5-trail-arguments",
+    "particle-j1-high-first",
+    "particle-j2-spin-reference",
+    "particle-j3-position-scope",
+    "particle-j4-active-reference",
+    "particle-j5-scale-references",
+    "particle-j6-render-reference",
+    "particle-j7-previous-y",
+    "particle-j9-zero-reference",
+    "secondary-h12-impulse-product",
+    "primary-m1-branch-values",
+    "primary-m2-speed-reference",
+    "primary-m5-impulse-and-loop",
+    "secondary-n2-rollback-reference",
+    "sprite-n4-combined",
+    "particle-n6-indexed",
+    "particle-n7-for",
+    "particle-n13-late-style",
+    "primary-q1-chained-zero"
+  ],
+  "experiments": {
+    "particle-g1-high-first": {
+      "parent": "before",
+      "change": "movement-high-first",
+      "parent_source_sha256": "a51cbf5d23486f87dc6aaab6133adb0e9a7c73e9dafac1ffc98c7e70f2d3f298",
+      "source_sha256": "050ea6bc53e17fac4aa3c089ae158d4f0fdc7ccdbdbb12779f974e6b906bc1cd",
+      "body_sha256": "284f85617a104bc50c1d1c62c754ad8b9bba30e423ecfc87130981718cd2fd4e",
+      "instructions": 2196,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 1236,
+          "removed": "                    if (particle->intensity <= 0.15f) {\n                        particle_position +=\n                            frame_dt * particle_velocity\n                            * 0.55f\n                            * particle->intensity;\n                    } else {\n",
+          "replacement": "                    if (particle->intensity > 0.15f) {\n"
+        },
+        {
+          "start_line": 1248,
+          "removed": "",
+          "replacement": "                    } else {\n                        particle_position +=\n                            frame_dt * particle_velocity\n                            * 0.55f\n                            * particle->intensity;\n"
+        },
+        {
+          "start_line": 1253,
+          "removed": "                if (particle->intensity <= 0.15f) {\n                    particle_position +=\n                        frame_dt * particle_velocity * 2.5f * 0.15f;\n                } else {\n",
+          "replacement": "                if (particle->intensity > 0.15f) {\n"
+        },
+        {
+          "start_line": 1263,
+          "removed": "",
+          "replacement": "                } else {\n                    particle_position +=\n                        frame_dt * particle_velocity * 2.5f * 0.15f;\n"
+        }
+      ]
+    },
+    "secondary-h1-speed-staged": {
+      "parent": "before",
+      "change": "secondary-speed-staged-squares",
+      "parent_source_sha256": "a51cbf5d23486f87dc6aaab6133adb0e9a7c73e9dafac1ffc98c7e70f2d3f298",
+      "source_sha256": "53318dbe95a11490d7f8da84794ed7648bcb4a4d39bf746ce059d0c4294a5b78",
+      "body_sha256": "490fb5e348e160416958cb43d374d98bd8e993e3398669457877be1bc0e93ac1",
+      "instructions": 2199,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 74,
+          "removed": "    return (float)sqrt(projectile_vec2_dot(value));\n",
+          "replacement": "    float squared = value.y * value.y;\n    squared += value.x * value.x;\n    return (float)sqrt(squared);\n"
+        },
+        {
+          "start_line": 884,
+          "removed": "                    float speed = (float)sqrt(\n                        secondary->pos.vx.vel_x\n                                * secondary->pos.vx.vel_x\n                            + secondary->pos.vx.vy.vel_y\n                                * secondary->pos.vx.vy.vel_y);\n",
+          "replacement": "                    float speed = projectile_vec2_length(\n                        secondary->pos.vx.velocity);\n"
+        },
+        {
+          "start_line": 897,
+          "removed": "                    float speed = (float)sqrt(\n                        secondary->pos.vx.vel_x\n                                * secondary->pos.vx.vel_x\n                            + secondary->pos.vx.vy.vel_y\n                                * secondary->pos.vx.vy.vel_y);\n",
+          "replacement": "                    float speed = projectile_vec2_length(\n                        secondary->pos.vx.velocity);\n"
+        }
+      ]
+    },
+    "particle-g2-position-scope": {
+      "parent": "particle-g1-high-first",
+      "change": "particle-position-collision-scope",
+      "parent_source_sha256": "050ea6bc53e17fac4aa3c089ae158d4f0fdc7ccdbdbb12779f974e6b906bc1cd",
+      "source_sha256": "ab98af3cbef3a6bbc8931cea15c5996464fd9568dfd8104861172e8f64c5bf27",
+      "body_sha256": "e3126cd2306e2b054bcbd72a28791df236b2c4da838c9eb399f19152850577eb",
+      "instructions": 2198,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 1226,
+          "removed": "            projectile_vec2_t &particle_position =\n                *(projectile_vec2_t *)&particle->position;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1244,
+          "removed": "                        particle_position +=\n",
+          "replacement": "                        (*(projectile_vec2_t *)&particle->position) +=\n"
+        },
+        {
+          "start_line": 1261,
+          "removed": "                    particle_position +=\n",
+          "replacement": "                    (*(projectile_vec2_t *)&particle->position) +=\n"
+        },
+        {
+          "start_line": 1326,
+          "removed": "",
+          "replacement": "                    projectile_vec2_t &particle_position =\n                        *(projectile_vec2_t *)&particle->position;\n"
+        }
+      ]
+    },
+    "secondary-h2-rollback-owner": {
+      "parent": "secondary-h1-speed-staged",
+      "change": "secondary-seeker-rollback-owner",
+      "parent_source_sha256": "53318dbe95a11490d7f8da84794ed7648bcb4a4d39bf746ce059d0c4294a5b78",
+      "source_sha256": "31fbc85a8bce19990583a3de13ba1be4d3970b8851d9fefbb5d9b116f87d0ac6",
+      "body_sha256": "d5fce5a115990ebd88c2afd4f7cf10443db5d4be5cb008832dd51a9ff8894753",
+      "instructions": 2197,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 939,
+          "removed": "                        secondary_velocity.x -=\n",
+          "replacement": "                        secondary->pos.vx.vel_x -=\n"
+        },
+        {
+          "start_line": 943,
+          "removed": "                        secondary_velocity.y -=\n",
+          "replacement": "                        secondary->pos.vx.vy.vel_y -=\n"
+        }
+      ]
+    },
+    "secondary-h3-trail-direction": {
+      "parent": "secondary-h1-speed-staged",
+      "change": "secondary-trail-direction",
+      "parent_source_sha256": "53318dbe95a11490d7f8da84794ed7648bcb4a4d39bf746ce059d0c4294a5b78",
+      "source_sha256": "064633c8f7f9007b7217feec7bd11fd578930ea452fd8df60e69e2bd504c3bd3",
+      "body_sha256": "490fb5e348e160416958cb43d374d98bd8e993e3398669457877be1bc0e93ac1",
+      "instructions": 2199,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 958,
+          "removed": "                    projectile_vec2_t trail_velocity(\n                        trail_cos * 90.0f,\n                        trail_cos * 90.0f);\n",
+          "replacement": "                    projectile_vec2_t trail_velocity =\n                        projectile_vec2_t(trail_cos, trail_cos) * 90.0f;\n"
+        }
+      ]
+    },
+    "secondary-h5-trail-arguments": {
+      "parent": "secondary-h1-speed-staged",
+      "change": "secondary-trail-argument-values",
+      "parent_source_sha256": "53318dbe95a11490d7f8da84794ed7648bcb4a4d39bf746ce059d0c4294a5b78",
+      "source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "body_sha256": "dffb079e6355a8a67c0aa3df60729f17f9e9a38963bb0fd192a0e6e93eb821bd",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 956,
+          "removed": "                    float trail_cos =\n                        (float)cos(secondary->angle + 1.5707964f);\n                    projectile_vec2_t trail_velocity(\n                        trail_cos * 90.0f,\n                        trail_cos * 90.0f);\n",
+          "replacement": "                    projectile_vec2_t trail_velocity =\n                        projectile_vec2_t(\n                            (float)cos(secondary->angle + 1.5707964f),\n                            (float)cos(secondary->angle + 1.5707964f)) * 90.0f;\n"
+        }
+      ]
+    },
+    "particle-g3-style-scopes": {
+      "parent": "particle-g2-position-scope",
+      "change": "particle-style-scopes",
+      "parent_source_sha256": "ab98af3cbef3a6bbc8931cea15c5996464fd9568dfd8104861172e8f64c5bf27",
+      "source_sha256": "482ed0daf48fae31f2c279503d9478fe1dce54ef3778acce513a168cb9250842",
+      "body_sha256": "e3126cd2306e2b054bcbd72a28791df236b2c4da838c9eb399f19152850577eb",
+      "instructions": 2198,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 1229,
+          "removed": "            unsigned char style_id = particle->style_id;\n            if (style_id == 8) {\n",
+          "replacement": "            if (particle->style_id == 8) {\n"
+        },
+        {
+          "start_line": 1264,
+          "removed": "            style_id = particle->style_id;\n",
+          "replacement": "            unsigned char style_id = particle->style_id;\n"
+        }
+      ]
+    },
+    "particle-j1-high-first": {
+      "parent": "secondary-h5-trail-arguments",
+      "change": "movement-high-first",
+      "parent_source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "source_sha256": "3f1a7efbf429be79ec45afec9ededef4874c80287532d4c9bfeccc05bf275fd4",
+      "body_sha256": "9a90a3c7fc546280ae09ecc6ba9f9a031199e09fb338c7524118c7e4ba694dc5",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1231,
+          "removed": "                    if (particle->intensity <= 0.15f) {\n                        particle_position +=\n                            frame_dt * particle_velocity\n                            * 0.55f\n                            * particle->intensity;\n                    } else {\n",
+          "replacement": "                    if (particle->intensity > 0.15f) {\n"
+        },
+        {
+          "start_line": 1243,
+          "removed": "",
+          "replacement": "                    } else {\n                        particle_position +=\n                            frame_dt * particle_velocity\n                            * 0.55f\n                            * particle->intensity;\n"
+        },
+        {
+          "start_line": 1248,
+          "removed": "                if (particle->intensity <= 0.15f) {\n                    particle_position +=\n                        frame_dt * particle_velocity * 2.5f * 0.15f;\n                } else {\n",
+          "replacement": "                if (particle->intensity > 0.15f) {\n"
+        },
+        {
+          "start_line": 1258,
+          "removed": "",
+          "replacement": "                } else {\n                    particle_position +=\n                        frame_dt * particle_velocity * 2.5f * 0.15f;\n"
+        }
+      ]
+    },
+    "primary-i1-double-arguments": {
+      "parent": "secondary-h5-trail-arguments",
+      "change": "primary-impulse-double-arguments",
+      "parent_source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "source_sha256": "0729eccc222b9d7123c6d2029a3b8b13d983b477cb3a6583d4167ff886719290",
+      "body_sha256": "1c6c8676e2808faab01d35815981783cd745f63234bf37d9a7cdb69c237c0ffc",
+      "instructions": 2200,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 593,
+          "removed": "                                        float impulse_cosine = (float)cos(\n                                            projectile->angle - 1.5707964f);\n                                        float impulse_x = impulse_cosine\n                                            * projectile->pos.tail.vy\n                                                .speed_scale;\n\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 601,
+          "removed": "                                            vec2f_t impulse = {\n                                                impulse_x,\n                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n                                            };\n",
+          "replacement": "                                            projectile_vec2_t impulse(\n                                                cos(projectile->angle - 1.5707964f)\n                                                    * projectile->pos.tail.vy.speed_scale,\n                                                cos(projectile->angle - 1.5707964f)\n                                                    * projectile->pos.tail.vy.speed_scale);\n"
+        },
+        {
+          "start_line": 612,
+          "removed": "                                                &impulse);\n",
+          "replacement": "                                                (vec2f_t *)&impulse);\n"
+        },
+        {
+          "start_line": 616,
+          "removed": "                                            vec2f_t impulse = {\n                                                impulse_x,\n                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n                                            };\n",
+          "replacement": "                                            projectile_vec2_t impulse(\n                                                cos(projectile->angle - 1.5707964f)\n                                                    * projectile->pos.tail.vy.speed_scale,\n                                                cos(projectile->angle - 1.5707964f)\n                                                    * projectile->pos.tail.vy.speed_scale);\n"
+        },
+        {
+          "start_line": 626,
+          "removed": "                                                &impulse);\n",
+          "replacement": "                                                (vec2f_t *)&impulse);\n"
+        }
+      ]
+    },
+    "secondary-h11-creature-pointer": {
+      "parent": "secondary-h5-trail-arguments",
+      "change": "secondary-creature-pointer-loop",
+      "parent_source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "source_sha256": "0ea1184e9301bc4b82ec9e5aa3a19ebcef2b3d12933987febd94bb0deb54cbce",
+      "body_sha256": "439c6a4775e1ac2fdaa9d6580398f16f6368deffb394ce363faf6065d8bcb098",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 846,
+          "removed": "",
+          "replacement": "                creature_t *creature = creature_pool;\n"
+        },
+        {
+          "start_line": 847,
+          "removed": "                    creature_t *creature = &creature_pool[creature_id];\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 872,
+          "removed": "",
+          "replacement": "                    ++creature;\n"
+        }
+      ]
+    },
+    "secondary-h4-acceleration-owner": {
+      "parent": "secondary-h3-trail-direction",
+      "change": "secondary-seeker-acceleration-owner",
+      "parent_source_sha256": "064633c8f7f9007b7217feec7bd11fd578930ea452fd8df60e69e2bd504c3bd3",
+      "source_sha256": "e456fe3cf51528b88b10d4e659e604a2721d2d69a0101bc79ef0adbb8b337289",
+      "body_sha256": "e8ff8b4781dcd998e468a693f5e580847e062ceb76960ccabdc6d04c3c01d2e6",
+      "instructions": 2197,
+      "frame": "sub esp, 0xe4",
+      "edits": [
+        {
+          "start_line": 927,
+          "removed": "                    secondary_velocity.x +=\n",
+          "replacement": "                    secondary->pos.vx.vel_x +=\n"
+        },
+        {
+          "start_line": 931,
+          "removed": "                    secondary_velocity.y +=\n",
+          "replacement": "                    secondary->pos.vx.vy.vel_y +=\n"
+        }
+      ]
+    },
+    "secondary-h6-explosion-reference": {
+      "parent": "secondary-h5-trail-arguments",
+      "change": "secondary-explosion-position-reference",
+      "parent_source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "source_sha256": "a155c0020bd1df02f8fa6609dd3fa6acbd780b3318895ab912cba156660a6b24",
+      "body_sha256": "05419eabd884beb50abc03ee422f9d2361e555e2187d42232a0e273e1343fb8c",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                        projectile_vec2_t &hit_position =\n                            *(projectile_vec2_t *)&creature->position;\n                        float dx = hit_position.x - secondary->position.x;\n                        float dy = hit_position.y - secondary->position.y;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            (vec2f_t *)&hit_position, &secondary->position);\n"
+        },
+        {
+          "start_line": 865,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    (vec2f_t *)&hit_position);\n"
+        },
+        {
+          "start_line": 867,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    (vec2f_t *)&hit_position);\n"
+        }
+      ]
+    },
+    "secondary-h7-indexed-creatures": {
+      "parent": "secondary-h5-trail-arguments",
+      "change": "secondary-explosion-indexed-creatures",
+      "parent_source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "source_sha256": "f9a9be12847eb3188baf348c700d8c042824cf51b150bd0f328ba011ba70ee49",
+      "body_sha256": "59c7cb360abf4de0be0a48edad61ddb6e0f8d274d5384c056f1769f1efa7f224",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 847,
+          "removed": "                    creature_t *creature = &creature_pool[creature_id];\n                    if (creature->active && creature->health > 0.0f) {\n                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                    if (creature_pool[creature_id].active && creature_pool[creature_id].health > 0.0f) {\n                        float dx = creature_pool[creature_id].position.x - secondary->position.x;\n                        float dy = creature_pool[creature_id].position.y - secondary->position.y;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            &creature_pool[creature_id].position, &secondary->position);\n"
+        },
+        {
+          "start_line": 863,
+          "removed": "                            if (creature->health <= 0.0f) {\n",
+          "replacement": "                            if (creature_pool[creature_id].health <= 0.0f) {\n"
+        },
+        {
+          "start_line": 865,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_pool[creature_id].position);\n"
+        },
+        {
+          "start_line": 867,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_pool[creature_id].position);\n"
+        }
+      ]
+    },
+    "secondary-h9-indexed-loop": {
+      "parent": "secondary-h5-trail-arguments",
+      "change": "secondary-indexed-loop",
+      "parent_source_sha256": "14de4e60aa0fbfcbfea88ef3512829eea7e688d75a2f34157c761a3154ac3ed5",
+      "source_sha256": "2dea30679a872201353f0bb8d6dcda71c8dd20606795df3f88ff051d6a20bfc3",
+      "body_sha256": "52bafae684970ff2b211c4c8bfc708de6892095408b41f88cb1fc0ad872839a7",
+      "instructions": 2206,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 817,
+          "removed": "    secondary_projectile_t *secondary = secondary_projectile_pool;\n",
+          "replacement": "    int secondary_index = 0;\n"
+        },
+        {
+          "start_line": 819,
+          "removed": "",
+          "replacement": "        secondary_projectile_t *secondary = &secondary_projectile_pool[secondary_index];\n"
+        },
+        {
+          "start_line": 1199,
+          "removed": "        ++secondary;\n    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+          "replacement": "        ++secondary_index;\n    } while (secondary_index < 0x40);\n"
+        }
+      ]
+    },
+    "particle-j2-spin-reference": {
+      "parent": "particle-j1-high-first",
+      "change": "particle-spin-reference",
+      "parent_source_sha256": "3f1a7efbf429be79ec45afec9ededef4874c80287532d4c9bfeccc05bf275fd4",
+      "source_sha256": "2c7a0e2c28ab3e032d37ae6d842709f22dff53e33617f93ec43f0d9635d1c7d0",
+      "body_sha256": "2278cb8825d3306b47a8e453f603c25262d4cee6f0e7839358ffe41c58a50bcc",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1226,
+          "removed": "",
+          "replacement": "            float &spin = particle->spin;\n"
+        },
+        {
+          "start_line": 1229,
+          "removed": "                particle->spin += frame_dt * 5.0f;\n",
+          "replacement": "                spin += frame_dt * 5.0f;\n"
+        },
+        {
+          "start_line": 1247,
+          "removed": "                particle->spin += frame_dt;\n",
+          "replacement": "                spin += frame_dt;\n"
+        }
+      ]
+    },
+    "secondary-h10-common-position": {
+      "parent": "secondary-h9-indexed-loop",
+      "change": "secondary-common-position-owner",
+      "parent_source_sha256": "2dea30679a872201353f0bb8d6dcda71c8dd20606795df3f88ff051d6a20bfc3",
+      "source_sha256": "1a0e7634d703ef58fe7980802c680e53a71f7560d285e85ee665f821033c9e3e",
+      "body_sha256": "93e98e8dcdfa7c97ce7d55520a597e743a92fb7226930be1392b85ffccb12245",
+      "instructions": 2200,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 876,
+          "removed": "",
+          "replacement": "                projectile_vec2_t &secondary_position =\n                    *(projectile_vec2_t *)&secondary->position;\n"
+        },
+        {
+          "start_line": 880,
+          "removed": "                    &secondary->position,\n",
+          "replacement": "                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 911,
+          "removed": "                                &secondary->position,\n",
+          "replacement": "                                (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 918,
+          "removed": "                    projectile_vec2_t &secondary_position =\n                        *(projectile_vec2_t *)&secondary->position;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 964,
+          "removed": "                        *(projectile_vec2_t *)&secondary->position;\n",
+          "replacement": "                        *(projectile_vec2_t *)(vec2f_t *)&secondary_position;\n"
+        },
+        {
+          "start_line": 980,
+          "removed": "                    &secondary->position,\n",
+          "replacement": "                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 992,
+          "removed": "                                &secondary->position,\n",
+          "replacement": "                                (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1040,
+          "removed": "                                &secondary->position,\n",
+          "replacement": "                                (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1058,
+          "removed": "                            &secondary->position,\n",
+          "replacement": "                            (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1085,
+          "removed": "                                    &secondary->position,\n",
+          "replacement": "                                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1117,
+          "removed": "                                    &secondary->position,\n",
+          "replacement": "                                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1184,
+          "removed": "                            &secondary->position,\n",
+          "replacement": "                            (vec2f_t *)&secondary_position,\n"
+        }
+      ]
+    },
+    "particle-j3-position-scope": {
+      "parent": "particle-j2-spin-reference",
+      "change": "particle-position-collision-scope",
+      "parent_source_sha256": "2c7a0e2c28ab3e032d37ae6d842709f22dff53e33617f93ec43f0d9635d1c7d0",
+      "source_sha256": "ca1715de9925e3e489e0e3f5fd4dd17ecce9032f6dd373f1122bd6c64c77a4cb",
+      "body_sha256": "7df1d0aef59ff17735107159e3a82ee8ad9906128972795efa00a51278c49a62",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1221,
+          "removed": "            projectile_vec2_t &particle_position =\n                *(projectile_vec2_t *)&particle->position;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1240,
+          "removed": "                        particle_position +=\n",
+          "replacement": "                        (*(projectile_vec2_t *)&particle->position) +=\n"
+        },
+        {
+          "start_line": 1257,
+          "removed": "                    particle_position +=\n",
+          "replacement": "                    (*(projectile_vec2_t *)&particle->position) +=\n"
+        },
+        {
+          "start_line": 1322,
+          "removed": "",
+          "replacement": "                    projectile_vec2_t &particle_position =\n                        *(projectile_vec2_t *)&particle->position;\n"
+        }
+      ]
+    },
+    "particle-j4-active-reference": {
+      "parent": "particle-j3-position-scope",
+      "change": "particle-active-reference",
+      "parent_source_sha256": "ca1715de9925e3e489e0e3f5fd4dd17ecce9032f6dd373f1122bd6c64c77a4cb",
+      "source_sha256": "8848afca669ce36a2a495357b3b81121c4d0d324c3eafaed8bfadb5e3f510ddd",
+      "body_sha256": "44f81487dad75942823a888e592c1ef819ff87497573534aa48e5ff7c13b474b",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1225,
+          "removed": "",
+          "replacement": "            unsigned char &active = particle->active;\n"
+        },
+        {
+          "start_line": 1262,
+          "removed": "                particle->active = 0;\n",
+          "replacement": "                active = 0;\n"
+        },
+        {
+          "start_line": 1264,
+          "removed": "                particle->active = 0;\n",
+          "replacement": "                active = 0;\n"
+        }
+      ]
+    },
+    "particle-j5-scale-references": {
+      "parent": "particle-j4-active-reference",
+      "change": "particle-scale-reference",
+      "parent_source_sha256": "8848afca669ce36a2a495357b3b81121c4d0d324c3eafaed8bfadb5e3f510ddd",
+      "source_sha256": "86451bea8d227f7938ed86113a0265530d516315287c575554a6e3b1ea54cf9f",
+      "body_sha256": "84248a4e8a5511d2920f99fb9f9035a7f6462a430098caa431660128fb9fef98",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1317,
+          "removed": "                particle->scale_x = 1.0f - particle->intensity * 0.95f;\n                particle->scale_y = particle->scale_x;\n",
+          "replacement": "                float &scale_x = particle->scale_x;\n                float &scale_y = particle->scale_y;\n                scale_x = 1.0f - particle->intensity * 0.95f;\n                scale_y = scale_x;\n"
+        }
+      ]
+    },
+    "particle-j6-render-reference": {
+      "parent": "particle-j5-scale-references",
+      "change": "particle-render-store-reference",
+      "parent_source_sha256": "86451bea8d227f7938ed86113a0265530d516315287c575554a6e3b1ea54cf9f",
+      "source_sha256": "4d94fba2acb2427ab105d32c339f3f32d096fc50eabd763680861688da87030b",
+      "body_sha256": "5ccc064b1dcab5b05f3060df88fc6a90213de7cf52b678ae26c223783c43e3de",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1330,
+          "removed": "                        particle->render_flag = 0;\n",
+          "replacement": "                        unsigned char &render_flag = particle->render_flag;\n                        render_flag = 0;\n"
+        }
+      ]
+    },
+    "particle-j7-previous-y": {
+      "parent": "particle-j6-render-reference",
+      "change": "particle-previous-y-owner",
+      "parent_source_sha256": "4d94fba2acb2427ab105d32c339f3f32d096fc50eabd763680861688da87030b",
+      "source_sha256": "579326544c123e40b0f6558a11d7d6fa28b76be48d80f25ef807b6a54b41f26f",
+      "body_sha256": "25ed8ecd090b44e0c7ede7759b2671ad1e66099b7a878951dbe37bc927a5c484",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1348,
+          "removed": "                            projectile_vec2_t previous_position = particle_position - displacement;\n",
+          "replacement": "                            projectile_vec2_t previous_position(\n                                particle_position.x - displacement.x,\n                                particle->position.y - displacement.y);\n"
+        }
+      ]
+    },
+    "primary-i2-branch-values": {
+      "parent": "particle-j6-render-reference",
+      "change": "impulse-after-branch",
+      "parent_source_sha256": "4d94fba2acb2427ab105d32c339f3f32d096fc50eabd763680861688da87030b",
+      "source_sha256": "d0d1cb792ad4fb7ff1a5dae48567c67a343b7a5aeabfb93b2607177cf77c453f",
+      "body_sha256": "3c262f9e3d47d810aa2a0252e5ee0ac0d92fa5b62909f4577abe2c79b49e74d4",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 593,
+          "removed": "                                        float impulse_cosine = (float)cos(\n                                            projectile->angle - 1.5707964f);\n                                        float impulse_x = impulse_cosine\n                                            * projectile->pos.tail.vy\n                                                .speed_scale;\n\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 601,
+          "removed": "",
+          "replacement": "                                            float impulse_cosine = (float)cos(\n                                                projectile->angle - 1.5707964f);\n                                            float impulse_x = impulse_cosine\n                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n\n"
+        },
+        {
+          "start_line": 616,
+          "removed": "",
+          "replacement": "                                            float impulse_cosine = (float)cos(\n                                                projectile->angle - 1.5707964f);\n                                            float impulse_x = impulse_cosine\n                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n\n"
+        }
+      ]
+    },
+    "particle-j8-zero-velocity": {
+      "parent": "particle-j7-previous-y",
+      "change": "particle-zero-velocity-value",
+      "parent_source_sha256": "579326544c123e40b0f6558a11d7d6fa28b76be48d80f25ef807b6a54b41f26f",
+      "source_sha256": "c74deefe7876aea9db9c5dee27ac431fe8a4d250838be10103a8d171a62e5342",
+      "body_sha256": "00f68ff1dfcc52224d37de13c9e1988d7e630477cf8df858858051a5a4b26a8c",
+      "instructions": 2208,
+      "frame": "sub esp, 0xec",
+      "edits": [
+        {
+          "start_line": 1335,
+          "removed": "                            particle->velocity.x = 0.0f;\n                            particle->velocity.y = 0.0f;\n",
+          "replacement": "                            particle_velocity = projectile_vec2_t(0.0f, 0.0f);\n"
+        }
+      ]
+    },
+    "particle-j9-zero-reference": {
+      "parent": "particle-j7-previous-y",
+      "change": "particle-zero-velocity-reference",
+      "parent_source_sha256": "579326544c123e40b0f6558a11d7d6fa28b76be48d80f25ef807b6a54b41f26f",
+      "source_sha256": "e5e34d698d6fa229bcf11b173690bb7031a651e71ffad2d7184d192579ec11b0",
+      "body_sha256": "b54f1e28ca3ba8388aab8ccfcd6b88ad336671b0d06701fa4bfeef0adff526e6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1335,
+          "removed": "                            particle->velocity.x = 0.0f;\n                            particle->velocity.y = 0.0f;\n",
+          "replacement": "                            particle_velocity.x = 0.0f;\n                            particle_velocity.y = 0.0f;\n"
+        }
+      ]
+    },
+    "primary-i3-component-references": {
+      "parent": "primary-i2-branch-values",
+      "change": "primary-impulse-component-references",
+      "parent_source_sha256": "d0d1cb792ad4fb7ff1a5dae48567c67a343b7a5aeabfb93b2607177cf77c453f",
+      "source_sha256": "5df2705948d054ded8e7ba14ae0a73842dd8859717789737267fb91e7e165123",
+      "body_sha256": "349e6e4ea58069819d356ef5d321b4390006e2babbc3e1de47a37c464b36bb07",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 597,
+          "removed": "                                            float impulse_x = impulse_cosine\n                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n\n                                            vec2f_t impulse = {\n                                                impulse_x,\n                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n                                            };\n",
+          "replacement": "                                            vec2f_t impulse;\n                                            float &impulse_x = impulse.x;\n                                            float &impulse_y = impulse.y;\n                                            impulse_x = impulse_cosine * projectile->pos.tail.vy.speed_scale;\n                                            impulse_y = impulse_cosine * projectile->pos.tail.vy.speed_scale;\n"
+        },
+        {
+          "start_line": 618,
+          "removed": "                                            float impulse_x = impulse_cosine\n                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n\n                                            vec2f_t impulse = {\n                                                impulse_x,\n                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n                                            };\n",
+          "replacement": "                                            vec2f_t impulse;\n                                            float &impulse_x = impulse.x;\n                                            float &impulse_y = impulse.y;\n                                            impulse_x = impulse_cosine * projectile->pos.tail.vy.speed_scale;\n                                            impulse_y = impulse_cosine * projectile->pos.tail.vy.speed_scale;\n"
+        }
+      ]
+    },
+    "particle-j10-clamp-reference": {
+      "parent": "particle-j9-zero-reference",
+      "change": "particle-clamp-reference-parameter",
+      "parent_source_sha256": "e5e34d698d6fa229bcf11b173690bb7031a651e71ffad2d7184d192579ec11b0",
+      "source_sha256": "a0a5632609a5954a71f9d8a959f44e27a0369aeeb72191750d5ca5cdf319d208",
+      "body_sha256": "b54f1e28ca3ba8388aab8ccfcd6b88ad336671b0d06701fa4bfeef0adff526e6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline void projectile_clamp_tint(float &value)\n"
+        },
+        {
+          "start_line": 144,
+          "removed": "    if (*value < 0.0f) {\n        *value = 0.0f;\n    } else if (*value > 1.0f) {\n        *value = 1.0f;\n",
+          "replacement": "    if (value < 0.0f) {\n        value = 0.0f;\n    } else if (value > 1.0f) {\n        value = 1.0f;\n"
+        },
+        {
+          "start_line": 1394,
+          "removed": "                                projectile_clamp_tint(&hit_creature->tint_r);\n                                projectile_clamp_tint(&hit_creature->tint_g);\n                                projectile_clamp_tint(&hit_creature->tint_b);\n                                projectile_clamp_tint(&hit_creature->tint_a);\n",
+          "replacement": "                                projectile_clamp_tint(hit_creature->tint_r);\n                                projectile_clamp_tint(hit_creature->tint_g);\n                                projectile_clamp_tint(hit_creature->tint_b);\n                                projectile_clamp_tint(hit_creature->tint_a);\n"
+        }
+      ]
+    },
+    "secondary-h12-impulse-product": {
+      "parent": "particle-j9-zero-reference",
+      "change": "secondary-impulse-vector-product",
+      "parent_source_sha256": "e5e34d698d6fa229bcf11b173690bb7031a651e71ffad2d7184d192579ec11b0",
+      "source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "body_sha256": "1ad08dad46fc8e9f001cf71864a028a18b84217ed00919e25c06d6e0b6c56dd6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 856,
+          "removed": "                            vec2f_t impulse = {direction.x * 0.1f, direction.y * 0.1f};\n",
+          "replacement": "                            projectile_vec2_t impulse =\n                                *(projectile_vec2_t *)&direction * 0.1f;\n"
+        },
+        {
+          "start_line": 862,
+          "removed": "                                &impulse);\n",
+          "replacement": "                                (vec2f_t *)&impulse);\n"
+        }
+      ]
+    },
+    "loop-k1-share-index": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "loop-share-primary-particle",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "3a70ed5309a9d271822c4c19a20c2d20f9872641ebe13b532ac57cd60a9eb6db",
+      "body_sha256": "5d452d3f20c846409c67991f83a2334ad3585d61c6286d75ed237264b22c0ed3",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1218,
+          "removed": "    int particle_index = 0;\n",
+          "replacement": "    projectile_index = 0;\n"
+        },
+        {
+          "start_line": 1401,
+          "removed": "                            if (particle_index % 3 == 0) {\n",
+          "replacement": "                            if (projectile_index % 3 == 0) {\n"
+        },
+        {
+          "start_line": 1426,
+          "removed": "        ++particle_index;\n",
+          "replacement": "        ++projectile_index;\n"
+        }
+      ]
+    },
+    "loop-k2-primary-scope": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "loop-primary-scope",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "4e2c8f77e597912066d9f7c8816a51b9559ab183ff62bb9351c8f7494f25c656",
+      "body_sha256": "1ad08dad46fc8e9f001cf71864a028a18b84217ed00919e25c06d6e0b6c56dd6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 164,
+          "removed": "",
+          "replacement": "    {\n"
+        },
+        {
+          "start_line": 816,
+          "removed": "",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "particle-j11-indexed-loop": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "particle-indexed-loop",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "8d1a3ce99ea33c3aacd2a7ee57b849ef391ff9f97d4d20faa1c2ca70ab8185ad",
+      "body_sha256": "e169c46933aa5fe04aed7a99ca3a49f948171441f1090df755909dc47ed20f17",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1219,
+          "removed": "    particle_t *particle = particle_pool;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1221,
+          "removed": "",
+          "replacement": "        particle_t *particle = &particle_pool[particle_index];\n"
+        },
+        {
+          "start_line": 1425,
+          "removed": "        ++particle;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1427,
+          "removed": "    } while ((int)particle < (int)&particle_pool[0x80]);\n",
+          "replacement": "    } while (particle_index < 0x80);\n"
+        }
+      ]
+    },
+    "particle-j13-clamp-bounds": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "particle-clamp-bounds",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "ab2f6269c87e8a952520c1e056715f0823bf4081b4aee118074ed0f2a065f9fa",
+      "body_sha256": "1ad08dad46fc8e9f001cf71864a028a18b84217ed00919e25c06d6e0b6c56dd6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline void projectile_clamp_tint(float *value, float lower, float upper)\n"
+        },
+        {
+          "start_line": 144,
+          "removed": "    if (*value < 0.0f) {\n        *value = 0.0f;\n    } else if (*value > 1.0f) {\n        *value = 1.0f;\n",
+          "replacement": "    if (*value < lower) {\n        *value = lower;\n    } else if (*value > upper) {\n        *value = upper;\n"
+        },
+        {
+          "start_line": 1395,
+          "removed": "                                projectile_clamp_tint(&hit_creature->tint_r);\n                                projectile_clamp_tint(&hit_creature->tint_g);\n                                projectile_clamp_tint(&hit_creature->tint_b);\n                                projectile_clamp_tint(&hit_creature->tint_a);\n",
+          "replacement": "                                projectile_clamp_tint(&hit_creature->tint_r, 0.0f, 1.0f);\n                                projectile_clamp_tint(&hit_creature->tint_g, 0.0f, 1.0f);\n                                projectile_clamp_tint(&hit_creature->tint_b, 0.0f, 1.0f);\n                                projectile_clamp_tint(&hit_creature->tint_a, 0.0f, 1.0f);\n"
+        }
+      ]
+    },
+    "particle-j14-color-clamp": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "particle-clamp-color-owner",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "20b9500256a892565c3b173443390c646d21ffeb2ce740d578fb66a350e05685",
+      "body_sha256": "6580e4eed05ab4df8781b5596f6ac2c418c3329fa7149bfc00feedbdd543c1d9",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline void projectile_clamp_tint(effect_color_t *color)\n"
+        },
+        {
+          "start_line": 144,
+          "removed": "    if (*value < 0.0f) {\n        *value = 0.0f;\n    } else if (*value > 1.0f) {\n        *value = 1.0f;\n",
+          "replacement": "    if (color->r < 0.0f) {\n        color->r = 0.0f;\n    } else if (color->r > 1.0f) {\n        color->r = 1.0f;\n    }\n    if (color->g < 0.0f) {\n        color->g = 0.0f;\n    } else if (color->g > 1.0f) {\n        color->g = 1.0f;\n    }\n    if (color->b < 0.0f) {\n        color->b = 0.0f;\n    } else if (color->b > 1.0f) {\n        color->b = 1.0f;\n    }\n    if (color->a < 0.0f) {\n        color->a = 0.0f;\n    } else if (color->a > 1.0f) {\n        color->a = 1.0f;\n"
+        },
+        {
+          "start_line": 1395,
+          "removed": "                                projectile_clamp_tint(&hit_creature->tint_r);\n                                projectile_clamp_tint(&hit_creature->tint_g);\n                                projectile_clamp_tint(&hit_creature->tint_b);\n                                projectile_clamp_tint(&hit_creature->tint_a);\n",
+          "replacement": "                                projectile_clamp_tint(&hit_creature->color);\n"
+        }
+      ]
+    },
+    "particle-l1-clamp-return": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "clamp-early-return",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "54c9e3b42d01231cbccf166312679954c73a97117da108b51d3b7f788b63d792",
+      "body_sha256": "1ad08dad46fc8e9f001cf71864a028a18b84217ed00919e25c06d6e0b6c56dd6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 146,
+          "removed": "    } else if (*value > 1.0f) {\n",
+          "replacement": "        return;\n    }\n    if (*value > 1.0f) {\n"
+        }
+      ]
+    },
+    "particle-l2-clamp-ref-return": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "clamp-return-reference",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "a35416764be78c7a246c4467bd38c0b355cfabb491c9025c7f733002294b0cc3",
+      "body_sha256": "1ad08dad46fc8e9f001cf71864a028a18b84217ed00919e25c06d6e0b6c56dd6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline float &projectile_clamp_tint(float *value)\n"
+        },
+        {
+          "start_line": 149,
+          "removed": "",
+          "replacement": "    return *value;\n"
+        }
+      ]
+    },
+    "particle-l3-clamp-bound-refs": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "clamp-reference-bounds",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "29d45e10b9fed26a2e00f7b40ed64a0f67c9af92c4a66a931bf3064bb424a6ad",
+      "body_sha256": "1ad08dad46fc8e9f001cf71864a028a18b84217ed00919e25c06d6e0b6c56dd6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline void projectile_clamp_tint(float *value, const float &lower, const float &upper)\n"
+        },
+        {
+          "start_line": 144,
+          "removed": "    if (*value < 0.0f) {\n        *value = 0.0f;\n    } else if (*value > 1.0f) {\n        *value = 1.0f;\n",
+          "replacement": "    if (*value < lower) {\n        *value = lower;\n    } else if (*value > upper) {\n        *value = upper;\n"
+        },
+        {
+          "start_line": 1395,
+          "removed": "                                projectile_clamp_tint(&hit_creature->tint_r);\n                                projectile_clamp_tint(&hit_creature->tint_g);\n                                projectile_clamp_tint(&hit_creature->tint_b);\n                                projectile_clamp_tint(&hit_creature->tint_a);\n",
+          "replacement": "                                projectile_clamp_tint(&hit_creature->tint_r, 0.0f, 1.0f);\n                                projectile_clamp_tint(&hit_creature->tint_g, 0.0f, 1.0f);\n                                projectile_clamp_tint(&hit_creature->tint_b, 0.0f, 1.0f);\n                                projectile_clamp_tint(&hit_creature->tint_a, 0.0f, 1.0f);\n"
+        }
+      ]
+    },
+    "primary-m1-branch-values": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "impulse-after-branch",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "26988b4126e38f2cd29a113680ffb18b11148c1983d2f856989f01f63ad756ea",
+      "body_sha256": "f3969f4ec4be96d46650bade8596347a90a23b79433616efe66378b83ed0275c",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 593,
+          "removed": "                                        float impulse_cosine = (float)cos(\n                                            projectile->angle - 1.5707964f);\n                                        float impulse_x = impulse_cosine\n                                            * projectile->pos.tail.vy\n                                                .speed_scale;\n\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 601,
+          "removed": "",
+          "replacement": "                                            float impulse_cosine = (float)cos(\n                                                projectile->angle - 1.5707964f);\n                                            float impulse_x = impulse_cosine\n                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n\n"
+        },
+        {
+          "start_line": 616,
+          "removed": "",
+          "replacement": "                                            float impulse_cosine = (float)cos(\n                                                projectile->angle - 1.5707964f);\n                                            float impulse_x = impulse_cosine\n                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n\n"
+        }
+      ]
+    },
+    "primary-m4-step-for": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "primary-step-for",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "ab0e3b1b796b69ec97cd0a7c75ae0457cfbe27d751cee17b5bee74198a2e7389",
+      "body_sha256": "e02b29730724974c57ef4d29b2aff5c4ee6b57415c80a7e1511883622d5161bd",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 235,
+          "removed": "                    step = 0;\n                    if (step_count > 0) {\n                        do {\n",
+          "replacement": "                    {\n                        for (step = 0; step < step_count; step += 3) {\n"
+        },
+        {
+          "start_line": 808,
+          "removed": "                            step += 3;\n                        } while (step < step_count);\n",
+          "replacement": "                        }\n"
+        }
+      ]
+    },
+    "secondary-h13-position-owners": {
+      "parent": "secondary-h12-impulse-product",
+      "change": "secondary-explosion-split-position-owner",
+      "parent_source_sha256": "c755cca0e09c675286359f9866b6d841acea71d159d42c2544657b6809561a39",
+      "source_sha256": "32a181ff0d66dfc131de478892ed62d3e5edbb28aa6d4ab1bf624642193ca1f2",
+      "body_sha256": "280c5d8500b782de03048c52d029908e11ac0c4a9d2482d8bb37dc547f9853bd",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n",
+          "replacement": "                        projectile_vec2_t &hit_position =\n                            *(projectile_vec2_t *)&creature->position;\n                        float dx = hit_position.x - secondary->position.x;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            (vec2f_t *)&hit_position, &secondary->position);\n"
+        },
+        {
+          "start_line": 866,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    (vec2f_t *)&hit_position);\n"
+        },
+        {
+          "start_line": 868,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    (vec2f_t *)&hit_position);\n"
+        }
+      ]
+    },
+    "particle-j12-for-loop": {
+      "parent": "particle-j11-indexed-loop",
+      "change": "particle-for-loop",
+      "parent_source_sha256": "8d1a3ce99ea33c3aacd2a7ee57b849ef391ff9f97d4d20faa1c2ca70ab8185ad",
+      "source_sha256": "d43e6065d7b120883f8746a0544ee9bc0c421b4c110a4d7c89c5c34fb14197af",
+      "body_sha256": "01f15b987cd2c36022cd020df406e1ed27e6d00a85b20bb37c88780bbdba30a5",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1218,
+          "removed": "    int particle_index = 0;\n    do {\n",
+          "replacement": "    for (int particle_index = 0; particle_index < 0x80; ++particle_index) {\n"
+        },
+        {
+          "start_line": 1425,
+          "removed": "        ++particle_index;\n    } while (particle_index < 0x80);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "primary-m2-speed-reference": {
+      "parent": "primary-m1-branch-values",
+      "change": "impulse-speed-reference",
+      "parent_source_sha256": "26988b4126e38f2cd29a113680ffb18b11148c1983d2f856989f01f63ad756ea",
+      "source_sha256": "927f9103da4a73c0ca60846678bf94b6c4c053289660394c36b83d6cc5cafd84",
+      "body_sha256": "5ca0e2ca466e95a071e191df5c6f571d7e53d2549af93c20ec235836a1e154bc",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 595,
+          "removed": "",
+          "replacement": "                                            float &impulse_speed = projectile->pos.tail.vy.speed_scale;\n"
+        },
+        {
+          "start_line": 603,
+          "removed": "                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n",
+          "replacement": "                                                impulse_cosine * impulse_speed,\n"
+        },
+        {
+          "start_line": 616,
+          "removed": "",
+          "replacement": "                                            float &impulse_speed = projectile->pos.tail.vy.speed_scale;\n"
+        },
+        {
+          "start_line": 624,
+          "removed": "                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n",
+          "replacement": "                                                impulse_cosine * impulse_speed,\n"
+        }
+      ]
+    },
+    "primary-m3-speed-indexed": {
+      "parent": "primary-m1-branch-values",
+      "change": "impulse-speed-indexed",
+      "parent_source_sha256": "26988b4126e38f2cd29a113680ffb18b11148c1983d2f856989f01f63ad756ea",
+      "source_sha256": "82b5b9498bd6c64af6fa162fbce964c9ece6d91ddcf78fa097598e80bf4b457d",
+      "body_sha256": "1eb32009230ae2e10fc7545e6859723a78a795b6f643401af67dac18a7a7ee3d",
+      "instructions": 2210,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 603,
+          "removed": "                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n",
+          "replacement": "                                                impulse_cosine * projectile_pool[projectile_index].pos.tail.vy.speed_scale,\n"
+        },
+        {
+          "start_line": 624,
+          "removed": "                                                impulse_cosine\n                                                    * projectile->pos.tail.vy\n                                                        .speed_scale,\n",
+          "replacement": "                                                impulse_cosine * projectile_pool[projectile_index].pos.tail.vy.speed_scale,\n"
+        }
+      ]
+    },
+    "primary-m5-impulse-and-loop": {
+      "parent": "primary-m2-speed-reference",
+      "change": "primary-step-for",
+      "parent_source_sha256": "927f9103da4a73c0ca60846678bf94b6c4c053289660394c36b83d6cc5cafd84",
+      "source_sha256": "24105c966c546c384fc92cb6e9d03658830599ba6b2a4e986a0caf397f46ce6b",
+      "body_sha256": "c2e149fe2b90dfc0c898ba70e2358e1f906e057176675b564df0f07578d9bff8",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 235,
+          "removed": "                    step = 0;\n                    if (step_count > 0) {\n                        do {\n",
+          "replacement": "                    {\n                        for (step = 0; step < step_count; step += 3) {\n"
+        },
+        {
+          "start_line": 812,
+          "removed": "                            step += 3;\n                        } while (step < step_count);\n",
+          "replacement": "                        }\n"
+        }
+      ]
+    },
+    "secondary-n1-y-reference": {
+      "parent": "primary-m5-impulse-and-loop",
+      "change": "explosion-y-reference",
+      "parent_source_sha256": "24105c966c546c384fc92cb6e9d03658830599ba6b2a4e986a0caf397f46ce6b",
+      "source_sha256": "905aa342c94a30d94f0a4e7645a6c8137f995ea05dbe261683caa24b03c30626",
+      "body_sha256": "c2e149fe2b90dfc0c898ba70e2358e1f906e057176675b564df0f07578d9bff8",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 852,
+          "removed": "                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                        float &creature_y = creature->position.y;\n                        float dy = creature_y - secondary->position.y;\n"
+        }
+      ]
+    },
+    "secondary-n2-rollback-reference": {
+      "parent": "primary-m5-impulse-and-loop",
+      "change": "seeker-x-rollback-reference",
+      "parent_source_sha256": "24105c966c546c384fc92cb6e9d03658830599ba6b2a4e986a0caf397f46ce6b",
+      "source_sha256": "5621eb5e6b22623b1caed25e575776f29f2b605d13b2c20c332e9f388795b4d6",
+      "body_sha256": "327fb5c6ecf0525f8928d62ba04270faa42febdcd55a25844d94435d7070f44c",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 942,
+          "removed": "                        secondary_velocity.x -=\n",
+          "replacement": "                        float &velocity_x = secondary->pos.vx.vel_x;\n                        velocity_x -=\n"
+        }
+      ]
+    },
+    "sprite-n3-indexed-loop": {
+      "parent": "primary-m5-impulse-and-loop",
+      "change": "sprite-indexed-loop",
+      "parent_source_sha256": "24105c966c546c384fc92cb6e9d03658830599ba6b2a4e986a0caf397f46ce6b",
+      "source_sha256": "a8a64ae8bc7346a115ee5c02234a57a836a3f71705500627a4eadd4480ff7aea",
+      "body_sha256": "6ad5f00ea3207eebb163fa2696327fcea6107ccff1247e60645ae1599504132b",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1205,
+          "removed": "    sprite_effect_t *sprite = sprite_effect_pool;\n    do {\n",
+          "replacement": "    for (int sprite_index = 0; sprite_index < 0x180; ++sprite_index) {\n        sprite_effect_t *sprite = &sprite_effect_pool[sprite_index];\n"
+        },
+        {
+          "start_line": 1217,
+          "removed": "        ++sprite;\n    } while ((int)sprite < (int)&sprite_effect_pool[0x180]);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "sprite-n4-combined": {
+      "parent": "secondary-n2-rollback-reference",
+      "change": "sprite-indexed-loop",
+      "parent_source_sha256": "5621eb5e6b22623b1caed25e575776f29f2b605d13b2c20c332e9f388795b4d6",
+      "source_sha256": "fe1fd07a68d8b64ce45823e1f022514a44ca241617f3e144b2a4173b7464d296",
+      "body_sha256": "b3294255bf1a84d5f4eedc80e74291db14f8aff102373f6755ed881e07d2bc87",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1206,
+          "removed": "    sprite_effect_t *sprite = sprite_effect_pool;\n    do {\n",
+          "replacement": "    for (int sprite_index = 0; sprite_index < 0x180; ++sprite_index) {\n        sprite_effect_t *sprite = &sprite_effect_pool[sprite_index];\n"
+        },
+        {
+          "start_line": 1218,
+          "removed": "        ++sprite;\n    } while ((int)sprite < (int)&sprite_effect_pool[0x180]);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "particle-n6-indexed": {
+      "parent": "sprite-n4-combined",
+      "change": "particle-indexed-loop",
+      "parent_source_sha256": "fe1fd07a68d8b64ce45823e1f022514a44ca241617f3e144b2a4173b7464d296",
+      "source_sha256": "41961b144682200088a547af6693017fcbe7767b63ef48c06c89d05f79d179dc",
+      "body_sha256": "72fb55fcdf2f1347bdd26c88b86dd85c98d683ae9997fce8e76f221213d0c55e",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1221,
+          "removed": "    particle_t *particle = particle_pool;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1223,
+          "removed": "",
+          "replacement": "        particle_t *particle = &particle_pool[particle_index];\n"
+        },
+        {
+          "start_line": 1427,
+          "removed": "        ++particle;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1429,
+          "removed": "    } while ((int)particle < (int)&particle_pool[0x80]);\n",
+          "replacement": "    } while (particle_index < 0x80);\n"
+        }
+      ]
+    },
+    "particle-n8-counted-pointer": {
+      "parent": "sprite-n4-combined",
+      "change": "particle-pointer-count-loop",
+      "parent_source_sha256": "fe1fd07a68d8b64ce45823e1f022514a44ca241617f3e144b2a4173b7464d296",
+      "source_sha256": "3c46026705f79cf7db736f28652331167c7d5f53d59203095a062a956119c2b8",
+      "body_sha256": "2f6be8044e5b39228d606c52f4e42bb06022faa132e8e7a02179dfe3172a5f4f",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1429,
+          "removed": "    } while ((int)particle < (int)&particle_pool[0x80]);\n",
+          "replacement": "    } while (particle_index < 0x80);\n"
+        }
+      ]
+    },
+    "secondary-n5-for-loop": {
+      "parent": "sprite-n4-combined",
+      "change": "secondary-for-loop",
+      "parent_source_sha256": "fe1fd07a68d8b64ce45823e1f022514a44ca241617f3e144b2a4173b7464d296",
+      "source_sha256": "0a41201c12a3027b38698f116bbb1483c978233ec238e2e3905700ff054239df",
+      "body_sha256": "4fbef529413cbd787405bb92a8af95136e1b2e47465eab58c8b4b8ada183f4b8",
+      "instructions": 2207,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 819,
+          "removed": "    secondary_projectile_t *secondary = secondary_projectile_pool;\n    do {\n",
+          "replacement": "    for (int secondary_index = 0; secondary_index < 0x40; ++secondary_index) {\n        secondary_projectile_t *secondary = &secondary_projectile_pool[secondary_index];\n"
+        },
+        {
+          "start_line": 1203,
+          "removed": "        ++secondary;\n    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "particle-n7-for": {
+      "parent": "particle-n6-indexed",
+      "change": "particle-for-loop",
+      "parent_source_sha256": "41961b144682200088a547af6693017fcbe7767b63ef48c06c89d05f79d179dc",
+      "source_sha256": "d12f50ee1d73420e1296d2f4d35b09c5f6022a8dee55b55de8058059753d7134",
+      "body_sha256": "7632f0c5865149ee8287c9a5818da81d728ffb0fce33fbbf1318b9957ae6b902",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1220,
+          "removed": "    int particle_index = 0;\n    do {\n",
+          "replacement": "    for (int particle_index = 0; particle_index < 0x80; ++particle_index) {\n"
+        },
+        {
+          "start_line": 1427,
+          "removed": "        ++particle_index;\n    } while (particle_index < 0x80);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "particle-n10-expiry-helper": {
+      "parent": "particle-n7-for",
+      "change": "particle-expiry-helper",
+      "parent_source_sha256": "d12f50ee1d73420e1296d2f4d35b09c5f6022a8dee55b55de8058059753d7134",
+      "source_sha256": "6ced3cf1a15c68b1626317697ac95f6d42c9e32d81645733fc591b43ee0a6b1d",
+      "body_sha256": "7632f0c5865149ee8287c9a5818da81d728ffb0fce33fbbf1318b9957ae6b902",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 149,
+          "removed": "",
+          "replacement": "}\n\nstatic __inline void projectile_particle_expire(unsigned char &active)\n{\n    active = 0;\n"
+        },
+        {
+          "start_line": 1265,
+          "removed": "                active = 0;\n",
+          "replacement": "                projectile_particle_expire(active);\n"
+        },
+        {
+          "start_line": 1267,
+          "removed": "                active = 0;\n",
+          "replacement": "                projectile_particle_expire(active);\n"
+        }
+      ]
+    },
+    "particle-n11-live-style": {
+      "parent": "particle-n7-for",
+      "change": "particle-live-style",
+      "parent_source_sha256": "d12f50ee1d73420e1296d2f4d35b09c5f6022a8dee55b55de8058059753d7134",
+      "source_sha256": "52407f14a032b92bbb05a32876305780af5d7ac24fb244cd055e9c4dcf797760",
+      "body_sha256": "ddc98f890d260ffc77a97f854fc4c19e5edc2585e94df3608c2a13fc3123c90b",
+      "instructions": 2205,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1228,
+          "removed": "            unsigned char style_id = particle->style_id;\n",
+          "replacement": "            const unsigned char &style_id = particle->style_id;\n"
+        },
+        {
+          "start_line": 1263,
+          "removed": "            style_id = particle->style_id;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1268,
+          "removed": "                if (particle->style_id == 8\n",
+          "replacement": "                if (style_id == 8\n"
+        }
+      ]
+    },
+    "particle-n12-late-active": {
+      "parent": "particle-n7-for",
+      "change": "particle-active-late-binding",
+      "parent_source_sha256": "d12f50ee1d73420e1296d2f4d35b09c5f6022a8dee55b55de8058059753d7134",
+      "source_sha256": "718500a5a430c011ffe39e7a95cbfb3c7b98ed9cab200038476c47432e0e477b",
+      "body_sha256": "72fb55fcdf2f1347bdd26c88b86dd85c98d683ae9997fce8e76f221213d0c55e",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1227,
+          "removed": "            unsigned char &active = particle->active;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1265,
+          "removed": "",
+          "replacement": "                unsigned char &active = particle->active;\n"
+        },
+        {
+          "start_line": 1267,
+          "removed": "",
+          "replacement": "                unsigned char &active = particle->active;\n"
+        }
+      ]
+    },
+    "particle-n13-late-style": {
+      "parent": "particle-n7-for",
+      "change": "particle-late-style-reference",
+      "parent_source_sha256": "d12f50ee1d73420e1296d2f4d35b09c5f6022a8dee55b55de8058059753d7134",
+      "source_sha256": "5ef4ba8b298ebb49e6fbb6f985180878c79d4b2e09746824795199223343856f",
+      "body_sha256": "46ef6e197ec466ca6811b5da0acce4722df2cc2626e96b380994fcc46b2d94c5",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1268,
+          "removed": "                if (particle->style_id == 8\n",
+          "replacement": "                const unsigned char &style = particle->style_id;\n                if (style == 8\n"
+        }
+      ]
+    },
+    "particle-n9-style-reference": {
+      "parent": "particle-n7-for",
+      "change": "particle-style-reference",
+      "parent_source_sha256": "d12f50ee1d73420e1296d2f4d35b09c5f6022a8dee55b55de8058059753d7134",
+      "source_sha256": "f7535a7c082bd270734edef328dd47ebae9204df3f6b4fd793c54b283021d5b0",
+      "body_sha256": "54618e35c4e13386009f2ed535e5a1794fc554385bc523ce97747b94fa1704f4",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1228,
+          "removed": "            unsigned char style_id = particle->style_id;\n",
+          "replacement": "            const unsigned char &style = particle->style_id;\n            unsigned char style_id = style;\n"
+        },
+        {
+          "start_line": 1263,
+          "removed": "            style_id = particle->style_id;\n",
+          "replacement": "            style_id = style;\n"
+        }
+      ]
+    },
+    "frame-p1-outer-color": {
+      "parent": "particle-n13-late-style",
+      "change": "secondary-color-outer",
+      "parent_source_sha256": "5ef4ba8b298ebb49e6fbb6f985180878c79d4b2e09746824795199223343856f",
+      "source_sha256": "16c4fec78fdec8482bc37f5aa1ece279462799d44af1b79ba6bbfba39945cfe3",
+      "body_sha256": "a09f1faec490b441bc53c627c914859eb34a1e351836d19c99808e6a75c581bc",
+      "instructions": 2202,
+      "frame": "sub esp, 0xf8",
+      "edits": [
+        {
+          "start_line": 153,
+          "removed": "",
+          "replacement": "    effect_color_t color;\n"
+        },
+        {
+          "start_line": 829,
+          "removed": "                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n",
+          "replacement": "                    color.r = 0.0f;\n                    color.g = 0.0f;\n                    color.b = 0.0f;\n                    color.a = 0.25f;\n"
+        }
+      ]
+    },
+    "frame-p2-color-stores": {
+      "parent": "particle-n13-late-style",
+      "change": "secondary-color-local-stores",
+      "parent_source_sha256": "5ef4ba8b298ebb49e6fbb6f985180878c79d4b2e09746824795199223343856f",
+      "source_sha256": "81a7d3d160287facf428a15cf83de483992a26f138272fddf62d53f0df846a1b",
+      "body_sha256": "46ef6e197ec466ca6811b5da0acce4722df2cc2626e96b380994fcc46b2d94c5",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 829,
+          "removed": "                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n",
+          "replacement": "                    effect_color_t color;\n                    color.r = 0.0f;\n                    color.g = 0.0f;\n                    color.b = 0.0f;\n                    color.a = 0.25f;\n"
+        }
+      ]
+    },
+    "primary-q1-chained-zero": {
+      "parent": "particle-n13-late-style",
+      "change": "delta-chained-zero",
+      "parent_source_sha256": "5ef4ba8b298ebb49e6fbb6f985180878c79d4b2e09746824795199223343856f",
+      "source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 233,
+          "removed": "                    delta.x = 0.0f;\n                    delta.y = 0.0f;\n",
+          "replacement": "                    delta.x = delta.y = 0.0f;\n"
+        },
+        {
+          "start_line": 808,
+          "removed": "                                delta.x = 0.0f;\n                                delta.y = 0.0f;\n",
+          "replacement": "                                delta.x = delta.y = 0.0f;\n"
+        }
+      ]
+    },
+    "secondary-o1-scalar-x": {
+      "parent": "particle-n13-late-style",
+      "change": "explosion-x-scalar-owner",
+      "parent_source_sha256": "5ef4ba8b298ebb49e6fbb6f985180878c79d4b2e09746824795199223343856f",
+      "source_sha256": "849bdb21a8b03f8b4f648d1bc170fa3169d914959d030a16861eee35c0c4e968",
+      "body_sha256": "46ef6e197ec466ca6811b5da0acce4722df2cc2626e96b380994fcc46b2d94c5",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 851,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n",
+          "replacement": "                        float dx = creature->pos_x - secondary->position.x;\n"
+        }
+      ]
+    },
+    "frame-p3-shared-index": {
+      "parent": "frame-p1-outer-color",
+      "change": "loop-share-primary-particle-for",
+      "parent_source_sha256": "16c4fec78fdec8482bc37f5aa1ece279462799d44af1b79ba6bbfba39945cfe3",
+      "source_sha256": "2c534bf315391e612229b4a9a475a4df691bbe9ef346adb06f980f8323eacbfc",
+      "body_sha256": "2650a9a153f84e51f47fd46586f581341236d78e4b4caa21719bb6fb33d5551e",
+      "instructions": 2202,
+      "frame": "sub esp, 0xf8",
+      "edits": [
+        {
+          "start_line": 1219,
+          "removed": "    for (int particle_index = 0; particle_index < 0x80; ++particle_index) {\n        particle_t *particle = &particle_pool[particle_index];\n",
+          "replacement": "    for (projectile_index = 0; projectile_index < 0x80; ++projectile_index) {\n        particle_t *particle = &particle_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 1402,
+          "removed": "                            if (particle_index % 3 == 0) {\n",
+          "replacement": "                            if (projectile_index % 3 == 0) {\n"
+        }
+      ]
+    },
+    "frame-q2-primary-color": {
+      "parent": "primary-q1-chained-zero",
+      "change": "primary-color-class",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "8a5d794cee840e15c5e0b8609764e7f6d0c577142cce9a512a7a8c77ba0d959a",
+      "body_sha256": "8ddcd4193e4184033a5dbdcc597265a26a7c40dfad57630e4eb197cf32b473b4",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 15,
+          "removed": "",
+          "replacement": "\nstruct projectile_color_t {\n    float r, g, b, a;\n    projectile_color_t(float rr, float gg, float bb, float aa)\n        : r(rr), g(gg), b(bb), a(aa) {}\n    ~projectile_color_t() {}\n};\n"
+        },
+        {
+          "start_line": 316,
+          "removed": "                                    effect_color_t effect_color = {\n                                        1.0f,\n                                        1.0f,\n                                        1.0f,\n                                        1.0f,\n                                    };\n",
+          "replacement": "                                    projectile_color_t effect_color(1.0f, 1.0f, 1.0f, 1.0f);\n"
+        },
+        {
+          "start_line": 323,
+          "removed": "                                    effect_template.color = effect_color;\n",
+          "replacement": "                                    effect_template.color = *(effect_color_t *)&effect_color;\n"
+        }
+      ]
+    },
+    "frame-q3-secondary-color": {
+      "parent": "primary-q1-chained-zero",
+      "change": "secondary-color-class",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "e97870754078704b9a8d57beededa973c1f88944a419f51bd366174128f92fab",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 15,
+          "removed": "",
+          "replacement": "\nstruct projectile_color_t {\n    float r, g, b, a;\n    projectile_color_t(float rr, float gg, float bb, float aa)\n        : r(rr), g(gg), b(bb), a(aa) {}\n    ~projectile_color_t() {}\n};\n"
+        },
+        {
+          "start_line": 827,
+          "removed": "                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n",
+          "replacement": "                    projectile_color_t color(0.0f, 0.0f, 0.0f, 0.25f);\n"
+        },
+        {
+          "start_line": 839,
+          "removed": "                        &color);\n",
+          "replacement": "                        (effect_color_t *)&color);\n"
+        }
+      ]
+    },
+    "particle-r1-clamp-tests": {
+      "parent": "primary-q1-chained-zero",
+      "change": "clamp-independent-tests",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "2e3c3aada7ff57fd2cc8c70883b1163b0cc266ba6231138c853fdb79b3f3a8ce",
+      "body_sha256": "33288be690d51db2ecfe37a82224bff0f5e1fa65993ccbd1edb0f9f8d12432ba",
+      "instructions": 2198,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 146,
+          "removed": "    } else if (*value > 1.0f) {\n",
+          "replacement": "    }\n    if (*value > 1.0f) {\n"
+        }
+      ]
+    },
+    "secondary-o2-scalar-xy": {
+      "parent": "secondary-o1-scalar-x",
+      "change": "explosion-y-scalar-owner",
+      "parent_source_sha256": "849bdb21a8b03f8b4f648d1bc170fa3169d914959d030a16861eee35c0c4e968",
+      "source_sha256": "42f3b73f39f03434c3807a03ca78bb69c38cd79c1b2bca3e06c86181441218b5",
+      "body_sha256": "46ef6e197ec466ca6811b5da0acce4722df2cc2626e96b380994fcc46b2d94c5",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 852,
+          "removed": "                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                        float dy = creature->pos_y - secondary->position.y;\n"
+        }
+      ]
+    },
+    "secondary-r2-velocity-scope": {
+      "parent": "primary-q1-chained-zero",
+      "change": "seeker-velocity-late-reference",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "381824fdb4159f8777fd591566874f5a8696a7174437de9feaf2c1213eeb8a9b",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 922,
+          "removed": "                    projectile_vec2_t &secondary_velocity =\n                        *(projectile_vec2_t *)&secondary->pos.vx.velocity;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 928,
+          "removed": "",
+          "replacement": "                    projectile_vec2_t &secondary_velocity =\n                        *(projectile_vec2_t *)&secondary->pos.vx.velocity;\n"
+        }
+      ]
+    },
+    "secondary-r3-direct-target": {
+      "parent": "primary-q1-chained-zero",
+      "change": "seeker-direct-position",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "207b0e4a584977d60ee4f2763fe77eb964c3dbb57b9c976cab1583b91179e1ef",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 916,
+          "removed": "                    creature_t *target = &creature_pool[\n                        secondary->pos.vx.vy.target_id];\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 921,
+          "removed": "                        *(projectile_vec2_t *)&target->position;\n",
+          "replacement": "                        *(projectile_vec2_t *)&creature_pool[secondary->pos.vx.vy.target_id].position;\n"
+        }
+      ]
+    },
+    "secondary-r4-target-first": {
+      "parent": "primary-q1-chained-zero",
+      "change": "seeker-target-first",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "f12c5f85c80a47bd172a02ac970e8e8089f184db3504e559591d73e2300c4d1f",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 918,
+          "removed": "",
+          "replacement": "                    projectile_vec2_t &target_position =\n                        *(projectile_vec2_t *)&target->position;\n"
+        },
+        {
+          "start_line": 920,
+          "removed": "                    projectile_vec2_t &target_position =\n                        *(projectile_vec2_t *)&target->position;\n",
+          "replacement": ""
+        }
+      ]
+    },
+    "secondary-s2-named-burst": {
+      "parent": "primary-q1-chained-zero",
+      "change": "burst-named-direction",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "65b7c7b636045471315fb50c3c616965af87cdfa062c52b083565bd49e71d847",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1182,
+          "removed": "                        projectile_vec2_t velocity =\n                            projectile_vec2_t(burst_cos, burst_sin) * magnitude;\n",
+          "replacement": "                        projectile_vec2_t burst_direction(burst_cos, burst_sin);\n                        projectile_vec2_t velocity = burst_direction * magnitude;\n"
+        }
+      ]
+    },
+    "secondary-s4-burst-arguments": {
+      "parent": "primary-q1-chained-zero",
+      "change": "burst-constructor-arguments",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "555294a7975f8928206a9baf9cb7d1e93f940aaaba303ad1e703f5e2f08eb6eb",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 1180,
+          "removed": "                        float burst_cos = (float)cos(angle);\n                        float burst_sin = (float)sin(angle);\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1183,
+          "removed": "                            projectile_vec2_t(burst_cos, burst_sin) * magnitude;\n",
+          "replacement": "                            projectile_vec2_t((float)cos(angle), (float)sin(angle)) * magnitude;\n"
+        }
+      ]
+    },
+    "vector-r5-right-order": {
+      "parent": "primary-q1-chained-zero",
+      "change": "vector-right-scalar-order",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "47353034e3a6f7388e80aa671fc2e30ae6001cfe3419ce92e6ec36ce96308703",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 52,
+          "removed": "    return projectile_vec2_t(scalar * value.x, scalar * value.y);\n",
+          "replacement": "    return projectile_vec2_t(value.x * scalar, value.y * scalar);\n"
+        }
+      ]
+    },
+    "frame-p4-shared-sprite": {
+      "parent": "frame-p3-shared-index",
+      "change": "loop-share-primary-sprite-for",
+      "parent_source_sha256": "2c534bf315391e612229b4a9a475a4df691bbe9ef346adb06f980f8323eacbfc",
+      "source_sha256": "1619bc5e038b37b20f4f748fba030a947cd6ed44020e717701c52137824d0a76",
+      "body_sha256": "2650a9a153f84e51f47fd46586f581341236d78e4b4caa21719bb6fb33d5551e",
+      "instructions": 2202,
+      "frame": "sub esp, 0xf8",
+      "edits": [
+        {
+          "start_line": 1205,
+          "removed": "    for (int sprite_index = 0; sprite_index < 0x180; ++sprite_index) {\n        sprite_effect_t *sprite = &sprite_effect_pool[sprite_index];\n",
+          "replacement": "    for (projectile_index = 0; projectile_index < 0x180; ++projectile_index) {\n        sprite_effect_t *sprite = &sprite_effect_pool[projectile_index];\n"
+        }
+      ]
+    },
+    "secondary-s3-outer-burst": {
+      "parent": "secondary-s2-named-burst",
+      "change": "burst-outer-direction",
+      "parent_source_sha256": "65b7c7b636045471315fb50c3c616965af87cdfa062c52b083565bd49e71d847",
+      "source_sha256": "649a60300843d569a3033f25164423fd092b44bbfc34bd5c694b1b82ed377d50",
+      "body_sha256": "e0c0983bca31e50e7bb478a1fd0c1a8e3170161d297c1078167787ff2abb9781",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "edits": [
+        {
+          "start_line": 153,
+          "removed": "",
+          "replacement": "    projectile_vec2_t burst_direction;\n"
+        },
+        {
+          "start_line": 1182,
+          "removed": "                        projectile_vec2_t burst_direction(burst_cos, burst_sin);\n",
+          "replacement": "                        burst_direction = projectile_vec2_t(burst_cos, burst_sin);\n"
+        }
+      ]
+    },
+    "frame-s1-all-shared": {
+      "parent": "frame-p4-shared-sprite",
+      "change": "secondary-shared-indexed-loop",
+      "parent_source_sha256": "1619bc5e038b37b20f4f748fba030a947cd6ed44020e717701c52137824d0a76",
+      "source_sha256": "7c74c34f3db6c8280a2710d656c0829074143fce3b227fd41641ed22cf29f8ae",
+      "body_sha256": "a5dc943a3445e02118fb015adef09f3b4c0c64d6d2efd11163ec3016f13ecc07",
+      "instructions": 2206,
+      "frame": "sub esp, 0xf8",
+      "edits": [
+        {
+          "start_line": 820,
+          "removed": "    secondary_projectile_t *secondary = secondary_projectile_pool;\n    do {\n",
+          "replacement": "    for (projectile_index = 0; projectile_index < 0x40; ++projectile_index) {\n        secondary_projectile_t *secondary = &secondary_projectile_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 1202,
+          "removed": "        ++secondary;\n    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    }
+  }
+}
