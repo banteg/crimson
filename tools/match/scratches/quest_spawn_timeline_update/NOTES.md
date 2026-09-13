@@ -1,5 +1,14 @@
 # quest_spawn_timeline_update
 
+Latest follow-up: [four-byte pointer-store evidence](../../evidence/timeline-four-byte-home-2026-09-13/README.md)
+reproduces the native dead pointer store with a 28-byte frame using stock VC6.
+A redundant guard loses its last pointer read only after copy cleanup; the
+remaining intrinsic lowers to the dead store. Reversing the guard operands
+removes the copy earlier. A separate counter-lifetime control also retains
+shared EBX zero tests/clears with the native frame and pointer triplet.
+These are diagnostic constructs, not recovered game source. Neither is exact,
+and canonical source/configuration and the metrics below are unchanged.
+
 Native target: `crimsonland.exe` at `0x00434250` (368 bytes, 115
 instructions).
 

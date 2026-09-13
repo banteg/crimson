@@ -1,0 +1,107 @@
+--- native
+
++++ candidate
+
+@@ -12,14 +12,14 @@
+
+ jmp L22
+ xor esi, esi
+ mov edi, dword [ADDR]
+-xor ebx, ebx
+ xor ebp, ebp
+-cmp edi, ebx
++test edi, edi
+ mov dword [ADDR], esi
+ jle L66
+ mov ecx, dword [ADDR]
+ mov eax, ADDR
+-cmp dword [eax+0x4], ebx
++mov ebx, dword [eax+0x4]
++test ebx, ebx
+ jle L5e
+ cmp dword [eax], ecx
+ jl L6e
+@@ -32,7 +32,7 @@
+
+ inc ebp
+ add eax, 0x18
+ cmp ebp, edi
+-jl L41
++jl L3f
+ pop edi
+ pop esi
+ pop ebp
+@@ -46,10 +46,11 @@
+
+ mov eax, dword [esi+0x14]
+ mov ecx, dword [esp+0x1c]
+ mov edx, dword [esp+0x20]
+-cmp eax, ebx
++xor ebx, ebx
++test eax, eax
+ mov dword [esp+0x14], ecx
+ mov dword [esp+0x18], edx
+-jle L143
++jle L145
+ lea edi, dword [esi+0xc]
+ mov dword [esp+0x10], edi
+ mov dword [esp+0x10], ebx
+@@ -57,24 +58,24 @@
+
+ fcomp dword [ADDR]
+ fnstsw ax
+ test ah, 0x1
+-jne Le6
++jne Le8
+ fild dword [ADDR]
+ fcomp dword [esi]
+ fnstsw ax
+ test ah, 0x1
+-jne Le6
++jne Le8
+ fild dword [esp+0x10]
+ test bl, 0x1
+ fstp dword [esp+0x14]
+-je Lfd
++je Lff
+ fld dword [esp+0x14]
+ fchs
+ fstp dword [esp+0x14]
+-jmp Lfd
++jmp Lff
+ fild dword [esp+0x10]
+ test bl, 0x1
+ fstp dword [esp+0x18]
+-je Lfd
++je Lff
+ fld dword [esp+0x18]
+ fchs
+ fstp dword [esp+0x18]
+@@ -86,7 +87,7 @@
+
+ push eax
+ fstp dword [esp+0x28]
+ fld dword [esp+0x1c]
+-fadd dword [esi+0x4]
++fadd dword [edi+-0x8]
+ push ecx
+ push edx
+ fstp dword [esp+0x34]
+@@ -98,13 +99,12 @@
+
+ add ecx, 0x28
+ cmp ebx, eax
+ mov dword [esp+0x10], ecx
+-jl Laf
++jl Lb1
+ mov edi, dword [ADDR]
+ lea eax, dword [edi+-0x1]
+-xor ebx, ebx
++mov dword [esi+0x14], 0x0
+ cmp ebp, eax
+-mov dword [esi+0x14], ebx
+-mov byte [ADDR], bl
++mov byte [ADDR], 0x0
+ jge L66
+ mov ecx, dword [esi+0x10]
+ mov eax, dword [esi+0x28]

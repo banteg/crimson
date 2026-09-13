@@ -1,0 +1,3099 @@
+{
+  "verifier_sha256": "95fb538758730e91ac7dee5ec99517636da0972218b9e24b742a66228598e0a5",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "source_controls": {
+    "canonical": {
+      "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "body_sha256": "846ce5764f3a43f8d178292b60805d7c2054b7467251f8957625d92e7e82a1d8",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 113,
+      "target_instructions": 115,
+      "prefix": 51,
+      "ratio": 0.9122807017543859,
+      "refs": [
+        13,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": false,
+      "shared_zero_tests_and_clears": true
+    },
+    "positive": {
+      "source_sha256": "a8ab7ebcef8414e32fc7989146e314a907877bd31c8821b36f8d4a52729263f8",
+      "body_sha256": "a98b3da1a84f25d446e058dba50fc7c436103bc88eb88e5ff746d879326c9180",
+      "normalized_coff_sha256": "eac4856a454cddaeee8b996efda447565019479da6bf52fafdf0a7ea64ab38b7",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 115,
+      "target_instructions": 115,
+      "prefix": 14,
+      "ratio": 0.8608695652173913,
+      "refs": [
+        12,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": true,
+      "shared_zero_tests_and_clears": false
+    },
+    "reversed": {
+      "source_sha256": "9d1ff3657676e0582ffbe5b3a9aea2bcd81c500f298f9e0a1a08848268130500",
+      "body_sha256": "846ce5764f3a43f8d178292b60805d7c2054b7467251f8957625d92e7e82a1d8",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 113,
+      "target_instructions": 115,
+      "prefix": 51,
+      "ratio": 0.9122807017543859,
+      "refs": [
+        13,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": false,
+      "shared_zero_tests_and_clears": true
+    },
+    "dead": {
+      "source_sha256": "10426657b28511986d848e042acc57726860bc386a4586b192e5f2f74fa04a2a",
+      "body_sha256": "846ce5764f3a43f8d178292b60805d7c2054b7467251f8957625d92e7e82a1d8",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 113,
+      "target_instructions": 115,
+      "prefix": 51,
+      "ratio": 0.9122807017543859,
+      "refs": [
+        13,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": false,
+      "shared_zero_tests_and_clears": true
+    },
+    "read": {
+      "source_sha256": "5857de3e19595ad1b9da99784a668ade2f1a0bd63f228299c8bedb225d7f9547",
+      "body_sha256": "7909a6485eba65961f69e02cfb8bdc14518183f9f5207e6ff417ff0cfe11f526",
+      "normalized_coff_sha256": "82788d4561c83bfb658aa7e9961b9187993054b99f5c8d23e071d20a2bcd3032",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 114,
+      "target_instructions": 115,
+      "prefix": 14,
+      "ratio": 0.8646288209606987,
+      "refs": [
+        12,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": false,
+      "shared_zero_tests_and_clears": false
+    },
+    "null-guard": {
+      "source_sha256": "5a82be45fae0f40c1800602e8c603f153d0fcd09e898464963d04336394c6cdd",
+      "body_sha256": "a98b3da1a84f25d446e058dba50fc7c436103bc88eb88e5ff746d879326c9180",
+      "normalized_coff_sha256": "eac4856a454cddaeee8b996efda447565019479da6bf52fafdf0a7ea64ab38b7",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 115,
+      "target_instructions": 115,
+      "prefix": 14,
+      "ratio": 0.8608695652173913,
+      "refs": [
+        12,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": true,
+      "shared_zero_tests_and_clears": false
+    },
+    "count-equals-zero": {
+      "source_sha256": "3279edc07d765166463445afbbe2c93dbad3b735f39cf3cac85a30d560a35de6",
+      "body_sha256": "a98b3da1a84f25d446e058dba50fc7c436103bc88eb88e5ff746d879326c9180",
+      "normalized_coff_sha256": "eac4856a454cddaeee8b996efda447565019479da6bf52fafdf0a7ea64ab38b7",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 115,
+      "target_instructions": 115,
+      "prefix": 14,
+      "ratio": 0.8608695652173913,
+      "refs": [
+        12,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": true,
+      "shared_zero_tests_and_clears": false
+    },
+    "memcpy": {
+      "source_sha256": "64002eafeb06f0c53503ed992da0999ad4d63cf9b9be80e6ae2b897204d4a7c6",
+      "body_sha256": "846ce5764f3a43f8d178292b60805d7c2054b7467251f8957625d92e7e82a1d8",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 113,
+      "target_instructions": 115,
+      "prefix": 51,
+      "ratio": 0.9122807017543859,
+      "refs": [
+        13,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": false,
+      "shared_zero_tests_and_clears": true
+    },
+    "assignment": {
+      "source_sha256": "679bd23cca6c0f3715aa41e5030a96ccc589142a75a25bf0f0e7415cf0f8e600",
+      "body_sha256": "846ce5764f3a43f8d178292b60805d7c2054b7467251f8957625d92e7e82a1d8",
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 113,
+      "target_instructions": 115,
+      "prefix": 51,
+      "ratio": 0.9122807017543859,
+      "refs": [
+        13,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": false,
+      "shared_zero_tests_and_clears": true
+    },
+    "counter-lifetime": {
+      "source_sha256": "5c51b4ddb2c3de71c303437e3cd2a3e5b6e9bede4c9d0ea64846eaa395c6e8dc",
+      "body_sha256": "314bc95f804a613d34e3cff3b94c42a0e749a25df397a6d0a1b5978002d9e0ea",
+      "normalized_coff_sha256": "2c7c2d2dff5d7880096da8f212a33c08546804199a7262067ab78110c2fa8c62",
+      "exact": false,
+      "body_byte_exact": false,
+      "instructions": 115,
+      "target_instructions": 115,
+      "prefix": 8,
+      "ratio": 0.7652173913043478,
+      "refs": [
+        8,
+        0,
+        0
+      ],
+      "frame": "sub esp, 0x1c",
+      "native_pointer_triplet": true,
+      "shared_zero_tests_and_clears": true
+    }
+  },
+  "traces": {
+    "positive": {
+      "source_sha256": "a8ab7ebcef8414e32fc7989146e314a907877bd31c8821b36f8d4a52729263f8",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "normalized_coff_sha256": "eac4856a454cddaeee8b996efda447565019479da6bf52fafdf0a7ea64ab38b7",
+      "profile_sha256": "bc361cef909f3c1ddb813d98439be9acbb6b5eb4bf62b3b02e25aa10d97d8c2b",
+      "stream_hashes": {
+        "ex": "10fd2c74dc27250f3ef30f0eeac5df86ca7398bfac8b75f45280f00568e138c2",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "1011076a288889c3464925cf495ca7af022c26e31ed6b775717558585b56851f",
+        "gl": "9d75ae88103e13ac541181b85e12908bbf3c65a9d7981918b9926be0fe9eac1f"
+      },
+      "trace_sha256": "6fa8cad19073e9047f99df05439a684aa00c55879ee019585fe9f21c1f969d0a",
+      "snapshots_sha256": "5da41556856bd95d7c7f25ffd26706a78247b493a443704dae8f33f92f7fb226",
+      "copied_symbol": 1814128856,
+      "history": [
+        {
+          "event": 0,
+          "site": "0x581ee",
+          "target": "0x130cb",
+          "boundary": "entry",
+          "state": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "intrinsics": [],
+          "reads": [
+            {
+              "id": 1814194088,
+              "op": 381,
+              "line": 45,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814194032,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    65888,
+                    16,
+                    1814128688,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    2147483649,
+                    0,
+                    16,
+                    1814140188,
+                    1814140188
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140188,
+                    0,
+                    32768,
+                    1814194088,
+                    0,
+                    90,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "id": 1814193416,
+              "op": 365,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    1814193360,
+                    330,
+                    268697602,
+                    65920,
+                    16,
+                    1814128772,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814140020,
+                    1814140020
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    524547,
+                    1814140020,
+                    0,
+                    4100,
+                    1814193416,
+                    0,
+                    88,
+                    4,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 90,
+          "site": "0x134e9",
+          "target": "0x450d7",
+          "boundary": "return",
+          "state": [
+            1,
+            1,
+            1,
+            0
+          ],
+          "intrinsics": [
+            {
+              "id": 1814204388,
+              "op": 400,
+              "line": 43,
+              "flags": 268697874,
+              "src": [
+                {
+                  "raw": [
+                    1814193476,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814201196,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814138676,
+                    1814138676
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814138676,
+                    0,
+                    4100,
+                    1814193532,
+                    0,
+                    72,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814190068,
+                    329,
+                    537133057,
+                    0,
+                    4112,
+                    1814139180,
+                    1814139180
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814139180,
+                    0,
+                    8196,
+                    1814330288,
+                    0,
+                    78,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814329916,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    18,
+                    1814219312
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    326,
+                    268697607,
+                    0,
+                    16,
+                    0,
+                    8193
+                  ],
+                  "kind": 7,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    20,
+                    0
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "reads": [
+            {
+              "id": 1814194088,
+              "op": 381,
+              "line": 45,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814372436,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    0,
+                    4112,
+                    1814350644,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    2147483649,
+                    0,
+                    16,
+                    1814140188,
+                    1814140188
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140188,
+                    0,
+                    32768,
+                    1814194088,
+                    0,
+                    90,
+                    0,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "id": 1814185528,
+              "op": 346,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 92,
+          "site": "0x13415",
+          "target": "0xb571",
+          "boundary": "return",
+          "state": [
+            1,
+            2,
+            1,
+            0
+          ],
+          "intrinsics": [
+            {
+              "id": 1814204388,
+              "op": 400,
+              "line": 43,
+              "flags": 268697874,
+              "src": [
+                {
+                  "raw": [
+                    1814193476,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814201196,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814138676,
+                    1814138676
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814138676,
+                    0,
+                    4100,
+                    1814193532,
+                    0,
+                    72,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814190068,
+                    329,
+                    537133057,
+                    0,
+                    4112,
+                    1814139180,
+                    1814139180
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814139180,
+                    0,
+                    8196,
+                    1814330288,
+                    0,
+                    78,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814329916,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    18,
+                    1814219312
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    326,
+                    268697607,
+                    0,
+                    16,
+                    0,
+                    8193
+                  ],
+                  "kind": 7,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    20,
+                    0
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "reads": [
+            {
+              "id": 1814194088,
+              "op": 381,
+              "line": 45,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814372436,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    0,
+                    4112,
+                    1814350644,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    2147483649,
+                    0,
+                    16,
+                    1814140188,
+                    1814140188
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140188,
+                    0,
+                    32768,
+                    1814194088,
+                    0,
+                    90,
+                    0,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "id": 1814383208,
+              "op": 383,
+              "line": 87,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814383268,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    0,
+                    16,
+                    1814350644,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    0,
+                    16,
+                    1814379920,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "id": 1814185528,
+              "op": 346,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 170,
+          "site": "0x13673",
+          "target": "0xb9ab",
+          "boundary": "return",
+          "state": [
+            1,
+            1,
+            1,
+            0
+          ],
+          "intrinsics": [
+            {
+              "id": 1814204388,
+              "op": 400,
+              "line": 43,
+              "flags": 268697874,
+              "src": [
+                {
+                  "raw": [
+                    1814193476,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814201196,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814138676,
+                    1814138676
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814138676,
+                    0,
+                    4100,
+                    1814193532,
+                    0,
+                    72,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814190068,
+                    329,
+                    537133057,
+                    0,
+                    4112,
+                    1814139180,
+                    1814139180
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814139180,
+                    0,
+                    8196,
+                    1814330288,
+                    0,
+                    78,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814329916,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    18,
+                    1814219312
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    326,
+                    268697607,
+                    0,
+                    16,
+                    0,
+                    8193
+                  ],
+                  "kind": 7,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    20,
+                    0
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "reads": [
+            {
+              "id": 1814194088,
+              "op": 381,
+              "line": 45,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814372436,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    0,
+                    4112,
+                    1814350644,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    2147483649,
+                    0,
+                    16,
+                    1814140188,
+                    1814140188
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140188,
+                    0,
+                    32768,
+                    1814194088,
+                    0,
+                    90,
+                    0,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "id": 1814185528,
+              "op": 346,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 176,
+          "site": "0x136f2",
+          "target": "0x43190",
+          "boundary": "return",
+          "state": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "intrinsics": [
+            {
+              "id": 1814204388,
+              "op": 400,
+              "line": 43,
+              "flags": 268697874,
+              "src": [
+                {
+                  "raw": [
+                    1814193476,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814201196,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814138676,
+                    1814138676
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814138676,
+                    0,
+                    4100,
+                    1814193532,
+                    0,
+                    72,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814190068,
+                    329,
+                    537133057,
+                    0,
+                    4112,
+                    1814139180,
+                    1814139180
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814139180,
+                    0,
+                    8196,
+                    1814330288,
+                    0,
+                    78,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814329916,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    18,
+                    1814219312
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    326,
+                    268697607,
+                    0,
+                    16,
+                    0,
+                    8193
+                  ],
+                  "kind": 7,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    20,
+                    0
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "reads": [],
+          "addresses": [
+            {
+              "id": 1814185528,
+              "op": 346,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814198840,
+                    1814198840
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198840,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    133,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 185,
+          "site": "0x5831e",
+          "target": "0x296de",
+          "boundary": "entry",
+          "state": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "intrinsics": [],
+          "reads": [],
+          "addresses": [],
+          "stores": [
+            {
+              "id": 1814330044,
+              "op": 1,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814375388,
+                    1814375388
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814375388,
+                    0,
+                    4100,
+                    1814330288,
+                    0,
+                    458,
+                    4,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697602,
+                    0,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "reversed": {
+      "source_sha256": "9d1ff3657676e0582ffbe5b3a9aea2bcd81c500f298f9e0a1a08848268130500",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "profile_sha256": "bc361cef909f3c1ddb813d98439be9acbb6b5eb4bf62b3b02e25aa10d97d8c2b",
+      "stream_hashes": {
+        "ex": "e02cc2b8d29a4897dababfec54fbb30285e05d0f0d49a761fcaa7ef9f1d16a99",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "1011076a288889c3464925cf495ca7af022c26e31ed6b775717558585b56851f",
+        "gl": "9d75ae88103e13ac541181b85e12908bbf3c65a9d7981918b9926be0fe9eac1f"
+      },
+      "trace_sha256": "684aae9a91141ff18a61791cb13c282625aa4f43a638a7daa99517d0fceec364",
+      "snapshots_sha256": "5999159155070dc9e4513c939821d2177e52cc9c9cf9ab10f381d607a20e2f24",
+      "copied_symbol": 1814128856,
+      "history": [
+        {
+          "event": 0,
+          "site": "0x581ee",
+          "target": "0x130cb",
+          "boundary": "entry",
+          "state": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "intrinsics": [],
+          "reads": [
+            {
+              "id": 1814194540,
+              "op": 381,
+              "line": 45,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814194484,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    65888,
+                    16,
+                    1814128688,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    2147483649,
+                    0,
+                    16,
+                    1814140356,
+                    1814140356
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140356,
+                    0,
+                    32768,
+                    1814194540,
+                    0,
+                    92,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "id": 1814193416,
+              "op": 365,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    1814193360,
+                    330,
+                    268697602,
+                    65920,
+                    16,
+                    1814128772,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814140020,
+                    1814140020
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    524547,
+                    1814140020,
+                    0,
+                    4100,
+                    1814193416,
+                    0,
+                    88,
+                    4,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 90,
+          "site": "0x134e9",
+          "target": "0x450d7",
+          "boundary": "return",
+          "state": [
+            1,
+            1,
+            1,
+            0
+          ],
+          "intrinsics": [
+            {
+              "id": 1814204388,
+              "op": 400,
+              "line": 43,
+              "flags": 268697874,
+              "src": [
+                {
+                  "raw": [
+                    1814193476,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814198756,
+                    1814198756
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198756,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    132,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814201196,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814139180,
+                    1814139180
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814139180,
+                    0,
+                    4100,
+                    1814193532,
+                    0,
+                    78,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814190068,
+                    329,
+                    537133057,
+                    0,
+                    4112,
+                    1814140188,
+                    1814140188
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140188,
+                    0,
+                    8196,
+                    1814330364,
+                    0,
+                    90,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814329992,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    18,
+                    1814219312
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    326,
+                    268697607,
+                    0,
+                    16,
+                    0,
+                    8193
+                  ],
+                  "kind": 7,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    20,
+                    0
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "reads": [
+            {
+              "id": 1814194540,
+              "op": 381,
+              "line": 45,
+              "flags": 537133324,
+              "src": [
+                {
+                  "raw": [
+                    1814372436,
+                    330,
+                    537133058,
+                    65952,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    537133058,
+                    0,
+                    4112,
+                    1814350812,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    2147483649,
+                    0,
+                    16,
+                    1814140356,
+                    1814140356
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140356,
+                    0,
+                    32768,
+                    1814194540,
+                    0,
+                    92,
+                    0,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "id": 1814185528,
+              "op": 346,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814198756,
+                    1814198756
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198756,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    132,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 136,
+          "site": "0x13476",
+          "target": "0x8f28",
+          "boundary": "return",
+          "state": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "intrinsics": [
+            {
+              "id": 1814204388,
+              "op": 400,
+              "line": 43,
+              "flags": 268697874,
+              "src": [
+                {
+                  "raw": [
+                    1814193476,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814198756,
+                    1814198756
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198756,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    132,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814201196,
+                    329,
+                    268697601,
+                    0,
+                    4112,
+                    1814139180,
+                    1814139180
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814139180,
+                    0,
+                    4100,
+                    1814193532,
+                    0,
+                    78,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814190068,
+                    329,
+                    537133057,
+                    0,
+                    4112,
+                    1814140188,
+                    1814140188
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814140188,
+                    0,
+                    8196,
+                    1814330364,
+                    0,
+                    90,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    1814329992,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    18,
+                    1814219312
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    326,
+                    268697607,
+                    0,
+                    16,
+                    0,
+                    8193
+                  ],
+                  "kind": 7,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    345,
+                    1610612747,
+                    0,
+                    16,
+                    20,
+                    0
+                  ],
+                  "kind": 11,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "reads": [],
+          "addresses": [
+            {
+              "id": 1814185528,
+              "op": 346,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1814128856,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1814198756,
+                    1814198756
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    259,
+                    1814198756,
+                    0,
+                    4100,
+                    1814185528,
+                    0,
+                    132,
+                    4,
+                    0,
+                    0,
+                    0,
+                    256,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 174,
+          "site": "0x13683",
+          "target": "0x6bd0",
+          "boundary": "return",
+          "state": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "intrinsics": [],
+          "reads": [],
+          "addresses": [],
+          "stores": []
+        }
+      ]
+    },
+    "dead": {
+      "source_sha256": "10426657b28511986d848e042acc57726860bc386a4586b192e5f2f74fa04a2a",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "compiler_decisions_modified": false,
+      "normalized_coff_sha256": "6b7ad2c923bb09fb80ffa87e81e499fb8cbd4a3a615895b43b3d1629853c8f13",
+      "profile_sha256": "bc361cef909f3c1ddb813d98439be9acbb6b5eb4bf62b3b02e25aa10d97d8c2b",
+      "stream_hashes": {
+        "ex": "1e0e472299dafe28a47e323880bada64d86cee1b7876150940e529f117166147",
+        "in": "ab415e8a4a727012f234765485ea72d0737cedb501149bf2d06de151b1c0e5c1",
+        "sy": "ba5bce01ec6a36c39808c88ca6164cf1166deccdfd27ed8fbf0f40ac8afd0ce3",
+        "gl": "96733fc7f012dbcfb6abfc1775e01155fe4c45d1091153fc19c081baddc2877a"
+      },
+      "trace_sha256": "f1f980cbc2e4812007ed9c461cc1ad874bf5c78a6cae44765943ddd0e7cfd055",
+      "snapshots_sha256": "b5d39f024d19db96c93c0ca0005606c55b4886670d1aa997571f2836a8347210",
+      "copied_symbol": 1813473496,
+      "history": [
+        {
+          "event": 0,
+          "site": "0x581ee",
+          "target": "0x130cb",
+          "boundary": "entry",
+          "state": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "intrinsics": [],
+          "reads": [],
+          "addresses": [
+            {
+              "id": 1814062272,
+              "op": 365,
+              "line": 43,
+              "flags": 268697868,
+              "src": [
+                {
+                  "raw": [
+                    1814062216,
+                    330,
+                    268697602,
+                    65920,
+                    16,
+                    1813473412,
+                    0
+                  ],
+                  "kind": 2,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "raw": [
+                    0,
+                    330,
+                    268697603,
+                    65549,
+                    16,
+                    1813473496,
+                    0
+                  ],
+                  "kind": 3,
+                  "temp_words": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "dst": [
+                {
+                  "raw": [
+                    0,
+                    329,
+                    268697601,
+                    0,
+                    16,
+                    1813484660,
+                    1813484660
+                  ],
+                  "kind": 1,
+                  "temp_words": [
+                    0,
+                    524547,
+                    1813484660,
+                    0,
+                    4100,
+                    1814062272,
+                    0,
+                    88,
+                    4,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "stores": []
+        },
+        {
+          "event": 86,
+          "site": "0x134e9",
+          "target": "0x450d7",
+          "boundary": "return",
+          "state": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "intrinsics": [],
+          "reads": [],
+          "addresses": [],
+          "stores": []
+        }
+      ]
+    }
+  }
+}
