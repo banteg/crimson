@@ -234,9 +234,9 @@ extern "C" void projectile_update(void)
                             delta.y += step_y
                                 * projectile->pos.tail.vy.speed_scale * 3.0f;
 
-                            float distance_sq = delta.x * delta.x;
-                            distance_sq += delta.y * delta.y;
-                            float distance = (float)sqrt(distance_sq);
+                            float distance = (float)sqrt(
+                                delta.x * delta.x
+                                + delta.y * delta.y);
                             if (distance >= 4.0f
                                 || step + 3 >= step_count) {
                                 vec2_add(position, &delta, 0.0f);
@@ -481,7 +481,7 @@ extern "C" void projectile_update(void)
                                                 &creature_pool[next_id];
                                             creature_t *hit_creature =
                                                 &creature_pool[hit_id];
-                                            float chain_angle = (float)atan2f(
+                                            float chain_angle = (float)atan2(
                                                 next_creature->position.y
                                                     - hit_creature->position.y,
                                                 next_creature->position.x

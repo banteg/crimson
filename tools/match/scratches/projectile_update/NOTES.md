@@ -1,5 +1,24 @@
 # `projectile_update`
 
+## Movement and ion-chain boundaries (2026-09-13)
+
+The [native replay proof](../../evidence/projectile-rounding-boundaries-2026-09-13/README.md)
+recovers a microstep rounding boundary and the ion-chain `atan2f` wrapper.
+Splitting the squared-distance accumulation makes VC6 store both updated delta
+components before loading them for the length. This clears four PC64 movement
+trace differences in 1,000 PC24/PC64 executions. The angle wrapper reproduces
+the native component/address-calculation sequence, with all 1,000 ion-chain
+spawn argument traces agreeing with native.
+
+The candidate now has 2,192/2,203 instructions at 66.393629%, with reference
+audit `437/0/8`, compared with 2,190 instructions, 66.287275%, and `435/0/10`
+before. Its `0xcc` frame remains smaller than native `0xf4`; neither normalized
+nor encoded-body exactness is claimed. The prior 4,817 particle trajectories,
+1,230 particle impacts, and 1,000 primary impacts preserve before/after
+observations, including their explicitly recorded remaining native differences.
+The retained source SHA-256 is
+`90b9bb4a39f0efd852395367bd11f71113b8812b15144301b4914f18423ac730`.
+
 The current MSVC 6.5 `/O2 /GB` candidate recovers all four native simulation
 phases at `0x00420b90`. The primary pool covers active/lifetime handling,
 lingering ion and Gauss damage, world-bounds expiry, travel-budget microsteps,
