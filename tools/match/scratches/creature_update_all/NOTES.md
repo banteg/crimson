@@ -726,3 +726,25 @@ Alignment rises from **54.952562% to 57.316149%**, instructions from 1,297 to
 prefix zero and both false exactness flags remain. No compiler flag, alias or
 native extent changes. The other contact reload sites and wider allocation
 remain open.
+
+## Corpse half-size vectors (2026-09-13)
+
+The [corpse-vector proof](../../evidence/creature-corpse-vectors-2026-09-13/README.md)
+recovers a previously missing value boundary in both queue arms. Native stores
+half-size as a float before the X subtraction, while Y consumes the retained
+x87 half-size. Constructing a half-size vector and subtracting it from position
+reproduces that boundary; repeating an already-computed scalar half-size does
+not. The ping-pong arm also receives a heading snapshot before the queue call.
+
+The old source fails 24/48 tiny-size PC24/PC64 cases, fixing only the ordinary
+arm leaves 12 failures, and fixing both leaves zero. All 2,472 historical,
+192 interaction-radius, and 12 callback cases remain equal to native. Every
+historical native observation is checked against the existing receipt. Tiny
+sizes and callback mutations are diagnostic witnesses under the shared models.
+
+Alignment moves from 57.316149% to 57.856872%, with 1,303/1,338 instructions,
+10 exact prefix instructions, and unchanged `228/0/1` references. The frame
+now has the native `0x7c` size; local positions and field-pointer lifetimes
+still differ. Neither exactness flag is true, and no compiler, reference-alias,
+extent, or matcher-rule change is included. Source SHA-256 is
+`d7136f28e4aae58932dd6368b837d5769f2d13f1388faada97e571bc06b14d4f`.

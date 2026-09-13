@@ -727,26 +727,22 @@ extern "C" void creature_update_all(void)
                                     float corpse_heading =
                                         creature_pool[creature_index].heading;
                                     corpse_queued = fx_queue_add_rotated(
-                                        *(creature_vec2_t *)position
-                                            - creature_vec2_t(
-                                                corpse_size * 0.5f,
-                                                corpse_size * 0.5f),
+                                        creature_vec2_t(
+                                            position->x - corpse_size * 0.5f,
+                                            position->y - corpse_size * 0.5f),
                                         &creature_pool[creature_index].color,
                                         corpse_heading,
                                         corpse_size,
                                         creature_pool[creature_index].type_id);
                                 } else {
-                                    float corpse_width =
-                                        creature_pool[creature_index].size;
-                                    float corpse_heading =
-                                        creature_pool[creature_index].heading;
+                                    float corpse_half_size =
+                                        creature_pool[creature_index].size * 0.5f;
                                     corpse_queued = fx_queue_add_rotated(
-                                        *(creature_vec2_t *)position
-                                            - creature_vec2_t(
-                                                corpse_width * 0.5f,
-                                                corpse_width * 0.5f),
+                                        creature_vec2_t(
+                                            position->x - corpse_half_size,
+                                            position->y - corpse_half_size),
                                         &creature_pool[creature_index].color,
-                                        corpse_heading,
+                                        creature_pool[creature_index].heading,
                                         creature_pool[creature_index].size,
                                         7);
                                 }
