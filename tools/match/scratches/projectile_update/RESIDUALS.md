@@ -1,5 +1,13 @@
 # Residual work ledger
 
+**Closed by the [exact recovery](../../evidence/projectile-exact-2026-09-13/README.md):**
+2,203 instructions, 8,409 encoded bytes, 507 positional references, 206 branch
+destinations and all 388 stack accesses agree. No residual or padding is excluded
+from the final matcher result. The compiler and reference configuration are
+unchanged.
+
+## Historical decomposition before the exact recovery
+
 Work from the pinned `d3505333` source and identify a native instruction/data-flow
 boundary before trying a spelling. Compile one change, check its own window,
 record effects elsewhere, and execute relevant native witnesses. Function score
@@ -16,7 +24,7 @@ adds 20 further steps and 73 compiling controls. Its [compiler stack observation
 checks group membership and maps the 964-instruction primary prefix's native
 stack accesses. These packages leave the canonical scratch unchanged.
 
-| Region | Concrete residual | Current evidence / next check |
+| Region | Concrete residual | Evidence at this intermediate checkpoint |
 | --- | --- | --- |
 | Primary movement `420de3..420e1f` | Accumulation rounding boundary | Already recovered in the pushed baseline; preserve its native witnesses. |
 | Ion-chain address `4212d5` | Candidate computes the pool base where native computes the position address | Recovered using position owners; the positional-reference mismatch is removed without an alias override. |
@@ -46,6 +54,6 @@ The accumulated diagnostic candidate passes 12,402 native/control cases within
 their documented scopes, but remains non-exact. Expanded explosion fixtures model
 the external D3DX normalization boundary rather than executing its DLL. The native
 stack map also exposed reversed delta-zero stores hidden by displacement-insensitive
-comparison; chained zero assignment recovers their Y-before-X order. Keep the
-recovered boundaries available while resolving remaining owners and allocation;
-no replay or compiler observation alone changes canonical matching credit.
+comparison; chained zero assignment recovers their Y-before-X order. These
+recovered boundaries were retained while resolving the remaining owners and
+allocation. Replay and compiler observation alone did not award matching credit.

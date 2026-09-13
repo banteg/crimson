@@ -1,5 +1,24 @@
 # `projectile_update`
 
+## Exact recovery (2026-09-13)
+
+The [exact recovery proof](../../evidence/projectile-exact-2026-09-13/README.md)
+verifies all **2,203 instructions, 8,409 encoded body bytes, and 507 references**,
+with no padding difference. The compiler configuration and reference aliases are
+unchanged. Full positional checking also verifies all 206 branch destinations
+and all 388 native stack accesses.
+
+The final boundaries are secondary explosion/position ownership, shared decal
+and burst angles, shared primary/particle indices, shared primary impact offset
+floats, a separate burst X-product value, and the SDK `atan2f` wrapper. The proof
+retains 57 reconstructible compiling variants, including the exact source and
+its formatted canonical form, plus a changed-angle rejection control.
+
+Canonical source SHA-256:
+`93a13039d7b7e15e735a4abea1afcd349d8f2d72be5c283eb2b9f5d953d281e7`.
+The entries below describe historical candidates; their remaining residuals
+are superseded by this full encoded match.
+
 ## Movement and ion-chain boundaries (2026-09-13)
 
 The [native replay proof](../../evidence/projectile-rounding-boundaries-2026-09-13/README.md)

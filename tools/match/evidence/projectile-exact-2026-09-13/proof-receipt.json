@@ -1,0 +1,5889 @@
+{
+  "schema_version": 1,
+  "native_image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "reference_aliases": [],
+  "final_source_sha256": "93a13039d7b7e15e735a4abea1afcd349d8f2d72be5c283eb2b9f5d953d281e7",
+  "final_object_sha256": "1a02b1fcd2c030e9c9b66b6ff0cd522acdd42beb79c320ecbee915e60cd27f8f",
+  "native_start": 4328336,
+  "native_end": 4336745,
+  "encoded_body_bytes": 8409,
+  "final": {
+    "instructions": 2203,
+    "target_instructions": 2203,
+    "prefix": 2203,
+    "references": 507,
+    "reference_problems": 0,
+    "exact": true,
+    "body_byte_exact": true
+  },
+  "final_positions": {
+    "paired_instructions": 2203,
+    "branches": 206,
+    "references": 507,
+    "stack_accesses": 388,
+    "stack_differences": [],
+    "residuals": [],
+    "labels": {
+      "_ion_damage_scale$": {
+        "candidate_base": 68,
+        "native_bases": [
+          68
+        ],
+        "accesses": 5
+      },
+      "_projectile_index$": {
+        "candidate_base": 28,
+        "native_bases": [
+          28
+        ],
+        "accesses": 11
+      },
+      "_step_count$": {
+        "candidate_base": 40,
+        "native_bases": [
+          40
+        ],
+        "accesses": 5
+      },
+      "_step_x$": {
+        "candidate_base": 52,
+        "native_bases": [
+          52
+        ],
+        "accesses": 2
+      },
+      "_step_y$": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "_delta$": {
+        "candidate_base": 56,
+        "native_bases": [
+          56
+        ],
+        "accesses": 15
+      },
+      "_step$": {
+        "candidate_base": 64,
+        "native_bases": [
+          64
+        ],
+        "accesses": 4
+      },
+      "_hit_id$4164": {
+        "candidate_base": 24,
+        "native_bases": [
+          24
+        ],
+        "accesses": 3
+      },
+      "_effect_color$4183": {
+        "candidate_base": 156,
+        "native_bases": [
+          156
+        ],
+        "accesses": 8
+      },
+      "_upper$4200": {
+        "candidate_base": 44,
+        "native_bases": [
+          44
+        ],
+        "accesses": 4
+      },
+      "_impact_offset_1$4205": {
+        "candidate_base": 172,
+        "native_bases": [
+          172
+        ],
+        "accesses": 2
+      },
+      "_impact_1$4208": {
+        "candidate_base": 228,
+        "native_bases": [
+          228
+        ],
+        "accesses": 3
+      },
+      "_impact_offset_2$4209": {
+        "candidate_base": 220,
+        "native_bases": [
+          220
+        ],
+        "accesses": 2
+      },
+      "_impact_2$4212": {
+        "candidate_base": 188,
+        "native_bases": [
+          188
+        ],
+        "accesses": 3
+      },
+      "_damage$4224": {
+        "candidate_base": 44,
+        "native_bases": [
+          44
+        ],
+        "accesses": 4
+      },
+      "_child_index$4238": {
+        "candidate_base": 32,
+        "native_bases": [
+          32
+        ],
+        "accesses": 3
+      },
+      "_child_radius$4239": {
+        "candidate_base": 20,
+        "native_bases": [
+          20
+        ],
+        "accesses": 3
+      },
+      "_child_pos$4248": {
+        "candidate_base": 124,
+        "native_bases": [
+          124
+        ],
+        "accesses": 3
+      },
+      "_child_angle$4243": {
+        "candidate_base": 32,
+        "native_bases": [
+          32
+        ],
+        "accesses": 3
+      },
+      "_child_offset$4245": {
+        "candidate_base": 204,
+        "native_bases": [
+          204
+        ],
+        "accesses": 2
+      },
+      "_pulse_offset$4255": {
+        "candidate_base": 236,
+        "native_bases": [
+          236
+        ],
+        "accesses": 2
+      },
+      "_impulse$4264": {
+        "candidate_base": 140,
+        "native_bases": [
+          140
+        ],
+        "accesses": 3
+      },
+      "_impulse$4270": {
+        "candidate_base": 108,
+        "native_bases": [
+          108
+        ],
+        "accesses": 3
+      },
+      "_offset_x$": {
+        "candidate_base": 44,
+        "native_bases": [
+          44
+        ],
+        "accesses": 8
+      },
+      "_offset_y$": {
+        "candidate_base": 32,
+        "native_bases": [
+          32
+        ],
+        "accesses": 8
+      },
+      "_decal_pos_1$4310": {
+        "candidate_base": 148,
+        "native_bases": [
+          148
+        ],
+        "accesses": 3
+      },
+      "_decal_offset_1$4309": {
+        "candidate_base": 180,
+        "native_bases": [
+          180
+        ],
+        "accesses": 2
+      },
+      "_decal_pos_2$4312": {
+        "candidate_base": 132,
+        "native_bases": [
+          132
+        ],
+        "accesses": 3
+      },
+      "_decal_offset_2$4311": {
+        "candidate_base": 196,
+        "native_bases": [
+          196
+        ],
+        "accesses": 2
+      },
+      "_decal_pos_3$4314": {
+        "candidate_base": 116,
+        "native_bases": [
+          116
+        ],
+        "accesses": 3
+      },
+      "_decal_offset_3$4313": {
+        "candidate_base": 212,
+        "native_bases": [
+          212
+        ],
+        "accesses": 2
+      },
+      "_zero$4291": {
+        "candidate_base": 92,
+        "native_bases": [
+          92
+        ],
+        "accesses": 3
+      },
+      "_impulse_pos$4290": {
+        "candidate_base": 84,
+        "native_bases": [
+          84
+        ],
+        "accesses": 3
+      },
+      "_shard_pos$4293": {
+        "candidate_base": 100,
+        "native_bases": [
+          100
+        ],
+        "accesses": 3
+      },
+      "_decal_pos$4295": {
+        "candidate_base": 76,
+        "native_bases": [
+          76
+        ],
+        "accesses": 3
+      },
+      "_color$4329": {
+        "candidate_base": 244,
+        "native_bases": [
+          244
+        ],
+        "accesses": 5
+      },
+      "_extent$4328": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "_radius$4330": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "_direction$4343": {
+        "candidate_base": 68,
+        "native_bases": [
+          68
+        ],
+        "accesses": 6
+      },
+      "_impulse$4344": {
+        "candidate_base": 76,
+        "native_bases": [
+          76
+        ],
+        "accesses": 3
+      },
+      "_movement$4352": {
+        "candidate_base": 100,
+        "native_bases": [
+          100
+        ],
+        "accesses": 3
+      },
+      "$T4743": {
+        "candidate_base": 20,
+        "native_bases": [
+          20
+        ],
+        "accesses": 1
+      },
+      "_bits$4742": {
+        "candidate_base": 52,
+        "native_bases": [
+          52
+        ],
+        "accesses": 2
+      },
+      "_bits$4747": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "$T4748": {
+        "candidate_base": 64,
+        "native_bases": [
+          64
+        ],
+        "accesses": 1
+      },
+      "_trail_velocity$4385": {
+        "candidate_base": 84,
+        "native_bases": [
+          84
+        ],
+        "accesses": 3
+      },
+      "_trail_pos$4392": {
+        "candidate_base": 92,
+        "native_bases": [
+          92
+        ],
+        "accesses": 3
+      },
+      "$T4657": {
+        "candidate_base": 212,
+        "native_bases": [
+          212
+        ],
+        "accesses": 2
+      },
+      "$T4658": {
+        "candidate_base": 196,
+        "native_bases": [
+          196
+        ],
+        "accesses": 2
+      },
+      "$T4659": {
+        "candidate_base": 180,
+        "native_bases": [
+          180
+        ],
+        "accesses": 2
+      },
+      "_decal_offset_1$4414": {
+        "candidate_base": 236,
+        "native_bases": [
+          236
+        ],
+        "accesses": 2
+      },
+      "_decal_pos_1$4417": {
+        "candidate_base": 116,
+        "native_bases": [
+          116
+        ],
+        "accesses": 3
+      },
+      "_decal_offset_2$4418": {
+        "candidate_base": 204,
+        "native_bases": [
+          204
+        ],
+        "accesses": 2
+      },
+      "_decal_pos_2$4421": {
+        "candidate_base": 132,
+        "native_bases": [
+          132
+        ],
+        "accesses": 3
+      },
+      "_decal_offset_3$4422": {
+        "candidate_base": 220,
+        "native_bases": [
+          220
+        ],
+        "accesses": 2
+      },
+      "_decal_pos_3$4425": {
+        "candidate_base": 148,
+        "native_bases": [
+          148
+        ],
+        "accesses": 3
+      },
+      "_damage$4426": {
+        "candidate_base": 40,
+        "native_bases": [
+          40
+        ],
+        "accesses": 4
+      },
+      "_impulse$4438": {
+        "candidate_base": 108,
+        "native_bases": [
+          108
+        ],
+        "accesses": 3
+      },
+      "_angle$4404": {
+        "candidate_base": 28,
+        "native_bases": [
+          28
+        ],
+        "accesses": 9
+      },
+      "_radius$4453": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "_decal_pos$4457": {
+        "candidate_base": 140,
+        "native_bases": [
+          140
+        ],
+        "accesses": 3
+      },
+      "_decal_offset$4454": {
+        "candidate_base": 172,
+        "native_bases": [
+          172
+        ],
+        "accesses": 2
+      },
+      "_radius$4473": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "_decal_pos$4477": {
+        "candidate_base": 124,
+        "native_bases": [
+          124
+        ],
+        "accesses": 3
+      },
+      "_decal_offset$4474": {
+        "candidate_base": 32,
+        "native_bases": [
+          32
+        ],
+        "accesses": 2
+      },
+      "_radius$4492": {
+        "candidate_base": 16,
+        "native_bases": [
+          16
+        ],
+        "accesses": 2
+      },
+      "_decal_pos$4496": {
+        "candidate_base": 188,
+        "native_bases": [
+          188
+        ],
+        "accesses": 3
+      },
+      "_decal_offset$4493": {
+        "candidate_base": 44,
+        "native_bases": [
+          44
+        ],
+        "accesses": 2
+      },
+      "_burst_index$4497": {
+        "candidate_base": 24,
+        "native_bases": [
+          24
+        ],
+        "accesses": 3
+      },
+      "_velocity$4510": {
+        "candidate_base": 228,
+        "native_bases": [
+          228
+        ],
+        "accesses": 3
+      },
+      "_burst_direction$4508": {
+        "candidate_base": 156,
+        "native_bases": [
+          156
+        ],
+        "accesses": 2
+      },
+      "$T4660": {
+        "candidate_base": 156,
+        "native_bases": [
+          156
+        ],
+        "accesses": 2
+      },
+      "$T4661": {
+        "candidate_base": 156,
+        "native_bases": [
+          156
+        ],
+        "accesses": 2
+      },
+      "_movement$4539": {
+        "candidate_base": 76,
+        "native_bases": [
+          76
+        ],
+        "accesses": 3
+      },
+      "$T4662": {
+        "candidate_base": 212,
+        "native_bases": [
+          212
+        ],
+        "accesses": 2
+      },
+      "$T4663": {
+        "candidate_base": 196,
+        "native_bases": [
+          196
+        ],
+        "accesses": 2
+      },
+      "$T4664": {
+        "candidate_base": 180,
+        "native_bases": [
+          180
+        ],
+        "accesses": 2
+      },
+      "$T4665": {
+        "candidate_base": 236,
+        "native_bases": [
+          236
+        ],
+        "accesses": 2
+      },
+      "_movement$4550": {
+        "candidate_base": 100,
+        "native_bases": [
+          100
+        ],
+        "accesses": 3
+      },
+      "$T4666": {
+        "candidate_base": 204,
+        "native_bases": [
+          204
+        ],
+        "accesses": 2
+      },
+      "$T4667": {
+        "candidate_base": 220,
+        "native_bases": [
+          220
+        ],
+        "accesses": 2
+      },
+      "$T4668": {
+        "candidate_base": 172,
+        "native_bases": [
+          172
+        ],
+        "accesses": 2
+      },
+      "$T4669": {
+        "candidate_base": 116,
+        "native_bases": [
+          116
+        ],
+        "accesses": 2
+      },
+      "_displacement$4604": {
+        "candidate_base": 132,
+        "native_bases": [
+          132
+        ],
+        "accesses": 2
+      },
+      "_previous_position$4606": {
+        "candidate_base": 148,
+        "native_bases": [
+          148
+        ],
+        "accesses": 2
+      },
+      "_hit_direction$4609": {
+        "candidate_base": 108,
+        "native_bases": [
+          108
+        ],
+        "accesses": 2
+      },
+      "_impulse$4624": {
+        "candidate_base": 84,
+        "native_bases": [
+          84
+        ],
+        "accesses": 3
+      },
+      "_velocity_x$4629": {
+        "candidate_base": 52,
+        "native_bases": [
+          52
+        ],
+        "accesses": 2
+      },
+      "_velocity$4632": {
+        "candidate_base": 92,
+        "native_bases": [
+          92
+        ],
+        "accesses": 3
+      },
+      "_reflected_velocity$4637": {
+        "candidate_base": 140,
+        "native_bases": [
+          140
+        ],
+        "accesses": 2
+      },
+      "_displacement_dt$4638": {
+        "candidate_base": 24,
+        "native_bases": [
+          24
+        ],
+        "accesses": 3
+      },
+      "_creature_displacement$4639": {
+        "candidate_base": 124,
+        "native_bases": [
+          124
+        ],
+        "accesses": 2
+      }
+    },
+    "scope": "All mapped instructions, references and branch destinations are checked. Named homes label candidate declarations, not original source names. Only the explicit residual list and stack differences are excluded; encoded identity is checked separately by the native matcher."
+  },
+  "rows": [
+    {
+      "name": "before",
+      "source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 483,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x1-indexed",
+      "source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "body_sha256": "c7f5a17d06913dc8ade77cc9b1e5f93bd2fb26e05aff6e0b4e5e1c753e0f666d",
+      "metrics": {
+        "instructions": 2206,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 481,
+        "reference_problems": 8,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x7-inner-owner",
+      "source_sha256": "77a4dcb5c1244562ddea859ea816645bfacdbaa5b6e66f2616bb0f122ae7f6ad",
+      "body_sha256": "7c400ced911bf2b3162e6a65b5f6b4c1b882ac860a29823caebe67bdc8bb0f5e",
+      "metrics": {
+        "instructions": 2207,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 482,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x8-common-owner",
+      "source_sha256": "f5449850b01c8c7569138d8532a995575802cce12f412a297649ce0ec386fb37",
+      "body_sha256": "e5a01fc55638a4b341809fab908b40925312ce5bb11c35c1b336df1d1a353b70",
+      "metrics": {
+        "instructions": 2201,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 485,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y2-distance-owner",
+      "source_sha256": "c2135cff0619b207d088d99c55b7029246fae5874597d7477b57fd4bf0a3ec11",
+      "body_sha256": "a95ccc93d5ccf58eb43ba52b05403a906712b0e81bb010de2fdd40984239c453",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 492,
+        "reference_problems": 5,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y5-health-owner",
+      "source_sha256": "96f146fa11a272a132a5558ea4966de961881c978965ede68c85664068855516",
+      "body_sha256": "a31e012a666b597b3e43d04dad3d22956d457ec83d91fa8d6d0ae2596cb9d73d",
+      "metrics": {
+        "instructions": 2201,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 485,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y6-x-owner",
+      "source_sha256": "e858717b34dc13589c68b74b0da3947db4cfa14ffdd0a0da7e4e3f9378232871",
+      "body_sha256": "501ce091c95eac270289535773febc4aa21140b62679196b6b92be5f2255642c",
+      "metrics": {
+        "instructions": 2200,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 485,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y7-effect-owner",
+      "source_sha256": "24f4fcb1ff54936aebc0fc183ee14ee7e5bb5f5122b1fc99daaff354d88a518b",
+      "body_sha256": "c7ecf42b27f2a70af6c3d78a93a57509793de2bc19f93c569a7bf7326c92e6be",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 488,
+        "reference_problems": 4,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y8-x-reference",
+      "source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 494,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "positions": {
+        "paired_instructions": 2203,
+        "branches": 206,
+        "references": 507,
+        "stack_accesses": 388,
+        "stack_differences": [
+          {
+            "native": 4328365,
+            "candidate": 29,
+            "native_home": 68,
+            "candidate_home": 168
+          },
+          {
+            "native": 4328385,
+            "candidate": 52,
+            "native_home": 68,
+            "candidate_home": 168
+          },
+          {
+            "native": 4328393,
+            "candidate": 63,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4328401,
+            "candidate": 71,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4328521,
+            "candidate": 191,
+            "native_home": 68,
+            "candidate_home": 168
+          },
+          {
+            "native": 4328568,
+            "candidate": 241,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4328631,
+            "candidate": 304,
+            "native_home": 68,
+            "candidate_home": 168
+          },
+          {
+            "native": 4328672,
+            "candidate": 348,
+            "native_home": 68,
+            "candidate_home": 168
+          },
+          {
+            "native": 4328735,
+            "candidate": 414,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4328739,
+            "candidate": 418,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4328765,
+            "candidate": 444,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4328769,
+            "candidate": 448,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4328909,
+            "candidate": 588,
+            "native_home": 64,
+            "candidate_home": 36
+          },
+          {
+            "native": 4328927,
+            "candidate": 606,
+            "native_home": 64,
+            "candidate_home": 36
+          },
+          {
+            "native": 4329050,
+            "candidate": 729,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4329141,
+            "candidate": 820,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329145,
+            "candidate": 824,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329243,
+            "candidate": 922,
+            "native_home": 160,
+            "candidate_home": 180
+          },
+          {
+            "native": 4329254,
+            "candidate": 933,
+            "native_home": 160,
+            "candidate_home": 180
+          },
+          {
+            "native": 4329261,
+            "candidate": 940,
+            "native_home": 156,
+            "candidate_home": 176
+          },
+          {
+            "native": 4329272,
+            "candidate": 951,
+            "native_home": 156,
+            "candidate_home": 176
+          },
+          {
+            "native": 4329289,
+            "candidate": 968,
+            "native_home": 164,
+            "candidate_home": 184
+          },
+          {
+            "native": 4329300,
+            "candidate": 979,
+            "native_home": 164,
+            "candidate_home": 184
+          },
+          {
+            "native": 4329307,
+            "candidate": 986,
+            "native_home": 168,
+            "candidate_home": 188
+          },
+          {
+            "native": 4329324,
+            "candidate": 1003,
+            "native_home": 168,
+            "candidate_home": 188
+          },
+          {
+            "native": 4329438,
+            "candidate": 1117,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329442,
+            "candidate": 1121,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329655,
+            "candidate": 1334,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4329668,
+            "candidate": 1347,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4329674,
+            "candidate": 1353,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4329684,
+            "candidate": 1363,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4329690,
+            "candidate": 1369,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329694,
+            "candidate": 1373,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329698,
+            "candidate": 1377,
+            "native_home": 172,
+            "candidate_home": 192
+          },
+          {
+            "native": 4329711,
+            "candidate": 1390,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4329715,
+            "candidate": 1394,
+            "native_home": 228,
+            "candidate_home": 224
+          },
+          {
+            "native": 4329725,
+            "candidate": 1404,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329729,
+            "candidate": 1408,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329733,
+            "candidate": 1412,
+            "native_home": 172,
+            "candidate_home": 192
+          },
+          {
+            "native": 4329746,
+            "candidate": 1425,
+            "native_home": 228,
+            "candidate_home": 224
+          },
+          {
+            "native": 4329759,
+            "candidate": 1438,
+            "native_home": 232,
+            "candidate_home": 228
+          },
+          {
+            "native": 4329777,
+            "candidate": 1456,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4329783,
+            "candidate": 1462,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329787,
+            "candidate": 1466,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329791,
+            "candidate": 1470,
+            "native_home": 220,
+            "candidate_home": 240
+          },
+          {
+            "native": 4329804,
+            "candidate": 1483,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4329808,
+            "candidate": 1487,
+            "native_home": 188,
+            "candidate_home": 120
+          },
+          {
+            "native": 4329818,
+            "candidate": 1494,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329822,
+            "candidate": 1498,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329826,
+            "candidate": 1502,
+            "native_home": 220,
+            "candidate_home": 240
+          },
+          {
+            "native": 4329839,
+            "candidate": 1515,
+            "native_home": 188,
+            "candidate_home": 120
+          },
+          {
+            "native": 4329852,
+            "candidate": 1528,
+            "native_home": 192,
+            "candidate_home": 124
+          },
+          {
+            "native": 4329864,
+            "candidate": 1540,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4329880,
+            "candidate": 1556,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4329890,
+            "candidate": 1566,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4329927,
+            "candidate": 1603,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4329931,
+            "candidate": 1607,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4330119,
+            "candidate": 1795,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4330373,
+            "candidate": 2049,
+            "native_home": 32,
+            "candidate_home": 28
+          },
+          {
+            "native": 4330383,
+            "candidate": 2059,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4330387,
+            "candidate": 2063,
+            "native_home": 32,
+            "candidate_home": 28
+          },
+          {
+            "native": 4330395,
+            "candidate": 2071,
+            "native_home": 124,
+            "candidate_home": 128
+          },
+          {
+            "native": 4330408,
+            "candidate": 2084,
+            "native_home": 32,
+            "candidate_home": 28
+          },
+          {
+            "native": 4330414,
+            "candidate": 2090,
+            "native_home": 32,
+            "candidate_home": 28
+          },
+          {
+            "native": 4330420,
+            "candidate": 2096,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4330424,
+            "candidate": 2100,
+            "native_home": 32,
+            "candidate_home": 28
+          },
+          {
+            "native": 4330430,
+            "candidate": 2106,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4330434,
+            "candidate": 2110,
+            "native_home": 208,
+            "candidate_home": 236
+          },
+          {
+            "native": 4330443,
+            "candidate": 2119,
+            "native_home": 124,
+            "candidate_home": 128
+          },
+          {
+            "native": 4330450,
+            "candidate": 2126,
+            "native_home": 208,
+            "candidate_home": 236
+          },
+          {
+            "native": 4330460,
+            "candidate": 2136,
+            "native_home": 128,
+            "candidate_home": 132
+          },
+          {
+            "native": 4330479,
+            "candidate": 2155,
+            "native_home": 32,
+            "candidate_home": 28
+          },
+          {
+            "native": 4330559,
+            "candidate": 2235,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4330661,
+            "candidate": 2337,
+            "native_home": 240,
+            "candidate_home": 220
+          },
+          {
+            "native": 4330680,
+            "candidate": 2356,
+            "native_home": 240,
+            "candidate_home": 220
+          },
+          {
+            "native": 4330776,
+            "candidate": 2452,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4330812,
+            "candidate": 2488,
+            "native_home": 140,
+            "candidate_home": 112
+          },
+          {
+            "native": 4330819,
+            "candidate": 2492,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4330823,
+            "candidate": 2496,
+            "native_home": 140,
+            "candidate_home": 112
+          },
+          {
+            "native": 4330838,
+            "candidate": 2508,
+            "native_home": 144,
+            "candidate_home": 116
+          },
+          {
+            "native": 4330867,
+            "candidate": 2537,
+            "native_home": 108,
+            "candidate_home": 104
+          },
+          {
+            "native": 4330875,
+            "candidate": 2545,
+            "native_home": 108,
+            "candidate_home": 104
+          },
+          {
+            "native": 4330887,
+            "candidate": 2557,
+            "native_home": 112,
+            "candidate_home": 108
+          },
+          {
+            "native": 4331016,
+            "candidate": 2683,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331020,
+            "candidate": 2687,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331086,
+            "candidate": 2753,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331090,
+            "candidate": 2757,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331121,
+            "candidate": 2788,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331133,
+            "candidate": 2800,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331142,
+            "candidate": 2809,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331152,
+            "candidate": 2819,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331162,
+            "candidate": 2829,
+            "native_home": 148,
+            "candidate_home": 160
+          },
+          {
+            "native": 4331170,
+            "candidate": 2837,
+            "native_home": 184,
+            "candidate_home": 204
+          },
+          {
+            "native": 4331179,
+            "candidate": 2846,
+            "native_home": 148,
+            "candidate_home": 160
+          },
+          {
+            "native": 4331186,
+            "candidate": 2853,
+            "native_home": 184,
+            "candidate_home": 204
+          },
+          {
+            "native": 4331196,
+            "candidate": 2863,
+            "native_home": 152,
+            "candidate_home": 164
+          },
+          {
+            "native": 4331208,
+            "candidate": 2875,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331214,
+            "candidate": 2881,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331220,
+            "candidate": 2887,
+            "native_home": 132,
+            "candidate_home": 136
+          },
+          {
+            "native": 4331228,
+            "candidate": 2895,
+            "native_home": 200,
+            "candidate_home": 212
+          },
+          {
+            "native": 4331237,
+            "candidate": 2904,
+            "native_home": 132,
+            "candidate_home": 136
+          },
+          {
+            "native": 4331244,
+            "candidate": 2911,
+            "native_home": 200,
+            "candidate_home": 212
+          },
+          {
+            "native": 4331254,
+            "candidate": 2921,
+            "native_home": 136,
+            "candidate_home": 140
+          },
+          {
+            "native": 4331266,
+            "candidate": 2933,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331276,
+            "candidate": 2943,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331286,
+            "candidate": 2953,
+            "native_home": 116,
+            "candidate_home": 144
+          },
+          {
+            "native": 4331294,
+            "candidate": 2961,
+            "native_home": 216,
+            "candidate_home": 156
+          },
+          {
+            "native": 4331303,
+            "candidate": 2970,
+            "native_home": 116,
+            "candidate_home": 144
+          },
+          {
+            "native": 4331310,
+            "candidate": 2977,
+            "native_home": 216,
+            "candidate_home": 156
+          },
+          {
+            "native": 4331320,
+            "candidate": 2987,
+            "native_home": 120,
+            "candidate_home": 148
+          },
+          {
+            "native": 4331362,
+            "candidate": 3029,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331383,
+            "candidate": 3050,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331387,
+            "candidate": 3054,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331428,
+            "candidate": 3095,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331432,
+            "candidate": 3099,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331473,
+            "candidate": 3140,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331477,
+            "candidate": 3144,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331496,
+            "candidate": 3163,
+            "native_home": 92,
+            "candidate_home": 72
+          },
+          {
+            "native": 4331500,
+            "candidate": 3167,
+            "native_home": 84,
+            "candidate_home": 80
+          },
+          {
+            "native": 4331511,
+            "candidate": 3178,
+            "native_home": 92,
+            "candidate_home": 72
+          },
+          {
+            "native": 4331519,
+            "candidate": 3186,
+            "native_home": 96,
+            "candidate_home": 76
+          },
+          {
+            "native": 4331535,
+            "candidate": 3202,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331549,
+            "candidate": 3216,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331555,
+            "candidate": 3222,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331565,
+            "candidate": 3232,
+            "native_home": 84,
+            "candidate_home": 80
+          },
+          {
+            "native": 4331569,
+            "candidate": 3236,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331579,
+            "candidate": 3246,
+            "native_home": 88,
+            "candidate_home": 84
+          },
+          {
+            "native": 4331615,
+            "candidate": 3282,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331621,
+            "candidate": 3288,
+            "native_home": 100,
+            "candidate_home": 96
+          },
+          {
+            "native": 4331625,
+            "candidate": 3292,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331632,
+            "candidate": 3299,
+            "native_home": 104,
+            "candidate_home": 100
+          },
+          {
+            "native": 4331650,
+            "candidate": 3317,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331654,
+            "candidate": 3321,
+            "native_home": 100,
+            "candidate_home": 96
+          },
+          {
+            "native": 4331658,
+            "candidate": 3325,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4331691,
+            "candidate": 3358,
+            "native_home": 44,
+            "candidate_home": 28
+          },
+          {
+            "native": 4331701,
+            "candidate": 3368,
+            "native_home": 76,
+            "candidate_home": 88
+          },
+          {
+            "native": 4331706,
+            "candidate": 3373,
+            "native_home": 76,
+            "candidate_home": 88
+          },
+          {
+            "native": 4331710,
+            "candidate": 3377,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4331720,
+            "candidate": 3387,
+            "native_home": 80,
+            "candidate_home": 92
+          },
+          {
+            "native": 4331729,
+            "candidate": 3396,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331737,
+            "candidate": 3404,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4331875,
+            "candidate": 3542,
+            "native_home": 64,
+            "candidate_home": 36
+          },
+          {
+            "native": 4331881,
+            "candidate": 3548,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4332003,
+            "candidate": 3670,
+            "native_home": 64,
+            "candidate_home": 36
+          },
+          {
+            "native": 4332027,
+            "candidate": 3694,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4332035,
+            "candidate": 3702,
+            "native_home": 28,
+            "candidate_home": 64
+          },
+          {
+            "native": 4332120,
+            "candidate": 3787,
+            "native_home": 244,
+            "candidate_home": 176
+          },
+          {
+            "native": 4332127,
+            "candidate": 3794,
+            "native_home": 244,
+            "candidate_home": 176
+          },
+          {
+            "native": 4332141,
+            "candidate": 3808,
+            "native_home": 248,
+            "candidate_home": 180
+          },
+          {
+            "native": 4332152,
+            "candidate": 3819,
+            "native_home": 252,
+            "candidate_home": 184
+          },
+          {
+            "native": 4332171,
+            "candidate": 3838,
+            "native_home": 256,
+            "candidate_home": 188
+          },
+          {
+            "native": 4332310,
+            "candidate": 3977,
+            "native_home": 68,
+            "candidate_home": 28
+          },
+          {
+            "native": 4332314,
+            "candidate": 3981,
+            "native_home": 68,
+            "candidate_home": 28
+          },
+          {
+            "native": 4332318,
+            "candidate": 3985,
+            "native_home": 68,
+            "candidate_home": 28
+          },
+          {
+            "native": 4332324,
+            "candidate": 3991,
+            "native_home": 72,
+            "candidate_home": 32
+          },
+          {
+            "native": 4332333,
+            "candidate": 4000,
+            "native_home": 68,
+            "candidate_home": 28
+          },
+          {
+            "native": 4332343,
+            "candidate": 4010,
+            "native_home": 76,
+            "candidate_home": 88
+          },
+          {
+            "native": 4332350,
+            "candidate": 4017,
+            "native_home": 76,
+            "candidate_home": 88
+          },
+          {
+            "native": 4332354,
+            "candidate": 4021,
+            "native_home": 72,
+            "candidate_home": 32
+          },
+          {
+            "native": 4332365,
+            "candidate": 4032,
+            "native_home": 80,
+            "candidate_home": 92
+          },
+          {
+            "native": 4332473,
+            "candidate": 4140,
+            "native_home": 100,
+            "candidate_home": 96
+          },
+          {
+            "native": 4332486,
+            "candidate": 4153,
+            "native_home": 100,
+            "candidate_home": 96
+          },
+          {
+            "native": 4332493,
+            "candidate": 4160,
+            "native_home": 104,
+            "candidate_home": 100
+          },
+          {
+            "native": 4332909,
+            "candidate": 4576,
+            "native_home": 20,
+            "candidate_home": 24
+          },
+          {
+            "native": 4332936,
+            "candidate": 4603,
+            "native_home": 64,
+            "candidate_home": 36
+          },
+          {
+            "native": 4332992,
+            "candidate": 4659,
+            "native_home": 84,
+            "candidate_home": 80
+          },
+          {
+            "native": 4333001,
+            "candidate": 4668,
+            "native_home": 92,
+            "candidate_home": 72
+          },
+          {
+            "native": 4333009,
+            "candidate": 4676,
+            "native_home": 212,
+            "candidate_home": 152
+          },
+          {
+            "native": 4333016,
+            "candidate": 4683,
+            "native_home": 212,
+            "candidate_home": 152
+          },
+          {
+            "native": 4333029,
+            "candidate": 4696,
+            "native_home": 84,
+            "candidate_home": 80
+          },
+          {
+            "native": 4333039,
+            "candidate": 4706,
+            "native_home": 88,
+            "candidate_home": 84
+          },
+          {
+            "native": 4333056,
+            "candidate": 4723,
+            "native_home": 196,
+            "candidate_home": 208
+          },
+          {
+            "native": 4333065,
+            "candidate": 4732,
+            "native_home": 196,
+            "candidate_home": 208
+          },
+          {
+            "native": 4333078,
+            "candidate": 4745,
+            "native_home": 180,
+            "candidate_home": 200
+          },
+          {
+            "native": 4333093,
+            "candidate": 4760,
+            "native_home": 180,
+            "candidate_home": 200
+          },
+          {
+            "native": 4333100,
+            "candidate": 4767,
+            "native_home": 92,
+            "candidate_home": 72
+          },
+          {
+            "native": 4333109,
+            "candidate": 4776,
+            "native_home": 96,
+            "candidate_home": 76
+          },
+          {
+            "native": 4333222,
+            "candidate": 4889,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4333267,
+            "candidate": 4934,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4333275,
+            "candidate": 4942,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4333310,
+            "candidate": 4977,
+            "native_home": 236,
+            "candidate_home": 216
+          },
+          {
+            "native": 4333337,
+            "candidate": 5004,
+            "native_home": 116,
+            "candidate_home": 144
+          },
+          {
+            "native": 4333345,
+            "candidate": 5015,
+            "native_home": 236,
+            "candidate_home": 216
+          },
+          {
+            "native": 4333359,
+            "candidate": 5029,
+            "native_home": 116,
+            "candidate_home": 144
+          },
+          {
+            "native": 4333369,
+            "candidate": 5042,
+            "native_home": 120,
+            "candidate_home": 148
+          },
+          {
+            "native": 4333402,
+            "candidate": 5078,
+            "native_home": 204,
+            "candidate_home": 232
+          },
+          {
+            "native": 4333429,
+            "candidate": 5105,
+            "native_home": 132,
+            "candidate_home": 136
+          },
+          {
+            "native": 4333440,
+            "candidate": 5116,
+            "native_home": 204,
+            "candidate_home": 232
+          },
+          {
+            "native": 4333454,
+            "candidate": 5130,
+            "native_home": 132,
+            "candidate_home": 136
+          },
+          {
+            "native": 4333467,
+            "candidate": 5143,
+            "native_home": 136,
+            "candidate_home": 140
+          },
+          {
+            "native": 4333503,
+            "candidate": 5179,
+            "native_home": 220,
+            "candidate_home": 240
+          },
+          {
+            "native": 4333530,
+            "candidate": 5206,
+            "native_home": 148,
+            "candidate_home": 160
+          },
+          {
+            "native": 4333541,
+            "candidate": 5217,
+            "native_home": 220,
+            "candidate_home": 240
+          },
+          {
+            "native": 4333555,
+            "candidate": 5231,
+            "native_home": 148,
+            "candidate_home": 160
+          },
+          {
+            "native": 4333568,
+            "candidate": 5244,
+            "native_home": 152,
+            "candidate_home": 164
+          },
+          {
+            "native": 4333769,
+            "candidate": 5445,
+            "native_home": 108,
+            "candidate_home": 104
+          },
+          {
+            "native": 4333790,
+            "candidate": 5466,
+            "native_home": 108,
+            "candidate_home": 104
+          },
+          {
+            "native": 4333796,
+            "candidate": 5472,
+            "native_home": 112,
+            "candidate_home": 108
+          },
+          {
+            "native": 4333947,
+            "candidate": 5620,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4333968,
+            "candidate": 5641,
+            "native_home": 140,
+            "candidate_home": 112
+          },
+          {
+            "native": 4333979,
+            "candidate": 5649,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4333988,
+            "candidate": 5658,
+            "native_home": 172,
+            "candidate_home": 192
+          },
+          {
+            "native": 4333995,
+            "candidate": 5665,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334003,
+            "candidate": 5673,
+            "native_home": 172,
+            "candidate_home": 192
+          },
+          {
+            "native": 4334016,
+            "candidate": 5686,
+            "native_home": 140,
+            "candidate_home": 112
+          },
+          {
+            "native": 4334029,
+            "candidate": 5696,
+            "native_home": 144,
+            "candidate_home": 116
+          },
+          {
+            "native": 4334185,
+            "candidate": 5849,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334210,
+            "candidate": 5874,
+            "native_home": 124,
+            "candidate_home": 128
+          },
+          {
+            "native": 4334218,
+            "candidate": 5885,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334227,
+            "candidate": 5894,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4334231,
+            "candidate": 5898,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334239,
+            "candidate": 5906,
+            "native_home": 32,
+            "candidate_home": 44
+          },
+          {
+            "native": 4334249,
+            "candidate": 5916,
+            "native_home": 124,
+            "candidate_home": 128
+          },
+          {
+            "native": 4334262,
+            "candidate": 5929,
+            "native_home": 128,
+            "candidate_home": 132
+          },
+          {
+            "native": 4334421,
+            "candidate": 6088,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334442,
+            "candidate": 6109,
+            "native_home": 188,
+            "candidate_home": 120
+          },
+          {
+            "native": 4334453,
+            "candidate": 6117,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334462,
+            "candidate": 6126,
+            "native_home": 44,
+            "candidate_home": 168
+          },
+          {
+            "native": 4334466,
+            "candidate": 6133,
+            "native_home": 28,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334474,
+            "candidate": 6141,
+            "native_home": 44,
+            "candidate_home": 168
+          },
+          {
+            "native": 4334484,
+            "candidate": 6154,
+            "native_home": 188,
+            "candidate_home": 120
+          },
+          {
+            "native": 4334497,
+            "candidate": 6164,
+            "native_home": 192,
+            "candidate_home": 124
+          },
+          {
+            "native": 4334517,
+            "candidate": 6184,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334543,
+            "candidate": 6210,
+            "native_home": 228,
+            "candidate_home": 224
+          },
+          {
+            "native": 4334562,
+            "candidate": 6229,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334576,
+            "candidate": 6243,
+            "native_home": 156,
+            "candidate_home": 64
+          },
+          {
+            "native": 4334587,
+            "candidate": 6251,
+            "native_home": 156,
+            "candidate_home": 64
+          },
+          {
+            "native": 4334594,
+            "candidate": 6255,
+            "native_home": 228,
+            "candidate_home": 224
+          },
+          {
+            "native": 4334603,
+            "candidate": 6266,
+            "native_home": 232,
+            "candidate_home": 228
+          },
+          {
+            "native": 4334630,
+            "candidate": 6293,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4334721,
+            "candidate": 6384,
+            "native_home": 156,
+            "candidate_home": 152
+          },
+          {
+            "native": 4334731,
+            "candidate": 6394,
+            "native_home": 156,
+            "candidate_home": 152
+          },
+          {
+            "native": 4334824,
+            "candidate": 6487,
+            "native_home": 28,
+            "candidate_home": 36
+          },
+          {
+            "native": 4334933,
+            "candidate": 6596,
+            "native_home": 156,
+            "candidate_home": 152
+          },
+          {
+            "native": 4334940,
+            "candidate": 6603,
+            "native_home": 76,
+            "candidate_home": 88
+          },
+          {
+            "native": 4334954,
+            "candidate": 6617,
+            "native_home": 156,
+            "candidate_home": 152
+          },
+          {
+            "native": 4334968,
+            "candidate": 6631,
+            "native_home": 76,
+            "candidate_home": 88
+          },
+          {
+            "native": 4334976,
+            "candidate": 6639,
+            "native_home": 80,
+            "candidate_home": 92
+          },
+          {
+            "native": 4334995,
+            "candidate": 6658,
+            "native_home": 212,
+            "candidate_home": 208
+          },
+          {
+            "native": 4335004,
+            "candidate": 6667,
+            "native_home": 212,
+            "candidate_home": 208
+          },
+          {
+            "native": 4335017,
+            "candidate": 6680,
+            "native_home": 196,
+            "candidate_home": 200
+          },
+          {
+            "native": 4335033,
+            "candidate": 6696,
+            "native_home": 196,
+            "candidate_home": 200
+          },
+          {
+            "native": 4335042,
+            "candidate": 6705,
+            "native_home": 180,
+            "candidate_home": 216
+          },
+          {
+            "native": 4335057,
+            "candidate": 6720,
+            "native_home": 180,
+            "candidate_home": 216
+          },
+          {
+            "native": 4335120,
+            "candidate": 6783,
+            "native_home": 236,
+            "candidate_home": 232
+          },
+          {
+            "native": 4335127,
+            "candidate": 6790,
+            "native_home": 100,
+            "candidate_home": 96
+          },
+          {
+            "native": 4335138,
+            "candidate": 6801,
+            "native_home": 236,
+            "candidate_home": 232
+          },
+          {
+            "native": 4335156,
+            "candidate": 6819,
+            "native_home": 204,
+            "candidate_home": 240
+          },
+          {
+            "native": 4335172,
+            "candidate": 6835,
+            "native_home": 204,
+            "candidate_home": 240
+          },
+          {
+            "native": 4335181,
+            "candidate": 6844,
+            "native_home": 100,
+            "candidate_home": 96
+          },
+          {
+            "native": 4335189,
+            "candidate": 6852,
+            "native_home": 104,
+            "candidate_home": 100
+          },
+          {
+            "native": 4335205,
+            "candidate": 6868,
+            "native_home": 220,
+            "candidate_home": 192
+          },
+          {
+            "native": 4335214,
+            "candidate": 6877,
+            "native_home": 220,
+            "candidate_home": 192
+          },
+          {
+            "native": 4335227,
+            "candidate": 6890,
+            "native_home": 172,
+            "candidate_home": 144
+          },
+          {
+            "native": 4335240,
+            "candidate": 6903,
+            "native_home": 172,
+            "candidate_home": 144
+          },
+          {
+            "native": 4335253,
+            "candidate": 6916,
+            "native_home": 116,
+            "candidate_home": 136
+          },
+          {
+            "native": 4335263,
+            "candidate": 6929,
+            "native_home": 116,
+            "candidate_home": 136
+          },
+          {
+            "native": 4335940,
+            "candidate": 7609,
+            "native_home": 132,
+            "candidate_home": 160
+          },
+          {
+            "native": 4335951,
+            "candidate": 7620,
+            "native_home": 132,
+            "candidate_home": 160
+          },
+          {
+            "native": 4335964,
+            "candidate": 7633,
+            "native_home": 148,
+            "candidate_home": 104
+          },
+          {
+            "native": 4335980,
+            "candidate": 7646,
+            "native_home": 148,
+            "candidate_home": 104
+          },
+          {
+            "native": 4335990,
+            "candidate": 7653,
+            "native_home": 108,
+            "candidate_home": 112
+          },
+          {
+            "native": 4335997,
+            "candidate": 7660,
+            "native_home": 108,
+            "candidate_home": 112
+          },
+          {
+            "native": 4336144,
+            "candidate": 7807,
+            "native_home": 84,
+            "candidate_home": 80
+          },
+          {
+            "native": 4336152,
+            "candidate": 7815,
+            "native_home": 88,
+            "candidate_home": 84
+          },
+          {
+            "native": 4336164,
+            "candidate": 7827,
+            "native_home": 84,
+            "candidate_home": 80
+          },
+          {
+            "native": 4336531,
+            "candidate": 8194,
+            "native_home": 28,
+            "candidate_home": 36
+          },
+          {
+            "native": 4336592,
+            "candidate": 8255,
+            "native_home": 92,
+            "candidate_home": 72
+          },
+          {
+            "native": 4336606,
+            "candidate": 8269,
+            "native_home": 92,
+            "candidate_home": 72
+          },
+          {
+            "native": 4336610,
+            "candidate": 8273,
+            "native_home": 96,
+            "candidate_home": 76
+          },
+          {
+            "native": 4336658,
+            "candidate": 8321,
+            "native_home": 144,
+            "candidate_home": 132
+          },
+          {
+            "native": 4336665,
+            "candidate": 8328,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4336669,
+            "candidate": 8332,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4336673,
+            "candidate": 8336,
+            "native_home": 144,
+            "candidate_home": 132
+          },
+          {
+            "native": 4336680,
+            "candidate": 8343,
+            "native_home": 24,
+            "candidate_home": 20
+          },
+          {
+            "native": 4336684,
+            "candidate": 8347,
+            "native_home": 128,
+            "candidate_home": 124
+          },
+          {
+            "native": 4336697,
+            "candidate": 8357,
+            "native_home": 128,
+            "candidate_home": 124
+          },
+          {
+            "native": 4336710,
+            "candidate": 8367,
+            "native_home": 28,
+            "candidate_home": 36
+          },
+          {
+            "native": 4336724,
+            "candidate": 8381,
+            "native_home": 28,
+            "candidate_home": 36
+          }
+        ],
+        "residuals": [
+          {
+            "kind": "frame",
+            "native": "sub esp, 0xf4",
+            "candidate": "sub esp, 0xe8"
+          },
+          {
+            "kind": "reorder",
+            "native": 4332723,
+            "candidate": 4390
+          },
+          {
+            "kind": "extra-fxch",
+            "native": 4334601,
+            "candidate": 6262
+          },
+          {
+            "kind": "frame",
+            "native": "add esp, 0xf4",
+            "candidate": "add esp, 0xe8"
+          }
+        ],
+        "labels": {
+          "_ion_damage_scale$": {
+            "candidate_base": 168,
+            "native_bases": [
+              68
+            ],
+            "accesses": 5
+          },
+          "_projectile_index$": {
+            "candidate_base": 64,
+            "native_bases": [
+              28
+            ],
+            "accesses": 7
+          },
+          "_step_count$": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 5
+          },
+          "_step_x$": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_step_y$": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_delta$": {
+            "candidate_base": 56,
+            "native_bases": [
+              56
+            ],
+            "accesses": 15
+          },
+          "_step$": {
+            "candidate_base": 36,
+            "native_bases": [
+              64
+            ],
+            "accesses": 4
+          },
+          "_hit_id$4163": {
+            "candidate_base": 20,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_effect_color$4182": {
+            "candidate_base": 176,
+            "native_bases": [
+              156
+            ],
+            "accesses": 8
+          },
+          "_upper$4199": {
+            "candidate_base": 28,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_impact_offset_1$4204": {
+            "candidate_base": 192,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_impact_1$4207": {
+            "candidate_base": 224,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "_impact_offset_2$4208": {
+            "candidate_base": 240,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_impact_2$4211": {
+            "candidate_base": 120,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_damage$4223": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_child_index$4237": {
+            "candidate_base": 28,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_radius$4238": {
+            "candidate_base": 24,
+            "native_bases": [
+              20
+            ],
+            "accesses": 3
+          },
+          "_child_pos$4247": {
+            "candidate_base": 128,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_child_angle$4242": {
+            "candidate_base": 28,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_offset$4244": {
+            "candidate_base": 232,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_pulse_offset$4254": {
+            "candidate_base": 216,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_impulse$4263": {
+            "candidate_base": 112,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_impulse$4269": {
+            "candidate_base": 104,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_offset_x$4307": {
+            "candidate_base": 28,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_offset_y$4309": {
+            "candidate_base": 44,
+            "native_bases": [
+              32
+            ],
+            "accesses": 4
+          },
+          "_decal_pos_1$4313": {
+            "candidate_base": 160,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_1$4312": {
+            "candidate_base": 200,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4315": {
+            "candidate_base": 136,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4314": {
+            "candidate_base": 208,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4317": {
+            "candidate_base": 144,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4316": {
+            "candidate_base": 152,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "_zero$4292": {
+            "candidate_base": 72,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_impulse_pos$4291": {
+            "candidate_base": 80,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_offset_x$4287": {
+            "candidate_base": 28,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_offset_y$4289": {
+            "candidate_base": 44,
+            "native_bases": [
+              32
+            ],
+            "accesses": 4
+          },
+          "_shard_pos$4294": {
+            "candidate_base": 96,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "_decal_pos$4296": {
+            "candidate_base": 88,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_color$4332": {
+            "candidate_base": 176,
+            "native_bases": [
+              244
+            ],
+            "accesses": 5
+          },
+          "_extent$4331": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_radius$4333": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_direction$4346": {
+            "candidate_base": 28,
+            "native_bases": [
+              68
+            ],
+            "accesses": 6
+          },
+          "_impulse$4347": {
+            "candidate_base": 88,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_movement$4355": {
+            "candidate_base": 96,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4747": {
+            "candidate_base": 24,
+            "native_bases": [
+              20
+            ],
+            "accesses": 1
+          },
+          "_bits$4746": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_bits$4751": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "$T4752": {
+            "candidate_base": 36,
+            "native_bases": [
+              64
+            ],
+            "accesses": 1
+          },
+          "_trail_velocity$4388": {
+            "candidate_base": 80,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_trail_pos$4397": {
+            "candidate_base": 72,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "$T4666": {
+            "candidate_base": 152,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4667": {
+            "candidate_base": 208,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4668": {
+            "candidate_base": 200,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_offset_1$4418": {
+            "candidate_base": 216,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_1$4421": {
+            "candidate_base": 144,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4422": {
+            "candidate_base": 232,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4425": {
+            "candidate_base": 136,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4426": {
+            "candidate_base": 240,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4429": {
+            "candidate_base": 160,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_damage$4430": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 4
+          },
+          "_impulse$4442": {
+            "candidate_base": 104,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_angle$4456": {
+            "candidate_base": 20,
+            "native_bases": [
+              28
+            ],
+            "accesses": 3
+          },
+          "_radius$4458": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4462": {
+            "candidate_base": 112,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4459": {
+            "candidate_base": 192,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_angle$4477": {
+            "candidate_base": 20,
+            "native_bases": [
+              28
+            ],
+            "accesses": 3
+          },
+          "_radius$4479": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4483": {
+            "candidate_base": 128,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4480": {
+            "candidate_base": 44,
+            "native_bases": [
+              32
+            ],
+            "accesses": 2
+          },
+          "_angle$4497": {
+            "candidate_base": 20,
+            "native_bases": [
+              28
+            ],
+            "accesses": 3
+          },
+          "_radius$4499": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4503": {
+            "candidate_base": 120,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4500": {
+            "candidate_base": 168,
+            "native_bases": [
+              44
+            ],
+            "accesses": 2
+          },
+          "_burst_index$4504": {
+            "candidate_base": 20,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_velocity$4516": {
+            "candidate_base": 224,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "$T4669": {
+            "candidate_base": 64,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4670": {
+            "candidate_base": 152,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "_particle_index$": {
+            "candidate_base": 36,
+            "native_bases": [
+              28
+            ],
+            "accesses": 4
+          },
+          "$T4671": {
+            "candidate_base": 152,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "_movement$4548": {
+            "candidate_base": 88,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "$T4672": {
+            "candidate_base": 208,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4673": {
+            "candidate_base": 200,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4674": {
+            "candidate_base": 216,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "$T4675": {
+            "candidate_base": 232,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_movement$4559": {
+            "candidate_base": 96,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4676": {
+            "candidate_base": 240,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "$T4677": {
+            "candidate_base": 192,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "$T4678": {
+            "candidate_base": 144,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "$T4679": {
+            "candidate_base": 136,
+            "native_bases": [
+              116
+            ],
+            "accesses": 2
+          },
+          "_displacement$4613": {
+            "candidate_base": 160,
+            "native_bases": [
+              132
+            ],
+            "accesses": 2
+          },
+          "_previous_position$4615": {
+            "candidate_base": 104,
+            "native_bases": [
+              148
+            ],
+            "accesses": 2
+          },
+          "_hit_direction$4618": {
+            "candidate_base": 112,
+            "native_bases": [
+              108
+            ],
+            "accesses": 2
+          },
+          "_impulse$4633": {
+            "candidate_base": 80,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_velocity_x$4638": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_velocity$4641": {
+            "candidate_base": 72,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_reflected_velocity$4646": {
+            "candidate_base": 128,
+            "native_bases": [
+              140
+            ],
+            "accesses": 2
+          },
+          "_displacement_dt$4647": {
+            "candidate_base": 20,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_creature_displacement$4648": {
+            "candidate_base": 120,
+            "native_bases": [
+              124
+            ],
+            "accesses": 2
+          }
+        },
+        "scope": "All mapped instructions, references and branch destinations are checked. Named homes label candidate declarations, not original source names. Only the explicit residual list and stack differences are excluded; encoded identity is checked separately by the native matcher."
+      }
+    },
+    {
+      "name": "frame-ac1-decal-angle",
+      "source_sha256": "1830ef1922be51b7716c74ae75fd15cd11e0e676be6f031039bc387347d03474",
+      "body_sha256": "e1222bb407cd787c934896538878811be482392d7e09f3aa22af5e5615ab03b0",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 10,
+        "references": 499,
+        "reference_problems": 4,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-ac2-shared-angle",
+      "source_sha256": "cfdc5a9857f30d30963459eed7e6671c0fea8070c5b8740d166aa1b578464faa",
+      "body_sha256": "dcc874f68b59b4242a7648ca738707102364861f3b92d0b571f706270e8df225",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 10,
+        "references": 502,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-ac3-shared-index",
+      "source_sha256": "6c718e2ef54b19e6c772d5baf7be9e33bc3e5d86eed8a0952e4d3a2adf1b5658",
+      "body_sha256": "55540c74e4e40563dac0e166885abd0543d651ff40fa85fa10e5eca52f12275a",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 10,
+        "references": 503,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-ad1-offset-y",
+      "source_sha256": "8a26ff5c59aa9ab6829c0eae5f9c480d48e72dc43ba20dda5bc7b9672b67e169",
+      "body_sha256": "7a74991a46d8ff2d21075d3de08869a461298818b29144fffd3c2ca48f78a5a6",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 10,
+        "references": 503,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-ad2-offset-xy",
+      "source_sha256": "fdfb074e90f4bb77102863a5ef748464bcf1f4c71491e49b093af4acd264fad6",
+      "body_sha256": "dd939c05fcccba1e94af6b4180c55487b2f0c57f0c85344c39eec9ef694b75c9",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 967,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "positions": {
+        "paired_instructions": 2203,
+        "branches": 206,
+        "references": 507,
+        "stack_accesses": 388,
+        "stack_differences": [],
+        "residuals": [
+          {
+            "kind": "reorder",
+            "native": 4332723,
+            "candidate": 4387
+          },
+          {
+            "kind": "extra-fxch",
+            "native": 4334601,
+            "candidate": 6265
+          }
+        ],
+        "labels": {
+          "_ion_damage_scale$": {
+            "candidate_base": 68,
+            "native_bases": [
+              68
+            ],
+            "accesses": 5
+          },
+          "_projectile_index$": {
+            "candidate_base": 28,
+            "native_bases": [
+              28
+            ],
+            "accesses": 11
+          },
+          "_step_count$": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 5
+          },
+          "_step_x$": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_step_y$": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_delta$": {
+            "candidate_base": 56,
+            "native_bases": [
+              56
+            ],
+            "accesses": 15
+          },
+          "_step$": {
+            "candidate_base": 64,
+            "native_bases": [
+              64
+            ],
+            "accesses": 4
+          },
+          "_hit_id$4165": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_effect_color$4184": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 8
+          },
+          "_upper$4201": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_impact_offset_1$4206": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_impact_1$4209": {
+            "candidate_base": 228,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "_impact_offset_2$4210": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_impact_2$4213": {
+            "candidate_base": 188,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_damage$4225": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_child_index$4239": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_radius$4240": {
+            "candidate_base": 20,
+            "native_bases": [
+              20
+            ],
+            "accesses": 3
+          },
+          "_child_pos$4249": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_child_angle$4244": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_offset$4246": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_pulse_offset$4256": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_impulse$4265": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_impulse$4271": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_offset_x$": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 8
+          },
+          "_offset_y$": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 8
+          },
+          "_decal_pos_1$4311": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_1$4310": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4313": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4312": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4315": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4314": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "_zero$4292": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_impulse_pos$4291": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_shard_pos$4294": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "_decal_pos$4296": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_color$4330": {
+            "candidate_base": 244,
+            "native_bases": [
+              244
+            ],
+            "accesses": 5
+          },
+          "_extent$4329": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_radius$4331": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_direction$4344": {
+            "candidate_base": 68,
+            "native_bases": [
+              68
+            ],
+            "accesses": 6
+          },
+          "_impulse$4345": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_movement$4353": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4741": {
+            "candidate_base": 20,
+            "native_bases": [
+              20
+            ],
+            "accesses": 1
+          },
+          "_bits$4740": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_bits$4745": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "$T4746": {
+            "candidate_base": 64,
+            "native_bases": [
+              64
+            ],
+            "accesses": 1
+          },
+          "_trail_velocity$4386": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_trail_pos$4395": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "$T4660": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4661": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4662": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_offset_1$4417": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_1$4420": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4421": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4424": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4425": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4428": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_damage$4429": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 4
+          },
+          "_impulse$4441": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_angle$4407": {
+            "candidate_base": 28,
+            "native_bases": [
+              28
+            ],
+            "accesses": 9
+          },
+          "_radius$4456": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4460": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4457": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_radius$4476": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4480": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4477": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 2
+          },
+          "_radius$4495": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4499": {
+            "candidate_base": 188,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4496": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 2
+          },
+          "_burst_index$4500": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_velocity$4511": {
+            "candidate_base": 228,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "$T4663": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4664": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4665": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "_movement$4542": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "$T4666": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4667": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4668": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "$T4669": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_movement$4553": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4670": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "$T4671": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "$T4672": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "$T4673": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 2
+          },
+          "_displacement$4607": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 2
+          },
+          "_previous_position$4609": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 2
+          },
+          "_hit_direction$4612": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 2
+          },
+          "_impulse$4627": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_velocity_x$4632": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_velocity$4635": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_reflected_velocity$4640": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 2
+          },
+          "_displacement_dt$4641": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_creature_displacement$4642": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 2
+          }
+        },
+        "scope": "All mapped instructions, references and branch destinations are checked. Named homes label candidate declarations, not original source names. Only the explicit residual list and stack differences are excluded; encoded identity is checked separately by the native matcher."
+      }
+    },
+    {
+      "name": "burst-ag1-pod-result",
+      "source_sha256": "e571c4fde282d51f4e6d0cab9e6b1d30f6c0c519dd34bcd6c1150fff1ee699f6",
+      "body_sha256": "d7f168ef0cc2fc1bddd743a79058e9845361d5881ca5164345c8c3408bef98f2",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 1160,
+        "references": 504,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "burst-ag2-x-local",
+      "source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 1160,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "positions": {
+        "paired_instructions": 2203,
+        "branches": 206,
+        "references": 507,
+        "stack_accesses": 388,
+        "stack_differences": [],
+        "residuals": [
+          {
+            "kind": "reorder",
+            "native": 4332723,
+            "candidate": 4387
+          }
+        ],
+        "labels": {
+          "_ion_damage_scale$": {
+            "candidate_base": 68,
+            "native_bases": [
+              68
+            ],
+            "accesses": 5
+          },
+          "_projectile_index$": {
+            "candidate_base": 28,
+            "native_bases": [
+              28
+            ],
+            "accesses": 11
+          },
+          "_step_count$": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 5
+          },
+          "_step_x$": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_step_y$": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_delta$": {
+            "candidate_base": 56,
+            "native_bases": [
+              56
+            ],
+            "accesses": 15
+          },
+          "_step$": {
+            "candidate_base": 64,
+            "native_bases": [
+              64
+            ],
+            "accesses": 4
+          },
+          "_hit_id$4165": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_effect_color$4184": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 8
+          },
+          "_upper$4201": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_impact_offset_1$4206": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_impact_1$4209": {
+            "candidate_base": 228,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "_impact_offset_2$4210": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_impact_2$4213": {
+            "candidate_base": 188,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_damage$4225": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_child_index$4239": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_radius$4240": {
+            "candidate_base": 20,
+            "native_bases": [
+              20
+            ],
+            "accesses": 3
+          },
+          "_child_pos$4249": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_child_angle$4244": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_offset$4246": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_pulse_offset$4256": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_impulse$4265": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_impulse$4271": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_offset_x$": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 8
+          },
+          "_offset_y$": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 8
+          },
+          "_decal_pos_1$4311": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_1$4310": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4313": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4312": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4315": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4314": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "_zero$4292": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_impulse_pos$4291": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_shard_pos$4294": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "_decal_pos$4296": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_color$4330": {
+            "candidate_base": 244,
+            "native_bases": [
+              244
+            ],
+            "accesses": 5
+          },
+          "_extent$4329": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_radius$4331": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_direction$4344": {
+            "candidate_base": 68,
+            "native_bases": [
+              68
+            ],
+            "accesses": 6
+          },
+          "_impulse$4345": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_movement$4353": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4740": {
+            "candidate_base": 20,
+            "native_bases": [
+              20
+            ],
+            "accesses": 1
+          },
+          "_bits$4739": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_bits$4744": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "$T4745": {
+            "candidate_base": 64,
+            "native_bases": [
+              64
+            ],
+            "accesses": 1
+          },
+          "_trail_velocity$4386": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_trail_pos$4395": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "$T4660": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4661": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4662": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_offset_1$4417": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_1$4420": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4421": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4424": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4425": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4428": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_damage$4429": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 4
+          },
+          "_impulse$4441": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_angle$4407": {
+            "candidate_base": 28,
+            "native_bases": [
+              28
+            ],
+            "accesses": 9
+          },
+          "_radius$4456": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4460": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4457": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_radius$4476": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4480": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4477": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 2
+          },
+          "_radius$4495": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4499": {
+            "candidate_base": 188,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4496": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 2
+          },
+          "_burst_index$4500": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_velocity$4513": {
+            "candidate_base": 228,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "_burst_direction$4511": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4663": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4664": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "_movement$4542": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "$T4665": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4666": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4667": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "$T4668": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_movement$4553": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4669": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "$T4670": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "$T4671": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "$T4672": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 2
+          },
+          "_displacement$4607": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 2
+          },
+          "_previous_position$4609": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 2
+          },
+          "_hit_direction$4612": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 2
+          },
+          "_impulse$4627": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_velocity_x$4632": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_velocity$4635": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_reflected_velocity$4640": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 2
+          },
+          "_displacement_dt$4641": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_creature_displacement$4642": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 2
+          }
+        },
+        "scope": "All mapped instructions, references and branch destinations are checked. Named homes label candidate declarations, not original source names. Only the explicit residual list and stack differences are excluded; encoded identity is checked separately by the native matcher."
+      }
+    },
+    {
+      "name": "burst-ag3-x-reference",
+      "source_sha256": "c2281ebed8b8fc1dfd3d7aa12a1f44fda51363c56236475dbc5984f470399070",
+      "body_sha256": "c5505e285d01365e8034096515fd9c9e6fdefb7286cfa65d7abe34246bdc1815",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 998,
+        "references": 504,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ai2-sdk-float",
+      "source_sha256": "5a8ad00a5d50842ff6e7459b5e5882644d1ad67c508cbdd26c970a249215a53e",
+      "body_sha256": "9a35722b3dc5b0841d08d01173fed5a417cb71f5649597bfea766a20dc7870b5",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 2203,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": true,
+        "body_byte_exact": true
+      }
+    },
+    {
+      "name": "final-aj1-readable-source",
+      "source_sha256": "93a13039d7b7e15e735a4abea1afcd349d8f2d72be5c283eb2b9f5d953d281e7",
+      "body_sha256": "9a35722b3dc5b0841d08d01173fed5a417cb71f5649597bfea766a20dc7870b5",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 2203,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": true,
+        "body_byte_exact": true
+      },
+      "positions": {
+        "paired_instructions": 2203,
+        "branches": 206,
+        "references": 507,
+        "stack_accesses": 388,
+        "stack_differences": [],
+        "residuals": [],
+        "labels": {
+          "_ion_damage_scale$": {
+            "candidate_base": 68,
+            "native_bases": [
+              68
+            ],
+            "accesses": 5
+          },
+          "_projectile_index$": {
+            "candidate_base": 28,
+            "native_bases": [
+              28
+            ],
+            "accesses": 11
+          },
+          "_step_count$": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 5
+          },
+          "_step_x$": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_step_y$": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_delta$": {
+            "candidate_base": 56,
+            "native_bases": [
+              56
+            ],
+            "accesses": 15
+          },
+          "_step$": {
+            "candidate_base": 64,
+            "native_bases": [
+              64
+            ],
+            "accesses": 4
+          },
+          "_hit_id$4164": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_effect_color$4183": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 8
+          },
+          "_upper$4200": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_impact_offset_1$4205": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_impact_1$4208": {
+            "candidate_base": 228,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "_impact_offset_2$4209": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_impact_2$4212": {
+            "candidate_base": 188,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_damage$4224": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 4
+          },
+          "_child_index$4238": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_radius$4239": {
+            "candidate_base": 20,
+            "native_bases": [
+              20
+            ],
+            "accesses": 3
+          },
+          "_child_pos$4248": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_child_angle$4243": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 3
+          },
+          "_child_offset$4245": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_pulse_offset$4255": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_impulse$4264": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_impulse$4270": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_offset_x$": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 8
+          },
+          "_offset_y$": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 8
+          },
+          "_decal_pos_1$4310": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_1$4309": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4312": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4311": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4314": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4313": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "_zero$4291": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_impulse_pos$4290": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_shard_pos$4293": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "_decal_pos$4295": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_color$4329": {
+            "candidate_base": 244,
+            "native_bases": [
+              244
+            ],
+            "accesses": 5
+          },
+          "_extent$4328": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_radius$4330": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_direction$4343": {
+            "candidate_base": 68,
+            "native_bases": [
+              68
+            ],
+            "accesses": 6
+          },
+          "_impulse$4344": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "_movement$4352": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4743": {
+            "candidate_base": 20,
+            "native_bases": [
+              20
+            ],
+            "accesses": 1
+          },
+          "_bits$4742": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_bits$4747": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "$T4748": {
+            "candidate_base": 64,
+            "native_bases": [
+              64
+            ],
+            "accesses": 1
+          },
+          "_trail_velocity$4385": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_trail_pos$4392": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "$T4657": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4658": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4659": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "_decal_offset_1$4414": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_1$4417": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_2$4418": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_2$4421": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 3
+          },
+          "_decal_offset_3$4422": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "_decal_pos_3$4425": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 3
+          },
+          "_damage$4426": {
+            "candidate_base": 40,
+            "native_bases": [
+              40
+            ],
+            "accesses": 4
+          },
+          "_impulse$4438": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 3
+          },
+          "_angle$4404": {
+            "candidate_base": 28,
+            "native_bases": [
+              28
+            ],
+            "accesses": 9
+          },
+          "_radius$4453": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4457": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4454": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "_radius$4473": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4477": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4474": {
+            "candidate_base": 32,
+            "native_bases": [
+              32
+            ],
+            "accesses": 2
+          },
+          "_radius$4492": {
+            "candidate_base": 16,
+            "native_bases": [
+              16
+            ],
+            "accesses": 2
+          },
+          "_decal_pos$4496": {
+            "candidate_base": 188,
+            "native_bases": [
+              188
+            ],
+            "accesses": 3
+          },
+          "_decal_offset$4493": {
+            "candidate_base": 44,
+            "native_bases": [
+              44
+            ],
+            "accesses": 2
+          },
+          "_burst_index$4497": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_velocity$4510": {
+            "candidate_base": 228,
+            "native_bases": [
+              228
+            ],
+            "accesses": 3
+          },
+          "_burst_direction$4508": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4660": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "$T4661": {
+            "candidate_base": 156,
+            "native_bases": [
+              156
+            ],
+            "accesses": 2
+          },
+          "_movement$4539": {
+            "candidate_base": 76,
+            "native_bases": [
+              76
+            ],
+            "accesses": 3
+          },
+          "$T4662": {
+            "candidate_base": 212,
+            "native_bases": [
+              212
+            ],
+            "accesses": 2
+          },
+          "$T4663": {
+            "candidate_base": 196,
+            "native_bases": [
+              196
+            ],
+            "accesses": 2
+          },
+          "$T4664": {
+            "candidate_base": 180,
+            "native_bases": [
+              180
+            ],
+            "accesses": 2
+          },
+          "$T4665": {
+            "candidate_base": 236,
+            "native_bases": [
+              236
+            ],
+            "accesses": 2
+          },
+          "_movement$4550": {
+            "candidate_base": 100,
+            "native_bases": [
+              100
+            ],
+            "accesses": 3
+          },
+          "$T4666": {
+            "candidate_base": 204,
+            "native_bases": [
+              204
+            ],
+            "accesses": 2
+          },
+          "$T4667": {
+            "candidate_base": 220,
+            "native_bases": [
+              220
+            ],
+            "accesses": 2
+          },
+          "$T4668": {
+            "candidate_base": 172,
+            "native_bases": [
+              172
+            ],
+            "accesses": 2
+          },
+          "$T4669": {
+            "candidate_base": 116,
+            "native_bases": [
+              116
+            ],
+            "accesses": 2
+          },
+          "_displacement$4604": {
+            "candidate_base": 132,
+            "native_bases": [
+              132
+            ],
+            "accesses": 2
+          },
+          "_previous_position$4606": {
+            "candidate_base": 148,
+            "native_bases": [
+              148
+            ],
+            "accesses": 2
+          },
+          "_hit_direction$4609": {
+            "candidate_base": 108,
+            "native_bases": [
+              108
+            ],
+            "accesses": 2
+          },
+          "_impulse$4624": {
+            "candidate_base": 84,
+            "native_bases": [
+              84
+            ],
+            "accesses": 3
+          },
+          "_velocity_x$4629": {
+            "candidate_base": 52,
+            "native_bases": [
+              52
+            ],
+            "accesses": 2
+          },
+          "_velocity$4632": {
+            "candidate_base": 92,
+            "native_bases": [
+              92
+            ],
+            "accesses": 3
+          },
+          "_reflected_velocity$4637": {
+            "candidate_base": 140,
+            "native_bases": [
+              140
+            ],
+            "accesses": 2
+          },
+          "_displacement_dt$4638": {
+            "candidate_base": 24,
+            "native_bases": [
+              24
+            ],
+            "accesses": 3
+          },
+          "_creature_displacement$4639": {
+            "candidate_base": 124,
+            "native_bases": [
+              124
+            ],
+            "accesses": 2
+          }
+        },
+        "scope": "All mapped instructions, references and branch destinations are checked. Named homes label candidate declarations, not original source names. Only the explicit residual list and stack differences are excluded; encoded identity is checked separately by the native matcher."
+      }
+    },
+    {
+      "name": "frame-q2-primary-color",
+      "source_sha256": "8a5d794cee840e15c5e0b8609764e7f6d0c577142cce9a512a7a8c77ba0d959a",
+      "body_sha256": "8ddcd4193e4184033a5dbdcc597265a26a7c40dfad57630e4eb197cf32b473b4",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-t4-color-temporary",
+      "source_sha256": "28540e6a2e55de03563a45078e80613e90c94ca193a0c6623abde31bb3d410b9",
+      "body_sha256": "fb840aec80408108025da1a356470a46d5bfe0edabce64e816a6858d29480338",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-u4-color-scope",
+      "source_sha256": "0f09a1c2577e7189a2320de9774b980c26a747b0ee664066ef349b5e4624edc7",
+      "body_sha256": "069ced323174aa6cd9926716e0af3f0ac781e3ae980e17b7a544f901969bf7bb",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 483,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-v3-burst-index",
+      "source_sha256": "46d6c0a2c4f62b84b8c3a9447d3d88fab400e4aa1480b9e1c86cdc1fb835852a",
+      "body_sha256": "35d36c2c09c1097d1fb12bb216c4f0dc9282129f088a5410e04b0d6031045632",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 10,
+        "references": 495,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-v5-particle-index",
+      "source_sha256": "9cb89f10a6a2f18e3667a0bf62460b3726c87061636c57b6e42377669a6b540f",
+      "body_sha256": "38df7eebeba4678b1720277f2ebcde90ffba954d16e65db8525bb8f0c2753509",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 477,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "frame-v6-color-and-index",
+      "source_sha256": "dc0f511aca630d471dc8d0b339a1e279ff4677c546a4e7ad1c081c0be50dfb8d",
+      "body_sha256": "32800090f0a8bcc8390b9a5f2e1e7ae5456d4de2ba5f95243870880329f31d39",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 7,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "loop-u1-shared-secondary",
+      "source_sha256": "8fa5f99a55fac1adab96418e66862889d48498e01a0be2adf35cbf1b8953aca9",
+      "body_sha256": "c7f5a17d06913dc8ade77cc9b1e5f93bd2fb26e05aff6e0b4e5e1c753e0f666d",
+      "metrics": {
+        "instructions": 2206,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 481,
+        "reference_problems": 8,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "particle-v1-clamp-value",
+      "source_sha256": "f6e724d9a882d1d40bc1aa12a0671e5cc71206b2344b290515b19c64b0ec3a6d",
+      "body_sha256": "7917904d7177406a6847012fd3b1820b0222846a0109f7e171464672aaf86285",
+      "metrics": {
+        "instructions": 2208,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 464,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "primary-w1-for",
+      "source_sha256": "bea1af91ac10cd59c8f632c979b3432b5d488c6b6658e014fc46fb7202a378fb",
+      "body_sha256": "e0c0983bca31e50e7bb478a1fd0c1a8e3170161d297c1078167787ff2abb9781",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-t2-inline-magnitude",
+      "source_sha256": "d23a985c72de40bc6506e9883ed41281e4dc571c594c9e0cc4854d289e06123a",
+      "body_sha256": "b74f29a8158850bcecc1b2931a4773aaae365b1f45103b9e2e15c404a2c47969",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 476,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-t3-angle-first",
+      "source_sha256": "82ee774a685eb29db8938678ed21fc9914693afd0a66674fae3dd2980a55fa8c",
+      "body_sha256": "9c26bca63897a92a4b7890ea6cbd7ce5f98ddb763f29b068f0e1058382b74578",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 482,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-u2-y-reference",
+      "source_sha256": "e745ac6df0cae2e698375d7a573966a820800c664ecfba18b217d1b4200313fe",
+      "body_sha256": "fb840aec80408108025da1a356470a46d5bfe0edabce64e816a6858d29480338",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-u3-x-reference",
+      "source_sha256": "ddee179e062bd2cc972ce545bc0f3ae9879eb2f69e5ee55f8c2531c3cef3b8a7",
+      "body_sha256": "8ddcd4193e4184033a5dbdcc597265a26a7c40dfad57630e4eb197cf32b473b4",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-v2-vector-difference",
+      "source_sha256": "21ca0192990e67bef4cbdddb7bd04e37f19b81fc13ed2cb8c222b993463654ca",
+      "body_sha256": "93ccf23618a143074e9d3a41cb61e9b44965ea735fdc5fe4018d1f687f3fc12a",
+      "metrics": {
+        "instructions": 2198,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 484,
+        "reference_problems": 8,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-v4-direct-length",
+      "source_sha256": "3dcac26a1dedbdf96bf0e2dcf6afd6b9723f032aa0a950d166611381cb8b3db0",
+      "body_sha256": "c3094dcf905fba9d82bf92f90c79b9d97c121abefde4b41b0ae38f215226df7b",
+      "metrics": {
+        "instructions": 2198,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 487,
+        "reference_problems": 5,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-w2-typed-end",
+      "source_sha256": "c47c33f5fcb92636eef0d49df2e375cf012ce94452929b305e36381f6fdd640b",
+      "body_sha256": "3fbec0a8622973eff020b7011aed782fcb4babf0312b65ac63f21a6241819ff3",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 483,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x2-explosion-owner",
+      "source_sha256": "f6ffd011455eeb3f262d0cf4caa873446c9e09e442c95f4468e9f993791cc223",
+      "body_sha256": "a29c9dd6bd5219c2e320bcc169ced29be160595218f398216ea0443844043fc6",
+      "metrics": {
+        "instructions": 2207,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 479,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x3-target-owner",
+      "source_sha256": "2f639417d5de23db23c26fb640dc61f2ad086c91cb0131bbf58c2751a17e91ae",
+      "body_sha256": "b3611e08055af4fda83ca8fec2ea84b2fc3f7b2e3b7995ff94a212496a744aa2",
+      "metrics": {
+        "instructions": 2207,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 479,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x4-late-delta",
+      "source_sha256": "abf6722a2490d3fcd7a70154b6b03e6740c8ecb5d52ec773ab401add673e3134",
+      "body_sha256": "c7f5a17d06913dc8ade77cc9b1e5f93bd2fb26e05aff6e0b4e5e1c753e0f666d",
+      "metrics": {
+        "instructions": 2206,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 481,
+        "reference_problems": 8,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x5-component-distance",
+      "source_sha256": "aeb08e4d724894dfb9b981ad32ec3e6e98c7f2c3f47cc95174d96ab68ef016c0",
+      "body_sha256": "282f97ab347ecd37b75b197e8d7c05a04497b66c20794b66aaf9be371ca61e5f",
+      "metrics": {
+        "instructions": 2206,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 478,
+        "reference_problems": 11,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-x6-reuse-delta",
+      "source_sha256": "fe2d7e2ace14254cccb78e528bb33cf89db8fb556d715a6e5a36ca962f26c97d",
+      "body_sha256": "3e51accd9d2e568df31147306b163af870cfe1028dd1b7ae44909c7399d6c41d",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 476,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y1-effect-owner",
+      "source_sha256": "fcf557c01341b4342540ba5ba628bf40c6f43c87fe6738b5959ac3b571411d39",
+      "body_sha256": "a31e012a666b597b3e43d04dad3d22956d457ec83d91fa8d6d0ae2596cb9d73d",
+      "metrics": {
+        "instructions": 2201,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 485,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y3-delta-order",
+      "source_sha256": "0db4ee304c23f1dd46c0fecfba1dcb402a4cdeeb94994bc2afc92a5722ff4b28",
+      "body_sha256": "e5a01fc55638a4b341809fab908b40925312ce5bb11c35c1b336df1d1a353b70",
+      "metrics": {
+        "instructions": 2201,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 485,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-y4-loop-y",
+      "source_sha256": "17a2378cf2fb1d6e7f82902b41534f66bd8ef653bd9dad7389a887ad0b3c1b9f",
+      "body_sha256": "a95ccc93d5ccf58eb43ba52b05403a906712b0e81bb010de2fdd40984239c453",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 492,
+        "reference_problems": 5,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-z1-inplace-burst",
+      "source_sha256": "91ca70d598dba825757dcd3fe74f0c694805ca5fa669e50c252fb351b785d21a",
+      "body_sha256": "6fb7259e524d4c46a83e8e975e54e1df1898e699c5b6322d8d3fda2790584cd0",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 496,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "secondary-z2-value-scale",
+      "source_sha256": "a8403b9e05eb31b5a32885c5908b533610884cd589d58abd96df063bef5bf911",
+      "body_sha256": "eab2125b802a9e173a011d81a017ddf1c133d72d3b3c81a706c593c5680045b8",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 491,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-aa1-member",
+      "source_sha256": "1a287cdd2e412a0a4bb56703ed7d2b5fe8a0b23e534d07d60bcaef3bf9879474",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 494,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-aa2-named",
+      "source_sha256": "ef8a5dfde98b62704a547c89f9accb89db868b13724032e75f62fb294fd3408e",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 494,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ab1-const-subtract",
+      "source_sha256": "0a5e0c2aef63f89b72bd04664617b326b47a89b96524fdec12699d979721db38",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 494,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ab2-free-subtract",
+      "source_sha256": "fcfdb9cc95db22776c7389601ccdb260508d0f126a75573e0594a52ea4917728",
+      "body_sha256": "3fad2f9e4a0d74801ed655a3f91579d859fafd5be43c18c6ec53ac9ac82459e6",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 494,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ah1-angle-local",
+      "source_sha256": "8ad1252139538b94dfba224cdaa6dfe11f2a3ca65a72836e66999bf2079ed3c0",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 1160,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ah2-borrow-difference",
+      "source_sha256": "f9ead76d666f94e3a40cf5ec9f4cba1d1a48b866cad525a896de3143d3f860fb",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 1160,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ah3-double-return",
+      "source_sha256": "a4cb5fc154b6579102f7f28bbf1e129e81594e0fc1ab272bea9a9f85bd53a120",
+      "body_sha256": "959cb28f3c6a8d5928e4398a7304042dc1678ae1edda2380f45288eb76539eb7",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 1160,
+        "references": 506,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "seeker-ai1-double-arguments",
+      "source_sha256": "76dd2c8c5e3201a2024b400731bab67a02a7dc8fdf66a79c5e3782ca6b763632",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 1160,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "vector-ae1-scalar-reference",
+      "source_sha256": "f88f8595a019912feb6dae9331914f70425dd34c12607e364d16b861d4edd8cb",
+      "body_sha256": "118ad24d79d1e6ad315a0d93c180c5b6fdab1db0af24c7c795c868e0dec2a456",
+      "metrics": {
+        "instructions": 2194,
+        "target_instructions": 2203,
+        "prefix": 967,
+        "references": 504,
+        "reference_problems": 3,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "vector-af1-plain-members",
+      "source_sha256": "a9ba342f253f7f8193b4476713535505348efc50e547048b8b25fd954c23931c",
+      "body_sha256": "dd939c05fcccba1e94af6b4180c55487b2f0c57f0c85344c39eec9ef694b75c9",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 967,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "vector-af2-initializers",
+      "source_sha256": "59c1d2b03b84582a47ef5c4366c1b7dcddd3b4ab64654e6e68922cc868c2e5bb",
+      "body_sha256": "dd939c05fcccba1e94af6b4180c55487b2f0c57f0c85344c39eec9ef694b75c9",
+      "metrics": {
+        "instructions": 2204,
+        "target_instructions": 2203,
+        "prefix": 967,
+        "references": 507,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "vector-t1-member-scale",
+      "source_sha256": "a906f484137d3b64fdae409b541ac7f8fb68141a6062446ca9cd598f9c4ea937",
+      "body_sha256": "e0c0983bca31e50e7bb478a1fd0c1a8e3170161d297c1078167787ff2abb9781",
+      "metrics": {
+        "instructions": 2202,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    },
+    {
+      "name": "vector-u5-destructor",
+      "source_sha256": "bd4e7e8c6833bb3af0c43f8bf54321dd5120924ed7e2b24250fc35ccbbed908c",
+      "body_sha256": "84efe18f1e1da22d679c5c1096e5b372df47d3a336c2aa7bffbde8f9be297dca",
+      "metrics": {
+        "instructions": 2203,
+        "target_instructions": 2203,
+        "prefix": 0,
+        "references": 480,
+        "reference_problems": 9,
+        "exact": false,
+        "body_byte_exact": false
+      }
+    }
+  ],
+  "changed_angle_rejected": {
+    "instructions": 2203,
+    "target_instructions": 2203,
+    "prefix": 2203,
+    "references": 506,
+    "reference_problems": 1,
+    "exact": false,
+    "body_byte_exact": false
+  },
+  "positional_controls_rejected": [
+    "branch",
+    "reference",
+    "stack"
+  ],
+  "new_exact_matches": 1,
+  "harness_sha256": {
+    "positions.py": "88c34561fad4218ce4e7801043a42c41c172f1db5d5366007e33cffa3c046325",
+    "replay.py": "d0ef22d71557ae122f81854d3dd88b7ef211d9532a52ddd7268e51befda59f03",
+    "verify.py": "dfc1c0480b4d07b3bda5f6efc36eb9ee322e23fac13337a9c48f25c4fa11f072",
+    "recover.py": "acb7704d5e10bef3a59bb556c13e4fd145427dceaf328ec14be4199a69a09b6c",
+    "before.cpp": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+    "experiments.json": "744043571b0ac8c374183f09a6c40708f5872b24ab9f18940770e86fffb661fe",
+    "../projectile-stack-groups-2026-09-13/primary_homes.py": "12341f813f9b5ec8f030e2eb61e3d220aec706c89e383f9184cddd478a27abaa"
+  },
+  "scope": "Full native code, extent, positional reference and encoded-body identity. Finite execution coverage is recorded separately; original source names are not claimed.",
+  "compiler_inputs_sha256": {
+    "CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+    "C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+    "C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "../Include/math.h": "0b65bf8d09c443d32b33cfb662896fd2d48bdcd6436725a691102637bb9116a7"
+  }
+}

@@ -1,0 +1,2178 @@
+{
+  "schema_version": 1,
+  "before_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+  "before_body_sha256": "b744a17a696a3ba2a2963d94bd7acf525f35cf331bd45fc4ed5a1f9b38af66f2",
+  "final": "final-aj1-readable-source",
+  "recovered_path": [
+    "secondary-x1-indexed",
+    "secondary-x7-inner-owner",
+    "secondary-x8-common-owner",
+    "secondary-y2-distance-owner",
+    "secondary-y5-health-owner",
+    "secondary-y6-x-owner",
+    "secondary-y7-effect-owner",
+    "secondary-y8-x-reference",
+    "frame-ac1-decal-angle",
+    "frame-ac2-shared-angle",
+    "frame-ac3-shared-index",
+    "frame-ad1-offset-y",
+    "frame-ad2-offset-xy",
+    "burst-ag1-pod-result",
+    "burst-ag2-x-local",
+    "seeker-ai2-sdk-float",
+    "final-aj1-readable-source"
+  ],
+  "experiments": {
+    "secondary-x1-indexed": {
+      "parent": "before",
+      "change": "secondary-for-loop",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "body_sha256": "c7f5a17d06913dc8ade77cc9b1e5f93bd2fb26e05aff6e0b4e5e1c753e0f666d",
+      "instructions": 2206,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 817,
+          "removed": "    secondary_projectile_t *secondary = secondary_projectile_pool;\n    do {\n",
+          "replacement": "    for (int secondary_index = 0; secondary_index < 0x40; ++secondary_index) {\n        secondary_projectile_t *secondary = &secondary_projectile_pool[secondary_index];\n"
+        },
+        {
+          "start_line": 1201,
+          "removed": "        ++secondary;\n    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "secondary-x7-inner-owner": {
+      "parent": "secondary-x1-indexed",
+      "change": "secondary-explosion-position-inner-owner",
+      "parent_source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "source_sha256": "77a4dcb5c1244562ddea859ea816645bfacdbaa5b6e66f2616bb0f122ae7f6ad",
+      "body_sha256": "7c400ced911bf2b3162e6a65b5f6b4c1b882ac860a29823caebe67bdc8bb0f5e",
+      "instructions": 2207,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                        vec2f_t &explosion_position = secondary->position;\n                        float dx = creature->position.x - explosion_position.x;\n                        float dy = creature->position.y - explosion_position.y;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            &creature->position, &explosion_position);\n"
+        }
+      ]
+    },
+    "secondary-x8-common-owner": {
+      "parent": "secondary-x7-inner-owner",
+      "change": "secondary-common-position-owner",
+      "parent_source_sha256": "77a4dcb5c1244562ddea859ea816645bfacdbaa5b6e66f2616bb0f122ae7f6ad",
+      "source_sha256": "f5449850b01c8c7569138d8532a995575802cce12f412a297649ce0ec386fb37",
+      "body_sha256": "e5a01fc55638a4b341809fab908b40925312ce5bb11c35c1b336df1d1a353b70",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 877,
+          "removed": "",
+          "replacement": "                projectile_vec2_t &secondary_position =\n                    *(projectile_vec2_t *)&secondary->position;\n"
+        },
+        {
+          "start_line": 881,
+          "removed": "                    &secondary->position,\n",
+          "replacement": "                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 912,
+          "removed": "                                &secondary->position,\n",
+          "replacement": "                                (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 919,
+          "removed": "                    projectile_vec2_t &secondary_position =\n                        *(projectile_vec2_t *)&secondary->position;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 966,
+          "removed": "                        *(projectile_vec2_t *)&secondary->position;\n",
+          "replacement": "                        *(projectile_vec2_t *)(vec2f_t *)&secondary_position;\n"
+        },
+        {
+          "start_line": 982,
+          "removed": "                    &secondary->position,\n",
+          "replacement": "                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 994,
+          "removed": "                                &secondary->position,\n",
+          "replacement": "                                (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1042,
+          "removed": "                                &secondary->position,\n",
+          "replacement": "                                (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1060,
+          "removed": "                            &secondary->position,\n",
+          "replacement": "                            (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1087,
+          "removed": "                                    &secondary->position,\n",
+          "replacement": "                                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1119,
+          "removed": "                                    &secondary->position,\n",
+          "replacement": "                                    (vec2f_t *)&secondary_position,\n"
+        },
+        {
+          "start_line": 1186,
+          "removed": "                            &secondary->position,\n",
+          "replacement": "                            (vec2f_t *)&secondary_position,\n"
+        }
+      ]
+    },
+    "secondary-y2-distance-owner": {
+      "parent": "secondary-x8-common-owner",
+      "change": "explosion-distance-indexed-position",
+      "parent_source_sha256": "f5449850b01c8c7569138d8532a995575802cce12f412a297649ce0ec386fb37",
+      "source_sha256": "c2135cff0619b207d088d99c55b7029246fae5874597d7477b57fd4bf0a3ec11",
+      "body_sha256": "a95ccc93d5ccf58eb43ba52b05403a906712b0e81bb010de2fdd40984239c453",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 853,
+          "removed": "                            &creature->position, &explosion_position);\n",
+          "replacement": "                            &creature_pool[creature_id].position, &explosion_position);\n"
+        }
+      ]
+    },
+    "secondary-y5-health-owner": {
+      "parent": "secondary-y2-distance-owner",
+      "change": "explosion-health-indexed-owner",
+      "parent_source_sha256": "c2135cff0619b207d088d99c55b7029246fae5874597d7477b57fd4bf0a3ec11",
+      "source_sha256": "96f146fa11a272a132a5558ea4966de961881c978965ede68c85664068855516",
+      "body_sha256": "a31e012a666b597b3e43d04dad3d22956d457ec83d91fa8d6d0ae2596cb9d73d",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 848,
+          "removed": "                    if (creature->active && creature->health > 0.0f) {\n",
+          "replacement": "                    if (creature->active && creature_pool[creature_id].health > 0.0f) {\n"
+        },
+        {
+          "start_line": 865,
+          "removed": "                            if (creature->health <= 0.0f) {\n",
+          "replacement": "                            if (creature_pool[creature_id].health <= 0.0f) {\n"
+        }
+      ]
+    },
+    "secondary-y6-x-owner": {
+      "parent": "secondary-y5-health-owner",
+      "change": "explosion-x-indexed-owner",
+      "parent_source_sha256": "96f146fa11a272a132a5558ea4966de961881c978965ede68c85664068855516",
+      "source_sha256": "e858717b34dc13589c68b74b0da3947db4cfa14ffdd0a0da7e4e3f9378232871",
+      "body_sha256": "501ce091c95eac270289535773febc4aa21140b62679196b6b92be5f2255642c",
+      "instructions": 2200,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 850,
+          "removed": "                        float dx = creature->position.x - explosion_position.x;\n",
+          "replacement": "                        float dx = creature_pool[creature_id].position.x - explosion_position.x;\n"
+        }
+      ]
+    },
+    "secondary-y7-effect-owner": {
+      "parent": "secondary-y6-x-owner",
+      "change": "explosion-effect-indexed-position",
+      "parent_source_sha256": "e858717b34dc13589c68b74b0da3947db4cfa14ffdd0a0da7e4e3f9378232871",
+      "source_sha256": "24f4fcb1ff54936aebc0fc183ee14ee7e5bb5f5122b1fc99daaff354d88a518b",
+      "body_sha256": "c7ecf42b27f2a70af6c3d78a93a57509793de2bc19f93c569a7bf7326c92e6be",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 867,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_pool[creature_id].position);\n"
+        },
+        {
+          "start_line": 869,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_pool[creature_id].position);\n"
+        }
+      ]
+    },
+    "secondary-y8-x-reference": {
+      "parent": "secondary-y7-effect-owner",
+      "change": "explosion-x-position-reference",
+      "parent_source_sha256": "24f4fcb1ff54936aebc0fc183ee14ee7e5bb5f5122b1fc99daaff354d88a518b",
+      "source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 850,
+          "removed": "                        float dx = creature_pool[creature_id].position.x - explosion_position.x;\n",
+          "replacement": "                        vec2f_t &explosion_target = creature_pool[creature_id].position;\n                        float dx = explosion_target.x - explosion_position.x;\n"
+        },
+        {
+          "start_line": 853,
+          "removed": "                            &creature_pool[creature_id].position, &explosion_position);\n",
+          "replacement": "                            &explosion_target, &explosion_position);\n"
+        }
+      ]
+    },
+    "frame-ac1-decal-angle": {
+      "parent": "secondary-y8-x-reference",
+      "change": "secondary-share-decal-angle",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "1830ef1922be51b7716c74ae75fd15cd11e0e676be6f031039bc387347d03474",
+      "body_sha256": "e1222bb407cd787c934896538878811be482392d7e09f3aa22af5e5615ab03b0",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 987,
+          "removed": "",
+          "replacement": "                    float angle;\n"
+        },
+        {
+          "start_line": 1095,
+          "removed": "                                float angle =\n",
+          "replacement": "                                angle =\n"
+        },
+        {
+          "start_line": 1127,
+          "removed": "                                float angle =\n",
+          "replacement": "                                angle =\n"
+        },
+        {
+          "start_line": 1159,
+          "removed": "                                float angle =\n",
+          "replacement": "                                angle =\n"
+        }
+      ]
+    },
+    "frame-ac2-shared-angle": {
+      "parent": "frame-ac1-decal-angle",
+      "change": "secondary-share-burst-angle",
+      "parent_source_sha256": "1830ef1922be51b7716c74ae75fd15cd11e0e676be6f031039bc387347d03474",
+      "source_sha256": "cfdc5a9857f30d30963459eed7e6671c0fea8070c5b8740d166aa1b578464faa",
+      "body_sha256": "dcc874f68b59b4242a7648ca738707102364861f3b92d0b571f706270e8df225",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1181,
+          "removed": "                        float angle =\n",
+          "replacement": "                        angle =\n"
+        }
+      ]
+    },
+    "frame-ac3-shared-index": {
+      "parent": "frame-ac2-shared-angle",
+      "change": "loop-share-primary-particle-for",
+      "parent_source_sha256": "cfdc5a9857f30d30963459eed7e6671c0fea8070c5b8740d166aa1b578464faa",
+      "source_sha256": "6c718e2ef54b19e6c772d5baf7be9e33bc3e5d86eed8a0952e4d3a2adf1b5658",
+      "body_sha256": "55540c74e4e40563dac0e166885abd0543d651ff40fa85fa10e5eca52f12275a",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1220,
+          "removed": "    for (int particle_index = 0; particle_index < 0x80; ++particle_index) {\n        particle_t *particle = &particle_pool[particle_index];\n",
+          "replacement": "    for (projectile_index = 0; projectile_index < 0x80; ++projectile_index) {\n        particle_t *particle = &particle_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 1403,
+          "removed": "                            if (particle_index % 3 == 0) {\n",
+          "replacement": "                            if (projectile_index % 3 == 0) {\n"
+        }
+      ]
+    },
+    "frame-ad1-offset-y": {
+      "parent": "frame-ac3-shared-index",
+      "change": "primary-share-offset-y",
+      "parent_source_sha256": "6c718e2ef54b19e6c772d5baf7be9e33bc3e5d86eed8a0952e4d3a2adf1b5658",
+      "source_sha256": "8a26ff5c59aa9ab6829c0eae5f9c480d48e72dc43ba20dda5bc7b9672b67e169",
+      "body_sha256": "7a74991a46d8ff2d21075d3de08869a461298818b29144fffd3c2ca48f78a5a6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 153,
+          "removed": "",
+          "replacement": "    float offset_y;\n"
+        },
+        {
+          "start_line": 686,
+          "removed": "                                            float offset_y =\n",
+          "replacement": "                                            offset_y =\n"
+        },
+        {
+          "start_line": 743,
+          "removed": "                                            float offset_y =\n",
+          "replacement": "                                            offset_y =\n"
+        }
+      ]
+    },
+    "frame-ad2-offset-xy": {
+      "parent": "frame-ad1-offset-y",
+      "change": "primary-share-offset-x",
+      "parent_source_sha256": "8a26ff5c59aa9ab6829c0eae5f9c480d48e72dc43ba20dda5bc7b9672b67e169",
+      "source_sha256": "fdfb074e90f4bb77102863a5ef748464bcf1f4c71491e49b093af4acd264fad6",
+      "body_sha256": "dd939c05fcccba1e94af6b4180c55487b2f0c57f0c85344c39eec9ef694b75c9",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 154,
+          "removed": "",
+          "replacement": "    float offset_x;\n"
+        },
+        {
+          "start_line": 684,
+          "removed": "                                            float offset_x =\n",
+          "replacement": "                                            offset_x =\n"
+        },
+        {
+          "start_line": 741,
+          "removed": "                                            float offset_x =\n",
+          "replacement": "                                            offset_x =\n"
+        }
+      ]
+    },
+    "burst-ag1-pod-result": {
+      "parent": "frame-ad2-offset-xy",
+      "change": "secondary-burst-direction-pod-result",
+      "parent_source_sha256": "fdfb074e90f4bb77102863a5ef748464bcf1f4c71491e49b093af4acd264fad6",
+      "source_sha256": "e571c4fde282d51f4e6d0cab9e6b1d30f6c0c519dd34bcd6c1150fff1ee699f6",
+      "body_sha256": "d7f168ef0cc2fc1bddd743a79058e9845361d5881ca5164345c8c3408bef98f2",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1187,
+          "removed": "                        projectile_vec2_t velocity =\n                            projectile_vec2_t(burst_cos, burst_sin) * magnitude;\n",
+          "replacement": "                        projectile_vec2_t burst_direction(burst_cos, burst_sin);\n                        vec2f_t velocity = {\n                            magnitude * burst_direction.x,\n                            magnitude * burst_direction.y,\n                        };\n"
+        }
+      ]
+    },
+    "burst-ag2-x-local": {
+      "parent": "burst-ag1-pod-result",
+      "change": "burst-x-product-local",
+      "parent_source_sha256": "e571c4fde282d51f4e6d0cab9e6b1d30f6c0c519dd34bcd6c1150fff1ee699f6",
+      "source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1188,
+          "removed": "",
+          "replacement": "                        float velocity_x = magnitude;\n                        velocity_x *= burst_direction.x;\n"
+        },
+        {
+          "start_line": 1189,
+          "removed": "                            magnitude * burst_direction.x,\n",
+          "replacement": "                            velocity_x,\n"
+        }
+      ]
+    },
+    "burst-ag3-x-reference": {
+      "parent": "burst-ag1-pod-result",
+      "change": "burst-x-reference",
+      "parent_source_sha256": "e571c4fde282d51f4e6d0cab9e6b1d30f6c0c519dd34bcd6c1150fff1ee699f6",
+      "source_sha256": "c2281ebed8b8fc1dfd3d7aa12a1f44fda51363c56236475dbc5984f470399070",
+      "body_sha256": "c5505e285d01365e8034096515fd9c9e6fdefb7286cfa65d7abe34246bdc1815",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1188,
+          "removed": "",
+          "replacement": "                        float &direction_x = burst_direction.x;\n"
+        },
+        {
+          "start_line": 1189,
+          "removed": "                            magnitude * burst_direction.x,\n",
+          "replacement": "                            magnitude * direction_x,\n"
+        }
+      ]
+    },
+    "seeker-ai2-sdk-float": {
+      "parent": "burst-ag2-x-local",
+      "change": "angle-sdk-float",
+      "parent_source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "source_sha256": "5a8ad00a5d50842ff6e7459b5e5882644d1ad67c508cbdd26c970a249215a53e",
+      "body_sha256": "9a35722b3dc5b0841d08d01173fed5a417cb71f5649597bfea766a20dc7870b5",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": true,
+      "body_byte_exact": true,
+      "edits": [
+        {
+          "start_line": 64,
+          "removed": "    return (float)atan2(value.y, value.x);\n",
+          "replacement": "    return atan2f(value.y, value.x);\n"
+        }
+      ]
+    },
+    "final-aj1-readable-source": {
+      "parent": "seeker-ai2-sdk-float",
+      "change": "readable-source",
+      "parent_source_sha256": "5a8ad00a5d50842ff6e7459b5e5882644d1ad67c508cbdd26c970a249215a53e",
+      "source_sha256": "93a13039d7b7e15e735a4abea1afcd349d8f2d72be5c283eb2b9f5d953d281e7",
+      "body_sha256": "9a35722b3dc5b0841d08d01173fed5a417cb71f5649597bfea766a20dc7870b5",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": true,
+      "body_byte_exact": true,
+      "edits": [
+        {
+          "start_line": 12,
+          "removed": "    int bits = (*(int *)&value) & 0x7fffffff;\n    return *(float *)&bits;\n",
+          "replacement": "    int bits = (*(int*)&value) & 0x7fffffff;\n    return *(float*)&bits;\n"
+        },
+        {
+          "start_line": 25,
+          "removed": "    projectile_vec2_t()\n    {\n    }\n",
+          "replacement": "    projectile_vec2_t() { }\n"
+        },
+        {
+          "start_line": 35,
+          "removed": "    inline projectile_vec2_t operator-(const projectile_vec2_t &other)\n",
+          "replacement": "    inline projectile_vec2_t operator-(const projectile_vec2_t& other)\n"
+        },
+        {
+          "start_line": 40,
+          "removed": "    inline projectile_vec2_t &operator+=(const projectile_vec2_t &other)\n",
+          "replacement": "    inline projectile_vec2_t& operator+=(const projectile_vec2_t& other)\n"
+        },
+        {
+          "start_line": 48,
+          "removed": "inline projectile_vec2_t operator*(\n    const projectile_vec2_t &value,\n    float scalar)\n",
+          "replacement": "inline projectile_vec2_t operator*(const projectile_vec2_t& value, float scalar)\n"
+        },
+        {
+          "start_line": 55,
+          "removed": "inline projectile_vec2_t operator*(\n    float scalar,\n    const projectile_vec2_t &value)\n",
+          "replacement": "inline projectile_vec2_t operator*(float scalar, const projectile_vec2_t& value)\n"
+        },
+        {
+          "start_line": 62,
+          "removed": "inline float projectile_vec2_angle(const projectile_vec2_t &value)\n",
+          "replacement": "inline float projectile_vec2_angle(const projectile_vec2_t& value)\n"
+        },
+        {
+          "start_line": 67,
+          "removed": "inline float projectile_vec2_dot(const vec2f_t &value)\n",
+          "replacement": "inline float projectile_vec2_dot(const vec2f_t& value)\n"
+        },
+        {
+          "start_line": 72,
+          "removed": "inline float projectile_vec2_length(vec2f_t &value)\n",
+          "replacement": "inline float projectile_vec2_length(vec2f_t& value)\n"
+        },
+        {
+          "start_line": 79,
+          "removed": "inline float projectile_vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)\n",
+          "replacement": "inline float projectile_vec2_distance(const vec2f_t* lhs, const vec2f_t* rhs)\n"
+        },
+        {
+          "start_line": 99,
+          "removed": "void creatures_apply_radius_damage(\n    const vec2f_t *pos,\n    float radius,\n    float damage,\n    int damage_type);\nint creature_find_in_radius(\n    const vec2f_t *pos,\n    float radius,\n    int start_index);\nint player_find_in_radius(\n    int owner_id,\n    const vec2f_t *pos,\n    float radius);\nint vec2_add(\n    vec2f_t *dst,\n    const vec2f_t *delta,\n    float mode);\nint vec2_add_inplace(\n    int entity_index,\n    vec2f_t *pos,\n    const vec2f_t *delta);\nvoid effect_spawn_blood_splatter(\n    const vec2f_t *pos,\n    float angle,\n    float age);\nvoid effect_spawn_splitter_hit_burst(\n    const vec2f_t *pos,\n    float radius,\n    int count);\nvoid effect_spawn_ion_hit_sparks(const vec2f_t *pos, float scale);\nvoid effect_spawn_shrinkifier_hit(const vec2f_t *pos);\nvoid fx_queue_add_random(vec2f_t *pos);\n",
+          "replacement": "void creatures_apply_radius_damage(const vec2f_t* pos, float radius, float damage, int damage_type);\nint creature_find_in_radius(const vec2f_t* pos, float radius, int start_index);\nint player_find_in_radius(int owner_id, const vec2f_t* pos, float radius);\nint vec2_add(vec2f_t* dst, const vec2f_t* delta, float mode);\nint vec2_add_inplace(int entity_index, vec2f_t* pos, const vec2f_t* delta);\nvoid effect_spawn_blood_splatter(const vec2f_t* pos, float angle, float age);\nvoid effect_spawn_splitter_hit_burst(const vec2f_t* pos, float radius, int count);\nvoid effect_spawn_ion_hit_sparks(const vec2f_t* pos, float scale);\nvoid effect_spawn_shrinkifier_hit(const vec2f_t* pos);\nvoid fx_queue_add_random(vec2f_t* pos);\n"
+        },
+        {
+          "start_line": 133,
+          "removed": "int fx_spawn_sprite(\n    const vec2f_t *pos,\n    const vec2f_t *vel,\n    float scale);\nvec2f_t *__stdcall D3DXVec2Normalize(\n    vec2f_t *dst,\n    const vec2f_t *src);\n",
+          "replacement": "int fx_spawn_sprite(const vec2f_t* pos, const vec2f_t* vel, float scale);\nvec2f_t* __stdcall D3DXVec2Normalize(vec2f_t* dst, const vec2f_t* src);\n"
+        },
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline void projectile_clamp_tint(float* value)\n"
+        },
+        {
+          "start_line": 169,
+          "removed": "            projectile_t *projectile =\n                &projectile_pool[projectile_index];\n",
+          "replacement": "            projectile_t* projectile = &projectile_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 176,
+          "removed": "                projectile_type_id_t type_id =\n                    projectile->pos.tail.vy.type_id;\n",
+          "replacement": "                projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;\n"
+        },
+        {
+          "start_line": 189,
+          "removed": "                            &projectile->position,\n                            ion_damage_scale * 88.0f,\n                            frame_dt * 100.0f,\n                            7);\n",
+          "replacement": "                            &projectile->position, ion_damage_scale * 88.0f, frame_dt * 100.0f, 7);\n"
+        },
+        {
+          "start_line": 195,
+          "removed": "                            &projectile->position,\n                            ion_damage_scale * 60.0f,\n                            frame_dt * 40.0f,\n                            7);\n",
+          "replacement": "                            &projectile->position, ion_damage_scale * 60.0f, frame_dt * 40.0f, 7);\n"
+        },
+        {
+          "start_line": 203,
+          "removed": "                        &projectile->position,\n                        ion_damage_scale * 128.0f,\n                        frame_dt * 300.0f,\n                        7);\n",
+          "replacement": "                        &projectile->position, ion_damage_scale * 128.0f, frame_dt * 300.0f, 7);\n"
+        },
+        {
+          "start_line": 213,
+          "removed": "                vec2f_t *position = &projectile->position;\n                if (projectile->position.x < -64.0f\n                    || projectile->position.y < -64.0f\n                    || (float)(terrain_texture_width + 64)\n                        < projectile->position.x\n                    || (float)(terrain_texture_height + 64)\n                        < projectile->position.y) {\n",
+          "replacement": "                vec2f_t* position = &projectile->position;\n                if (projectile->position.x < -64.0f || projectile->position.y < -64.0f\n                    || (float)(terrain_texture_width + 64) < projectile->position.x\n                    || (float)(terrain_texture_height + 64) < projectile->position.y) {\n"
+        },
+        {
+          "start_line": 222,
+          "removed": "                    step_count =\n                        (int)projectile->pos.tail.vy.travel_budget;\n",
+          "replacement": "                    step_count = (int)projectile->pos.tail.vy.travel_budget;\n"
+        },
+        {
+          "start_line": 225,
+          "removed": "                    step_x =\n                        (float)cos(heading) * frame_dt * 20.0f;\n                    step_y =\n                        (float)sin(heading) * frame_dt * 20.0f;\n",
+          "replacement": "                    step_x = (float)cos(heading) * frame_dt * 20.0f;\n                    step_y = (float)sin(heading) * frame_dt * 20.0f;\n"
+        },
+        {
+          "start_line": 238,
+          "removed": "                            delta.x += step_x\n                                * projectile->pos.tail.vy.speed_scale * 3.0f;\n                            delta.y += step_y\n                                * projectile->pos.tail.vy.speed_scale * 3.0f;\n",
+          "replacement": "                            delta.x += step_x * projectile->pos.tail.vy.speed_scale * 3.0f;\n                            delta.y += step_y * projectile->pos.tail.vy.speed_scale * 3.0f;\n"
+        },
+        {
+          "start_line": 246,
+          "removed": "                            if (distance >= 4.0f\n                                || step + 3 >= step_count) {\n",
+          "replacement": "                            if (distance >= 4.0f || step + 3 >= step_count) {\n"
+        },
+        {
+          "start_line": 250,
+          "removed": "                                    position,\n                                    projectile->pos.tail.vy.hit_radius,\n                                    0);\n",
+          "replacement": "                                    position, projectile->pos.tail.vy.hit_radius, 0);\n"
+        },
+        {
+          "start_line": 254,
+          "removed": "                                if (hit_id == -1\n                                    || hit_id\n                                        == projectile->pos.tail.vy.owner_id) {\n                                    if (projectile_index\n                                        != shock_chain_projectile_id) {\n                                        int owner_id =\n                                            projectile->pos.tail.vy.owner_id;\n",
+          "replacement": "                                if (hit_id == -1 || hit_id == projectile->pos.tail.vy.owner_id) {\n                                    if (projectile_index != shock_chain_projectile_id) {\n                                        int owner_id = projectile->pos.tail.vy.owner_id;\n"
+        },
+        {
+          "start_line": 262,
+          "removed": "                                            hit_id = player_find_in_radius(\n                                                owner_id,\n                                                position,\n",
+          "replacement": "                                            hit_id = player_find_in_radius(owner_id, position,\n"
+        },
+        {
+          "start_line": 268,
+          "removed": "                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n                                            if (player_state_table[hit_id]\n                                                    .shield_timer\n                                                <= 0.0f) {\n                                                player_state_table[hit_id]\n                                                    .health -= 10.0f;\n",
+          "replacement": "                                            projectile->pos.tail.vy.life_timer = 0.25f;\n                                            if (player_state_table[hit_id].shield_timer <= 0.0f) {\n                                                player_state_table[hit_id].health -= 10.0f;\n"
+        },
+        {
+          "start_line": 279,
+          "removed": "                                    if (perk_count_get(\n                                            perk_id_poison_bullets)\n                                            != 0\n",
+          "replacement": "                                    if (perk_count_get(perk_id_poison_bullets) != 0\n"
+        },
+        {
+          "start_line": 283,
+          "removed": "                                        creature_pool[hit_id].flags |=\n                                            CREATURE_FLAG_SELF_DAMAGE_TICK;\n",
+          "replacement": "                                        creature_pool[hit_id].flags\n                                            |= CREATURE_FLAG_SELF_DAMAGE_TICK;\n"
+        },
+        {
+          "start_line": 287,
+          "removed": "                                    projectile_type_id_t type_id =\n                                        projectile->pos.tail.vy.type_id;\n                                    if (type_id\n                                        == PROJECTILE_TYPE_BLADE_GUN) {\n",
+          "replacement": "                                    projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;\n                                    if (type_id == PROJECTILE_TYPE_BLADE_GUN) {\n"
+        },
+        {
+          "start_line": 293,
+          "removed": "                                            effect_spawn_blood_splatter(\n                                                position,\n                                                (float)(crt_rand() & 0xff)\n                                                    * 0.024543693f,\n                                                0.0f);\n",
+          "replacement": "                                            effect_spawn_blood_splatter(position,\n                                                (float)(crt_rand() & 0xff) * 0.024543693f, 0.0f);\n"
+        },
+        {
+          "start_line": 300,
+          "removed": "                                    } else if (type_id\n                                        == PROJECTILE_TYPE_SPLITTER_GUN) {\n                                        effect_spawn_splitter_hit_burst(\n                                            position,\n                                            26.0f,\n                                            3);\n                                        projectile_spawn(\n                                            position,\n                                            projectile->angle - 1.0471976f,\n                                            PROJECTILE_TYPE_SPLITTER_GUN,\n                                            hit_id);\n                                        projectile_spawn(\n                                            position,\n                                            projectile->angle + 1.0471976f,\n                                            PROJECTILE_TYPE_SPLITTER_GUN,\n                                            hit_id);\n",
+          "replacement": "                                    } else if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {\n                                        effect_spawn_splitter_hit_burst(position, 26.0f, 3);\n                                        projectile_spawn(position, projectile->angle - 1.0471976f,\n                                            PROJECTILE_TYPE_SPLITTER_GUN, hit_id);\n                                        projectile_spawn(position, projectile->angle + 1.0471976f,\n                                            PROJECTILE_TYPE_SPLITTER_GUN, hit_id);\n"
+        },
+        {
+          "start_line": 332,
+          "removed": "                                        if (perk_count_get(\n                                                perk_id_bloody_mess_quick_learner)\n",
+          "replacement": "                                        if (perk_count_get(perk_id_bloody_mess_quick_learner)\n"
+        },
+        {
+          "start_line": 337,
+          "removed": "                                                effect_spawn_blood_splatter(\n                                                    position,\n                                                    projectile->angle\n                                                        - 1.5707964f\n                                                        + (float)(\n                                                            (crt_rand() & 0x1f)\n                                                            - 0x10)\n",
+          "replacement": "                                                effect_spawn_blood_splatter(position,\n                                                    projectile->angle - 1.5707964f\n                                                        + (float)((crt_rand() & 0x1f) - 0x10)\n"
+        },
+        {
+          "start_line": 348,
+          "removed": "                                            effect_spawn_blood_splatter(\n                                                position,\n                                                projectile->angle\n                                                    - 1.5707964f\n                                                    + 3.1415927f,\n                                                0.0f);\n",
+          "replacement": "                                            effect_spawn_blood_splatter(position,\n                                                projectile->angle - 1.5707964f + 3.1415927f, 0.0f);\n"
+        },
+        {
+          "start_line": 358,
+          "removed": "                                                    position,\n                                                    projectile->angle\n                                                        - 1.5707964f,\n                                                    0.0f);\n",
+          "replacement": "                                                    position, projectile->angle - 1.5707964f, 0.0f);\n"
+        },
+        {
+          "start_line": 363,
+          "removed": "                                                    effect_spawn_blood_splatter(\n                                                        position,\n                                                        projectile->angle\n                                                            - 1.5707964f\n                                                            + 3.1415927f,\n",
+          "replacement": "                                                    effect_spawn_blood_splatter(position,\n                                                        projectile->angle - 1.5707964f + 3.1415927f,\n"
+        },
+        {
+          "start_line": 375,
+          "removed": "                                    if (creature_pool[hit_id]\n                                            .lifecycle_stage\n                                        == 16.0f) {\n",
+          "replacement": "                                    if (creature_pool[hit_id].lifecycle_stage == 16.0f) {\n"
+        },
+        {
+          "start_line": 381,
+          "removed": "                                    if (perk_count_get(\n                                            perk_id_bloody_mess_quick_learner)\n                                        != 0) {\n",
+          "replacement": "                                    if (perk_count_get(perk_id_bloody_mess_quick_learner) != 0) {\n"
+        },
+        {
+          "start_line": 388,
+          "removed": "                                                (float)(crt_rand() % (upper - lower)\n                                                    + lower),\n                                                (float)(crt_rand() % (upper - lower)\n                                                    + lower),\n",
+          "replacement": "                                                (float)(crt_rand() % (upper - lower) + lower),\n                                                (float)(crt_rand() % (upper - lower) + lower),\n"
+        },
+        {
+          "start_line": 395,
+          "removed": "                                                    + creature_pool[hit_id]\n                                                        .position.x,\n",
+          "replacement": "                                                    + creature_pool[hit_id].position.x,\n"
+        },
+        {
+          "start_line": 398,
+          "removed": "                                                    + creature_pool[hit_id]\n                                                        .position.y,\n",
+          "replacement": "                                                    + creature_pool[hit_id].position.y,\n"
+        },
+        {
+          "start_line": 404,
+          "removed": "                                                (float)(crt_rand() % (upper - lower)\n                                                    + lower),\n                                                (float)(crt_rand() % (upper - lower)\n                                                    + lower),\n",
+          "replacement": "                                                (float)(crt_rand() % (upper - lower) + lower),\n                                                (float)(crt_rand() % (upper - lower) + lower),\n"
+        },
+        {
+          "start_line": 411,
+          "removed": "                                                    + creature_pool[hit_id]\n                                                        .position.x,\n",
+          "replacement": "                                                    + creature_pool[hit_id].position.x,\n"
+        },
+        {
+          "start_line": 414,
+          "removed": "                                                    + creature_pool[hit_id]\n                                                        .position.y,\n",
+          "replacement": "                                                    + creature_pool[hit_id].position.y,\n"
+        },
+        {
+          "start_line": 424,
+          "removed": "                                    type_id =\n                                        projectile->pos.tail.vy.type_id;\n                                    if (type_id\n                                            != PROJECTILE_TYPE_FIRE_BULLETS\n                                        && type_id\n                                            != PROJECTILE_TYPE_GAUSS_GUN\n                                        && type_id\n                                            != PROJECTILE_TYPE_BLADE_GUN) {\n                                        projectile->pos.tail.vy.life_timer =\n                                            0.25f;\n",
+          "replacement": "                                    type_id = projectile->pos.tail.vy.type_id;\n                                    if (type_id != PROJECTILE_TYPE_FIRE_BULLETS\n                                        && type_id != PROJECTILE_TYPE_GAUSS_GUN\n                                        && type_id != PROJECTILE_TYPE_BLADE_GUN) {\n                                        projectile->pos.tail.vy.life_timer = 0.25f;\n"
+        },
+        {
+          "start_line": 435,
+          "removed": "                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)cos(heading) * jitter;\n                                        projectile->position.y +=\n                                            (float)sin(heading) * jitter;\n",
+          "replacement": "                                        float heading = projectile->angle - 1.5707964f;\n                                        projectile->position.x += (float)cos(heading) * jitter;\n                                        projectile->position.y += (float)sin(heading) * jitter;\n"
+        },
+        {
+          "start_line": 443,
+          "removed": "                                    float damage_dx =\n                                        projectile->pos.origin_x - position->x;\n                                    float damage_dy =\n                                        projectile->pos.tail.origin_y - position->y;\n",
+          "replacement": "                                    float damage_dx = projectile->pos.origin_x - position->x;\n                                    float damage_dy = projectile->pos.tail.origin_y - position->y;\n"
+        },
+        {
+          "start_line": 448,
+          "removed": "                                        damage_dx * damage_dx\n                                        + damage_dy * damage_dy);\n",
+          "replacement": "                                        damage_dx * damage_dx + damage_dy * damage_dy);\n"
+        },
+        {
+          "start_line": 454,
+          "removed": "                                    type_id =\n                                        projectile->pos.tail.vy.type_id;\n                                    float damage =\n                                        ((100.0f / damage_distance)\n                                                * weapon_table[type_id]\n                                                    .damage_scale\n                                                * 30.0f\n                                            + 10.0f);\n",
+          "replacement": "                                    type_id = projectile->pos.tail.vy.type_id;\n                                    float damage = ((100.0f / damage_distance)\n                                            * weapon_table[type_id].damage_scale * 30.0f\n                                        + 10.0f);\n"
+        },
+        {
+          "start_line": 463,
+          "removed": "                                    if (type_id\n                                        == PROJECTILE_TYPE_ION_MINIGUN) {\n                                        effect_spawn_ion_hit_core(\n                                            position,\n                                            1.5f,\n                                            0.1f);\n                                        effect_spawn_ion_hit_sparks(\n                                            position,\n                                            0.8f);\n                                    } else if (type_id\n                                        == PROJECTILE_TYPE_ION_RIFLE) {\n",
+          "replacement": "                                    if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {\n                                        effect_spawn_ion_hit_core(position, 1.5f, 0.1f);\n                                        effect_spawn_ion_hit_sparks(position, 0.8f);\n                                    } else if (type_id == PROJECTILE_TYPE_ION_RIFLE) {\n"
+        },
+        {
+          "start_line": 475,
+          "removed": "                                            && projectile_index\n                                                == shock_chain_projectile_id) {\n",
+          "replacement": "                                            && projectile_index == shock_chain_projectile_id) {\n"
+        },
+        {
+          "start_line": 478,
+          "removed": "                                            int next_id = creature_find_nearest(\n                                                position,\n                                                hit_id,\n                                                100.0f);\n",
+          "replacement": "                                            int next_id\n                                                = creature_find_nearest(position, hit_id, 100.0f);\n"
+        },
+        {
+          "start_line": 483,
+          "removed": "                                            vec2f_t *next_position =\n                                                &creature_pool[next_id].position;\n                                            vec2f_t *hit_position =\n                                                &creature_pool[hit_id].position;\n                                            float chain_angle = (float)atan2f(\n                                                next_position->y - hit_position->y,\n                                                next_position->x - hit_position->x);\n                                            shock_chain_projectile_id =\n                                                projectile_spawn(\n                                                    position,\n                                                    chain_angle\n                                                        - 1.5707964f\n                                                        - 3.1415927f,\n                                                    PROJECTILE_TYPE_ION_RIFLE,\n                                                    hit_id);\n",
+          "replacement": "                                            vec2f_t* next_position\n                                                = &creature_pool[next_id].position;\n                                            vec2f_t* hit_position = &creature_pool[hit_id].position;\n                                            float chain_angle\n                                                = (float)atan2f(next_position->y - hit_position->y,\n                                                    next_position->x - hit_position->x);\n                                            shock_chain_projectile_id = projectile_spawn(position,\n                                                chain_angle - 1.5707964f - 3.1415927f,\n                                                PROJECTILE_TYPE_ION_RIFLE, hit_id);\n"
+        },
+        {
+          "start_line": 500,
+          "removed": "                                        effect_spawn_ion_hit_core(\n                                            position,\n                                            1.2f,\n                                            0.4f);\n                                        effect_spawn_ion_hit_sparks(\n                                            position,\n                                            1.2f);\n                                    } else if (type_id\n                                        == PROJECTILE_TYPE_ION_CANNON) {\n                                        effect_spawn_ion_hit_core(\n                                            position,\n                                            1.0f,\n                                            1.0f);\n                                        effect_spawn_ion_hit_sparks(\n                                            position,\n                                            2.2f);\n                                        sfx_play_panned(\n                                            sfx_shockwave,\n                                            position,\n                                            1.0f);\n                                    } else if (type_id\n                                        == PROJECTILE_TYPE_PLASMA_CANNON) {\n",
+          "replacement": "                                        effect_spawn_ion_hit_core(position, 1.2f, 0.4f);\n                                        effect_spawn_ion_hit_sparks(position, 1.2f);\n                                    } else if (type_id == PROJECTILE_TYPE_ION_CANNON) {\n                                        effect_spawn_ion_hit_core(position, 1.0f, 1.0f);\n                                        effect_spawn_ion_hit_sparks(position, 2.2f);\n                                        sfx_play_panned(sfx_shockwave, position, 1.0f);\n                                    } else if (type_id == PROJECTILE_TYPE_PLASMA_CANNON) {\n"
+        },
+        {
+          "start_line": 524,
+          "removed": "                                        float child_radius =\n                                            creature_pool[hit_id].size * 0.5f\n                                            + 1.0f;\n",
+          "replacement": "                                        float child_radius\n                                            = creature_pool[hit_id].size * 0.5f + 1.0f;\n"
+        },
+        {
+          "start_line": 528,
+          "removed": "                                            float child_angle =\n                                                (float)child_index\n                                                * 0.5235988f;\n",
+          "replacement": "                                            float child_angle = (float)child_index * 0.5235988f;\n"
+        },
+        {
+          "start_line": 539,
+          "removed": "                                            projectile_spawn(\n                                                &child_pos,\n                                                child_angle,\n                                                PROJECTILE_TYPE_PLASMA_RIFLE,\n                                                -100);\n",
+          "replacement": "                                            projectile_spawn(&child_pos, child_angle,\n                                                PROJECTILE_TYPE_PLASMA_RIFLE, -100);\n"
+        },
+        {
+          "start_line": 547,
+          "removed": "                                        sfx_play_panned(\n                                            sfx_explosion_medium,\n                                            position,\n                                            1.0f);\n                                        sfx_play_panned(\n                                            sfx_shockwave,\n                                            position,\n                                            1.0f);\n                                        effect_spawn_plasma_hit_core(\n                                            position,\n                                            1.5f,\n                                            1.0f);\n                                        effect_spawn_plasma_hit_core(\n                                            position,\n                                            1.0f,\n                                            1.0f);\n                                    } else if (type_id\n                                        == PROJECTILE_TYPE_SHRINKIFIER) {\n",
+          "replacement": "                                        sfx_play_panned(sfx_explosion_medium, position, 1.0f);\n                                        sfx_play_panned(sfx_shockwave, position, 1.0f);\n                                        effect_spawn_plasma_hit_core(position, 1.5f, 1.0f);\n                                        effect_spawn_plasma_hit_core(position, 1.0f, 1.0f);\n                                    } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n"
+        },
+        {
+          "start_line": 566,
+          "removed": "                                        float size =\n                                            creature_pool[hit_id].size * 0.65f;\n                                        projectile->pos.tail.vy.life_timer =\n                                            0.25f;\n",
+          "replacement": "                                        float size = creature_pool[hit_id].size * 0.65f;\n                                        projectile->pos.tail.vy.life_timer = 0.25f;\n"
+        },
+        {
+          "start_line": 574,
+          "removed": "                                    } else if (type_id\n                                        == PROJECTILE_TYPE_PULSE_GUN) {\n",
+          "replacement": "                                    } else if (type_id == PROJECTILE_TYPE_PULSE_GUN) {\n"
+        },
+        {
+          "start_line": 577,
+          "removed": "                                            delta.x * 3.0f, delta.y * 3.0f,\n",
+          "replacement": "                                            delta.x * 3.0f,\n                                            delta.y * 3.0f,\n"
+        },
+        {
+          "start_line": 581,
+          "removed": "                                    } else if (type_id\n                                        == PROJECTILE_TYPE_PLAGUE_SPREADER) {\n                                        creature_pool[hit_id].collision_flag =\n                                            1;\n",
+          "replacement": "                                    } else if (type_id == PROJECTILE_TYPE_PLAGUE_SPREADER) {\n                                        creature_pool[hit_id].collision_flag = 1;\n"
+        },
+        {
+          "start_line": 588,
+          "removed": "                                    if (damage > 0.0f\n                                        && creature_pool[hit_id].health\n                                            > 0.0f) {\n                                        projectile->pos.tail.vy.damage_pool -=\n                                            1.0f;\n                                        if (projectile->pos.tail.vy.damage_pool\n                                            > 0.0f) {\n                                            float &impulse_speed = projectile->pos.tail.vy.speed_scale;\n                                            float impulse_cosine = (float)cos(\n                                                projectile->angle - 1.5707964f);\n",
+          "replacement": "                                    if (damage > 0.0f && creature_pool[hit_id].health > 0.0f) {\n                                        projectile->pos.tail.vy.damage_pool -= 1.0f;\n                                        if (projectile->pos.tail.vy.damage_pool > 0.0f) {\n                                            float& impulse_speed\n                                                = projectile->pos.tail.vy.speed_scale;\n                                            float impulse_cosine\n                                                = (float)cos(projectile->angle - 1.5707964f);\n"
+        },
+        {
+          "start_line": 599,
+          "removed": "                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n",
+          "replacement": "                                                * projectile->pos.tail.vy.speed_scale;\n"
+        },
+        {
+          "start_line": 606,
+          "removed": "                                            creature_apply_damage(\n                                                hit_id,\n                                                projectile->pos.tail.vy\n                                                    .damage_pool,\n                                                1,\n                                                &impulse);\n                                            projectile->pos.tail.vy.damage_pool -=\n                                                creature_pool[hit_id].health;\n",
+          "replacement": "                                            creature_apply_damage(hit_id,\n                                                projectile->pos.tail.vy.damage_pool, 1, &impulse);\n                                            projectile->pos.tail.vy.damage_pool\n                                                -= creature_pool[hit_id].health;\n"
+        },
+        {
+          "start_line": 615,
+          "removed": "                                            float &impulse_speed = projectile->pos.tail.vy.speed_scale;\n                                            float impulse_cosine = (float)cos(\n                                                projectile->angle - 1.5707964f);\n",
+          "replacement": "                                            float& impulse_speed\n                                                = projectile->pos.tail.vy.speed_scale;\n                                            float impulse_cosine\n                                                = (float)cos(projectile->angle - 1.5707964f);\n"
+        },
+        {
+          "start_line": 619,
+          "removed": "                                                * projectile->pos.tail.vy\n                                                    .speed_scale;\n",
+          "replacement": "                                                * projectile->pos.tail.vy.speed_scale;\n"
+        },
+        {
+          "start_line": 626,
+          "removed": "                                            creature_apply_damage(\n                                                hit_id,\n                                                damage,\n                                                1,\n                                                &impulse);\n                                            if (projectile->pos.tail.vy\n                                                    .life_timer\n                                                != 0.25f) {\n                                                projectile->pos.tail.vy\n                                                    .life_timer = 0.25f;\n",
+          "replacement": "                                            creature_apply_damage(hit_id, damage, 1, &impulse);\n                                            if (projectile->pos.tail.vy.life_timer != 0.25f) {\n                                                projectile->pos.tail.vy.life_timer = 0.25f;\n"
+        },
+        {
+          "start_line": 640,
+          "removed": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        == 1.0f) {\n                                        if (projectile->pos.tail.vy.life_timer\n                                            == 0.25f) {\n                                            projectile->pos.tail.vy.damage_pool =\n                                                0.0f;\n",
+          "replacement": "                                    if (projectile->pos.tail.vy.damage_pool == 1.0f) {\n                                        if (projectile->pos.tail.vy.life_timer == 0.25f) {\n                                            projectile->pos.tail.vy.damage_pool = 0.0f;\n"
+        },
+        {
+          "start_line": 647,
+          "removed": "                                            projectile->pos.tail.vy.damage_pool =\n                                                0.0f;\n                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n",
+          "replacement": "                                            projectile->pos.tail.vy.damage_pool = 0.0f;\n                                            projectile->pos.tail.vy.life_timer = 0.25f;\n"
+        },
+        {
+          "start_line": 656,
+          "removed": "                                    type_id =\n                                        projectile->pos.tail.vy.type_id;\n                                    if (type_id\n                                            == PROJECTILE_TYPE_GAUSS_GUN\n                                        || type_id\n                                            == PROJECTILE_TYPE_FIRE_BULLETS) {\n                                        perk_count_get(\n                                            perk_id_bloody_mess_quick_learner);\n",
+          "replacement": "                                    type_id = projectile->pos.tail.vy.type_id;\n                                    if (type_id == PROJECTILE_TYPE_GAUSS_GUN\n                                        || type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                                        perk_count_get(perk_id_bloody_mess_quick_learner);\n"
+        },
+        {
+          "start_line": 666,
+          "removed": "                                            float speed =\n                                                (float)(crt_rand() % 100)\n                                                * 0.1f;\n",
+          "replacement": "                                            float speed = (float)(crt_rand() % 100) * 0.1f;\n"
+        },
+        {
+          "start_line": 670,
+          "removed": "                                                speed =\n                                                    (float)(crt_rand() % 90\n                                                        + 10)\n                                                    * 0.1f;\n",
+          "replacement": "                                                speed = (float)(crt_rand() % 90 + 10) * 0.1f;\n"
+        },
+        {
+          "start_line": 676,
+          "removed": "                                                speed =\n                                                    (float)(crt_rand() % 80\n                                                        + 20)\n                                                    * 0.1f;\n",
+          "replacement": "                                                speed = (float)(crt_rand() % 80 + 20) * 0.1f;\n"
+        },
+        {
+          "start_line": 682,
+          "removed": "                                            float impact_heading =\n                                                projectile->angle\n                                                - 1.5707964f;\n                                            offset_x =\n                                                (float)cos(impact_heading)\n                                                * speed * 20.0f;\n                                            offset_y =\n                                                (float)sin(impact_heading)\n                                                * speed * 20.0f;\n",
+          "replacement": "                                            float impact_heading = projectile->angle - 1.5707964f;\n                                            offset_x = (float)cos(impact_heading) * speed * 20.0f;\n                                            offset_y = (float)sin(impact_heading) * speed * 20.0f;\n"
+        },
+        {
+          "start_line": 692,
+          "removed": "                                                creature_pool[hit_id].position.x\n                                                    + offset_x,\n                                                creature_pool[hit_id].position.y\n                                                    + offset_y,\n",
+          "replacement": "                                                creature_pool[hit_id].position.x + offset_x,\n                                                creature_pool[hit_id].position.y + offset_y,\n"
+        },
+        {
+          "start_line": 697,
+          "removed": "                                            vec2f_t zero = {0.0f, 0.0f};\n                                            vec2_add_inplace(\n                                                hit_id,\n                                                &impulse_pos,\n                                                &zero);\n",
+          "replacement": "                                            vec2f_t zero = { 0.0f, 0.0f };\n                                            vec2_add_inplace(hit_id, &impulse_pos, &zero);\n"
+        },
+        {
+          "start_line": 709,
+          "removed": "                                                effect_spawn_freeze_shard(\n                                                    &shard_pos,\n",
+          "replacement": "                                                effect_spawn_freeze_shard(&shard_pos,\n"
+        },
+        {
+          "start_line": 712,
+          "removed": "                                                        + (float)(\n                                                            crt_rand() % 100)\n                                                            * 0.01f);\n",
+          "replacement": "                                                        + (float)(crt_rand() % 100) * 0.01f);\n"
+        },
+        {
+          "start_line": 718,
+          "removed": "                                                creature_pool[hit_id].position.x\n                                                    + offset_x,\n                                                creature_pool[hit_id].position.y\n                                                    + offset_y,\n",
+          "replacement": "                                                creature_pool[hit_id].position.x + offset_x,\n                                                creature_pool[hit_id].position.y + offset_y,\n"
+        },
+        {
+          "start_line": 727,
+          "removed": "                                        effect_spawn_freeze_shard(\n                                            position,\n                                            projectile->angle\n                                                - 1.5707964f\n                                                + (float)(crt_rand() % 100)\n                                                    * 0.01f);\n",
+          "replacement": "                                        effect_spawn_freeze_shard(position,\n                                            projectile->angle - 1.5707964f\n                                                + (float)(crt_rand() % 100) * 0.01f);\n"
+        },
+        {
+          "start_line": 736,
+          "removed": "                                            float impact_heading =\n                                                projectile->angle\n                                                - 1.5707964f\n                                                + (float)(\n                                                    crt_rand() % 20 - 10)\n                                                    * 0.1f;\n                                            offset_x =\n                                                (float)cos(impact_heading)\n                                                * 20.0f;\n                                            offset_y =\n                                                (float)sin(impact_heading)\n                                                * 20.0f;\n",
+          "replacement": "                                            float impact_heading = projectile->angle - 1.5707964f\n                                                + (float)(crt_rand() % 20 - 10) * 0.1f;\n                                            offset_x = (float)cos(impact_heading) * 20.0f;\n                                            offset_y = (float)sin(impact_heading) * 20.0f;\n"
+        },
+        {
+          "start_line": 749,
+          "removed": "                                            vec2f_t *creature_pos =\n                                                &creature_pool[hit_id].position;\n",
+          "replacement": "                                            vec2f_t* creature_pos = &creature_pool[hit_id].position;\n"
+        },
+        {
+          "start_line": 786,
+          "removed": "                                    if (!demo_mode_active\n                                        && !music_playlist_randomized_latch\n                                        && config_game_mode\n                                            != GAME_MODE_RUSH) {\n                                        sfx_play_exclusive(\n                                            music_track_extra_0);\n",
+          "replacement": "                                    if (!demo_mode_active && !music_playlist_randomized_latch\n                                        && config_game_mode != GAME_MODE_RUSH) {\n                                        sfx_play_exclusive(music_track_extra_0);\n"
+        },
+        {
+          "start_line": 794,
+          "removed": "                                                .ammo_class == 4) {\n",
+          "replacement": "                                                .ammo_class\n                                            == 4) {\n"
+        },
+        {
+          "start_line": 798,
+          "removed": "                                                crt_rand() % 6 + sfx_bullet_hit_01,\n                                                position, 1.0f);\n",
+          "replacement": "                                                crt_rand() % 6 + sfx_bullet_hit_01, position, 1.0f);\n"
+        },
+        {
+          "start_line": 803,
+          "removed": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        <= 0.0f) {\n",
+          "replacement": "                                    if (projectile->pos.tail.vy.damage_pool <= 0.0f) {\n"
+        },
+        {
+          "start_line": 820,
+          "removed": "        secondary_projectile_t *secondary = &secondary_projectile_pool[secondary_index];\n",
+          "replacement": "        secondary_projectile_t* secondary = &secondary_projectile_pool[secondary_index];\n"
+        },
+        {
+          "start_line": 822,
+          "removed": "            if (secondary->pos.vx.vy.type_id\n                == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n",
+          "replacement": "            if (secondary->pos.vx.vy.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n"
+        },
+        {
+          "start_line": 835,
+          "removed": "                    fx_queue_add(\n                        0x10,\n                        &secondary->position,\n                        extent,\n                        extent,\n                        0.0f,\n                        &color);\n",
+          "replacement": "                    fx_queue_add(0x10, &secondary->position, extent, extent, 0.0f, &color);\n"
+        },
+        {
+          "start_line": 845,
+          "removed": "                float radius = secondary->pos.vx.vy.vel_y\n                    * secondary->pos.vx.vel_x * 80.0f;\n",
+          "replacement": "                float radius = secondary->pos.vx.vy.vel_y * secondary->pos.vx.vel_x * 80.0f;\n"
+        },
+        {
+          "start_line": 849,
+          "removed": "                    creature_t *creature = &creature_pool[creature_id];\n",
+          "replacement": "                    creature_t* creature = &creature_pool[creature_id];\n"
+        },
+        {
+          "start_line": 851,
+          "removed": "                        vec2f_t &explosion_position = secondary->position;\n                        vec2f_t &explosion_target = creature_pool[creature_id].position;\n",
+          "replacement": "                        vec2f_t& explosion_position = secondary->position;\n                        vec2f_t& explosion_target = creature_pool[creature_id].position;\n"
+        },
+        {
+          "start_line": 855,
+          "removed": "                        float distance = projectile_vec2_distance(\n                            &explosion_target, &explosion_position);\n",
+          "replacement": "                        float distance\n                            = projectile_vec2_distance(&explosion_target, &explosion_position);\n"
+        },
+        {
+          "start_line": 858,
+          "removed": "                            vec2f_t direction = {dx, dy};\n",
+          "replacement": "                            vec2f_t direction = { dx, dy };\n"
+        },
+        {
+          "start_line": 860,
+          "removed": "                            projectile_vec2_t impulse =\n                                *(projectile_vec2_t *)&direction * 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                (vec2f_t *)&impulse);\n",
+          "replacement": "                            projectile_vec2_t impulse = *(projectile_vec2_t*)&direction * 0.1f;\n                            creature_apply_damage(creature_id,\n                                frame_dt * secondary->pos.vx.vy.vel_y * 700.0f, 3,\n                                (vec2f_t*)&impulse);\n"
+        },
+        {
+          "start_line": 869,
+          "removed": "                                fx_queue_add_random(\n                                    &creature_pool[creature_id].position);\n                                fx_queue_add_random(\n                                    &creature_pool[creature_id].position);\n",
+          "replacement": "                                fx_queue_add_random(&creature_pool[creature_id].position);\n                                fx_queue_add_random(&creature_pool[creature_id].position);\n"
+        },
+        {
+          "start_line": 880,
+          "removed": "                projectile_vec2_t &secondary_position =\n                    *(projectile_vec2_t *)&secondary->position;\n                projectile_vec2_t movement =\n                    frame_dt\n                    * *(projectile_vec2_t *)&secondary->pos.vx.velocity;\n                vec2_add(\n                    (vec2f_t *)&secondary_position,\n                    (vec2f_t *)&movement,\n                    4.0f);\n",
+          "replacement": "                projectile_vec2_t& secondary_position = *(projectile_vec2_t*)&secondary->position;\n                projectile_vec2_t movement\n                    = frame_dt * *(projectile_vec2_t*)&secondary->pos.vx.velocity;\n                vec2_add((vec2f_t*)&secondary_position, (vec2f_t*)&movement, 4.0f);\n"
+        },
+        {
+          "start_line": 890,
+          "removed": "                secondary_projectile_type_id_t type_id =\n                    secondary->pos.vx.vy.type_id;\n",
+          "replacement": "                secondary_projectile_type_id_t type_id = secondary->pos.vx.vy.type_id;\n"
+        },
+        {
+          "start_line": 893,
+          "removed": "                    float speed = projectile_vec2_length(\n                        secondary->pos.vx.velocity);\n",
+          "replacement": "                    float speed = projectile_vec2_length(secondary->pos.vx.velocity);\n"
+        },
+        {
+          "start_line": 901,
+          "removed": "                } else if (type_id\n                    == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {\n                    float speed = projectile_vec2_length(\n                        secondary->pos.vx.velocity);\n",
+          "replacement": "                } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {\n                    float speed = projectile_vec2_length(secondary->pos.vx.velocity);\n"
+        },
+        {
+          "start_line": 911,
+          "removed": "                } else if (type_id\n                    == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {\n                    if (!creature_pool[secondary->pos.vx.vy.target_id]\n                            .active) {\n                        secondary->pos.vx.vy.target_id =\n                            creature_find_nearest(\n                                (vec2f_t *)&secondary_position,\n                                -1,\n                                0.0f);\n",
+          "replacement": "                } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {\n                    if (!creature_pool[secondary->pos.vx.vy.target_id].active) {\n                        secondary->pos.vx.vy.target_id\n                            = creature_find_nearest((vec2f_t*)&secondary_position, -1, 0.0f);\n"
+        },
+        {
+          "start_line": 922,
+          "removed": "                    creature_t *target = &creature_pool[\n                        secondary->pos.vx.vy.target_id];\n                    projectile_vec2_t &target_position =\n                        *(projectile_vec2_t *)&target->position;\n                    projectile_vec2_t &secondary_velocity =\n                        *(projectile_vec2_t *)&secondary->pos.vx.velocity;\n                    secondary->angle =\n                        projectile_vec2_angle(\n                            secondary_position - target_position)\n                        - 1.5707964f;\n                    secondary_velocity.x +=\n                        (float)cos(\n                            secondary->angle - 1.5707964f)\n                        * frame_dt * 800.0f;\n                    secondary_velocity.y +=\n                        (float)sin(\n                            secondary->angle - 1.5707964f)\n                        * frame_dt * 800.0f;\n",
+          "replacement": "                    creature_t* target = &creature_pool[secondary->pos.vx.vy.target_id];\n                    projectile_vec2_t& target_position = *(projectile_vec2_t*)&target->position;\n                    projectile_vec2_t& secondary_velocity\n                        = *(projectile_vec2_t*)&secondary->pos.vx.velocity;\n                    secondary->angle\n                        = projectile_vec2_angle(secondary_position - target_position) - 1.5707964f;\n                    secondary_velocity.x\n                        += (float)cos(secondary->angle - 1.5707964f) * frame_dt * 800.0f;\n                    secondary_velocity.y\n                        += (float)sin(secondary->angle - 1.5707964f) * frame_dt * 800.0f;\n"
+        },
+        {
+          "start_line": 941,
+          "removed": "                    float speed = projectile_vec2_length(\n                        secondary->pos.vx.velocity);\n",
+          "replacement": "                    float speed = projectile_vec2_length(secondary->pos.vx.velocity);\n"
+        },
+        {
+          "start_line": 944,
+          "removed": "                        float &velocity_x = secondary->pos.vx.vel_x;\n                        velocity_x -=\n                            (float)cos(\n                                secondary->angle - 1.5707964f)\n                            * frame_dt * 800.0f;\n                        secondary_velocity.y -=\n                            (float)sin(\n                                secondary->angle - 1.5707964f)\n                            * frame_dt * 800.0f;\n",
+          "replacement": "                        float& velocity_x = secondary->pos.vx.vel_x;\n                        velocity_x -= (float)cos(secondary->angle - 1.5707964f) * frame_dt * 800.0f;\n                        secondary_velocity.y\n                            -= (float)sin(secondary->angle - 1.5707964f) * frame_dt * 800.0f;\n"
+        },
+        {
+          "start_line": 957,
+          "removed": "                secondary->pos.vx.vy.trail_timer -=\n                    (m_fabs(secondary->pos.vx.vel_x)\n                        + m_fabs(secondary->pos.vx.vy.vel_y))\n",
+          "replacement": "                secondary->pos.vx.vy.trail_timer\n                    -= (m_fabs(secondary->pos.vx.vel_x) + m_fabs(secondary->pos.vx.vy.vel_y))\n"
+        },
+        {
+          "start_line": 962,
+          "removed": "                    projectile_vec2_t trail_velocity =\n                        projectile_vec2_t(\n                            (float)cos(secondary->angle + 1.5707964f),\n                            (float)cos(secondary->angle + 1.5707964f)) * 90.0f;\n                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    projectile_vec2_t &trail_origin =\n                        *(projectile_vec2_t *)(vec2f_t *)&secondary_position;\n                    projectile_vec2_t trail_pos =\n                        trail_origin\n                        - projectile_vec2_t(\n                            (float)cos(trail_heading),\n                            (float)sin(trail_heading))\n",
+          "replacement": "                    projectile_vec2_t trail_velocity\n                        = projectile_vec2_t((float)cos(secondary->angle + 1.5707964f),\n                              (float)cos(secondary->angle + 1.5707964f))\n                        * 90.0f;\n                    float trail_heading = secondary->angle - 1.5707964f;\n                    projectile_vec2_t& trail_origin = secondary_position;\n                    projectile_vec2_t trail_pos = trail_origin\n                        - projectile_vec2_t((float)cos(trail_heading), (float)sin(trail_heading))\n"
+        },
+        {
+          "start_line": 977,
+          "removed": "                        (const vec2f_t *)&trail_pos,\n                        (const vec2f_t *)&trail_velocity,\n                        14.0f);\n",
+          "replacement": "                        (const vec2f_t*)&trail_pos, (const vec2f_t*)&trail_velocity, 14.0f);\n"
+        },
+        {
+          "start_line": 984,
+          "removed": "                int hit_id = creature_find_in_radius(\n                    (vec2f_t *)&secondary_position,\n                    8.0f,\n                    0);\n",
+          "replacement": "                int hit_id = creature_find_in_radius((vec2f_t*)&secondary_position, 8.0f, 0);\n"
+        },
+        {
+          "start_line": 998,
+          "removed": "                                (vec2f_t *)&secondary_position,\n                                (float)(crt_rand() % 612) * 0.01f);\n",
+          "replacement": "                                (vec2f_t*)&secondary_position, (float)(crt_rand() % 612) * 0.01f);\n"
+        },
+        {
+          "start_line": 1008,
+          "removed": "                            decal_offset_1.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_1.y\n                                + creature_pool[hit_id].position.y,\n",
+          "replacement": "                            decal_offset_1.x + creature_pool[hit_id].position.x,\n                            decal_offset_1.y + creature_pool[hit_id].position.y,\n"
+        },
+        {
+          "start_line": 1020,
+          "removed": "                            decal_offset_2.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_2.y\n                                + creature_pool[hit_id].position.y,\n",
+          "replacement": "                            decal_offset_2.x + creature_pool[hit_id].position.x,\n                            decal_offset_2.y + creature_pool[hit_id].position.y,\n"
+        },
+        {
+          "start_line": 1032,
+          "removed": "                            decal_offset_3.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_3.y\n                                + creature_pool[hit_id].position.y,\n",
+          "replacement": "                            decal_offset_3.x + creature_pool[hit_id].position.x,\n                            decal_offset_3.y + creature_pool[hit_id].position.y,\n"
+        },
+        {
+          "start_line": 1045,
+          "removed": "                            effect_spawn_explosion_burst(\n                                (vec2f_t *)&secondary_position,\n                                0.4f);\n",
+          "replacement": "                            effect_spawn_explosion_burst((vec2f_t*)&secondary_position, 0.4f);\n"
+        },
+        {
+          "start_line": 1049,
+          "removed": "                    } else if (type_id\n                        == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {\n",
+          "replacement": "                    } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {\n"
+        },
+        {
+          "start_line": 1052,
+          "removed": "                    } else if (type_id\n                        == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {\n",
+          "replacement": "                    } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {\n"
+        },
+        {
+          "start_line": 1057,
+          "removed": "                    if (!demo_mode_active\n                        && !music_playlist_randomized_latch\n",
+          "replacement": "                    if (!demo_mode_active && !music_playlist_randomized_latch\n"
+        },
+        {
+          "start_line": 1062,
+          "removed": "                        sfx_play_panned(\n                            sfx_explosion_medium,\n                            (vec2f_t *)&secondary_position,\n                            1.0f);\n",
+          "replacement": "                        sfx_play_panned(sfx_explosion_medium, (vec2f_t*)&secondary_position, 1.0f);\n"
+        },
+        {
+          "start_line": 1075,
+          "removed": "                    creature_apply_damage(\n                        hit_id,\n                        damage,\n                        3,\n                        &impulse);\n",
+          "replacement": "                    creature_apply_damage(hit_id, damage, 3, &impulse);\n"
+        },
+        {
+          "start_line": 1083,
+          "removed": "                        secondary->pos.vx.vy.type_id =\n                            SECONDARY_PROJECTILE_TYPE_EXPLODING;\n",
+          "replacement": "                        secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;\n"
+        },
+        {
+          "start_line": 1090,
+          "removed": "                                effect_spawn_freeze_shard(\n                                    (vec2f_t *)&secondary_position,\n",
+          "replacement": "                                effect_spawn_freeze_shard((vec2f_t*)&secondary_position,\n"
+        },
+        {
+          "start_line": 1098,
+          "removed": "                                angle =\n                                    (float)(crt_rand() % 628) * 0.01f;\n",
+          "replacement": "                                angle = (float)(crt_rand() % 628) * 0.01f;\n"
+        },
+        {
+          "start_line": 1113,
+          "removed": "                    } else if (type_id\n                        == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {\n                        secondary->pos.vx.vy.type_id =\n                            SECONDARY_PROJECTILE_TYPE_EXPLODING;\n",
+          "replacement": "                    } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {\n                        secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;\n"
+        },
+        {
+          "start_line": 1122,
+          "removed": "                                effect_spawn_freeze_shard(\n                                    (vec2f_t *)&secondary_position,\n",
+          "replacement": "                                effect_spawn_freeze_shard((vec2f_t*)&secondary_position,\n"
+        },
+        {
+          "start_line": 1130,
+          "removed": "                                angle =\n                                    (float)(crt_rand() % 628) * 0.01f;\n",
+          "replacement": "                                angle = (float)(crt_rand() % 628) * 0.01f;\n"
+        },
+        {
+          "start_line": 1145,
+          "removed": "                    } else if (type_id\n                        == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {\n                        secondary->pos.vx.vy.type_id =\n                            SECONDARY_PROJECTILE_TYPE_EXPLODING;\n",
+          "replacement": "                    } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {\n                        secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;\n"
+        },
+        {
+          "start_line": 1154,
+          "removed": "                                effect_spawn_freeze_shard(\n                                    &creature_pool[hit_id].position,\n",
+          "replacement": "                                effect_spawn_freeze_shard(&creature_pool[hit_id].position,\n"
+        },
+        {
+          "start_line": 1162,
+          "removed": "                                angle =\n                                    (float)(crt_rand() % 628) * 0.01f;\n",
+          "replacement": "                                angle = (float)(crt_rand() % 628) * 0.01f;\n"
+        },
+        {
+          "start_line": 1181,
+          "removed": "                        float magnitude =\n                            (float)(crt_rand() % 800) * 0.1f;\n                        angle =\n                            (float)burst_index * 0.62831855f;\n",
+          "replacement": "                        float magnitude = (float)(crt_rand() % 800) * 0.1f;\n                        angle = (float)burst_index * 0.62831855f;\n"
+        },
+        {
+          "start_line": 1195,
+          "removed": "                            (vec2f_t *)&secondary_position,\n                            (vec2f_t *)&velocity,\n                            14.0f);\n",
+          "replacement": "                            (vec2f_t*)&secondary_position, (vec2f_t*)&velocity, 14.0f);\n"
+        },
+        {
+          "start_line": 1204,
+          "removed": "                    secondary->pos.vx.vy.type_id =\n                        SECONDARY_PROJECTILE_TYPE_EXPLODING;\n",
+          "replacement": "                    secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;\n"
+        },
+        {
+          "start_line": 1214,
+          "removed": "        sprite_effect_t *sprite = &sprite_effect_pool[sprite_index];\n",
+          "replacement": "        sprite_effect_t* sprite = &sprite_effect_pool[sprite_index];\n"
+        },
+        {
+          "start_line": 1216,
+          "removed": "            *(projectile_vec2_t *)&sprite->position +=\n                frame_dt * *(projectile_vec2_t *)&sprite->velocity;\n",
+          "replacement": "            *(projectile_vec2_t*)&sprite->position\n                += frame_dt * *(projectile_vec2_t*)&sprite->velocity;\n"
+        },
+        {
+          "start_line": 1228,
+          "removed": "        particle_t *particle = &particle_pool[projectile_index];\n",
+          "replacement": "        particle_t* particle = &particle_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 1230,
+          "removed": "            projectile_vec2_t &particle_velocity =\n                *(projectile_vec2_t *)&particle->velocity;\n            float &angle = particle->angle;\n            float &spin = particle->spin;\n            unsigned char &active = particle->active;\n",
+          "replacement": "            projectile_vec2_t& particle_velocity = *(projectile_vec2_t*)&particle->velocity;\n            float& angle = particle->angle;\n            float& spin = particle->spin;\n            unsigned char& active = particle->active;\n"
+        },
+        {
+          "start_line": 1241,
+          "removed": "                        projectile_vec2_t movement =\n                            frame_dt * particle_velocity * particle->intensity;\n                        vec2_add(\n                            &particle->position,\n                            (vec2f_t *)&movement,\n                            3.0f);\n",
+          "replacement": "                        projectile_vec2_t movement\n                            = frame_dt * particle_velocity * particle->intensity;\n                        vec2_add(&particle->position, (vec2f_t*)&movement, 3.0f);\n"
+        },
+        {
+          "start_line": 1248,
+          "removed": "                        (*(projectile_vec2_t *)&particle->position) +=\n                            frame_dt * particle_velocity\n                            * 0.55f\n                            * particle->intensity;\n",
+          "replacement": "                        (*(projectile_vec2_t*)&particle->position)\n                            += frame_dt * particle_velocity * 0.55f * particle->intensity;\n"
+        },
+        {
+          "start_line": 1258,
+          "removed": "                    projectile_vec2_t movement =\n                        frame_dt * particle_velocity * 2.5f * particle->intensity;\n                    vec2_add(\n                        &particle->position,\n                        (vec2f_t *)&movement,\n                        3.0f);\n",
+          "replacement": "                    projectile_vec2_t movement\n                        = frame_dt * particle_velocity * 2.5f * particle->intensity;\n                    vec2_add(&particle->position, (vec2f_t*)&movement, 3.0f);\n"
+        },
+        {
+          "start_line": 1265,
+          "removed": "                    (*(projectile_vec2_t *)&particle->position) +=\n                        frame_dt * particle_velocity * 2.5f * 0.15f;\n",
+          "replacement": "                    (*(projectile_vec2_t*)&particle->position)\n                        += frame_dt * particle_velocity * 2.5f * 0.15f;\n"
+        },
+        {
+          "start_line": 1275,
+          "removed": "                const unsigned char &style = particle->style_id;\n                if (style == 8\n                    && particle->target_id != -1) {\n",
+          "replacement": "                const unsigned char& style = particle->style_id;\n                if (style == 8 && particle->target_id != -1) {\n"
+        },
+        {
+          "start_line": 1280,
+          "removed": "                            creature_type_table[\n                                creature_pool[particle->target_id].type_id]\n",
+          "replacement": "                            creature_type_table[creature_pool[particle->target_id].type_id]\n"
+        },
+        {
+          "start_line": 1283,
+          "removed": "                            &creature_pool[particle->target_id].position,\n                            1.0f);\n",
+          "replacement": "                            &creature_pool[particle->target_id].position, 1.0f);\n"
+        },
+        {
+          "start_line": 1297,
+          "removed": "                        particle->velocity.x =\n                            (float)cos(angle) * 82.0f;\n                        particle->velocity.y =\n                            (float)sin(angle) * 82.0f;\n",
+          "replacement": "                        particle->velocity.x = (float)cos(angle) * 82.0f;\n                        particle->velocity.y = (float)sin(angle) * 82.0f;\n"
+        },
+        {
+          "start_line": 1308,
+          "removed": "                        particle->velocity.x =\n                            (float)cos(angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(angle) * 62.0f;\n",
+          "replacement": "                        particle->velocity.x = (float)cos(angle) * 62.0f;\n                        particle->velocity.y = (float)sin(angle) * 62.0f;\n"
+        },
+        {
+          "start_line": 1319,
+          "removed": "                        particle->velocity.x =\n                            (float)cos(angle) * 82.0f;\n                        particle->velocity.y =\n                            (float)sin(angle) * 82.0f;\n",
+          "replacement": "                        particle->velocity.x = (float)cos(angle) * 82.0f;\n                        particle->velocity.y = (float)sin(angle) * 82.0f;\n"
+        },
+        {
+          "start_line": 1325,
+          "removed": "                particle->age = particle->intensity > 1.0f\n                    ? 1.0f : particle->intensity;\n                float &scale_x = particle->scale_x;\n                float &scale_y = particle->scale_y;\n",
+          "replacement": "                particle->age = particle->intensity > 1.0f ? 1.0f : particle->intensity;\n                float& scale_x = particle->scale_x;\n                float& scale_y = particle->scale_y;\n"
+        },
+        {
+          "start_line": 1333,
+          "removed": "                    projectile_vec2_t &particle_position =\n                        *(projectile_vec2_t *)&particle->position;\n",
+          "replacement": "                    projectile_vec2_t& particle_position = *(projectile_vec2_t*)&particle->position;\n"
+        },
+        {
+          "start_line": 1336,
+          "removed": "                        &particle->position,\n                        particle->intensity * 8.0f,\n                        0);\n",
+          "replacement": "                        &particle->position, particle->intensity * 8.0f, 0);\n"
+        },
+        {
+          "start_line": 1340,
+          "removed": "                        unsigned char &render_flag = particle->render_flag;\n",
+          "replacement": "                        unsigned char& render_flag = particle->render_flag;\n"
+        },
+        {
+          "start_line": 1343,
+          "removed": "                            particle_position =\n                                *(projectile_vec2_t *)&creature_pool[hit_id].position;\n",
+          "replacement": "                            particle_position\n                                = *(projectile_vec2_t*)&creature_pool[hit_id].position;\n"
+        },
+        {
+          "start_line": 1361,
+          "removed": "                            projectile_vec2_t &hit_position =\n                                *(projectile_vec2_t *)&creature_pool[hit_id].position;\n",
+          "replacement": "                            projectile_vec2_t& hit_position\n                                = *(projectile_vec2_t*)&creature_pool[hit_id].position;\n"
+        },
+        {
+          "start_line": 1377,
+          "removed": "                            particle->velocity.x =\n                                (float)cos(particle->angle) * 82.0f;\n                            particle->velocity.y =\n                                (float)sin(particle->angle) * 82.0f;\n",
+          "replacement": "                            particle->velocity.x = (float)cos(particle->angle) * 82.0f;\n                            particle->velocity.y = (float)sin(particle->angle) * 82.0f;\n"
+        },
+        {
+          "start_line": 1385,
+          "removed": "                            vec2f_t impulse = {0.0f, 0.0f};\n                            creature_apply_damage(\n                                hit_id,\n                                particle->intensity * 10.0f,\n                                4,\n                                &impulse);\n",
+          "replacement": "                            vec2f_t impulse = { 0.0f, 0.0f };\n                            creature_apply_damage(hit_id, particle->intensity * 10.0f, 4, &impulse);\n"
+        },
+        {
+          "start_line": 1392,
+          "removed": "                            creature_t *hit_creature =\n                                &creature_pool[hit_id];\n                            if (hit_creature->tint_r\n                                    + hit_creature->tint_g\n                                    + hit_creature->tint_b\n",
+          "replacement": "                            creature_t* hit_creature = &creature_pool[hit_id];\n                            if (hit_creature->tint_r + hit_creature->tint_g + hit_creature->tint_b\n"
+        },
+        {
+          "start_line": 1398,
+          "removed": "                                float tint_scale =\n                                    1.0f - particle->intensity * 0.01f;\n",
+          "replacement": "                                float tint_scale = 1.0f - particle->intensity * 0.01f;\n"
+        },
+        {
+          "start_line": 1413,
+          "removed": "                                    (float)velocity_x,\n                                    (float)(crt_rand() % 60 - 30));\n",
+          "replacement": "                                    (float)velocity_x, (float)(crt_rand() % 60 - 30));\n"
+        },
+        {
+          "start_line": 1416,
+          "removed": "                                    (vec2f_t *)&hit_position,\n                                    (vec2f_t *)&velocity,\n                                    13.0f);\n",
+          "replacement": "                                    (vec2f_t*)&hit_position, (vec2f_t*)&velocity, 13.0f);\n"
+        },
+        {
+          "start_line": 1421,
+          "removed": "                            fx_queue_add_random(\n                                (vec2f_t *)&hit_position);\n",
+          "replacement": "                            fx_queue_add_random((vec2f_t*)&hit_position);\n"
+        },
+        {
+          "start_line": 1426,
+          "removed": "                            projectile_vec2_t creature_displacement =\n                                reflected_velocity * displacement_dt;\n",
+          "replacement": "                            projectile_vec2_t creature_displacement\n                                = reflected_velocity * displacement_dt;\n"
+        }
+      ]
+    },
+    "frame-q2-primary-color": {
+      "parent": "before",
+      "change": "primary-color-class",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "8a5d794cee840e15c5e0b8609764e7f6d0c577142cce9a512a7a8c77ba0d959a",
+      "body_sha256": "8ddcd4193e4184033a5dbdcc597265a26a7c40dfad57630e4eb197cf32b473b4",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 15,
+          "removed": "",
+          "replacement": "\nstruct projectile_color_t {\n    float r, g, b, a;\n    projectile_color_t(float rr, float gg, float bb, float aa)\n        : r(rr), g(gg), b(bb), a(aa) {}\n    ~projectile_color_t() {}\n};\n"
+        },
+        {
+          "start_line": 316,
+          "removed": "                                    effect_color_t effect_color = {\n                                        1.0f,\n                                        1.0f,\n                                        1.0f,\n                                        1.0f,\n                                    };\n",
+          "replacement": "                                    projectile_color_t effect_color(1.0f, 1.0f, 1.0f, 1.0f);\n"
+        },
+        {
+          "start_line": 323,
+          "removed": "                                    effect_template.color = effect_color;\n",
+          "replacement": "                                    effect_template.color = *(effect_color_t *)&effect_color;\n"
+        }
+      ]
+    },
+    "frame-t4-color-temporary": {
+      "parent": "frame-q2-primary-color",
+      "change": "primary-color-temporary",
+      "parent_source_sha256": "8a5d794cee840e15c5e0b8609764e7f6d0c577142cce9a512a7a8c77ba0d959a",
+      "source_sha256": "28540e6a2e55de03563a45078e80613e90c94ca193a0c6623abde31bb3d410b9",
+      "body_sha256": "fb840aec80408108025da1a356470a46d5bfe0edabce64e816a6858d29480338",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 323,
+          "removed": "                                    projectile_color_t effect_color(1.0f, 1.0f, 1.0f, 1.0f);\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 325,
+          "removed": "                                    effect_template.color = *(effect_color_t *)&effect_color;\n",
+          "replacement": "                                    *(projectile_color_t *)&effect_template.color = projectile_color_t(1.0f, 1.0f, 1.0f, 1.0f);\n"
+        }
+      ]
+    },
+    "frame-u4-color-scope": {
+      "parent": "before",
+      "change": "secondary-color-loop-scope",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "0f09a1c2577e7189a2320de9774b980c26a747b0ee664066ef349b5e4624edc7",
+      "body_sha256": "069ced323174aa6cd9926716e0af3f0ac781e3ae980e17b7a544f901969bf7bb",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 819,
+          "removed": "",
+          "replacement": "        effect_color_t color;\n"
+        },
+        {
+          "start_line": 827,
+          "removed": "                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n",
+          "replacement": "                    color.r = color.g = color.b = 0.0f;\n                    color.a = 0.25f;\n"
+        }
+      ]
+    },
+    "frame-v3-burst-index": {
+      "parent": "before",
+      "change": "burst-shared-index",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "46d6c0a2c4f62b84b8c3a9447d3d88fab400e4aa1480b9e1c86cdc1fb835852a",
+      "body_sha256": "35d36c2c09c1097d1fb12bb216c4f0dc9282129f088a5410e04b0d6031045632",
+      "instructions": 2202,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1174,
+          "removed": "                    int burst_index = 0;\n",
+          "replacement": "                    projectile_index = 0;\n"
+        },
+        {
+          "start_line": 1179,
+          "removed": "                            (float)burst_index * 0.62831855f;\n",
+          "replacement": "                            (float)projectile_index * 0.62831855f;\n"
+        },
+        {
+          "start_line": 1189,
+          "removed": "                        ++burst_index;\n                    } while (burst_index < 10);\n",
+          "replacement": "                        ++projectile_index;\n                    } while (projectile_index < 10);\n"
+        }
+      ]
+    },
+    "frame-v5-particle-index": {
+      "parent": "before",
+      "change": "loop-share-primary-particle-for",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "9cb89f10a6a2f18e3667a0bf62460b3726c87061636c57b6e42377669a6b540f",
+      "body_sha256": "38df7eebeba4678b1720277f2ebcde90ffba954d16e65db8525bb8f0c2753509",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1218,
+          "removed": "    for (int particle_index = 0; particle_index < 0x80; ++particle_index) {\n        particle_t *particle = &particle_pool[particle_index];\n",
+          "replacement": "    for (projectile_index = 0; projectile_index < 0x80; ++projectile_index) {\n        particle_t *particle = &particle_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 1401,
+          "removed": "                            if (particle_index % 3 == 0) {\n",
+          "replacement": "                            if (projectile_index % 3 == 0) {\n"
+        }
+      ]
+    },
+    "frame-v6-color-and-index": {
+      "parent": "frame-v5-particle-index",
+      "change": "secondary-color-outer",
+      "parent_source_sha256": "9cb89f10a6a2f18e3667a0bf62460b3726c87061636c57b6e42377669a6b540f",
+      "source_sha256": "dc0f511aca630d471dc8d0b339a1e279ff4677c546a4e7ad1c081c0be50dfb8d",
+      "body_sha256": "32800090f0a8bcc8390b9a5f2e1e7ae5456d4de2ba5f95243870880329f31d39",
+      "instructions": 2202,
+      "frame": "sub esp, 0xf8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 153,
+          "removed": "",
+          "replacement": "    effect_color_t color;\n"
+        },
+        {
+          "start_line": 827,
+          "removed": "                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n",
+          "replacement": "                    color.r = 0.0f;\n                    color.g = 0.0f;\n                    color.b = 0.0f;\n                    color.a = 0.25f;\n"
+        }
+      ]
+    },
+    "loop-u1-shared-secondary": {
+      "parent": "before",
+      "change": "secondary-shared-indexed-loop",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "8fa5f99a55fac1adab96418e66862889d48498e01a0be2adf35cbf1b8953aca9",
+      "body_sha256": "c7f5a17d06913dc8ade77cc9b1e5f93bd2fb26e05aff6e0b4e5e1c753e0f666d",
+      "instructions": 2206,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 817,
+          "removed": "    secondary_projectile_t *secondary = secondary_projectile_pool;\n    do {\n",
+          "replacement": "    for (projectile_index = 0; projectile_index < 0x40; ++projectile_index) {\n        secondary_projectile_t *secondary = &secondary_projectile_pool[projectile_index];\n"
+        },
+        {
+          "start_line": 1201,
+          "removed": "        ++secondary;\n    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "particle-v1-clamp-value": {
+      "parent": "before",
+      "change": "clamp-return-value",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "f6e724d9a882d1d40bc1aa12a0671e5cc71206b2344b290515b19c64b0ec3a6d",
+      "body_sha256": "7917904d7177406a6847012fd3b1820b0222846a0109f7e171464672aaf86285",
+      "instructions": 2208,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 142,
+          "removed": "static __inline void projectile_clamp_tint(float *value)\n",
+          "replacement": "static __inline float projectile_clamp_tint(float value)\n"
+        },
+        {
+          "start_line": 144,
+          "removed": "    if (*value < 0.0f) {\n        *value = 0.0f;\n    } else if (*value > 1.0f) {\n        *value = 1.0f;\n",
+          "replacement": "    if (value < 0.0f) {\n        value = 0.0f;\n    } else if (value > 1.0f) {\n        value = 1.0f;\n"
+        },
+        {
+          "start_line": 149,
+          "removed": "",
+          "replacement": "    return value;\n"
+        },
+        {
+          "start_line": 1395,
+          "removed": "                                projectile_clamp_tint(&hit_creature->tint_r);\n                                projectile_clamp_tint(&hit_creature->tint_g);\n                                projectile_clamp_tint(&hit_creature->tint_b);\n                                projectile_clamp_tint(&hit_creature->tint_a);\n",
+          "replacement": "                                hit_creature->tint_r = projectile_clamp_tint(hit_creature->tint_r);\n                                hit_creature->tint_g = projectile_clamp_tint(hit_creature->tint_g);\n                                hit_creature->tint_b = projectile_clamp_tint(hit_creature->tint_b);\n                                hit_creature->tint_a = projectile_clamp_tint(hit_creature->tint_a);\n"
+        }
+      ]
+    },
+    "primary-w1-for": {
+      "parent": "before",
+      "change": "primary-index-for",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "bea1af91ac10cd59c8f632c979b3432b5d488c6b6658e014fc46fb7202a378fb",
+      "body_sha256": "e0c0983bca31e50e7bb478a1fd0c1a8e3170161d297c1078167787ff2abb9781",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 164,
+          "removed": "    int projectile_index = 0;\n    do {\n",
+          "replacement": "    for (int projectile_index = 0; projectile_index < 0x60; ++projectile_index) {\n"
+        },
+        {
+          "start_line": 814,
+          "removed": "        ++projectile_index;\n    } while (projectile_index < 0x60);\n",
+          "replacement": "    }\n"
+        }
+      ]
+    },
+    "secondary-t2-inline-magnitude": {
+      "parent": "before",
+      "change": "burst-inline-magnitude",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "d23a985c72de40bc6506e9883ed41281e4dc571c594c9e0cc4854d289e06123a",
+      "body_sha256": "b74f29a8158850bcecc1b2931a4773aaae365b1f45103b9e2e15c404a2c47969",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1176,
+          "removed": "                        float magnitude =\n                            (float)(crt_rand() % 800) * 0.1f;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 1183,
+          "removed": "                            projectile_vec2_t(burst_cos, burst_sin) * magnitude;\n",
+          "replacement": "                            projectile_vec2_t(burst_cos, burst_sin) * ((float)(crt_rand() % 800) * 0.1f);\n"
+        }
+      ]
+    },
+    "secondary-t3-angle-first": {
+      "parent": "before",
+      "change": "burst-angle-before-magnitude",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "82ee774a685eb29db8938678ed21fc9914693afd0a66674fae3dd2980a55fa8c",
+      "body_sha256": "9c26bca63897a92a4b7890ea6cbd7ce5f98ddb763f29b068f0e1058382b74578",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1176,
+          "removed": "",
+          "replacement": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n"
+        },
+        {
+          "start_line": 1178,
+          "removed": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n",
+          "replacement": ""
+        }
+      ]
+    },
+    "secondary-u2-y-reference": {
+      "parent": "before",
+      "change": "explosion-position-y-reference",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "e745ac6df0cae2e698375d7a573966a820800c664ecfba18b217d1b4200313fe",
+      "body_sha256": "fb840aec80408108025da1a356470a46d5bfe0edabce64e816a6858d29480338",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 848,
+          "removed": "",
+          "replacement": "                    vec2f_t &creature_position = creature->position;\n"
+        },
+        {
+          "start_line": 850,
+          "removed": "                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                        float dy = creature_position.y - secondary->position.y;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            &creature_position, &secondary->position);\n"
+        },
+        {
+          "start_line": 866,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_position);\n"
+        },
+        {
+          "start_line": 868,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_position);\n"
+        }
+      ]
+    },
+    "secondary-u3-x-reference": {
+      "parent": "before",
+      "change": "explosion-position-x-reference",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "ddee179e062bd2cc972ce545bc0f3ae9879eb2f69e5ee55f8c2531c3cef3b8a7",
+      "body_sha256": "8ddcd4193e4184033a5dbdcc597265a26a7c40dfad57630e4eb197cf32b473b4",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 848,
+          "removed": "",
+          "replacement": "                    vec2f_t &creature_position = creature->position;\n"
+        },
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n",
+          "replacement": "                        float dx = creature_position.x - secondary->position.x;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            &creature_position, &secondary->position);\n"
+        },
+        {
+          "start_line": 866,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_position);\n"
+        },
+        {
+          "start_line": 868,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_position);\n"
+        }
+      ]
+    },
+    "secondary-v2-vector-difference": {
+      "parent": "before",
+      "change": "explosion-vector-difference",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "21ca0192990e67bef4cbdddb7bd04e37f19b81fc13ed2cb8c222b993463654ca",
+      "body_sha256": "93ccf23618a143074e9d3a41cb61e9b44965ea735fdc5fe4018d1f687f3fc12a",
+      "instructions": 2198,
+      "frame": "sub esp, 0xec",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance = projectile_vec2_distance(\n                            &creature->position, &secondary->position);\n",
+          "replacement": "                        projectile_vec2_t difference =\n                            *(projectile_vec2_t *)&creature->position\n                            - *(projectile_vec2_t *)&secondary->position;\n                        float distance = projectile_vec2_length(*(vec2f_t *)&difference);\n"
+        },
+        {
+          "start_line": 854,
+          "removed": "                            vec2f_t direction = {dx, dy};\n",
+          "replacement": "                            vec2f_t direction = *(vec2f_t *)&difference;\n"
+        }
+      ]
+    },
+    "secondary-v4-direct-length": {
+      "parent": "secondary-v2-vector-difference",
+      "change": "explosion-direct-difference-length",
+      "parent_source_sha256": "21ca0192990e67bef4cbdddb7bd04e37f19b81fc13ed2cb8c222b993463654ca",
+      "source_sha256": "3dcac26a1dedbdf96bf0e2dcf6afd6b9723f032aa0a950d166611381cb8b3db0",
+      "body_sha256": "c3094dcf905fba9d82bf92f90c79b9d97c121abefde4b41b0ae38f215226df7b",
+      "instructions": 2198,
+      "frame": "sub esp, 0xec",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 852,
+          "removed": "                        float distance = projectile_vec2_length(*(vec2f_t *)&difference);\n",
+          "replacement": "                        float distance = (float)sqrt(difference.x * difference.x + difference.y * difference.y);\n"
+        }
+      ]
+    },
+    "secondary-w2-typed-end": {
+      "parent": "before",
+      "change": "secondary-typed-pointer-end",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "c47c33f5fcb92636eef0d49df2e375cf012ce94452929b305e36381f6fdd640b",
+      "body_sha256": "3fbec0a8622973eff020b7011aed782fcb4babf0312b65ac63f21a6241819ff3",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 1202,
+          "removed": "    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+          "replacement": "    } while (secondary < &secondary_projectile_pool[0x40]);\n"
+        }
+      ]
+    },
+    "secondary-x2-explosion-owner": {
+      "parent": "secondary-x1-indexed",
+      "change": "secondary-explosion-position-owner",
+      "parent_source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "source_sha256": "f6ffd011455eeb3f262d0cf4caa873446c9e09e442c95f4468e9f993791cc223",
+      "body_sha256": "a29c9dd6bd5219c2e320bcc169ced29be160595218f398216ea0443844043fc6",
+      "instructions": 2207,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 822,
+          "removed": "",
+          "replacement": "                vec2f_t &explosion_position = secondary->position;\n"
+        },
+        {
+          "start_line": 835,
+          "removed": "                        &secondary->position,\n",
+          "replacement": "                        &explosion_position,\n"
+        },
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": "                        float dx = creature->position.x - explosion_position.x;\n                        float dy = creature->position.y - explosion_position.y;\n"
+        },
+        {
+          "start_line": 852,
+          "removed": "                            &creature->position, &secondary->position);\n",
+          "replacement": "                            &creature->position, &explosion_position);\n"
+        }
+      ]
+    },
+    "secondary-x3-target-owner": {
+      "parent": "secondary-x2-explosion-owner",
+      "change": "secondary-explosion-creature-position-owner",
+      "parent_source_sha256": "f6ffd011455eeb3f262d0cf4caa873446c9e09e442c95f4468e9f993791cc223",
+      "source_sha256": "2f639417d5de23db23c26fb640dc61f2ad086c91cb0131bbf58c2751a17e91ae",
+      "body_sha256": "b3611e08055af4fda83ca8fec2ea84b2fc3f7b2e3b7995ff94a212496a744aa2",
+      "instructions": 2207,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 850,
+          "removed": "                        float dx = creature->position.x - explosion_position.x;\n                        float dy = creature->position.y - explosion_position.y;\n",
+          "replacement": "                        vec2f_t &explosion_target = creature->position;\n                        float dx = explosion_target.x - explosion_position.x;\n                        float dy = explosion_target.y - explosion_position.y;\n"
+        },
+        {
+          "start_line": 853,
+          "removed": "                            &creature->position, &explosion_position);\n",
+          "replacement": "                            &explosion_target, &explosion_position);\n"
+        },
+        {
+          "start_line": 867,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &explosion_target);\n"
+        },
+        {
+          "start_line": 869,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &explosion_target);\n"
+        }
+      ]
+    },
+    "secondary-x4-late-delta": {
+      "parent": "secondary-x1-indexed",
+      "change": "explosion-late-delta",
+      "parent_source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "source_sha256": "abf6722a2490d3fcd7a70154b6b03e6740c8ecb5d52ec773ab401add673e3134",
+      "body_sha256": "c7f5a17d06913dc8ade77cc9b1e5f93bd2fb26e05aff6e0b4e5e1c753e0f666d",
+      "instructions": 2206,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 849,
+          "removed": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 854,
+          "removed": "",
+          "replacement": "                            float dx = creature->position.x - secondary->position.x;\n                            float dy = creature->position.y - secondary->position.y;\n"
+        }
+      ]
+    },
+    "secondary-x5-component-distance": {
+      "parent": "secondary-x1-indexed",
+      "change": "explosion-distance-components",
+      "parent_source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "source_sha256": "aeb08e4d724894dfb9b981ad32ec3e6e98c7f2c3f47cc95174d96ab68ef016c0",
+      "body_sha256": "282f97ab347ecd37b75b197e8d7c05a04497b66c20794b66aaf9be371ca61e5f",
+      "instructions": 2206,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 77,
+          "removed": "",
+          "replacement": "}\n\ninline float projectile_distance_components(float ax, float ay, float bx, float by)\n{\n    float dx = ax - bx;\n    float dy = ay - by;\n    return (float)sqrt(dx * dx + dy * dy);\n"
+        },
+        {
+          "start_line": 851,
+          "removed": "                        float distance = projectile_vec2_distance(\n                            &creature->position, &secondary->position);\n",
+          "replacement": "                        float distance = projectile_distance_components(\n                            creature->position.x, creature->position.y, secondary->position.x, secondary->position.y);\n"
+        }
+      ]
+    },
+    "secondary-x6-reuse-delta": {
+      "parent": "secondary-x1-indexed",
+      "change": "explosion-reuse-delta-length",
+      "parent_source_sha256": "50c6b948c4e8feba072da02de73fb1184ad78e106086d2cca1731ada31b0646e",
+      "source_sha256": "fe2d7e2ace14254cccb78e528bb33cf89db8fb556d715a6e5a36ca962f26c97d",
+      "body_sha256": "3e51accd9d2e568df31147306b163af870cfe1028dd1b7ae44909c7399d6c41d",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 851,
+          "removed": "                        float distance = projectile_vec2_distance(\n                            &creature->position, &secondary->position);\n",
+          "replacement": "                        float distance = (float)sqrt(dx * dx + dy * dy);\n"
+        }
+      ]
+    },
+    "secondary-y1-effect-owner": {
+      "parent": "secondary-x8-common-owner",
+      "change": "explosion-effect-indexed-position",
+      "parent_source_sha256": "f5449850b01c8c7569138d8532a995575802cce12f412a297649ce0ec386fb37",
+      "source_sha256": "fcf557c01341b4342540ba5ba628bf40c6f43c87fe6738b5959ac3b571411d39",
+      "body_sha256": "a31e012a666b597b3e43d04dad3d22956d457ec83d91fa8d6d0ae2596cb9d73d",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 867,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_pool[creature_id].position);\n"
+        },
+        {
+          "start_line": 869,
+          "removed": "                                    &creature->position);\n",
+          "replacement": "                                    &creature_pool[creature_id].position);\n"
+        }
+      ]
+    },
+    "secondary-y3-delta-order": {
+      "parent": "secondary-x8-common-owner",
+      "change": "explosion-delta-y-first",
+      "parent_source_sha256": "f5449850b01c8c7569138d8532a995575802cce12f412a297649ce0ec386fb37",
+      "source_sha256": "0db4ee304c23f1dd46c0fecfba1dcb402a4cdeeb94994bc2afc92a5722ff4b28",
+      "body_sha256": "e5a01fc55638a4b341809fab908b40925312ce5bb11c35c1b336df1d1a353b70",
+      "instructions": 2201,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 850,
+          "removed": "",
+          "replacement": "                        float dy = creature->position.y - explosion_position.y;\n"
+        },
+        {
+          "start_line": 851,
+          "removed": "                        float dy = creature->position.y - explosion_position.y;\n",
+          "replacement": ""
+        }
+      ]
+    },
+    "secondary-y4-loop-y": {
+      "parent": "secondary-y2-distance-owner",
+      "change": "explosion-loop-y-owner",
+      "parent_source_sha256": "c2135cff0619b207d088d99c55b7029246fae5874597d7477b57fd4bf0a3ec11",
+      "source_sha256": "17a2378cf2fb1d6e7f82902b41534f66bd8ef653bd9dad7389a887ad0b3c1b9f",
+      "body_sha256": "a95ccc93d5ccf58eb43ba52b05403a906712b0e81bb010de2fdd40984239c453",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 848,
+          "removed": "",
+          "replacement": "                    float &creature_y = creature->position.y;\n"
+        },
+        {
+          "start_line": 851,
+          "removed": "                        float dy = creature->position.y - explosion_position.y;\n",
+          "replacement": "                        float dy = creature_y - explosion_position.y;\n"
+        }
+      ]
+    },
+    "secondary-z1-inplace-burst": {
+      "parent": "secondary-y8-x-reference",
+      "change": "burst-inplace-scale",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "91ca70d598dba825757dcd3fe74f0c694805ca5fa669e50c252fb351b785d21a",
+      "body_sha256": "6fb7259e524d4c46a83e8e975e54e1df1898e699c5b6322d8d3fda2790584cd0",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 33,
+          "removed": "",
+          "replacement": "    }\n\n    inline projectile_vec2_t &operator*=(float scalar)\n    {\n        x *= scalar;\n        y *= scalar;\n        return *this;\n"
+        },
+        {
+          "start_line": 1184,
+          "removed": "                        projectile_vec2_t velocity =\n                            projectile_vec2_t(burst_cos, burst_sin) * magnitude;\n",
+          "replacement": "                        projectile_vec2_t velocity(burst_cos, burst_sin);\n                        velocity *= magnitude;\n"
+        }
+      ]
+    },
+    "secondary-z2-value-scale": {
+      "parent": "secondary-y8-x-reference",
+      "change": "vector-scale-by-value",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "a8403b9e05eb31b5a32885c5908b533610884cd589d58abd96df063bef5bf911",
+      "body_sha256": "eab2125b802a9e173a011d81a017ddf1c133d72d3b3c81a706c593c5680045b8",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 49,
+          "removed": "    const projectile_vec2_t &value,\n",
+          "replacement": "    projectile_vec2_t value,\n"
+        }
+      ]
+    },
+    "seeker-aa1-member": {
+      "parent": "secondary-y8-x-reference",
+      "change": "seeker-member-angle",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "1a287cdd2e412a0a4bb56703ed7d2b5fe8a0b23e534d07d60bcaef3bf9879474",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 34,
+          "removed": "",
+          "replacement": "\n    inline float angle() const { return (float)atan2(y, x); }\n"
+        },
+        {
+          "start_line": 927,
+          "removed": "                        projectile_vec2_angle(\n                            secondary_position - target_position)\n",
+          "replacement": "                        (secondary_position - target_position).angle()\n"
+        }
+      ]
+    },
+    "seeker-aa2-named": {
+      "parent": "secondary-y8-x-reference",
+      "change": "seeker-named-angle-input",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "ef8a5dfde98b62704a547c89f9accb89db868b13724032e75f62fb294fd3408e",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 926,
+          "removed": "                    secondary->angle =\n                        projectile_vec2_angle(\n                            secondary_position - target_position)\n                        - 1.5707964f;\n",
+          "replacement": "                    projectile_vec2_t target_direction = secondary_position - target_position;\n                    secondary->angle = projectile_vec2_angle(target_direction) - 1.5707964f;\n"
+        }
+      ]
+    },
+    "seeker-ab1-const-subtract": {
+      "parent": "secondary-y8-x-reference",
+      "change": "vector-const-subtract",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "0a5e0c2aef63f89b72bd04664617b326b47a89b96524fdec12699d979721db38",
+      "body_sha256": "967037dd6376cb4be4c6d018616e0c0e8820dd2ca77927ff9dae9f25effac088",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 35,
+          "removed": "    inline projectile_vec2_t operator-(const projectile_vec2_t &other)\n",
+          "replacement": "    inline projectile_vec2_t operator-(const projectile_vec2_t &other) const\n"
+        }
+      ]
+    },
+    "seeker-ab2-free-subtract": {
+      "parent": "secondary-y8-x-reference",
+      "change": "vector-free-subtract",
+      "parent_source_sha256": "fd5a5672a4e18b271cea86ad20811f1ef35b67524fbba35628fd1280411b19bb",
+      "source_sha256": "fcfdb9cc95db22776c7389601ccdb260508d0f126a75573e0594a52ea4917728",
+      "body_sha256": "3fad2f9e4a0d74801ed655a3f91579d859fafd5be43c18c6ec53ac9ac82459e6",
+      "instructions": 2204,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 35,
+          "removed": "    inline projectile_vec2_t operator-(const projectile_vec2_t &other)\n    {\n        return projectile_vec2_t(x - other.x, y - other.y);\n    }\n\n",
+          "replacement": ""
+        },
+        {
+          "start_line": 60,
+          "removed": "",
+          "replacement": "}\n\ninline projectile_vec2_t operator-(const projectile_vec2_t &lhs, const projectile_vec2_t &rhs)\n{\n    return projectile_vec2_t(lhs.x - rhs.x, lhs.y - rhs.y);\n"
+        }
+      ]
+    },
+    "seeker-ah1-angle-local": {
+      "parent": "burst-ag2-x-local",
+      "change": "seeker-angle-local",
+      "parent_source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "source_sha256": "8ad1252139538b94dfba224cdaa6dfe11f2a3ca65a72836e66999bf2079ed3c0",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 928,
+          "removed": "                    secondary->angle =\n                        projectile_vec2_angle(\n                            secondary_position - target_position)\n                        - 1.5707964f;\n",
+          "replacement": "                    float target_angle = projectile_vec2_angle(secondary_position - target_position);\n                    secondary->angle = target_angle - 1.5707964f;\n"
+        }
+      ]
+    },
+    "seeker-ah2-borrow-difference": {
+      "parent": "burst-ag2-x-local",
+      "change": "seeker-borrow-difference",
+      "parent_source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "source_sha256": "f9ead76d666f94e3a40cf5ec9f4cba1d1a48b866cad525a896de3143d3f860fb",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 928,
+          "removed": "                    secondary->angle =\n                        projectile_vec2_angle(\n                            secondary_position - target_position)\n                        - 1.5707964f;\n",
+          "replacement": "                    const projectile_vec2_t &target_direction = secondary_position - target_position;\n                    secondary->angle = projectile_vec2_angle(target_direction) - 1.5707964f;\n"
+        }
+      ]
+    },
+    "seeker-ah3-double-return": {
+      "parent": "burst-ag2-x-local",
+      "change": "angle-helper-double",
+      "parent_source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "source_sha256": "a4cb5fc154b6579102f7f28bbf1e129e81594e0fc1ab272bea9a9f85bd53a120",
+      "body_sha256": "959cb28f3c6a8d5928e4398a7304042dc1678ae1edda2380f45288eb76539eb7",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 62,
+          "removed": "inline float projectile_vec2_angle(const projectile_vec2_t &value)\n",
+          "replacement": "inline double projectile_vec2_angle(const projectile_vec2_t &value)\n"
+        },
+        {
+          "start_line": 64,
+          "removed": "    return (float)atan2(value.y, value.x);\n",
+          "replacement": "    return atan2(value.y, value.x);\n"
+        }
+      ]
+    },
+    "seeker-ai1-double-arguments": {
+      "parent": "burst-ag2-x-local",
+      "change": "angle-double-arguments",
+      "parent_source_sha256": "3cd249eceb7ce08276399f8ae4f29a2adb8f32619416a5385a32772648d74a1c",
+      "source_sha256": "76dd2c8c5e3201a2024b400731bab67a02a7dc8fdf66a79c5e3782ca6b763632",
+      "body_sha256": "56d11a22c179bf57369982ed612026f1d27d93b092dda20e50a95764b19df5ea",
+      "instructions": 2203,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 64,
+          "removed": "    return (float)atan2(value.y, value.x);\n",
+          "replacement": "    return (float)atan2((double)value.y, (double)value.x);\n"
+        }
+      ]
+    },
+    "vector-ae1-scalar-reference": {
+      "parent": "frame-ad2-offset-xy",
+      "change": "vector-right-scale-reference",
+      "parent_source_sha256": "fdfb074e90f4bb77102863a5ef748464bcf1f4c71491e49b093af4acd264fad6",
+      "source_sha256": "f88f8595a019912feb6dae9331914f70425dd34c12607e364d16b861d4edd8cb",
+      "body_sha256": "118ad24d79d1e6ad315a0d93c180c5b6fdab1db0af24c7c795c868e0dec2a456",
+      "instructions": 2194,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 50,
+          "removed": "    float scalar)\n",
+          "replacement": "    const float &scalar)\n"
+        }
+      ]
+    },
+    "vector-af1-plain-members": {
+      "parent": "frame-ad2-offset-xy",
+      "change": "vector-plain-members",
+      "parent_source_sha256": "fdfb074e90f4bb77102863a5ef748464bcf1f4c71491e49b093af4acd264fad6",
+      "source_sha256": "a9ba342f253f7f8193b4476713535505348efc50e547048b8b25fd954c23931c",
+      "body_sha256": "dd939c05fcccba1e94af6b4180c55487b2f0c57f0c85344c39eec9ef694b75c9",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 17,
+          "removed": "    union {\n        struct {\n            float x;\n            float y;\n        };\n        float values[2];\n    };\n",
+          "replacement": "    float x;\n    float y;\n"
+        }
+      ]
+    },
+    "vector-af2-initializers": {
+      "parent": "frame-ad2-offset-xy",
+      "change": "vector-constructor-initializers",
+      "parent_source_sha256": "fdfb074e90f4bb77102863a5ef748464bcf1f4c71491e49b093af4acd264fad6",
+      "source_sha256": "59c1d2b03b84582a47ef5c4366c1b7dcddd3b4ab64654e6e68922cc868c2e5bb",
+      "body_sha256": "dd939c05fcccba1e94af6b4180c55487b2f0c57f0c85344c39eec9ef694b75c9",
+      "instructions": 2204,
+      "frame": "sub esp, 0xf4",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 29,
+          "removed": "    projectile_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n",
+          "replacement": "    projectile_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n"
+        }
+      ]
+    },
+    "vector-t1-member-scale": {
+      "parent": "before",
+      "change": "vector-member-scale",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "a906f484137d3b64fdae409b541ac7f8fb68141a6062446ca9cd598f9c4ea937",
+      "body_sha256": "e0c0983bca31e50e7bb478a1fd0c1a8e3170161d297c1078167787ff2abb9781",
+      "instructions": 2202,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 35,
+          "removed": "",
+          "replacement": "    inline projectile_vec2_t operator*(float scalar) const\n    {\n        return projectile_vec2_t(x * scalar, y * scalar);\n    }\n\n"
+        },
+        {
+          "start_line": 47,
+          "removed": "\ninline projectile_vec2_t operator*(\n    const projectile_vec2_t &value,\n    float scalar)\n{\n    return projectile_vec2_t(scalar * value.x, scalar * value.y);\n}\n",
+          "replacement": ""
+        }
+      ]
+    },
+    "vector-u5-destructor": {
+      "parent": "before",
+      "change": "vector-destructor",
+      "parent_source_sha256": "f46d40ef618dd67ddc365fc30fa4280966dcb4eec7f248fc165e9b15e138e078",
+      "source_sha256": "bd4e7e8c6833bb3af0c43f8bf54321dd5120924ed7e2b24250fc35ccbbed908c",
+      "body_sha256": "84efe18f1e1da22d679c5c1096e5b372df47d3a336c2aa7bffbde8f9be297dca",
+      "instructions": 2203,
+      "frame": "sub esp, 0xe8",
+      "exact": false,
+      "body_byte_exact": false,
+      "edits": [
+        {
+          "start_line": 24,
+          "removed": "",
+          "replacement": "\n    ~projectile_vec2_t() {}\n"
+        }
+      ]
+    }
+  }
+}
