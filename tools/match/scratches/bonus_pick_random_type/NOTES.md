@@ -279,3 +279,29 @@ The retained `filter-boundary-controls-2026-09-17.json` plan and corresponding
 experiment-log entry cover 11 earlier filter-boundary controls. Seven compile
 to the canonical score and instruction count; four retry-owner variants regress.
 The plan and all 11 generated source hashes agree with the recorded results.
+
+## Path-ownership interactions (2026-09-21)
+
+`path-ownership-controls-2026-09-21.json` and the matching experiment record
+retain 24 complete, compiling controls. No control improves the canonical
+75.925926%, 162/162 instructions, prefix 55, and `20/0/0` references.
+
+- Twelve controls put the common Freeze check on combinations of the hardcore
+  stage-2, stage-4, and stage-5 paths before joining at the shield filter. They
+  cross positive/inverted hardcore guards with six path subsets, excluding the
+  already-studied stage-5-only subset. Every result retains extra instructions
+  (167–177); the highest score is 75.739645% with 176 instructions and 20 clean
+  references. Duplicating additional paths does not remove the extra filters.
+- Twelve controls separate hardcore/normal paths or factor the major-stage test
+  first, using if/switch secondary rules. Four separate the first Nuke rule too.
+  The best result is 73.873874%, 171 instructions, prefix 55, and `20/0/0`.
+  Its complete normalized diff shows a shared stage-4 rejection body but two
+  stage-5 predicates before the common filters; native has one stage-5 predicate
+  after the retry backedge. This tested factorization does not recover the tail.
+
+Replay with `crimson match mutate tools/match/scratches/bonus_pick_random_type
+--spec tools/match/scratches/bonus_pick_random_type/path-ownership-controls-2026-09-21.json
+--max-variants 24`. Both source families are diagnostics; no probe is promoted.
+The current canonical instruction graph still matches all 156 non-jump
+instructions and 20 references with six transparent jumps per side. Normalized
+and encoded-body exactness remain false. Canonical source and flags are unchanged.
