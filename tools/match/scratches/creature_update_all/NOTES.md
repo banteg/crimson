@@ -775,3 +775,36 @@ frame `0x7c`, and references `226/0/1`. Both exact flags remain false. Source
 SHA-256: `b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae`.
 The remaining address, field-pointer, and local-lifetime differences are not
 resolved by this recovery.
+
+## Per-region decomposition and reference audit (2026-09-17)
+
+The canonical body remains 58.55%, 1,306/1,338 instructions, prefix 10, and
+references `226/0/1`. A fresh `--all-scores` reference audit plus complete
+normalized listings of both sides highlight these allocation and alignment
+differences:
+
+1. Opening allocation cascade (native `0x00426220..0x00426298`): native keeps
+   the loop index scaled (`esi*8` SIB per access) inside a `0x7c` frame, while
+   the candidate folds one `shl esi, 0x3` into a byte offset. Both current
+   bodies use a `0x7c` frame.
+   Two controls retested against the current baseline were byte-neutral: the
+   loop-index `for`-initializer move (recorded previously) and a
+   `creature_index`/`distance` declaration-order swap (58.5477%, prefix 10,
+   1,306/1,338, `226/0/1`). Neither control resolves the allocation difference.
+2. Perk-check argument registers (native `0x004272fa..0x00427338`): native
+   loads the two perk ids into `edx` then `eax`; the candidate uses `eax` then
+   `ecx`. Both sides call the same helper with the same ids and apply the same
+   `|= 3` / `|= 1` arms.
+3. The audit's single reported mismatch (native `0x00427318` =
+   `perk_id_veins_of_poison` vs candidate `perk_id_toxic_avenger`) is a
+   phantom: the shape pairing aligned native's second `mov eax, dword [ADDR]`
+   argument load with the candidate's first. Both streams reference both perk
+   ids once. This explains the reported pairing mismatch; it does not by
+   itself establish whole-function semantic equivalence.
+
+Controls that were refused: rewriting the `creature_t` stride (0x98 is proven
+by exact neighbors sharing the header) and hard-coded raw-address loads
+(rejected by `crimson match validate` as fakematching).
+
+Address, field-pointer, and local-lifetime residuals remain. Canonical source,
+flags, and the verified 58.55% body are unchanged.

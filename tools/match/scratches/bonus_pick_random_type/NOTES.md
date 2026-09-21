@@ -196,3 +196,86 @@ The 80.745342% Freeze-first shared-predicate candidate has only 160 instructions
 and merges a comparison retained in native code. Duplicated filter paths can
 move quest checks after the retry backedge but add instructions. Neither result
 recovers the original sequence. The stage-5 tail placement remains open.
+
+## Stage-five outline gate (2026-09-21)
+
+Canonical source is unchanged: 162/162 instructions, prefix 55, references
+`20/0/0`, 75.93%. The normalized difference is not a missing quest check. Both
+sides have the same six stage-5 instructions. Native places them after the
+retry backedge; the candidate keeps them between the stage-4 arm and the
+shared Freeze filter, so stage-4 success needs an extra `jmp` that native
+deletes by falling through.
+
+C2+0x3663c can move that block. It fires only when an unconditional jump is
+not a jump to the next instruction and the destination's previous node also
+terminates unconditionally. A goto aimed at the Freeze check itself is deleted
+before that pass. A goto aimed past the Freeze check survives and triggers the
+move.
+
+Fresh overlays against the current source, not retained:
+
+- Inverting the hardcore stage-2 guard, with no extra goto, is rewritten back
+  to the canonical body.
+- Skipping the Freeze check without that inversion moves stage 4 and stage 5
+  together: 160 instructions, 79.50%, prefix 55, `20/0/0`.
+- Inversion plus a stage-5 goto past the shared Freeze check moves stage 5
+  alone and leaves stage 4 hot. Instruction count returns to 162, the ratio
+  rises to 81.48%, and references stay `20/0/0`. This is not a match. Opcode
+  comparison against native leaves two real differences; the other normalized
+  mismatches are label numbers shifted by those two:
+  1. Hardcore Freeze rejection is `jne common; jmp retry` instead of native
+     `je retry; jmp common`. Nested and split spellings of the same inverted
+     guard keep that polarity.
+  2. The outlined stage-5 minor and success exits land after the Freeze
+     filter. Native lands on it. Aiming the goto at the filter makes the jump
+     adjacent again, the pass does not fire, and the body returns to 75.93%.
+- Duplicating the Freeze filter before the goto fixes the landing and still
+  outlines stage 5 alone, but keeps the reversed edge and adds the seven
+  filter instructions (169 instructions, 79.76%). That reproduces the earlier
+  inverted-hardcore diagnostic.
+
+The positive outer guard preserves the native edge and does not isolate stage
+5. The inverted guard isolates stage 5 and does not preserve the edge. No
+tested spelling separates those two effects, and no tested goto both survives
+until C2+0x3663c and still targets the Freeze filter. Canonical source stays
+the reference-complete body. The open problem is a stage-5-only movable range
+whose exits target the shared Freeze filter and whose hardcore rejection keeps
+`je retry; jmp common`.
+
+Follow-up overlays did not separate those effects. Clause order
+(`bonus == FREEZE && minor == 10`), a bonus-then-minor nest, and the same
+outlining source under `msvc6.6` keep the reversed edge. A positive Freeze
+rejection before the inverted chain emits native `je retry` but leaves the
+reversed copy in place (168 instructions). Dropping that else still outlines
+stage 5, then adds one `cmp major, 2` and swaps the hardcore byte into `cl`
+and the minor into `edx`, so the aligned body gets worse. None is retained.
+
+A preserving trace of the 162-instruction outlining overlay shows the
+contradiction directly. C2+0x3663c selects the unconditional jump immediately
+before the stage-5 chain. That chain is eight IL nodes and is inserted after
+the retry backedge. Its last node is an unconditional jump to the shield
+check, and that jump is the list-predecessor of the Freeze block, which is
+why the gate accepts the move. A jump from that predecessor to the Freeze
+block itself would be a jump to the next node and is deleted before this
+pass; the canonical body is that deletion. For this tested source shape, the pass outlines stage 5
+by making its exit skip the Freeze block. The final assembly still has
+that skip. No later hooked mover retargets it. Canonical source stays.
+
+The two remaining avenues were tested and do not open a match.
+
+A node between a stage-5 goto and the Freeze label does not survive in the
+right window. A dead local copy and an inline sink are removed early; both
+compile back to the canonical 162-instruction body. A volatile copy survives
+into the output (165 instructions, prefix 0, two reference mismatches).
+`#pragma optimize("g", off)` deoptimizes the whole function to 191
+instructions and does not outline stage 5.
+
+The range mover has four other callers. A preserving trace records that none
+of them run on the canonical body or on the 162-instruction outlining overlay.
+Only C2+0x367ce runs, and only on that overlay. The C2+0x42830 tail of the
+same pass is not taken. Canonical source stays.
+
+The retained `filter-boundary-controls-2026-09-17.json` plan and corresponding
+experiment-log entry cover 11 earlier filter-boundary controls. Seven compile
+to the canonical score and instruction count; four retry-owner variants regress.
+The plan and all 11 generated source hashes agree with the recorded results.

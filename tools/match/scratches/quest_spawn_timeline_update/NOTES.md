@@ -432,3 +432,30 @@ not a candidate improvement. The remaining source constraints are the four-byte
 dead-store owner and native zero lifetimes/register selection. All 121 source
 builds and 25 priority/cost/extent modes are retained; no exact body was found.
 Canonical source, flags, and native metrics remain unchanged.
+
+## Spawn-loop cursor liveness sweep (2026-09-17)
+
+The canonical body remains 91.23%, 113/115 instructions, prefix 51, and
+references `13/0/0`. A fresh instruction-level diff shows two extra native instructions at
+`0x004342f4`: `lea edi, dword [esi+0xc]` followed by
+`mov dword [esp+0x10], edi`. The next instruction overwrites that stack
+store with `mov dword [esp+0x10], ebx`, but EDI remains live: native later
+loads the template and heading through `[edi-0x4]` and `[edi]`, where the
+candidate uses `[esi+0x8]` and `[esi+0xc]`. The field addresses agree; the
+pointer lifetime and overwritten store differ, and branch targets shift.
+All 13 audited references remain clean.
+
+This signature suggests VC6 retained a pointer temporary in EDI while
+reusing its stack slot. Five bounded spellings tried to reproduce it; none compiled to
+the native layout:
+
+- `heading_cursor` hoisted before the spawn loop (`f62f6972…`), float cursor
+  with `[-1]` template read (`4e20d542…`), in-loop cursor (`8c852603…` for
+  both next-entry spellings): 82.97%, 114/115, prefix 51, `13/0/0`. Each also
+  perturbs the `creature_spawn_template` argument setup (`push ecx` first,
+  heading via `fild`), so they are not neutral-plus-dead-pair either.
+- An `int *` alias for `&entry->heading` does not compile (C2440), confirming
+  the cursor must be spelled `float *`.
+
+The pointer lifetime and overwritten store remain compiler residuals. Do not promote any
+probe; canonical source and configuration are unchanged.
