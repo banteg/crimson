@@ -1,0 +1,18 @@
+/* C2+0x306c1 tests descriptor byte +5 bit 4 to exclude substitution.
+   It clears that bit itself on return. This is a one-pass control. */
+static unsigned long health_intervention_count;
+static void retain_health(unsigned long first)
+{
+    unsigned long n, dst, descriptor=0;
+    for(n=first;n;n=*(unsigned long*)n) {
+        if(*(unsigned short*)(n+0x10)!=27 || *(unsigned long*)(n+4)!=1)continue;
+        dst=*(unsigned long*)(n+0x1c);
+        if(!dst || *(unsigned char*)(dst+8)!=1 || *(unsigned long*)dst)ExitProcess(81);
+        if(descriptor)ExitProcess(82);
+        descriptor=*(unsigned long*)(dst+0x18);
+    }
+    if(!descriptor || *(unsigned char*)(descriptor+4)!=2 || health_intervention_count++)ExitProcess(83);
+#if KEEP_HEALTH
+    *(unsigned char*)(descriptor+5)|=4;
+#endif
+}

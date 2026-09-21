@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "kind": "creature-offset-unit-causality",
+  "match_credit": false,
+  "canonical_source_sha256": "b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae",
+  "canonical_source_modified": false,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "preserving_manifest_sha256": "5629eabba879a0209aad90566c667f169b69f358e70d935a1fee130690d48a18",
+  "stages": [
+    {
+      "phase": 0,
+      "target_rva": "0x130cb",
+      "offset_line_operations": [
+        "0x16f",
+        "0x16d",
+        "0x17d",
+        "0x185"
+      ],
+      "health_line_operations": [
+        "0x16f",
+        "0x16d",
+        "0x15b"
+      ]
+    },
+    {
+      "phase": 1,
+      "target_rva": "0xfcda",
+      "offset_line_operations": [
+        "0x16f",
+        "0x16d",
+        "0x17d",
+        "0x185"
+      ],
+      "health_line_operations": [
+        "0x16d",
+        "0x15b"
+      ],
+      "shared_offset_address_uses": 105
+    },
+    {
+      "phase": 2,
+      "target_rva": "0x281cd",
+      "offset_line_operations": [
+        "0x16f",
+        "0x16d",
+        "0x17d",
+        "0x185"
+      ],
+      "health_line_operations": [
+        "0x16d",
+        "0x15b"
+      ],
+      "shared_offset_address_uses": 105
+    },
+    {
+      "phase": 3,
+      "target_rva": "0x2930f",
+      "offset_line_operations": [
+        "0x15b",
+        "0x15b",
+        "0x15b",
+        "0x15b",
+        "0x15b",
+        "0x16f",
+        "0x16d",
+        "0x16f",
+        "0x16d",
+        "0x16f",
+        "0x15b",
+        "0x16d",
+        "0x17d",
+        "0x185"
+      ],
+      "health_line_operations": [
+        "0x16d",
+        "0x15b"
+      ]
+    },
+    {
+      "phase": 4,
+      "target_rva": "0x29511",
+      "offset_line_operations": [
+        "0x15b",
+        "0x15b",
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x15b",
+        "0x12",
+        "0x17d",
+        "0x185"
+      ],
+      "health_line_operations": [
+        "0x12",
+        "0x15b"
+      ]
+    },
+    {
+      "phase": 5,
+      "target_rva": "0x296de",
+      "offset_line_operations": [
+        "0x1",
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x1",
+        "0x12",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": [
+        "0x12",
+        "0x1"
+      ]
+    },
+    {
+      "phase": 6,
+      "target_rva": "0x26d75",
+      "offset_line_operations": [
+        "0x1",
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x1",
+        "0x12",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": [
+        "0x12",
+        "0x1"
+      ]
+    },
+    {
+      "phase": 7,
+      "target_rva": "0x2f8fc",
+      "offset_line_operations": [
+        "0x1",
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x1",
+        "0x12",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": [
+        "0x12",
+        "0x1"
+      ]
+    },
+    {
+      "phase": 8,
+      "target_rva": "0x30308",
+      "offset_line_operations": [
+        "0x1",
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x1",
+        "0x12",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": [
+        "0x12",
+        "0x1"
+      ]
+    },
+    {
+      "phase": 9,
+      "target_rva": "0x306c1",
+      "offset_line_operations": [
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x1",
+        "0x12",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": [
+        "0x12",
+        "0x1"
+      ]
+    },
+    {
+      "phase": 10,
+      "target_rva": "0x30a40",
+      "offset_line_operations": [
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x1",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": []
+    },
+    {
+      "phase": 11,
+      "target_rva": "0x336f4",
+      "offset_line_operations": [
+        "0x12",
+        "0x12",
+        "0x2a",
+        "0x2f",
+        "0xf"
+      ],
+      "health_line_operations": []
+    }
+  ],
+  "controls": {
+    "baseline": {
+      "rescale_offset": false,
+      "retain_health_one_pass": false,
+      "match_credit": false,
+      "counts": {
+        "definitions": 1,
+        "uses": 105,
+        "address_operands": 105
+      },
+      "metrics": {
+        "ratio": 0.5854765506807866,
+        "target_instructions": 1338,
+        "candidate_instructions": 1306,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "health_operations_after_substitution": [],
+      "health_operations_after_allocation": [],
+      "frame_bytes": 124,
+      "normalized_coff_sha256": "0c9f2c47e450baa7051d327e3e2cb944cd52badae49a3bfb70dea2660e4ed2ec",
+      "observer_sha256": "2ab39a8336a7e0779c0c5792bc36bd34eff937710c2b41b4f21fce93c2b60d8a"
+    },
+    "scaled": {
+      "rescale_offset": true,
+      "retain_health_one_pass": false,
+      "match_credit": false,
+      "counts": {
+        "definitions": 1,
+        "uses": 105,
+        "address_operands": 105
+      },
+      "metrics": {
+        "ratio": 0.6419379258137774,
+        "target_instructions": 1338,
+        "candidate_instructions": 1304,
+        "prefix_instructions": 0,
+        "references_ok": 338,
+        "reference_problems": 10,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "health_operations_after_substitution": [],
+      "health_operations_after_allocation": [],
+      "frame_bytes": 112,
+      "normalized_coff_sha256": "2cd8580ee3db7bab2d48ad1f483fb698ec907d4cf28e6641e895d7fcce53eaa0",
+      "observer_sha256": "4ee23b30bf9fcaf2a2b22efc8ab9037a613c04366f419f0b02b3a6fda406ebf6"
+    },
+    "health": {
+      "rescale_offset": false,
+      "retain_health_one_pass": true,
+      "match_credit": false,
+      "counts": {
+        "definitions": 1,
+        "uses": 105,
+        "address_operands": 105
+      },
+      "metrics": {
+        "ratio": 0.5854765506807866,
+        "target_instructions": 1338,
+        "candidate_instructions": 1306,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "health_operations_after_substitution": [
+        "0x12"
+      ],
+      "health_operations_after_allocation": [],
+      "frame_bytes": 124,
+      "normalized_coff_sha256": "0c9f2c47e450baa7051d327e3e2cb944cd52badae49a3bfb70dea2660e4ed2ec",
+      "observer_sha256": "5f2974b618b685ff8d14f1d614608f4e9fb34023f6a542b0177cea490b94e8ee"
+    },
+    "scaled-health": {
+      "rescale_offset": true,
+      "retain_health_one_pass": true,
+      "match_credit": false,
+      "counts": {
+        "definitions": 1,
+        "uses": 105,
+        "address_operands": 105
+      },
+      "metrics": {
+        "ratio": 0.6419379258137774,
+        "target_instructions": 1338,
+        "candidate_instructions": 1304,
+        "prefix_instructions": 0,
+        "references_ok": 338,
+        "reference_problems": 10,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "health_operations_after_substitution": [
+        "0x12"
+      ],
+      "health_operations_after_allocation": [],
+      "frame_bytes": 112,
+      "normalized_coff_sha256": "2cd8580ee3db7bab2d48ad1f483fb698ec907d4cf28e6641e895d7fcce53eaa0",
+      "observer_sha256": "92c110a1aad6490a701a98f08bac54c934e59231d046bd7c90c6802f6cabf26f"
+    }
+  },
+  "behavior": {
+    "cases": 3480,
+    "native_baseline_differences": 0,
+    "changed_observations": {
+      "writes": 2
+    },
+    "witnesses": [
+      {
+        "case": {
+          "name": "animation-wrap-4-pc37f",
+          "creatures": [
+            {
+              "health": 100,
+              "lifecycle_stage": 16,
+              "flags": 4,
+              "move_speed": 1.7,
+              "anim_phase": 94,
+              "size": 40
+            }
+          ],
+          "fpcw": 895
+        },
+        "differences": {
+          "writes": {
+            "index": 15,
+            "lengths": [
+              17,
+              22
+            ],
+            "native": [
+              [
+                4833228,
+                4,
+                1119675849
+              ],
+              [
+                4833228,
+                4,
+                1083071632
+              ],
+              [
+                4833176,
+                4,
+                0
+              ]
+            ],
+            "candidate": [
+              [
+                4833228,
+                4,
+                1119675849
+              ],
+              [
+                4833228,
+                4,
+                1117709769
+              ],
+              [
+                4833228,
+                4,
+                1115743689
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "case": {
+          "name": "animation-wrap-4-pc07f",
+          "creatures": [
+            {
+              "health": 100,
+              "lifecycle_stage": 16,
+              "flags": 4,
+              "move_speed": 1.7,
+              "anim_phase": 94,
+              "size": 40
+            }
+          ],
+          "fpcw": 127
+        },
+        "differences": {
+          "writes": {
+            "index": 15,
+            "lengths": [
+              17,
+              22
+            ],
+            "native": [
+              [
+                4833228,
+                4,
+                1119675849
+              ],
+              [
+                4833228,
+                4,
+                1083071632
+              ],
+              [
+                4833176,
+                4,
+                0
+              ]
+            ],
+            "candidate": [
+              [
+                4833228,
+                4,
+                1119675849
+              ],
+              [
+                4833228,
+                4,
+                1117709769
+              ],
+              [
+                4833228,
+                4,
+                1115743689
+              ]
+            ]
+          }
+        }
+      }
+    ],
+    "rows_sha256": "bddbf848b00b4d795df64e8f925e41195a1abd0b04f01c72c9c1a8bd2723ec09",
+    "scope": "Finite native x86 observations with existing callback models; not whole-game equivalence."
+  },
+  "harness_sha256": {
+    "verify.py": "ff0229f548a369899799c6b1cc13fa41ddff8877449880626e0616ef3ba95fc5",
+    "rescale.c.in": "02fb352a6808bb14dd265612920f08aee305165798d7eb180ca8f6e3254c2c1f",
+    "retain.c.in": "4f5b3a6a051976a185b57ac77e0e57deced23f1729966c32831808375847bcf6"
+  },
+  "validation_note": "Final operand-form guards preserve all four previously executed whole COFF objects; behavior receipts apply byte-for-byte."
+}

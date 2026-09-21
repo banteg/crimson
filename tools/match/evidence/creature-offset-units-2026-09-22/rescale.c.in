@@ -1,0 +1,63 @@
+/* Diagnostic only: retain offset / 8, put the factor in every address. */
+static unsigned long intervention_count;
+static unsigned long scaled[105][12];
+static void rescale_offset(unsigned long first)
+{
+    unsigned long n, shift=0, copy, src, dst, symbol, p, side, base, index, form;
+    unsigned long *link, *replacement, j;
+    unsigned long uses=0, addresses=0, definitions=0;
+    for(n=first;n;n=*(unsigned long*)n)
+        if(*(unsigned long*)(n+4)==0x2a && *(unsigned short*)(n+0x10)==20) {
+            if(shift)ExitProcess(70);
+            shift=n;
+        }
+    if(!shift || intervention_count++)ExitProcess(71);
+    src=*(unsigned long*)(shift+0x18);dst=*(unsigned long*)(shift+0x1c);
+    p=*(unsigned long*)src;
+    if(*(unsigned char*)(src+8)!=1 || !p || *(unsigned char*)(p+8)!=7 ||
+       *(unsigned long*)(p+0x18)!=3 || *(unsigned long*)p)ExitProcess(72);
+    copy=*(unsigned long*)shift;
+    if(*(unsigned long*)(copy+4)!=0x15b ||
+       *(unsigned long*)(*(unsigned long*)(copy+0x18)+0x14)!=*(unsigned long*)(dst+0x14))ExitProcess(73);
+    symbol=*(unsigned long*)(*(unsigned long*)(copy+0x1c)+0x14);
+    for(n=first;n;n=*(unsigned long*)n) {
+        if(!(*(unsigned char*)(n+9)&1))continue;
+        for(side=0;side<2;++side)for(link=(unsigned long*)(n+0x18+side*4);(p=*link)!=0;link=(unsigned long*)p) {
+            if(*(unsigned char*)(p+8)==1 && *(unsigned long*)(p+0x14)==symbol) {
+                if(side) { if(n!=copy)ExitProcess(74); ++definitions; }
+                else ++uses;
+            }
+            if(*(unsigned char*)(p+8)!=5 && *(unsigned char*)(p+8)!=6)continue;
+            form=*(unsigned short*)(p+4);
+            base=(form==0x14c || form==0x14d) ? *(unsigned long*)(p+0x28) : 0;
+            index=(form==0x14d || form==0x14f) ? *(unsigned long*)(p+0x2c) : 0;
+            if(index && *(unsigned long*)(index+0x14)==symbol)ExitProcess(75);
+            if(!base || *(unsigned long*)(base+0x14)!=symbol)continue;
+            if(index || (*(unsigned long*)(p+0x10)&15)!=0)ExitProcess(76);
+            if(*(unsigned short*)(p+4)!=0x14c || addresses>=105)ExitProcess(79);
+            replacement=scaled[addresses++];
+#if DO_RESCALE
+            for(j=0;j<11;++j)replacement[j]=*(unsigned long*)(p+4*j);
+            /* 0x14c is base-only; 0x14f is index-only. 0x14d requires
+               both base and index and is not a substitute for 0x14f. */
+            replacement[1]=(replacement[1]&0xffff0000)|0x14f;
+            replacement[4]|=3;
+            replacement[10]=0;replacement[11]=base;
+            *link=(unsigned long)replacement;p=*link;
+#endif
+        }
+    }
+    {
+        unsigned long counts[3]; DWORD written;
+        HANDLE file=CreateFileA("counts.bin",GENERIC_WRITE,0,0,CREATE_ALWAYS,0,0);
+        counts[0]=definitions;counts[1]=uses;counts[2]=addresses;
+        if(file==INVALID_HANDLE_VALUE || !WriteFile(file,counts,sizeof(counts),&written,0) ||
+           written!=sizeof(counts))ExitProcess(80);
+        CloseHandle(file);
+    }
+    if(definitions!=1 || uses!=addresses || addresses!=105)ExitProcess(77);
+#if DO_RESCALE
+    *(unsigned long*)(shift+4)=0x15b;
+    *(unsigned long*)src=0;
+#endif
+}

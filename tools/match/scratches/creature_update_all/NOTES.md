@@ -808,3 +808,23 @@ by exact neighbors sharing the header) and hard-coded raw-address loads
 
 Address, field-pointer, and local-lifetime residuals remain. Canonical source,
 flags, and the verified 58.55% body are unchanged.
+
+## 2026-09-22: split offset units from pointer retention
+
+[The preserving trace and four causal controls](../../evidence/creature-offset-units-2026-09-22/README.md)
+show that the extra index shift predates register allocation: C2 shares
+`152 * index` across 105 address uses, then lowers it to two LEAs and a shift.
+A diagnostic IR control restores `19 * index` plus scale-eight addresses, but
+changes the frame from the native/current 124 bytes to 112 and loses the
+already-correct x87 animation loop's final-store-only staging. All 3,480
+canonical/native fixtures agree; the intervention adds five intermediate
+stores in each of two animation-wrap fixtures, despite identical final state
+and calls across that suite. Its increased score is not a recovery.
+
+The health-pointer LEA/COPY disappears during `C2+0x306c1`. Excluding just that
+pointer from substitution retains its LEA through this pass, but later
+optimization removes it and yields identical final whole COFF. This is true
+with both byte-offset and scale-eight addressing. The second removal site has
+not yet been localized. The residual therefore needs separate controls for
+address units, pointer retention, and x87 loop memory staging; “allocation
+cascade” alone does not explain it. Canonical source and match credit unchanged.
