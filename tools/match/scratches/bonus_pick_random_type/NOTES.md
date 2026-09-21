@@ -1,5 +1,27 @@
 # bonus_pick_random_type WIP
 
+## Causal layout isolation (2026-09-22)
+
+The [causality verifier](../../evidence/bonus-pick-layout-causality-2026-09-22/README.md)
+reproduces all 77 reachable blocks in VC6's early reverse-postorder rebuild.
+Dominance and acyclicity checks establish that changing successor visitation
+order in this captured graph cannot place stage five after the retry latch.
+
+At entry to C2+0x3663c, relocating the existing stage-five nodes after the
+backedge and reusing stage four's existing skip jump as their exit yields
+**encoded-exact native output**: 162 instructions and 20 clean references.
+The disabled intervention preserves the whole ordinary COFF except timestamp;
+the enabled intervention changes list links only and verifies node membership
+and non-link fields. This is a compiler intervention, with no source recovery
+or match credit. Canonical source, flags, and its non-exact status are unchanged.
+
+The remaining source problem is now isolated: induce this placement while
+preserving the shared Freeze destination and native hardcore branch polarity.
+The known forward-scanning mover also considers an earlier skip spanning both
+stages four and five, so making the tail unconditional alone is insufficient.
+Further controls should demonstrate the intended intermediate-graph or pass
+decision change, rather than rank alternative syntax by fuzzy score.
+
 ## Stage-five-only diagnostic and early ordering (2026-09-13)
 
 The [preserving path follow-up](../../evidence/bonus-pick-layout-trace-2026-09-13/README.md#isolating-stage-5-and-locating-the-early-reorder)

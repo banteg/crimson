@@ -1,0 +1,25 @@
+/* Read-only snapshot of the basic-block and successor lists before/after DFS. */
+static HANDLE blocks_file;
+static void block_dump(unsigned long phase, unsigned long function)
+{
+    unsigned long block, edge, count = 0, w[11], k, h[3];
+    DWORD written;
+    for (block = **(unsigned long **)(function + 8); block; block = *(unsigned long *)block)
+        if (++count > MAX_NODES) ExitProcess(81);
+    h[0] = phase; h[1] = function; h[2] = count;
+    if (!WriteFile(blocks_file, h, sizeof(h), &written, 0) || written != sizeof(h)) ExitProcess(82);
+    for (block = **(unsigned long **)(function + 8); block; block = *(unsigned long *)block) {
+        w[0] = block;
+        for (k = 0; k < 9; ++k) w[k + 1] = *(unsigned long *)(block + k * 4);
+        w[8] = *(unsigned long *)w[8]; /* Dereference the block's first-node slot. */
+        w[10] = 0;
+        for (edge = *(unsigned long *)(block + 12); edge; edge = *(unsigned long *)edge)
+            if (++w[10] > MAX_NODES) ExitProcess(83);
+        if (!WriteFile(blocks_file, w, sizeof(w), &written, 0) || written != sizeof(w)) ExitProcess(82);
+        for (edge = *(unsigned long *)(block + 12); edge; edge = *(unsigned long *)edge) {
+            unsigned long e[2];
+            e[0] = edge; e[1] = *(unsigned long *)(edge + 12);
+            if (!WriteFile(blocks_file, e, sizeof(e), &written, 0) || written != sizeof(e)) ExitProcess(82);
+        }
+    }
+}

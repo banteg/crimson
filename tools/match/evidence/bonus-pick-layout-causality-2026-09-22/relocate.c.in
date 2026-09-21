@@ -1,0 +1,73 @@
+/* Diagnostic only: relocate existing IL nodes, never edit an emitted object. */
+static unsigned long intervention_count;
+static unsigned long saved_nodes[193], saved_words[193][9];
+static unsigned long node_words(unsigned long node)
+{
+    unsigned long flags = *(unsigned long *)(node + 8);
+    /* Ordinary instructions stop at +0x1f; +0x20 belongs only to branches.
+       Reading it on a compare can alias the following node's next pointer. */
+    if ((flags & 255) == 0x11) return 9;
+    if (flags & 0x100) return 8;
+    if ((flags & 255) == 0x1a) return 7;
+    return 6;
+}
+static unsigned long branch_target(unsigned long node)
+{
+    unsigned long operand = *(unsigned long *)(node + 0x18);
+    if (*(unsigned char *)(operand + 8) != 4) ExitProcess(71);
+    return *(unsigned long *)(*(unsigned long *)(operand + 0x14) + 0x32);
+}
+static void relocate_stage_five(unsigned long first)
+{
+    unsigned long node, skip = 0, back = 0, common, start, last, before, after, count = 0, i, j;
+    for (node = first; node; node = *(unsigned long *)node) {
+        if (count >= 193) ExitProcess(72);
+        saved_nodes[count] = node;
+        for (j = 0; j < node_words(node); ++j) saved_words[count][j] = *(unsigned long *)(node + 4 * j);
+        ++count;
+        if (*(unsigned long *)(node + 4) == 0x10 && *(unsigned long *)(node + 0x20) == 0) {
+            if (*(unsigned short *)(node + 0x10) == 75) {
+                if (skip) ExitProcess(73);
+                skip = node;
+            }
+            if (*(unsigned short *)(node + 0x10) == 103 &&
+                *(unsigned short *)(*(unsigned long *)branch_target(node) + 0x10) == 14) {
+                if (back) ExitProcess(74);
+                back = node;
+            }
+        }
+    }
+    if (count != 193 || !skip || !back || intervention_count++) ExitProcess(75);
+    common = branch_target(skip); start = *(unsigned long *)skip;
+    last = *(unsigned long *)(common + 12); before = *(unsigned long *)(skip + 12);
+    after = *(unsigned long *)back;
+    if (*(unsigned char *)(start + 8) != 0x1a || *(unsigned char *)(common + 8) != 0x1a ||
+        *(unsigned long *)(last + 4) != 0xf || !*(unsigned long *)(last + 0x20) ||
+        *(unsigned long *)(before + 4) != 0xf || branch_target(before) != branch_target(last))
+        ExitProcess(76);
+    count = 0;
+    for (node = start; node != common; node = *(unsigned long *)node)
+        if (!node || ++count > 7) ExitProcess(77);
+    if (count != 7) ExitProcess(77);
+#if DO_RELOCATE
+    /* Stage four falls through to common; stage five now falls through to skip. */
+    *(unsigned long *)before = common; *(unsigned long *)(common + 12) = before;
+    *(unsigned long *)back = start; *(unsigned long *)(start + 12) = back;
+    *(unsigned long *)last = skip; *(unsigned long *)(skip + 12) = last;
+    *(unsigned long *)skip = after; *(unsigned long *)(after + 12) = skip;
+#endif
+    /* Every node and every inspected non-link field must be unchanged. */
+    for (i = 0; i < 193; ++i)
+        for (j = 0; j < node_words(saved_nodes[i]); ++j)
+            if (j != 0 && j != 3 && saved_words[i][j] != *(unsigned long *)(saved_nodes[i] + j * 4))
+                ExitProcess(78);
+    count = 0; before = 0;
+    for (node = first; node; node = *(unsigned long *)node) {
+        if (++count > 193 || (before && *(unsigned long *)(node + 12) != before)) ExitProcess(79);
+        for (i = 0; i < 193 && saved_nodes[i] != node; ++i) {}
+        if (i == 193) ExitProcess(79);
+        saved_nodes[i] = 0;
+        before = node;
+    }
+    if (count != 193) ExitProcess(79);
+}

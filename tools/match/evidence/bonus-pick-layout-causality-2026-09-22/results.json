@@ -1,0 +1,1004 @@
+{
+  "schema_version": 1,
+  "kind": "compiler-layout-causality-diagnostic",
+  "match_credit": false,
+  "canonical_source_modified": false,
+  "canonical_source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+  "canonical_metrics": {
+    "ratio": 0.7592592592592593,
+    "target_instructions": 162,
+    "candidate_instructions": 162,
+    "prefix_instructions": 55,
+    "references_ok": 20,
+    "reference_problems": 0,
+    "exact": false,
+    "body_byte_exact": false
+  },
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "early_graph": {
+    "model_matches_observed_order": true,
+    "initial_blocks": 79,
+    "reachable_blocks": 77,
+    "unreachable_blocks": [
+      14,
+      18
+    ],
+    "header": 6,
+    "stage_five": 51,
+    "retry_latch": 73,
+    "header_dominates_stage_five_and_latch": true,
+    "stage_five_reachable_subgraph_without_header_is_acyclic": true,
+    "stage_five_reaches_latch_without_header": true,
+    "rpo_constraint": "stage five precedes retry latch for every successor visitation order in this graph",
+    "blocks": [
+      {
+        "index": 0,
+        "lines": [
+          0,
+          1
+        ],
+        "successors": [
+          1
+        ]
+      },
+      {
+        "index": 1,
+        "lines": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "successors": [
+          2
+        ]
+      },
+      {
+        "index": 2,
+        "lines": [
+          0,
+          6
+        ],
+        "successors": [
+          5,
+          3
+        ]
+      },
+      {
+        "index": 3,
+        "lines": [
+          0,
+          6
+        ],
+        "successors": [
+          5,
+          4
+        ]
+      },
+      {
+        "index": 4,
+        "lines": [
+          0,
+          7
+        ],
+        "successors": [
+          5
+        ]
+      },
+      {
+        "index": 5,
+        "lines": [
+          0,
+          9,
+          10
+        ],
+        "successors": [
+          6,
+          2
+        ]
+      },
+      {
+        "index": 6,
+        "lines": [
+          0,
+          14,
+          15,
+          16
+        ],
+        "successors": [
+          8,
+          7
+        ]
+      },
+      {
+        "index": 7,
+        "lines": [
+          0,
+          17
+        ],
+        "successors": [
+          8
+        ]
+      },
+      {
+        "index": 8,
+        "lines": [
+          0,
+          19,
+          20
+        ],
+        "successors": [
+          11,
+          9
+        ]
+      },
+      {
+        "index": 9,
+        "lines": [
+          0,
+          20
+        ],
+        "successors": [
+          11,
+          10
+        ]
+      },
+      {
+        "index": 10,
+        "lines": [
+          0,
+          21
+        ],
+        "successors": [
+          11
+        ]
+      },
+      {
+        "index": 11,
+        "lines": [
+          0,
+          23,
+          25
+        ],
+        "successors": [
+          16,
+          12
+        ]
+      },
+      {
+        "index": 12,
+        "lines": [
+          0,
+          26
+        ],
+        "successors": [
+          15,
+          13
+        ]
+      },
+      {
+        "index": 13,
+        "lines": [
+          0,
+          27
+        ],
+        "successors": [
+          76
+        ]
+      },
+      {
+        "index": 14,
+        "lines": [
+          0,
+          27
+        ],
+        "successors": [
+          24
+        ]
+      },
+      {
+        "index": 15,
+        "lines": [
+          0,
+          29,
+          30
+        ],
+        "successors": [
+          19
+        ]
+      },
+      {
+        "index": 16,
+        "lines": [
+          0,
+          30
+        ],
+        "successors": [
+          19,
+          17
+        ]
+      },
+      {
+        "index": 17,
+        "lines": [
+          0,
+          31
+        ],
+        "successors": [
+          75
+        ]
+      },
+      {
+        "index": 18,
+        "lines": [
+          0,
+          31
+        ],
+        "successors": [
+          24
+        ]
+      },
+      {
+        "index": 19,
+        "lines": [
+          0,
+          35
+        ],
+        "successors": [
+          20
+        ]
+      },
+      {
+        "index": 20,
+        "lines": [
+          0,
+          36
+        ],
+        "successors": [
+          24,
+          21
+        ]
+      },
+      {
+        "index": 21,
+        "lines": [
+          0,
+          37
+        ],
+        "successors": [
+          23,
+          22
+        ]
+      },
+      {
+        "index": 22,
+        "lines": [
+          0,
+          38,
+          39
+        ],
+        "successors": [
+          24
+        ]
+      },
+      {
+        "index": 23,
+        "lines": [
+          0,
+          41,
+          42,
+          43
+        ],
+        "successors": [
+          20
+        ]
+      },
+      {
+        "index": 24,
+        "lines": [
+          0,
+          47
+        ],
+        "successors": [
+          27,
+          25
+        ]
+      },
+      {
+        "index": 25,
+        "lines": [
+          0,
+          47
+        ],
+        "successors": [
+          27,
+          26
+        ]
+      },
+      {
+        "index": 26,
+        "lines": [
+          0,
+          48
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 27,
+        "lines": [
+          0,
+          51
+        ],
+        "successors": [
+          55,
+          28
+        ]
+      },
+      {
+        "index": 28,
+        "lines": [
+          0,
+          52
+        ],
+        "successors": [
+          34,
+          29
+        ]
+      },
+      {
+        "index": 29,
+        "lines": [
+          0,
+          52
+        ],
+        "successors": [
+          34,
+          30
+        ]
+      },
+      {
+        "index": 30,
+        "lines": [
+          0,
+          53
+        ],
+        "successors": [
+          33,
+          31
+        ]
+      },
+      {
+        "index": 31,
+        "lines": [
+          0,
+          53
+        ],
+        "successors": [
+          33,
+          32
+        ]
+      },
+      {
+        "index": 32,
+        "lines": [
+          0,
+          54
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 33,
+        "lines": [
+          0,
+          56
+        ],
+        "successors": [
+          38
+        ]
+      },
+      {
+        "index": 34,
+        "lines": [
+          0,
+          58
+        ],
+        "successors": [
+          38,
+          35
+        ]
+      },
+      {
+        "index": 35,
+        "lines": [
+          0,
+          58
+        ],
+        "successors": [
+          38,
+          36
+        ]
+      },
+      {
+        "index": 36,
+        "lines": [
+          0,
+          58
+        ],
+        "successors": [
+          38,
+          37
+        ]
+      },
+      {
+        "index": 37,
+        "lines": [
+          0,
+          59
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 38,
+        "lines": [
+          0,
+          62
+        ],
+        "successors": [
+          44,
+          39
+        ]
+      },
+      {
+        "index": 39,
+        "lines": [
+          0,
+          62
+        ],
+        "successors": [
+          44,
+          40
+        ]
+      },
+      {
+        "index": 40,
+        "lines": [
+          0,
+          63
+        ],
+        "successors": [
+          43,
+          41
+        ]
+      },
+      {
+        "index": 41,
+        "lines": [
+          0,
+          63
+        ],
+        "successors": [
+          43,
+          42
+        ]
+      },
+      {
+        "index": 42,
+        "lines": [
+          0,
+          64
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 43,
+        "lines": [
+          0,
+          66
+        ],
+        "successors": [
+          55
+        ]
+      },
+      {
+        "index": 44,
+        "lines": [
+          0,
+          66
+        ],
+        "successors": [
+          51,
+          45
+        ]
+      },
+      {
+        "index": 45,
+        "lines": [
+          0,
+          67
+        ],
+        "successors": [
+          50,
+          46
+        ]
+      },
+      {
+        "index": 46,
+        "lines": [
+          0,
+          68
+        ],
+        "successors": [
+          48,
+          47
+        ]
+      },
+      {
+        "index": 47,
+        "lines": [
+          0,
+          69
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 48,
+        "lines": [
+          0,
+          71
+        ],
+        "successors": [
+          50,
+          49
+        ]
+      },
+      {
+        "index": 49,
+        "lines": [
+          0,
+          72
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 50,
+        "lines": [
+          0,
+          75
+        ],
+        "successors": [
+          55
+        ]
+      },
+      {
+        "index": 51,
+        "lines": [
+          0,
+          75
+        ],
+        "successors": [
+          55,
+          52
+        ]
+      },
+      {
+        "index": 52,
+        "lines": [
+          0,
+          76
+        ],
+        "successors": [
+          55,
+          53
+        ]
+      },
+      {
+        "index": 53,
+        "lines": [
+          0,
+          76
+        ],
+        "successors": [
+          55,
+          54
+        ]
+      },
+      {
+        "index": 54,
+        "lines": [
+          0,
+          77
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 55,
+        "lines": [
+          0,
+          82
+        ],
+        "successors": [
+          58,
+          56
+        ]
+      },
+      {
+        "index": 56,
+        "lines": [
+          0,
+          82
+        ],
+        "successors": [
+          58,
+          57
+        ]
+      },
+      {
+        "index": 57,
+        "lines": [
+          0,
+          83
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 58,
+        "lines": [
+          0,
+          88
+        ],
+        "successors": [
+          60,
+          59
+        ]
+      },
+      {
+        "index": 59,
+        "lines": [
+          0,
+          88
+        ],
+        "successors": [
+          62,
+          60
+        ]
+      },
+      {
+        "index": 60,
+        "lines": [
+          0,
+          88
+        ],
+        "successors": [
+          62,
+          61
+        ]
+      },
+      {
+        "index": 61,
+        "lines": [
+          0,
+          89
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 62,
+        "lines": [
+          0,
+          91
+        ],
+        "successors": [
+          65,
+          63
+        ]
+      },
+      {
+        "index": 63,
+        "lines": [
+          0,
+          91
+        ],
+        "successors": [
+          65,
+          64
+        ]
+      },
+      {
+        "index": 64,
+        "lines": [
+          0,
+          92
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 65,
+        "lines": [
+          0,
+          94
+        ],
+        "successors": [
+          68,
+          66
+        ]
+      },
+      {
+        "index": 66,
+        "lines": [
+          0,
+          94
+        ],
+        "successors": [
+          68,
+          67
+        ]
+      },
+      {
+        "index": 67,
+        "lines": [
+          0,
+          95
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 68,
+        "lines": [
+          0,
+          97
+        ],
+        "successors": [
+          71,
+          69
+        ]
+      },
+      {
+        "index": 69,
+        "lines": [
+          0,
+          97
+        ],
+        "successors": [
+          71,
+          70
+        ]
+      },
+      {
+        "index": 70,
+        "lines": [
+          0,
+          98
+        ],
+        "successors": [
+          73
+        ]
+      },
+      {
+        "index": 71,
+        "lines": [
+          0,
+          100
+        ],
+        "successors": [
+          73,
+          72
+        ]
+      },
+      {
+        "index": 72,
+        "lines": [
+          0,
+          101
+        ],
+        "successors": [
+          77
+        ]
+      },
+      {
+        "index": 73,
+        "lines": [
+          0,
+          103
+        ],
+        "successors": [
+          74,
+          6
+        ]
+      },
+      {
+        "index": 74,
+        "lines": [
+          0,
+          104
+        ],
+        "successors": [
+          77
+        ]
+      },
+      {
+        "index": 75,
+        "lines": [
+          0,
+          105
+        ],
+        "successors": [
+          24
+        ]
+      },
+      {
+        "index": 76,
+        "lines": [
+          0,
+          105
+        ],
+        "successors": [
+          24
+        ]
+      },
+      {
+        "index": 77,
+        "lines": [
+          0
+        ],
+        "successors": [
+          78
+        ]
+      },
+      {
+        "index": 78,
+        "lines": [
+          0,
+          105
+        ],
+        "successors": []
+      }
+    ],
+    "observed_reverse_postorder": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      76,
+      15,
+      16,
+      17,
+      75,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      77,
+      78
+    ]
+  },
+  "disabled_intervention": {
+    "compiler_decisions_modified": false,
+    "match_credit": false,
+    "metrics": {
+      "ratio": 0.7592592592592593,
+      "target_instructions": 162,
+      "candidate_instructions": 162,
+      "prefix_instructions": 55,
+      "references_ok": 20,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    },
+    "normalized_coff_sha256": "8d819680a0ab1a50585e4a472760158905db1413c81bb0fc7ad5f063448d8532",
+    "observer_sha256": "acb00366353785cadcb878b92099daa2e355b1a59369c37b7f20f1cbce07b21a",
+    "trace_sha256": "3a7ddea1c973fa47185039b89eb458273e891612b102475e9e1ff53cc36d42d2"
+  },
+  "layout_intervention": {
+    "compiler_decisions_modified": true,
+    "match_credit": false,
+    "metrics": {
+      "ratio": 1.0,
+      "target_instructions": 162,
+      "candidate_instructions": 162,
+      "prefix_instructions": 162,
+      "references_ok": 20,
+      "reference_problems": 0,
+      "exact": true,
+      "body_byte_exact": true
+    },
+    "normalized_coff_sha256": "196e06412e507e4e49e26f223f81d668298425ca31ad71e8290368db9c03e726",
+    "observer_sha256": "6dfe308f00b1e11697de200c6b74dd1f80bf512bd7e950438bd559b20d2c3dd3",
+    "trace_sha256": "be5b72d57aab908ef782791d1ccf5ee9934c07780059a94afdcc12c8a171c0b6"
+  },
+  "preserving_manifests": {
+    "early": "ffa5be0bdd6c701abe5c294f64bb62462e9d20627755e5ba89d947abeac22012",
+    "late": "9bfd72f89c8a3b9f73154f9812e0e7e7c4327d2294e15502845db547848e0f8e"
+  },
+  "blocks_sha256": "72a12a1d2f95e09c3c8641bcc41dd7d236062119b90f5f18232eb43395333d55",
+  "harness_sha256": {
+    "verify.py": "242bca68abe221d940564045d46c9727e8178ada607ba6ae27cc02c0f85de542",
+    "blocks.c.in": "91bda379c6c80e0b12d7e68771fc6fa4268d44bc2348b1d8c6fd8756797230bb",
+    "relocate.c.in": "9f74afa264adfae6b5441668742c7d7cd37a229a53679376d7a45747afad8c81"
+  },
+  "late_profile_sha256": "d22029ed44ea5a6e00e0cdbc2191bd4f801ebedb27be738477f2f17535b562e4"
+}
