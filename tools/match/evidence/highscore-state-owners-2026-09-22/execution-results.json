@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "kind": "highscore-saved-state-execution",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+  "metrics": {
+    "normalized_coff_sha256": "92582598ff9af087355403197b93212a247165c4904a808bb98548779f3dcb2a",
+    "body_sha256": "7f3ffe1db59c43703b5334dfca8bd192e0335f8b68ea58f09597d42b771d6134",
+    "instructions": 2004,
+    "ratio": 0.9975049900199601,
+    "prefix": 108,
+    "references": [
+      639,
+      0,
+      0
+    ],
+    "exact": false,
+    "body_byte_exact": false
+  },
+  "region": [
+    {
+      "window": [
+        3464,
+        3541
+      ],
+      "instructions": 15,
+      "bytes": 77,
+      "resolved_bytes_sha256": "1768b524fb5b5471c54ebab454aaf920de2349cdd4bb6d811fe9c1df4e40de95",
+      "relocations": [
+        {
+          "offset": 3466,
+          "address": 4747860,
+          "kind": 6,
+          "shared": [
+            "address:0x00487254",
+            "name:highscore_return_quest_stage_minor"
+          ]
+        },
+        {
+          "offset": 3471,
+          "address": 4747864,
+          "kind": 6,
+          "shared": [
+            "address:0x00487258",
+            "name:highscore_return_game_mode_id"
+          ]
+        },
+        {
+          "offset": 3477,
+          "address": 4747856,
+          "kind": 6,
+          "shared": [
+            "address:0x00487250",
+            "name:highscore_return_quest_stage_major"
+          ]
+        },
+        {
+          "offset": 3483,
+          "address": 4747272,
+          "kind": 6,
+          "shared": [
+            "address:0x00487008",
+            "name:quest_stage_minor"
+          ]
+        },
+        {
+          "offset": 3497,
+          "address": 4747268,
+          "kind": 6,
+          "shared": [
+            "address:0x00487004",
+            "name:quest_stage_major"
+          ]
+        },
+        {
+          "offset": 3503,
+          "address": 4747868,
+          "kind": 6,
+          "shared": [
+            "address:0x0048725c",
+            "name:highscore_return_hardcore_flag"
+          ]
+        },
+        {
+          "offset": 3512,
+          "address": 4747900,
+          "kind": 6,
+          "shared": [
+            "address:0x0048727c",
+            "name:player_overlay_suppressed_latch"
+          ]
+        },
+        {
+          "offset": 3518,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 3524,
+          "address": 4720528,
+          "kind": 6,
+          "shared": [
+            "address:0x00480790"
+          ]
+        },
+        {
+          "offset": 3530,
+          "address": 4747852,
+          "kind": 6,
+          "shared": [
+            "address:0x0048724c",
+            "name:ui_transition_direction"
+          ]
+        },
+        {
+          "offset": 3537,
+          "address": 4747892,
+          "kind": 6,
+          "shared": [
+            "address:0x00487274",
+            "name:game_state_pending"
+          ]
+        }
+      ],
+      "literal_branches": [],
+      "stack_bindings": []
+    }
+  ],
+  "fixtures": 9216,
+  "execution_digest": "6302404f428be670ef6368ed8c224b4fda863f556c60db3d4b92e0013a23a772",
+  "ordered_writes_equal": true,
+  "stack_and_saved_registers_preserved": true,
+  "corruptions_rejected": [
+    "wrong-minor-source",
+    "wrong-mode-comparison",
+    "wrong-transition-value",
+    "mode-before-overlay"
+  ],
+  "full_function_match": false,
+  "limitations": "Straight-line restoration only. No callbacks, whole UI execution, or reachability claim for arbitrary input bit patterns.",
+  "inputs": {
+    "controls.py": "ad024f6079801a3e6f3b1f4383df7deeb55ca24019bb6fef6351a5f672e3cb6d",
+    "controls.json": "9c8773f742e0a6971bad9ccff0630f7e510eb9c095726f1af13c12378c2c86ed",
+    "verify.py": "0f7572752d15270c4196c77a58762206ec173a9589294801e26cf898cfd52c33",
+    "verify_execution.py": "f32ed1b75f6933b5ce11dc935ad2da885b25085d5cf9cd3518fe8e3144cd61f1"
+  }
+}

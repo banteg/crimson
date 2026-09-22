@@ -1,0 +1,3961 @@
+{
+  "schema_version": 1,
+  "kind": "highscore-state-and-scheduler-trace",
+  "stock": {
+    "quest-arm-direct": {
+      "manifest": {
+        "schema_version": 1,
+        "kind": "preserving-c2-trace",
+        "profile": "msvc6.5-c2-d50100ac",
+        "function": "highscore_screen_update",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "source_sha256": "bf9dce0fbce17274e1b7fcbe7905b967eff37b5b7cbc468b0d960e29174fc434",
+        "build_key": {
+          "toolchain": {
+            "compiler_trees": {
+              "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+              "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+            },
+            "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+            "runner_mode": 493,
+            "cl_environment": {
+              "CL": null,
+              "_CL_": null
+            }
+          },
+          "pipeline_sha256": [
+            "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+            "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+            "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+          ],
+          "compiler": "msvc6.5",
+          "argv": [
+            "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+            "/c",
+            "/O2",
+            "/GB",
+            "/W3",
+            "/GR-",
+            "scratch.cpp"
+          ],
+          "auto_inline_off": [],
+          "dependencies": [
+            [
+              "/private/tmp/highscore-state-owners-compiler-final/quest-arm-direct/source/scratch.cpp",
+              "bf9dce0fbce17274e1b7fcbe7905b967eff37b5b7cbc468b0d960e29174fc434"
+            ],
+            [
+              "/private/tmp/highscore-state-owners-compiler-final/quest-arm-direct/source/scratch.conf",
+              "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075"
+            ],
+            [
+              "cl.sh",
+              "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+            ],
+            [
+              "compilers/msvc6.5/Bin/CL.EXE",
+              "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+            ],
+            [
+              "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+              "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+            ],
+            [
+              "include/crimsonland_console.h",
+              "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+            ],
+            [
+              "include/crimsonland_gameplay.h",
+              "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+            ],
+            [
+              "include/crimsonland_textures_owner.h",
+              "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5"
+            ],
+            [
+              "include/crimsonland_ui.h",
+              "a803083591d339fbf41b4d7535fc7eed96347f736742a30c23c1810488fed439"
+            ],
+            [
+              "include/grim2d_cpp.h",
+              "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+            ]
+          ]
+        },
+        "input_hashes": {
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "0ebeeb00386bbabb6464cb7b09334b9798e1f56560daf79d6b05d9e22a110fe9",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+          "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+          "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+          "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+        },
+        "stream_hashes": {
+          "ex": "d228cac266d4ccda335354b2ac909a72ca900ed3db70c4326e4ca08f6f26d50a",
+          "in": "7f5bfeab08ed0f92812917e605234546e5197528333fff99057806c6e7387ad2",
+          "sy": "461bb7ad9b9f463ae02ad2f502256b2edcc6eedd954dac6efad5c8898571fda9",
+          "gl": "d13235ae8dd728b45ca02e7f668b25f99ed253ad2ca88780f4725dbd47792974"
+        },
+        "whole_coff_equal_except_timestamp": true,
+        "normalized_coff_sha256": "5e89593d11b17d02b40191fa860ec9cffdae920ed5c6e95e5a6a6ece65d32e3a",
+        "missing_stream_rejected": true,
+        "compiler_decisions_modified": false,
+        "passes_only": false,
+        "metrics": {
+          "ratio": 0.9001996007984032,
+          "target_instructions": 2004,
+          "candidate_instructions": 2004,
+          "prefix_instructions": 108,
+          "references_ok": 623,
+          "reference_problems": 2,
+          "exact": false,
+          "body_byte_exact": false
+        },
+        "events": 43,
+        "object_paths": [
+          "source/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
+          "captured-source/build/msvc6.5/3d19f53e58ba4892/scratch.obj",
+          "replay/replay.obj",
+          "observed/replay.obj"
+        ],
+        "profile_sha256": "a73cb7c3081e70cdcd8b415e52732fe81abbe5b8886be6e4b43cbde6894cc53b",
+        "trace_sha256": "d9837fa981cc4ae2ee41dae82dda7d564ce2ef225b86bee90a5303600c2ff79c",
+        "snapshots_sha256": "01e93b2899b0386bbbd7ee5f8d973e4676140a58d0c4e938b55a071467518b15"
+      },
+      "state": {
+        "11": [
+          {
+            "operation": "load-minor",
+            "home": null
+          },
+          {
+            "operation": "store-minor",
+            "home": null
+          },
+          {
+            "operation": "load-major",
+            "home": null
+          },
+          {
+            "operation": "store-major",
+            "home": null
+          },
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": null
+          },
+          {
+            "operation": "store-hardcore",
+            "home": null
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": null
+          }
+        ],
+        "111": [
+          {
+            "operation": "load-minor",
+            "home": "edx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "edx"
+          },
+          {
+            "operation": "load-major",
+            "home": "eax"
+          },
+          {
+            "operation": "store-major",
+            "home": "eax"
+          },
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "edx"
+          }
+        ],
+        "22": [
+          {
+            "operation": "load-minor",
+            "home": "edx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "edx"
+          },
+          {
+            "operation": "load-major",
+            "home": "eax"
+          },
+          {
+            "operation": "store-major",
+            "home": "eax"
+          },
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "edx"
+          }
+        ],
+        "122": [
+          {
+            "operation": "load-major",
+            "home": "eax"
+          },
+          {
+            "operation": "load-minor",
+            "home": "edx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-major",
+            "home": "eax"
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-minor",
+            "home": "edx"
+          },
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "edx"
+          }
+        ]
+      }
+    },
+    "status-shared-sleep": {
+      "manifest": {
+        "schema_version": 1,
+        "kind": "preserving-c2-trace",
+        "profile": "msvc6.5-c2-d50100ac",
+        "function": "highscore_screen_update",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "source_sha256": "9b3f8b1a03a5535c3f087c4dd154b2775b0596c2c793ac6fbefe6fd57470a2d0",
+        "build_key": {
+          "toolchain": {
+            "compiler_trees": {
+              "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+              "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+            },
+            "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+            "runner_mode": 493,
+            "cl_environment": {
+              "CL": null,
+              "_CL_": null
+            }
+          },
+          "pipeline_sha256": [
+            "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+            "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+            "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+          ],
+          "compiler": "msvc6.5",
+          "argv": [
+            "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+            "/c",
+            "/O2",
+            "/GB",
+            "/W3",
+            "/GR-",
+            "scratch.cpp"
+          ],
+          "auto_inline_off": [],
+          "dependencies": [
+            [
+              "/private/tmp/highscore-state-owners-compiler-final/status-shared-sleep/source/scratch.cpp",
+              "9b3f8b1a03a5535c3f087c4dd154b2775b0596c2c793ac6fbefe6fd57470a2d0"
+            ],
+            [
+              "/private/tmp/highscore-state-owners-compiler-final/status-shared-sleep/source/scratch.conf",
+              "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075"
+            ],
+            [
+              "cl.sh",
+              "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+            ],
+            [
+              "compilers/msvc6.5/Bin/CL.EXE",
+              "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+            ],
+            [
+              "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+              "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+            ],
+            [
+              "include/crimsonland_console.h",
+              "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+            ],
+            [
+              "include/crimsonland_gameplay.h",
+              "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+            ],
+            [
+              "include/crimsonland_textures_owner.h",
+              "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5"
+            ],
+            [
+              "include/crimsonland_ui.h",
+              "a803083591d339fbf41b4d7535fc7eed96347f736742a30c23c1810488fed439"
+            ],
+            [
+              "include/grim2d_cpp.h",
+              "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+            ]
+          ]
+        },
+        "input_hashes": {
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "0ebeeb00386bbabb6464cb7b09334b9798e1f56560daf79d6b05d9e22a110fe9",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+          "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+          "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+          "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+        },
+        "stream_hashes": {
+          "ex": "2b7736b562e77b8ebf47545c68654a668ab18a6eec1fb63beec6bd4534543c58",
+          "in": "4482a0799363f17c129a58d978a3975e97aaec7da80e57c214d0775d2b4328e4",
+          "sy": "779de37a9feeaf2b2bd6c32f389607ec1a95bbb4102793d48cda71455f326824",
+          "gl": "e81aff1e48507738d57a592d3c2d30f0dd0378eb9821fb20d7341f4fde0f2a18"
+        },
+        "whole_coff_equal_except_timestamp": true,
+        "normalized_coff_sha256": "bc5101c07adcd8587046e1104cf6e0557aaf83291c96e336b70a37e3350bcf3e",
+        "missing_stream_rejected": true,
+        "compiler_decisions_modified": false,
+        "passes_only": false,
+        "metrics": {
+          "ratio": 0.9965069860279441,
+          "target_instructions": 2004,
+          "candidate_instructions": 2004,
+          "prefix_instructions": 108,
+          "references_ok": 637,
+          "reference_problems": 0,
+          "exact": false,
+          "body_byte_exact": false
+        },
+        "events": 43,
+        "object_paths": [
+          "source/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
+          "captured-source/build/msvc6.5/43eebaaac6a18404/scratch.obj",
+          "replay/replay.obj",
+          "observed/replay.obj"
+        ],
+        "profile_sha256": "a73cb7c3081e70cdcd8b415e52732fe81abbe5b8886be6e4b43cbde6894cc53b",
+        "trace_sha256": "f1aca57f59fbf010d5de974f99b759ab0e20a24a964b91e531c3c05ce0b9664f",
+        "snapshots_sha256": "b25baa01a15b5db5a0d0d85c004ec6e6fa4a68488471639ce2cd9cc9d255e00f"
+      },
+      "state": {
+        "11": [
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": null
+          },
+          {
+            "operation": "store-major",
+            "home": null
+          },
+          {
+            "operation": "load-minor",
+            "home": null
+          },
+          {
+            "operation": "store-minor",
+            "home": null
+          },
+          {
+            "operation": "load-hardcore",
+            "home": null
+          },
+          {
+            "operation": "store-hardcore",
+            "home": null
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": null
+          }
+        ],
+        "111": [
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": "edx"
+          },
+          {
+            "operation": "store-major",
+            "home": "edx"
+          },
+          {
+            "operation": "load-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "ecx"
+          }
+        ],
+        "22": [
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": "edx"
+          },
+          {
+            "operation": "store-major",
+            "home": "edx"
+          },
+          {
+            "operation": "load-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "ecx"
+          }
+        ],
+        "122": [
+          {
+            "operation": "load-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": "edx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-major",
+            "home": "edx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "ecx"
+          }
+        ]
+      }
+    },
+    "stage-reference": {
+      "manifest": {
+        "schema_version": 1,
+        "kind": "preserving-c2-trace",
+        "profile": "msvc6.5-c2-d50100ac",
+        "function": "highscore_screen_update",
+        "cflags": "/O2 /GB /W3 /GR-",
+        "source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+        "build_key": {
+          "toolchain": {
+            "compiler_trees": {
+              "Bin": "863333f46e1823f319e171cecbf548921f485b95bbc58787bc3f67938e682204",
+              "Include": "e12364b447c101415646ef4ca41b6b334f5b8b32d3282774f02d9ea239f89429"
+            },
+            "runner_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+            "runner_mode": 493,
+            "cl_environment": {
+              "CL": null,
+              "_CL_": null
+            }
+          },
+          "pipeline_sha256": [
+            "a414d4c50f88809c77b2eab45b6b0ab3aef01073042895e13b9dfed2da482b90",
+            "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
+            "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6"
+          ],
+          "compiler": "msvc6.5",
+          "argv": [
+            "/Users/banteg/dev/banteg/crimson/tools/match/cl.sh",
+            "/c",
+            "/O2",
+            "/GB",
+            "/W3",
+            "/GR-",
+            "scratch.cpp"
+          ],
+          "auto_inline_off": [],
+          "dependencies": [
+            [
+              "/private/tmp/highscore-state-owners-compiler-final/stage-reference/source/scratch.cpp",
+              "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3"
+            ],
+            [
+              "/private/tmp/highscore-state-owners-compiler-final/stage-reference/source/scratch.conf",
+              "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075"
+            ],
+            [
+              "cl.sh",
+              "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+            ],
+            [
+              "compilers/msvc6.5/Bin/CL.EXE",
+              "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+            ],
+            [
+              "/Users/banteg/dev/banteg/crimson/third_party/headers/crimsonland_types.h",
+              "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+            ],
+            [
+              "include/crimsonland_console.h",
+              "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+            ],
+            [
+              "include/crimsonland_gameplay.h",
+              "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+            ],
+            [
+              "include/crimsonland_textures_owner.h",
+              "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5"
+            ],
+            [
+              "include/crimsonland_ui.h",
+              "a803083591d339fbf41b4d7535fc7eed96347f736742a30c23c1810488fed439"
+            ],
+            [
+              "include/grim2d_cpp.h",
+              "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+            ]
+          ]
+        },
+        "input_hashes": {
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/README.md": "0ebeeb00386bbabb6464cb7b09334b9798e1f56560daf79d6b05d9e22a110fe9",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
+          "/Users/banteg/dev/banteg/crimson/tools/match/c2/profile.json": "56d119b4d999a73d1ca00ef5bc9af50732c8285e9def92223cc183fb760a43ff",
+          "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+          "/Users/banteg/dev/banteg/crimson/src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+          "/Users/banteg/dev/banteg/crimson/tools/match/bin/wibo": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/CL.EXE": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1.DLL": "0792033fc3d2fec262ff95478c6a9e70a06e836ed55f0a9710200fa06c204754",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C1XX.DLL": "f014b3bee650224adf6cb44e51f0eeac5abbf5da666fa299d5250b2f3d1937c6",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/C2.DLL": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/MSPDB60.DLL": "d9f1d9b5c5a99868bc172752a98ea700bce10ddb2afdbcb5e4faeafaec3489df",
+          "/Users/banteg/dev/banteg/crimson/tools/match/compilers/msvc6.5/Bin/LINK.EXE": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97",
+          "/Users/banteg/dev/banteg/crimson/analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+        },
+        "stream_hashes": {
+          "ex": "c3920314d06080e3e39edd8fb325e81873345b90569ba867635bdad9929dd1a4",
+          "in": "4482a0799363f17c129a58d978a3975e97aaec7da80e57c214d0775d2b4328e4",
+          "sy": "c7c6a2af815d5a43669cb1a648a38e7f702e6eaf19808939ecf22ccc6a27eb0a",
+          "gl": "3012269867813da9918fc06d03e14f65f09aa414046f9ac267282370f10363a8"
+        },
+        "whole_coff_equal_except_timestamp": true,
+        "normalized_coff_sha256": "92582598ff9af087355403197b93212a247165c4904a808bb98548779f3dcb2a",
+        "missing_stream_rejected": true,
+        "compiler_decisions_modified": false,
+        "passes_only": false,
+        "metrics": {
+          "ratio": 0.9975049900199601,
+          "target_instructions": 2004,
+          "candidate_instructions": 2004,
+          "prefix_instructions": 108,
+          "references_ok": 639,
+          "reference_problems": 0,
+          "exact": false,
+          "body_byte_exact": false
+        },
+        "events": 43,
+        "object_paths": [
+          "source/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
+          "captured-source/build/msvc6.5/2d7a3a0fb116b9e8/scratch.obj",
+          "replay/replay.obj",
+          "observed/replay.obj"
+        ],
+        "profile_sha256": "a73cb7c3081e70cdcd8b415e52732fe81abbe5b8886be6e4b43cbde6894cc53b",
+        "trace_sha256": "5d881d1807abadbb76cc09c4c1b9f4392d91548a0658a82516b8b39408861a87",
+        "snapshots_sha256": "1235fddd105d064db3f782a8f53e65218429b4642e5bc73ea8a18a20a0c08028"
+      },
+      "state": {
+        "11": [
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": null
+          },
+          {
+            "operation": "store-major",
+            "home": null
+          },
+          {
+            "operation": "load-minor",
+            "home": null
+          },
+          {
+            "operation": "store-minor",
+            "home": null
+          },
+          {
+            "operation": "load-hardcore",
+            "home": null
+          },
+          {
+            "operation": "store-hardcore",
+            "home": null
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": null
+          }
+        ],
+        "111": [
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": "edx"
+          },
+          {
+            "operation": "store-major",
+            "home": "edx"
+          },
+          {
+            "operation": "load-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "ecx"
+          }
+        ],
+        "22": [
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": "edx"
+          },
+          {
+            "operation": "store-major",
+            "home": "edx"
+          },
+          {
+            "operation": "load-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "ecx"
+          }
+        ],
+        "122": [
+          {
+            "operation": "load-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "load-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "load-major",
+            "home": "edx"
+          },
+          {
+            "operation": "store-minor",
+            "home": "ecx"
+          },
+          {
+            "operation": "store-major",
+            "home": "edx"
+          },
+          {
+            "operation": "load-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-overlay",
+            "home": null
+          },
+          {
+            "operation": "store-mode",
+            "home": "eax"
+          },
+          {
+            "operation": "store-hardcore",
+            "home": "edx"
+          },
+          {
+            "operation": "store-transition",
+            "home": null
+          },
+          {
+            "operation": "store-pending",
+            "home": "ecx"
+          }
+        ]
+      }
+    }
+  },
+  "graph": [
+    [
+      {
+        "ordinal": 0,
+        "line": 0,
+        "opcode": 0,
+        "priority": 1105920,
+        "depth": 135,
+        "outgoing": [
+          [
+            31,
+            524288,
+            0
+          ],
+          [
+            29,
+            524288,
+            0
+          ],
+          [
+            2,
+            524288,
+            0
+          ],
+          [
+            1,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 1,
+        "line": 17,
+        "opcode": 1,
+        "priority": 614400,
+        "depth": 75,
+        "outgoing": [
+          [
+            35,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 2,
+        "line": 21,
+        "opcode": 96,
+        "priority": 1163264,
+        "depth": 134,
+        "outgoing": [
+          [
+            35,
+            64,
+            0
+          ],
+          [
+            3,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 3,
+        "line": 21,
+        "opcode": 69,
+        "priority": 1146880,
+        "depth": 132,
+        "outgoing": [
+          [
+            35,
+            64,
+            0
+          ],
+          [
+            28,
+            7,
+            0
+          ],
+          [
+            27,
+            7,
+            0
+          ],
+          [
+            26,
+            7,
+            0
+          ],
+          [
+            25,
+            7,
+            0
+          ],
+          [
+            24,
+            7,
+            0
+          ],
+          [
+            23,
+            7,
+            0
+          ],
+          [
+            22,
+            7,
+            0
+          ],
+          [
+            21,
+            7,
+            0
+          ],
+          [
+            20,
+            7,
+            0
+          ],
+          [
+            15,
+            7,
+            0
+          ],
+          [
+            14,
+            7,
+            0
+          ],
+          [
+            13,
+            7,
+            0
+          ],
+          [
+            12,
+            7,
+            0
+          ],
+          [
+            11,
+            7,
+            0
+          ],
+          [
+            10,
+            7,
+            0
+          ],
+          [
+            9,
+            7,
+            0
+          ],
+          [
+            8,
+            7,
+            0
+          ],
+          [
+            7,
+            7,
+            0
+          ],
+          [
+            6,
+            7,
+            0
+          ],
+          [
+            5,
+            7,
+            0
+          ],
+          [
+            4,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 4,
+        "line": 21,
+        "opcode": 354,
+        "priority": 8192,
+        "depth": 1,
+        "outgoing": []
+      },
+      {
+        "ordinal": 5,
+        "line": 21,
+        "opcode": 96,
+        "priority": 1138688,
+        "depth": 131,
+        "outgoing": [
+          [
+            35,
+            64,
+            0
+          ],
+          [
+            6,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 6,
+        "line": 21,
+        "opcode": 69,
+        "priority": 1122304,
+        "depth": 129,
+        "outgoing": [
+          [
+            35,
+            64,
+            0
+          ],
+          [
+            28,
+            7,
+            0
+          ],
+          [
+            27,
+            7,
+            0
+          ],
+          [
+            26,
+            7,
+            0
+          ],
+          [
+            25,
+            7,
+            0
+          ],
+          [
+            24,
+            7,
+            0
+          ],
+          [
+            23,
+            7,
+            0
+          ],
+          [
+            22,
+            7,
+            0
+          ],
+          [
+            21,
+            7,
+            0
+          ],
+          [
+            20,
+            7,
+            0
+          ],
+          [
+            15,
+            7,
+            0
+          ],
+          [
+            14,
+            7,
+            0
+          ],
+          [
+            13,
+            7,
+            0
+          ],
+          [
+            12,
+            7,
+            0
+          ],
+          [
+            11,
+            7,
+            0
+          ],
+          [
+            10,
+            7,
+            0
+          ],
+          [
+            9,
+            7,
+            0
+          ],
+          [
+            8,
+            2,
+            0
+          ],
+          [
+            7,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 7,
+        "line": 21,
+        "opcode": 354,
+        "priority": 1024000,
+        "depth": 125,
+        "outgoing": [
+          [
+            8,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 8,
+        "line": 21,
+        "opcode": 99,
+        "priority": 1081344,
+        "depth": 124,
+        "outgoing": [
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            2,
+            0
+          ],
+          [
+            26,
+            2,
+            0
+          ],
+          [
+            25,
+            2,
+            0
+          ],
+          [
+            24,
+            2,
+            0
+          ],
+          [
+            23,
+            2,
+            0
+          ],
+          [
+            22,
+            2,
+            0
+          ],
+          [
+            21,
+            2,
+            0
+          ],
+          [
+            20,
+            2,
+            0
+          ],
+          [
+            15,
+            2,
+            0
+          ],
+          [
+            14,
+            2,
+            0
+          ],
+          [
+            13,
+            2,
+            0
+          ],
+          [
+            12,
+            34,
+            0
+          ],
+          [
+            11,
+            2,
+            0
+          ],
+          [
+            10,
+            2,
+            0
+          ],
+          [
+            9,
+            7,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 9,
+        "line": 21,
+        "opcode": 69,
+        "priority": 1056768,
+        "depth": 121,
+        "outgoing": [
+          [
+            28,
+            7,
+            0
+          ],
+          [
+            27,
+            7,
+            0
+          ],
+          [
+            26,
+            7,
+            0
+          ],
+          [
+            25,
+            7,
+            0
+          ],
+          [
+            24,
+            7,
+            0
+          ],
+          [
+            23,
+            7,
+            0
+          ],
+          [
+            22,
+            7,
+            0
+          ],
+          [
+            21,
+            7,
+            0
+          ],
+          [
+            20,
+            7,
+            0
+          ],
+          [
+            15,
+            7,
+            0
+          ],
+          [
+            14,
+            7,
+            0
+          ],
+          [
+            13,
+            7,
+            0
+          ],
+          [
+            12,
+            7,
+            0
+          ],
+          [
+            11,
+            2,
+            0
+          ],
+          [
+            10,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 10,
+        "line": 21,
+        "opcode": 354,
+        "priority": 958464,
+        "depth": 117,
+        "outgoing": [
+          [
+            11,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 11,
+        "line": 21,
+        "opcode": 99,
+        "priority": 1015808,
+        "depth": 116,
+        "outgoing": [
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            2,
+            0
+          ],
+          [
+            26,
+            2,
+            0
+          ],
+          [
+            25,
+            2,
+            0
+          ],
+          [
+            24,
+            2,
+            0
+          ],
+          [
+            23,
+            2,
+            0
+          ],
+          [
+            22,
+            2,
+            0
+          ],
+          [
+            21,
+            2,
+            0
+          ],
+          [
+            20,
+            34,
+            0
+          ],
+          [
+            16,
+            32,
+            0
+          ],
+          [
+            15,
+            2,
+            0
+          ],
+          [
+            14,
+            2,
+            0
+          ],
+          [
+            13,
+            2,
+            0
+          ],
+          [
+            12,
+            6,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 12,
+        "line": 21,
+        "opcode": 96,
+        "priority": 999424,
+        "depth": 114,
+        "outgoing": [
+          [
+            13,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 13,
+        "line": 21,
+        "opcode": 69,
+        "priority": 983040,
+        "depth": 112,
+        "outgoing": [
+          [
+            28,
+            7,
+            0
+          ],
+          [
+            27,
+            7,
+            0
+          ],
+          [
+            26,
+            7,
+            0
+          ],
+          [
+            25,
+            7,
+            0
+          ],
+          [
+            24,
+            7,
+            0
+          ],
+          [
+            23,
+            7,
+            0
+          ],
+          [
+            22,
+            7,
+            0
+          ],
+          [
+            21,
+            7,
+            0
+          ],
+          [
+            20,
+            7,
+            0
+          ],
+          [
+            15,
+            2,
+            0
+          ],
+          [
+            14,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 14,
+        "line": 21,
+        "opcode": 354,
+        "priority": 884736,
+        "depth": 108,
+        "outgoing": [
+          [
+            15,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 15,
+        "line": 21,
+        "opcode": 99,
+        "priority": 942080,
+        "depth": 107,
+        "outgoing": [
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            2,
+            0
+          ],
+          [
+            26,
+            2,
+            0
+          ],
+          [
+            25,
+            2,
+            0
+          ],
+          [
+            24,
+            2,
+            0
+          ],
+          [
+            23,
+            2,
+            0
+          ],
+          [
+            22,
+            2,
+            0
+          ],
+          [
+            21,
+            2,
+            0
+          ],
+          [
+            20,
+            6,
+            1
+          ],
+          [
+            18,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 16,
+        "line": 23,
+        "opcode": 1,
+        "priority": 729088,
+        "depth": 81,
+        "outgoing": [
+          [
+            30,
+            4,
+            1
+          ],
+          [
+            17,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 17,
+        "line": 23,
+        "opcode": 1,
+        "priority": 647168,
+        "depth": 79,
+        "outgoing": [
+          [
+            35,
+            162,
+            0
+          ],
+          [
+            30,
+            34,
+            0
+          ],
+          [
+            28,
+            128,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 18,
+        "line": 23,
+        "opcode": 1,
+        "priority": 851968,
+        "depth": 96,
+        "outgoing": [
+          [
+            35,
+            4,
+            1
+          ],
+          [
+            19,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 19,
+        "line": 23,
+        "opcode": 1,
+        "priority": 770048,
+        "depth": 94,
+        "outgoing": [
+          [
+            35,
+            162,
+            0
+          ],
+          [
+            30,
+            32,
+            0
+          ],
+          [
+            26,
+            128,
+            0
+          ],
+          [
+            24,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 20,
+        "line": 25,
+        "opcode": 96,
+        "priority": 925696,
+        "depth": 105,
+        "outgoing": [
+          [
+            21,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 21,
+        "line": 25,
+        "opcode": 69,
+        "priority": 909312,
+        "depth": 103,
+        "outgoing": [
+          [
+            35,
+            64,
+            0
+          ],
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            2,
+            0
+          ],
+          [
+            26,
+            2,
+            0
+          ],
+          [
+            25,
+            2,
+            0
+          ],
+          [
+            24,
+            2,
+            0
+          ],
+          [
+            23,
+            2,
+            0
+          ],
+          [
+            22,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 22,
+        "line": 25,
+        "opcode": 69,
+        "priority": 876544,
+        "depth": 99,
+        "outgoing": [
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            2,
+            0
+          ],
+          [
+            26,
+            2,
+            0
+          ],
+          [
+            25,
+            2,
+            0
+          ],
+          [
+            24,
+            2,
+            0
+          ],
+          [
+            23,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 23,
+        "line": 25,
+        "opcode": 71,
+        "priority": 843776,
+        "depth": 95,
+        "outgoing": [
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            3,
+            3
+          ],
+          [
+            26,
+            2,
+            0
+          ],
+          [
+            25,
+            2,
+            0
+          ],
+          [
+            24,
+            6,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 24,
+        "line": 26,
+        "opcode": 96,
+        "priority": 827392,
+        "depth": 93,
+        "outgoing": [
+          [
+            35,
+            64,
+            0
+          ],
+          [
+            26,
+            64,
+            0
+          ],
+          [
+            25,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 25,
+        "line": 26,
+        "opcode": 69,
+        "priority": 811008,
+        "depth": 91,
+        "outgoing": [
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            2,
+            0
+          ],
+          [
+            26,
+            7,
+            4
+          ]
+        ]
+      },
+      {
+        "ordinal": 26,
+        "line": 26,
+        "opcode": 99,
+        "priority": 770048,
+        "depth": 86,
+        "outgoing": [
+          [
+            35,
+            160,
+            0
+          ],
+          [
+            30,
+            32,
+            0
+          ],
+          [
+            28,
+            2,
+            0
+          ],
+          [
+            27,
+            7,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 27,
+        "line": 27,
+        "opcode": 71,
+        "priority": 745472,
+        "depth": 83,
+        "outgoing": [
+          [
+            28,
+            7,
+            4
+          ]
+        ]
+      },
+      {
+        "ordinal": 28,
+        "line": 27,
+        "opcode": 99,
+        "priority": 704512,
+        "depth": 78,
+        "outgoing": [
+          [
+            35,
+            160,
+            0
+          ],
+          [
+            30,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 29,
+        "line": 29,
+        "opcode": 1,
+        "priority": 720896,
+        "depth": 80,
+        "outgoing": [
+          [
+            35,
+            69,
+            1
+          ],
+          [
+            30,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 30,
+        "line": 29,
+        "opcode": 1,
+        "priority": 696320,
+        "depth": 77,
+        "outgoing": [
+          [
+            35,
+            71,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 31,
+        "line": 29,
+        "opcode": 13,
+        "priority": 647168,
+        "depth": 79,
+        "outgoing": [
+          [
+            35,
+            2,
+            0
+          ],
+          [
+            34,
+            2,
+            0
+          ],
+          [
+            33,
+            2,
+            0
+          ],
+          [
+            32,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 32,
+        "line": 29,
+        "opcode": 13,
+        "priority": 638976,
+        "depth": 78,
+        "outgoing": [
+          [
+            35,
+            2,
+            0
+          ],
+          [
+            34,
+            2,
+            0
+          ],
+          [
+            33,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 33,
+        "line": 29,
+        "opcode": 13,
+        "priority": 630784,
+        "depth": 77,
+        "outgoing": [
+          [
+            35,
+            2,
+            0
+          ],
+          [
+            34,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 34,
+        "line": 29,
+        "opcode": 13,
+        "priority": 622592,
+        "depth": 76,
+        "outgoing": [
+          [
+            35,
+            7,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 35,
+        "line": 29,
+        "opcode": 14,
+        "priority": 671744,
+        "depth": 74,
+        "outgoing": [
+          [
+            36,
+            231,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 36,
+        "line": 31,
+        "opcode": 14,
+        "priority": 598016,
+        "depth": 73,
+        "outgoing": [
+          [
+            40,
+            228,
+            0
+          ],
+          [
+            39,
+            2,
+            0
+          ],
+          [
+            38,
+            2,
+            0
+          ],
+          [
+            37,
+            3,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 37,
+        "line": 31,
+        "opcode": 13,
+        "priority": 589824,
+        "depth": 72,
+        "outgoing": [
+          [
+            40,
+            2,
+            0
+          ],
+          [
+            39,
+            2,
+            0
+          ],
+          [
+            38,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 38,
+        "line": 31,
+        "opcode": 13,
+        "priority": 581632,
+        "depth": 71,
+        "outgoing": [
+          [
+            39,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 39,
+        "line": 31,
+        "opcode": 13,
+        "priority": 573440,
+        "depth": 70,
+        "outgoing": [
+          [
+            40,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 40,
+        "line": 31,
+        "opcode": 14,
+        "priority": 557056,
+        "depth": 68,
+        "outgoing": [
+          [
+            45,
+            230,
+            0
+          ],
+          [
+            44,
+            2,
+            0
+          ],
+          [
+            43,
+            36,
+            0
+          ],
+          [
+            42,
+            36,
+            0
+          ],
+          [
+            41,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 41,
+        "line": 31,
+        "opcode": 45,
+        "priority": 540672,
+        "depth": 66,
+        "outgoing": [
+          [
+            45,
+            2,
+            0
+          ],
+          [
+            44,
+            7,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 42,
+        "line": 32,
+        "opcode": 1,
+        "priority": 614400,
+        "depth": 67,
+        "outgoing": [
+          [
+            45,
+            69,
+            1
+          ],
+          [
+            43,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 43,
+        "line": 32,
+        "opcode": 1,
+        "priority": 589824,
+        "depth": 64,
+        "outgoing": [
+          [
+            45,
+            71,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 44,
+        "line": 32,
+        "opcode": 13,
+        "priority": 516096,
+        "depth": 63,
+        "outgoing": [
+          [
+            45,
+            7,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 45,
+        "line": 32,
+        "opcode": 14,
+        "priority": 565248,
+        "depth": 61,
+        "outgoing": [
+          [
+            63,
+            226,
+            0
+          ],
+          [
+            62,
+            2,
+            0
+          ],
+          [
+            61,
+            64,
+            0
+          ],
+          [
+            60,
+            2,
+            0
+          ],
+          [
+            58,
+            32,
+            0
+          ],
+          [
+            56,
+            2,
+            0
+          ],
+          [
+            55,
+            32,
+            0
+          ],
+          [
+            54,
+            7,
+            1
+          ],
+          [
+            53,
+            38,
+            0
+          ],
+          [
+            52,
+            34,
+            0
+          ],
+          [
+            48,
+            2,
+            0
+          ],
+          [
+            47,
+            7,
+            0
+          ],
+          [
+            46,
+            1,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 46,
+        "line": 32,
+        "opcode": 1,
+        "priority": 491520,
+        "depth": 60,
+        "outgoing": [
+          [
+            63,
+            2,
+            0
+          ],
+          [
+            52,
+            2,
+            0
+          ],
+          [
+            48,
+            2,
+            0
+          ],
+          [
+            47,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 47,
+        "line": 33,
+        "opcode": 223,
+        "priority": 483328,
+        "depth": 59,
+        "outgoing": [
+          [
+            63,
+            2,
+            0
+          ],
+          [
+            55,
+            4,
+            1
+          ],
+          [
+            52,
+            2,
+            0
+          ],
+          [
+            48,
+            7,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 48,
+        "line": 33,
+        "opcode": 50,
+        "priority": 458752,
+        "depth": 56,
+        "outgoing": [
+          [
+            63,
+            2,
+            0
+          ],
+          [
+            55,
+            2,
+            0
+          ],
+          [
+            52,
+            6,
+            1
+          ],
+          [
+            49,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 49,
+        "line": 33,
+        "opcode": 1,
+        "priority": 442368,
+        "depth": 54,
+        "outgoing": [
+          [
+            63,
+            2,
+            0
+          ],
+          [
+            52,
+            2,
+            0
+          ],
+          [
+            50,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 50,
+        "line": 33,
+        "opcode": 41,
+        "priority": 425984,
+        "depth": 52,
+        "outgoing": [
+          [
+            51,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 51,
+        "line": 33,
+        "opcode": 1,
+        "priority": 409600,
+        "depth": 50,
+        "outgoing": [
+          [
+            57,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 52,
+        "line": 37,
+        "opcode": 1,
+        "priority": 425984,
+        "depth": 44,
+        "outgoing": [
+          [
+            63,
+            68,
+            1
+          ],
+          [
+            62,
+            1,
+            1
+          ],
+          [
+            53,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 53,
+        "line": 37,
+        "opcode": 1,
+        "priority": 401408,
+        "depth": 41,
+        "outgoing": [
+          [
+            63,
+            71,
+            2
+          ],
+          [
+            60,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 54,
+        "line": 37,
+        "opcode": 13,
+        "priority": 335872,
+        "depth": 41,
+        "outgoing": [
+          [
+            62,
+            2,
+            0
+          ],
+          [
+            60,
+            2,
+            0
+          ],
+          [
+            56,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 55,
+        "line": 37,
+        "opcode": 1,
+        "priority": 409600,
+        "depth": 42,
+        "outgoing": [
+          [
+            63,
+            68,
+            1
+          ],
+          [
+            56,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 56,
+        "line": 37,
+        "opcode": 13,
+        "priority": 327680,
+        "depth": 40,
+        "outgoing": [
+          [
+            63,
+            2,
+            0
+          ],
+          [
+            62,
+            2,
+            0
+          ],
+          [
+            60,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 57,
+        "line": 37,
+        "opcode": 86,
+        "priority": 466944,
+        "depth": 49,
+        "outgoing": [
+          [
+            58,
+            5,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 58,
+        "line": 37,
+        "opcode": 72,
+        "priority": 434176,
+        "depth": 45,
+        "outgoing": [
+          [
+            63,
+            64,
+            0
+          ],
+          [
+            61,
+            2,
+            0
+          ],
+          [
+            59,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 59,
+        "line": 37,
+        "opcode": 69,
+        "priority": 401408,
+        "depth": 41,
+        "outgoing": [
+          [
+            61,
+            7,
+            4
+          ]
+        ]
+      },
+      {
+        "ordinal": 60,
+        "line": 37,
+        "opcode": 13,
+        "priority": 319488,
+        "depth": 39,
+        "outgoing": [
+          [
+            63,
+            2,
+            0
+          ],
+          [
+            62,
+            7,
+            0
+          ],
+          [
+            61,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 61,
+        "line": 37,
+        "opcode": 99,
+        "priority": 360448,
+        "depth": 36,
+        "outgoing": [
+          [
+            63,
+            32,
+            0
+          ],
+          [
+            62,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 62,
+        "line": 37,
+        "opcode": 13,
+        "priority": 286720,
+        "depth": 35,
+        "outgoing": [
+          [
+            63,
+            3,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 63,
+        "line": 37,
+        "opcode": 14,
+        "priority": 335872,
+        "depth": 33,
+        "outgoing": [
+          [
+            71,
+            230,
+            0
+          ],
+          [
+            70,
+            2,
+            0
+          ],
+          [
+            69,
+            2,
+            0
+          ],
+          [
+            68,
+            2,
+            0
+          ],
+          [
+            67,
+            2,
+            0
+          ],
+          [
+            66,
+            36,
+            0
+          ],
+          [
+            65,
+            38,
+            0
+          ],
+          [
+            64,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 64,
+        "line": 37,
+        "opcode": 45,
+        "priority": 262144,
+        "depth": 32,
+        "outgoing": [
+          [
+            71,
+            2,
+            0
+          ],
+          [
+            70,
+            2,
+            0
+          ],
+          [
+            69,
+            2,
+            0
+          ],
+          [
+            68,
+            2,
+            0
+          ],
+          [
+            67,
+            7,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 65,
+        "line": 39,
+        "opcode": 1,
+        "priority": 311296,
+        "depth": 30,
+        "outgoing": [
+          [
+            71,
+            69,
+            1
+          ],
+          [
+            66,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 66,
+        "line": 39,
+        "opcode": 1,
+        "priority": 286720,
+        "depth": 27,
+        "outgoing": [
+          [
+            71,
+            71,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 67,
+        "line": 39,
+        "opcode": 13,
+        "priority": 237568,
+        "depth": 29,
+        "outgoing": [
+          [
+            71,
+            2,
+            0
+          ],
+          [
+            70,
+            2,
+            0
+          ],
+          [
+            69,
+            2,
+            0
+          ],
+          [
+            68,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 68,
+        "line": 39,
+        "opcode": 13,
+        "priority": 229376,
+        "depth": 28,
+        "outgoing": [
+          [
+            71,
+            2,
+            0
+          ],
+          [
+            70,
+            2,
+            0
+          ],
+          [
+            69,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 69,
+        "line": 39,
+        "opcode": 13,
+        "priority": 221184,
+        "depth": 27,
+        "outgoing": [
+          [
+            71,
+            2,
+            0
+          ],
+          [
+            70,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 70,
+        "line": 39,
+        "opcode": 13,
+        "priority": 212992,
+        "depth": 26,
+        "outgoing": [
+          [
+            71,
+            7,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 71,
+        "line": 39,
+        "opcode": 14,
+        "priority": 262144,
+        "depth": 24,
+        "outgoing": [
+          [
+            79,
+            32,
+            0
+          ],
+          [
+            76,
+            32,
+            0
+          ],
+          [
+            73,
+            6,
+            0
+          ],
+          [
+            72,
+            6,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 72,
+        "line": 43,
+        "opcode": 1,
+        "priority": 188416,
+        "depth": 23,
+        "outgoing": [
+          [
+            73,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 73,
+        "line": 43,
+        "opcode": 50,
+        "priority": 172032,
+        "depth": 21,
+        "outgoing": [
+          [
+            74,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 74,
+        "line": 43,
+        "opcode": 1,
+        "priority": 155648,
+        "depth": 19,
+        "outgoing": [
+          [
+            75,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 75,
+        "line": 43,
+        "opcode": 86,
+        "priority": 212992,
+        "depth": 18,
+        "outgoing": [
+          [
+            76,
+            5,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 76,
+        "line": 43,
+        "opcode": 69,
+        "priority": 180224,
+        "depth": 14,
+        "outgoing": [
+          [
+            81,
+            7,
+            0
+          ],
+          [
+            80,
+            7,
+            0
+          ],
+          [
+            79,
+            7,
+            0
+          ],
+          [
+            78,
+            2,
+            0
+          ],
+          [
+            77,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 77,
+        "line": 43,
+        "opcode": 354,
+        "priority": 81920,
+        "depth": 10,
+        "outgoing": [
+          [
+            78,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 78,
+        "line": 43,
+        "opcode": 99,
+        "priority": 139264,
+        "depth": 9,
+        "outgoing": [
+          [
+            81,
+            2,
+            0
+          ],
+          [
+            80,
+            2,
+            0
+          ],
+          [
+            79,
+            6,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 79,
+        "line": 43,
+        "opcode": 96,
+        "priority": 122880,
+        "depth": 7,
+        "outgoing": [
+          [
+            80,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 80,
+        "line": 43,
+        "opcode": 69,
+        "priority": 106496,
+        "depth": 5,
+        "outgoing": [
+          [
+            81,
+            7,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 81,
+        "line": 43,
+        "opcode": 354,
+        "priority": 8192,
+        "depth": 1,
+        "outgoing": [
+          [
+            82,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 82,
+        "line": 0,
+        "opcode": 0,
+        "priority": 0,
+        "depth": 0,
+        "outgoing": []
+      }
+    ],
+    [
+      {
+        "ordinal": 0,
+        "line": 0,
+        "opcode": 0,
+        "priority": 163840,
+        "depth": 20,
+        "outgoing": [
+          [
+            8,
+            524288,
+            0
+          ],
+          [
+            4,
+            524288,
+            0
+          ],
+          [
+            2,
+            524288,
+            0
+          ],
+          [
+            1,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 1,
+        "line": 43,
+        "opcode": 99,
+        "priority": 221184,
+        "depth": 19,
+        "outgoing": [
+          [
+            10,
+            160,
+            0
+          ],
+          [
+            7,
+            2,
+            0
+          ],
+          [
+            5,
+            6,
+            1
+          ],
+          [
+            3,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 2,
+        "line": 45,
+        "opcode": 1,
+        "priority": 212992,
+        "depth": 18,
+        "outgoing": [
+          [
+            10,
+            69,
+            1
+          ],
+          [
+            6,
+            1,
+            1
+          ],
+          [
+            3,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 3,
+        "line": 45,
+        "opcode": 1,
+        "priority": 172032,
+        "depth": 13,
+        "outgoing": [
+          [
+            10,
+            71,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 4,
+        "line": 45,
+        "opcode": 13,
+        "priority": 139264,
+        "depth": 17,
+        "outgoing": [
+          [
+            10,
+            2,
+            0
+          ],
+          [
+            9,
+            2,
+            0
+          ],
+          [
+            6,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 5,
+        "line": 45,
+        "opcode": 86,
+        "priority": 204800,
+        "depth": 17,
+        "outgoing": [
+          [
+            7,
+            5,
+            3
+          ]
+        ]
+      },
+      {
+        "ordinal": 6,
+        "line": 45,
+        "opcode": 13,
+        "priority": 131072,
+        "depth": 16,
+        "outgoing": [
+          [
+            10,
+            2,
+            0
+          ],
+          [
+            9,
+            7,
+            0
+          ],
+          [
+            7,
+            1,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 7,
+        "line": 45,
+        "opcode": 99,
+        "priority": 172032,
+        "depth": 13,
+        "outgoing": [
+          [
+            10,
+            34,
+            0
+          ],
+          [
+            9,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 8,
+        "line": 45,
+        "opcode": 18,
+        "priority": 114688,
+        "depth": 14,
+        "outgoing": [
+          [
+            10,
+            4,
+            1
+          ],
+          [
+            9,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 9,
+        "line": 45,
+        "opcode": 13,
+        "priority": 98304,
+        "depth": 12,
+        "outgoing": [
+          [
+            10,
+            7,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 10,
+        "line": 45,
+        "opcode": 14,
+        "priority": 147456,
+        "depth": 10,
+        "outgoing": [
+          [
+            17,
+            4,
+            0
+          ],
+          [
+            16,
+            36,
+            0
+          ],
+          [
+            15,
+            524288,
+            0
+          ],
+          [
+            14,
+            524288,
+            0
+          ],
+          [
+            13,
+            192,
+            0
+          ],
+          [
+            11,
+            32,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 11,
+        "line": 47,
+        "opcode": 96,
+        "priority": 139264,
+        "depth": 9,
+        "outgoing": [
+          [
+            13,
+            64,
+            0
+          ],
+          [
+            12,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 12,
+        "line": 47,
+        "opcode": 69,
+        "priority": 122880,
+        "depth": 7,
+        "outgoing": [
+          [
+            13,
+            7,
+            4
+          ]
+        ]
+      },
+      {
+        "ordinal": 13,
+        "line": 47,
+        "opcode": 99,
+        "priority": 81920,
+        "depth": 2,
+        "outgoing": [
+          [
+            18,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 14,
+        "line": 49,
+        "opcode": 1,
+        "priority": 16384,
+        "depth": 2,
+        "outgoing": [
+          [
+            18,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 15,
+        "line": 49,
+        "opcode": 1,
+        "priority": 40960,
+        "depth": 5,
+        "outgoing": [
+          [
+            17,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 16,
+        "line": 49,
+        "opcode": 1,
+        "priority": 106496,
+        "depth": 5,
+        "outgoing": [
+          [
+            17,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 17,
+        "line": 49,
+        "opcode": 47,
+        "priority": 24576,
+        "depth": 3,
+        "outgoing": [
+          [
+            18,
+            524289,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 18,
+        "line": 49,
+        "opcode": 15,
+        "priority": 8192,
+        "depth": 1,
+        "outgoing": [
+          [
+            19,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 19,
+        "line": 0,
+        "opcode": 0,
+        "priority": 0,
+        "depth": 0,
+        "outgoing": []
+      }
+    ],
+    [
+      {
+        "ordinal": 0,
+        "line": 0,
+        "opcode": 0,
+        "priority": 122880,
+        "depth": 15,
+        "outgoing": [
+          [
+            12,
+            524288,
+            0
+          ],
+          [
+            11,
+            524288,
+            0
+          ],
+          [
+            9,
+            524288,
+            0
+          ],
+          [
+            8,
+            524288,
+            0
+          ],
+          [
+            1,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 1,
+        "line": 378,
+        "opcode": 96,
+        "priority": 180224,
+        "depth": 14,
+        "outgoing": [
+          [
+            3,
+            5,
+            0
+          ],
+          [
+            4,
+            5,
+            0
+          ],
+          [
+            5,
+            5,
+            0
+          ],
+          [
+            6,
+            5,
+            0
+          ],
+          [
+            7,
+            5,
+            0
+          ],
+          [
+            14,
+            64,
+            0
+          ],
+          [
+            2,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 2,
+        "line": 378,
+        "opcode": 354,
+        "priority": 8192,
+        "depth": 1,
+        "outgoing": []
+      },
+      {
+        "ordinal": 3,
+        "line": 378,
+        "opcode": 98,
+        "priority": 172032,
+        "depth": 13,
+        "outgoing": [
+          [
+            14,
+            160,
+            0
+          ],
+          [
+            7,
+            2,
+            0
+          ],
+          [
+            6,
+            2,
+            0
+          ],
+          [
+            5,
+            2,
+            0
+          ],
+          [
+            4,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 4,
+        "line": 378,
+        "opcode": 96,
+        "priority": 163840,
+        "depth": 12,
+        "outgoing": [
+          [
+            7,
+            5,
+            0
+          ],
+          [
+            14,
+            64,
+            0
+          ],
+          [
+            5,
+            5,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 5,
+        "line": 378,
+        "opcode": 354,
+        "priority": 81920,
+        "depth": 10,
+        "outgoing": [
+          [
+            6,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 6,
+        "line": 378,
+        "opcode": 99,
+        "priority": 139264,
+        "depth": 9,
+        "outgoing": [
+          [
+            14,
+            160,
+            0
+          ],
+          [
+            7,
+            7,
+            2
+          ]
+        ]
+      },
+      {
+        "ordinal": 7,
+        "line": 379,
+        "opcode": 99,
+        "priority": 114688,
+        "depth": 6,
+        "outgoing": [
+          [
+            14,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 8,
+        "line": 380,
+        "opcode": 1,
+        "priority": 49152,
+        "depth": 6,
+        "outgoing": [
+          [
+            14,
+            160,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 9,
+        "line": 381,
+        "opcode": 1,
+        "priority": 131072,
+        "depth": 8,
+        "outgoing": [
+          [
+            14,
+            68,
+            1
+          ],
+          [
+            10,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 10,
+        "line": 381,
+        "opcode": 1,
+        "priority": 49152,
+        "depth": 6,
+        "outgoing": [
+          [
+            14,
+            162,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 11,
+        "line": 384,
+        "opcode": 13,
+        "priority": 65536,
+        "depth": 8,
+        "outgoing": [
+          [
+            13,
+            7,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 12,
+        "line": 384,
+        "opcode": 18,
+        "priority": 73728,
+        "depth": 9,
+        "outgoing": [
+          [
+            14,
+            4,
+            1
+          ],
+          [
+            13,
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 13,
+        "line": 384,
+        "opcode": 13,
+        "priority": 57344,
+        "depth": 7,
+        "outgoing": [
+          [
+            14,
+            3,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 14,
+        "line": 384,
+        "opcode": 14,
+        "priority": 40960,
+        "depth": 5,
+        "outgoing": [
+          [
+            16,
+            5,
+            0
+          ],
+          [
+            15,
+            2,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 15,
+        "line": 384,
+        "opcode": 45,
+        "priority": 32768,
+        "depth": 4,
+        "outgoing": [
+          [
+            16,
+            4,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 16,
+        "line": 384,
+        "opcode": 51,
+        "priority": 24576,
+        "depth": 3,
+        "outgoing": [
+          [
+            17,
+            524289,
+            1
+          ]
+        ]
+      },
+      {
+        "ordinal": 17,
+        "line": 384,
+        "opcode": 15,
+        "priority": 8192,
+        "depth": 1,
+        "outgoing": [
+          [
+            18,
+            524288,
+            0
+          ]
+        ]
+      },
+      {
+        "ordinal": 18,
+        "line": 0,
+        "opcode": 0,
+        "priority": 0,
+        "depth": 0,
+        "outgoing": []
+      }
+    ]
+  ],
+  "graph_sha256": "9e4900b023cc55829bfb3ce7ff42e0a0de5a560c79eff45bbf60d59ba191d54f",
+  "boundary_diagnostic": {
+    "normalized_coff_sha256": "e5c402c772e868a50fa7afc0c6367cb8fb56416e1117a709506aac47f0961d13",
+    "body_sha256": "89f8f2156b6cd819de4b5c7a7705743dd360ed2566f1112301d5804b43b3a78b",
+    "instructions": 2004,
+    "ratio": 0.9965069860279441,
+    "prefix": 110,
+    "references": [
+      639,
+      0,
+      0
+    ],
+    "exact": false,
+    "body_byte_exact": false
+  },
+  "boundary_changes": 1,
+  "full_function_match": false,
+  "graph_corruptions_rejected": [
+    "separator-priority",
+    "widget-store-kind"
+  ],
+  "inputs": {
+    "controls.py": "ad024f6079801a3e6f3b1f4383df7deeb55ca24019bb6fef6351a5f672e3cb6d",
+    "controls.json": "9c8773f742e0a6971bad9ccff0630f7e510eb9c095726f1af13c12378c2c86ed",
+    "watch.c.in": "884a835ca48387bdb4c93d3dae96a3f7d0b03871674726bba09d45a3dac22d82",
+    "verify_compiler.py": "6228b2ad360e79aa859b0ec326edb136f1e2ec2e946f7fd8a3dbaf7c74f91021"
+  }
+}

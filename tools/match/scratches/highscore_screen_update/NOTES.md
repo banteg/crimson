@@ -780,3 +780,42 @@ canonical source/configuration and 804/810 coverage are unchanged. The new
 witness has 2,004 instructions, prefix 108, references 623/0/2, and both exactness
 flags false. Saved-state restoration is the next local mismatch after the
 newly verified region; full UI execution is not established.
+
+## Saved-state ownership and scheduler windows (2026-09-22)
+
+The [state-owner evidence](../../evidence/highscore-state-owners-2026-09-22/README.md)
+recovers saved-state restoration, right-panel/filter setup, the shared status
+tail, and the two batch-stage zero stores. Its stock `stage-reference` witness
+has 2,004 instructions, 8,026 bytes, prefix 108, references 639/0/0, and both
+exactness flags false. The source SHA is
+`2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3`.
+The byte proof covers 7,980 bytes / 1,993 instructions with 645 positional
+references and 241 literal branches. Only `0x1d8..0x1e7` and `0xf2f..0xf4e`
+are excluded, relative to native `0x4423d0`; no binding or alias is added.
+
+Publishing the saved mode through the existing configuration field before
+the quest copies reserves EAX early; the copies then receive native ECX/EDX.
+The overlay assignment precedes that mode assignment, and major precedes
+minor in source. Preserving traces distinguish allocation at C2 `0x336f4`
+from native load/store scheduling at `0x374aa`. A common `Sleep(10)` source
+tail changes the sole remaining status branch byte. Binding `stage` to the
+saved index changes exactly two EBP store encodings to native ECX stores.
+Direct-global and separate-value controls retain the distinct failure modes.
+
+The separator mismatch is now localized to an 81-node scheduling-window
+boundary at C2 `0x37a43`. Its Y store starts the next window and has higher
+priority than the independent interface load. Moving that boundary back two
+nodes in a diagnostic replay restores two positions but delays the store too
+far; it is not a source recovery. The online checkbox instead has a dependency
+chain ordering widget-X, Y, and then filter-X stores. Earlier snapshots and
+alternate construction forms change integer-copy/stack ownership, so they do
+not solve that graph. These constraints, not alignment score, define the next
+source experiments.
+
+All 16 stock builds and ESP maps pass. Three preserving compiler traces reject
+missing streams; two graph corruptions and five byte/reference corruptions are
+rejected. Native/stock/oracle restoration agrees for 9,216 fixtures, including
+all hardcore byte values and signed extrema. Four execution corruptions include
+a write-order change with identical final state. Canonical inputs and 804/810
+coverage remain unchanged; full UI execution and a new function match remain
+unproved.

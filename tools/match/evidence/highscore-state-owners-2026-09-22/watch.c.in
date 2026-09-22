@@ -1,0 +1,53 @@
+/* Preserving dependency-graph observer. FORCE_BOUNDARY is a separate
+   diagnostic replay; only one scheduling-window endpoint may change. */
+static HANDLE graph_file;
+static unsigned long ordinal, saved_graph, boundary_changes;
+static void graph_write(unsigned long *row) {
+    DWORD written;
+    if(!WriteFile(graph_file,row,144,&written,0)||written!=144)ExitProcess(82);
+}
+static void watch(unsigned long phase,unsigned long *regs) {
+    unsigned long root,node,ir,edge,j,line,count=0,selected=0,row[36],previous;
+    if(phase==0)++ordinal;
+    if(ordinal!=1)return;
+    if(phase==129 && FORCE_BOUNDARY) {
+        node=regs[7];
+        if(*(unsigned short *)(node+0x10)!=43 || *(unsigned long *)(node+4)!=0x162)return;
+        previous=*(unsigned long *)(node+0xc);
+        if(*(unsigned long *)(previous+4)!=0x45 || *(unsigned short *)(previous+0x10)!=43)ExitProcess(84);
+        previous=*(unsigned long *)(previous+0xc);
+        if(*(unsigned long *)(previous+4)!=0x60 || *(unsigned short *)(previous+0x10)!=43)ExitProcess(85);
+        for(j=0;j<36;++j)row[j]=0;
+        row[0]=300;row[1]=node;row[2]=previous;row[3]=43;
+        graph_write(row);regs[7]=previous;++boundary_changes;
+    }
+    if(phase!=127 && phase!=128)return;
+    if(phase==127)saved_graph=regs[7];
+    root=saved_graph;
+    for(node=*(unsigned long *)root;node;node=*(unsigned long *)node) {
+        ir=*(unsigned long *)(node+0x1c);
+        if(ir) {
+            line=*(unsigned short *)(ir+0x10);
+            if((line>=40 && line<=45)||(line>=378 && line<=384))selected=1;
+        }
+        if(++count>10000)ExitProcess(88);
+        if(node==*(unsigned long *)(root+4))break;
+    }
+    if(!selected)return;
+    count=0;
+    for(node=*(unsigned long *)root;node;node=*(unsigned long *)node) {
+        for(j=0;j<36;++j)row[j]=0;
+        row[0]=phase;row[1]=root;row[2]=node;row[3]=count++;
+        for(j=0;j<15;++j)row[4+j]=*(unsigned long *)(node+j*4);
+        ir=*(unsigned long *)(node+0x1c);
+        if(ir)for(j=0;j<8;++j)row[20+j]=*(unsigned long *)(ir+j*4);
+        graph_write(row);
+        for(edge=*(unsigned long *)(node+0xc);edge;edge=*(unsigned long *)edge) {
+            for(j=0;j<36;++j)row[j]=0;
+            row[0]=phase+100;row[1]=root;row[2]=node;row[3]=edge;
+            for(j=0;j<6;++j)row[4+j]=*(unsigned long *)(edge+j*4);
+            graph_write(row);
+        }
+        if(node==*(unsigned long *)(root+4))break;
+    }
+}
