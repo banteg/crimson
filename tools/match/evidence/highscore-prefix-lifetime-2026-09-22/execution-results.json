@@ -1,0 +1,472 @@
+{
+  "schema": 1,
+  "scope": "row-loop-only-sprintf-modeled",
+  "region_audits": {
+    "prefix-before-clear": {
+      "instructions": 95,
+      "bytes": 300,
+      "stack_references": 16,
+      "stack_map": {
+        "20": 44,
+        "36": 20,
+        "52": 32,
+        "76": 28,
+        "40": 24
+      },
+      "different_stack_displacement_bytes": [
+        {
+          "offset": 1920,
+          "native": 20,
+          "candidate": 44,
+          "native_home": 20,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1930,
+          "native": 36,
+          "candidate": 20,
+          "native_home": 36,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1934,
+          "native": 52,
+          "candidate": 32,
+          "native_home": 52,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1942,
+          "native": 76,
+          "candidate": 28,
+          "native_home": 76,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1966,
+          "native": 40,
+          "candidate": 24,
+          "native_home": 40,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1974,
+          "native": 20,
+          "candidate": 44,
+          "native_home": 20,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1978,
+          "native": 40,
+          "candidate": 24,
+          "native_home": 40,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2066,
+          "native": 40,
+          "candidate": 24,
+          "native_home": 36,
+          "stack_depth": 4
+        },
+        {
+          "offset": 2127,
+          "native": 44,
+          "candidate": 28,
+          "native_home": 36,
+          "stack_depth": 8
+        },
+        {
+          "offset": 2143,
+          "native": 36,
+          "candidate": 20,
+          "native_home": 36,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2169,
+          "native": 96,
+          "candidate": 48,
+          "native_home": 76,
+          "stack_depth": 20
+        },
+        {
+          "offset": 2173,
+          "native": 60,
+          "candidate": 44,
+          "native_home": 40,
+          "stack_depth": 20
+        },
+        {
+          "offset": 2177,
+          "native": 56,
+          "candidate": 40,
+          "native_home": 36,
+          "stack_depth": 20
+        },
+        {
+          "offset": 2202,
+          "native": 76,
+          "candidate": 28,
+          "native_home": 76,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2206,
+          "native": 40,
+          "candidate": 24,
+          "native_home": 40,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2210,
+          "native": 36,
+          "candidate": 20,
+          "native_home": 36,
+          "stack_depth": 0
+        }
+      ],
+      "all_other_bytes_equal_after_audited_relocation": true,
+      "literal_branch_bytes_equal": true,
+      "exact_match_credit": false
+    },
+    "row-plus-widget-labels": {
+      "instructions": 95,
+      "bytes": 300,
+      "stack_references": 16,
+      "stack_map": {
+        "20": 20,
+        "36": 40,
+        "52": 44,
+        "76": 36,
+        "40": 84
+      },
+      "different_stack_displacement_bytes": [
+        {
+          "offset": 1930,
+          "native": 36,
+          "candidate": 40,
+          "native_home": 36,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1934,
+          "native": 52,
+          "candidate": 44,
+          "native_home": 52,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1942,
+          "native": 76,
+          "candidate": 36,
+          "native_home": 76,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1966,
+          "native": 40,
+          "candidate": 84,
+          "native_home": 40,
+          "stack_depth": 0
+        },
+        {
+          "offset": 1978,
+          "native": 40,
+          "candidate": 84,
+          "native_home": 40,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2066,
+          "native": 40,
+          "candidate": 44,
+          "native_home": 36,
+          "stack_depth": 4
+        },
+        {
+          "offset": 2127,
+          "native": 44,
+          "candidate": 48,
+          "native_home": 36,
+          "stack_depth": 8
+        },
+        {
+          "offset": 2143,
+          "native": 36,
+          "candidate": 40,
+          "native_home": 36,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2169,
+          "native": 96,
+          "candidate": 56,
+          "native_home": 76,
+          "stack_depth": 20
+        },
+        {
+          "offset": 2173,
+          "native": 60,
+          "candidate": 104,
+          "native_home": 40,
+          "stack_depth": 20
+        },
+        {
+          "offset": 2177,
+          "native": 56,
+          "candidate": 60,
+          "native_home": 36,
+          "stack_depth": 20
+        },
+        {
+          "offset": 2202,
+          "native": 76,
+          "candidate": 36,
+          "native_home": 76,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2206,
+          "native": 40,
+          "candidate": 84,
+          "native_home": 40,
+          "stack_depth": 0
+        },
+        {
+          "offset": 2210,
+          "native": 36,
+          "candidate": 40,
+          "native_home": 36,
+          "stack_depth": 0
+        }
+      ],
+      "all_other_bytes_equal_after_audited_relocation": true,
+      "literal_branch_bytes_equal": true,
+      "exact_match_credit": false
+    }
+  },
+  "literal_branch_corruption_rejected": true,
+  "wrong_stack_binding_rejected": true,
+  "fixtures": 1576,
+  "fixtures_sha256": "08e3db3a107dc7f17188f3ab4517edeaca26753f6e193ec13334d2db8ccb56ee",
+  "verifier_sha256": "71fe888e34322e62faf7e63dba6aa0329eefa05dc6f47706b173367b2365c380",
+  "input_hashes": {
+    "controls.py": "646bce40109777c831fb45d38b972ed6ed9de353f56782b7bf39e87f342ac600",
+    "controls.json": "cb0659d1e4363d7cf1de636e39fc916ec132a072782893e8a7167f796f7fdf44",
+    "region.py": "cf282725e2054a3c96659fbfe3a8755e17814d206c09f579f772571de2cb794d"
+  },
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "corruption_controls_rejected": [
+    "wrong-prefix-mask",
+    "unsigned-division-shift",
+    "ninety-nine-row-limit"
+  ],
+  "digests": {
+    "native": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2",
+    "baseline": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2",
+    "prefix-before-clear": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2",
+    "row-plus-widget-labels": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2"
+  },
+  "compiled": {
+    "baseline": {
+      "window": [
+        1917,
+        2189,
+        36,
+        20
+      ],
+      "relocations": [
+        [
+          1923,
+          4649520,
+          6
+        ],
+        [
+          1944,
+          5032244,
+          6
+        ],
+        [
+          1949,
+          4729684,
+          6
+        ],
+        [
+          1955,
+          4649508,
+          6
+        ],
+        [
+          1963,
+          5033320,
+          6
+        ],
+        [
+          2033,
+          4719456,
+          6
+        ],
+        [
+          2074,
+          4688920,
+          6
+        ],
+        [
+          2118,
+          4688920,
+          6
+        ],
+        [
+          2136,
+          4688920,
+          6
+        ],
+        [
+          2142,
+          4593383,
+          20
+        ],
+        [
+          2171,
+          5049720,
+          6
+        ]
+      ],
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392"
+    },
+    "prefix-before-clear": {
+      "window": [
+        1917,
+        2217,
+        28,
+        44
+      ],
+      "relocations": [
+        [
+          1923,
+          4649520,
+          6
+        ],
+        [
+          1948,
+          5032244,
+          6
+        ],
+        [
+          1954,
+          4649508,
+          6
+        ],
+        [
+          1959,
+          4729684,
+          6
+        ],
+        [
+          1967,
+          5033320,
+          6
+        ],
+        [
+          2037,
+          4719456,
+          6
+        ],
+        [
+          2082,
+          4688920,
+          6
+        ],
+        [
+          2130,
+          4688920,
+          6
+        ],
+        [
+          2156,
+          4688920,
+          6
+        ],
+        [
+          2162,
+          4593383,
+          20
+        ],
+        [
+          2195,
+          5049720,
+          6
+        ]
+      ],
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120"
+    },
+    "row-plus-widget-labels": {
+      "window": [
+        1917,
+        2217,
+        36,
+        20
+      ],
+      "relocations": [
+        [
+          1923,
+          4649520,
+          6
+        ],
+        [
+          1948,
+          5032244,
+          6
+        ],
+        [
+          1954,
+          4649508,
+          6
+        ],
+        [
+          1959,
+          4729684,
+          6
+        ],
+        [
+          1967,
+          5033320,
+          6
+        ],
+        [
+          2037,
+          4719456,
+          6
+        ],
+        [
+          2082,
+          4688920,
+          6
+        ],
+        [
+          2130,
+          4688920,
+          6
+        ],
+        [
+          2156,
+          4688920,
+          6
+        ],
+        [
+          2162,
+          4593383,
+          20
+        ],
+        [
+          2195,
+          5049720,
+          6
+        ]
+      ],
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3"
+    }
+  }
+}

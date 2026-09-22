@@ -32,7 +32,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **6** non-exact scratch-backed functions hold **14483 fuzzy-gap bytes**. The top 5 hold **99.8%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **3 functions / 5920 gap bytes**; **3 / 8562** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **4 functions / 7549 gap bytes**; **2 / 6934** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -41,7 +41,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 1/74 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | creature_update_all | 2209 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 4 | crimsonland.exe | highscore_screen_update | 1629 | semantic-complete | compiler,references | historical-only | 0/32 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 4 | crimsonland.exe | highscore_screen_update | 1629 | semantic-complete | compiler,references | current-active | 2/34 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 5 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/11 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
 | 6 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/10 | 1 | repeated-variants,variant-errors |
 

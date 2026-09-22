@@ -637,3 +637,31 @@ flags remain false. Rank is still in EBX rather than a stack home, while prefix
 uses ECX rather than native EBX. Neither a derived rank nor branch-local
 post-increment fixes that lifetime. Source SHA-256:
 `e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd`.
+
+## Prefix lifetime across the row clear (2026-09-22)
+
+The [prefix-lifetime proof](../../evidence/highscore-prefix-lifetime-2026-09-22/README.md)
+identifies a stock source control for the remaining row allocation: initialize
+`prefix_length` before `memset`. Its definition crosses the inline clear before
+allocation, excluding ECX and EDI and leaving EBX. The final scheduler still
+places the zero after the clear. Moving only the declaration is byte-neutral.
+A scoped diagnostic that denies exactly those two prefix eligibility results
+produces the same whole COFF as the stock source witness, except timestamps.
+Both preserving traces and missing-stream rejection pass.
+
+The native row's 95 instructions and 300 bytes agree with this source after
+resolving relocations and applying five explicitly checked stack-home bindings;
+literal branch bytes and every other encoded byte agree. The before-clear
+witness still differs in 16 stack displacement bytes. Combining the earlier
+tooltip/right-panel copies and native label arithmetic leaves 14 such bytes and
+restores the 132-byte frame. Both witnesses pass 1,576 row-execution fixtures
+against native and an independent oracle, plus five corruption controls.
+This does not verify the combined source's surrounding UI edits.
+
+All 11 source controls are reconstructible. The isolated witness has a 128-byte
+frame, 1,986/2,004 instructions, 75.488722%, prefix 1 and references 577/0/16.
+The cumulative witness has a 132-byte frame, 2,005/2,004 instructions,
+83.512098%, prefix 43 and references 604/0/6. Neither is promoted. The canonical
+source and exactness status remain unchanged. The next constraint is storage
+ownership and filter lifetimes in the cumulative witness, with the native row
+sequence now obtainable without register hints or patched compiler decisions.

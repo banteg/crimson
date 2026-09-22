@@ -1,0 +1,531 @@
+{
+  "schema": 1,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "input_hashes": {
+    "controls.py": "646bce40109777c831fb45d38b972ed6ed9de353f56782b7bf39e87f342ac600",
+    "controls.json": "cb0659d1e4363d7cf1de636e39fc916ec132a072782893e8a7167f796f7fdf44",
+    "watch.c.in": "dcb8780deda2a7e52d24cda11639ff40300127750d8db3b7a1a409f2699c4adb",
+    "verify_compiler.py": "67d9e5794fa94e0921e460144706841097949df138225374b4004ed441b91a76"
+  },
+  "results": {
+    "baseline": {
+      "single_prefix_allocation": true,
+      "priority": 106,
+      "cost": 20,
+      "register_rva": 706520,
+      "choices": [
+        {
+          "register": 1,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 2,
+          "before": 4,
+          "after": 4,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 3,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 7,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 8,
+          "before": 256,
+          "after": 256,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 4,
+          "before": 16,
+          "after": 16,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 6,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "trace_sha256": "5c2f71516be06606202091d90fcf73d8df7736c0531f881c036a74a953e2860f",
+      "coff_sha256": "1a853c23f85eef4b02adf4db12e92b012c073fb57afe02f669895caf33b00593",
+      "pre_allocation_order": {
+        "prefix_definition_precedes_clear": false,
+        "prefix_opcode": 1,
+        "clear_opcode": 273,
+        "prefix_line": 174,
+        "clear_line": 173,
+        "prefix_ordinal": 655,
+        "clear_ordinal": 654
+      },
+      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true
+    },
+    "prefix-before-clear": {
+      "single_prefix_allocation": true,
+      "priority": 106,
+      "cost": 20,
+      "register_rva": 706688,
+      "choices": [
+        {
+          "register": 1,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 2,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 3,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 7,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 8,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 4,
+          "before": 16,
+          "after": 16,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 6,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "trace_sha256": "8113bd5627ccf2e3895ac13185fe38c2b3e1b4fed9c485d46fea187bbc99e05a",
+      "coff_sha256": "cf5baa1bd04a23ac74cca29c22057e702c2b90a2f58d11862bae9123ab1fc07f",
+      "pre_allocation_order": {
+        "prefix_definition_precedes_clear": true,
+        "prefix_opcode": 1,
+        "clear_opcode": 273,
+        "prefix_line": 173,
+        "clear_line": 174,
+        "prefix_ordinal": 651,
+        "clear_ordinal": 655
+      },
+      "source_sha256": "fae09457d64b84809f8f855b9029f983784f169cb3cf51dea7ecb0e50706bed4",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true
+    },
+    "deny-ecx": {
+      "single_prefix_allocation": true,
+      "priority": 106,
+      "cost": 20,
+      "register_rva": 707024,
+      "choices": [
+        {
+          "register": 1,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 2,
+          "before": 4,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 3,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 7,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 8,
+          "before": 256,
+          "after": 256,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 4,
+          "before": 16,
+          "after": 16,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 6,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "trace_sha256": "20d1023c0efad3b43f5a6d77cd0ad58cdd80cb4154bb9a667cac36c5fb8d12cd",
+      "coff_sha256": "9d53dac8092ad77dd7ed71c7f3b313a8618e5e87a27378bbf8c7d0a3f5c080e1",
+      "changed_choices": [
+        2
+      ]
+    },
+    "deny-ecx-edi": {
+      "single_prefix_allocation": true,
+      "priority": 106,
+      "cost": 20,
+      "register_rva": 706688,
+      "choices": [
+        {
+          "register": 1,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 2,
+          "before": 4,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 3,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 7,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 8,
+          "before": 256,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 4,
+          "before": 16,
+          "after": 16,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "register": 6,
+          "before": 0,
+          "after": 0,
+          "costs": [
+            0,
+            0,
+            0,
+            0,
+            20200,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "trace_sha256": "100ffc18d67d7994489291ecb5c70dd9ce0b1dda59c00554ba583772dbcafffe",
+      "coff_sha256": "cf5baa1bd04a23ac74cca29c22057e702c2b90a2f58d11862bae9123ab1fc07f",
+      "changed_choices": [
+        2,
+        8
+      ]
+    }
+  }
+}

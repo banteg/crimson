@@ -1,0 +1,36 @@
+/* Only the prefix temporary is observed. Allocation IDs are replay-local. */
+static HANDLE watch_file;
+static unsigned long ordinal, subject, scoped, choice_index, c2base;
+static void watch_record(unsigned long phase, unsigned long before, unsigned long after) {
+    unsigned long rec[35], j; DWORD written;
+    rec[0]=phase;rec[1]=ordinal;rec[2]=subject;rec[3]=choice_index;rec[4]=before;rec[5]=after;
+    for(j=0;j<20;++j)rec[6+j]=*(unsigned long *)(subject+j*4);
+    for(j=0;j<9;++j)rec[26+j]=*(unsigned long *)(c2base+0x9d868+j*4);
+    if(!WriteFile(watch_file,rec,sizeof(rec),&written,0)||written!=sizeof(rec))ExitProcess(82);
+}
+static void watch(unsigned long phase,unsigned long *registers,unsigned long first) {
+    unsigned long node,op,side,zero_defs=0,two_defs=0;
+    if(phase==0)++ordinal;
+    if(phase==12) {
+        subject=registers[6];scoped=0;
+        if(ordinal!=1)return;
+        for(node=first;node;node=*(unsigned long *)node) {
+            if(!(*(unsigned char *)(node+9)&1))continue;
+            for(side=0;side<2;++side)for(op=*(unsigned long *)(node+0x18+side*4);op;op=*(unsigned long *)op) {
+                if(*(unsigned char *)(op+8)!=1 || *(unsigned long *)(op+0x18)!=subject || side!=1)continue;
+                if(*(unsigned short *)(node+0x10)==PREFIX_LINE)++zero_defs;
+                if(*(unsigned short *)(node+0x10)==TWO_LINE)++two_defs;
+            }
+        }
+        if(zero_defs==1 && two_defs==1) {scoped=1;choice_index=0;watch_record(phase,0,0);}
+    } else if(phase==112) {
+        if(scoped)watch_record(phase,0,0);
+        scoped=0;
+    } else if(phase==13) {
+        choice_index=registers[5];
+    } else if(phase==113 && scoped) {
+        unsigned long before=registers[7];
+        if(choice_index<32 && (DENY_MASK & (1UL<<choice_index)))registers[7]=0;
+        watch_record(phase,before,registers[7]);
+    }
+}

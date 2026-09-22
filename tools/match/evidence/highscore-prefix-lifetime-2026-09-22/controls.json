@@ -1,0 +1,410 @@
+{
+  "base_commit": "6a4c8a2e579b84485a88fadbc914da8df884c652",
+  "base_source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+  "controls": [
+    {
+      "name": "baseline",
+      "edits": [],
+      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-before-clear",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        }
+      ],
+      "source_sha256": "fae09457d64b84809f8f855b9029f983784f169cb3cf51dea7ecb0e50706bed4",
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120",
+      "instructions": 1986,
+      "ratio": 0.7548872180451128,
+      "prefix": 1,
+      "references": [
+        577,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-before-item",
+      "edits": [
+        {
+          "start": 362,
+          "end": 362,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        }
+      ],
+      "source_sha256": "5bc8432cc9af3d370fc214620e15dee85f6f597c2b1ef2ddc68d0e3bb8a978b4",
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120",
+      "instructions": 1986,
+      "ratio": 0.7548872180451128,
+      "prefix": 1,
+      "references": [
+        577,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-declare-before-init-after",
+      "edits": [
+        {
+          "start": 362,
+          "end": 362,
+          "lines": [
+            "        int prefix_length;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "        prefix_length = 0;\n"
+          ]
+        }
+      ],
+      "source_sha256": "0de26846385bdad87cc404f443c8c52f4e5e98b28314ca8d8e782c28b2062699",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-outside-init-before",
+      "edits": [
+        {
+          "start": 361,
+          "end": 361,
+          "lines": [
+            "    int prefix_length;\n"
+          ]
+        },
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        }
+      ],
+      "source_sha256": "1403dab727752d3c66443986ef6caae62cccaef609eeeac78b5f6a43f623a28e",
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120",
+      "instructions": 1986,
+      "ratio": 0.7548872180451128,
+      "prefix": 1,
+      "references": [
+        577,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-shared-clear-zero",
+      "edits": [
+        {
+          "start": 363,
+          "end": 364,
+          "lines": []
+        },
+        {
+          "start": 365,
+          "end": 365,
+          "lines": [
+            "        memset(score_line_items[score_count], prefix_length, sizeof(score_line_buffers[score_count]));\n"
+          ]
+        }
+      ],
+      "source_sha256": "47d1fb4f9f054fd03f7db24423b08af1c20e2673824102a47422e17280836066",
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120",
+      "instructions": 1986,
+      "ratio": 0.7548872180451128,
+      "prefix": 1,
+      "references": [
+        577,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-init-row-top",
+      "edits": [
+        {
+          "start": 362,
+          "end": 362,
+          "lines": [
+            "        int prefix_length;\n",
+            "        prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        }
+      ],
+      "source_sha256": "a2d6f06cd395ff22480371e00acfac9fcb0c163dea22ffa35add676a51bd4ecf",
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120",
+      "instructions": 1986,
+      "ratio": 0.7548872180451128,
+      "prefix": 1,
+      "references": [
+        577,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-declared-before-count",
+      "edits": [
+        {
+          "start": 356,
+          "end": 356,
+          "lines": [
+            "    int prefix_length;\n"
+          ]
+        },
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        }
+      ],
+      "source_sha256": "21b130326675093ff4fefd7e22b9de229658b501a2d522f7bbbeb3f057cb8f03",
+      "body_sha256": "e64253a7ff00fcf39f36c80592107a70e303347177c210db6350df6d9c72e120",
+      "instructions": 1986,
+      "ratio": 0.7548872180451128,
+      "prefix": 1,
+      "references": [
+        577,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-plus-tooltip-copy-components",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        }
+      ],
+      "source_sha256": "d46be1565076b76b7f0ec6729b552928aca12877d766825237e74f0d3a528e92",
+      "body_sha256": "089b4fa7c0e5b880faca0caa4df20f7b9f382f7c8e5134b71c0043801b7a0aa0",
+      "instructions": 1990,
+      "ratio": 0.7441161742613921,
+      "prefix": 1,
+      "references": [
+        572,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-plus-right-dataflow",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        }
+      ],
+      "source_sha256": "20332fdf9e33013f5cff1f128dbe87c0d10ec07b7b74b187460ef997861d52a2",
+      "body_sha256": "d975d0c8da1fe831635718321086d5f88eda4057f684297f506f5669b248634b",
+      "instructions": 2001,
+      "ratio": 0.7575530586766542,
+      "prefix": 1,
+      "references": [
+        585,
+        0,
+        13
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-plus-widget-labels",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ],
+      "source_sha256": "ffc2226e2ec54cefaf4a2fde09fd1f379342b105f9162a418b49f5d0ce1fa6c7",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    }
+  ]
+}
