@@ -1,6 +1,14 @@
 # quest_spawn_timeline_update
 
-Latest follow-up: [four-byte pointer-store evidence](../../evidence/timeline-four-byte-home-2026-09-13/README.md)
+Latest follow-up: [implicit copy aliases and stack sharing](../../evidence/timeline-copy-aliases-2026-09-22/README.md)
+compares a four-byte end-pointer copy with the earlier pair and guard witnesses.
+The end-pointer copy remains in two pointer-load and two spawn-call alias sets,
+preventing it from sharing spread's slot. Temporarily removing only that alias
+membership during allocation recovers the 28-byte frame and ordered pointer/zero
+stores, while also changing argument scheduling. All findings are diagnostic;
+canonical source and configuration remain unchanged.
+
+The earlier [four-byte pointer-store evidence](../../evidence/timeline-four-byte-home-2026-09-13/README.md)
 reproduces the native dead pointer store with a 28-byte frame using stock VC6.
 A redundant guard loses its last pointer read only after copy cleanup; the
 remaining intrinsic lowers to the dead store. Reversing the guard operands
@@ -440,7 +448,7 @@ references `13/0/0`. A fresh instruction-level diff shows two extra native instr
 `0x004342f4`: `lea edi, dword [esi+0xc]` followed by
 `mov dword [esp+0x10], edi`. The next instruction overwrites that stack
 store with `mov dword [esp+0x10], ebx`, but EDI remains live: native later
-loads the template and heading through `[edi-0x4]` and `[edi]`, where the
+loads heading and the template ID through `[edi-0x4]` and `[edi]`, where the
 candidate uses `[esi+0x8]` and `[esi+0xc]`. The field addresses agree; the
 pointer lifetime and overwritten store differ, and branch targets shift.
 All 13 audited references remain clean.
@@ -454,8 +462,35 @@ the native layout:
   both next-entry spellings): 82.97%, 114/115, prefix 51, `13/0/0`. Each also
   perturbs the `creature_spawn_template` argument setup (`push ecx` first,
   heading via `fild`), so they are not neutral-plus-dead-pair either.
-- An `int *` alias for `&entry->heading` does not compile (C2440), confirming
-  the cursor must be spelled `float *`.
+- An `int *` alias for `&entry->heading` does not compile (C2440). This checks
+  the heading field's type, not the native cursor's type: native EDI points at
+  `entry->template_id` (+12), and `[edi-4]` accesses heading (+8). The earlier
+  conclusion that this cursor must be `float *` was incorrect.
 
 The pointer lifetime and overwritten store remain compiler residuals. Do not promote any
 probe; canonical source and configuration are unchanged.
+
+## Implicit copy aliases and frame interference (2026-09-22)
+
+The [new allocation evidence](../../evidence/timeline-copy-aliases-2026-09-22/README.md)
+does not supersede the September 13 stock four-byte guard witness. It explains
+why another four-byte copy, retained by consuming its byte-loop end pointer,
+still needs a separate slot. One explicit store is not its full lifetime:
+kind-6 loads and kind-11 call effects retain implicit references to the copied
+local. The guard and pair witnesses have no such copied-local aliases.
+
+Four preserving compiler traces resolve the actual alias lists, predict all
+20 stack offsets, and retain whole-COFF/missing-stream checks. A bounded
+diagnostic removes one shared alias-list link only during stack dataflow and
+conflict construction, then restores it with readback before grouping. The
+resulting graph shares the copy with spread and emits the native 28-byte frame
+and adjacent pointer/zero stores. Argument scheduling also changes, so this
+does not establish native recovery or runtime equivalence.
+
+Fourteen retained stock source controls produce no match. Closing the copy's
+scope or consuming the end through equality deletes the copy; changing its
+four-byte type or rebasing the subtraction does not remove the alias conflict.
+The remaining requirements include credible source for the late-dead copy,
+native zero lifetimes/register choices, addressing, and argument scheduling.
+Canonical 113/115 instructions, prefix 51, 13 clean references, and non-exact
+status are unchanged.

@@ -1,0 +1,42 @@
+static HANDLE alias_file;
+static void alias_record(unsigned long node,unsigned long side,unsigned long op,
+                         unsigned long handle,unsigned long symbol) {
+ unsigned long r[10]; DWORD written;
+ r[0]=node; r[1]=*(unsigned short *)(node+0x10);
+ r[2]=*(unsigned long *)(node+4); r[3]=side;
+ r[4]=op; r[5]=*(unsigned char *)(op+8);
+ r[6]=*(unsigned long *)(op+0x10); r[7]=handle;
+ r[8]=symbol; r[9]=symbol?*(unsigned long *)(symbol+0x38):0xffffffff;
+ if(!WriteFile(alias_file,r,sizeof(r),&written,0)||written!=sizeof(r))ExitProcess(84);
+}
+static void alias_list(unsigned long node,unsigned long side,unsigned long op,
+                       unsigned long handle,unsigned long list,unsigned long depth) {
+ unsigned long limit=0;
+ if(depth>1)ExitProcess(83);
+ for(;list;list=*(unsigned long *)list) {
+  unsigned long symbol=*(unsigned long *)(list+4);
+  if(++limit>16384||!symbol)ExitProcess(82);
+  if(*(unsigned char *)(symbol+4)==12) {
+   alias_list(node,side,op,handle,*(unsigned long *)(symbol+0x30),depth+1);
+  } else if(*(long *)(symbol+0x38)>=0) {
+   unsigned long index=*(unsigned long *)(symbol+0x38);
+   if(index>=saved_count||saved_symbols[index]!=symbol)ExitProcess(81);
+   alias_record(node,side,op,handle,symbol);
+  }
+ }
+}
+static void alias_use(unsigned long phase,unsigned long node,unsigned long side,unsigned long op) {
+ unsigned long kind,handle,limit,list;
+ unsigned long *table; unsigned char *secondary;
+ if(phase!=12)return;
+ kind=*(unsigned char *)(op+8);
+ if(kind!=6&&kind!=11)return;
+ handle=*(unsigned long *)(op+(kind==6?0x1c:0x14));
+ limit=*(unsigned long *)(compiler_base+0x9d670);
+ table=*(unsigned long **)(compiler_base+0x9d6b0);
+ secondary=*(unsigned char **)(compiler_base+0x9d6bc);
+ if(handle>1000000||limit>1000000||!table)ExitProcess(80);
+ list=handle<limit?table[handle]:table[*(unsigned long *)(secondary+(handle-limit)*12)];
+ alias_record(node,side,op,handle,0);
+ alias_list(node,side,op,handle,list,0);
+}

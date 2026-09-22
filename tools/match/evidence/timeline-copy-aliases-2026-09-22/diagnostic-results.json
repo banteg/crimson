@@ -1,0 +1,307 @@
+{
+  "kind": "timeline-copy-alias-diagnostic",
+  "verified": true,
+  "limitations": "One deliberate compiler intervention. Aliases restored before grouping returns to later passes. No stock-source recovery, runtime equivalence, or new match is claimed; argument scheduling still changes.",
+  "source_hashes": {
+    "diagnostic.py": "ceaac4a2df207cfd36b4e9132dfcbb8a5e7fdebaf685ee2599dde8eb4308f9d4",
+    "prune.c.in": "30c6965d587499049f87adec50dc9a07aece84d9c1335e63f88a0391e18116ec",
+    "verify.py": "085d7deb31e8425aa87a01a3fc24df00a798573e894454dab37d9fc82c319adf",
+    "aliases.c.in": "4d298b468e9c0897d9fdf289d8967ba2a5bc1a58b40588f3978170b0cb4f317a"
+  },
+  "modes": [
+    {
+      "mode": "preserving",
+      "edited_and_restored_alias_links": 0,
+      "offsets_checked": 5,
+      "graph_sha256": "bab3d9bae3e8227672e97115b9c60566863e74b8acb317bedbc2f443aaa75ff4",
+      "alias_sha256": "332314598b4b94825b600cbfabfcff1fe13c5656540a997a52a95e84cd39b36d",
+      "conflicts": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "prediction": {
+        "raw_size": 32,
+        "frame_size": 32,
+        "groups": [
+          {
+            "size": 4,
+            "members": [
+              0
+            ],
+            "conflicts": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 5,
+            "creation_index": 0,
+            "density": 1250,
+            "offset": -32
+          },
+          {
+            "size": 4,
+            "members": [
+              1
+            ],
+            "conflicts": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 1,
+            "creation_index": 1,
+            "density": 250,
+            "offset": -28
+          },
+          {
+            "size": 8,
+            "members": [
+              2
+            ],
+            "conflicts": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 10,
+            "creation_index": 2,
+            "density": 1250,
+            "offset": -24
+          },
+          {
+            "size": 8,
+            "members": [
+              3
+            ],
+            "conflicts": [
+              3
+            ],
+            "uses": 4,
+            "creation_index": 3,
+            "density": 500,
+            "offset": -16
+          },
+          {
+            "size": 8,
+            "members": [
+              4
+            ],
+            "conflicts": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 3,
+            "creation_index": 4,
+            "density": 375,
+            "offset": -8
+          }
+        ]
+      },
+      "normalized_coff_sha256": "9fd1f848af414cac4ca282056c41ad02ac329f7c001935cf01dc4b66dc22b014",
+      "metrics": {
+        "ratio": 0.6956521739130435,
+        "target_instructions": 115,
+        "candidate_instructions": 115,
+        "prefix_instructions": 1,
+        "references_ok": 12,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame": 32,
+      "pointer_window": [
+        "lea edi, dword [esi+0xc]",
+        "mov dword [esp+0x10], ebx",
+        "mov dword [esp+0x14], edi"
+      ],
+      "argument_window": [
+        "fld dword [esp+0x18]",
+        "fadd dword [esi]",
+        "lea ecx, dword [esp+0x28]",
+        "fstp dword [esp+0x28]",
+        "fld dword [esp+0x1c]",
+        "fadd dword [edi+-0x8]",
+        "fstp dword [esp+0x2c]",
+        "mov eax, dword [edi+-0x4]",
+        "mov edx, dword [edi]",
+        "push eax",
+        "push ecx",
+        "push edx",
+        "call ADDR"
+      ]
+    },
+    {
+      "mode": "pruned",
+      "edited_and_restored_alias_links": 1,
+      "offsets_checked": 5,
+      "graph_sha256": "9013f9aa44c35b77b5ff185f694261359ee1c3a24f151c4ad590bd5510b277e1",
+      "alias_sha256": "408f2643c63c223018845edadc259e589fa0c921856d760ace164bd2836bfad3",
+      "conflicts": [
+        [
+          0,
+          2,
+          3,
+          4
+        ],
+        [
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          2,
+          3,
+          4
+        ],
+        [
+          3
+        ],
+        [
+          0,
+          2,
+          3,
+          4
+        ]
+      ],
+      "prediction": {
+        "raw_size": 28,
+        "frame_size": 28,
+        "groups": [
+          {
+            "size": 4,
+            "members": [
+              0,
+              1
+            ],
+            "conflicts": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "uses": 6,
+            "creation_index": 0,
+            "density": 1500,
+            "offset": -28
+          },
+          {
+            "size": 8,
+            "members": [
+              2
+            ],
+            "conflicts": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "uses": 10,
+            "creation_index": 1,
+            "density": 1250,
+            "offset": -24
+          },
+          {
+            "size": 8,
+            "members": [
+              3
+            ],
+            "conflicts": [
+              3
+            ],
+            "uses": 4,
+            "creation_index": 2,
+            "density": 500,
+            "offset": -16
+          },
+          {
+            "size": 8,
+            "members": [
+              4
+            ],
+            "conflicts": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "uses": 3,
+            "creation_index": 3,
+            "density": 375,
+            "offset": -8
+          }
+        ]
+      },
+      "normalized_coff_sha256": "a62e6a1bb1759c77963a1f7689dc06426a77aeb9274ed78f9c462e0602c1a7c2",
+      "metrics": {
+        "ratio": 0.8260869565217391,
+        "target_instructions": 115,
+        "candidate_instructions": 115,
+        "prefix_instructions": 14,
+        "references_ok": 12,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame": 28,
+      "pointer_window": [
+        "lea edi, dword [esi+0xc]",
+        "mov dword [esp+0x10], edi",
+        "mov dword [esp+0x10], ebx"
+      ],
+      "argument_window": [
+        "fld dword [esp+0x14]",
+        "fadd dword [esi]",
+        "lea ecx, dword [esp+0x24]",
+        "fstp dword [esp+0x24]",
+        "fld dword [esp+0x18]",
+        "fadd dword [edi+-0x8]",
+        "fstp dword [esp+0x28]",
+        "mov eax, dword [edi+-0x4]",
+        "mov edx, dword [edi]",
+        "push eax",
+        "push ecx",
+        "push edx",
+        "call ADDR"
+      ]
+    }
+  ]
+}

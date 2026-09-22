@@ -1,0 +1,63 @@
+/* Diagnostic only: remove one selected local from implicit alias lists during
+   stack dataflow and graph construction, then restore every edited link. */
+static unsigned long *pruned_links[16384], pruned_values[16384], pruned_next[16384], pruned_count;
+static void prune_list(unsigned long *link,unsigned long owner,unsigned long depth) {
+ unsigned long limit=0;
+ if(depth>1)ExitProcess(77);
+ while(*link) {
+  unsigned long item=*link, symbol=*(unsigned long *)(item+4);
+  if(++limit>16384||!symbol)ExitProcess(76);
+  if(symbol==owner) {
+   if(pruned_count>=16384)ExitProcess(75);
+   pruned_links[pruned_count]=link;pruned_values[pruned_count]=item;
+   pruned_next[pruned_count++]=*(unsigned long *)item;
+   *link=*(unsigned long *)item;
+  } else {
+   if(*(unsigned char *)(symbol+4)==12)
+    prune_list((unsigned long *)(symbol+0x30),owner,depth+1);
+   link=(unsigned long *)item;
+  }
+ }
+}
+static void prune_aliases(void) {
+ unsigned long n=*(unsigned long *)(compiler_base+0x9f20c),i,owner=0,found=0,node;
+ unsigned long *symbols=*(unsigned long **)(compiler_base+0x9f218);
+ unsigned long first=*(unsigned long *)(**(unsigned long **)(saved_function+8)+0x1c);
+ if(!ENABLE_PRUNE)return;
+ if(n>16384||pruned_count)ExitProcess(74);
+ for(i=0;i<n;++i) {
+  unsigned long s=symbols[i];
+  if(*(unsigned long *)(s+0x20)==4&&*(unsigned long *)(s+0x34)==1) {owner=s;++found;}
+ }
+ if(found!=1)ExitProcess(73);
+ for(node=first;node;node=*(unsigned long *)node) {
+  unsigned long side;
+  if(!(*(unsigned char *)(node+9)&1))continue;
+  for(side=0;side<2;++side) {
+   unsigned long op=*(unsigned long *)(node+0x18+side*4);
+   for(;op;op=*(unsigned long *)op) {
+    unsigned long kind=*(unsigned char *)(op+8),handle,limit,index;
+    unsigned long *table; unsigned char *secondary;
+    if(kind!=6&&kind!=11)continue;
+    handle=*(unsigned long *)(op+(kind==6?0x1c:0x14));
+    limit=*(unsigned long *)(compiler_base+0x9d670);
+    table=*(unsigned long **)(compiler_base+0x9d6b0);
+    secondary=*(unsigned char **)(compiler_base+0x9d6bc);
+    index=handle<limit?handle:*(unsigned long *)(secondary+(handle-limit)*12);
+    prune_list(&table[index],owner,0);
+   }
+  }
+ }
+ if(pruned_count!=1)ExitProcess(72);
+}
+static void restore_aliases(void) {
+ unsigned long record[2]; DWORD written;
+ record[0]=0x50524e31;record[1]=pruned_count;
+ if(!WriteFile(alias_file,record,sizeof(record),&written,0)||written!=sizeof(record))ExitProcess(71);
+ while(pruned_count) {
+  --pruned_count;
+  if(*pruned_links[pruned_count]!=pruned_next[pruned_count])ExitProcess(70);
+  *pruned_links[pruned_count]=pruned_values[pruned_count];
+  if(*pruned_links[pruned_count]!=pruned_values[pruned_count])ExitProcess(69);
+ }
+}
