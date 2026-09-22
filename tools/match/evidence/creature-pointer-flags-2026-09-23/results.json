@@ -1,0 +1,224 @@
+{
+  "source_sha256": "7bb97911b09a9e96d60b4b7b93530f07702d92de55d343d75fb5b642b49f44bd",
+  "operand_0x10_on_definition_copies": {
+    "0x130cb": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        false
+      ]
+    },
+    "0xfcda": {
+      "health": [
+        true
+      ],
+      "lifecycle": [
+        true
+      ],
+      "collision": [
+        true
+      ],
+      "size": [
+        true
+      ],
+      "cooldown": [
+        true
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x281cd": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x2930f": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x29511": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x296de": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x26d75": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x2f8fc": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x30308": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": [
+        true
+      ]
+    },
+    "0x306c1": {
+      "health": [
+        false
+      ],
+      "lifecycle": [
+        false
+      ],
+      "collision": [
+        false
+      ],
+      "size": [
+        false
+      ],
+      "cooldown": [
+        false
+      ],
+      "target_player": []
+    },
+    "0x30a40": {
+      "health": [],
+      "lifecycle": [],
+      "collision": [],
+      "size": [],
+      "cooldown": [],
+      "target_player": []
+    },
+    "0x336f4": {
+      "health": [],
+      "lifecycle": [],
+      "collision": [],
+      "size": [],
+      "cooldown": [],
+      "target_player": []
+    }
+  },
+  "target_player": {
+    "pointer_leas": 0,
+    "direct_scaled_accesses": 13
+  },
+  "conclusion": "Operand flag 0x10 on the definition copy does not retain the pointer."
+}

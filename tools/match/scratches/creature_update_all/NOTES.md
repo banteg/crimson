@@ -41,6 +41,12 @@ Residual signature
   corpse queue; whether an inlined helper owns the native pointer lifetimes.
 ```
 
+[Flag test on 2026-09-23](../../evidence/creature-pointer-flags-2026-09-23/README.md)
+rejects operand flag `0x10` as the retention cause: it stays set on
+`&target_player` through allocation, yet that pointer is never formed, and
+the five field pointers lose it and are rebuilt. Routing all six native
+contact reads through the declared pointer also forms no EBX pointer.
+
 The older sections below describe the pre-pool-base body; their metrics
 are superseded.
 
