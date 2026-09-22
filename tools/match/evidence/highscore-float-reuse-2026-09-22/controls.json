@@ -1,0 +1,386 @@
+{
+  "schema": 1,
+  "base_package": "highscore-filter-storage-2026-09-22",
+  "base_control": "row-plus-widget-labels",
+  "base_source_sha256": "ffc2226e2ec54cefaf4a2fde09fd1f379342b105f9162a418b49f5d0ce1fa6c7",
+  "controls": [
+    {
+      "name": "constructor-scalar-borrows",
+      "source_sha256": "ea05513890a3872709fac4e6ce51b358246ad5d3c36169f03b190a5ed22e7a0a",
+      "body_sha256": "3b59e4351d279a54f5f0b3f584055afc34786b3f2dc2c640093d21cf0fef2e5f",
+      "instructions": 2005,
+      "ratio": 0.8166625093539536,
+      "prefix": 43,
+      "refs": [
+        600,
+        0,
+        4
+      ],
+      "edits": [
+        {
+          "start": 19,
+          "end": 20,
+          "lines": [
+            "    highscore_vec2_t(const float &x_value, const float &y_value)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "copy-then-vector-adjust",
+      "source_sha256": "d0fe8fc52e2ab6e608331a1f9741c3204e612fc4dbb904827fe832107b7f7945",
+      "body_sha256": "29c40f39e6fdfe1257f79f42528d81ceaa343676c75e2fd11919b6e24b15f420",
+      "instructions": 2017,
+      "ratio": 0.719224073613529,
+      "prefix": 1,
+      "refs": [
+        556,
+        0,
+        13
+      ],
+      "edits": [
+        {
+          "start": 590,
+          "end": 592,
+          "lines": [
+            "            highscore_vec2_t profile_position = right_panel;\n",
+            "            profile_position += highscore_vec2_t(0.0f, 114.0f);\n"
+          ]
+        },
+        {
+          "start": 615,
+          "end": 617,
+          "lines": [
+            "            highscore_vec2_t date_position = right_panel;\n",
+            "            date_position += highscore_vec2_t(0.0f, 70.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "borrowed-widget-base-y",
+      "source_sha256": "d3a64704fcdcdd6d8508ef0dd649e7d015f30eb2edac28bd14bd678012e2b4a9",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "refs": [
+        604,
+        0,
+        6
+      ],
+      "edits": [
+        {
+          "start": 557,
+          "end": 557,
+          "lines": [
+            "        float &filter_base_y = right_panel.y;\n"
+          ]
+        },
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                right_panel.x, filter_base_y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 616,
+          "end": 617,
+          "lines": [
+            "                right_panel.x, filter_base_y + 70.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "labels-subtract-negative",
+      "source_sha256": "64f06f44f9dd9143a2ddad38f6fbb8a41e4a05a673b127256d747af52b136691",
+      "body_sha256": "18c57c2854970c8c4c70c696fab2d242d6a0be321a0eb48e8472086f0a660f07",
+      "instructions": 2003,
+      "ratio": 0.7591714499625655,
+      "prefix": 1,
+      "refs": [
+        587,
+        0,
+        13
+      ],
+      "edits": [
+        {
+          "start": 588,
+          "end": 589,
+          "lines": [
+            "                right_panel.y - (-114.0f) - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 610,
+          "end": 611,
+          "lines": [
+            "            right_panel.y - (-70.0f) - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widgets-subtract-negative",
+      "source_sha256": "ec96615d8196ee3a0579ec6faafd7ae9ad805edd7ffd40ff41f05a6a19b77a2f",
+      "body_sha256": "60e7b1f44dff4b8f7c41857d47468ad3e9cc29f4f4886154f29fec470d6df0dc",
+      "instructions": 2003,
+      "ratio": 0.7591714499625655,
+      "prefix": 1,
+      "refs": [
+        587,
+        0,
+        13
+      ],
+      "edits": [
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                right_panel.x, right_panel.y - (-114.0f));\n"
+          ]
+        },
+        {
+          "start": 616,
+          "end": 617,
+          "lines": [
+            "                right_panel.x, right_panel.y - (-70.0f));\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "union-members",
+      "source_sha256": "2a00711bee398fad22ea42fb5776565073e56c449630eee1548da8c1b3baaae2",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "refs": [
+        604,
+        0,
+        6
+      ],
+      "edits": [
+        {
+          "start": 15,
+          "end": 17,
+          "lines": [
+            "    union {\n",
+            "        struct { float x, y; };\n",
+            "        float v[2];\n",
+            "    };\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "union-widget-y",
+      "source_sha256": "a8ab340e0734f9b4d6a5e32cf64e10d6094d2b262cd25dce7fe0588ebd71907e",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "refs": [
+        604,
+        0,
+        6
+      ],
+      "edits": [
+        {
+          "start": 15,
+          "end": 17,
+          "lines": [
+            "    union {\n",
+            "        struct { float x, y; };\n",
+            "        float v[2];\n",
+            "    };\n"
+          ]
+        },
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                right_panel.x, right_panel.v[1] + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 616,
+          "end": 617,
+          "lines": [
+            "                right_panel.x, right_panel.v[1] + 70.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "union-widget-xy",
+      "source_sha256": "ad6ac63751dedc905c30d9dd5cc43c171ebd5789e7ddb8cbb50013a05231efcf",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "refs": [
+        604,
+        0,
+        6
+      ],
+      "edits": [
+        {
+          "start": 15,
+          "end": 17,
+          "lines": [
+            "    union {\n",
+            "        struct { float x, y; };\n",
+            "        float v[2];\n",
+            "    };\n"
+          ]
+        },
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                right_panel.v[0], right_panel.v[1] + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 616,
+          "end": 617,
+          "lines": [
+            "                right_panel.v[0], right_panel.v[1] + 70.0f);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "union-label-y",
+      "source_sha256": "822b6e385942b46c57001b166a06256d9cf1661a3f55d8b420a0bc0229207fdd",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "refs": [
+        604,
+        0,
+        6
+      ],
+      "edits": [
+        {
+          "start": 15,
+          "end": 17,
+          "lines": [
+            "    union {\n",
+            "        struct { float x, y; };\n",
+            "        float v[2];\n",
+            "    };\n"
+          ]
+        },
+        {
+          "start": 588,
+          "end": 589,
+          "lines": [
+            "                right_panel.v[1] + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 610,
+          "end": 611,
+          "lines": [
+            "            right_panel.v[1] + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "copy-then-y-adjust",
+      "source_sha256": "9dd382768d11337a61f028e950ac6cb3bb1b92737ce2f70147b8728b39d1e607",
+      "body_sha256": "c9212d609efb61f9db5c80a1e6c7975d997eb38e633e2a9faa9f8ae6a085f099",
+      "instructions": 2015,
+      "ratio": 0.7872605125653147,
+      "prefix": 43,
+      "refs": [
+        562,
+        0,
+        8
+      ],
+      "edits": [
+        {
+          "start": 590,
+          "end": 592,
+          "lines": [
+            "            highscore_vec2_t profile_position = right_panel;\n",
+            "            profile_position.y += 114.0f;\n"
+          ]
+        },
+        {
+          "start": 615,
+          "end": 617,
+          "lines": [
+            "            highscore_vec2_t date_position = right_panel;\n",
+            "            date_position.y += 70.0f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "labels-double-base",
+      "source_sha256": "77f65817324ce9eb2a8581b69d22ca54796822b04fc7f27e9f9f73ca8e4ab9c6",
+      "body_sha256": "32f868df07f78a103a006b21c06a6b62e32c4c6eac9a04118444821cdb3cbd6f",
+      "instructions": 2003,
+      "ratio": 0.7581731969054155,
+      "prefix": 1,
+      "refs": [
+        585,
+        0,
+        13
+      ],
+      "edits": [
+        {
+          "start": 588,
+          "end": 589,
+          "lines": [
+            "                (double)right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 610,
+          "end": 611,
+          "lines": [
+            "            (double)right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "widgets-double-base",
+      "source_sha256": "ff790db3455ebaf0fa3cb05c36512f92c1efb8446d6505831591a09b4341ba08",
+      "body_sha256": "a44ac354df2a66665107f745d8ab184ffd67e764a0aac5eef3c8d5dbbefc9650",
+      "instructions": 2003,
+      "ratio": 0.7591714499625655,
+      "prefix": 1,
+      "refs": [
+        587,
+        0,
+        13
+      ],
+      "edits": [
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                right_panel.x, (double)right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 616,
+          "end": 617,
+          "lines": [
+            "                right_panel.x, (double)right_panel.y + 70.0f);\n"
+          ]
+        }
+      ]
+    }
+  ]
+}

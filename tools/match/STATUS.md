@@ -41,7 +41,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 1/74 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | creature_update_all | 2209 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 4 | crimsonland.exe | highscore_screen_update | 1629 | semantic-complete | compiler,references | current-active | 4/36 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
+| 4 | crimsonland.exe | highscore_screen_update | 1629 | incomplete | analysis,compiler,references | current-active | 5/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 5 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/11 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
 | 6 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 1/10 | 1 | repeated-variants,variant-errors |
 

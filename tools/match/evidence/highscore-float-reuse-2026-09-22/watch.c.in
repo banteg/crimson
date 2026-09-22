@@ -1,0 +1,43 @@
+/* Only C2+9739 availability returns for the two pinned floating additions
+   may change. Every matching entry, return, and deletion is recorded. */
+static HANDLE watch_file;
+static unsigned long c2base, watched_function;
+static unsigned long saved[2][11];
+
+static void watch(unsigned long phase, unsigned long *regs)
+{
+    unsigned long index, node, op, line, operand, expression, *record;
+    DWORD written;
+    if (phase != 13 && phase != 113 && phase != 14) return;
+    index = phase == 14 ? 1 : 0;
+    record = saved[index];
+    if (phase < 100) {
+        node = regs[1]; /* ESI holds the current instruction in C2+9690. */
+        line = *(unsigned short *)(node + 0x10);
+        op = *(unsigned long *)(node + 4);
+        record[1] = 0;
+        if (op != 0x16d || (line != 401 && line != 426)) return;
+        operand = *(unsigned long *)(node + 0x1c);
+        if (!operand || *(unsigned char *)(operand + 8) != 2) ExitProcess(81);
+        expression = *(unsigned long *)(operand + 0x14);
+        if (!expression) ExitProcess(82);
+        record[1] = line;
+        record[2] = op;
+        record[3] = node;
+        record[4] = *(unsigned long *)(c2base + 0x9f114);
+        record[7] = *(unsigned long *)(expression + 0x1c);
+        record[8] = expression;
+        record[9] = *(unsigned long *)(expression + 0x14);
+        record[10] = *(unsigned long *)(expression + 0x18);
+        if (phase == 13 && record[7] != regs[5]) ExitProcess(83);
+    }
+    if (!record[1]) return;
+    record[0] = phase;
+    record[5] = regs[7];
+    if (phase == 113 && regs[7] &&
+        ((record[1] == 401 && (DENY_MASK & 1)) ||
+         (record[1] == 426 && (DENY_MASK & 2)))) regs[7] = 0;
+    record[6] = regs[7];
+    if (!WriteFile(watch_file, record, sizeof(saved[0]), &written, 0) ||
+        written != sizeof(saved[0])) ExitProcess(84);
+}

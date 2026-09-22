@@ -689,3 +689,34 @@ The best alignment, 87.060583% with 2,007 instructions, prefix 105 and reference
 616/0/4, remains structurally wrong. The next constraint is native Y
 recomputation and X copy ownership without the extra scalar or wrong
 initialization stage, not further declaration-order or score-only tuning.
+
+## Floating-expression reuse and finite counterexamples (2026-09-22)
+
+The [float-reuse evidence](../../evidence/highscore-float-reuse-2026-09-22/README.md)
+finds a semantic residual in the canonical profile label: `Y + 100` is not
+equivalent to native `(Y + 114) - 14` at 24-bit x87 precision. The cumulative
+row/filter witness has the opposite problem at 53/64-bit precision because C2
+saves the intermediate sum to float32 before subtracting 14. For finite input
+`Y = 0x41800003`, each discrepancy is one float32 ULP. Canonical recovery is
+therefore marked `incomplete`, with `analysis` restored to residuals. Its source,
+body, and matching metrics are unchanged. These are instruction-window
+counterexamples; runtime FPU state and complete UI reachability are unproven.
+
+C2 `0x11209` gives the repeated profile/date additions the same expression
+owner. In optimizer phase 3, availability tests at `0x9739 -> 0x251d` cause the
+later additions to be deleted at `0x97a4 -> 0x210e`. Independent controls deny
+only the profile, date, or both return values. A preserving whole-COFF trace,
+missing-stream rejection, and seven corrupted-evidence checks pass.
+The deny-both label setup agrees in all 34 bytes after audited relocations and
+one stack binding, but remains a compiler diagnostic with the wrong frame and
+surrounding ownership; it is not promoted.
+
+All 2,868 finite fixtures across three precisions and four rounding modes agree
+with exact-rational operation/store models for native, canonical, cumulative,
+and deny-both label setup. Three execution/byte corruption controls fail as
+expected. The test ends before drawing and does not execute the date label.
+Twelve additional stock-source controls rebuild: component borrowing and
+union access are body-neutral; copy/adjust forms retain wrong ownership;
+negative subtraction or double casts prevent reuse with the wrong native
+operations or operand widths. This family now has a causal stop rule rather
+than another score-based claim of exhaustion.

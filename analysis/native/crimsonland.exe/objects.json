@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "6efb6a3250bf87ecd716d0cf51434ed0a41c7201d824ee448f5e70744a890e95",
+  "audit_digest": "125ee255be5c69e5aa92bfb5d1a5d3e7cf87b7ab2bf954411a88245060eb8c99",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -79717,7 +79717,7 @@
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "539a1b82db4443514aa0899f3e47e7652f8701395fb02a43fdcf8a3b14ca0651"
+          "sha256": "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075"
         },
         {
           "path": "tools/match/cl.sh",
@@ -79762,7 +79762,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/highscore_screen_update/scratch.conf",
-      "config_sha256": "539a1b82db4443514aa0899f3e47e7652f8701395fb02a43fdcf8a3b14ca0651",
+      "config_sha256": "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075",
       "effective_end": 4473642,
       "end": 4473642,
       "function": "highscore_screen_update",
@@ -79770,7 +79770,7 @@
         {
           "address": 4465616,
           "canonical_config": "tools/match/scratches/highscore_screen_update/scratch.conf",
-          "canonical_config_sha256": "539a1b82db4443514aa0899f3e47e7652f8701395fb02a43fdcf8a3b14ca0651",
+          "canonical_config_sha256": "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075",
           "canonical_scratch": "tools/match/scratches/highscore_screen_update",
           "canonical_source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
           "canonical_source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
