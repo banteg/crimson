@@ -1,0 +1,88 @@
+/* Included in the pinned C2 replay observer. Registers are pushad order:
+   EDI, ESI, EBP, saved ESP, EBX, EDX, ECX, EAX.
+   DENY_MASK bits select X input, Y input, heading. Zero is preserving. */
+static HANDLE angle_file;
+static unsigned long saved_angle[13], watched_definitions[3], watch_function;
+static void angle_write(unsigned long *record) {
+ DWORD written;
+ if(!WriteFile(angle_file,record,52,&written,0)||written!=52)ExitProcess(82);
+}
+/* Bind the three definitions once for this single-function capture. */
+static void angle_init(unsigned long function) {
+ unsigned long first,node,dst,i=0,record[13],j;
+ if(watch_function==function)return;
+ watch_function=function;
+ first=*(unsigned long *)(**(unsigned long **)(function+8)+0x1c);
+ for(node=first;node;node=*(unsigned long *)node) {
+  if(*(unsigned short *)(node+0x10)!=171||*(unsigned long *)(node+4)!=0x15b||!(*(unsigned long *)(node+8)&0x40000000))continue;
+  dst=*(unsigned long *)(node+0x1c);
+  if(!dst||*(unsigned char *)(dst+8)!=2)continue;
+  if(i>=3)ExitProcess(84);
+  watched_definitions[i]=node;
+  for(j=0;j<13;++j)record[j]=0;
+  record[0]=15;record[1]=node;record[3]=171;record[4]=0x15b;record[6]=*(unsigned long *)(dst+0x14);record[12]=i++;
+  angle_write(record);
+ }
+ if(i!=3)ExitProcess(85);
+}
+static void angle_watch(unsigned long phase,unsigned long *regs) {
+ unsigned long node,use,dst,src,record[13],i,role;
+ if(phase!=12&&phase!=112&&phase!=13&&phase!=14)return;
+ if(phase==112) {
+  if(!saved_angle[0])return;
+  for(i=0;i<13;++i)record[i]=saved_angle[i];
+  record[0]=phase;record[10]=regs[7];
+  if((DENY_MASK&(1<<record[12]))&&regs[7])regs[7]=0;
+  record[11]=regs[7];
+ } else {
+  if(phase==12)saved_angle[0]=0;
+  node=phase==13?regs[5]:regs[6];
+  use=phase==12?regs[5]:(phase==13?regs[6]:0);
+  for(role=0;role<3;++role)if(watched_definitions[role]==node)break;
+  if(role==3)return;
+  dst=*(unsigned long *)(node+0x1c);src=*(unsigned long *)(node+0x18);
+  if(!dst||!src||*(unsigned char *)(dst+8)!=2)ExitProcess(81);
+  record[0]=phase;record[1]=node;record[2]=use;
+  record[3]=*(unsigned short *)(node+0x10);record[4]=*(unsigned long *)(node+4);
+  record[5]=*(unsigned char *)(dst+8);record[6]=*(unsigned long *)(dst+0x14);
+  record[7]=*(unsigned char *)(src+8);record[8]=*(unsigned long *)(src+0x14);
+  record[9]=use?*(unsigned long *)(use+4):0;record[10]=0;record[11]=0;record[12]=role;
+  if(phase==12)for(i=0;i<13;++i)saved_angle[i]=record[i];
+ }
+ angle_write(record);
+}
+static HANDLE conflict_file;
+static unsigned long conflict_context=99, conflict_saved[5][26];
+/* Outer checks retain EBP=definition and ESI=use. Within 42ad4, EBX is
+   the crossed node, ECX/EDX are compared operands. Record all comparisons
+   for the watched definitions; never change the alias-check results. */
+static void conflict_watch(unsigned long phase,unsigned long *regs) {
+ unsigned long r[26],i,j,idx,def,op;
+ DWORD written;
+ if(phase>=116&&phase<=120) {
+  idx=phase-116;
+  if(!conflict_saved[idx][0])return;
+  for(i=0;i<26;++i)r[i]=conflict_saved[idx][i];
+  r[0]=phase;r[5]=regs[7];
+  if(phase<=117)conflict_context=99;
+ } else if(phase>=16&&phase<=20) {
+  idx=phase-16;conflict_saved[idx][0]=0;
+  if(phase<=17) {
+   def=regs[2];conflict_context=99;
+   for(i=0;i<3;++i)if(watched_definitions[i]==def)conflict_context=i;
+  }
+  if(conflict_context==99)return;
+  for(i=0;i<26;++i)r[i]=0;
+  r[0]=phase;r[1]=conflict_context;r[2]=regs[4];
+  if(phase>=18) {
+   r[3]=*(unsigned short *)(r[2]+0x10);r[4]=*(unsigned long *)(r[2]+4);
+   for(j=0;j<2;++j) {
+    op=regs[6-j];r[6+j*10]=op;
+    for(i=0;i<7;++i)r[7+j*10+i]=*(unsigned long *)(op+4*i);
+    if(*(unsigned char *)(op+8)==6)r[14+j*10]=*(unsigned long *)(op+0x1c);
+   }
+  } else {r[2]=def;r[3]=regs[1];r[4]=*(unsigned long *)def;}
+  for(i=0;i<26;++i)conflict_saved[idx][i]=r[i];
+ } else return;
+ if(!WriteFile(conflict_file,r,sizeof(r),&written,0)||written!=sizeof(r))ExitProcess(86);
+}

@@ -111224,6 +111224,8 @@
     "tools/match/evidence/player-aim-direction-2026-09-11/runner.py": "f16a034623c30637a525f1b692addeb284e96deeb89198f01307d4678601835a",
     "tools/match/evidence/player-aim-direction-2026-09-11/verify.py": "ef459bf52c63e88a6fa5e255b46d54f8d6702ec23adfc39bf7b11dff4b50cf37",
     "tools/match/evidence/player-aim-direction-2026-09-11/verify_ports.py": "d353ca73057f37efc10d88d03bddf2372900355fd5d01633af04b156ddfbd6f7",
+    "tools/match/evidence/player-angle-propagation-2026-09-22/controls.py": "585b0e652f42ddd0d7ec33c3f578295cede7012a2e91de89c2c6dcb67f117af6",
+    "tools/match/evidence/player-angle-propagation-2026-09-22/verify.py": "489ac1c8ca66e65734523b83b5422368d254c73d2861c5b97e972224394efd6a",
     "tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify.py": "0feda236cad0d813ab26523fefeb09e2224348c99cd6668ec89daeb711f96493",
     "tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify_ports.py": "fe5172454109b715166ea3d11450dcf735e5dc058e7ae5d21ad43ae17648c967",
     "tools/match/evidence/player-fire-cough-2026-09-14/followup.py": "59ec0bd4176af9c345875d1cd0896acd216f0b26b3acac7ee1601f7d8a3a3422",

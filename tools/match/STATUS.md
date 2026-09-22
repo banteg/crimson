@@ -38,7 +38,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | rank | image | function | fuzzy gap | declared recovery | declared residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
-| 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 1/74 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
+| 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 9/82 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | creature_update_all | 2209 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | highscore_screen_update | 1629 | incomplete | analysis,compiler,references | current-active | 5/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |

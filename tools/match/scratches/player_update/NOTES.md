@@ -1534,3 +1534,35 @@ position adds between phases 0 and 1, before allocation. The early field-store
 control still loses native operand loading, so angle scheduling and vector
 homes remain open residuals. The previous source is recorded in the ledger
 as `hot-tempered-original-ternary-receiver-control`.
+
+## Fire Cough propagation and alias interference (2026-09-22)
+
+The earlier phase-0/phase-1 angle movement is now located inside
+`C2+0x1315a -> 0x11afa`. A preserving trace watches the X/Y float-wrapper
+parameter definitions and the final heading assignment. The eligibility
+helper at `0x11f08 -> 0x11786` accepts all three. C2 moves the heading
+expression at `0x1273e -> 0x1d548` and deletes its assignment at
+`0x12794 -> 0x211e`. The intrinsic now follows the projectile-position adds.
+
+That move changes the input-copy decisions: the crossing test at
+`0x125d8 -> 0x42ad4` encounters the `move_delta.x` store. Its operand check
+at `0x42b47 -> 0x2771` reports a possible alias with each returned-vector
+read. Both input propagations therefore fail. This explains why the late
+angle still loads X/Y with `fxch`; it is not independent of the angle's move.
+
+Eight diagnostic modes deny the three eligibility results independently.
+Denying X, Y or both alone is whole-COFF neutral. Denying heading lets both
+inputs propagate and produces early computation with Y/X loads. Denying X
+and heading together keeps early computation plus X/Y/`fxch`, but the
+subtract is still scheduled too early and the heading home is wrong. Denying
+all three still produces Y/X in later passes. None is a source candidate.
+
+The package `tools/match/evidence/player-angle-propagation-2026-09-22/`
+retains the observer, bounded stock-source controls, complete frame-relative
+angle windows, decision checks and corruption controls. Separate array,
+struct and union storage, a double destination using `atan2f`, and a scalar
+subtract moved to the call argument are all whole-COFF neutral. Existing
+scratch-member storage keeps the angle early but loses X/Y loading; delaying
+its subtract adds a store/reload. A const-reference version also misses.
+Canonical source/configuration, references 807/0/2, prefix 7 and both false
+exactness flags are unchanged. No new runtime equivalence is claimed.
