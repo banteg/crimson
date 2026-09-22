@@ -1,5 +1,5 @@
 {
-  "audit_digest": "125ee255be5c69e5aa92bfb5d1a5d3e7cf87b7ab2bf954411a88245060eb8c99",
+  "audit_digest": "3c6af7fe6a705ba272487b847347f8b1ebc06a5184c11f706131c09788915089",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -26560,32 +26560,6 @@
           "object": "tools/match/scratches/bonus_try_spawn_on_kill/build/msvc6.5/4728abc59584c62c/scratch.obj",
           "section": ".rdata",
           "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4004e000000000000000",
-          "comdat_selection": 2,
-          "function": null,
-          "functions": [
-            "highscore_screen_update",
-            "highscore_game_mode_list_destroy",
-            "highscore_player_count_list_destroy",
-            "highscore_date_filter_list_destroy",
-            "highscore_online_scores_checkbox_destroy",
-            "highscore_back_button_destroy",
-            "highscore_play_button_destroy",
-            "highscore_update_button_destroy",
-            "highscore_score_scrollbar_destroy",
-            "highscore_hardcore_checkbox_destroy"
-          ],
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "translation_unit": "highscore-screen-lifecycle",
           "weak": false
         },
         {
@@ -82974,32 +82948,6 @@
           "comdat_selection": 2,
           "function": null,
           "functions": [
-            "highscore_screen_update",
-            "highscore_game_mode_list_destroy",
-            "highscore_player_count_list_destroy",
-            "highscore_date_filter_list_destroy",
-            "highscore_online_scores_checkbox_destroy",
-            "highscore_back_button_destroy",
-            "highscore_play_button_destroy",
-            "highscore_update_button_destroy",
-            "highscore_score_scrollbar_destroy",
-            "highscore_hardcore_checkbox_destroy"
-          ],
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "translation_unit": "highscore-screen-lifecycle",
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4004e000000000000000",
-          "comdat_selection": 2,
-          "function": null,
-          "functions": [
             "quest_results_screen_update",
             "quest_results_main_menu_button_destroy",
             "quest_results_highscores_button_destroy",
@@ -98343,7 +98291,7 @@
             "highscore_hardcore_checkbox_destroy"
           ],
           "kind": "section",
-          "logical_section_size": 7920,
+          "logical_section_size": 8032,
           "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
           "section": ".text",
           "size": null,
@@ -141943,7 +141891,7 @@
             "highscore_hardcore_checkbox_destroy"
           ],
           "kind": "section",
-          "logical_section_size": 7920,
+          "logical_section_size": 8032,
           "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
           "section": ".text",
           "size": null,

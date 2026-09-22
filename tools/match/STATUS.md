@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **804/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **805/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**804/810** functions matched exactly (**99.3%**), **298976/341992** code bytes (**87.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**805/810** functions matched exactly (**99.4%**), **307002/341992** code bytes (**89.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **327509/341992** code bytes (**95.8%**).
+Fuzzy-weighted alignment is **329138/341992** code bytes (**96.2%**).
 
-Remaining exact-match debt is **6 functions**, **43016 code bytes**, and **14483 fuzzy-gap bytes**.
+Remaining exact-match debt is **5 functions**, **34990 code bytes**, and **12854 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**6** non-exact scratch-backed functions hold **14483 fuzzy-gap bytes**. The top 5 hold **99.8%** of that gap; the top 10 hold **100.0%**.
+**5** non-exact scratch-backed functions hold **12854 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **4 functions / 7549 gap bytes**; **2 / 6934** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **3 functions / 5920 gap bytes**; **2 / 6934** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -41,9 +41,8 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 9/82 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
 | 3 | crimsonland.exe | creature_update_all | 2209 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 4 | crimsonland.exe | highscore_screen_update | 1629 | incomplete | analysis,compiler,references | current-active | 14/46 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 5 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/11 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
-| 6 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 3/12 | 1 | repeated-variants,variant-errors |
+| 4 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/11 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
+| 5 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 3/12 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -113,12 +112,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 665/671 | 277811/320827 | 86.6% | 306344/320827 | 95.5% | 671/671 | 320827/320827 | 100.0% | 665/671 |
+| crimsonland.exe | 666/671 | 285837/320827 | 89.1% | 307973/320827 | 96.0% | 671/671 | 320827/320827 | 100.0% | 666/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**665/671** functions (**99.1%**), **277811/320827** bytes (**86.6%**), **306344/320827** fuzzy-weighted bytes (**95.5%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **665/671** scratches verified.
+**666/671** functions (**99.3%**), **285837/320827** bytes (**89.1%**), **307973/320827** fuzzy-weighted bytes (**96.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **666/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -699,7 +698,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
 | match | ui_update_notice_button_destroy | 0x004423c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-ui-update-notice-button-destroy |
-| wip | highscore_screen_update | 0x004423d0 | 8026 | 6397/8026 | 1629 | 1978/2004 | 79.71% | 45/2004 | 592/0/4 |  | highscore-list-filters-online-sync-and-state-routing |
+| match | highscore_screen_update | 0x004423d0 | 8026 | 8026/8026 | 0 | 2004/2004 | 100.00% | 2004/2004 | 639/0/0 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
 | match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |

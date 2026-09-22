@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "controls": [
+    {
+      "name": "vector-online-offset",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "31c299bae17e656e9295612fa28687e1aa6b1cbf1a45ce6217dd22eff19e877d",
+      "edits": [
+        {
+          "start": 560,
+          "end": 561,
+          "lines": [
+            "        right_panel += highscore_vec2_t(0.0f, 2.0f);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "d62fd5f04de325c5927bce60032823bc454f4fea41a6d5e832ea45ffce661e88",
+      "body_sha256": "b1a74ccb724d451f133d9ebeb27c36d3556387f3ad9928b88e947a1168b672ab",
+      "instructions": 1992,
+      "ratio": 0.8528528528528528,
+      "prefix": 43,
+      "references": [
+        627,
+        0,
+        1
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "diagnostic-unit-product",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "4c78a1fb445a2143a31ea3648070ed626d66f82a35fb51f658a47a7d722d9f88",
+      "edits": [
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            filter_x = right_panel.x * 1.0f;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "3aafb91966c5e47ea398bdd115ab621ac217d65809882275d33e306539f17d81",
+      "body_sha256": "4404503e161e754d8983521e227f4717290f989872c42002612b11a54bfc5902",
+      "instructions": 2005,
+      "ratio": 0.8725367922175106,
+      "prefix": 43,
+      "references": [
+        614,
+        0,
+        2
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "independent-x-read",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "9e61f272c2b087ec37069033f41a86f0d7710d40e84c8ed0db2313c64ae14ecc",
+      "edits": [
+        {
+          "start": 564,
+          "end": 564,
+          "lines": [
+            "            filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 565,
+          "end": 566,
+          "lines": []
+        }
+      ],
+      "normalized_coff_sha256": "df528f94492d9ab4a788969266609055b134b054cb1798468f303949ce8cddf0",
+      "body_sha256": "f75d9ee4ad6665bf19ca4d59819c1579577c92323805da7200cf2f6c8fb1a5d3",
+      "instructions": 2005,
+      "ratio": 0.8969817909703168,
+      "prefix": 43,
+      "references": [
+        634,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "temporary-x-projection",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "a32ceaaba3f29bc3eec406933ae95edf8f0af88120c85fde1ebdc2b310976135",
+      "edits": [
+        {
+          "start": 564,
+          "end": 564,
+          "lines": [
+            "            filter_x = highscore_vec2_t(right_panel.x, right_panel.y).x;\n"
+          ]
+        },
+        {
+          "start": 565,
+          "end": 566,
+          "lines": []
+        }
+      ],
+      "normalized_coff_sha256": "8704612a4025a8f7cc7bdfaf313cc16fdc0ae3538a4c2bda2ca0a8a8af135afd",
+      "body_sha256": "e3400a4a6c932499a0c4aa1d716285b147ed64a349d6f82d48533183da2fd709",
+      "instructions": 1991,
+      "ratio": 0.8010012515644556,
+      "prefix": 1,
+      "references": [
+        620,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "scoped-double-x",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "3b5ab61e586c07dfda92276efe61d12c4ea91cfd10d964da25924c8e3c1f4018",
+      "edits": [
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            double x_value = right_panel.x;\n",
+            "            filter_x = (float)x_value;\n",
+            "            highscore_vec2_t widget_position((float)x_value, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "6468dffb920bcaa16f234c78ac42f51ed364df4f5ee19637d3b110c2fede2903",
+      "body_sha256": "808e6b8fb241cc6ad0153cacac066e0f4548cc709e2e5bb4ea2938d687716b91",
+      "instructions": 2004,
+      "ratio": 0.9995009980039921,
+      "prefix": 108,
+      "references": [
+        639,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "scoped-float-x",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "cefca170c63804f4b9846bf916280b0b359c7a7750b6768f9c3437d739b4d2dc",
+      "edits": [
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            float x_value = right_panel.x;\n",
+            "            filter_x = (float)x_value;\n",
+            "            highscore_vec2_t widget_position((float)x_value, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "3aafb91966c5e47ea398bdd115ab621ac217d65809882275d33e306539f17d81",
+      "body_sha256": "4404503e161e754d8983521e227f4717290f989872c42002612b11a54bfc5902",
+      "instructions": 2005,
+      "ratio": 0.8725367922175106,
+      "prefix": 43,
+      "references": [
+        614,
+        0,
+        2
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "separator-wide-y",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "c4b62a8bb2e2c9ed578637ef6d4b20ffe12eaac98ef41ef00360991e8404f5ab",
+      "edits": [
+        {
+          "start": 227,
+          "end": 227,
+          "lines": [
+            "        double separator_y = position.y;\n"
+          ]
+        },
+        {
+          "start": 229,
+          "end": 230,
+          "lines": [
+            "            (float)(separator_y + 14.0f));\n"
+          ]
+        },
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            double x_value = right_panel.x;\n",
+            "            filter_x = (float)x_value;\n",
+            "            highscore_vec2_t widget_position((float)x_value, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "470c15bb30c4c3fc8ba8828eb925c2861e788970257552b8790c16ffcb776d8f",
+      "body_sha256": "8237f3fbedef0fcf1daad6729dd8bba08d73ed31cedbf1bb94ca64ab2dd988ac",
+      "instructions": 2004,
+      "ratio": 0.999001996007984,
+      "prefix": 107,
+      "references": [
+        638,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "separator-wide-result",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "6592236692d3e9f72649a370e7be73beef4163223b0ebb0e2bf11522992ad0d3",
+      "edits": [
+        {
+          "start": 227,
+          "end": 227,
+          "lines": [
+            "        double separator_y = position.y + 14.0f;\n"
+          ]
+        },
+        {
+          "start": 229,
+          "end": 230,
+          "lines": [
+            "            (float)separator_y);\n"
+          ]
+        },
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            double x_value = right_panel.x;\n",
+            "            filter_x = (float)x_value;\n",
+            "            highscore_vec2_t widget_position((float)x_value, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "6468dffb920bcaa16f234c78ac42f51ed364df4f5ee19637d3b110c2fede2903",
+      "body_sha256": "808e6b8fb241cc6ad0153cacac066e0f4548cc709e2e5bb4ea2938d687716b91",
+      "instructions": 2004,
+      "ratio": 0.9995009980039921,
+      "prefix": 108,
+      "references": [
+        639,
+        0,
+        0
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "separator-float-center",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "2e058c1874a526745907342b9b130b19d9c5230e530afd11e8e2c189ec0d6786",
+      "edits": [
+        {
+          "start": 227,
+          "end": 227,
+          "lines": [
+            "        float center_offset = 128 - title_half_width;\n"
+          ]
+        },
+        {
+          "start": 228,
+          "end": 229,
+          "lines": [
+            "            position.x + (float)center_offset,\n"
+          ]
+        },
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            double x_value = right_panel.x;\n",
+            "            filter_x = (float)x_value;\n",
+            "            highscore_vec2_t widget_position((float)x_value, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "38f78159308fbdf645d357342a0a3cb4b78d98a02f2c7d5df876be737a4000bf",
+      "body_sha256": "1943caaa486c562bca66f7f8aad46add428ffa6aa974e4ba4e74a9fb3f98a89d",
+      "instructions": 1990,
+      "ratio": 0.8768152228342514,
+      "prefix": 466,
+      "references": [
+        634,
+        0,
+        1
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "separator-double-center",
+      "parent": "stage-reference",
+      "parent_source_sha256": "2ebc0af90c8ff218d7db9bc0a5a85e5b2ebb73af243f56dd93060632aa5958f3",
+      "source_sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f",
+      "edits": [
+        {
+          "start": 227,
+          "end": 227,
+          "lines": [
+            "        double center_offset = 128 - title_half_width;\n"
+          ]
+        },
+        {
+          "start": 228,
+          "end": 229,
+          "lines": [
+            "            position.x + (float)center_offset,\n"
+          ]
+        },
+        {
+          "start": 564,
+          "end": 566,
+          "lines": [
+            "            double x_value = right_panel.x;\n",
+            "            filter_x = (float)x_value;\n",
+            "            highscore_vec2_t widget_position((float)x_value, right_panel.y);\n"
+          ]
+        }
+      ],
+      "normalized_coff_sha256": "0c694ed3b350c1bc8d3dd050ebff87335e4374fbcf3c81c47cec96185e6e3751",
+      "body_sha256": "26caa07047c4ebfc2dffe0c669b87066bd241076f958ca1d92d89a2231f78014",
+      "instructions": 2004,
+      "ratio": 1.0,
+      "prefix": 2004,
+      "references": [
+        639,
+        0,
+        0
+      ],
+      "exact": true,
+      "body_byte_exact": true
+    }
+  ]
+}

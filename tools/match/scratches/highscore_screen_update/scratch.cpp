@@ -94,11 +94,7 @@ struct highscore_scrollbar_t {
 
     highscore_scrollbar_t()
     {
-        int *column = column_offsets;
-        int *end = column_offsets + 2;
-        while (column != end) {
-            *column++ = 0;
-        }
+        memset(column_offsets, 0, 8);
     }
 
     ~highscore_scrollbar_t() {}
@@ -229,8 +225,9 @@ extern "C" void highscore_screen_update(void)
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
     {
+        double center_offset = 128 - title_half_width;
         highscore_vec2_t separator(
-            position.x + (float)(128 - title_half_width),
+            position.x + (float)center_offset,
             position.y + 14.0f);
         grim_interface_ptr->grim_draw_rect_outline(
             (float *)&separator, (float)title_width, 1.0f);
@@ -361,8 +358,8 @@ extern "C" void highscore_screen_update(void)
     position.y += 1.0f;
     while (score_count < 100) {
         score_line_items[score_count] = score_line_buffers[score_count];
-        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));
         int prefix_length = 0;
+        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));
         if (highscore_table[score_count].survival_elapsed_ms == 0) {
             break;
         }
@@ -462,14 +459,21 @@ extern "C" void highscore_screen_update(void)
         online_sync_status == 6 || online_sync_status == 0;
     if (ui_button_update((float *)&position, (ui_button_t *)&play_button)) {
         if (config_blob.game_mode == GAME_MODE_QUEST) {
-            const int &quest_unlock_limit = config_blob.hardcore
-                ? quest_unlock_index_full
-                : quest_unlock_index;
-            int quest_index =
-                quest_stage_minor + quest_stage_major * 10 - 11;
-            if (quest_unlock_limit < quest_index) {
+            if (config_blob.hardcore) {
+                int quest_index =
+                    quest_stage_minor + quest_stage_major * 10 - 11;
+                if (quest_unlock_index_full >= quest_index) {
+                    goto quest_game_allowed;
+                }
                 goto play_game_done;
+            } else {
+                int quest_index =
+                    quest_stage_minor + quest_stage_major * 10 - 11;
+                if (quest_unlock_index < quest_index) {
+                    goto play_game_done;
+                }
             }
+quest_game_allowed:
             render_pass_mode = 0;
             ui_sign_crimson.focus_disabled = 0;
             ui_transition_direction = 0;
@@ -490,8 +494,9 @@ play_game_done:
         ;
     }
 
-    left_panel.x = position.x - 32.0f;
-    left_panel.y = position.y + 32.0f;
+    left_panel = position;
+    left_panel.x -= 32.0f;
+    left_panel.y += 32.0f;
     static highscore_button_t back_button;
     back_button.label = menu_label_back;
     back_button.enabled =
@@ -517,14 +522,14 @@ play_game_done:
                 for (reset_index = 0; reset_index < 384; ++reset_index) {
                     creature_pool[reset_index].active = 0;
                 }
-                quest_stage_minor = highscore_return_quest_stage_minor;
-                quest_stage_major = highscore_return_quest_stage_major;
                 player_overlay_suppressed_latch = 1;
                 config_blob.game_mode = highscore_return_game_mode_id;
+                quest_stage_major = highscore_return_quest_stage_major;
+                quest_stage_minor = highscore_return_quest_stage_minor;
                 config_blob.hardcore = highscore_return_hardcore_flag;
                 ui_transition_direction = 0;
                 game_state_pending =
-                    highscore_return_game_mode_id == GAME_MODE_QUEST
+                    config_blob.game_mode == GAME_MODE_QUEST
                     ? GAME_STATE_QUEST_RESULTS
                     : GAME_STATE_GAME_OVER;
             } else {
@@ -536,15 +541,16 @@ play_game_done:
 
     highscore_vec2_t right_panel =
         *(highscore_vec2_t *)&ui_element_slot_33.pos_x
-        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x;
-    right_panel += highscore_vec2_t(300.0f, 40.0f);
-    position.x =
-        ui_element_slot_33.render_offset_x - 16.0f + right_panel.x - 224.0f;
-    position.y = right_panel.y + 10.0f;
+        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x
+        + highscore_vec2_t(300.0f, 40.0f);
+    position = right_panel;
+    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;
+    position.y += 10.0f;
     highscore_vec2_t notice_position(
         position.x + 32.0f, position.y + 364.0f);
-    right_panel.x = position.x - 16.0f;
-    right_panel.y = position.y - 8.0f;
+    right_panel = position;
+    right_panel.y -= 8.0f;
+    right_panel.x -= 16.0f;
     if (config_blob.screen_width <= 640) {
         right_panel.x += 10.0f;
         position.x -= 8.0f;
@@ -554,9 +560,12 @@ play_game_done:
     if ((online_sync_status == 6 || online_sync_status == 0)
         && selected_score == -1) {
         right_panel.y += 2.0f;
+        float filter_x;
         {
             static highscore_checkbox_t online_scores_checkbox;
-            highscore_vec2_t widget_position(right_panel.x, right_panel.y);
+            double x_value = right_panel.x;
+            filter_x = (float)x_value;
+            highscore_vec2_t widget_position((float)x_value, right_panel.y);
             online_scores_checkbox.label = "Show internet scores";
             online_scores_checkbox.checked = config_blob.show_online_scores;
             if (ui_checkbox_update(
@@ -579,40 +588,46 @@ play_game_done:
         date_filter_list.item_count = 4;
         date_filter_list.items = date_items;
 
+        float label_x;
         if (game_is_full_version()) {
+            memcpy(&label_x, &right_panel.x, sizeof label_x);
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, 0.800000012f);
             grim_interface_ptr->grim_draw_text_small(
-                right_panel.x,
-                right_panel.y + 100.0f,
+                label_x,
+                right_panel.y + 114.0f - 14.0f,
                 "Selected score list:");
             highscore_vec2_t profile_position(
-                right_panel.x, right_panel.y + 114.0f);
+                filter_x, right_panel.y + 114.0f);
             ui_profile_menu_update(
                 (float *)&profile_position, ui_profile_menu_enabled);
+        } else {
+            memcpy(&label_x, &right_panel.x, sizeof label_x);
         }
 
         date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.800000012f);
         float option_label_y = right_panel.y + 28.0f - 14.0f;
+        float player_count_x = right_panel.x + 2.0f;
         grim_interface_ptr->grim_draw_text_small(
-            right_panel.x + 2.0f,
+            player_count_x,
             option_label_y,
             "Number of players");
+        float game_mode_x = right_panel.x + 130.0f;
         grim_interface_ptr->grim_draw_text_small(
-            right_panel.x + 130.0f,
+            game_mode_x,
             option_label_y,
             "Game mode");
         grim_interface_ptr->grim_draw_text_small(
-            right_panel.x,
-            right_panel.y + 56.0f,
+            label_x,
+            right_panel.y + 70.0f - 14.0f,
             "Show scores:");
 
         int selected;
         {
             highscore_vec2_t date_position(
-                right_panel.x, right_panel.y + 70.0f);
+                filter_x, right_panel.y + 70.0f);
             selected = ui_list_widget_update(
                 (float *)&date_position,
                 (ui_list_widget_t *)&date_filter_list);
@@ -637,19 +652,20 @@ play_game_done:
             }
         }
 
+        float player_count_y;
+        char *player_count_items[2] = {
+            "1 player",
+            "2 players",
+        };
         static highscore_list_widget_t player_count_list;
         {
-            char *player_count_items[2] = {
-                "1 player",
-                "2 players",
-            };
             player_count_list.items = player_count_items;
             player_count_list.item_count = 2;
             player_count_list.selected_index = config_blob.player_count - 1;
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, 0.810000002f);
-            highscore_vec2_t player_count_position(
-                right_panel.x + 2.0f, right_panel.y + 28.0f);
+            player_count_y = right_panel.y + 28.0f;
+            highscore_vec2_t player_count_position(player_count_x, player_count_y);
             selected = ui_list_widget_update(
                 (float *)&player_count_position,
                 (ui_list_widget_t *)&player_count_list);
@@ -711,10 +727,10 @@ play_game_done:
 
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.810000002f);
-        highscore_vec2_t game_mode_position(
-            right_panel.x + 130.0f, right_panel.y + 28.0f);
+        right_panel.x = game_mode_x;
+        right_panel.y = player_count_y;
         selected = ui_list_widget_update(
-            (float *)&game_mode_position,
+            (float *)&right_panel,
             (ui_list_widget_t *)&game_mode_list);
         if ((online_sync_status == 6 || online_sync_status == 0)
             && selected > -2
@@ -751,11 +767,9 @@ play_game_done:
         if (online_sync_status == 1) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 tooltip_x, tooltip_y, "Connecting...");
-            Sleep(10);
         } else if (online_sync_status == 2) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 tooltip_x, tooltip_y, "Connected...");
-            Sleep(10);
         } else if (online_sync_status == 3) {
             if (game_is_full_version()) {
                 grim_interface_ptr->grim_draw_text_small_fmt(
@@ -764,11 +778,9 @@ play_game_done:
                 grim_interface_ptr->grim_draw_text_small_fmt(
                     tooltip_x, tooltip_y, "Connected....");
             }
-            Sleep(10);
         } else if (online_sync_status == 4) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 tooltip_x, tooltip_y, "Receiving internet scores...");
-            Sleep(10);
         } else if (online_sync_status == 5) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 tooltip_x, tooltip_y, "Done...");
@@ -777,7 +789,6 @@ play_game_done:
                 crt_beginthread(statistics_update_check_worker, 0, 0);
                 highscore_post_sync_update_check_latch = 1;
             }
-            Sleep(10);
         } else if (online_sync_status == 6) {
             grim_interface_ptr->grim_set_color(1.0f, 0.5f, 0.5f, 1.0f);
             grim_interface_ptr->grim_draw_text_small_fmt(
@@ -785,10 +796,8 @@ play_game_done:
                 tooltip_y,
                 "Failed to update scores. Try again later.");
             highscore_batch_sync_mode = 0;
-            Sleep(10);
-        } else {
-            Sleep(10);
         }
+        Sleep(10);
     } else {
         if (grim_interface_ptr->grim_is_key_down(1)) {
             highscore_batch_sync_mode = 0;
@@ -802,10 +811,10 @@ play_game_done:
             }
             static unsigned char batch_hardcore;
             batch_hardcore = hardcore;
-            int stage = ++highscore_batch_sync_stage_index;
+            int &stage = highscore_batch_sync_stage_index;
+            ++stage;
             if (hardcore && stage < 0) {
                 stage = 0;
-                highscore_batch_sync_stage_index = 0;
             } else {
                 if (stage == -3) {
                     config_blob.game_mode = GAME_MODE_SURVIVAL;
@@ -814,7 +823,6 @@ play_game_done:
                 } else if (stage == -1) {
                     if (config_blob.player_count > 1) {
                         stage = 0;
-                        highscore_batch_sync_stage_index = 0;
                     }
                     config_blob.game_mode = GAME_MODE_TYPO_SHOOTER;
                 }

@@ -2,6 +2,28 @@
 
 Native target: `crimsonland.exe` at `0x004423d0` (8,026 bytes).
 
+## Complete stock match — 2026-09-22
+
+The canonical scratch now matches all **2,004 instructions / 8,026 bytes**,
+with references **639/0/0** and both exactness flags true. The independent
+[complete proof](../../evidence/highscore-float-owners-2026-09-22/README.md)
+checks every positional reference and literal branch destination without
+excluding any range or adding bindings/aliases. Source SHA:
+`2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f`.
+
+The final controls retain a `double` intermediate for the checkbox's shared
+X coordinate and the separator's centering offset. The first preserves the
+floating copy graph; the second adds a compiler round marker that moves the
+81-node scheduling boundary, recovering the native interface-load/push/store
+order. Three preserving C2 traces and ten stock controls reproduce the cause.
+Compiler endpoint interventions are diagnostic only; the canonical object
+comes from unmodified `msvc6.5 /O2 /GB /W3 /GR-`.
+
+The notes below are historical evidence and negative controls. Their WIP
+counts and residual descriptions are superseded by the complete proof above.
+
+## Earlier recovery notes
+
 Live Binary Ninja disassembly and decompilation recover the complete high-score
 screen callback:
 

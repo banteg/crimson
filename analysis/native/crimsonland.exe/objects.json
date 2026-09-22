@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "125ee255be5c69e5aa92bfb5d1a5d3e7cf87b7ab2bf954411a88245060eb8c99",
+  "audit_digest": "3c6af7fe6a705ba272487b847347f8b1ebc06a5184c11f706131c09788915089",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -79712,12 +79712,12 @@
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd"
+          "sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f"
         },
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075"
+          "sha256": "8bc1ee5c791d2602733505ea8019084c0c9aa9be6b740bb8c8b56577ba762dec"
         },
         {
           "path": "tools/match/cl.sh",
@@ -79762,7 +79762,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/highscore_screen_update/scratch.conf",
-      "config_sha256": "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075",
+      "config_sha256": "8bc1ee5c791d2602733505ea8019084c0c9aa9be6b740bb8c8b56577ba762dec",
       "effective_end": 4473642,
       "end": 4473642,
       "function": "highscore_screen_update",
@@ -79770,27 +79770,27 @@
         {
           "address": 4465616,
           "canonical_config": "tools/match/scratches/highscore_screen_update/scratch.conf",
-          "canonical_config_sha256": "f17569fe31c845dcef6b5eb32e988cec2ec253886e7997dd2b7b23f66bf37075",
+          "canonical_config_sha256": "8bc1ee5c791d2602733505ea8019084c0c9aa9be6b740bb8c8b56577ba762dec",
           "canonical_scratch": "tools/match/scratches/highscore_screen_update",
           "canonical_source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-          "canonical_source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+          "canonical_source_sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f",
           "effective_end": 4473642,
           "end": 4473642,
-          "experiment_epoch": "503563ddf5f38c0884d9e2e62a93bc9b876a2b6e17ec1fa4e9e0f6b9f8bb73a9",
+          "experiment_epoch": "dadc1b7790688a0d8d93ae7f0725b00f326a52bf5fe5f324961b9ab3619fa885",
           "function": "highscore_screen_update",
           "match": {
-            "body_byte_exact": false,
-            "candidate_instructions": 1978,
-            "masked_mismatches": 4,
-            "masked_ok": 592,
+            "body_byte_exact": true,
+            "candidate_instructions": 2004,
+            "masked_mismatches": 0,
+            "masked_ok": 639,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 45,
-            "ratio": 0.797086891009543,
-            "state": "wip",
+            "prefix_instructions": 2004,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 2004
           },
           "object_function_symbol": "_highscore_screen_update",
@@ -80059,26 +80059,26 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
-        "candidate_instructions": 1978,
-        "masked_mismatches": 4,
-        "masked_ok": 592,
+        "body_byte_exact": true,
+        "candidate_instructions": 2004,
+        "masked_mismatches": 0,
+        "masked_ok": 639,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 45,
-        "ratio": 0.797086891009543,
-        "state": "wip",
+        "prefix_instructions": 2004,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 2004
       },
       "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
       "object_function_symbol": "_highscore_screen_update",
-      "object_sha256": "1a853c23f85eef4b02adf4db12e92b012c073fb57afe02f669895caf33b00593",
+      "object_sha256": "0c694ed3b350c1bc8d3dd050ebff87335e4374fbcf3c81c47cec96185e6e3751",
       "scratch": "tools/match/scratches/highscore_screen_update",
       "source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "source_sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f",
       "target_size": 8026,
       "translation_unit": {
         "config": "tools/native/translation_units/crimsonland.exe.json",
@@ -87509,8 +87509,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 665,
-    "wip": 6
+    "match": 666,
+    "wip": 5
   },
   "translation_units": {
     "cluster_count": 28,
