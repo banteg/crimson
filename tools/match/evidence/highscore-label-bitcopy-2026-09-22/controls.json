@@ -1,0 +1,799 @@
+{
+  "schema": 1,
+  "controls": [
+    {
+      "name": "canonical",
+      "parent": "previous/baseline",
+      "parent_source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "edits": [],
+      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "normalized_coff_sha256": "1a853c23f85eef4b02adf4db12e92b012c073fb57afe02f669895caf33b00593",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "scalar-snapshot",
+      "parent": "previous/filter-copy-after-constructor",
+      "parent_source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "edits": [],
+      "source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "normalized_coff_sha256": "25efedf5fc783b31091f275b1ba712f1e2e008915af26544514b1aa0ac453b61",
+      "body_sha256": "03441b8f9aa1c448dde1c32c3d800bdd66f01578c01b7bf8ea88106ba8acf796",
+      "instructions": 2007,
+      "ratio": 0.8706058339566193,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "scalar-branches",
+      "parent": "previous/label-branch-definitions",
+      "parent_source_sha256": "2a3296b684ed8fdfd82c89aa69125ff752ebc617b21e7657bee330419d221c91",
+      "edits": [],
+      "source_sha256": "2a3296b684ed8fdfd82c89aa69125ff752ebc617b21e7657bee330419d221c91",
+      "normalized_coff_sha256": "299cba1bf9cd40dc85433298db595d16c0057be3a7e988335fdc2a464a394ba4",
+      "body_sha256": "b827e27c32b085e77510afaa0591d4e5d021b6cb6f97cbe60b2b98970c909e87",
+      "instructions": 2010,
+      "ratio": 0.7922272047832586,
+      "prefix": 1,
+      "references": [
+        578,
+        0,
+        12
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-copy-after-constructor-label-copy",
+      "parent": "previous/filter-copy-after-constructor",
+      "parent_source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "edits": [
+        {
+          "start": 585,
+          "end": 586,
+          "lines": [
+            "        highscore_vec2_t label_position = right_panel;\n"
+          ]
+        },
+        {
+          "start": 590,
+          "end": 591,
+          "lines": [
+            "                label_position.x,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "            label_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "4126d70bf0f83f7840c1d7b227e2f928792d13bcfd90c3f047feadf86ddce9cf",
+      "normalized_coff_sha256": "2ce8914b69d759e77ed2b627ea13b7574425f37498d40db7123bcb26e325b49b",
+      "body_sha256": "35373f1bc1b33a5032bfc2c6f2c20b62fc00e56943f4a7252e01c22287f776b7",
+      "instructions": 2007,
+      "ratio": 0.8835701819995013,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-copy-after-constructor-label-assign",
+      "parent": "previous/filter-copy-after-constructor",
+      "parent_source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "edits": [
+        {
+          "start": 585,
+          "end": 586,
+          "lines": [
+            "        highscore_vec2_t label_position; label_position = right_panel;\n"
+          ]
+        },
+        {
+          "start": 590,
+          "end": 591,
+          "lines": [
+            "                label_position.x,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "            label_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "8ca7802ce00604c2cfeab1481a8eaeca24377d2c91b5f32e923f2c862eb74336",
+      "normalized_coff_sha256": "2ce8914b69d759e77ed2b627ea13b7574425f37498d40db7123bcb26e325b49b",
+      "body_sha256": "35373f1bc1b33a5032bfc2c6f2c20b62fc00e56943f4a7252e01c22287f776b7",
+      "instructions": 2007,
+      "ratio": 0.8835701819995013,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-copy-after-constructor-label-member-init",
+      "parent": "previous/filter-copy-after-constructor",
+      "parent_source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "edits": [
+        {
+          "start": 585,
+          "end": 586,
+          "lines": [
+            "        highscore_vec2_t label_position(right_panel.x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 590,
+          "end": 591,
+          "lines": [
+            "                label_position.x,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "            label_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "5f302568ecee826018add1aa4efb09f248b11c55c4ac9ced439450b9f9156a0b",
+      "normalized_coff_sha256": "581bd39efa499e34157fca0c3728c4c7f02686a2ee7055507b90d3e9f18f487c",
+      "body_sha256": "c5436ce302709213f851ab59f947bf2fb48538f3da3dfa5f83bb7868fe2a7e09",
+      "instructions": 2007,
+      "ratio": 0.8641236599351783,
+      "prefix": 8,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-copy-after-constructor-label-word-copy",
+      "parent": "previous/filter-copy-after-constructor",
+      "parent_source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "edits": [
+        {
+          "start": 585,
+          "end": 586,
+          "lines": [
+            "        float label_x; memcpy(&label_x, &right_panel.x, sizeof label_x);\n"
+          ]
+        }
+      ],
+      "source_sha256": "8e8beabb5b6036d89f3e09bf6a5ad825a31b29e53fa51183285021888b6c19c9",
+      "normalized_coff_sha256": "35642ed5fe59250d9bfe095a38e6e5726d1e4357c773dc7ed0e5b411f00610f3",
+      "body_sha256": "61ff2643edda6da319d9e2a399aab88e9adc563555450d0622ea6bec9e56cd9f",
+      "instructions": 2005,
+      "ratio": 0.8840109753055625,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "byte-full-version-label-copy",
+      "parent": "previous/byte-full-version",
+      "parent_source_sha256": "efa1b1a6cc3db18aa422970d705f826bdb0489d0e778a96870d48b65ee4d4b2c",
+      "edits": [
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "        highscore_vec2_t label_position = right_panel;\n"
+          ]
+        },
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                label_position.x,\n"
+          ]
+        },
+        {
+          "start": 615,
+          "end": 616,
+          "lines": [
+            "            label_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "2faf71e1d6cd22ca124391a464b9c3e9837d5311a9569616a53d710908384b7c",
+      "normalized_coff_sha256": "b3094b16f61fe7e4cff77a4f42341b5ed52cc4de066fec3b90c47a91649343c5",
+      "body_sha256": "2d3ed5ba762059c0177a0f398453f558eefd70045b444205042b8f863b251db0",
+      "instructions": 1994,
+      "ratio": 0.8134067033516759,
+      "prefix": 8,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "byte-full-version-label-assign",
+      "parent": "previous/byte-full-version",
+      "parent_source_sha256": "efa1b1a6cc3db18aa422970d705f826bdb0489d0e778a96870d48b65ee4d4b2c",
+      "edits": [
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "        highscore_vec2_t label_position; label_position = right_panel;\n"
+          ]
+        },
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                label_position.x,\n"
+          ]
+        },
+        {
+          "start": 615,
+          "end": 616,
+          "lines": [
+            "            label_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "53b431072a8608e06566581656384f2381c96cf7286a5fc34a279801c4103b28",
+      "normalized_coff_sha256": "b3094b16f61fe7e4cff77a4f42341b5ed52cc4de066fec3b90c47a91649343c5",
+      "body_sha256": "2d3ed5ba762059c0177a0f398453f558eefd70045b444205042b8f863b251db0",
+      "instructions": 1994,
+      "ratio": 0.8134067033516759,
+      "prefix": 8,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "byte-full-version-label-member-init",
+      "parent": "previous/byte-full-version",
+      "parent_source_sha256": "efa1b1a6cc3db18aa422970d705f826bdb0489d0e778a96870d48b65ee4d4b2c",
+      "edits": [
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "        highscore_vec2_t label_position(right_panel.x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 591,
+          "end": 592,
+          "lines": [
+            "                label_position.x,\n"
+          ]
+        },
+        {
+          "start": 615,
+          "end": 616,
+          "lines": [
+            "            label_position.x,\n"
+          ]
+        }
+      ],
+      "source_sha256": "130cebf044c8b8cc4be4c0ba53cb124aff6cafe19aaebbdf16ae8dc5481a5ac1",
+      "normalized_coff_sha256": "abbd75855a91925172463b0f717f8517b960b2fa3c2b5d8cad15923ab3e0442a",
+      "body_sha256": "caec174b4af44fd18b02f253277b44f727b076ed0db9c0b204350386d6dce129",
+      "instructions": 2008,
+      "ratio": 0.8569292123629113,
+      "prefix": 8,
+      "references": [
+        608,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "byte-full-version-label-word-copy",
+      "parent": "previous/byte-full-version",
+      "parent_source_sha256": "efa1b1a6cc3db18aa422970d705f826bdb0489d0e778a96870d48b65ee4d4b2c",
+      "edits": [
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "        float label_x; memcpy(&label_x, &right_panel.x, sizeof label_x);\n"
+          ]
+        }
+      ],
+      "source_sha256": "f609bd28acd501505ab81d14bd2b6d5f85310771ac624fc05652ba476cc3fe98",
+      "normalized_coff_sha256": "60dd0cfcbb94de34c310f7e9c5c0f7502b8b16363ebdb055a977b06cdbd8f1d9",
+      "body_sha256": "41afcc01916063bea0be61ed08758e32f05a2a774c919d9c12454bd1e32e9ef8",
+      "instructions": 1992,
+      "ratio": 0.8438438438438438,
+      "prefix": 108,
+      "references": [
+        603,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "post-version-label-word-copy-bool",
+      "parent": "filter-copy-after-constructor-label-word-copy",
+      "parent_source_sha256": "8e8beabb5b6036d89f3e09bf6a5ad825a31b29e53fa51183285021888b6c19c9",
+      "edits": [
+        {
+          "start": 585,
+          "end": 585,
+          "lines": [
+            "        bool full_version = game_is_full_version();\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "        if (full_version) {\n"
+          ]
+        }
+      ],
+      "source_sha256": "f2461390a2c524cf8bc61e59e42e59e30ad88c65ec8b2a37e7c38cb0e80557a0",
+      "normalized_coff_sha256": "c47139f95fe77572c6fc3e82f91ef1021a262042427ddc060e7d2d951b95dfe8",
+      "body_sha256": "3d848a3b8ca78559ba36a0a39d2e9c56b3d46b4bb9d17fb1b2afb73e21844e34",
+      "instructions": 2007,
+      "ratio": 0.8840688107703815,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "post-version-label-word-copy-unsigned-char",
+      "parent": "filter-copy-after-constructor-label-word-copy",
+      "parent_source_sha256": "8e8beabb5b6036d89f3e09bf6a5ad825a31b29e53fa51183285021888b6c19c9",
+      "edits": [
+        {
+          "start": 585,
+          "end": 585,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "        if (full_version) {\n"
+          ]
+        }
+      ],
+      "source_sha256": "4806d7dade1583dfabde3be5ff77d9eed613d367e64e8bc88aa30f10ad1ceed3",
+      "normalized_coff_sha256": "a3cb466b8b2fb0e11e9da760d678b8c5b7d801bd78c2b35ac96b68fd33c0dfd9",
+      "body_sha256": "77c59b16691166f9215d66683fb727980d19e6b2509a266a925ebda067dfe4d0",
+      "instructions": 1991,
+      "ratio": 0.8540675844806007,
+      "prefix": 108,
+      "references": [
+        611,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "branch-defined-label-word-copy",
+      "parent": "previous/label-branch-definitions",
+      "parent_source_sha256": "2a3296b684ed8fdfd82c89aa69125ff752ebc617b21e7657bee330419d221c91",
+      "edits": [
+        {
+          "start": 587,
+          "end": 588,
+          "lines": [
+            "            memcpy(&label_x, &right_panel.x, sizeof label_x);\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            memcpy(&label_x, &right_panel.x, sizeof label_x);\n"
+          ]
+        }
+      ],
+      "source_sha256": "00acfaca9e99a87b57219ab0a4de91ba4b1570b647fa0574f30d0e1b98dcd082",
+      "normalized_coff_sha256": "7f164d7e1e0d9cf28587b6ced68efdfea116920c4168d04d178c8102fb54c8be",
+      "body_sha256": "6633f09d309bb54650875f37f5e146eac6041059c7733fc7b591d04f92454dc1",
+      "instructions": 2006,
+      "ratio": 0.9187032418952619,
+      "prefix": 43,
+      "references": [
+        591,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "branch-copy-constructor-snapshot",
+      "parent": "branch-defined-label-word-copy",
+      "parent_source_sha256": "00acfaca9e99a87b57219ab0a4de91ba4b1570b647fa0574f30d0e1b98dcd082",
+      "edits": [
+        {
+          "start": 561,
+          "end": 563,
+          "lines": [
+            "            highscore_vec2_t widget_position(right_panel.x, right_panel.y);\n",
+            "            filter_x = widget_position.x;\n"
+          ]
+        }
+      ],
+      "source_sha256": "0341f6282d7c55890396718e96e0e4d485d63317199525ba45a1abd12a6e7bc2",
+      "normalized_coff_sha256": "a9caa620e4f9e145b734b22eed81d297c2a20da1093ebab031523702781279eb",
+      "body_sha256": "f71a8bffd58f3462acf621bb3e0edbc01e771d67c43cebb9767bd1511ed95ff0",
+      "instructions": 2005,
+      "ratio": 0.8845098528311299,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "branch-copy-sdk-clear",
+      "parent": "branch-copy-constructor-snapshot",
+      "parent_source_sha256": "0341f6282d7c55890396718e96e0e4d485d63317199525ba45a1abd12a6e7bc2",
+      "edits": [
+        {
+          "start": 96,
+          "end": 101,
+          "lines": [
+            "        memset(column_offsets, 0, 8);\n"
+          ]
+        }
+      ],
+      "source_sha256": "96369503ef5172e5fbdffa0015c9da3b175c11b0777bcc333c6df6713dcd238d",
+      "normalized_coff_sha256": "f0b1db0374ad086c65fadc91d579c07c1a8986a504a9b8b7351c3819f4d68cbc",
+      "body_sha256": "117aeabec906ca8cdcec1f3b0a94de35d1ba29a96af1f46fb5fa4fdb30a2d356",
+      "instructions": 2004,
+      "ratio": 0.8952095808383234,
+      "prefix": 108,
+      "references": [
+        624,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "branch-copy-direct-clear",
+      "parent": "branch-copy-constructor-snapshot",
+      "parent_source_sha256": "0341f6282d7c55890396718e96e0e4d485d63317199525ba45a1abd12a6e7bc2",
+      "edits": [
+        {
+          "start": 96,
+          "end": 101,
+          "lines": [
+            "        column_offsets[0] = column_offsets[1] = 0;\n"
+          ]
+        }
+      ],
+      "source_sha256": "965771d14cabf51ce7edee349fcadf49d22c03fbccc008ba17bdc0fe70c882dd",
+      "normalized_coff_sha256": "75e20c02f6b0c889052f1b15fc741ce8890d2a2f7bfcbb0eeb5d7ad7b3cc9b2f",
+      "body_sha256": "7ad203cf6ecb8aac22705414af65ea0ef30d1bec19aefa6f9e04ad6b4f41b60e",
+      "instructions": 2003,
+      "ratio": 0.877963563763414,
+      "prefix": 108,
+      "references": [
+        617,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "native-boundaries-gate-1-items-0",
+      "parent": "branch-copy-sdk-clear",
+      "parent_source_sha256": "96369503ef5172e5fbdffa0015c9da3b175c11b0777bcc333c6df6713dcd238d",
+      "edits": [
+        {
+          "start": 460,
+          "end": 463,
+          "lines": []
+        },
+        {
+          "start": 465,
+          "end": 466,
+          "lines": [
+            "            if (config_blob.hardcore) {\n",
+            "                if (quest_unlock_index_full < quest_index) {\n",
+            "                    goto play_game_done;\n",
+            "                }\n",
+            "            } else if (quest_unlock_index < quest_index) {\n"
+          ]
+        }
+      ],
+      "source_sha256": "270f6a8692f1aca45217971781a809133a80373049c0832b2178453a4d9bf41b",
+      "normalized_coff_sha256": "25320bb2278e80cc5ba6e45863b0643a270d59833510f07efa88f8049a26978a",
+      "body_sha256": "2248b32f6682ac3306f67cf81f2388d92e74f3b88172bcdd63f76e586d99bbf2",
+      "instructions": 1990,
+      "ratio": 0.8497746619929895,
+      "prefix": 108,
+      "references": [
+        611,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "native-boundaries-gate-0-items-1",
+      "parent": "branch-copy-sdk-clear",
+      "parent_source_sha256": "96369503ef5172e5fbdffa0015c9da3b175c11b0777bcc333c6df6713dcd238d",
+      "edits": [
+        {
+          "start": 646,
+          "end": 646,
+          "lines": [
+            "        char *player_count_items[2] = {\n",
+            "            \"1 player\",\n",
+            "            \"2 players\",\n",
+            "        };\n"
+          ]
+        },
+        {
+          "start": 648,
+          "end": 652,
+          "lines": []
+        }
+      ],
+      "source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "normalized_coff_sha256": "7558a432f5a5f5d42025f1baa584fcf016437c4722f488061a871cfa7ae70438",
+      "body_sha256": "e2ba4046f4c401684fc2277a1f8d68d34ae48dc31acb7a47458827982a256075",
+      "instructions": 2004,
+      "ratio": 0.8982035928143712,
+      "prefix": 108,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "native-boundaries-gate-1-items-1",
+      "parent": "native-boundaries-gate-1-items-0",
+      "parent_source_sha256": "270f6a8692f1aca45217971781a809133a80373049c0832b2178453a4d9bf41b",
+      "edits": [
+        {
+          "start": 647,
+          "end": 647,
+          "lines": [
+            "        char *player_count_items[2] = {\n",
+            "            \"1 player\",\n",
+            "            \"2 players\",\n",
+            "        };\n"
+          ]
+        },
+        {
+          "start": 649,
+          "end": 653,
+          "lines": []
+        }
+      ],
+      "source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "normalized_coff_sha256": "810675b2c47d622fe40191a4f575b421d2aa3ec9d38a8e9a5c2ee40fa0584b7b",
+      "body_sha256": "f1f668414cc95da3028068608b3579a92694341a4a3682e1aa0f15e1d7141b74",
+      "instructions": 1990,
+      "ratio": 0.8527791687531296,
+      "prefix": 108,
+      "references": [
+        613,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "predicate-ternary-gate",
+      "parent": "native-boundaries-gate-0-items-1",
+      "parent_source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "edits": [
+        {
+          "start": 460,
+          "end": 463,
+          "lines": []
+        },
+        {
+          "start": 465,
+          "end": 466,
+          "lines": [
+            "            if (config_blob.hardcore\n",
+            "                ? quest_unlock_index_full < quest_index\n",
+            "                : quest_unlock_index < quest_index) {\n"
+          ]
+        }
+      ],
+      "source_sha256": "90349b29ae7e0f1995a9372036c8b841f0b99acbbc7c3ca45cd48bae8c18c77a",
+      "normalized_coff_sha256": "65726cf5ba214eca945547d812aa294c8e5866b40460a4e3f01ac261079a0951",
+      "body_sha256": "849ea0f29528cdf43df7b940b8bcd78403ae678acbb88d2d1802ce3dc528aa1c",
+      "instructions": 2012,
+      "ratio": 0.8954183266932271,
+      "prefix": 108,
+      "references": [
+        625,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "online-argument-snapshot",
+      "parent": "native-boundaries-gate-0-items-1",
+      "parent_source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "edits": [
+        {
+          "start": 557,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position(filter_x = right_panel.x, right_panel.y);\n"
+          ]
+        }
+      ],
+      "source_sha256": "af7683f6d09b1727451f3c82c417d44b8dcbdb515d948684dfdc5238fd20b8a2",
+      "normalized_coff_sha256": "af01d35031749d2e2828287444eb5edce623af63af699a23709cd105611ebc51",
+      "body_sha256": "d95292248fd55ceefe646d9ea69e85d6878f4d32bde4fcc974187a244eebd47c",
+      "instructions": 2005,
+      "ratio": 0.9329009728111749,
+      "prefix": 43,
+      "references": [
+        601,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "float-before-constructor",
+      "parent": "native-boundaries-gate-0-items-1",
+      "parent_source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "edits": [
+        {
+          "start": 557,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        }
+      ],
+      "source_sha256": "dfcb7347d26d262194daf63432c7ddafa54b826ec9b427a2b2c2fa02419cee8c",
+      "normalized_coff_sha256": "af01d35031749d2e2828287444eb5edce623af63af699a23709cd105611ebc51",
+      "body_sha256": "d95292248fd55ceefe646d9ea69e85d6878f4d32bde4fcc974187a244eebd47c",
+      "instructions": 2005,
+      "ratio": 0.9329009728111749,
+      "prefix": 43,
+      "references": [
+        601,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "float-chain-members",
+      "parent": "native-boundaries-gate-0-items-1",
+      "parent_source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "edits": [
+        {
+          "start": 557,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            widget_position.x = filter_x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        }
+      ],
+      "source_sha256": "fb864965845f0967764f9feb2f82a9b246b898562a94b4d03e310ecb93a0e413",
+      "normalized_coff_sha256": "fc0083d1eec385d85c0fb94f2af96d04ae45f6cb663b9968af4d61063854b2c4",
+      "body_sha256": "304d413646c52d52602e49fad3062199b9f742eb92da46b0753e34868a5d1046",
+      "instructions": 2005,
+      "ratio": 0.8815165876777251,
+      "prefix": 43,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "float-reverse-chain",
+      "parent": "native-boundaries-gate-0-items-1",
+      "parent_source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "edits": [
+        {
+          "start": 557,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            filter_x = widget_position.x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        }
+      ],
+      "source_sha256": "59bf0217f2fddaccd93e51ad65856b7efb4c815fc978dba571222eccf73b42a7",
+      "normalized_coff_sha256": "f5b8f6ab33a3043ffc89ac5177c67f60f7440a2b79f4f6e4c194ebdfc49bf65a",
+      "body_sha256": "a0e7a4fdf046cc5c6580e8d6199e6c951a631dfb1dee36fc7a91805e833b35f0",
+      "instructions": 2005,
+      "ratio": 0.8815165876777251,
+      "prefix": 43,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    }
+  ]
+}

@@ -1,0 +1,2609 @@
+{
+  "schema": 1,
+  "scope": "score-row-and-two-label-argument-windows-only",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "compiled": {
+    "normalized_coff_sha256": "7558a432f5a5f5d42025f1baa584fcf016437c4722f488061a871cfa7ae70438",
+    "body_sha256": "e2ba4046f4c401684fc2277a1f8d68d34ae48dc31acb7a47458827982a256075",
+    "instructions": 2004,
+    "ratio": 0.8982035928143712,
+    "prefix": 108,
+    "references": [
+      626,
+      0,
+      4
+    ],
+    "exact": false,
+    "body_byte_exact": false
+  },
+  "audits": {
+    "row-and-buttons": {
+      "native_window": [
+        4467533,
+        4468572
+      ],
+      "candidate_window": [
+        1917,
+        2956
+      ],
+      "instructions": 270,
+      "bytes": 1039,
+      "relocations": [
+        {
+          "offset": 1923,
+          "address": 4649520,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008041"
+          ]
+        },
+        {
+          "offset": 1948,
+          "address": 5032244,
+          "kind": 6,
+          "shared": [
+            "address:0x004cc934"
+          ]
+        },
+        {
+          "offset": 1954,
+          "address": 4649508,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000803f"
+          ]
+        },
+        {
+          "offset": 1959,
+          "address": 4729684,
+          "kind": 6,
+          "shared": [
+            "address:0x00482b54"
+          ]
+        },
+        {
+          "offset": 1967,
+          "address": 5033320,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccd68"
+          ]
+        },
+        {
+          "offset": 2037,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 2082,
+          "address": 4688920,
+          "kind": 6,
+          "shared": [
+            "string:\"%d\\t%d\\t%s\""
+          ]
+        },
+        {
+          "offset": 2130,
+          "address": 4688920,
+          "kind": 6,
+          "shared": [
+            "string:\"%d\\t%d\\t%s\""
+          ]
+        },
+        {
+          "offset": 2156,
+          "address": 4688920,
+          "kind": 6,
+          "shared": [
+            "string:\"%d\\t%d\\t%s\""
+          ]
+        },
+        {
+          "offset": 2162,
+          "address": 4593383,
+          "kind": 20,
+          "shared": [
+            "address:0x004616e7",
+            "name:crt_sprintf"
+          ]
+        },
+        {
+          "offset": 2195,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 2223,
+          "address": 4649520,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008041"
+          ]
+        },
+        {
+          "offset": 2228,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2243,
+          "address": 4473760,
+          "kind": 6,
+          "shared": [
+            "address:0x004443a0"
+          ]
+        },
+        {
+          "offset": 2252,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2260,
+          "address": 5032664,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccad8"
+          ]
+        },
+        {
+          "offset": 2266,
+          "address": 5032668,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccadc"
+          ]
+        },
+        {
+          "offset": 2271,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 2284,
+          "address": 4649576,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000041"
+          ]
+        },
+        {
+          "offset": 2297,
+          "address": 5032700,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccafc"
+          ]
+        },
+        {
+          "offset": 2315,
+          "address": 5032648,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccac8"
+          ]
+        },
+        {
+          "offset": 2326,
+          "address": 5032696,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccaf8"
+          ]
+        },
+        {
+          "offset": 2330,
+          "address": 5032244,
+          "kind": 6,
+          "shared": [
+            "address:0x004cc934"
+          ]
+        },
+        {
+          "offset": 2335,
+          "address": 5032660,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccad4"
+          ]
+        },
+        {
+          "offset": 2340,
+          "address": 5032664,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccad8"
+          ]
+        },
+        {
+          "offset": 2346,
+          "address": 5032668,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccadc"
+          ]
+        },
+        {
+          "offset": 2356,
+          "address": 5032672,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccae0"
+          ]
+        },
+        {
+          "offset": 2365,
+          "address": 4447984,
+          "kind": 20,
+          "shared": [
+            "address:0x0043def0",
+            "name:ui_scrollbar_update"
+          ]
+        },
+        {
+          "offset": 2375,
+          "address": 4650896,
+          "kind": 6,
+          "shared": [
+            "bytes4:00002843"
+          ]
+        },
+        {
+          "offset": 2380,
+          "address": 5032652,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccacc"
+          ]
+        },
+        {
+          "offset": 2408,
+          "address": 4649520,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008041"
+          ]
+        },
+        {
+          "offset": 2431,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2446,
+          "address": 4649508,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000803f"
+          ]
+        },
+        {
+          "offset": 2451,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2471,
+          "address": 4473744,
+          "kind": 6,
+          "shared": [
+            "address:0x00444390"
+          ]
+        },
+        {
+          "offset": 2477,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2483,
+          "address": 5050238,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f7e"
+          ]
+        },
+        {
+          "offset": 2490,
+          "address": 5050253,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f8d"
+          ]
+        },
+        {
+          "offset": 2497,
+          "address": 5050252,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f8c"
+          ]
+        },
+        {
+          "offset": 2504,
+          "address": 5050248,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f88"
+          ]
+        },
+        {
+          "offset": 2514,
+          "address": 5050244,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f84"
+          ]
+        },
+        {
+          "offset": 2520,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2526,
+          "address": 5050236,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f7c"
+          ]
+        },
+        {
+          "offset": 2533,
+          "address": 5050237,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f7d"
+          ]
+        },
+        {
+          "offset": 2540,
+          "address": 5050240,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f80"
+          ]
+        },
+        {
+          "offset": 2545,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 2557,
+          "address": 4316992,
+          "kind": 20,
+          "shared": [
+            "address:0x0041df40",
+            "name:game_is_full_version"
+          ]
+        },
+        {
+          "offset": 2563,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2584,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2601,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2605,
+          "address": 4688904,
+          "kind": 6,
+          "shared": [
+            "string:\"Update scores\""
+          ]
+        },
+        {
+          "offset": 2613,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2617,
+          "address": 4688892,
+          "kind": 6,
+          "shared": [
+            "string:\"Update all\""
+          ]
+        },
+        {
+          "offset": 2632,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2647,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2651,
+          "address": 4688876,
+          "kind": 6,
+          "shared": [
+            "string:\"Receive scores\""
+          ]
+        },
+        {
+          "offset": 2659,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2663,
+          "address": 4688864,
+          "kind": 6,
+          "shared": [
+            "string:\"Receive all\""
+          ]
+        },
+        {
+          "offset": 2672,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2678,
+          "address": 4450352,
+          "kind": 20,
+          "shared": [
+            "address:0x0043e830",
+            "name:ui_button_update"
+          ]
+        },
+        {
+          "offset": 2690,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 2705,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2722,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2738,
+          "address": 5050873,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f9",
+            "name:highscore_batch_sync_mode"
+          ]
+        },
+        {
+          "offset": 2746,
+          "address": 5032792,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccb58",
+            "name:highscore_batch_sync_stage_index"
+          ]
+        },
+        {
+          "offset": 2756,
+          "address": 5050873,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f9",
+            "name:highscore_batch_sync_mode"
+          ]
+        },
+        {
+          "offset": 2764,
+          "address": 4378848,
+          "kind": 6,
+          "shared": [
+            "address:0x0042d0e0",
+            "name:highscore_sync_worker"
+          ]
+        },
+        {
+          "offset": 2770,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 2779,
+          "address": 4596287,
+          "kind": 20,
+          "shared": [
+            "address:0x0046223f",
+            "name:crt_beginthread"
+          ]
+        },
+        {
+          "offset": 2792,
+          "address": 4650892,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000442"
+          ]
+        },
+        {
+          "offset": 2798,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2815,
+          "address": 4473728,
+          "kind": 6,
+          "shared": [
+            "address:0x00444380"
+          ]
+        },
+        {
+          "offset": 2823,
+          "address": 5050126,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0e"
+          ]
+        },
+        {
+          "offset": 2830,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2836,
+          "address": 5050141,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f1d"
+          ]
+        },
+        {
+          "offset": 2843,
+          "address": 5050140,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f1c"
+          ]
+        },
+        {
+          "offset": 2850,
+          "address": 5050136,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f18"
+          ]
+        },
+        {
+          "offset": 2860,
+          "address": 5050132,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f14"
+          ]
+        },
+        {
+          "offset": 2866,
+          "address": 5050120,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f08"
+          ]
+        },
+        {
+          "offset": 2872,
+          "address": 5050124,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0c"
+          ]
+        },
+        {
+          "offset": 2879,
+          "address": 5050125,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0d"
+          ]
+        },
+        {
+          "offset": 2886,
+          "address": 5050128,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f10"
+          ]
+        },
+        {
+          "offset": 2891,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 2899,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 2905,
+          "address": 5050120,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f08"
+          ]
+        },
+        {
+          "offset": 2909,
+          "address": 4661996,
+          "kind": 6,
+          "shared": [
+            "string:\"Play a game\""
+          ]
+        },
+        {
+          "offset": 2922,
+          "address": 5050126,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0e"
+          ]
+        },
+        {
+          "offset": 2931,
+          "address": 5050126,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0e"
+          ]
+        },
+        {
+          "offset": 2941,
+          "address": 5050120,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f08"
+          ]
+        },
+        {
+          "offset": 2947,
+          "address": 4450352,
+          "kind": 20,
+          "shared": [
+            "address:0x0043e830",
+            "name:ui_button_update"
+          ]
+        }
+      ],
+      "local_branches": [
+        [
+          4467614,
+          4467833,
+          1998,
+          2217
+        ],
+        [
+          4467624,
+          4467652,
+          2008,
+          2036
+        ],
+        [
+          4467628,
+          4467634,
+          2012,
+          2018
+        ],
+        [
+          4467632,
+          4467652,
+          2016,
+          2036
+        ],
+        [
+          4467660,
+          4467705,
+          2044,
+          2089
+        ],
+        [
+          4467703,
+          4467777,
+          2087,
+          2161
+        ],
+        [
+          4467708,
+          4467753,
+          2092,
+          2137
+        ],
+        [
+          4467751,
+          4467777,
+          2135,
+          2161
+        ],
+        [
+          4467827,
+          4467591,
+          2211,
+          1975
+        ],
+        [
+          4467854,
+          4467894,
+          2238,
+          2278
+        ],
+        [
+          4468012,
+          4468018,
+          2396,
+          2402
+        ],
+        [
+          4468077,
+          4468170,
+          2461,
+          2554
+        ],
+        [
+          4468168,
+          4468172,
+          2552,
+          2556
+        ],
+        [
+          4468189,
+          4468239,
+          2573,
+          2623
+        ],
+        [
+          4468196,
+          4468227,
+          2580,
+          2611
+        ],
+        [
+          4468213,
+          4468227,
+          2597,
+          2611
+        ],
+        [
+          4468225,
+          4468283,
+          2609,
+          2667
+        ],
+        [
+          4468237,
+          4468283,
+          2621,
+          2667
+        ],
+        [
+          4468244,
+          4468273,
+          2628,
+          2657
+        ],
+        [
+          4468271,
+          4468283,
+          2655,
+          2667
+        ],
+        [
+          4468303,
+          4468402,
+          2687,
+          2786
+        ],
+        [
+          4468312,
+          4468319,
+          2696,
+          2703
+        ],
+        [
+          4468317,
+          4468402,
+          2701,
+          2786
+        ],
+        [
+          4468334,
+          4468360,
+          2718,
+          2744
+        ],
+        [
+          4468351,
+          4468360,
+          2735,
+          2744
+        ],
+        [
+          4468358,
+          4468377,
+          2742,
+          2761
+        ],
+        [
+          4468426,
+          4468514,
+          2810,
+          2898
+        ],
+        [
+          4468532,
+          4468545,
+          2916,
+          2929
+        ],
+        [
+          4468543,
+          4468552,
+          2927,
+          2936
+        ]
+      ],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "3629be0c4914968420b2369b9aff0397376bc2e4c1fdb908be9ba9a3457d6f30",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    },
+    "filters": {
+      "native_window": [
+        4469705,
+        4471080
+      ],
+      "candidate_window": [
+        4085,
+        5460
+      ],
+      "instructions": 323,
+      "bytes": 1375,
+      "relocations": [
+        {
+          "offset": 4091,
+          "address": 5049736,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d88"
+          ]
+        },
+        {
+          "offset": 4100,
+          "address": 5049732,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d84"
+          ]
+        },
+        {
+          "offset": 4105,
+          "address": 4316992,
+          "kind": 20,
+          "shared": [
+            "address:0x0041df40",
+            "name:game_is_full_version"
+          ]
+        },
+        {
+          "offset": 4119,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4157,
+          "address": 4650720,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e442"
+          ]
+        },
+        {
+          "offset": 4163,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4168,
+          "address": 4688752,
+          "kind": 6,
+          "shared": [
+            "string:\"Selected score list:\""
+          ]
+        },
+        {
+          "offset": 4175,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        },
+        {
+          "offset": 4197,
+          "address": 4650720,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e442"
+          ]
+        },
+        {
+          "offset": 4203,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 4226,
+          "address": 4473792,
+          "kind": 20,
+          "shared": [
+            "address:0x004443c0",
+            "name:ui_profile_menu_update"
+          ]
+        },
+        {
+          "offset": 4236,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4242,
+          "address": 5049728,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d80"
+          ]
+        },
+        {
+          "offset": 4248,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4286,
+          "address": 4649696,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e041"
+          ]
+        },
+        {
+          "offset": 4292,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4297,
+          "address": 4688732,
+          "kind": 6,
+          "shared": [
+            "string:\"Number of players\""
+          ]
+        },
+        {
+          "offset": 4303,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        },
+        {
+          "offset": 4319,
+          "address": 4649528,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000040"
+          ]
+        },
+        {
+          "offset": 4349,
+          "address": 4650876,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000243"
+          ]
+        },
+        {
+          "offset": 4355,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4360,
+          "address": 4688720,
+          "kind": 6,
+          "shared": [
+            "string:\"Game mode\""
+          ]
+        },
+        {
+          "offset": 4388,
+          "address": 4650176,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008c42"
+          ]
+        },
+        {
+          "offset": 4394,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4399,
+          "address": 4688704,
+          "kind": 6,
+          "shared": [
+            "string:\"Show scores:\""
+          ]
+        },
+        {
+          "offset": 4406,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        },
+        {
+          "offset": 4428,
+          "address": 4650176,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008c42"
+          ]
+        },
+        {
+          "offset": 4441,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 4455,
+          "address": 4452288,
+          "kind": 20,
+          "shared": [
+            "address:0x0043efc0",
+            "name:ui_list_widget_update"
+          ]
+        },
+        {
+          "offset": 4462,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 4484,
+          "address": 4481072,
+          "kind": 20,
+          "shared": [
+            "address:0x00446030",
+            "name:input_primary_just_pressed"
+          ]
+        },
+        {
+          "offset": 4494,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4511,
+          "address": 5049724,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d7c"
+          ]
+        },
+        {
+          "offset": 4526,
+          "address": 5049724,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d7c"
+          ]
+        },
+        {
+          "offset": 4534,
+          "address": 5049728,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d80"
+          ]
+        },
+        {
+          "offset": 4542,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4556,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4570,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4584,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4590,
+          "address": 4438016,
+          "kind": 20,
+          "shared": [
+            "address:0x0043b800",
+            "name:highscore_load_table_thunk"
+          ]
+        },
+        {
+          "offset": 4595,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 4603,
+          "address": 4688692,
+          "kind": 6,
+          "shared": [
+            "string:\"1 player\""
+          ]
+        },
+        {
+          "offset": 4613,
+          "address": 4688680,
+          "kind": 6,
+          "shared": [
+            "string:\"2 players\""
+          ]
+        },
+        {
+          "offset": 4622,
+          "address": 4473664,
+          "kind": 6,
+          "shared": [
+            "address:0x00444340"
+          ]
+        },
+        {
+          "offset": 4631,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 4638,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 4644,
+          "address": 5050304,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fc0"
+          ]
+        },
+        {
+          "offset": 4650,
+          "address": 5050300,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fbc"
+          ]
+        },
+        {
+          "offset": 4657,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 4663,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 4669,
+          "address": 5050296,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb8"
+          ]
+        },
+        {
+          "offset": 4675,
+          "address": 5050292,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb4"
+          ]
+        },
+        {
+          "offset": 4680,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 4688,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 4694,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4710,
+          "address": 5050292,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb4"
+          ]
+        },
+        {
+          "offset": 4716,
+          "address": 5050296,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb8"
+          ]
+        },
+        {
+          "offset": 4725,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 4758,
+          "address": 4649696,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e041"
+          ]
+        },
+        {
+          "offset": 4771,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 4789,
+          "address": 4452288,
+          "kind": 20,
+          "shared": [
+            "address:0x0043efc0",
+            "name:ui_list_widget_update"
+          ]
+        },
+        {
+          "offset": 4796,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 4818,
+          "address": 4481072,
+          "kind": 20,
+          "shared": [
+            "address:0x00446030",
+            "name:input_primary_just_pressed"
+          ]
+        },
+        {
+          "offset": 4828,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4845,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 4861,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 4869,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 4876,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 4881,
+          "address": 4438016,
+          "kind": 20,
+          "shared": [
+            "address:0x0043b800",
+            "name:highscore_load_table_thunk"
+          ]
+        },
+        {
+          "offset": 4893,
+          "address": 5050200,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f58"
+          ]
+        },
+        {
+          "offset": 4904,
+          "address": 4666892,
+          "kind": 6,
+          "shared": [
+            "string:\"Quests\""
+          ]
+        },
+        {
+          "offset": 4917,
+          "address": 4666900,
+          "kind": 6,
+          "shared": [
+            "string:\"Rush\""
+          ]
+        },
+        {
+          "offset": 4928,
+          "address": 4661420,
+          "kind": 6,
+          "shared": [
+            "string:\"Survival\""
+          ]
+        },
+        {
+          "offset": 4939,
+          "address": 4661392,
+          "kind": 6,
+          "shared": [
+            "string:\"Typ'o'Shooter\""
+          ]
+        },
+        {
+          "offset": 4955,
+          "address": 4473648,
+          "kind": 6,
+          "shared": [
+            "address:0x00444330"
+          ]
+        },
+        {
+          "offset": 4964,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 4971,
+          "address": 5050200,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f58"
+          ]
+        },
+        {
+          "offset": 4977,
+          "address": 5033208,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf8"
+          ]
+        },
+        {
+          "offset": 4983,
+          "address": 5033204,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf4"
+          ]
+        },
+        {
+          "offset": 4990,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 4996,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5002,
+          "address": 5033200,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf0"
+          ]
+        },
+        {
+          "offset": 5008,
+          "address": 5033196,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccec"
+          ]
+        },
+        {
+          "offset": 5013,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 5033,
+          "address": 5033196,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccec"
+          ]
+        },
+        {
+          "offset": 5038,
+          "address": 4747316,
+          "kind": 6,
+          "shared": [
+            "address:0x00487034",
+            "name:quest_unlock_index"
+          ]
+        },
+        {
+          "offset": 5047,
+          "address": 5033200,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf0"
+          ]
+        },
+        {
+          "offset": 5055,
+          "address": 5033200,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf0"
+          ]
+        },
+        {
+          "offset": 5064,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5070,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5079,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 5086,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5095,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5102,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 5109,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 5117,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5124,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 5131,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5138,
+          "address": 5049724,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d7c"
+          ]
+        },
+        {
+          "offset": 5146,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5153,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5159,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5165,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 5176,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5193,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5205,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5218,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5224,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 5231,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 5237,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 5243,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 5288,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5302,
+          "address": 4452288,
+          "kind": 20,
+          "shared": [
+            "address:0x0043efc0",
+            "name:ui_list_widget_update"
+          ]
+        },
+        {
+          "offset": 5309,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 5335,
+          "address": 4481072,
+          "kind": 20,
+          "shared": [
+            "address:0x00446030",
+            "name:input_primary_just_pressed"
+          ]
+        },
+        {
+          "offset": 5345,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 5362,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5374,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5382,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5390,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5406,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5423,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5436,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5446,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 5451,
+          "address": 4438016,
+          "kind": 20,
+          "shared": [
+            "address:0x0043b800",
+            "name:highscore_load_table_thunk"
+          ]
+        },
+        {
+          "offset": 5456,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        }
+      ],
+      "local_branches": [
+        [
+          4469735,
+          4469853,
+          4115,
+          4233
+        ],
+        [
+          4470092,
+          4470098,
+          4472,
+          4478
+        ],
+        [
+          4470096,
+          4470214,
+          4476,
+          4594
+        ],
+        [
+          4470101,
+          4470214,
+          4481,
+          4594
+        ],
+        [
+          4470110,
+          4470129,
+          4490,
+          4509
+        ],
+        [
+          4470127,
+          4470214,
+          4507,
+          4594
+        ],
+        [
+          4470150,
+          4470214,
+          4530,
+          4594
+        ],
+        [
+          4470158,
+          4470169,
+          4538,
+          4549
+        ],
+        [
+          4470167,
+          4470209,
+          4547,
+          4589
+        ],
+        [
+          4470172,
+          4470183,
+          4552,
+          4563
+        ],
+        [
+          4470181,
+          4470209,
+          4561,
+          4589
+        ],
+        [
+          4470186,
+          4470197,
+          4566,
+          4577
+        ],
+        [
+          4470195,
+          4470209,
+          4575,
+          4589
+        ],
+        [
+          4470200,
+          4470209,
+          4580,
+          4589
+        ],
+        [
+          4470237,
+          4470307,
+          4617,
+          4687
+        ],
+        [
+          4470426,
+          4470432,
+          4806,
+          4812
+        ],
+        [
+          4470430,
+          4470507,
+          4810,
+          4887
+        ],
+        [
+          4470435,
+          4470507,
+          4815,
+          4887
+        ],
+        [
+          4470444,
+          4470463,
+          4824,
+          4843
+        ],
+        [
+          4470461,
+          4470507,
+          4841,
+          4887
+        ],
+        [
+          4470485,
+          4470512,
+          4865,
+          4892
+        ],
+        [
+          4470505,
+          4470512,
+          4885,
+          4892
+        ],
+        [
+          4470570,
+          4470640,
+          4950,
+          5020
+        ],
+        [
+          4470671,
+          4470683,
+          5051,
+          5063
+        ],
+        [
+          4470711,
+          4470727,
+          5091,
+          5107
+        ],
+        [
+          4470733,
+          4470756,
+          5113,
+          5136
+        ],
+        [
+          4470762,
+          4470778,
+          5142,
+          5158
+        ],
+        [
+          4470792,
+          4470806,
+          5172,
+          5186
+        ],
+        [
+          4470804,
+          4470861,
+          5184,
+          5241
+        ],
+        [
+          4470809,
+          4470819,
+          5189,
+          5199
+        ],
+        [
+          4470817,
+          4470861,
+          5197,
+          5241
+        ],
+        [
+          4470821,
+          4470831,
+          5201,
+          5211
+        ],
+        [
+          4470829,
+          4470861,
+          5209,
+          5241
+        ],
+        [
+          4470834,
+          4470861,
+          5214,
+          5241
+        ],
+        [
+          4470939,
+          4470949,
+          5319,
+          5329
+        ],
+        [
+          4470943,
+          4471080,
+          5323,
+          5460
+        ],
+        [
+          4470952,
+          4471080,
+          5332,
+          5460
+        ],
+        [
+          4470961,
+          4470980,
+          5341,
+          5360
+        ],
+        [
+          4470978,
+          4471075,
+          5358,
+          5455
+        ],
+        [
+          4470998,
+          4471075,
+          5378,
+          5455
+        ],
+        [
+          4471006,
+          4471020,
+          5386,
+          5400
+        ],
+        [
+          4471018,
+          4471070,
+          5398,
+          5450
+        ],
+        [
+          4471022,
+          4471036,
+          5402,
+          5416
+        ],
+        [
+          4471034,
+          4471070,
+          5414,
+          5450
+        ],
+        [
+          4471039,
+          4471049,
+          5419,
+          5429
+        ],
+        [
+          4471047,
+          4471070,
+          5427,
+          5450
+        ],
+        [
+          4471052,
+          4471070,
+          5432,
+          5450
+        ]
+      ],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "1aac14ee9a5cbe7e97cf48a88d21fd7265d7c60bc8bb3bb2ddb1d578391fd379",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    },
+    "profile-label": {
+      "native_window": [
+        4469771,
+        4469805
+      ],
+      "candidate_window": [
+        4151,
+        4185
+      ],
+      "instructions": 9,
+      "bytes": 34,
+      "relocations": [
+        {
+          "offset": 4157,
+          "address": 4650720,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e442"
+          ]
+        },
+        {
+          "offset": 4163,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4168,
+          "address": 4688752,
+          "kind": 6,
+          "shared": [
+            "string:\"Selected score list:\""
+          ]
+        },
+        {
+          "offset": 4175,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        }
+      ],
+      "local_branches": [],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "353984ecf7f91be32a37568d4a1daf973b3f6521acc24a53801d45d38fef667a",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    },
+    "date-label": {
+      "native_window": [
+        4470002,
+        4470036
+      ],
+      "candidate_window": [
+        4382,
+        4416
+      ],
+      "instructions": 9,
+      "bytes": 34,
+      "relocations": [
+        {
+          "offset": 4388,
+          "address": 4650176,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008c42"
+          ]
+        },
+        {
+          "offset": 4394,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4399,
+          "address": 4688704,
+          "kind": 6,
+          "shared": [
+            "string:\"Show scores:\""
+          ]
+        },
+        {
+          "offset": 4406,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        }
+      ],
+      "local_branches": [],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "49b4e4ad4782729be392a39672fe4a1501bdc19a9dc845dcfc826696d4ab7d09",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    }
+  },
+  "row_fixtures": 1576,
+  "row_fixture_sha256": "08e3db3a107dc7f17188f3ab4517edeaca26753f6e193ec13334d2db8ccb56ee",
+  "row_outputs_sha256": {
+    "native": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2",
+    "witness": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2"
+  },
+  "label_y_fixture_sha256": "438c84e502192c61c9f3c6be0ef02caefa20a158c0a2c1559f6492772e5b1eb8",
+  "label_control_words": {
+    "profile": {
+      "0x7f": {
+        "precision": 24,
+        "rounding": 0,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "09c2f30f3984e56dc5182c7024b6efdefce589ee435a8c68c51bfe4d1a02ddcb"
+      },
+      "0x47f": {
+        "precision": 24,
+        "rounding": 1,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "3e46b45dc5dc3b7ee8dd8bcf243fe5b8ed49a71012cc40d3ce020e81c77bb313"
+      },
+      "0x87f": {
+        "precision": 24,
+        "rounding": 2,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "b5a63a5430de2158b3198ca1cbfc42081a8a83e8ff8491f1664e3104f6621cfe"
+      },
+      "0xc7f": {
+        "precision": 24,
+        "rounding": 3,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "b6034ab45f5b737fe5f7090f1c1f2cf34e781e13379ebd12514ed4729e4d8c0d"
+      },
+      "0x27f": {
+        "precision": 53,
+        "rounding": 0,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "30cb76ee3358b3208a5100220fde88316d2c50e3c2bc060beef96cad22dbecca"
+      },
+      "0x67f": {
+        "precision": 53,
+        "rounding": 1,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "4842890540d0c5099b63296acb7447f70c3c6dad36487d1d4958e99d1bf9e6ba"
+      },
+      "0xa7f": {
+        "precision": 53,
+        "rounding": 2,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "fc698ee892594d8a148751063c278d26fe671426a30d1384888936183711b9a5"
+      },
+      "0xe7f": {
+        "precision": 53,
+        "rounding": 3,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "6a7232632f84df4a10545bfde7a8f899b89ed725cc7fe38eba4646c178cec32f"
+      },
+      "0x37f": {
+        "precision": 64,
+        "rounding": 0,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "30cb76ee3358b3208a5100220fde88316d2c50e3c2bc060beef96cad22dbecca"
+      },
+      "0x77f": {
+        "precision": 64,
+        "rounding": 1,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "4842890540d0c5099b63296acb7447f70c3c6dad36487d1d4958e99d1bf9e6ba"
+      },
+      "0xb7f": {
+        "precision": 64,
+        "rounding": 2,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "fc698ee892594d8a148751063c278d26fe671426a30d1384888936183711b9a5"
+      },
+      "0xf7f": {
+        "precision": 64,
+        "rounding": 3,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "6a7232632f84df4a10545bfde7a8f899b89ed725cc7fe38eba4646c178cec32f"
+      }
+    },
+    "date": {
+      "0x7f": {
+        "precision": 24,
+        "rounding": 0,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "f8c4f289af39fd551fc38ec6efec1eb776ef63c354c7e06a0e3f9d530f07b1df"
+      },
+      "0x47f": {
+        "precision": 24,
+        "rounding": 1,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "c1bade548f64ca9590fbda3929e53b20b4efb669a76c5fb111fe39f3771611df"
+      },
+      "0x87f": {
+        "precision": 24,
+        "rounding": 2,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "12750ac399229711fbb2f3490fc31c661662d7ff8f928bcad57224ea4d8b0eee"
+      },
+      "0xc7f": {
+        "precision": 24,
+        "rounding": 3,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "caffe98fa437468a8a32b36ebe9551703dcbe4c6594291ad8da2716da189f76a"
+      },
+      "0x27f": {
+        "precision": 53,
+        "rounding": 0,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "23b17658e5d4312c9b770bae3f20b81280e9fb2d58571ef71296b9bc84cd2b45"
+      },
+      "0x67f": {
+        "precision": 53,
+        "rounding": 1,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "4679f0fe0efeb587ef07c5f651f0d22d9403445b013e8d9310b546c3ce9c7651"
+      },
+      "0xa7f": {
+        "precision": 53,
+        "rounding": 2,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "139feb03a8f923fc4c408f585fcbf6b3ccbd7d28c8603df7b48ed66b589ee9d9"
+      },
+      "0xe7f": {
+        "precision": 53,
+        "rounding": 3,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "3d70cfa1d799829a7775a3b98b55c8375359e9b436b77638a08357ddce727c23"
+      },
+      "0x37f": {
+        "precision": 64,
+        "rounding": 0,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "23b17658e5d4312c9b770bae3f20b81280e9fb2d58571ef71296b9bc84cd2b45"
+      },
+      "0x77f": {
+        "precision": 64,
+        "rounding": 1,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "4679f0fe0efeb587ef07c5f651f0d22d9403445b013e8d9310b546c3ce9c7651"
+      },
+      "0xb7f": {
+        "precision": 64,
+        "rounding": 2,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "139feb03a8f923fc4c408f585fcbf6b3ccbd7d28c8603df7b48ed66b589ee9d9"
+      },
+      "0xf7f": {
+        "precision": 64,
+        "rounding": 3,
+        "y_inputs": 275,
+        "x_inputs": 3,
+        "outputs_sha256": "3d70cfa1d799829a7775a3b98b55c8375359e9b436b77638a08357ddce727c23"
+      }
+    }
+  },
+  "label_fixtures": 19800,
+  "corruptions_rejected": [
+    "wrong-prefix-mask",
+    "unsigned-division-shift",
+    "ninety-nine-row-limit",
+    "profile-wrong-constant",
+    "date-wrong-constant"
+  ],
+  "input_hashes": {
+    "controls.py": "f1095d8da168a3c69f7c618e12ef5e3a7496ec2c363c9bb45bfa6d1f39f9eef5",
+    "controls.json": "9be6c55d60e626e9c54f38930582b096aae3447eb99bfbbb49e79ac9fc52f31e",
+    "verify.py": "15e54661e8e389ca7f4f8dda23bd53827230dc6e76964d67f68e05f9ba1bd265",
+    "verify_execution.py": "dc9f0754ce503dd77361c8fd2e5279d11cc4b6f0f8da55891567000ac194c18f"
+  },
+  "dependency_hashes": {
+    "highscore-prefix-lifetime-2026-09-22/region.py": "cf282725e2054a3c96659fbfe3a8755e17814d206c09f579f772571de2cb794d",
+    "highscore-prefix-lifetime-2026-09-22/verify_execution.py": "71fe888e34322e62faf7e63dba6aa0329eefa05dc6f47706b173367b2365c380",
+    "highscore-float-reuse-2026-09-22/verify_execution.py": "45620b6c0b2e73b2cb5b6385f531a77cbfac325f1a0fd6fb5d0505e4cf7af603"
+  }
+}

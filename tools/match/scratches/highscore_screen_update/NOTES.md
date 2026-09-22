@@ -720,3 +720,34 @@ union access are body-neutral; copy/adjust forms retain wrong ownership;
 negative subtraction or double casts prevent reuse with the wrong native
 operations or operand widths. This family now has a causal stop rule rather
 than another score-based claim of exhaustion.
+
+## Stock label-copy and filter regions (2026-09-22)
+
+The [label-bitcopy evidence](../../evidence/highscore-label-bitcopy-2026-09-22/README.md)
+recovers native's post-version-call EDI load through a four-byte member copy
+defined in both version branches. Unlike a named float assignment, it removes
+the extra stack home; unlike a two-member vector copy, it does not copy unused
+Y. The cumulative source combines this with the eight-byte scrollbar clear
+and player-item initialization immediately before its own static guard.
+
+Two continuous stock-compiled regions now agree in all encoded bytes after
+reference resolution: 1,039 bytes from score-row construction through the play
+button, and 1,375 bytes of filters. No stack binding or compiler intervention
+is used. All 216 references and 76 local branches are audited; both 34-byte
+label argument windows are included in the filter region. Six corrupted byte
+or reference controls are rejected.
+
+All 25 source controls rebuild with full ESP propagation and checked COFF
+hashes. Native/witness row execution passes 1,576 fixtures including ordered
+writes. Both labels pass 19,800 fixtures against native and exact-rational
+rounding models, across 12 x87 modes and three X bit patterns. Five execution
+corruptions are rejected. Full widgets/callbacks and surrounding UI are not
+executed, so this is still partial evidence.
+
+The witness has 2,004/2,004 instructions, prefix 108, references 626/0/4 and both
+exactness flags false. It is not promoted; canonical inputs remain unchanged.
+The higher-scoring online-argument snapshot changes stack homes and is not
+selected. Restoring the quest gate's two native comparison arms changes the
+earlier row's allocation and later shared tails. The next causal question is
+why that gate change perturbs distant allocation while the now-verified
+regions must be preserved, not another score-only source sweep.

@@ -1,0 +1,2875 @@
+{
+  "schema": 1,
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "witness": "native-boundaries-gate-0-items-1",
+  "scope": "stock-source-region-byte-proof-not-full-UI-execution",
+  "compiled": {
+    "canonical": {
+      "normalized_coff_sha256": "1a853c23f85eef4b02adf4db12e92b012c073fb57afe02f669895caf33b00593",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1978 total 1978 conflicts [] returns [(1977, 0)]"
+      ]
+    },
+    "scalar-snapshot": {
+      "normalized_coff_sha256": "25efedf5fc783b31091f275b1ba712f1e2e008915af26544514b1aa0ac453b61",
+      "body_sha256": "03441b8f9aa1c448dde1c32c3d800bdd66f01578c01b7bf8ea88106ba8acf796",
+      "instructions": 2007,
+      "ratio": 0.8706058339566193,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2007 total 2007 conflicts [] returns [(2006, 0)]"
+      ]
+    },
+    "scalar-branches": {
+      "normalized_coff_sha256": "299cba1bf9cd40dc85433298db595d16c0057be3a7e988335fdc2a464a394ba4",
+      "body_sha256": "b827e27c32b085e77510afaa0591d4e5d021b6cb6f97cbe60b2b98970c909e87",
+      "instructions": 2010,
+      "ratio": 0.7922272047832586,
+      "prefix": 1,
+      "references": [
+        578,
+        0,
+        12
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2010 total 2010 conflicts [] returns [(2009, 0)]"
+      ]
+    },
+    "filter-copy-after-constructor-label-copy": {
+      "normalized_coff_sha256": "2ce8914b69d759e77ed2b627ea13b7574425f37498d40db7123bcb26e325b49b",
+      "body_sha256": "35373f1bc1b33a5032bfc2c6f2c20b62fc00e56943f4a7252e01c22287f776b7",
+      "instructions": 2007,
+      "ratio": 0.8835701819995013,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2007 total 2007 conflicts [] returns [(2006, 0)]"
+      ]
+    },
+    "filter-copy-after-constructor-label-assign": {
+      "normalized_coff_sha256": "2ce8914b69d759e77ed2b627ea13b7574425f37498d40db7123bcb26e325b49b",
+      "body_sha256": "35373f1bc1b33a5032bfc2c6f2c20b62fc00e56943f4a7252e01c22287f776b7",
+      "instructions": 2007,
+      "ratio": 0.8835701819995013,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2007 total 2007 conflicts [] returns [(2006, 0)]"
+      ]
+    },
+    "filter-copy-after-constructor-label-member-init": {
+      "normalized_coff_sha256": "581bd39efa499e34157fca0c3728c4c7f02686a2ee7055507b90d3e9f18f487c",
+      "body_sha256": "c5436ce302709213f851ab59f947bf2fb48538f3da3dfa5f83bb7868fe2a7e09",
+      "instructions": 2007,
+      "ratio": 0.8641236599351783,
+      "prefix": 8,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2007 total 2007 conflicts [] returns [(2006, 0)]"
+      ]
+    },
+    "filter-copy-after-constructor-label-word-copy": {
+      "normalized_coff_sha256": "35642ed5fe59250d9bfe095a38e6e5726d1e4357c773dc7ed0e5b411f00610f3",
+      "body_sha256": "61ff2643edda6da319d9e2a399aab88e9adc563555450d0622ea6bec9e56cd9f",
+      "instructions": 2005,
+      "ratio": 0.8840109753055625,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2005 total 2005 conflicts [] returns [(2004, 0)]"
+      ]
+    },
+    "byte-full-version-label-copy": {
+      "normalized_coff_sha256": "b3094b16f61fe7e4cff77a4f42341b5ed52cc4de066fec3b90c47a91649343c5",
+      "body_sha256": "2d3ed5ba762059c0177a0f398453f558eefd70045b444205042b8f863b251db0",
+      "instructions": 1994,
+      "ratio": 0.8134067033516759,
+      "prefix": 8,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1994 total 1994 conflicts [] returns [(1993, 0)]"
+      ]
+    },
+    "byte-full-version-label-assign": {
+      "normalized_coff_sha256": "b3094b16f61fe7e4cff77a4f42341b5ed52cc4de066fec3b90c47a91649343c5",
+      "body_sha256": "2d3ed5ba762059c0177a0f398453f558eefd70045b444205042b8f863b251db0",
+      "instructions": 1994,
+      "ratio": 0.8134067033516759,
+      "prefix": 8,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1994 total 1994 conflicts [] returns [(1993, 0)]"
+      ]
+    },
+    "byte-full-version-label-member-init": {
+      "normalized_coff_sha256": "abbd75855a91925172463b0f717f8517b960b2fa3c2b5d8cad15923ab3e0442a",
+      "body_sha256": "caec174b4af44fd18b02f253277b44f727b076ed0db9c0b204350386d6dce129",
+      "instructions": 2008,
+      "ratio": 0.8569292123629113,
+      "prefix": 8,
+      "references": [
+        608,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2008 total 2008 conflicts [] returns [(2007, 0)]"
+      ]
+    },
+    "byte-full-version-label-word-copy": {
+      "normalized_coff_sha256": "60dd0cfcbb94de34c310f7e9c5c0f7502b8b16363ebdb055a977b06cdbd8f1d9",
+      "body_sha256": "41afcc01916063bea0be61ed08758e32f05a2a774c919d9c12454bd1e32e9ef8",
+      "instructions": 1992,
+      "ratio": 0.8438438438438438,
+      "prefix": 108,
+      "references": [
+        603,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1992 total 1992 conflicts [] returns [(1991, 0)]"
+      ]
+    },
+    "post-version-label-word-copy-bool": {
+      "normalized_coff_sha256": "c47139f95fe77572c6fc3e82f91ef1021a262042427ddc060e7d2d951b95dfe8",
+      "body_sha256": "3d848a3b8ca78559ba36a0a39d2e9c56b3d46b4bb9d17fb1b2afb73e21844e34",
+      "instructions": 2007,
+      "ratio": 0.8840688107703815,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2007 total 2007 conflicts [] returns [(2006, 0)]"
+      ]
+    },
+    "post-version-label-word-copy-unsigned-char": {
+      "normalized_coff_sha256": "a3cb466b8b2fb0e11e9da760d678b8c5b7d801bd78c2b35ac96b68fd33c0dfd9",
+      "body_sha256": "77c59b16691166f9215d66683fb727980d19e6b2509a266a925ebda067dfe4d0",
+      "instructions": 1991,
+      "ratio": 0.8540675844806007,
+      "prefix": 108,
+      "references": [
+        611,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1991 total 1991 conflicts [] returns [(1990, 0)]"
+      ]
+    },
+    "branch-defined-label-word-copy": {
+      "normalized_coff_sha256": "7f164d7e1e0d9cf28587b6ced68efdfea116920c4168d04d178c8102fb54c8be",
+      "body_sha256": "6633f09d309bb54650875f37f5e146eac6041059c7733fc7b591d04f92454dc1",
+      "instructions": 2006,
+      "ratio": 0.9187032418952619,
+      "prefix": 43,
+      "references": [
+        591,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2006 total 2006 conflicts [] returns [(2005, 0)]"
+      ]
+    },
+    "branch-copy-constructor-snapshot": {
+      "normalized_coff_sha256": "a9caa620e4f9e145b734b22eed81d297c2a20da1093ebab031523702781279eb",
+      "body_sha256": "f71a8bffd58f3462acf621bb3e0edbc01e771d67c43cebb9767bd1511ed95ff0",
+      "instructions": 2005,
+      "ratio": 0.8845098528311299,
+      "prefix": 108,
+      "references": [
+        616,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2005 total 2005 conflicts [] returns [(2004, 0)]"
+      ]
+    },
+    "branch-copy-sdk-clear": {
+      "normalized_coff_sha256": "f0b1db0374ad086c65fadc91d579c07c1a8986a504a9b8b7351c3819f4d68cbc",
+      "body_sha256": "117aeabec906ca8cdcec1f3b0a94de35d1ba29a96af1f46fb5fa4fdb30a2d356",
+      "instructions": 2004,
+      "ratio": 0.8952095808383234,
+      "prefix": 108,
+      "references": [
+        624,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2004 total 2004 conflicts [] returns [(2003, 0)]"
+      ]
+    },
+    "branch-copy-direct-clear": {
+      "normalized_coff_sha256": "75e20c02f6b0c889052f1b15fc741ce8890d2a2f7bfcbb0eeb5d7ad7b3cc9b2f",
+      "body_sha256": "7ad203cf6ecb8aac22705414af65ea0ef30d1bec19aefa6f9e04ad6b4f41b60e",
+      "instructions": 2003,
+      "ratio": 0.877963563763414,
+      "prefix": 108,
+      "references": [
+        617,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2003 total 2003 conflicts [] returns [(2002, 0)]"
+      ]
+    },
+    "native-boundaries-gate-1-items-0": {
+      "normalized_coff_sha256": "25320bb2278e80cc5ba6e45863b0643a270d59833510f07efa88f8049a26978a",
+      "body_sha256": "2248b32f6682ac3306f67cf81f2388d92e74f3b88172bcdd63f76e586d99bbf2",
+      "instructions": 1990,
+      "ratio": 0.8497746619929895,
+      "prefix": 108,
+      "references": [
+        611,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1990 total 1990 conflicts [] returns [(1989, 0)]"
+      ]
+    },
+    "native-boundaries-gate-0-items-1": {
+      "normalized_coff_sha256": "7558a432f5a5f5d42025f1baa584fcf016437c4722f488061a871cfa7ae70438",
+      "body_sha256": "e2ba4046f4c401684fc2277a1f8d68d34ae48dc31acb7a47458827982a256075",
+      "instructions": 2004,
+      "ratio": 0.8982035928143712,
+      "prefix": 108,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2004 total 2004 conflicts [] returns [(2003, 0)]"
+      ]
+    },
+    "native-boundaries-gate-1-items-1": {
+      "normalized_coff_sha256": "810675b2c47d622fe40191a4f575b421d2aa3ec9d38a8e9a5c2ee40fa0584b7b",
+      "body_sha256": "f1f668414cc95da3028068608b3579a92694341a4a3682e1aa0f15e1d7141b74",
+      "instructions": 1990,
+      "ratio": 0.8527791687531296,
+      "prefix": 108,
+      "references": [
+        613,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 1990 total 1990 conflicts [] returns [(1989, 0)]"
+      ]
+    },
+    "predicate-ternary-gate": {
+      "normalized_coff_sha256": "65726cf5ba214eca945547d812aa294c8e5866b40460a4e3f01ac261079a0951",
+      "body_sha256": "849ea0f29528cdf43df7b940b8bcd78403ae678acbb88d2d1802ce3dc528aa1c",
+      "instructions": 2012,
+      "ratio": 0.8954183266932271,
+      "prefix": 108,
+      "references": [
+        625,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2012 total 2012 conflicts [] returns [(2011, 0)]"
+      ]
+    },
+    "online-argument-snapshot": {
+      "normalized_coff_sha256": "af01d35031749d2e2828287444eb5edce623af63af699a23709cd105611ebc51",
+      "body_sha256": "d95292248fd55ceefe646d9ea69e85d6878f4d32bde4fcc974187a244eebd47c",
+      "instructions": 2005,
+      "ratio": 0.9329009728111749,
+      "prefix": 43,
+      "references": [
+        601,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2005 total 2005 conflicts [] returns [(2004, 0)]"
+      ]
+    },
+    "float-before-constructor": {
+      "normalized_coff_sha256": "af01d35031749d2e2828287444eb5edce623af63af699a23709cd105611ebc51",
+      "body_sha256": "d95292248fd55ceefe646d9ea69e85d6878f4d32bde4fcc974187a244eebd47c",
+      "instructions": 2005,
+      "ratio": 0.9329009728111749,
+      "prefix": 43,
+      "references": [
+        601,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2005 total 2005 conflicts [] returns [(2004, 0)]"
+      ]
+    },
+    "float-chain-members": {
+      "normalized_coff_sha256": "fc0083d1eec385d85c0fb94f2af96d04ae45f6cb663b9968af4d61063854b2c4",
+      "body_sha256": "304d413646c52d52602e49fad3062199b9f742eb92da46b0753e34868a5d1046",
+      "instructions": 2005,
+      "ratio": 0.8815165876777251,
+      "prefix": 43,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2005 total 2005 conflicts [] returns [(2004, 0)]"
+      ]
+    },
+    "float-reverse-chain": {
+      "normalized_coff_sha256": "f5b8f6ab33a3043ffc89ac5177c67f60f7440a2b79f4f6e4c194ebdfc49bf65a",
+      "body_sha256": "a0e7a4fdf046cc5c6580e8d6199e6c951a631dfb1dee36fc7a91805e833b35f0",
+      "instructions": 2005,
+      "ratio": 0.8815165876777251,
+      "prefix": 43,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false,
+      "frame_check": [
+        "native reached 2004 total 2004 conflicts [] returns [(2003, 0)]",
+        "candidate reached 2005 total 2005 conflicts [] returns [(2004, 0)]"
+      ]
+    }
+  },
+  "whole_coff_equal_pairs": [
+    [
+      "filter-copy-after-constructor-label-copy",
+      "filter-copy-after-constructor-label-assign"
+    ],
+    [
+      "byte-full-version-label-copy",
+      "byte-full-version-label-assign"
+    ],
+    [
+      "online-argument-snapshot",
+      "float-before-constructor"
+    ]
+  ],
+  "audits": {
+    "row-and-buttons": {
+      "native_window": [
+        4467533,
+        4468572
+      ],
+      "candidate_window": [
+        1917,
+        2956
+      ],
+      "instructions": 270,
+      "bytes": 1039,
+      "relocations": [
+        {
+          "offset": 1923,
+          "address": 4649520,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008041"
+          ]
+        },
+        {
+          "offset": 1948,
+          "address": 5032244,
+          "kind": 6,
+          "shared": [
+            "address:0x004cc934"
+          ]
+        },
+        {
+          "offset": 1954,
+          "address": 4649508,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000803f"
+          ]
+        },
+        {
+          "offset": 1959,
+          "address": 4729684,
+          "kind": 6,
+          "shared": [
+            "address:0x00482b54"
+          ]
+        },
+        {
+          "offset": 1967,
+          "address": 5033320,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccd68"
+          ]
+        },
+        {
+          "offset": 2037,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 2082,
+          "address": 4688920,
+          "kind": 6,
+          "shared": [
+            "string:\"%d\\t%d\\t%s\""
+          ]
+        },
+        {
+          "offset": 2130,
+          "address": 4688920,
+          "kind": 6,
+          "shared": [
+            "string:\"%d\\t%d\\t%s\""
+          ]
+        },
+        {
+          "offset": 2156,
+          "address": 4688920,
+          "kind": 6,
+          "shared": [
+            "string:\"%d\\t%d\\t%s\""
+          ]
+        },
+        {
+          "offset": 2162,
+          "address": 4593383,
+          "kind": 20,
+          "shared": [
+            "address:0x004616e7",
+            "name:crt_sprintf"
+          ]
+        },
+        {
+          "offset": 2195,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 2223,
+          "address": 4649520,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008041"
+          ]
+        },
+        {
+          "offset": 2228,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2243,
+          "address": 4473760,
+          "kind": 6,
+          "shared": [
+            "address:0x004443a0"
+          ]
+        },
+        {
+          "offset": 2252,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2260,
+          "address": 5032664,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccad8"
+          ]
+        },
+        {
+          "offset": 2266,
+          "address": 5032668,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccadc"
+          ]
+        },
+        {
+          "offset": 2271,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 2284,
+          "address": 4649576,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000041"
+          ]
+        },
+        {
+          "offset": 2297,
+          "address": 5032700,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccafc"
+          ]
+        },
+        {
+          "offset": 2315,
+          "address": 5032648,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccac8"
+          ]
+        },
+        {
+          "offset": 2326,
+          "address": 5032696,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccaf8"
+          ]
+        },
+        {
+          "offset": 2330,
+          "address": 5032244,
+          "kind": 6,
+          "shared": [
+            "address:0x004cc934"
+          ]
+        },
+        {
+          "offset": 2335,
+          "address": 5032660,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccad4"
+          ]
+        },
+        {
+          "offset": 2340,
+          "address": 5032664,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccad8"
+          ]
+        },
+        {
+          "offset": 2346,
+          "address": 5032668,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccadc"
+          ]
+        },
+        {
+          "offset": 2356,
+          "address": 5032672,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccae0"
+          ]
+        },
+        {
+          "offset": 2365,
+          "address": 4447984,
+          "kind": 20,
+          "shared": [
+            "address:0x0043def0",
+            "name:ui_scrollbar_update"
+          ]
+        },
+        {
+          "offset": 2375,
+          "address": 4650896,
+          "kind": 6,
+          "shared": [
+            "bytes4:00002843"
+          ]
+        },
+        {
+          "offset": 2380,
+          "address": 5032652,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccacc"
+          ]
+        },
+        {
+          "offset": 2408,
+          "address": 4649520,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008041"
+          ]
+        },
+        {
+          "offset": 2431,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2446,
+          "address": 4649508,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000803f"
+          ]
+        },
+        {
+          "offset": 2451,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2471,
+          "address": 4473744,
+          "kind": 6,
+          "shared": [
+            "address:0x00444390"
+          ]
+        },
+        {
+          "offset": 2477,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2483,
+          "address": 5050238,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f7e"
+          ]
+        },
+        {
+          "offset": 2490,
+          "address": 5050253,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f8d"
+          ]
+        },
+        {
+          "offset": 2497,
+          "address": 5050252,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f8c"
+          ]
+        },
+        {
+          "offset": 2504,
+          "address": 5050248,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f88"
+          ]
+        },
+        {
+          "offset": 2514,
+          "address": 5050244,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f84"
+          ]
+        },
+        {
+          "offset": 2520,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2526,
+          "address": 5050236,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f7c"
+          ]
+        },
+        {
+          "offset": 2533,
+          "address": 5050237,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f7d"
+          ]
+        },
+        {
+          "offset": 2540,
+          "address": 5050240,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f80"
+          ]
+        },
+        {
+          "offset": 2545,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 2557,
+          "address": 4316992,
+          "kind": 20,
+          "shared": [
+            "address:0x0041df40",
+            "name:game_is_full_version"
+          ]
+        },
+        {
+          "offset": 2563,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2584,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2601,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2605,
+          "address": 4688904,
+          "kind": 6,
+          "shared": [
+            "string:\"Update scores\""
+          ]
+        },
+        {
+          "offset": 2613,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2617,
+          "address": 4688892,
+          "kind": 6,
+          "shared": [
+            "string:\"Update all\""
+          ]
+        },
+        {
+          "offset": 2632,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2647,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2651,
+          "address": 4688876,
+          "kind": 6,
+          "shared": [
+            "string:\"Receive scores\""
+          ]
+        },
+        {
+          "offset": 2659,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2663,
+          "address": 4688864,
+          "kind": 6,
+          "shared": [
+            "string:\"Receive all\""
+          ]
+        },
+        {
+          "offset": 2672,
+          "address": 5050232,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f78"
+          ]
+        },
+        {
+          "offset": 2678,
+          "address": 4450352,
+          "kind": 20,
+          "shared": [
+            "address:0x0043e830",
+            "name:ui_button_update"
+          ]
+        },
+        {
+          "offset": 2690,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 2705,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2722,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 2738,
+          "address": 5050873,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f9",
+            "name:highscore_batch_sync_mode"
+          ]
+        },
+        {
+          "offset": 2746,
+          "address": 5032792,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccb58",
+            "name:highscore_batch_sync_stage_index"
+          ]
+        },
+        {
+          "offset": 2756,
+          "address": 5050873,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f9",
+            "name:highscore_batch_sync_mode"
+          ]
+        },
+        {
+          "offset": 2764,
+          "address": 4378848,
+          "kind": 6,
+          "shared": [
+            "address:0x0042d0e0",
+            "name:highscore_sync_worker"
+          ]
+        },
+        {
+          "offset": 2770,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 2779,
+          "address": 4596287,
+          "kind": 20,
+          "shared": [
+            "address:0x0046223f",
+            "name:crt_beginthread"
+          ]
+        },
+        {
+          "offset": 2792,
+          "address": 4650892,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000442"
+          ]
+        },
+        {
+          "offset": 2798,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2815,
+          "address": 4473728,
+          "kind": 6,
+          "shared": [
+            "address:0x00444380"
+          ]
+        },
+        {
+          "offset": 2823,
+          "address": 5050126,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0e"
+          ]
+        },
+        {
+          "offset": 2830,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 2836,
+          "address": 5050141,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f1d"
+          ]
+        },
+        {
+          "offset": 2843,
+          "address": 5050140,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f1c"
+          ]
+        },
+        {
+          "offset": 2850,
+          "address": 5050136,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f18"
+          ]
+        },
+        {
+          "offset": 2860,
+          "address": 5050132,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f14"
+          ]
+        },
+        {
+          "offset": 2866,
+          "address": 5050120,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f08"
+          ]
+        },
+        {
+          "offset": 2872,
+          "address": 5050124,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0c"
+          ]
+        },
+        {
+          "offset": 2879,
+          "address": 5050125,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0d"
+          ]
+        },
+        {
+          "offset": 2886,
+          "address": 5050128,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f10"
+          ]
+        },
+        {
+          "offset": 2891,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 2899,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 2905,
+          "address": 5050120,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f08"
+          ]
+        },
+        {
+          "offset": 2909,
+          "address": 4661996,
+          "kind": 6,
+          "shared": [
+            "string:\"Play a game\""
+          ]
+        },
+        {
+          "offset": 2922,
+          "address": 5050126,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0e"
+          ]
+        },
+        {
+          "offset": 2931,
+          "address": 5050126,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f0e"
+          ]
+        },
+        {
+          "offset": 2941,
+          "address": 5050120,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f08"
+          ]
+        },
+        {
+          "offset": 2947,
+          "address": 4450352,
+          "kind": 20,
+          "shared": [
+            "address:0x0043e830",
+            "name:ui_button_update"
+          ]
+        }
+      ],
+      "local_branches": [
+        [
+          4467614,
+          4467833,
+          1998,
+          2217
+        ],
+        [
+          4467624,
+          4467652,
+          2008,
+          2036
+        ],
+        [
+          4467628,
+          4467634,
+          2012,
+          2018
+        ],
+        [
+          4467632,
+          4467652,
+          2016,
+          2036
+        ],
+        [
+          4467660,
+          4467705,
+          2044,
+          2089
+        ],
+        [
+          4467703,
+          4467777,
+          2087,
+          2161
+        ],
+        [
+          4467708,
+          4467753,
+          2092,
+          2137
+        ],
+        [
+          4467751,
+          4467777,
+          2135,
+          2161
+        ],
+        [
+          4467827,
+          4467591,
+          2211,
+          1975
+        ],
+        [
+          4467854,
+          4467894,
+          2238,
+          2278
+        ],
+        [
+          4468012,
+          4468018,
+          2396,
+          2402
+        ],
+        [
+          4468077,
+          4468170,
+          2461,
+          2554
+        ],
+        [
+          4468168,
+          4468172,
+          2552,
+          2556
+        ],
+        [
+          4468189,
+          4468239,
+          2573,
+          2623
+        ],
+        [
+          4468196,
+          4468227,
+          2580,
+          2611
+        ],
+        [
+          4468213,
+          4468227,
+          2597,
+          2611
+        ],
+        [
+          4468225,
+          4468283,
+          2609,
+          2667
+        ],
+        [
+          4468237,
+          4468283,
+          2621,
+          2667
+        ],
+        [
+          4468244,
+          4468273,
+          2628,
+          2657
+        ],
+        [
+          4468271,
+          4468283,
+          2655,
+          2667
+        ],
+        [
+          4468303,
+          4468402,
+          2687,
+          2786
+        ],
+        [
+          4468312,
+          4468319,
+          2696,
+          2703
+        ],
+        [
+          4468317,
+          4468402,
+          2701,
+          2786
+        ],
+        [
+          4468334,
+          4468360,
+          2718,
+          2744
+        ],
+        [
+          4468351,
+          4468360,
+          2735,
+          2744
+        ],
+        [
+          4468358,
+          4468377,
+          2742,
+          2761
+        ],
+        [
+          4468426,
+          4468514,
+          2810,
+          2898
+        ],
+        [
+          4468532,
+          4468545,
+          2916,
+          2929
+        ],
+        [
+          4468543,
+          4468552,
+          2927,
+          2936
+        ]
+      ],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "3629be0c4914968420b2369b9aff0397376bc2e4c1fdb908be9ba9a3457d6f30",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    },
+    "filters": {
+      "native_window": [
+        4469705,
+        4471080
+      ],
+      "candidate_window": [
+        4085,
+        5460
+      ],
+      "instructions": 323,
+      "bytes": 1375,
+      "relocations": [
+        {
+          "offset": 4091,
+          "address": 5049736,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d88"
+          ]
+        },
+        {
+          "offset": 4100,
+          "address": 5049732,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d84"
+          ]
+        },
+        {
+          "offset": 4105,
+          "address": 4316992,
+          "kind": 20,
+          "shared": [
+            "address:0x0041df40",
+            "name:game_is_full_version"
+          ]
+        },
+        {
+          "offset": 4119,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4157,
+          "address": 4650720,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e442"
+          ]
+        },
+        {
+          "offset": 4163,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4168,
+          "address": 4688752,
+          "kind": 6,
+          "shared": [
+            "string:\"Selected score list:\""
+          ]
+        },
+        {
+          "offset": 4175,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        },
+        {
+          "offset": 4197,
+          "address": 4650720,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e442"
+          ]
+        },
+        {
+          "offset": 4203,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 4226,
+          "address": 4473792,
+          "kind": 20,
+          "shared": [
+            "address:0x004443c0",
+            "name:ui_profile_menu_update"
+          ]
+        },
+        {
+          "offset": 4236,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4242,
+          "address": 5049728,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d80"
+          ]
+        },
+        {
+          "offset": 4248,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4286,
+          "address": 4649696,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e041"
+          ]
+        },
+        {
+          "offset": 4292,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4297,
+          "address": 4688732,
+          "kind": 6,
+          "shared": [
+            "string:\"Number of players\""
+          ]
+        },
+        {
+          "offset": 4303,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        },
+        {
+          "offset": 4319,
+          "address": 4649528,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000040"
+          ]
+        },
+        {
+          "offset": 4349,
+          "address": 4650876,
+          "kind": 6,
+          "shared": [
+            "bytes4:00000243"
+          ]
+        },
+        {
+          "offset": 4355,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4360,
+          "address": 4688720,
+          "kind": 6,
+          "shared": [
+            "string:\"Game mode\""
+          ]
+        },
+        {
+          "offset": 4388,
+          "address": 4650176,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008c42"
+          ]
+        },
+        {
+          "offset": 4394,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4399,
+          "address": 4688704,
+          "kind": 6,
+          "shared": [
+            "string:\"Show scores:\""
+          ]
+        },
+        {
+          "offset": 4406,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        },
+        {
+          "offset": 4428,
+          "address": 4650176,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008c42"
+          ]
+        },
+        {
+          "offset": 4441,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 4455,
+          "address": 4452288,
+          "kind": 20,
+          "shared": [
+            "address:0x0043efc0",
+            "name:ui_list_widget_update"
+          ]
+        },
+        {
+          "offset": 4462,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 4484,
+          "address": 4481072,
+          "kind": 20,
+          "shared": [
+            "address:0x00446030",
+            "name:input_primary_just_pressed"
+          ]
+        },
+        {
+          "offset": 4494,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4511,
+          "address": 5049724,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d7c"
+          ]
+        },
+        {
+          "offset": 4526,
+          "address": 5049724,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d7c"
+          ]
+        },
+        {
+          "offset": 4534,
+          "address": 5049728,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d80"
+          ]
+        },
+        {
+          "offset": 4542,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4556,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4570,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4584,
+          "address": 4719434,
+          "kind": 6,
+          "shared": [
+            "address:0x0048034a"
+          ]
+        },
+        {
+          "offset": 4590,
+          "address": 4438016,
+          "kind": 20,
+          "shared": [
+            "address:0x0043b800",
+            "name:highscore_load_table_thunk"
+          ]
+        },
+        {
+          "offset": 4595,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 4603,
+          "address": 4688692,
+          "kind": 6,
+          "shared": [
+            "string:\"1 player\""
+          ]
+        },
+        {
+          "offset": 4613,
+          "address": 4688680,
+          "kind": 6,
+          "shared": [
+            "string:\"2 players\""
+          ]
+        },
+        {
+          "offset": 4622,
+          "address": 4473664,
+          "kind": 6,
+          "shared": [
+            "address:0x00444340"
+          ]
+        },
+        {
+          "offset": 4631,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 4638,
+          "address": 5033144,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccb8"
+          ]
+        },
+        {
+          "offset": 4644,
+          "address": 5050304,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fc0"
+          ]
+        },
+        {
+          "offset": 4650,
+          "address": 5050300,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fbc"
+          ]
+        },
+        {
+          "offset": 4657,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 4663,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 4669,
+          "address": 5050296,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb8"
+          ]
+        },
+        {
+          "offset": 4675,
+          "address": 5050292,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb4"
+          ]
+        },
+        {
+          "offset": 4680,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 4688,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 4694,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4710,
+          "address": 5050292,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb4"
+          ]
+        },
+        {
+          "offset": 4716,
+          "address": 5050296,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb8"
+          ]
+        },
+        {
+          "offset": 4725,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 4758,
+          "address": 4649696,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e041"
+          ]
+        },
+        {
+          "offset": 4771,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 4789,
+          "address": 4452288,
+          "kind": 20,
+          "shared": [
+            "address:0x0043efc0",
+            "name:ui_list_widget_update"
+          ]
+        },
+        {
+          "offset": 4796,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 4818,
+          "address": 4481072,
+          "kind": 20,
+          "shared": [
+            "address:0x00446030",
+            "name:input_primary_just_pressed"
+          ]
+        },
+        {
+          "offset": 4828,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4845,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 4861,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 4869,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 4876,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 4881,
+          "address": 4438016,
+          "kind": 20,
+          "shared": [
+            "address:0x0043b800",
+            "name:highscore_load_table_thunk"
+          ]
+        },
+        {
+          "offset": 4893,
+          "address": 5050200,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f58"
+          ]
+        },
+        {
+          "offset": 4904,
+          "address": 4666892,
+          "kind": 6,
+          "shared": [
+            "string:\"Quests\""
+          ]
+        },
+        {
+          "offset": 4917,
+          "address": 4666900,
+          "kind": 6,
+          "shared": [
+            "string:\"Rush\""
+          ]
+        },
+        {
+          "offset": 4928,
+          "address": 4661420,
+          "kind": 6,
+          "shared": [
+            "string:\"Survival\""
+          ]
+        },
+        {
+          "offset": 4939,
+          "address": 4661392,
+          "kind": 6,
+          "shared": [
+            "string:\"Typ'o'Shooter\""
+          ]
+        },
+        {
+          "offset": 4955,
+          "address": 4473648,
+          "kind": 6,
+          "shared": [
+            "address:0x00444330"
+          ]
+        },
+        {
+          "offset": 4964,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 4971,
+          "address": 5050200,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0f58"
+          ]
+        },
+        {
+          "offset": 4977,
+          "address": 5033208,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf8"
+          ]
+        },
+        {
+          "offset": 4983,
+          "address": 5033204,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf4"
+          ]
+        },
+        {
+          "offset": 4990,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 4996,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5002,
+          "address": 5033200,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf0"
+          ]
+        },
+        {
+          "offset": 5008,
+          "address": 5033196,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccec"
+          ]
+        },
+        {
+          "offset": 5013,
+          "address": 4590982,
+          "kind": 20,
+          "shared": [
+            "address:0x00460d86",
+            "name:atexit"
+          ]
+        },
+        {
+          "offset": 5033,
+          "address": 5033196,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccec"
+          ]
+        },
+        {
+          "offset": 5038,
+          "address": 4747316,
+          "kind": 6,
+          "shared": [
+            "address:0x00487034",
+            "name:quest_unlock_index"
+          ]
+        },
+        {
+          "offset": 5047,
+          "address": 5033200,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf0"
+          ]
+        },
+        {
+          "offset": 5055,
+          "address": 5033200,
+          "kind": 6,
+          "shared": [
+            "address:0x004cccf0"
+          ]
+        },
+        {
+          "offset": 5064,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5070,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5079,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 5086,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5095,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5102,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 5109,
+          "address": 5050284,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fac"
+          ]
+        },
+        {
+          "offset": 5117,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5124,
+          "address": 5049720,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d78"
+          ]
+        },
+        {
+          "offset": 5131,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5138,
+          "address": 5049724,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0d7c"
+          ]
+        },
+        {
+          "offset": 5146,
+          "address": 4687480,
+          "kind": 6,
+          "shared": [
+            "address:0x00478678",
+            "name:ui_profile_menu_enabled"
+          ]
+        },
+        {
+          "offset": 5153,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5159,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5165,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 5176,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5193,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5205,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5218,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5224,
+          "address": 5050280,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fa8"
+          ]
+        },
+        {
+          "offset": 5231,
+          "address": 5050288,
+          "kind": 6,
+          "shared": [
+            "address:0x004d0fb0"
+          ]
+        },
+        {
+          "offset": 5237,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 5243,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 5288,
+          "address": 5033184,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce0"
+          ]
+        },
+        {
+          "offset": 5302,
+          "address": 4452288,
+          "kind": 20,
+          "shared": [
+            "address:0x0043efc0",
+            "name:ui_list_widget_update"
+          ]
+        },
+        {
+          "offset": 5309,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        },
+        {
+          "offset": 5335,
+          "address": 4481072,
+          "kind": 20,
+          "shared": [
+            "address:0x00446030",
+            "name:input_primary_just_pressed"
+          ]
+        },
+        {
+          "offset": 5345,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 5362,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5374,
+          "address": 5033188,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce4"
+          ]
+        },
+        {
+          "offset": 5382,
+          "address": 5033192,
+          "kind": 6,
+          "shared": [
+            "address:0x004ccce8"
+          ]
+        },
+        {
+          "offset": 5390,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5406,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5423,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5436,
+          "address": 4719456,
+          "kind": 6,
+          "shared": [
+            "address:0x00480360"
+          ]
+        },
+        {
+          "offset": 5446,
+          "address": 4719452,
+          "kind": 6,
+          "shared": [
+            "address:0x0048035c"
+          ]
+        },
+        {
+          "offset": 5451,
+          "address": 4438016,
+          "kind": 20,
+          "shared": [
+            "address:0x0043b800",
+            "name:highscore_load_table_thunk"
+          ]
+        },
+        {
+          "offset": 5456,
+          "address": 5050864,
+          "kind": 6,
+          "shared": [
+            "address:0x004d11f0",
+            "name:online_sync_status"
+          ]
+        }
+      ],
+      "local_branches": [
+        [
+          4469735,
+          4469853,
+          4115,
+          4233
+        ],
+        [
+          4470092,
+          4470098,
+          4472,
+          4478
+        ],
+        [
+          4470096,
+          4470214,
+          4476,
+          4594
+        ],
+        [
+          4470101,
+          4470214,
+          4481,
+          4594
+        ],
+        [
+          4470110,
+          4470129,
+          4490,
+          4509
+        ],
+        [
+          4470127,
+          4470214,
+          4507,
+          4594
+        ],
+        [
+          4470150,
+          4470214,
+          4530,
+          4594
+        ],
+        [
+          4470158,
+          4470169,
+          4538,
+          4549
+        ],
+        [
+          4470167,
+          4470209,
+          4547,
+          4589
+        ],
+        [
+          4470172,
+          4470183,
+          4552,
+          4563
+        ],
+        [
+          4470181,
+          4470209,
+          4561,
+          4589
+        ],
+        [
+          4470186,
+          4470197,
+          4566,
+          4577
+        ],
+        [
+          4470195,
+          4470209,
+          4575,
+          4589
+        ],
+        [
+          4470200,
+          4470209,
+          4580,
+          4589
+        ],
+        [
+          4470237,
+          4470307,
+          4617,
+          4687
+        ],
+        [
+          4470426,
+          4470432,
+          4806,
+          4812
+        ],
+        [
+          4470430,
+          4470507,
+          4810,
+          4887
+        ],
+        [
+          4470435,
+          4470507,
+          4815,
+          4887
+        ],
+        [
+          4470444,
+          4470463,
+          4824,
+          4843
+        ],
+        [
+          4470461,
+          4470507,
+          4841,
+          4887
+        ],
+        [
+          4470485,
+          4470512,
+          4865,
+          4892
+        ],
+        [
+          4470505,
+          4470512,
+          4885,
+          4892
+        ],
+        [
+          4470570,
+          4470640,
+          4950,
+          5020
+        ],
+        [
+          4470671,
+          4470683,
+          5051,
+          5063
+        ],
+        [
+          4470711,
+          4470727,
+          5091,
+          5107
+        ],
+        [
+          4470733,
+          4470756,
+          5113,
+          5136
+        ],
+        [
+          4470762,
+          4470778,
+          5142,
+          5158
+        ],
+        [
+          4470792,
+          4470806,
+          5172,
+          5186
+        ],
+        [
+          4470804,
+          4470861,
+          5184,
+          5241
+        ],
+        [
+          4470809,
+          4470819,
+          5189,
+          5199
+        ],
+        [
+          4470817,
+          4470861,
+          5197,
+          5241
+        ],
+        [
+          4470821,
+          4470831,
+          5201,
+          5211
+        ],
+        [
+          4470829,
+          4470861,
+          5209,
+          5241
+        ],
+        [
+          4470834,
+          4470861,
+          5214,
+          5241
+        ],
+        [
+          4470939,
+          4470949,
+          5319,
+          5329
+        ],
+        [
+          4470943,
+          4471080,
+          5323,
+          5460
+        ],
+        [
+          4470952,
+          4471080,
+          5332,
+          5460
+        ],
+        [
+          4470961,
+          4470980,
+          5341,
+          5360
+        ],
+        [
+          4470978,
+          4471075,
+          5358,
+          5455
+        ],
+        [
+          4470998,
+          4471075,
+          5378,
+          5455
+        ],
+        [
+          4471006,
+          4471020,
+          5386,
+          5400
+        ],
+        [
+          4471018,
+          4471070,
+          5398,
+          5450
+        ],
+        [
+          4471022,
+          4471036,
+          5402,
+          5416
+        ],
+        [
+          4471034,
+          4471070,
+          5414,
+          5450
+        ],
+        [
+          4471039,
+          4471049,
+          5419,
+          5429
+        ],
+        [
+          4471047,
+          4471070,
+          5427,
+          5450
+        ],
+        [
+          4471052,
+          4471070,
+          5432,
+          5450
+        ]
+      ],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "1aac14ee9a5cbe7e97cf48a88d21fd7265d7c60bc8bb3bb2ddb1d578391fd379",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    },
+    "profile-label": {
+      "native_window": [
+        4469771,
+        4469805
+      ],
+      "candidate_window": [
+        4151,
+        4185
+      ],
+      "instructions": 9,
+      "bytes": 34,
+      "relocations": [
+        {
+          "offset": 4157,
+          "address": 4650720,
+          "kind": 6,
+          "shared": [
+            "bytes4:0000e442"
+          ]
+        },
+        {
+          "offset": 4163,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4168,
+          "address": 4688752,
+          "kind": 6,
+          "shared": [
+            "string:\"Selected score list:\""
+          ]
+        },
+        {
+          "offset": 4175,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        }
+      ],
+      "local_branches": [],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "353984ecf7f91be32a37568d4a1daf973b3f6521acc24a53801d45d38fef667a",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    },
+    "date-label": {
+      "native_window": [
+        4470002,
+        4470036
+      ],
+      "candidate_window": [
+        4382,
+        4416
+      ],
+      "instructions": 9,
+      "bytes": 34,
+      "relocations": [
+        {
+          "offset": 4388,
+          "address": 4650176,
+          "kind": 6,
+          "shared": [
+            "bytes4:00008c42"
+          ]
+        },
+        {
+          "offset": 4394,
+          "address": 4720700,
+          "kind": 6,
+          "shared": [
+            "address:0x0048083c",
+            "name:grim_interface_ptr"
+          ]
+        },
+        {
+          "offset": 4399,
+          "address": 4688704,
+          "kind": 6,
+          "shared": [
+            "string:\"Show scores:\""
+          ]
+        },
+        {
+          "offset": 4406,
+          "address": 4649600,
+          "kind": 6,
+          "shared": [
+            "bytes4:00006041"
+          ]
+        }
+      ],
+      "local_branches": [],
+      "stack_bindings": [],
+      "resolved_bytes_sha256": "49b4e4ad4782729be392a39672fe4a1501bdc19a9dc845dcfc826696d4ab7d09",
+      "literal_branch_bytes_equal": true,
+      "all_encoded_bytes_equal_after_reference_resolution": true,
+      "full_function_match": false
+    }
+  },
+  "corruptions_rejected": [
+    "literal-row-branch",
+    "label-stack-displacement",
+    "wrong-reference-owner",
+    "omitted-relocation",
+    "truncated-window",
+    "date-substituted-for-profile"
+  ],
+  "input_hashes": {
+    "controls.py": "f1095d8da168a3c69f7c618e12ef5e3a7496ec2c363c9bb45bfa6d1f39f9eef5",
+    "controls.json": "9be6c55d60e626e9c54f38930582b096aae3447eb99bfbbb49e79ac9fc52f31e",
+    "verify.py": "15e54661e8e389ca7f4f8dda23bd53827230dc6e76964d67f68e05f9ba1bd265"
+  }
+}
