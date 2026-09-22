@@ -1,0 +1,4207 @@
+{
+  "base_commit": "b9bab229d28a8c4b11549bdaae8504048948ebe4",
+  "base_source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+  "controls": [
+    {
+      "name": "baseline",
+      "edits": [],
+      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-plus-widget-labels",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ],
+      "source_sha256": "ffc2226e2ec54cefaf4a2fde09fd1f379342b105f9162a418b49f5d0ce1fa6c7",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "borrowed-label",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            widget_position.x = filter_x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        const float & label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "616460dda9d6c2de074768185955570e758dba3c4d23f54f70c4f5eab178cf1b",
+      "body_sha256": "bd80f274de5f57c7000499c6456fb9c75fee4e0c5bc082d4e76144d7c174685d",
+      "instructions": 2008,
+      "ratio": 0.8409770687936191,
+      "prefix": 43,
+      "references": [
+        597,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "byte-full-version",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "efa1b1a6cc3db18aa422970d705f826bdb0489d0e778a96870d48b65ee4d4b2c",
+      "body_sha256": "6a25c36f8c2feb1857cdc3dde174608175ad2009771078b11f18a9f810c321c8",
+      "instructions": 1994,
+      "ratio": 0.8354177088544272,
+      "prefix": 105,
+      "references": [
+        604,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "chained-with-byte-version",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            widget_position.x = filter_x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "9236ffa954fc51914603a5ce4ae093640cd6f53bac52c150c536cae27ac5eddd",
+      "body_sha256": "15912573f3b8cbe43b84100d731f23e7cd6c6238ad95db81a2c121ffe00fd652",
+      "instructions": 2008,
+      "ratio": 0.8698903290129611,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "commuted-label-y",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                114.0f + right_panel.y - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            70.0f + right_panel.y - 14.0f,\n"
+          ]
+        }
+      ],
+      "source_sha256": "72a099934679094644d14b15a762595a4390569b3a9fb65979546639b77d7f2a",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "commuted-widget-y",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                right_panel.x, 114.0f + right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                right_panel.x, 70.0f + right_panel.y);\n"
+          ]
+        }
+      ],
+      "source_sha256": "1b4f5b3223965c0482835bafaeb981e3c724ac3612b17adabebf5d611374c882",
+      "body_sha256": "9e60f1b6688db4c84699d44b280e46f0afce439b0cbb6c19280ae2adc84178e3",
+      "instructions": 2005,
+      "ratio": 0.8351209777999501,
+      "prefix": 43,
+      "references": [
+        604,
+        0,
+        6
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "const-label",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            widget_position.x = filter_x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        const float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "b364db78f358021f7f22dc769586560d42826b7c05806abfa57c2859aa40fb53",
+      "body_sha256": "15912573f3b8cbe43b84100d731f23e7cd6c6238ad95db81a2c121ffe00fd652",
+      "instructions": 2008,
+      "ratio": 0.8698903290129611,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "constructor-with-byte-version",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 559,
+          "end": 559,
+          "lines": [
+            "            filter_x = widget_position.x;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "8a0f8dda5ef27e21c5c17d45c55519b8330c7d625ae3352e3490d388c0951bc4",
+      "body_sha256": "1e33e6183d01a9054e4450684795377e4e3a8c5951904c2d43df604ab2ce8c43",
+      "instructions": 1993,
+      "ratio": 0.8401300975731799,
+      "prefix": 105,
+      "references": [
+        611,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "ctor-and-reuse-components",
+      "edits": [
+        {
+          "start": 96,
+          "end": 101,
+          "lines": [
+            "        column_offsets[0] = 0;\n",
+            "        column_offsets[1] = 0;\n"
+          ]
+        },
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x += 130.0f;\n",
+            "        right_panel.y += 28.0f;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "04e39cc044052147de432c85e61fe653c259d2e28278cdfaa97ae97b1de37ba2",
+      "body_sha256": "a6248eda441c47b5b9cb475fd213a09af5c786db1a1968033288c81d6ba65adb",
+      "instructions": 2004,
+      "ratio": 0.716566866267465,
+      "prefix": 1,
+      "references": [
+        579,
+        0,
+        11
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "ctor-stores",
+      "edits": [
+        {
+          "start": 96,
+          "end": 101,
+          "lines": [
+            "        column_offsets[0] = 0;\n",
+            "        column_offsets[1] = 0;\n"
+          ]
+        },
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        }
+      ],
+      "source_sha256": "6439acd7ccb96c5d2f3293939db6f8b7ac64a1fcc25d407627def49ca550aaab",
+      "body_sha256": "4e49140f44c500ce1ee1536796f45c0baf458616cdc108b26bfc7ad26841314b",
+      "instructions": 1989,
+      "ratio": 0.7998998246932131,
+      "prefix": 43,
+      "references": [
+        597,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "escaped-panel-snapshots",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "e42ed48d0a9a99ba65bd30c6c60846d543a695973c3be74c8ec25e0a50e89291",
+      "body_sha256": "da9c5759dc2734814ac21d782cf1e80eafe62be6fb1c7d514a8ff1398e5e422d",
+      "instructions": 2008,
+      "ratio": 0.8374875373878365,
+      "prefix": 8,
+      "references": [
+        594,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "escaped-panel-snapshots-ctor",
+      "edits": [
+        {
+          "start": 96,
+          "end": 101,
+          "lines": [
+            "        column_offsets[0] = 0;\n",
+            "        column_offsets[1] = 0;\n"
+          ]
+        },
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "1c7120ab843752be39e15a28d065a9a33486ef95bf0b09cc74e0739f5a2644ee",
+      "body_sha256": "529f83a30f366ca94864d36df09eabfe963818cb32b590c9467b4adc3180c906",
+      "instructions": 1992,
+      "ratio": 0.8083083083083084,
+      "prefix": 8,
+      "references": [
+        590,
+        0,
+        8
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "escaped-panel-snapshots-items",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n",
+            "        char *player_count_items[2] = {\n",
+            "            \"1 player\",\n",
+            "            \"2 players\",\n",
+            "        };\n"
+          ]
+        },
+        {
+          "start": 641,
+          "end": 645,
+          "lines": []
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "b8f947d8531e4a08a1e66344e5d66c2e5803efa57d1c8b0e4f864087e24c7969",
+      "body_sha256": "99bd5ce3cff47236fe2e6e3596038c9b499ab670338e828bcef83a2b116144cc",
+      "instructions": 2008,
+      "ratio": 0.8374875373878365,
+      "prefix": 8,
+      "references": [
+        594,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "escaped-panel-snapshots-items-ctor",
+      "edits": [
+        {
+          "start": 96,
+          "end": 101,
+          "lines": [
+            "        column_offsets[0] = 0;\n",
+            "        column_offsets[1] = 0;\n"
+          ]
+        },
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n",
+            "        char *player_count_items[2] = {\n",
+            "            \"1 player\",\n",
+            "            \"2 players\",\n",
+            "        };\n"
+          ]
+        },
+        {
+          "start": 641,
+          "end": 645,
+          "lines": []
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "134a0351546f310cefc774ee26f0f11d17a86052fb499060df9733c7505fb94d",
+      "body_sha256": "f19268a6cad26d184959c204705756570850585618d334bfbbf833678c8ce386",
+      "instructions": 1992,
+      "ratio": 0.8083083083083084,
+      "prefix": 8,
+      "references": [
+        590,
+        0,
+        8
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-and-label-x",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        bool full_version = game_is_full_version() != 0;\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "1541bd7a917a8def1e44d4669b2cd558739d491217ab1a544bb31f4d15e78ad7",
+      "body_sha256": "b35f3c0082af575fa01a029830cd0d2d2571eaea193495b0bbfc82b89186747a",
+      "instructions": 2010,
+      "ratio": 0.866965620328849,
+      "prefix": 105,
+      "references": [
+        610,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-chained-assignment",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            widget_position.x = filter_x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 581,
+          "lines": [
+            "        float label_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "d661276464d744e345ae4e89ecdd827c70e922b430102bc83cf5072de4d81099",
+      "body_sha256": "e527e02eabae69d69626095878a3a4fac913f82059044d4d2f5878c577c365fe",
+      "instructions": 2008,
+      "ratio": 0.8698903290129611,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-copy-after-constructor",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 559,
+          "end": 559,
+          "lines": [
+            "            filter_x = widget_position.x;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 581,
+          "lines": [
+            "        float label_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "a0294e9b4693afc3e3a87d69faba5f02960ec42de3a97e8645f79436c53ab924",
+      "body_sha256": "03441b8f9aa1c448dde1c32c3d800bdd66f01578c01b7bf8ea88106ba8acf796",
+      "instructions": 2007,
+      "ratio": 0.8706058339566193,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-x-after-static",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "bf125140a9fe5e588280e40d7ea1cfe813fc9eb96b446065cf1270fb441582be",
+      "body_sha256": "c8ef163a8718fe95d4e2179070b3cd9b938bb11df21982d4b7b6259cc3195d42",
+      "instructions": 2008,
+      "ratio": 0.839481555333998,
+      "prefix": 43,
+      "references": [
+        595,
+        0,
+        7
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "filter-x-after-widget",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 559,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "bff06a5588cf70d5279d97f30b1b70a2c455eb3800c8151ba51a45004eb6a07b",
+      "body_sha256": "739e8ad6dad8342162af3baca5b423be58fb26bde61f2a67d8a180db9448fed4",
+      "instructions": 1994,
+      "ratio": 0.8319159579789895,
+      "prefix": 105,
+      "references": [
+        602,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "label-after-int-version",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        int full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "49dbcaf485903c74262ea9235de304b6f72797501d6a6774aa5ca43a54b1f4d8",
+      "body_sha256": "eecaf66f0c3c89c934023540ce0b338c7be3928faa9ac130d1538474e3ee2713",
+      "instructions": 2009,
+      "ratio": 0.8666832793421381,
+      "prefix": 105,
+      "references": [
+        610,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "label-branch-definitions",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 581,
+          "lines": [
+            "        float label_x;\n"
+          ]
+        },
+        {
+          "start": 582,
+          "end": 582,
+          "lines": [
+            "            label_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 592,
+          "end": 592,
+          "lines": [
+            "        } else {\n",
+            "            label_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "2a3296b684ed8fdfd82c89aa69125ff752ebc617b21e7657bee330419d221c91",
+      "body_sha256": "b827e27c32b085e77510afaa0591d4e5d021b6cb6f97cbe60b2b98970c909e87",
+      "instructions": 2010,
+      "ratio": 0.7922272047832586,
+      "prefix": 1,
+      "references": [
+        578,
+        0,
+        12
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "label-x-before-version",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 581,
+          "lines": [
+            "        float label_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "4c065b4b9d76dce6e5999b9382a7367844b95d89e22df5b74b18725c81abc26e",
+      "body_sha256": "d0d1a06e21297da825e86faee49823163afc0e86458548a12657638903f98a3d",
+      "instructions": 2008,
+      "ratio": 0.8673978065802592,
+      "prefix": 105,
+      "references": [
+        610,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "last-widget-reuse-components",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x += 130.0f;\n",
+            "        right_panel.y += 28.0f;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "d2ef8dbbeb349302e8276ab1a6626aa92bd06611361d1ab0801346c31f84db44",
+      "body_sha256": "a206196697052eb5a8b0bcbb8e2bbd4d65b4800a78d60f5ad66421c64345d11f",
+      "instructions": 1992,
+      "ratio": 0.6981981981981982,
+      "prefix": 1,
+      "references": [
+        573,
+        0,
+        12
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "last-widget-reuse-sum",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel = right_panel + highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "c002fb2ccf7493c5c4472eb780a88a7178b8a36e6585cd734ca15f3bcbf27fa3",
+      "body_sha256": "b2b607655eb926265e6c3a8869eed6cb934bfcfb221c71477d4b7ffdd118136c",
+      "instructions": 1996,
+      "ratio": 0.699,
+      "prefix": 1,
+      "references": [
+        573,
+        0,
+        12
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "player-items-before-date",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            filter_x = right_panel.x;\n",
+            "            highscore_vec2_t widget_position(filter_x, right_panel.y);\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 581,
+          "lines": [
+            "        float label_x = right_panel.x;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 610,
+          "end": 610,
+          "lines": [
+            "\n",
+            "        char *player_count_items[2] = {\n",
+            "            \"1 player\",\n",
+            "            \"2 players\",\n",
+            "        };\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 641,
+          "end": 645,
+          "lines": []
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "e15008d1d2ace303b4a77144f7f63dbbf09442ad181b2d3b8c51c22f50a788cc",
+      "body_sha256": "01f26f775f215e4c3c9bf3a7dc78ccae4c262bf279b653ecd28f1c7f667fc5f7",
+      "instructions": 2008,
+      "ratio": 0.8693918245264207,
+      "prefix": 105,
+      "references": [
+        610,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "reversed-chain-with-byte-version",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 558,
+          "end": 559,
+          "lines": [
+            "            highscore_vec2_t widget_position;\n",
+            "            filter_x = widget_position.x = right_panel.x;\n",
+            "            widget_position.y = right_panel.y;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "c579c61441cbc2c32adf86bf1c99eaf7b57ca33ffb98c07d18ac3a35d728b8da",
+      "body_sha256": "b102b028c6e2c14e7f55ba459cc142cae0b9f4bf7a4d8a13f4d130faf52ed292",
+      "instructions": 2008,
+      "ratio": 0.8698903290129611,
+      "prefix": 105,
+      "references": [
+        616,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "widget-copy-add-vectors",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 588,
+          "end": 590,
+          "lines": [
+            "            highscore_vec2_t profile_position = right_panel;\n",
+            "            profile_position += highscore_vec2_t(0.0f, 114.0f);\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 613,
+          "end": 615,
+          "lines": [
+            "            highscore_vec2_t date_position = right_panel;\n",
+            "            date_position += highscore_vec2_t(0.0f, 70.0f);\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            highscore_vec2_t player_count_position = right_panel;\n",
+            "            player_count_position += highscore_vec2_t(2.0f, 28.0f);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        highscore_vec2_t game_mode_position = right_panel;\n",
+            "        game_mode_position += highscore_vec2_t(130.0f, 28.0f);\n"
+          ]
+        }
+      ],
+      "source_sha256": "3010d29aff892d5d3d0f0410240e0f92b2df599d4fbf40450e62e5aaada4bcf9",
+      "body_sha256": "59a55e81921d1e4577230b01cc753784396dddd25dd852a8393f35e744408c8f",
+      "instructions": 2022,
+      "ratio": 0.6905116741182314,
+      "prefix": 1,
+      "references": [
+        553,
+        0,
+        9
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "widget-copy-components",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 586,
+          "end": 587,
+          "lines": [
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 588,
+          "end": 590,
+          "lines": [
+            "            highscore_vec2_t profile_position = right_panel;\n",
+            "            profile_position.y += 114.0f;\n"
+          ]
+        },
+        {
+          "start": 608,
+          "end": 609,
+          "lines": [
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 613,
+          "end": 615,
+          "lines": [
+            "            highscore_vec2_t date_position = right_panel;\n",
+            "            date_position.y += 70.0f;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            highscore_vec2_t player_count_position = right_panel;\n",
+            "            player_count_position.x += 2.0f;\n",
+            "            player_count_position.y += 28.0f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        highscore_vec2_t game_mode_position = right_panel;\n",
+            "        game_mode_position.x += 130.0f;\n",
+            "        game_mode_position.y += 28.0f;\n"
+          ]
+        }
+      ],
+      "source_sha256": "e083caf254fd50ec471d2de0ee44ad531a0264a1331dbe6d16702ab36c4d8040",
+      "body_sha256": "4187fa195332764f18422f3baa9b042fbfa5a3018d69e9c8408dfaf9ab398b20",
+      "instructions": 2006,
+      "ratio": 0.6817955112219451,
+      "prefix": 1,
+      "references": [
+        536,
+        0,
+        16
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "widget-x-snapshot",
+      "edits": [
+        {
+          "start": 363,
+          "end": 363,
+          "lines": [
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": []
+        },
+        {
+          "start": 492,
+          "end": 494,
+          "lines": [
+            "    left_panel = position;\n",
+            "    left_panel.x -= 32.0f;\n",
+            "    left_panel.y += 32.0f;\n"
+          ]
+        },
+        {
+          "start": 538,
+          "end": 543,
+          "lines": [
+            "        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n",
+            "        + highscore_vec2_t(300.0f, 40.0f);\n",
+            "    position = right_panel;\n",
+            "    position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;\n",
+            "    position.y += 10.0f;\n"
+          ]
+        },
+        {
+          "start": 545,
+          "end": 547,
+          "lines": [
+            "    right_panel = position;\n",
+            "    right_panel.y -= 8.0f;\n",
+            "    right_panel.x -= 16.0f;\n"
+          ]
+        },
+        {
+          "start": 556,
+          "end": 556,
+          "lines": [
+            "        float filter_x;\n"
+          ]
+        },
+        {
+          "start": 559,
+          "end": 559,
+          "lines": [
+            "            filter_x = widget_position.x;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "lines": [
+            "        unsigned char full_version = game_is_full_version();\n",
+            "        float label_x = right_panel.x;\n",
+            "        if (full_version) {\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 587,
+          "lines": [
+            "                label_x,\n",
+            "                right_panel.y + 114.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 589,
+          "end": 590,
+          "lines": [
+            "                filter_x, right_panel.y + 114.0f);\n"
+          ]
+        },
+        {
+          "start": 598,
+          "end": 598,
+          "lines": [
+            "        float player_count_x = right_panel.x + 2.0f;\n"
+          ]
+        },
+        {
+          "start": 599,
+          "end": 600,
+          "lines": [
+            "            player_count_x,\n"
+          ]
+        },
+        {
+          "start": 602,
+          "end": 602,
+          "lines": [
+            "        float game_mode_x = right_panel.x + 130.0f;\n"
+          ]
+        },
+        {
+          "start": 603,
+          "end": 604,
+          "lines": [
+            "            game_mode_x,\n"
+          ]
+        },
+        {
+          "start": 607,
+          "end": 609,
+          "lines": [
+            "            label_x,\n",
+            "            right_panel.y + 70.0f - 14.0f,\n"
+          ]
+        },
+        {
+          "start": 614,
+          "end": 615,
+          "lines": [
+            "                filter_x, right_panel.y + 70.0f);\n"
+          ]
+        },
+        {
+          "start": 639,
+          "end": 639,
+          "lines": [
+            "        float player_count_y;\n"
+          ]
+        },
+        {
+          "start": 650,
+          "end": 652,
+          "lines": [
+            "            player_count_y = right_panel.y + 28.0f;\n",
+            "            highscore_vec2_t player_count_position(player_count_x, player_count_y);\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 715,
+          "lines": [
+            "        right_panel.x = game_mode_x;\n",
+            "        right_panel.y = player_count_y;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "lines": [
+            "            (float *)&right_panel,\n"
+          ]
+        }
+      ],
+      "source_sha256": "8a0f8dda5ef27e21c5c17d45c55519b8330c7d625ae3352e3490d388c0951bc4",
+      "body_sha256": "1e33e6183d01a9054e4450684795377e4e3a8c5951904c2d43df604ab2ce8c43",
+      "instructions": 1993,
+      "ratio": 0.8401300975731799,
+      "prefix": 105,
+      "references": [
+        611,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    }
+  ]
+}

@@ -665,3 +665,27 @@ The cumulative witness has a 132-byte frame, 2,005/2,004 instructions,
 source and exactness status remain unchanged. The next constraint is storage
 ownership and filter lifetimes in the cumulative witness, with the native row
 sequence now obtainable without register hints or patched compiler decisions.
+
+## Filter ownership and large-frame ordering (2026-09-22)
+
+The [filter-storage evidence](../../evidence/highscore-filter-storage-2026-09-22/README.md)
+predicts all 182 stack-symbol offsets across five preserving C2 traces. Their
+groups total 129 bytes before alignment, triggering C2 `0x61bf0` to sort by
+uses per byte before allocating the 132-byte frame. Middle-pivot quicksort tie
+behavior and one-byte padding both matter; the earlier HUD model lacked this
+large-frame path. All five whole COFF objects are preserved except timestamps,
+with 21 model/trace corruption checks and five missing-stream rejections.
+
+Thirty replayable controls separate address escape, explicit scalar snapshots,
+version-result types, array lifetimes, coordinate copies and scrollbar clears.
+Reusing the right panel restores some Y recomputation but disrupts X copies.
+Moving the explicit label scalar across the version call does not remove its
+stack home. Extending the player-item array lifetime recovers the native array
+and player-widget slots while moving initialization earlier than native.
+Commuting the tested additions is body-byte neutral. None is promoted or
+covered by a whole-UI execution proof; the canonical source is unchanged.
+
+The best alignment, 87.060583% with 2,007 instructions, prefix 105 and references
+616/0/4, remains structurally wrong. The next constraint is native Y
+recomputation and X copy ownership without the extra scalar or wrong
+initialization stage, not further declaration-order or score-only tuning.

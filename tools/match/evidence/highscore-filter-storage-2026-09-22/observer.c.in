@@ -1,0 +1,51 @@
+/* Preserving observation only; no compiler descriptor or decision is changed. */
+static HANDLE graph_file, use_file;
+static unsigned char *compiler_base;
+static unsigned long saved_count, saved_symbols[16384];
+static void graph_write(void *p,unsigned long n) { DWORD written; if(!WriteFile(graph_file,p,n,&written,0)||written!=n) ExitProcess(99); }
+static void graph(unsigned long phase) {
+ unsigned long n=*(unsigned long *)(compiler_base+0x9f20c),i,j,count;
+ unsigned long head=*(unsigned long *)(compiler_base+0x9f220);
+ unsigned long *symbols=*(unsigned long **)(compiler_base+0x9f218);
+ unsigned long **edges=*(unsigned long ***)(compiler_base+0x9f204);
+ unsigned long zero[21]={0};
+ if(phase==1) {
+  if(!saved_count) return;
+  graph_write(&phase,4);graph_write(&saved_count,4);
+  for(i=0;i<saved_count;++i) {
+   unsigned long s=saved_symbols[i],d=*(unsigned long *)s;
+   graph_write(&s,4);graph_write((void *)s,84);
+   graph_write(d?(void *)d:zero,64);
+  }
+  saved_count=0;return;
+ }
+ if(n>16384 || saved_count) ExitProcess(97);
+ saved_count=n;graph_write(&phase,4);
+ graph_write(&n,4);graph_write(&head,4);
+ for(i=0;i<n;++i) {
+  unsigned long s=symbols[i],d=s?*(unsigned long *)s:0;
+  unsigned long *bits=edges[i]?(unsigned long *)edges[i][0]:0;
+  saved_symbols[i]=s;
+  count=0;for(j=(unsigned long)bits;j;j=*(unsigned long *)(j+4)) { if(++count>1024) ExitProcess(98); }
+  graph_write(&s,4);graph_write(s?(void *)s:zero,84);graph_write(d?(void *)d:zero,64);
+  graph_write(&count,4);
+  for(j=(unsigned long)bits;j;j=*(unsigned long *)(j+4))graph_write((void *)j,12);
+ }
+}
+
+
+static void source_use(unsigned long phase, unsigned long node,
+                       unsigned long side, unsigned long op) {
+    unsigned long d, parent, rec[6]; DWORD written;
+    if (phase != 12 || *(unsigned char *)(op + 8) != 2) return;
+    d = *(unsigned long *)(op + 0x14);
+    if (!d) return;
+    parent = *(unsigned long *)(d + 8);
+    if (!parent || *(unsigned char *)(parent + 4) != 4) return;
+    rec[0] = parent; rec[1] = node;
+    rec[2] = *(unsigned short *)(node + 0x10);
+    rec[3] = *(unsigned long *)(node + 4);
+    rec[4] = side; rec[5] = d;
+    if (!WriteFile(use_file, rec, sizeof(rec), &written, 0)
+        || written != sizeof(rec)) ExitProcess(86);
+}

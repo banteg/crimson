@@ -111153,6 +111153,8 @@
     "tools/match/evidence/fire-overlay-lifetimes-2026-09-13/before.cpp": "48ff88ff9f9e78427d1e6b28af863bedbc983c6ccf1d4c8fe9c9563b7fce3750",
     "tools/match/evidence/fire-overlay-lifetimes-2026-09-13/verify.py": "4d23c95688b50c2c422af1ca035f135011f7fa61bcaca0574ea2f0de370f8c31",
     "tools/match/evidence/highscore-cursor-2026-09-09/verify.py": "36814310b9c9e5cb62ef267e363f2f584b1689be8673f46ce9f76b9fce4cf09c",
+    "tools/match/evidence/highscore-filter-storage-2026-09-22/controls.py": "46fb436913bf0e3fd509e4571968daabc7a03e8a77473938dfbf3507953a4c33",
+    "tools/match/evidence/highscore-filter-storage-2026-09-22/verify.py": "476a3af8fd19e5bbd8f7cb9fc50e21fef1f1874a51b4bf14b41344bcb99464b8",
     "tools/match/evidence/highscore-prefix-lifetime-2026-09-22/controls.py": "646bce40109777c831fb45d38b972ed6ed9de353f56782b7bf39e87f342ac600",
     "tools/match/evidence/highscore-prefix-lifetime-2026-09-22/region.py": "cf282725e2054a3c96659fbfe3a8755e17814d206c09f579f772571de2cb794d",
     "tools/match/evidence/highscore-prefix-lifetime-2026-09-22/verify_compiler.py": "67d9e5794fa94e0921e460144706841097949df138225374b4004ed441b91a76",
