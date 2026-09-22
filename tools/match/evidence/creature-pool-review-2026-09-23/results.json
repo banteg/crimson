@@ -1,0 +1,328 @@
+{
+  "source_sha256": "7bb97911b09a9e96d60b4b7b93530f07702d92de55d343d75fb5b642b49f44bd",
+  "compiler_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "match_credit": false,
+  "runtime_equivalence_of_mutated_objects_claimed": false,
+  "controls": {
+    "observer": {
+      "watched_values": 4,
+      "frame_instruction": "sub esp, 0x6c",
+      "metrics": {
+        "ratio": 0.6666666666666666,
+        "target_instructions": 1338,
+        "candidate_instructions": 1311,
+        "prefix_instructions": 0,
+        "references_ok": 363,
+        "reference_problems": 5,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "stock_coff_equal_except_timestamp": true,
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [],
+        "12": [],
+        "112": [],
+        "11": []
+      },
+      "counts": {
+        "early": 4,
+        "allocation_calls": 88,
+        "seen": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rejected": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "normalized_coff_sha256": "62e2383d307d1bfedce5947e222c1543b122c93379acd9c0f59d5ff2b00755b3"
+    },
+    "early-health": {
+      "watched_values": 1,
+      "frame_instruction": "sub esp, 0x6c",
+      "metrics": {
+        "ratio": 0.6666666666666666,
+        "target_instructions": 1338,
+        "candidate_instructions": 1311,
+        "prefix_instructions": 0,
+        "references_ok": 363,
+        "reference_problems": 5,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "stock_coff_equal_except_timestamp": true,
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [],
+        "11": []
+      },
+      "counts": {
+        "early": 1,
+        "allocation_calls": 88,
+        "seen": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rejected": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "normalized_coff_sha256": "62e2383d307d1bfedce5947e222c1543b122c93379acd9c0f59d5ff2b00755b3"
+    },
+    "health-home": {
+      "watched_values": 1,
+      "frame_instruction": "sub esp, 0x70",
+      "metrics": {
+        "ratio": 0.6900188323917138,
+        "target_instructions": 1338,
+        "candidate_instructions": 1317,
+        "prefix_instructions": 0,
+        "references_ok": 363,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "stock_coff_equal_except_timestamp": false,
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": [
+          "0x12",
+          "0x1"
+        ]
+      },
+      "counts": {
+        "early": 1,
+        "allocation_calls": 91,
+        "seen": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "rejected": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "normalized_coff_sha256": "d71bace6007944608d97b3b6fa8727c652959856b656d6985d6f7c505a35e99e"
+    },
+    "four-homes": {
+      "watched_values": 4,
+      "frame_instruction": "sub esp, 0x80",
+      "metrics": {
+        "ratio": 0.6581804567577686,
+        "target_instructions": 1338,
+        "candidate_instructions": 1333,
+        "prefix_instructions": 0,
+        "references_ok": 345,
+        "reference_problems": 8,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "stock_coff_equal_except_timestamp": false,
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": [
+          "0x12",
+          "0x1"
+        ]
+      },
+      "counts": {
+        "early": 4,
+        "allocation_calls": 97,
+        "seen": [
+          4,
+          0,
+          0,
+          0,
+          4,
+          0,
+          3
+        ],
+        "positive": [
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          3
+        ],
+        "rejected": [
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          3
+        ]
+      },
+      "normalized_coff_sha256": "e875a8dbff48cffa0816b66a699bb48d545757428ac9199d19dc5f53e392a008"
+    },
+    "five-values": {
+      "watched_values": 5,
+      "frame_instruction": "sub esp, 0x80",
+      "metrics": {
+        "ratio": 0.682962962962963,
+        "target_instructions": 1338,
+        "candidate_instructions": 1362,
+        "prefix_instructions": 0,
+        "references_ok": 370,
+        "reference_problems": 6,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "stock_coff_equal_except_timestamp": false,
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": [
+          "0x12",
+          "0x1"
+        ]
+      },
+      "counts": {
+        "early": 5,
+        "allocation_calls": 99,
+        "seen": [
+          5,
+          0,
+          0,
+          0,
+          4,
+          0,
+          4
+        ],
+        "positive": [
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          4
+        ],
+        "rejected": [
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          4
+        ]
+      },
+      "normalized_coff_sha256": "1bc3defe8ce0f859e6c1e448eb3aac82662b520ccd2ea7e12c52dc2b4d37c049"
+    }
+  },
+  "harness_sha256": {
+    "verify.py": "35f3929de151358e518d903a650a1dc01adcd4002d4a77ed54eace48993e7404",
+    "watch.c.in": "d2e0c758d145347cd82e044d44c4b78487f111c6ed6f0e21acf6d10d7bde3455"
+  }
+}

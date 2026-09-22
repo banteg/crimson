@@ -67,10 +67,12 @@ lea edi, dword [esi+health]
 mov dword [esp+0x20], edi
 ```
 
-This is not the native sequence: native forms and stores the pointer before
-its initial health load, uses scaled addressing, and reserves 124 bytes. This
-control reserves **128** bytes. Its score falls substantially despite exposing
-the missing storage mechanism.
+Native uses the same load/compare/LEA/store order at
+`0x004262a3..0x004262b7`, with scaled addressing, and reserves 124 bytes.
+This older control uses byte-offset addressing and reserves **128** bytes.
+Its score falls substantially despite exposing the missing storage mechanism.
+The [pool-base review](../creature-pool-review-2026-09-23/README.md) repeats
+this control after recovering scaled addressing.
 
 | Control | Positive late decisions rejected | Instructions | Frame | Final result |
 |---|---:|---:|---:|---|

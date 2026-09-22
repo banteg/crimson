@@ -69,13 +69,21 @@ uv run --no-sync --with unicorn==2.1.4 python \
 
 ## Remaining residual
 
-Native stores four field pointers (lifecycle at `+0x24`, the byte at `+0x28`,
-collision flag at `+0x30`, cooldown/size at `+0x14`) and keeps
-`&target_player` in EBX; the candidate rematerializes those addresses from
-ESI. In a full preserving trace every pointer definition is still present
+Native stores four field pointers (health at `esp+0x24`, lifecycle at
+`esp+0x28`, collision flag at `esp+0x30`, and size at `esp+0x14`), holds
+`&attack_cooldown` in EBP, and keeps `&target_player` in EBX;
+the candidate rematerializes field addresses from ESI. In a full preserving
+trace the four field-pointer definitions are still present
 (`0x12` LEA plus copy) at the entry of `C2+0x306c1` and gone at `0x30a40`,
 as the earlier health-pointer study found. Declaration placement, element
 pointers, block scope, global-pool initializers and byte arithmetic all
-compile to the same body. The five reference mismatches are pairing effects
-of this allocation difference: target Y/X store order, heading versus orbit
-angle, and the adjacent perk/SFX calls.
+compile to the same body. The five reference mismatches pair different
+operations within the hold-target copy, projectile argument preparation,
+and contact block. They do not indicate reversed X/Y stores or substituted
+field/callee identities.
+
+The [independent review](../creature-pool-review-2026-09-23/README.md)
+rechecks execution and reference pairing, corrects the native pointer-home
+labels above, and tests retention on this source. Keeping the health value
+alone restores its native opening LEA/store; keeping all four homes still
+does not reproduce native allocation.

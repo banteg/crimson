@@ -26,8 +26,10 @@ Residual signature
 - target/candidate instructions and CFG/control shape: 1,338/1,311; same
   arms and branch structure; 908 identical, 61 stack-only, 90 label-only.
 - target/candidate stack-frame allocation: 0x7c/0x6c; native keeps four
-  field-pointer homes (esp+0x14/0x24/0x28/0x30) and &target_player in EBX.
-- references ok/unresolved/mismatched: 363/0/5, all adjacent-pairing effects.
+  field-pointer homes (size/health/lifecycle/collision at
+  esp+0x14/0x24/0x28/0x30), &attack_cooldown in EBP, and &target_player in EBX.
+- references ok/unresolved/mismatched: 363/0/5, all within-region alignment
+  effects; the contact-block pairings can span multiple operations.
 - consistent register or stack-slot mappings: creature index and distance
   slots differ by a constant 4 bytes; generated vector temporaries by 16.
 - regions made exact by globally neutral or degrading variants: none new;
@@ -41,6 +43,14 @@ Residual signature
 
 The older sections below describe the pre-pool-base body; their metrics
 are superseded.
+
+[Independent review on 2026-09-23](../../evidence/creature-pool-review-2026-09-23/README.md)
+supports keeping this source and the base-bound mismatch waiver. All 3,480
+execution fixtures and 12 additional callback-mutation cases agree. Current
+C2 controls show that early-only health retention is byte-neutral; blocking
+its later reconstruction and splitting restores the native opening health
+LEA/store but gives a 0x70 frame. Retaining all four field-pointer homes gives
+0x80 rather than 0x7c. These are compiler diagnostics, not source recoveries.
 
 This is the central 384-slot creature simulation sweep. Live Binary Ninja
 disassembly and the Ghidra hotspot recovery establish the complete gameplay
