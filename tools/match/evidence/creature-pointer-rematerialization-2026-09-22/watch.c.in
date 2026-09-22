@@ -1,0 +1,75 @@
+/* Diagnostic controls only. The symbol identifies the named health value;
+   its temporary descriptor can change and its definition can be cloned. */
+static unsigned long health_node, health_symbol, health_temp, early_hits, allocation_pairs;
+static unsigned long pending[7], hits[7], rejected[7], seen[7];
+static HANDLE decisions_file;
+
+static int watch(unsigned long phase, unsigned long *regs, unsigned long first)
+{
+    unsigned long n,d,k,definition,owner,temporary,select,row[8];
+    DWORD written;
+    if(phase==9) {
+        for(n=first;n;n=*(unsigned long*)n) {
+            if(*(unsigned short*)(n+0x10)!=27)continue;
+            if(*(unsigned long*)(n+4)==1) {
+                d=*(unsigned long*)(n+0x1c);
+                if(!d || *(unsigned char*)(d+8)!=1 || *(unsigned long*)d || early_hits++)ExitProcess(70);
+                health_symbol=*(unsigned long*)(d+0x14);
+                health_temp=*(unsigned long*)(d+0x18);
+                if(*(unsigned char*)(health_temp+4)!=2)ExitProcess(71);
+#if KEEP_EARLY
+                *(unsigned char*)(health_temp+5)|=4;
+#endif
+            }
+            if(*(unsigned long*)(n+4)==0x12) {
+                if(health_node)ExitProcess(72);
+                health_node=n;
+            }
+        }
+        if(!health_node || !health_symbol || early_hits!=1)ExitProcess(73);
+    }
+    if(phase>=13 && phase<=19) {
+        k=phase-13;definition=regs[6];d=*(unsigned long*)(definition+0x1c);
+        owner=d ? *(unsigned long*)(d+0x14) : 0;
+        temporary=d ? *(unsigned long*)(d+0x18) : 0;
+        pending[k]=d && *(unsigned char*)(d+8)==1 && owner==health_symbol &&
+            *(unsigned long*)(definition+4)==0x12 &&
+            (FOLLOW_OWNER || (definition==health_node && *(unsigned short*)(definition+0x10)==27));
+        if(pending[k]) {
+            row[0]=phase;row[1]=definition;row[2]=owner;row[3]=temporary;
+            row[4]=health_temp;row[5]=*(unsigned short*)(definition+0x10);row[6]=0;row[7]=0;
+            if(!WriteFile(decisions_file,row,sizeof(row),&written,0) || written!=sizeof(row))ExitProcess(74);
+        }
+        return 0;
+    }
+    if(phase>=113 && phase<=119) {
+        k=phase-113;
+        if(pending[k]) {
+            ++seen[k];
+            if(regs[7]>1)ExitProcess(75);
+            select=k<3 ? (1UL<<k) : 8;
+            row[0]=phase;row[1]=regs[7];row[2]=0;row[3]=0;
+            row[4]=0;row[5]=0;row[6]=0;row[7]=0;
+            if(regs[7]) {
+                ++hits[k];
+                if(REJECT_MASK & select) { regs[7]=0;++rejected[k];row[2]=1; }
+            }
+            if(!WriteFile(decisions_file,row,sizeof(row),&written,0) || written!=sizeof(row))ExitProcess(76);
+        }
+        return 0;
+    }
+    /* The first allocation call contains the watched definition. Other calls
+       need no full-function dump: there are over eighty of them. */
+    if(phase==12 && allocation_pairs++)return 0;
+    if(phase==112 && allocation_pairs!=1)return 0;
+    return 1;
+}
+static void finish_watch(void)
+{
+    unsigned long row[24],k;DWORD written;
+    if(early_hits!=1 || !allocation_pairs)ExitProcess(77);
+    row[0]=early_hits;row[1]=allocation_pairs;row[2]=health_symbol;
+    for(k=0;k<7;++k) { row[3+k]=seen[k];row[10+k]=hits[k];row[17+k]=rejected[k]; }
+    if(!WriteFile(decisions_file,row,sizeof(row),&written,0) || written!=sizeof(row))ExitProcess(78);
+    CloseHandle(decisions_file);
+}

@@ -1,0 +1,786 @@
+{
+  "schema_version": 1,
+  "kind": "creature-pointer-rematerialization",
+  "match_credit": false,
+  "canonical_source_sha256": "b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae",
+  "canonical_source_modified": false,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "preserving_manifest_sha256": "a11b62bc509f6fae734bb784ec9b8be743909954481000119de748dd40589cbc",
+  "controls": {
+    "control": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 82,
+        "seen": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rejected": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "decisions": [],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [],
+        "12": [],
+        "112": [],
+        "11": []
+      },
+      "metrics": {
+        "ratio": 0.5854765506807866,
+        "target_instructions": 1338,
+        "candidate_instructions": 1306,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x7c",
+      "opening": [
+        "je L140f",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lb3",
+        "cmp dword [esi+ADDR], 0x41800000",
+        "jne Lb3",
+        "fld dword [esi+ADDR]"
+      ],
+      "normalized_coff_sha256": "0c9f2c47e450baa7051d327e3e2cb944cd52badae49a3bfb70dea2660e4ed2ec",
+      "observer_sha256": "f7e2c30c1ee0367cf969445514413546433ad4e0e765a4647f336b427969ce9f",
+      "trace_sha256": "7967839638eeeb9af412ee9c91ea433f1c21fbcf089b60f19acdd1ac51976194",
+      "decision_sha256": "df7360d63ab9b7181f3707c29babbf6db4ba3733dfa413529e9d83d9ec47516e"
+    },
+    "early": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 82,
+        "seen": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rejected": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "decisions": [
+        {
+          "callsite": "0x5273a",
+          "definition": 1814149532,
+          "owner": 1814067516,
+          "temporary": 1815324012,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": false
+        }
+      ],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [],
+        "11": []
+      },
+      "metrics": {
+        "ratio": 0.5854765506807866,
+        "target_instructions": 1338,
+        "candidate_instructions": 1306,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x7c",
+      "opening": [
+        "je L140f",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lb3",
+        "cmp dword [esi+ADDR], 0x41800000",
+        "jne Lb3",
+        "fld dword [esi+ADDR]"
+      ],
+      "normalized_coff_sha256": "0c9f2c47e450baa7051d327e3e2cb944cd52badae49a3bfb70dea2660e4ed2ec",
+      "observer_sha256": "e0733d0b3cc65e83ddaa5525415a754c71c6b2d8f7d5e60daf9a876aecfafe7b",
+      "trace_sha256": "2c04d5d9cb961cd6a7bec677eab7e67f780f43025899620b028ee198d952d243",
+      "decision_sha256": "5f007461b4a310d8c8e726b0eacca6e21048ec968a436e612278fd5ab8b2fd7d"
+    },
+    "early-allocation": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 82,
+        "seen": [
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rejected": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "decisions": [
+        {
+          "callsite": "0x5273a",
+          "definition": 1814083996,
+          "owner": 1813477692,
+          "temporary": 1815324012,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x6a6b9",
+          "definition": 1814083996,
+          "owner": 1813477692,
+          "temporary": 1815324012,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": false
+        }
+      ],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": []
+      },
+      "metrics": {
+        "ratio": 0.5854765506807866,
+        "target_instructions": 1338,
+        "candidate_instructions": 1306,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x7c",
+      "opening": [
+        "je L140f",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lb3",
+        "cmp dword [esi+ADDR], 0x41800000",
+        "jne Lb3",
+        "fld dword [esi+ADDR]"
+      ],
+      "normalized_coff_sha256": "0c9f2c47e450baa7051d327e3e2cb944cd52badae49a3bfb70dea2660e4ed2ec",
+      "observer_sha256": "e8aeb3f3fc7229c47d506985b9499705a2f80d9012f390cf1ef89ff4453c4b72",
+      "trace_sha256": "32add6695d5763627d8101f2f1a7f4258564bf26b8fc0dc54fa1567fd8fa0a20",
+      "decision_sha256": "e3f88158efff8e1f5ee9ef3ea8a89e055f290de038fb40c43802f343a57cdab1"
+    },
+    "early-allocation-spill": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 82,
+        "seen": [
+          1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0
+        ],
+        "rejected": [
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "decisions": [
+        {
+          "callsite": "0x5273a",
+          "definition": 1814215068,
+          "owner": 1814133052,
+          "temporary": 1815389548,
+          "initial_temporary": 1815389548,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x6a6b9",
+          "definition": 1814215068,
+          "owner": 1814133052,
+          "temporary": 1815389548,
+          "initial_temporary": 1815389548,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x333ad",
+          "definition": 1814215068,
+          "owner": 1814133052,
+          "temporary": 1815389548,
+          "initial_temporary": 1815389548,
+          "line": 27,
+          "original_return": 1,
+          "rejected": false
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1814215068,
+          "owner": 1814133052,
+          "temporary": 1814849224,
+          "initial_temporary": 1815389548,
+          "line": 27,
+          "original_return": 1,
+          "rejected": false
+        }
+      ],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": []
+      },
+      "metrics": {
+        "ratio": 0.5854765506807866,
+        "target_instructions": 1338,
+        "candidate_instructions": 1306,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x7c",
+      "opening": [
+        "je L140f",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lb3",
+        "cmp dword [esi+ADDR], 0x41800000",
+        "jne Lb3",
+        "fld dword [esi+ADDR]"
+      ],
+      "normalized_coff_sha256": "0c9f2c47e450baa7051d327e3e2cb944cd52badae49a3bfb70dea2660e4ed2ec",
+      "observer_sha256": "aba4cd97798620cf0622e6b32b3e813569904126b276aad5522d7f6093d8f172",
+      "trace_sha256": "5b6fdd0f3c3d29ed500537032aba5ed8ab19c0194ea1bd3205170e405f157ae6",
+      "decision_sha256": "62786b5c85a74928b548c7768641b879f1149b5da45110064342bb922ecebba2"
+    },
+    "original-definition": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 83,
+        "seen": [
+          1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0
+        ],
+        "rejected": [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "decisions": [
+        {
+          "callsite": "0x5273a",
+          "definition": 1814083996,
+          "owner": 1813477692,
+          "temporary": 1815324012,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x6a6b9",
+          "definition": 1814083996,
+          "owner": 1813477692,
+          "temporary": 1815324012,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x333ad",
+          "definition": 1814083996,
+          "owner": 1813477692,
+          "temporary": 1815324012,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": false
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1814083996,
+          "owner": 1813477692,
+          "temporary": 1814718152,
+          "initial_temporary": 1815324012,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        }
+      ],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": [
+          "0x12"
+        ]
+      },
+      "metrics": {
+        "ratio": 0.5860113421550095,
+        "target_instructions": 1338,
+        "candidate_instructions": 1307,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x7c",
+      "opening": [
+        "je L1411",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "lea edi, dword [esi+ADDR]",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lb9",
+        "cmp dword [esi+ADDR], 0x41800000",
+        "jne Lb9"
+      ],
+      "normalized_coff_sha256": "5e93896f9c6de372f5c93052101b67decc5286f2096bf1fe7ac562f2fd470229",
+      "observer_sha256": "302b49d47a3be34f76a723a3c3d3e3bd04d183e496dce5cd64d55e28fd15f8ad",
+      "trace_sha256": "302a5eb57fc4398a2bc1fe3390d2c21843d515658de6e2a5c40d34e5e913f0d7",
+      "decision_sha256": "2913855cf349fb5ac8235ce0d51cc8e82d9940c2c651dabb41bdf8dad91cd587"
+    },
+    "health-value": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 87,
+        "seen": [
+          1,
+          1,
+          5,
+          0,
+          1,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          1,
+          5,
+          0,
+          1,
+          0,
+          0
+        ],
+        "rejected": [
+          1,
+          1,
+          5,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "decisions": [
+        {
+          "callsite": "0x5273a",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1815258476,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x6a6b9",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1815258476,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x333ad",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1815258476,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": false
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1815462236,
+          "owner": 1813412156,
+          "temporary": 1815243768,
+          "initial_temporary": 1815258476,
+          "line": 614,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1814205812,
+          "owner": 1813412156,
+          "temporary": 1814652708,
+          "initial_temporary": 1815258476,
+          "line": 479,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1814302100,
+          "owner": 1813412156,
+          "temporary": 1815244108,
+          "initial_temporary": 1815258476,
+          "line": 134,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1815461092,
+          "owner": 1813412156,
+          "temporary": 1815243836,
+          "initial_temporary": 1815258476,
+          "line": 606,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x52659",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1814652616,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        }
+      ],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": [
+          "0x12"
+        ]
+      },
+      "metrics": {
+        "ratio": 0.5889014722536806,
+        "target_instructions": 1338,
+        "candidate_instructions": 1311,
+        "prefix_instructions": 10,
+        "references_ok": 226,
+        "reference_problems": 1,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x7c",
+      "opening": [
+        "je L140d",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "lea edi, dword [esi+ADDR]",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lb9",
+        "cmp dword [esi+ADDR], 0x41800000",
+        "jne Lb9"
+      ],
+      "normalized_coff_sha256": "0e9257c887544623a950685776808292192003f1c13bc6012b596af513b766f5",
+      "observer_sha256": "fc34524f30c0aa6d76655253184ba2b08669d379bf6759a566024be48d589561",
+      "trace_sha256": "95be4ac3709f7ba28193576ca94b3b1a9a9cb40b10228857c904bbdff6547e17",
+      "decision_sha256": "fb5f517d3b718792c4f610e06dd0e597f57e9513e7e8bac5c22b4ef08461698b"
+    },
+    "health-home": {
+      "counts": {
+        "early": 1,
+        "allocation_calls": 84,
+        "seen": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "positive": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "rejected": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "decisions": [
+        {
+          "callsite": "0x5273a",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1815258476,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x6a6b9",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1815258476,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        },
+        {
+          "callsite": "0x333ad",
+          "definition": 1813494172,
+          "owner": 1813412156,
+          "temporary": 1815258476,
+          "initial_temporary": 1815258476,
+          "line": 27,
+          "original_return": 1,
+          "rejected": true
+        }
+      ],
+      "health_operations": {
+        "9": [
+          "0x12",
+          "0x1"
+        ],
+        "10": [
+          "0x12"
+        ],
+        "12": [
+          "0x12"
+        ],
+        "112": [
+          "0x12"
+        ],
+        "11": [
+          "0x12",
+          "0x1"
+        ]
+      },
+      "metrics": {
+        "ratio": 0.49227289860535245,
+        "target_instructions": 1338,
+        "candidate_instructions": 1315,
+        "prefix_instructions": 0,
+        "references_ok": 196,
+        "reference_problems": 2,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "frame_instruction": "sub esp, 0x80",
+      "opening": [
+        "je L1418",
+        "fld dword [esi+ADDR]",
+        "fcomp dword [ADDR]",
+        "lea edi, dword [esi+ADDR]",
+        "mov dword [esp+0x20], edi",
+        "fnstsw ax",
+        "test ah, 0x41",
+        "je Lc0",
+        "cmp dword [esi+ADDR], 0x41800000"
+      ],
+      "normalized_coff_sha256": "c475f8394fd73270a13b0f0b4b4362cc389f8c99568dee4e902d127fe250493c",
+      "observer_sha256": "6dc1a755ed08ae778669c21f88f928bf4d6b89dbe10c6606c690bcecd6cab550",
+      "trace_sha256": "5a5f3a89c3983a03e1cabed5a5d9e25eb767a8a5ded6ee45d759f5d1ee70dfc2",
+      "decision_sha256": "b77cdaa01dfc187ca2ab6d00121d18be106aeee4e34ee378ce6d20f916b47612"
+    }
+  },
+  "source_controls": {
+    "field-reference": {
+      "source_sha256": "8729b02e33f371f86461199431b3f42a59bd1e9f11220f6e828fc7cab20fc788",
+      "encoded_bytes_equal": true,
+      "relocations_equal": true,
+      "body_sha256": "67f3a0775f7bc8f685d5ccaaf7109bf25bc583430fc388c6f57cc9791ee332ce"
+    },
+    "bound-pointer-reference": {
+      "source_sha256": "d8cc6448fd109fb5a7631bf45a593b095aa5aa566097bbdc2ba052f90c30d055",
+      "encoded_bytes_equal": true,
+      "relocations_equal": true,
+      "body_sha256": "67f3a0775f7bc8f685d5ccaaf7109bf25bc583430fc388c6f57cc9791ee332ce"
+    }
+  },
+  "harness_sha256": {
+    "verify.py": "275b456bfbc432d601f6ab86f6fa12ee6bafef952f0db298eae53fb1329cad30",
+    "watch.c.in": "ca3f8fd8ee6ffdcb8eb7f210c8f5e1108e039eeeec8721b7a44fb3dc98326044"
+  }
+}

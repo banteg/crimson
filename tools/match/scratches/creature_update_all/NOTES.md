@@ -828,3 +828,21 @@ with both byte-offset and scale-eight addressing. The second removal site has
 not yet been localized. The residual therefore needs separate controls for
 address units, pointer retention, and x87 loop memory staging; “allocation
 cascade” alone does not explain it. Canonical source and match credit unchanged.
+
+### Health-pointer follow-through (2026-09-22)
+
+[Seven controlled replays](../../evidence/creature-pointer-rematerialization-2026-09-22/README.md)
+now locate the later routes: allocation analysis (`0x32216`), spill handling
+(`0x33230`), and the final allocation loop all invoke the same reconstruction
+predicate at distinct callsites. Suppressing the first three removal routes
+still yields the stock whole COFF. The original descriptor changes during
+regional splitting; following the original definition retains one LEA, while
+following the named health value catches seven decisions across five final
+regional definitions.
+
+Rejecting regional eligibility at `0x333ad` finally produces a pointer home,
+but in a 128-byte frame with the initial load still ahead of its LEA. This is
+mechanism evidence only, not source recovery. Field-reference and bound-pointer
+reference controls reproduce canonical function bytes and relocation descriptors.
+The remaining source constraint is the value's lifetime across regions plus
+native early storage, not the pointer declaration alone. No match credit added.

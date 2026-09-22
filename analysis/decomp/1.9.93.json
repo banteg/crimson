@@ -35259,7 +35259,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 162,
-        "candidate_object_sha256": "485433adf4b326a4645cde0c865b31e85bf302f646bce309f2c728ac49e2d866",
+        "candidate_object_sha256": "d2eda8a4c04efa41658a55723235bb2489779f083d1212c997a90821e2cc28c5",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -48247,7 +48247,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1968,
-        "candidate_object_sha256": "24cd870f67b117976d09c266523ca1f4a6fdbb1cd42005afa23535cad959e3c1",
+        "candidate_object_sha256": "54865ad3680633ad8c209619bdc0d6885a6f18e05b8789358ecfa3845d68850b",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -111103,6 +111103,7 @@
     "tools/match/evidence/bonus-pick-cold-edge-2026-09-11/verify_controls.py": "40f3b00922e98ca1a7a6863d9685a7a1ae7803cd3c8f4ae5f312f91e3e8d3c92",
     "tools/match/evidence/bonus-pick-flow-graph-2026-09-11/verify.py": "c7f6f44d399666794830de4fca7ae815712ec6ccceeda47b0ea680f4a906a2fc",
     "tools/match/evidence/bonus-pick-flow-graph-2026-09-11/verify_controls.py": "40f3b00922e98ca1a7a6863d9685a7a1ae7803cd3c8f4ae5f312f91e3e8d3c92",
+    "tools/match/evidence/bonus-pick-layout-causality-2026-09-22/verify.py": "242bca68abe221d940564045d46c9727e8178ada607ba6ae27cc02c0f85de542",
     "tools/match/evidence/bonus-pick-layout-trace-2026-09-13/controls/explicit-stage-five-tail.cpp": "eb41fd1e64e0470f5316a4a6ac49b836e7e82482dfb2db989c4f7c44cb94dd72",
     "tools/match/evidence/bonus-pick-layout-trace-2026-09-13/controls/inverted-hardcore-prefix.cpp": "a376494276b4217258bb8dc2e44e742ba0d313bd13f1869d2b25f39b8501903b",
     "tools/match/evidence/bonus-pick-layout-trace-2026-09-13/verify.py": "5740c240f4a2e37c549ca417f2eb1748b87ecb9e6415ea6c9ca40805dbb148d9",
@@ -111128,8 +111129,10 @@
     "tools/match/evidence/creature-interaction-boundaries-2026-09-13/before.cpp": "c5bce487a3bb6a0b890b33cd9af9ff273a1ef45db1e42c19ac330b1b2e3159b2",
     "tools/match/evidence/creature-interaction-boundaries-2026-09-13/recover.py": "5f050b895161631b0b3743d3d289f12968bf19eb6de645ba9b958594c5ee5b56",
     "tools/match/evidence/creature-interaction-boundaries-2026-09-13/verify.py": "98729375f1cdf1dd92ab57b1ff9a461d90b673fbb6103bf51a8af5af75812643",
+    "tools/match/evidence/creature-offset-units-2026-09-22/verify.py": "ff0229f548a369899799c6b1cc13fa41ddff8877449880626e0616ef3ba95fc5",
     "tools/match/evidence/creature-pass-order-2026-09-11/verify.py": "7fa93302482c0df0900c8634d66e5de8f807d1f66846cb8fd997451d1f82979f",
     "tools/match/evidence/creature-pass-order-2026-09-11/verify_ports.py": "8bd8c7b12ebfce4091abe0a8aecb617af8dce8e0b4efaee88ca04e90dfb17aad",
+    "tools/match/evidence/creature-pointer-rematerialization-2026-09-22/verify.py": "275b456bfbc432d601f6ab86f6fa12ee6bafef952f0db298eae53fb1329cad30",
     "tools/match/evidence/creature-pool-sentinel-2026-09-09/verify.py": "3ca3450c569ab5a892f55dcd361d44edc9bd83240c83f20fac84d4cc729d81c0",
     "tools/match/evidence/creature-render-colors-2026-09-11/verify.py": "29636255bf144fbfbdb5022baafea9efcb9e09ef1f673890674ffc1a7e814d1c",
     "tools/match/evidence/creature-render-colors-2026-09-11/verify_ports.py": "9270c9b516228512601ae9926a145e069c71cea0da90d708a2807417f6d1d69c",
