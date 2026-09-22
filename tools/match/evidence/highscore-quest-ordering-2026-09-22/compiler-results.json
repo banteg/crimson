@@ -1,0 +1,3344 @@
+{
+  "schema": 1,
+  "scope": "causal-compiler-evidence-not-full-function-match",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "hooks": [
+    {
+      "site": 360942,
+      "target": 78027,
+      "return": false
+    },
+    {
+      "site": 360956,
+      "target": 64730,
+      "return": false
+    },
+    {
+      "site": 361033,
+      "target": 164301,
+      "return": false
+    },
+    {
+      "site": 361185,
+      "target": 168719,
+      "return": false
+    },
+    {
+      "site": 361232,
+      "target": 169233,
+      "return": false
+    },
+    {
+      "site": 361246,
+      "target": 169694,
+      "return": false
+    },
+    {
+      "site": 361356,
+      "target": 159093,
+      "return": false
+    },
+    {
+      "site": 361375,
+      "target": 194812,
+      "return": false
+    },
+    {
+      "site": 195504,
+      "target": 197384,
+      "return": false
+    },
+    {
+      "site": 195517,
+      "target": 198337,
+      "return": false
+    },
+    {
+      "site": 195524,
+      "target": 199232,
+      "return": false
+    },
+    {
+      "site": 361413,
+      "target": 210676,
+      "return": false
+    },
+    {
+      "site": 55949,
+      "target": 62852,
+      "return": true
+    },
+    {
+      "site": 55530,
+      "target": 62852,
+      "return": true
+    },
+    {
+      "site": 55551,
+      "target": 62852,
+      "return": true
+    },
+    {
+      "site": 196191,
+      "target": 208764,
+      "return": true
+    },
+    {
+      "site": 209090,
+      "target": 9501,
+      "return": true
+    }
+  ],
+  "results": {
+    "selector": {
+      "ordering": {
+        "generated_base_id": 2858,
+        "natural_memory_key": 98311,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 6,
+        "priority": 106,
+        "cost": 20,
+        "register_rva": 706688,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [],
+      "coff_sha256": "7558a432f5a5f5d42025f1baa584fcf016437c4722f488061a871cfa7ae70438",
+      "trace_hashes": {
+        "order.bin": "a9cdf5731f11dc9367e26e9274871066ce4bc93ba28ef2863d16ec0a8bb4d7ff",
+        "alloc.bin": "36b0ff61e8afe7e89d4a6be08925e9f1da5fa54463f6dd36698e9a3d3ceeb6d3",
+        "change.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lowering": {
+        "4": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "5": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "10": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      },
+      "source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "capture_manifest_sha256": "448d5f2d116710938954a96cf1e7f1c62005d6d3d3dadf2fab8aade478b84b72"
+    },
+    "predicate": {
+      "ordering": {
+        "generated_base_id": 2856,
+        "natural_memory_key": 65543,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 1,
+        "priority": 274,
+        "cost": 44,
+        "register_rva": 706940,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            193,
+            45,
+            1
+          ],
+          [
+            193,
+            13,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            1
+          ],
+          [
+            201,
+            13,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            1
+          ],
+          [
+            208,
+            13,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 128,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 64,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [],
+      "coff_sha256": "810675b2c47d622fe40191a4f575b421d2aa3ec9d38a8e9a5c2ee40fa0584b7b",
+      "trace_hashes": {
+        "order.bin": "183f196ff9387a009ee029632ae6f69a633ce5658e0eeb186aaa1b82b56b4cec",
+        "alloc.bin": "cca5b631d4996f7e5a3b3a9ea7dedadd0bff37e949f766d87556b339deb607eb",
+        "change.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lowering": {
+        "4": [
+          [
+            193,
+            45,
+            0,
+            [
+              1,
+              6,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            0,
+            [
+              1,
+              6,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            0,
+            [
+              1,
+              6,
+              1
+            ]
+          ]
+        ],
+        "5": [
+          [
+            193,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            201,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            208,
+            1,
+            0,
+            [
+              1
+            ]
+          ]
+        ],
+        "10": [
+          [
+            193,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            201,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            208,
+            1,
+            0,
+            [
+              1
+            ]
+          ]
+        ]
+      },
+      "source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "capture_manifest_sha256": "c2ee9a4d37bfe250cdcab6c38ac75edd4edfe230f2219212a8057230a0e54e60"
+    },
+    "quest-limit-reference": {
+      "ordering": {
+        "generated_base_id": 2857,
+        "natural_memory_key": 81927,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              81927,
+              66400
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 6,
+        "priority": 106,
+        "cost": 20,
+        "register_rva": 706688,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [],
+      "coff_sha256": "8a8e26a6abceb6c1aefd0100dcdec65f74fb520432ed4285008da3f43ebb0045",
+      "trace_hashes": {
+        "order.bin": "d29891aba4ddb60ac1871b7d1a3a1ea4e8d34d327c7e9689b7f482bf1c225590",
+        "alloc.bin": "9dfef6ce7ea1e476126cb82758685e3db8d2c7d4b4b35e16ddbad7683b09642d",
+        "change.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lowering": {
+        "4": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "5": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "10": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      },
+      "source_sha256": "0c797bbc3e614aa89da8da7c69aef9c9fb684296e742128e3079f6d2425aba20",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "capture_manifest_sha256": "17301b846db7fd1c2b51983a41b444562a2a8f0ba58574019fffa675101ab4ac"
+    },
+    "quest-arm-indices": {
+      "ordering": {
+        "generated_base_id": 2856,
+        "natural_memory_key": 65543,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 1,
+        "priority": 274,
+        "cost": 44,
+        "register_rva": 706940,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            193,
+            45,
+            1
+          ],
+          [
+            193,
+            13,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            1
+          ],
+          [
+            201,
+            13,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            1
+          ],
+          [
+            208,
+            13,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 128,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 64,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [],
+      "coff_sha256": "580f4444c4ccfc87008a7b78d6ab67ef85fb5f04d889dcd9f9bc1429bb836960",
+      "trace_hashes": {
+        "order.bin": "a9a4281f948897fb4231d45582ca7c9ba731f0c912f9434c6683c221f745cfb3",
+        "alloc.bin": "a3ba6e3ef78bbe5acd7b6d23c406c83bacb24e46a3336c15c15f8120988a95ea",
+        "change.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lowering": {
+        "4": [
+          [
+            193,
+            45,
+            0,
+            [
+              1,
+              6,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            0,
+            [
+              1,
+              6,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            0,
+            [
+              1,
+              6,
+              1
+            ]
+          ]
+        ],
+        "5": [
+          [
+            193,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            201,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            208,
+            1,
+            0,
+            [
+              1
+            ]
+          ]
+        ],
+        "10": [
+          [
+            193,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            201,
+            1,
+            0,
+            [
+              1
+            ]
+          ],
+          [
+            208,
+            1,
+            0,
+            [
+              1
+            ]
+          ]
+        ]
+      },
+      "source_sha256": "8fae482543f8209814ac89edbd2923fd5e92c5555a0eab57f884965cb2418ee7",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "capture_manifest_sha256": "83326cd3e8801b1b47fff49a27925815461843f399601bc8a72e678a7726874f"
+    },
+    "quest-arm-direct": {
+      "ordering": {
+        "generated_base_id": 2855,
+        "natural_memory_key": 114695,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              114695,
+              66400
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 6,
+        "priority": 106,
+        "cost": 20,
+        "register_rva": 706688,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [],
+      "coff_sha256": "5e89593d11b17d02b40191fa860ec9cffdae920ed5c6e95e5a6a6ece65d32e3a",
+      "trace_hashes": {
+        "order.bin": "f57e36a6d85e8406ebc1dc6c2893dbb643bce8ed2685c7522cf953aefbeaab51",
+        "alloc.bin": "ba9793a98d2faf556f1e970bd3d194a9a9e9dc924108d16fa76d498823d71d42",
+        "change.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lowering": {
+        "4": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "5": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "10": [
+          [
+            193,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            201,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            208,
+            45,
+            1,
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      },
+      "source_sha256": "bf9dce0fbce17274e1b7fcbe7905b967eff37b5b7cbc468b0d960e29174fc434",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true,
+      "capture_manifest_sha256": "2d3200e7fa1b40cab76bcec5dd742420923fd85fcba976900f80c033fc6f6c98"
+    },
+    "predicate-force-key": {
+      "ordering": {
+        "generated_base_id": 2856,
+        "natural_memory_key": 65543,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              65543,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 6,
+        "priority": 106,
+        "cost": 20,
+        "register_rva": 706688,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              0,
+              20200,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [
+        [
+          14,
+          193,
+          65543,
+          98311
+        ],
+        [
+          12,
+          193,
+          65543,
+          98311
+        ],
+        [
+          14,
+          201,
+          65543,
+          98311
+        ],
+        [
+          12,
+          201,
+          65543,
+          98311
+        ],
+        [
+          14,
+          208,
+          65543,
+          98311
+        ],
+        [
+          12,
+          208,
+          65543,
+          98311
+        ]
+      ],
+      "coff_sha256": "8a8e26a6abceb6c1aefd0100dcdec65f74fb520432ed4285008da3f43ebb0045",
+      "trace_hashes": {
+        "order.bin": "a7968b33d97252353fb79ed8ed667cb38eec98cd88d8180d6e32d453597c45c1",
+        "alloc.bin": "b29ed8479196496123b7b0ad504c2518e80de3eaafc62894f501dada78210e69",
+        "change.bin": "da4ade82d78cb894dd0dd2715be09e96ca06e2e542c00f2b4e13c380f27adc69"
+      }
+    },
+    "selector-force-key": {
+      "ordering": {
+        "generated_base_id": 2858,
+        "natural_memory_key": 98311,
+        "prefix_key": 66400,
+        "sorts": [
+          {
+            "line": 193,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              98311
+            ]
+          },
+          {
+            "line": 193,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              98311
+            ]
+          },
+          {
+            "line": 201,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 14,
+            "kinds": [
+              6,
+              2
+            ],
+            "keys": [
+              98311,
+              66400
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 114,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 13,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 113,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 12,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              98311
+            ]
+          },
+          {
+            "line": 208,
+            "phase": 112,
+            "kinds": [
+              2,
+              6
+            ],
+            "keys": [
+              66400,
+              65543
+            ]
+          }
+        ]
+      },
+      "allocation": {
+        "ordinal": 1,
+        "priority": 274,
+        "cost": 44,
+        "register_rva": 706940,
+        "users": [
+          [
+            173,
+            1,
+            1
+          ],
+          [
+            183,
+            1,
+            1
+          ],
+          [
+            193,
+            45,
+            0
+          ],
+          [
+            193,
+            45,
+            1
+          ],
+          [
+            193,
+            13,
+            0
+          ],
+          [
+            201,
+            45,
+            0
+          ],
+          [
+            201,
+            45,
+            1
+          ],
+          [
+            201,
+            13,
+            0
+          ],
+          [
+            208,
+            45,
+            0
+          ],
+          [
+            208,
+            45,
+            1
+          ],
+          [
+            208,
+            13,
+            0
+          ]
+        ],
+        "choices": [
+          {
+            "register": 1,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 2,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 3,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 7,
+            "eligible": 128,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 8,
+            "eligible": 0,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 4,
+            "eligible": 16,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "register": 6,
+            "eligible": 64,
+            "costs": [
+              0,
+              0,
+              0,
+              2,
+              14100,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "total_allocations": 170
+      },
+      "changed_keys": [
+        [
+          14,
+          193,
+          98311,
+          65543
+        ],
+        [
+          12,
+          193,
+          98311,
+          65543
+        ],
+        [
+          14,
+          201,
+          98311,
+          65543
+        ],
+        [
+          12,
+          201,
+          98311,
+          65543
+        ],
+        [
+          14,
+          208,
+          98311,
+          65543
+        ],
+        [
+          12,
+          208,
+          98311,
+          65543
+        ]
+      ],
+      "coff_sha256": "05552a274b93076586b25cce144c94afd8e9647ee92709e4c7149ce47dd5875e",
+      "trace_hashes": {
+        "order.bin": "2de2095ffe088095fcb8e83d3854ce10b1c72de7d338f94155bc3b49bf2125f2",
+        "alloc.bin": "02a004f55b1e0e87ec61e689f9bad61f700b40a299fef9cc9c444be0ac13b208",
+        "change.bin": "6d1527025427bd956ad8d9189ba51ca19bc1263f5cae233b6b095a3ffe9f05b8"
+      }
+    }
+  },
+  "corruptions_rejected": [
+    "truncated-order-record",
+    "omitted-sort-return",
+    "wrong-ordering-key"
+  ],
+  "dependency_hashes": {
+    "src/crimson/match_c2.py": "f69ef8df1170cc762d1d1692224ef55b8408e3dd12b0da8b970faa15ae1265ac",
+    "src/crimson/match_c2_replay.py": "23023a2cb1933c722c4d2b6b780bcaa83f4de27bd9221a222cdf3f1561dc4fe5",
+    "tools/match/c2/observer.c.in": "5fa704e4c2c68b8e77717e30405a9c2e4c589115fce23f16ef3d559940d762b0"
+  },
+  "input_hashes": {
+    "controls.py": "d5a27e7aa43a20402b2a0a45ae9b330e5da21410779e548c649be47aac527476",
+    "controls.json": "a656ae30c6b9d53f5d40ec4bb81bc1b1fef8e4a45ee293d3b36feccb2c30c854",
+    "verify_compiler.py": "955631b3ea8250433c6f25059b32cf7679809601f35e075f1e27564e45105838",
+    "watch.c.in": "b207e2e3e138058827afbbd72eee9dc4a3607dcb442762ad5e31ad60715ff8c8"
+  }
+}

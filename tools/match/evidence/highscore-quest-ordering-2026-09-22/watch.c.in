@@ -1,0 +1,104 @@
+/* Observe the three prefix additions and every register allocation.
+   Only FORCE_KEY changes compiler state. It changes no pointer, symbol ID,
+   operand link, eligibility answer, instruction, or source stream. */
+static HANDLE order_file, alloc_file, change_file;
+static unsigned long ordinal, sortnode[3], prefix_symbol, c2base;
+static unsigned long alloc_index, subject, choice_index, key_changes;
+
+static void write_record(HANDLE file, unsigned long *row, unsigned long bytes) {
+    DWORD written;
+    if(!WriteFile(file,row,bytes,&written,0) || written!=bytes)ExitProcess(82);
+}
+static void append_op(unsigned long *row,unsigned long pos,unsigned long ptr) {
+    unsigned long j,kind,symbol,words;
+    if(!ptr)return;
+    kind=*(unsigned char *)(ptr+8);
+    words=(kind==5 || kind==6)?12:7;
+    for(j=0;j<words;++j)row[pos+j]=*(unsigned long *)(ptr+4*j);
+    if(kind>=1 && kind<=4) {
+        symbol=*(unsigned long *)(ptr+0x14);
+        if(symbol)for(j=0;j<8;++j)row[pos+12+j]=*(unsigned long *)(symbol+4*j);
+    }
+}
+static void order_record(unsigned long phase,unsigned long node,unsigned long op) {
+    unsigned long row[90],k,j;
+    for(k=0;op;op=*(unsigned long *)op,++k) {
+        for(j=0;j<90;++j)row[j]=0;
+        row[0]=phase;row[1]=node;row[2]=*(unsigned short *)(node+4);
+        row[3]=*(unsigned short *)(node+0x10);row[4]=k;row[5]=op;
+        append_op(row,6,op);
+        if(*(unsigned char *)(op+8)==6) {
+            append_op(row,34,*(unsigned long *)(op+0x28));
+            append_op(row,62,*(unsigned long *)(op+0x2c));
+        }
+        write_record(order_file,row,sizeof(row));
+    }
+}
+static void order_watch(unsigned long phase,unsigned long *regs) {
+    unsigned long slot,node,line,op,it,memory=0,prefixes=0,count=0,change[4];
+    if(phase<12)return;
+    slot=(phase>=100 ? phase-100 : phase)-12;
+    if(slot>2)return;
+    if(phase<100)sortnode[slot]=regs[slot==0?4:slot==1?1:2];
+    node=sortnode[slot];line=*(unsigned short *)(node+0x10);
+    if(line!=ROW_LINE_0 && line!=ROW_LINE_1 && line!=ROW_LINE_2)return;
+    if(*(unsigned short *)(node+4)!=0x16d)return;
+    op=(phase<100)?regs[6]:regs[7];
+    for(it=op;it;it=*(unsigned long *)it) {
+        ++count;
+        if(*(unsigned char *)(it+8)==2 && *(unsigned long *)(it+0x14)==prefix_symbol)++prefixes;
+        if(*(unsigned char *)(it+8)==6)memory=it;
+    }
+    if(!prefixes)return;
+    if(prefixes!=1 || count!=2 || !memory)ExitProcess(84);
+    if(*(unsigned short *)(memory+4)!=0x14c || *(unsigned long *)(memory+0x24)!=0
+       || !*(unsigned long *)(memory+0x28) || *(unsigned long *)(memory+0x2c))ExitProcess(85);
+    order_record(phase,node,op);
+    if(phase<100 && FORCE_KEY) {
+        change[0]=phase;change[1]=line;change[2]=*(unsigned long *)(memory+0xc);change[3]=FORCE_KEY;
+        if(change[2]!=EXPECT_KEY && change[2]!=FORCE_KEY)ExitProcess(86);
+        if(change[2]!=FORCE_KEY) {
+            ++key_changes;
+            write_record(change_file,change,sizeof(change));
+            *(unsigned long *)(memory+0xc)=FORCE_KEY;
+        }
+    }
+}
+static void alloc_record(unsigned long phase,unsigned long before) {
+    unsigned long row[35],j;
+    row[0]=phase;row[1]=alloc_index;row[2]=subject;row[3]=choice_index;row[4]=before;row[5]=before;
+    for(j=0;j<20;++j)row[6+j]=*(unsigned long *)(subject+j*4);
+    for(j=0;j<9;++j)row[26+j]=*(unsigned long *)(c2base+0x9d868+j*4);
+    write_record(alloc_file,row,sizeof(row));
+}
+static void watch(unsigned long phase,unsigned long *regs,unsigned long first) {
+    unsigned long node,op,side,row[35],j,defs=0;
+    if(phase==0)++ordinal;
+    if(ordinal!=1)return;
+    if(phase==0) {
+        for(node=first;node;node=*(unsigned long *)node) {
+            if(*(unsigned short *)(node+0x10)!=PREFIX_LINE)continue;
+            op=*(unsigned long *)(node+0x1c);
+            if(op && *(unsigned char *)(op+8)==2) {prefix_symbol=*(unsigned long *)(op+0x14);++defs;}
+        }
+        if(defs!=1)ExitProcess(88);
+    }
+    order_watch(phase,regs);
+    if(phase==15) {
+        subject=regs[6];++alloc_index;choice_index=0;
+        alloc_record(12,0);
+        for(node=first;node;node=*(unsigned long *)node) {
+            if(!(*(unsigned char *)(node+9)&1))continue;
+            for(side=0;side<2;++side)for(op=*(unsigned long *)(node+0x18+side*4);op;op=*(unsigned long *)op) {
+                if(*(unsigned char *)(op+8)!=1 || *(unsigned long *)(op+0x18)!=subject)continue;
+                for(j=0;j<35;++j)row[j]=0;
+                row[0]=200;row[1]=alloc_index;row[2]=subject;row[3]=node;row[4]=side;
+                row[5]=*(unsigned short *)(node+0x10);row[6]=*(unsigned short *)(node+4);
+                for(j=0;j<7;++j)row[7+j]=*(unsigned long *)(op+4*j);
+                write_record(alloc_file,row,sizeof(row));
+            }
+        }
+    }else if(phase==115)alloc_record(112,0);
+    else if(phase==16)choice_index=regs[5];
+    else if(phase==116)alloc_record(113,regs[7]);
+}

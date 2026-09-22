@@ -1,0 +1,326 @@
+{
+  "schema": 1,
+  "controls": [
+    {
+      "name": "selector",
+      "parent": "native-boundaries-gate-0-items-1",
+      "parent_source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "edits": [],
+      "source_sha256": "d792e8f3b99ba797cb1a90683342a31667d2c5818e6278294e87d54bb970d9c9",
+      "normalized_coff_sha256": "7558a432f5a5f5d42025f1baa584fcf016437c4722f488061a871cfa7ae70438",
+      "body_sha256": "e2ba4046f4c401684fc2277a1f8d68d34ae48dc31acb7a47458827982a256075",
+      "instructions": 2004,
+      "ratio": 0.8982035928143712,
+      "prefix": 108,
+      "references": [
+        626,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "predicate",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [],
+      "source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "normalized_coff_sha256": "810675b2c47d622fe40191a4f575b421d2aa3ec9d38a8e9a5c2ee40fa0584b7b",
+      "body_sha256": "f1f668414cc95da3028068608b3579a92694341a4a3682e1aa0f15e1d7141b74",
+      "instructions": 1990,
+      "ratio": 0.8527791687531296,
+      "prefix": 108,
+      "references": [
+        613,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-arm-direct",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 462,
+          "lines": []
+        },
+        {
+          "start": 463,
+          "end": 464,
+          "lines": [
+            "                int quest_index =\n",
+            "                    quest_stage_minor + quest_stage_major * 10 - 11;\n",
+            "                if (quest_unlock_index_full >= quest_index) {\n",
+            "                    goto quest_game_allowed;\n",
+            "                }\n",
+            "                goto play_game_done;\n",
+            "            } else {\n",
+            "                int quest_index =\n",
+            "                    quest_stage_minor + quest_stage_major * 10 - 11;\n",
+            "                if (quest_unlock_index < quest_index) {\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 468,
+          "lines": []
+        },
+        {
+          "start": 469,
+          "end": 469,
+          "lines": [
+            "quest_game_allowed:\n"
+          ]
+        }
+      ],
+      "source_sha256": "bf9dce0fbce17274e1b7fcbe7905b967eff37b5b7cbc468b0d960e29174fc434",
+      "normalized_coff_sha256": "5e89593d11b17d02b40191fa860ec9cffdae920ed5c6e95e5a6a6ece65d32e3a",
+      "body_sha256": "21cf87610439508e50b4a8c16777d0534cec5af2646e61b5ec0021f1f332bb2d",
+      "instructions": 2004,
+      "ratio": 0.9001996007984032,
+      "prefix": 108,
+      "references": [
+        623,
+        0,
+        2
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-arm-indices",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 462,
+          "lines": [
+            "            const int &hardcore_limit = quest_unlock_index_full;\n"
+          ]
+        },
+        {
+          "start": 463,
+          "end": 464,
+          "lines": [
+            "                int quest_index =\n",
+            "                    quest_stage_minor + quest_stage_major * 10 - 11;\n",
+            "                if (hardcore_limit >= quest_index) {\n",
+            "                    goto quest_game_allowed;\n",
+            "                }\n",
+            "                goto play_game_done;\n",
+            "            } else {\n",
+            "                int quest_index =\n",
+            "                    quest_stage_minor + quest_stage_major * 10 - 11;\n",
+            "                if (quest_unlock_index < quest_index) {\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 468,
+          "lines": []
+        },
+        {
+          "start": 469,
+          "end": 469,
+          "lines": [
+            "quest_game_allowed:\n"
+          ]
+        }
+      ],
+      "source_sha256": "8fae482543f8209814ac89edbd2923fd5e92c5555a0eab57f884965cb2418ee7",
+      "normalized_coff_sha256": "580f4444c4ccfc87008a7b78d6ab67ef85fb5f04d889dcd9f9bc1429bb836960",
+      "body_sha256": "2525dcecf67e34de5b73eaffdeaea93a42d156c29c9343d1eebc209725de5007",
+      "instructions": 1990,
+      "ratio": 0.85778668002003,
+      "prefix": 108,
+      "references": [
+        615,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-limit-reference",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 460,
+          "lines": [
+            "            const int &hardcore_limit = quest_unlock_index_full;\n"
+          ]
+        },
+        {
+          "start": 463,
+          "end": 464,
+          "lines": [
+            "                if (hardcore_limit < quest_index) {\n"
+          ]
+        }
+      ],
+      "source_sha256": "0c797bbc3e614aa89da8da7c69aef9c9fb684296e742128e3079f6d2425aba20",
+      "normalized_coff_sha256": "8a8e26a6abceb6c1aefd0100dcdec65f74fb520432ed4285008da3f43ebb0045",
+      "body_sha256": "45f5313ca82008194823424cbf05659cf892f441d17d57a6b1f90da2852fc40b",
+      "instructions": 2004,
+      "ratio": 0.8852295409181636,
+      "prefix": 108,
+      "references": [
+        618,
+        0,
+        2
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-major-value",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 460,
+          "lines": [
+            "            int quest_major = quest_stage_major;\n"
+          ]
+        },
+        {
+          "start": 461,
+          "end": 462,
+          "lines": [
+            "                quest_stage_minor + quest_major * 10 - 11;\n"
+          ]
+        }
+      ],
+      "source_sha256": "61b234e916b1632808bfe6d96be55967128b519f3f064f2db9cdecc74d6057be",
+      "normalized_coff_sha256": "810675b2c47d622fe40191a4f575b421d2aa3ec9d38a8e9a5c2ee40fa0584b7b",
+      "body_sha256": "f1f668414cc95da3028068608b3579a92694341a4a3682e1aa0f15e1d7141b74",
+      "instructions": 1990,
+      "ratio": 0.8527791687531296,
+      "prefix": 108,
+      "references": [
+        613,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-parts-references",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 462,
+          "lines": [
+            "            const int &quest_major = quest_stage_major;\n",
+            "            const int &quest_minor = quest_stage_minor;\n",
+            "            int quest_index = quest_minor + quest_major * 10 - 11;\n"
+          ]
+        }
+      ],
+      "source_sha256": "5477509082c4a9a6074aebf85eb7595acdba9c5dce7160813abe75f9e2f2d9ef",
+      "normalized_coff_sha256": "8a8e26a6abceb6c1aefd0100dcdec65f74fb520432ed4285008da3f43ebb0045",
+      "body_sha256": "45f5313ca82008194823424cbf05659cf892f441d17d57a6b1f90da2852fc40b",
+      "instructions": 2004,
+      "ratio": 0.8852295409181636,
+      "prefix": 108,
+      "references": [
+        618,
+        0,
+        2
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-parts-values",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 462,
+          "lines": [
+            "            int quest_major = quest_stage_major;\n",
+            "            int quest_minor = quest_stage_minor;\n",
+            "            int quest_index = quest_minor + quest_major * 10 - 11;\n"
+          ]
+        }
+      ],
+      "source_sha256": "5555aed4b6a783c8bb78d16e96aac66f9530b80ef38edee8b2e9c246197ed1c7",
+      "normalized_coff_sha256": "810675b2c47d622fe40191a4f575b421d2aa3ec9d38a8e9a5c2ee40fa0584b7b",
+      "body_sha256": "f1f668414cc95da3028068608b3579a92694341a4a3682e1aa0f15e1d7141b74",
+      "instructions": 1990,
+      "ratio": 0.8527791687531296,
+      "prefix": 108,
+      "references": [
+        613,
+        0,
+        3
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "quest-positive-goto",
+      "parent": "native-boundaries-gate-1-items-1",
+      "parent_source_sha256": "aa614106875fae2993ace66c9d98baa23e1836dac9fad41cd3c036c9160bd23f",
+      "edits": [
+        {
+          "start": 460,
+          "end": 460,
+          "lines": [
+            "            const int &hardcore_limit = quest_unlock_index_full;\n"
+          ]
+        },
+        {
+          "start": 463,
+          "end": 465,
+          "lines": [
+            "                if (hardcore_limit >= quest_index) {\n",
+            "                    goto quest_game_allowed;\n"
+          ]
+        },
+        {
+          "start": 466,
+          "end": 466,
+          "lines": [
+            "                goto play_game_done;\n"
+          ]
+        },
+        {
+          "start": 469,
+          "end": 469,
+          "lines": [
+            "quest_game_allowed:\n"
+          ]
+        }
+      ],
+      "source_sha256": "741e40957dd33b1d801e4c201dde336a154fe6f539fc05c5b26b9bbc862775b5",
+      "normalized_coff_sha256": "2b2c767541aac462819638f8da8a728e6cb961da5d03d8ea1217bf65ef67ecf2",
+      "body_sha256": "0ca2a84eba4e5e3dc869c31446138c55fc1ac76bcc33857d667e8c03b67eda21",
+      "instructions": 2004,
+      "ratio": 0.8852295409181636,
+      "prefix": 108,
+      "references": [
+        618,
+        0,
+        2
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    }
+  ]
+}

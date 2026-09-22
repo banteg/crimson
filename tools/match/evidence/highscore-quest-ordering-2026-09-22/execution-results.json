@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "scope": "play-gate-state-writes-and-modeled-sound-calls-only",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "compiled": {
+    "normalized_coff_sha256": "5e89593d11b17d02b40191fa860ec9cffdae920ed5c6e95e5a6a6ece65d32e3a",
+    "body_sha256": "21cf87610439508e50b4a8c16777d0534cec5af2646e61b5ec0021f1f332bb2d",
+    "instructions": 2004,
+    "ratio": 0.9001996007984032,
+    "prefix": 108,
+    "references": [
+      623,
+      0,
+      2
+    ],
+    "exact": false,
+    "body_byte_exact": false
+  },
+  "fixtures": 9024,
+  "fixture_sha256": "5a38a8b3df5440ad0273dc4415d79eaaf2e57c292b34d14f668b626891edb47e",
+  "outputs_sha256": "adc11f514d27dbad54489598c9c031f126ee451d84b6055ee91b22d5bda5a813",
+  "native_window": [
+    4468570,
+    4468748
+  ],
+  "candidate_window": [
+    2954,
+    3132
+  ],
+  "ordered_events_equal": true,
+  "stack_balanced": true,
+  "saved_registers_preserved": true,
+  "corruptions_rejected": [
+    "strict-hardcore-boundary",
+    "wrong-hardcore-limit",
+    "missing-fade-write"
+  ],
+  "input_hashes": {
+    "controls.py": "d5a27e7aa43a20402b2a0a45ae9b330e5da21410779e548c649be47aac527476",
+    "controls.json": "a656ae30c6b9d53f5d40ec4bb81bc1b1fef8e4a45ee293d3b36feccb2c30c854",
+    "verify.py": "69b61ddc0f5d8e40924d038e325ceb083433ce0de5dff17983a19fba77e45160",
+    "verify_execution.py": "42cd60f4a1f9cb97126060a3baac6557088c00ac238784eb6af0c7aa711a6787"
+  }
+}

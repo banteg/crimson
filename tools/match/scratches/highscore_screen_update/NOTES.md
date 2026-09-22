@@ -751,3 +751,32 @@ selected. Restoring the quest gate's two native comparison arms changes the
 earlier row's allocation and later shared tails. The next causal question is
 why that gate change perturbs distant allocation while the now-verified
 regions must be preserved, not another score-only source sweep.
+
+## Quest arms and row operand ordering (2026-09-22)
+
+The [quest-ordering evidence](../../evidence/highscore-quest-ordering-2026-09-22/README.md)
+explains the distant allocation change. C2 sorts row additions using a key
+whose low word includes the generated cursor symbol number. The quest edit
+changes that number from `0xb2a` to `0xb28`, lowering the memory key from
+`0x18007` to `0x10007`, below the prefix's `0x10360`. The prefix then becomes
+the address accumulator; copy coalescing raises its allocation priority from
+106 to 274 and selects ESI instead of EBX. Five preserving traces and two
+scoped key interventions verify the ordering, lowering, and allocation chain.
+One intervention reproduces an entire stock named-reference object.
+
+The stock `quest-arm-direct` source places the index in each quest arm and
+uses the native positive hardcore branch. Its cursor key is `0x1c007`, so the
+row remains exact while the gate, sound loads, and back-button setup also
+recover. A continuous 1,437-byte region and a separate 1,356-byte filter core
+pass literal byte/reference/branch checks with no bindings. The earlier
+1,375-byte filter window is not preserved: its first three setup instructions
+differ. Both 34-byte label setups remain exact inside the smaller core.
+
+Nine stock controls and full ESP maps pass; six byte/reference corruptions,
+three compiler-record corruptions, and three gate-execution corruptions are
+rejected. Native/stock/oracle execution agrees on 9,024 gate fixtures including
+ordered state writes and modeled sound calls. This remains partial evidence:
+canonical source/configuration and 804/810 coverage are unchanged. The new
+witness has 2,004 instructions, prefix 108, references 623/0/2, and both exactness
+flags false. Saved-state restoration is the next local mismatch after the
+newly verified region; full UI execution is not established.
