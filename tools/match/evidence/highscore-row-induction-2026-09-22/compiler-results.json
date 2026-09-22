@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "kind": "highscore-row-induction-count",
+  "compiler_interventions_are_diagnostic": true,
+  "new_exact_matches": 0,
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "receipts": {
+    "prefix-before-empty-indexed": {
+      "manifest_sha256": "fa8414582b5f1d4ff23b21255998df80d84e56f5b11cdedc31639fddbe79f14d",
+      "source_sha256": "b25d0d9f480aa9c9632087007600739e956fd13dc67400753fb1cd34b3e70ed6",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true
+    },
+    "flags-split-mask": {
+      "manifest_sha256": "b596fb55f0f2a83cd9a505d38d6dc259cd20841fe5b092b0560a1de3fee55972",
+      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "whole_coff_equal_except_timestamp": true,
+      "missing_stream_rejected": true
+    }
+  },
+  "controls": {
+    "prefix-before-empty-indexed": {
+      "counts": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "decisions": [
+        [
+          113,
+          4,
+          1816242284,
+          1815111308,
+          1816242284,
+          1814104348,
+          0,
+          0
+        ]
+      ],
+      "normalized_coff_sha256": "13ba15d8c7c2db30568fa2d11e96467bf20f0cb807305ef6096b7f6dc8398bd7"
+    },
+    "flags-split-mask": {
+      "counts": [
+        7,
+        1,
+        0,
+        0
+      ],
+      "decisions": [
+        [
+          113,
+          5,
+          1816291292,
+          1815166604,
+          1816291292,
+          1814104348,
+          0,
+          0
+        ]
+      ],
+      "normalized_coff_sha256": "1a853c23f85eef4b02adf4db12e92b012c073fb57afe02f669895caf33b00593"
+    },
+    "cost-4": {
+      "counts": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "decisions": [
+        [
+          113,
+          4,
+          1816242284,
+          1815111308,
+          1816242284,
+          1814104348,
+          4,
+          0
+        ]
+      ],
+      "normalized_coff_sha256": "13ba15d8c7c2db30568fa2d11e96467bf20f0cb807305ef6096b7f6dc8398bd7"
+    },
+    "cost-5": {
+      "counts": [
+        7,
+        1,
+        1,
+        0
+      ],
+      "decisions": [
+        [
+          113,
+          4,
+          1816242284,
+          1815111308,
+          1816242284,
+          1814104348,
+          5,
+          0
+        ]
+      ],
+      "normalized_coff_sha256": "1a853c23f85eef4b02adf4db12e92b012c073fb57afe02f669895caf33b00593"
+    }
+  },
+  "harness_sha256": {
+    "controls.py": "b0b44744805a12c991cd2ffcb759429fc726af94caeb9c21491ddfaed3ae5cd8",
+    "controls.json": "21aa58c19410d6b3b100f9612b8841690676101f2aca154c1d8ebc297cf60a6b",
+    "verify_compiler.py": "1e88c39096607ea87354ec440dfc88110f05a16402cf9b42dd143a8e49b39c89",
+    "watch.c.in": "836daab9c771ca5cadaad5c31a14e2972204954b9fae16c7773e97f776c43c8d"
+  }
+}

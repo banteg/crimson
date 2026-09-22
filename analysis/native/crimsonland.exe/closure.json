@@ -1,5 +1,5 @@
 {
-  "audit_digest": "3d33482250a07adb67ad400139f52a1daa2673821a0288eda5c890c793616026",
+  "audit_digest": "6efb6a3250bf87ecd716d0cf51434ed0a41c7201d824ee448f5e70744a890e95",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -98343,7 +98343,7 @@
             "highscore_hardcore_checkbox_destroy"
           ],
           "kind": "section",
-          "logical_section_size": 7904,
+          "logical_section_size": 7920,
           "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
           "section": ".text",
           "size": null,
@@ -141943,7 +141943,7 @@
             "highscore_hardcore_checkbox_destroy"
           ],
           "kind": "section",
-          "logical_section_size": 7904,
+          "logical_section_size": 7920,
           "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
           "section": ".text",
           "size": null,

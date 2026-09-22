@@ -357,60 +357,50 @@ extern "C" void highscore_screen_update(void)
     int score_number = 1;
     int selected_score = -1;
     int score_count = 0;
-    char **score_line_item = score_line_items;
     position.y += 16.0f;
     position.y += 1.0f;
-    unsigned char *record_flags = &highscore_table[0].flags;
-    char (*score_line_buffer)[164] = score_line_buffers;
-    do {
-        *score_line_item = *score_line_buffer;
-        memset(*score_line_item, 0, sizeof(*score_line_buffer));
-        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {
+    while (score_count < 100) {
+        score_line_items[score_count] = score_line_buffers[score_count];
+        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));
+        int prefix_length = 0;
+        if (highscore_table[score_count].survival_elapsed_ms == 0) {
             break;
         }
 
-        int prefix_length = 0;
-        if ((*record_flags & 5) != 0
-            && ((*record_flags & 2) == 0 || (*record_flags & 4) != 0)) {
-            (*score_line_item)[0] = '\\';
-            (*score_line_item)[1] = 'g';
+        if (((highscore_table[score_count].flags & 1) != 0 || (highscore_table[score_count].flags & 4) != 0)
+            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {
+            (score_line_items[score_count])[0] = '\\';
+            (score_line_items[score_count])[1] = 'g';
             prefix_length = 2;
         }
 
-        switch (config_blob.game_mode) {
-        case GAME_MODE_RUSH:
+        if (config_blob.game_mode == GAME_MODE_RUSH) {
             crt_sprintf(
-                *score_line_item + prefix_length,
+                score_line_items[score_count] + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
-                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)
-                    ->survival_elapsed_ms / 1000,
-                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
-            break;
-        case GAME_MODE_QUEST:
+                (int)highscore_table[score_count]
+                    .survival_elapsed_ms / 1000,
+                highscore_table[score_count].player_name);
+        } else if (config_blob.game_mode == GAME_MODE_QUEST) {
             crt_sprintf(
-                *score_line_item + prefix_length,
+                score_line_items[score_count] + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
-                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)
-                    ->survival_elapsed_ms / 1000,
-                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
-            break;
-        default:
+                (int)highscore_table[score_count]
+                    .survival_elapsed_ms / 1000,
+                highscore_table[score_count].player_name);
+        } else {
             crt_sprintf(
-                *score_line_item + prefix_length,
+                score_line_items[score_count] + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
-                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->score_xp,
-                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
-            break;
+                highscore_table[score_count].score_xp,
+                highscore_table[score_count].player_name);
         }
         ++score_count;
-        ++score_line_buffer;
-        record_flags += sizeof(highscore_record_t);
         ++score_number;
-        ++score_line_item;
-    } while (score_line_buffer < score_line_buffers + 100);
+    }
 
     position.x += 16.0f;
     static highscore_scrollbar_t score_scrollbar;

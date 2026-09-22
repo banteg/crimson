@@ -1,0 +1,42 @@
+static unsigned long flag_source,flag_owner,watch_defs,selected_costs,changed_costs,pending[2];
+static HANDLE costs_file;
+static void watch(unsigned long phase,unsigned long *regs,unsigned long first) {
+ unsigned long n,s,d,k,row[8];DWORD written;
+ if(phase==0) {
+  flag_source=0;flag_owner=0;
+  for(n=first;n;n=*(unsigned long*)n)if(*(unsigned short*)(n+0x10)==180 && *(unsigned long*)(n+4)==0x16d) {
+   for(s=*(unsigned long*)(n+0x18);s;s=*(unsigned long*)s)if(*(unsigned char*)(s+8)==3) {
+    if(flag_source && flag_source!=*(unsigned long*)(s+0x14))ExitProcess(81);
+    flag_source=*(unsigned long*)(s+0x14);
+   }
+  }
+ }
+ if(!flag_source)return;
+ if(phase==112) {
+  for(n=first;n;n=*(unsigned long*)n)if(*(unsigned short*)(n+0x10)==166 && *(unsigned long*)(n+4)==0x15b) {
+   s=*(unsigned long*)(n+0x18);d=*(unsigned long*)(n+0x1c);
+   if(s && d && *(unsigned char*)(s+8)==3 && *(unsigned long*)(s+0x14)==flag_source && *(unsigned char*)(d+8)==2) {
+    flag_owner=*(unsigned long*)(d+0x14);++watch_defs;
+   }
+  }
+ }
+ if(phase==13||phase==14) {
+  k=phase-13;s=phase==13?regs[1]:regs[4];pending[k]=s==flag_owner && flag_owner!=0;
+  if(pending[k] && regs[6]!=*(unsigned long*)(s+0x50))ExitProcess(82);
+ }
+ if(phase==113||phase==114) {
+  k=phase-113;if(!pending[k])return;
+  ++selected_costs;row[0]=phase;row[1]=regs[7];row[2]=flag_owner;row[3]=flag_source;
+  row[4]=regs[1];row[5]=regs[4];row[6]=0;row[7]=0;
+#if COST_VALUE >= 0
+  regs[7]=COST_VALUE;++changed_costs;row[6]=COST_VALUE;
+#endif
+  if(!WriteFile(costs_file,row,sizeof(row),&written,0)||written!=sizeof(row))ExitProcess(83);
+ }
+}
+static void finish_watch(void) {
+ unsigned long row[4];DWORD written;
+ row[0]=watch_defs;row[1]=selected_costs;row[2]=changed_costs;row[3]=0;
+ if(!WriteFile(costs_file,row,sizeof(row),&written,0)||written!=sizeof(row))ExitProcess(84);
+ CloseHandle(costs_file);
+}

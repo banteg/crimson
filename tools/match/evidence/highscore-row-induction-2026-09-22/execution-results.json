@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "scope": "row-loop-only-sprintf-modeled",
+  "fixtures": 1576,
+  "fixtures_sha256": "08e3db3a107dc7f17188f3ab4517edeaca26753f6e193ec13334d2db8ccb56ee",
+  "verifier_sha256": "aafff4c98546570e68a018b4acb8d1140da39684f0d54f3f02dbd811fa2ce6cf",
+  "input_hashes": {
+    "controls.py": "b0b44744805a12c991cd2ffcb759429fc726af94caeb9c21491ddfaed3ae5cd8",
+    "controls.json": "21aa58c19410d6b3b100f9612b8841690676101f2aca154c1d8ebc297cf60a6b"
+  },
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "corruption_controls_rejected": [
+    "wrong-prefix-mask",
+    "unsigned-division-shift",
+    "ninety-nine-row-limit"
+  ],
+  "digests": {
+    "native": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2",
+    "canonical": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2",
+    "flags-split-mask": "ce5e8ca0474757668908b1ea8d0c3c47f0b2a9ab733de3d26c06304d7914bbc2"
+  },
+  "compiled": {
+    "canonical": {
+      "window": [
+        1908,
+        2166,
+        36
+      ],
+      "relocations": [
+        [
+          1914,
+          4649520,
+          6
+        ],
+        [
+          1919,
+          5033320,
+          6
+        ],
+        [
+          1936,
+          4649508,
+          6
+        ],
+        [
+          1942,
+          5032244,
+          6
+        ],
+        [
+          1963,
+          5032244,
+          6
+        ],
+        [
+          1974,
+          4729648,
+          6
+        ],
+        [
+          1992,
+          4729616,
+          6
+        ],
+        [
+          2032,
+          4719456,
+          6
+        ],
+        [
+          2056,
+          4688920,
+          6
+        ],
+        [
+          2092,
+          4688920,
+          6
+        ],
+        [
+          2098,
+          4593383,
+          20
+        ],
+        [
+          2127,
+          5049720,
+          6
+        ]
+      ],
+      "body_sha256": "c3e803f1d3a3bf98fda0765f36b9cc18d8048b4132d81ff0068400f89922d7f5"
+    },
+    "flags-split-mask": {
+      "window": [
+        1917,
+        2189,
+        36
+      ],
+      "relocations": [
+        [
+          1923,
+          4649520,
+          6
+        ],
+        [
+          1944,
+          5032244,
+          6
+        ],
+        [
+          1949,
+          4729684,
+          6
+        ],
+        [
+          1955,
+          4649508,
+          6
+        ],
+        [
+          1963,
+          5033320,
+          6
+        ],
+        [
+          2033,
+          4719456,
+          6
+        ],
+        [
+          2074,
+          4688920,
+          6
+        ],
+        [
+          2118,
+          4688920,
+          6
+        ],
+        [
+          2136,
+          4688920,
+          6
+        ],
+        [
+          2142,
+          4593383,
+          20
+        ],
+        [
+          2171,
+          5049720,
+          6
+        ]
+      ],
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392"
+    }
+  }
+}

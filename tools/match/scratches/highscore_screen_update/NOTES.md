@@ -612,3 +612,28 @@ The canonical source reaches 78.499496%, 1,968/2,004 instructions, prefix 45,
 references 594/0/4, and the unchanged 132-byte frame. Both normalized and
 encoded exactness remain false. Source SHA-256:
 `acdab50a9479c2f84ff6864d58223ab8f1cbc286684897baed5be7e0b8d10550`.
+
+## Row induction use counts and flag spelling (2026-09-22)
+
+The [row-induction proof](../../evidence/highscore-row-induction-2026-09-22/README.md)
+recovers a single-entry signed indexed loop, separate Rush/Quest argument
+preparation, and the native flags-based record cursor. Writing mask 5 as
+separate bit-1 and bit-4 tests changes the compiler's induction use-list count
+from four to five before those tests later combine. A scoped return-value
+control at `0x46ad2` independently reproduces the complete stock-source COFF,
+excluding timestamps. This distinguishes source-controlled induction merging
+from later register allocation.
+
+All 22 source controls rebuild. Native, before, and retained row loops agree
+in 1,576 execution fixtures, including all flag bytes, signed division edges,
+ordered writes and formatting arguments, and empty/full 100-row bounds.
+Three corrupted-instruction controls fail as expected. Only the row region is
+executed, with `sprintf` modeled; the proof does not cover the complete UI.
+
+The retained body reaches 79.708689%, 1,978/2,004 instructions, prefix 45,
+132-byte frame and references 592/0/4. The two fewer aligned references are an
+explicit tradeoff; all four earlier mismatch addresses persist. Both exactness
+flags remain false. Rank is still in EBX rather than a stack home, while prefix
+uses ECX rather than native EBX. Neither a derived rank nor branch-local
+post-increment fixes that lifetime. Source SHA-256:
+`e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd`.

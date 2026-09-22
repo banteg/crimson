@@ -1,0 +1,2097 @@
+{
+  "schema": 1,
+  "base_commit": "09841af5a6643455f535fef4de63e373109607e8",
+  "base_source_sha256": "acdab50a9479c2f84ff6864d58223ab8f1cbc286684897baed5be7e0b8d10550",
+  "controls": [
+    {
+      "name": "canonical",
+      "edits": [],
+      "source_sha256": "acdab50a9479c2f84ff6864d58223ab8f1cbc286684897baed5be7e0b8d10550",
+      "body_sha256": "c3e803f1d3a3bf98fda0765f36b9cc18d8048b4132d81ff0068400f89922d7f5",
+      "instructions": 1968,
+      "ratio": 0.7849949647532729,
+      "prefix": 45,
+      "references": [
+        594,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "canonical-rank-post",
+      "edits": [
+        {
+          "start": 384,
+          "end": 385,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 393,
+          "end": 394,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 402,
+          "end": 403,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 410,
+          "end": 411,
+          "lines": []
+        }
+      ],
+      "source_sha256": "095979f06ce327597c60bfa03cc46b23b3e5fe99dc0707f8d166d38d9625c97b",
+      "body_sha256": "99e749e900574e2e1d3df0cfc572327057d72f7dd2a0c3070f926d92d45de168",
+      "instructions": 1971,
+      "ratio": 0.7733333333333333,
+      "prefix": 45,
+      "references": [
+        591,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-after-empty",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 371,
+          "lines": [
+            "        unsigned char row_flags = highscore_table[score_count].flags;\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((row_flags & 5) != 0\n",
+            "            && ((row_flags & 2) == 0 || (row_flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "394de6637eee67e8d687f0b0ae57e8853c1735733b5131151c18d35da0dba4ba",
+      "body_sha256": "fe855f0f76f7b7435ec679e1aebdbfd3cd4098a07ed0bb1c8c74c66284fa0f21",
+      "instructions": 1977,
+      "ratio": 0.7952775684501382,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-before-clear",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        unsigned char row_flags = highscore_table[score_count].flags;\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((row_flags & 5) != 0\n",
+            "            && ((row_flags & 2) == 0 || (row_flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "0ccf82c07680dc2c4faefc754f52877cc8e7368a551c7082eb7c787faeafbb44",
+      "body_sha256": "ce17b55d03a4e29f4f7465e3457f3578e9edfd892d055a47b61b49500fceebbb",
+      "instructions": 1977,
+      "ratio": 0.7937704094448631,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-before-empty",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        unsigned char row_flags = highscore_table[score_count].flags;\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((row_flags & 5) != 0\n",
+            "            && ((row_flags & 2) == 0 || (row_flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "f4838b4e93b8bfc3f77e054be7d8e2ae2301595d69dfb2b31f59126619f29a89",
+      "body_sha256": "e39f6b5d6cee9aeb4e6c7fcd723178849dce888443e3ebb929fba28d835c770c",
+      "instructions": 1978,
+      "ratio": 0.7950778503264692,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-distributed",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 4) != 0 || ((highscore_table[score_count].flags & 1) != 0 && (highscore_table[score_count].flags & 2) == 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "3b0c14386fa3ab490cc85a2c045507f53a215083200f44c08b576cde0aee8564",
+      "body_sha256": "ae5153b5127d3a1ddb5652da2f7547959ad59d0bfc0292f462b9a0ebe6d09be6",
+      "instructions": 1978,
+      "ratio": 0.7945755901557007,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-distributed-reverse",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if (((highscore_table[score_count].flags & 1) != 0 && (highscore_table[score_count].flags & 2) == 0) || (highscore_table[score_count].flags & 4) != 0) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "aa4802e7ded03639d88432d1b6e3b46f3e3a1ea33ff11c215c8989bff692c08d",
+      "body_sha256": "128f95a18ce9a068f703ad324204cbadf611f50b93717d1d0f17379716d13c7b",
+      "instructions": 1978,
+      "ratio": 0.7950778503264692,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-owner-before-clear",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 367,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        unsigned char *record_flags = &highscore_table[score_count].flags;\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 372,
+          "lines": []
+        },
+        {
+          "start": 374,
+          "end": 376,
+          "lines": [
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "7e06815ca96886b72d0b8875e378b16498634f8c7586795a13a3910e8ee3dbfe",
+      "body_sha256": "3aea9838bfb2514d7924f30429b4a0466df914fbe4773cfc47b5636f8cfaae96",
+      "instructions": 1964,
+      "ratio": 0.8004032258064516,
+      "prefix": 45,
+      "references": [
+        594,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-owner-before-empty",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 367,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        unsigned char *record_flags = &highscore_table[score_count].flags;\n",
+            "        int prefix_length = 0;\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 372,
+          "lines": []
+        },
+        {
+          "start": 374,
+          "end": 376,
+          "lines": [
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "933dfc908df60aebf56bdb60d89077c5e6b7d6765b863ad41cf8bca622d1f70c",
+      "body_sha256": "beb8c9ec9010be7f56d389b6ce92efa7b33db098d28a7aac9ba5785b1e1e79a3",
+      "instructions": 1964,
+      "ratio": 0.8009072580645161,
+      "prefix": 45,
+      "references": [
+        594,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-split-derived-rank",
+      "edits": [
+        {
+          "start": 356,
+          "end": 357,
+          "lines": []
+        },
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if (((highscore_table[score_count].flags & 1) != 0 || (highscore_table[score_count].flags & 4) != 0)\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 384,
+          "end": 390,
+          "lines": [
+            "                score_count + 1,\n",
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 393,
+          "end": 399,
+          "lines": [
+            "                score_count + 1,\n",
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 402,
+          "end": 406,
+          "lines": [
+            "                score_count + 1,\n",
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "5218e41b30d716f012820c310c24f9e4ab1f3af9e809bb982bef444dc7a6b53f",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "flags-split-mask",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if (((highscore_table[score_count].flags & 1) != 0 || (highscore_table[score_count].flags & 4) != 0)\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "e214b927b4836da4ac731f80e24380580d324421e58945dc987c8b2f4e971abd",
+      "body_sha256": "68b5c4a6e7eaf848be291652e8e47e673eef6dea746719daf74df017c207c392",
+      "instructions": 1978,
+      "ratio": 0.797086891009543,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "indexed-record-if-while-buffer",
+      "edits": [
+        {
+          "start": 362,
+          "end": 363,
+          "lines": []
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_line_buffer < score_line_buffers + 100) {\n"
+          ]
+        },
+        {
+          "start": 367,
+          "end": 368,
+          "lines": [
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 374,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 409,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "a08b8a2a35c71d95aee57c88f94ce902429baf31f777b54f7b32dc1055ca93ee",
+      "body_sha256": "5207be70f24f21370bdbdc499a1bf9ccde8d8f7554e1f4c9ebd6cad51dcf9d46",
+      "instructions": 1977,
+      "ratio": 0.7947751821150465,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "indexed-record-if-while-count",
+      "edits": [
+        {
+          "start": 362,
+          "end": 363,
+          "lines": []
+        },
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_count < 100) {\n"
+          ]
+        },
+        {
+          "start": 367,
+          "end": 368,
+          "lines": [
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 374,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 409,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "a066d41b1339e20a63ef776b3c957284c952f91aaa7717587ad2db375d67e178",
+      "body_sha256": "c6ee1b6e9ed83c82bbc242c0496373d899bf2b5a842f8ea46cdbf9b958ea2d65",
+      "instructions": 1977,
+      "ratio": 0.7937704094448631,
+      "prefix": 45,
+      "references": [
+        591,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "indexed-rows-if-while-count",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "eeaad551d9e68d32585e8856b34c0b724acba57d2a1cc551d3423d7cefba5ed5",
+      "body_sha256": "fe855f0f76f7b7435ec679e1aebdbfd3cd4098a07ed0bb1c8c74c66284fa0f21",
+      "instructions": 1977,
+      "ratio": 0.7952775684501382,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "indexed-rows-separate-index",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    for (int row_index = 0; row_index < 100; ++row_index) {\n",
+            "        score_line_items[row_index] = score_line_buffers[row_index];\n",
+            "        memset(score_line_items[row_index], 0, sizeof(score_line_buffers[row_index]));\n",
+            "        if (highscore_table[row_index].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 372,
+          "end": 376,
+          "lines": [
+            "        if ((highscore_table[row_index].flags & 5) != 0\n",
+            "            && ((highscore_table[row_index].flags & 2) == 0 || (highscore_table[row_index].flags & 4) != 0)) {\n",
+            "            (score_line_items[row_index])[0] = '\\\\';\n",
+            "            (score_line_items[row_index])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[row_index] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[row_index]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[row_index].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[row_index] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[row_index]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[row_index].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[row_index] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[row_index].score_xp,\n",
+            "                highscore_table[row_index].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "a399efe3e9f90d225a43a4d4569542a62b1d4a027d63e0cf846eed3b89246bd1",
+      "body_sha256": "d97a6254ee5747223e04904aaf116414b41f6803a248f6ed728ebc320a6128ab",
+      "instructions": 1968,
+      "ratio": 0.797583081570997,
+      "prefix": 45,
+      "references": [
+        591,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "prefix-before-empty-indexed",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n",
+            "        if (highscore_table[score_count].survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if ((highscore_table[score_count].flags & 5) != 0\n",
+            "            && ((highscore_table[score_count].flags & 2) == 0 || (highscore_table[score_count].flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 390,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 399,
+          "lines": [
+            "                (int)highscore_table[score_count]\n",
+            "                    .survival_elapsed_ms / 1000,\n",
+            "                highscore_table[score_count].player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                highscore_table[score_count].score_xp,\n",
+            "                highscore_table[score_count].player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "b25d0d9f480aa9c9632087007600739e956fd13dc67400753fb1cd34b3e70ed6",
+      "body_sha256": "cddce3202623847b1a810ced5f178484dee2fe1eab4805f84f27cbfbf05ff26c",
+      "instructions": 1978,
+      "ratio": 0.7955801104972375,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        4
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "record-owner-before-clear",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        highscore_record_t *row_record = &highscore_table[score_count];\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        int prefix_length = 0;\n",
+            "        if (row_record->survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if ((row_record->flags & 5) != 0\n",
+            "            && ((row_record->flags & 2) == 0 || (row_record->flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 386,
+          "lines": [
+            "                (int)row_record\n"
+          ]
+        },
+        {
+          "start": 387,
+          "end": 390,
+          "lines": [
+            "                row_record->player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 395,
+          "lines": [
+            "                (int)row_record\n"
+          ]
+        },
+        {
+          "start": 396,
+          "end": 399,
+          "lines": [
+            "                row_record->player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                row_record->score_xp,\n",
+            "                row_record->player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "0c1c0dc554c8bfee9bb59a18ff4a40b3f4a02a95041b31fe0dc4f779beed6072",
+      "body_sha256": "25a34a5add7c1bbea7c159e323ea54894b36cbec334b89ac794e5ff5670613f7",
+      "instructions": 1968,
+      "ratio": 0.7925478348439073,
+      "prefix": 45,
+      "references": [
+        590,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "record-owner-before-empty",
+      "edits": [
+        {
+          "start": 359,
+          "end": 360,
+          "lines": []
+        },
+        {
+          "start": 362,
+          "end": 368,
+          "lines": [
+            "    while (score_count < 100) {\n",
+            "        score_line_items[score_count] = score_line_buffers[score_count];\n",
+            "        memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));\n",
+            "        highscore_record_t *row_record = &highscore_table[score_count];\n",
+            "        int prefix_length = 0;\n",
+            "        if (row_record->survival_elapsed_ms == 0) {\n"
+          ]
+        },
+        {
+          "start": 371,
+          "end": 376,
+          "lines": [
+            "        if ((row_record->flags & 5) != 0\n",
+            "            && ((row_record->flags & 2) == 0 || (row_record->flags & 4) != 0)) {\n",
+            "            (score_line_items[score_count])[0] = '\\\\';\n",
+            "            (score_line_items[score_count])[1] = 'g';\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 382,
+          "end": 383,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 385,
+          "end": 386,
+          "lines": [
+            "                (int)row_record\n"
+          ]
+        },
+        {
+          "start": 387,
+          "end": 390,
+          "lines": [
+            "                row_record->player_name);\n",
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 391,
+          "end": 392,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 394,
+          "end": 395,
+          "lines": [
+            "                (int)row_record\n"
+          ]
+        },
+        {
+          "start": 396,
+          "end": 399,
+          "lines": [
+            "                row_record->player_name);\n",
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 400,
+          "end": 401,
+          "lines": [
+            "                score_line_items[score_count] + prefix_length,\n"
+          ]
+        },
+        {
+          "start": 403,
+          "end": 406,
+          "lines": [
+            "                row_record->score_xp,\n",
+            "                row_record->player_name);\n"
+          ]
+        },
+        {
+          "start": 408,
+          "end": 410,
+          "lines": []
+        },
+        {
+          "start": 411,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "d0be4ffc8389f58da4ccbd02ade2ae65b6a1a661a52403e340292e18ae6f9217",
+      "body_sha256": "fad9a179e49b6880c9052748c427f35bcabe98fba1042908cd3ad10cf43c60b4",
+      "instructions": 1968,
+      "ratio": 0.7930513595166163,
+      "prefix": 45,
+      "references": [
+        590,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-while-count",
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_count < 100) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "17f020f47fbc4ad085cdb7335f57edba7ac498f0a84de13770cbcfadf32556ef",
+      "body_sha256": "2624baf7ffdf81c0bf59b0539f2ab8c75db64f9af52c086f846c597d32f60c75",
+      "instructions": 1966,
+      "ratio": 0.8005037783375315,
+      "prefix": 45,
+      "references": [
+        594,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-while-count-rank-post",
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_count < 100) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 384,
+          "end": 385,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 393,
+          "end": 394,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 402,
+          "end": 403,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 410,
+          "end": 411,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "085b6c329e8243778ae75aa9a38650c4bc03939b7a8c26cbd51aecae667d2560",
+      "body_sha256": "0b64547dff4741688becb4116334a4fa21e48a9366d8ad1bb9cf0388910f6925",
+      "instructions": 1965,
+      "ratio": 0.7946586041824137,
+      "prefix": 45,
+      "references": [
+        591,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-while-pointer",
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_line_buffer < score_line_buffers + 100) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "9925ec75f50af3748e7f7b174b64deba1980e7a88cdb66d27820f9ca6e37787f",
+      "body_sha256": "71b2c4a4ddc3967269d8e0a6c9467e2d8ac032550f35ea2e407f2d1a5664db1e",
+      "instructions": 1966,
+      "ratio": 0.8025188916876574,
+      "prefix": 45,
+      "references": [
+        595,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    },
+    {
+      "name": "row-while-pointer-rank-post",
+      "edits": [
+        {
+          "start": 364,
+          "end": 365,
+          "lines": [
+            "    while (score_line_buffer < score_line_buffers + 100) {\n"
+          ]
+        },
+        {
+          "start": 379,
+          "end": 381,
+          "lines": [
+            "        if (config_blob.game_mode == GAME_MODE_RUSH) {\n"
+          ]
+        },
+        {
+          "start": 384,
+          "end": 385,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 388,
+          "end": 390,
+          "lines": [
+            "        } else if (config_blob.game_mode == GAME_MODE_QUEST) {\n"
+          ]
+        },
+        {
+          "start": 393,
+          "end": 394,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 397,
+          "end": 399,
+          "lines": [
+            "        } else {\n"
+          ]
+        },
+        {
+          "start": 402,
+          "end": 403,
+          "lines": [
+            "                score_number++,\n"
+          ]
+        },
+        {
+          "start": 405,
+          "end": 406,
+          "lines": []
+        },
+        {
+          "start": 410,
+          "end": 411,
+          "lines": []
+        },
+        {
+          "start": 412,
+          "end": 413,
+          "lines": [
+            "    }\n"
+          ]
+        }
+      ],
+      "source_sha256": "8840423f85babd0289ebf28175b0deccdf6260d962daffc9e16b8a1c38e56e24",
+      "body_sha256": "df2b302376866faf04ba0c53735de389ef4bf20d7b8e20eda17a5d6180b6d9be",
+      "instructions": 1965,
+      "ratio": 0.7956664147140338,
+      "prefix": 45,
+      "references": [
+        592,
+        0,
+        5
+      ],
+      "exact": false,
+      "body_byte_exact": false
+    }
+  ]
+}
