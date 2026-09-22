@@ -8,9 +8,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **805/810** functions matched exactly (**99.4%**), **307002/341992** code bytes (**89.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **329138/341992** code bytes (**96.2%**).
+Fuzzy-weighted alignment is **329571/341992** code bytes (**96.4%**).
 
-Remaining exact-match debt is **5 functions**, **34990 code bytes**, and **12854 fuzzy-gap bytes**.
+Remaining exact-match debt is **5 functions**, **34990 code bytes**, and **12421 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**5** non-exact scratch-backed functions hold **12854 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
+**5** non-exact scratch-backed functions hold **12421 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **3 functions / 5920 gap bytes**; **2 / 6934** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **3 functions / 5920 gap bytes**; **2 / 6501** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -40,7 +40,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 |---:|---|---|---:|---|---|---|---:|---:|---|
 | 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 9/82 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 2 | crimsonland.exe | projectile_render | 4724 | incomplete | analysis,compiler,references | historical-only | 0/78 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 3 | crimsonland.exe | creature_update_all | 2209 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 3 | crimsonland.exe | creature_update_all | 1777 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
 | 4 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/11 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
 | 5 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 3/12 | 1 | repeated-variants,variant-errors |
 
@@ -112,12 +112,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 666/671 | 285837/320827 | 89.1% | 307973/320827 | 96.0% | 671/671 | 320827/320827 | 100.0% | 666/671 |
+| crimsonland.exe | 666/671 | 285837/320827 | 89.1% | 308406/320827 | 96.1% | 671/671 | 320827/320827 | 100.0% | 666/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**666/671** functions (**99.3%**), **285837/320827** bytes (**89.1%**), **307973/320827** fuzzy-weighted bytes (**96.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **666/671** scratches verified.
+**666/671** functions (**99.3%**), **285837/320827** bytes (**89.1%**), **308406/320827** fuzzy-weighted bytes (**96.1%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **666/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -465,7 +465,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | wip | projectile_render | 0x00422c70 | 12551 | 7827/12551 | 4724 | 2967/3021 | 62.36% | 0/3021 | 495/0/7 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
-| wip | creature_update_all | 0x00426220 | 5330 | 3121/5330 | 2209 | 1306/1338 | 58.55% | 10/1338 | 226/0/1 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
+| wip | creature_update_all | 0x00426220 | 5330 | 3553/5330 | 1777 | 1311/1338 | 66.67% | 0/1338 | 363/0/5 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
 | match | fx_queue_add_random | 0x00427700 | 291 | 291/291 | 0 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |
 | match | fx_queue_random_color_destroy | 0x00427830 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | fx-random-color-trivial-destructor |
 | match | fx_queue_add_rotated | 0x00427840 | 210 | 210/210 | 0 | 55/55 | 100.00% | 55/55 | 18/0/0 |  | gameplay-rotated-fx-queue |

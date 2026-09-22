@@ -1,0 +1,41 @@
+{
+  "before_source_sha256": "b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae",
+  "after_source_sha256": "7bb97911b09a9e96d60b4b7b93530f07702d92de55d343d75fb5b642b49f44bd",
+  "metrics": {
+    "before": {
+      "ratio": 0.5854765506807866,
+      "native_instructions": 1338,
+      "candidate_instructions": 1306,
+      "normalized_exact": false,
+      "body_byte_exact": false,
+      "references": [
+        226,
+        0,
+        1
+      ],
+      "object_sha256": "3b5bccd62bbd1dba992fef86b9390c73a0ed58829c2a9c1dda5539194fc1aeec",
+      "body_sha256": "67f3a0775f7bc8f685d5ccaaf7109bf25bc583430fc388c6f57cc9791ee332ce"
+    },
+    "after": {
+      "ratio": 0.6666666666666666,
+      "native_instructions": 1338,
+      "candidate_instructions": 1311,
+      "normalized_exact": false,
+      "body_byte_exact": false,
+      "references": [
+        363,
+        0,
+        5
+      ],
+      "object_sha256": "787c0bf700ae79a93ebd06def6bcf168ad25b854d4b6a4592917b99e620bd18f",
+      "body_sha256": "404a2ad96cd2d5354e933b2b2e53c1d9f920a5469377f6ca15dbca3a766de502"
+    }
+  },
+  "cases": 3480,
+  "native_differences": {
+    "before": 0,
+    "after": 0
+  },
+  "observations_sha256": "2a637c890370ea92187fb0a2fc08d4750d1b02375b66f7ec7dda9a8a077b8d81",
+  "scope": "Finite native x86 observations with existing callback models; not whole-game equivalence."
+}

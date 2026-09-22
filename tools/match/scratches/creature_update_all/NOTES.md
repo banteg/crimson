@@ -2,6 +2,46 @@
 
 Native target: `crimsonland.exe` at `0x00426220` (5,330 bytes).
 
+## Current state: pool base pointer (2026-09-22)
+
+[The pool-base evidence](../../evidence/creature-pool-base-2026-09-22/README.md)
+recovers native scaled creature addressing with a stock source form: a local
+`creature_t *creatures = creature_pool;` indexed as `creatures[i].field`.
+VC6 forms one shared `152*i` offset and shifts it when `creature_pool[i]` is
+indexed directly; through a local base it keeps `19*i` with `*8` addressing,
+which native uses for all 190 current-creature accesses. The follow-link and
+tethered arms keep `creature_pool[linked_index]` because native shifts
+there. Five natural shapes that were previously hidden behind the address
+mismatch are recovered: tethered distance as a vector length, alternate
+player indexed by the widened target, in-place link timer, and vector copies
+for the hold-timer and forced targets.
+
+The canonical body moves from 58.55% to **66.67%**, 1,311/1,338 instructions,
+references `226/0/1` to `363/0/5`. All 3,480 native execution fixtures still
+agree. Source SHA:
+`7bb97911b09a9e96d60b4b7b93530f07702d92de55d343d75fb5b642b49f44bd`.
+
+```text
+Residual signature
+- target/candidate instructions and CFG/control shape: 1,338/1,311; same
+  arms and branch structure; 908 identical, 61 stack-only, 90 label-only.
+- target/candidate stack-frame allocation: 0x7c/0x6c; native keeps four
+  field-pointer homes (esp+0x14/0x24/0x28/0x30) and &target_player in EBX.
+- references ok/unresolved/mismatched: 363/0/5, all adjacent-pairing effects.
+- consistent register or stack-slot mappings: creature index and distance
+  slots differ by a constant 4 bytes; generated vector temporaries by 16.
+- regions made exact by globally neutral or degrading variants: none new;
+  contact target reloads (7 combinations) regress by 45-150 weighted bytes.
+- conclusions and assumptions held fixed: pool-base addressing, current
+  arm structure; pointer declaration placement, element pointers, scope and
+  global-pool initializers are byte-neutral.
+- untested: interactions between pointer homes and x87 temporaries in the
+  corpse queue; whether an inlined helper owns the native pointer lifetimes.
+```
+
+The older sections below describe the pre-pool-base body; their metrics
+are superseded.
+
 This is the central 384-slot creature simulation sweep. Live Binary Ninja
 disassembly and the Ghidra hotspot recovery establish the complete gameplay
 shape: freeze gating, damage-over-time flags, target selection, all nine AI
