@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "start-strip-ownership",
+      "find": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t start;\n                    start.x = start_result.x;\n                    start.y = start_result.y;\n                    projectile_render_vec2_t strip0 =\n                        start - arc * effect_scale * 10.0f;\n                    projectile_render_vec2_t strip1 =\n                        start + arc * effect_scale * 10.0f;\n",
+      "replacements": [
+        {
+          "name": "member-copies",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0;\n                    projectile_render_vec2_t strip1;\n                    strip0.x = start_result.x;\n                    strip1.x = start_result.x;\n                    strip0.y = start_result.y;\n                    strip1.y = start_result.y;\n                    strip0 -= arc * effect_scale * 10.0f;\n                    strip1 += arc * effect_scale * 10.0f;\n"
+        },
+        {
+          "name": "whole-then-members",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 = start_result;\n                    projectile_render_vec2_t strip1;\n                    strip1.x = start_result.x;\n                    strip1.y = start_result.y;\n                    strip0 -= arc * effect_scale * 10.0f;\n                    strip1 += arc * effect_scale * 10.0f;\n"
+        },
+        {
+          "name": "direct-copies",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 = start_result;\n                    projectile_render_vec2_t strip1 = start_result;\n                    strip0 -= arc * effect_scale * 10.0f;\n                    strip1 += arc * effect_scale * 10.0f;\n"
+        },
+        {
+          "name": "first-then-second",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 = start_result;\n                    projectile_render_vec2_t strip1 = strip0;\n                    strip0 -= arc * effect_scale * 10.0f;\n                    strip1 += arc * effect_scale * 10.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "end-strip-ownership",
+      "find": "                    projectile_render_vec2_t end_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t end = end_result;\n                    projectile_render_vec2_t strip2 =\n                        end + arc * effect_scale * 10.0f;\n                    projectile_render_vec2_t strip3 =\n                        end - arc * effect_scale * 10.0f;\n\n",
+      "replacements": [
+        {
+          "name": "whole-and-member",
+          "text": "                    projectile_render_vec2_t end_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 = end_result;\n                    projectile_render_vec2_t strip3;\n                    strip3.x = end_result.x;\n                    strip3.y = end_result.y;\n                    strip2 += arc * effect_scale * 10.0f;\n                    strip3 -= arc * effect_scale * 10.0f;\n\n"
+        },
+        {
+          "name": "member-copies",
+          "text": "                    projectile_render_vec2_t end_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2;\n                    projectile_render_vec2_t strip3;\n                    strip2.x = end_result.x;\n                    strip3.x = end_result.x;\n                    strip2.y = end_result.y;\n                    strip3.y = end_result.y;\n                    strip2 += arc * effect_scale * 10.0f;\n                    strip3 -= arc * effect_scale * 10.0f;\n\n"
+        }
+      ]
+    }
+  ]
+}

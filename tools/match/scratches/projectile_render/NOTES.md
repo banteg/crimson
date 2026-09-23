@@ -1536,3 +1536,32 @@ both exactness flags are false. The largest current mismatch region starts at
 `0x424c0c` in the ion chain; further source/allocator recovery is required.
 Current source SHA-256:
 `59c0c868a5ad0a5e444a235257f3ca77931a09fe8a66ac2e2f110560c95a5b16`.
+
+## Ion strip result ownership (2026-09-23)
+
+Native `0x424c2f..0x424c58` copies the camera-plus-projectile result into
+both start strip points before offsetting them along the arc. The endpoint at
+`0x424d0d..0x424d2e` has a different ownership shape: it copies the whole
+camera-plus-creature result into one point and its members into the other.
+The scratch now expresses those two shapes separately. The ordered vector
+arithmetic and endpoint draw rounding remain unchanged.
+
+The complete 14-variant, two-site sweep in
+`ion-strip-result-ownership-20260923.json` is recorded in
+`experiments.jsonl`. The selected combination gains **128.523 weighted
+bytes** over the prior source and changes alignment **63.117490% ->
+64.141498%**, instructions **2,971 -> 2,972** against 3,021, and reference
+audit **498/0/5 -> 505/0/5**. Neither site alone gives the combined gain;
+the alternative end-member pairing loses two instructions, and direct/serial
+start copies lose alignment or reference quality. The measured gain is a
+compiler-layout signal, not proof that the native local variables were named
+or scoped exactly this way.
+
+`crimson match validate`, all **11,854** historic, conventional-corner, and
+laser-trig native/candidate traces, and **524** PC24/PC64 ion endpoint and
+strip traces pass with this source. The latter compare ordered draw calls and
+state, including the already-established wide endpoint rounding behavior.
+The candidate still has a **388/412-byte** frame, zero exact prefix, five
+reference mismatches, and false body/exact flags. Recovery remains incomplete.
+Current source SHA-256:
+`002ecc37edc65abe7b396c65b6995684cfe1c2c09574fbf9e3e5ee25eb795594`.

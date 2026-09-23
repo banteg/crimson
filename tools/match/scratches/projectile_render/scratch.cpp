@@ -883,22 +883,24 @@ extern "C" void projectile_render(float transition_alpha)
                     projectile_render_vec2_t start_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)&projectile->position;
-                    projectile_render_vec2_t start;
-                    start.x = start_result.x;
-                    start.y = start_result.y;
-                    projectile_render_vec2_t strip0 =
-                        start - arc * effect_scale * 10.0f;
-                    projectile_render_vec2_t strip1 =
-                        start + arc * effect_scale * 10.0f;
+                    projectile_render_vec2_t strip0;
+                    projectile_render_vec2_t strip1;
+                    strip0.x = start_result.x;
+                    strip1.x = start_result.x;
+                    strip0.y = start_result.y;
+                    strip1.y = start_result.y;
+                    strip0 -= arc * effect_scale * 10.0f;
+                    strip1 += arc * effect_scale * 10.0f;
                     projectile_render_vec2_t end_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x;
-                    projectile_render_vec2_t end = end_result;
-                    projectile_render_vec2_t strip2 =
-                        end + arc * effect_scale * 10.0f;
-                    projectile_render_vec2_t strip3 =
-                        end - arc * effect_scale * 10.0f;
+                    projectile_render_vec2_t strip2 = end_result;
+                    projectile_render_vec2_t strip3;
+                    strip3.x = end_result.x;
+                    strip3.y = end_result.y;
+                    strip2 += arc * effect_scale * 10.0f;
+                    strip3 -= arc * effect_scale * 10.0f;
 
                     grim_interface_ptr->grim_draw_quad_points(
                         strip0.x,
