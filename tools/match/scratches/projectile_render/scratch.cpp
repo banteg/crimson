@@ -191,9 +191,11 @@ extern "C" void projectile_render(float transition_alpha)
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
         projectile_vel_y_block_t *tail = &projectile->pos.tail.vy;
+        if (!projectile->active) {
+            continue;
+        }
         projectile_type_id_t type_id = tail->type_id;
-        if (!projectile->active
-            || !((int)type_id <= 7
+        if (!((int)type_id <= 7
                 || type_id == PROJECTILE_TYPE_SPLITTER_GUN)) {
             continue;
         }
@@ -641,9 +643,9 @@ extern "C" void projectile_render(float transition_alpha)
                     pulse_scale * 16.0f,
                     pulse_scale * 16.0f);
             } else {
-                float fade = projectile_render_clamp(life * 2.5f);
                 grim_interface_ptr->grim_set_rotation(projectile->angle);
                 grim_interface_ptr->grim_set_atlas_frame(2, 0);
+                float fade = projectile_render_clamp(primary->vy.life_timer * 2.5f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, fade * transition_alpha);
                 grim_interface_ptr->grim_draw_quad(
@@ -756,12 +758,14 @@ extern "C" void projectile_render(float transition_alpha)
             float first = along;
             float size = effect_scale * 32.0f;
             while (along < distance) {
-                float alpha = (along - first) / span
-                    * transition_alpha;
                 if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
+                    float alpha = (along - first) / span
+                        * transition_alpha;
                     grim_interface_ptr->grim_set_color(
                         1.0f, 0.6f, 0.1f, alpha);
                 } else {
+                    float alpha = (along - first) / span
+                        * transition_alpha;
                     grim_interface_ptr->grim_set_color(
                         0.5f, 0.6f, 1.0f, alpha);
                 }

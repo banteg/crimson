@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pulse-fade-after-calls",
+      "find": "                float fade = projectile_render_clamp(life * 2.5f);\n                grim_interface_ptr->grim_set_rotation(projectile->angle);\n                grim_interface_ptr->grim_set_atlas_frame(2, 0);",
+      "replacements": [
+        {
+          "name": "field-read",
+          "text": "                grim_interface_ptr->grim_set_rotation(projectile->angle);\n                grim_interface_ptr->grim_set_atlas_frame(2, 0);\n                float fade = projectile_render_clamp(primary->vy.life_timer * 2.5f);"
+        }
+      ]
+    },
+    {
+      "name": "live-branch-alpha",
+      "find": "                float alpha = (along - first) / span\n                    * transition_alpha;\n                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }",
+      "replacements": [
+        {
+          "name": "branch-local",
+          "text": "                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    float alpha = (along - first) / span\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    float alpha = (along - first) / span\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "fade-branch-alpha",
+      "find": "                float alpha = (along - first) / span\n                    * fade\n                    * transition_alpha;\n                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }",
+      "replacements": [
+        {
+          "name": "branch-local",
+          "text": "                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    float alpha = (along - first) / span\n                        * fade\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    float alpha = (along - first) / span\n                        * fade\n                        * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }"
+        }
+      ]
+    }
+  ]
+}

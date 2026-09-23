@@ -1497,3 +1497,42 @@ keeps every reference problem visible. Prefix remains zero, frame remains
 388/412 bytes, both exactness flags remain false, and recovery is incomplete.
 Current source SHA-256:
 `2fe2084afc11c39589bdafdbfce233c7bc1852ea646c13beb986640d938b69ae`.
+
+## Conventional activity gate and Pulse/ion ordering (2026-09-23)
+
+Native `0x423016..0x423024` tests the conventional projectile's active byte
+before loading its type. Splitting that gate from the type filter recovers the
+entry order without changing the loop's behavior. The isolated recorded probe
+adds 8.384 weighted bytes, changing alignment from **62.358049% to
+62.424850%**, with 2,967/3,021 instructions and `495/0/7` references unchanged.
+
+Two other native order facts interact in VC6's allocation. In the fading Pulse
+arm, rotation and atlas calls at `0x424290` and `0x4242a2` precede the live
+life-timer read at `0x4242a8`. In the live ion beam, the Fire Bullets branch
+at `0x42468d..0x424690` precedes the alpha calculation in each color arm at
+`0x424692..0x4246f6`. The scratch now places those reads and calculations at
+the same boundaries. The seven-variant complete interaction sweep in
+`native-order-interactions-20260923.json` is recorded in `experiments.jsonl`.
+Each change alone loses whole-body alignment, but the pair gains **86.933**
+weighted bytes over the activity-gate baseline, adds four instructions, and
+changes the reference audit from `495/0/7` to `498/0/5`. The resulting
+alignment is **63.117490%**, with **2,971/3,021** instructions. This is a
+compiler-allocation interaction; fewer positional mismatches do not prove that
+the underlying global accesses were repaired.
+
+The selected source passes `crimson match validate`, all **11,854** historical
+native/candidate renderer fixtures, and **32** direct Pulse, ion, and Fire
+cases over four life values and two glow states. Those cases compare ordered
+modeled calls and pool/state hashes (types 19, 22, 23, 45; life 0, 0.2, 0.4,
+0.8; glow 0/1; transition alpha 0.67). A preserved C2 trace has 12 pass events,
+whole-COFF agreement, and a rejected missing-stream control. Its first IR
+shape difference from the preceding source is at phase 0; the trace is
+compiler evidence, not a native IR comparison. The fading ion branch-local
+alpha variant and ion strip copy interactions lose reference quality on this
+baseline and remain diagnostic only.
+
+The candidate frame remains **388/412** bytes, the exact prefix is zero, and
+both exactness flags are false. The largest current mismatch region starts at
+`0x424c0c` in the ion chain; further source/allocator recovery is required.
+Current source SHA-256:
+`59c0c868a5ad0a5e444a235257f3ca77931a09fe8a66ac2e2f110560c95a5b16`.
