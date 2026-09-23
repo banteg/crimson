@@ -1598,3 +1598,45 @@ mismatches. These are bounded negative controls on the largest remaining ion
 region, not source recoveries. Exact prefix remains zero and both exactness
 flags remain false. Current source SHA-256:
 `8a49c59b5a075b643928acae594c54071383e094aed3e0b38eed414e59b2fd6e`.
+
+## Plague fade value lifetime (2026-09-23)
+
+Native `0x42523c..0x42526f` stores the Plague Spreader's scaled life value
+before comparing it with `1.0f`, then reloads that slot for the lower clamp.
+The former helper call left the value on the x87 stack through the first
+comparison. A direct local clamp produces the native `fld/fmul/fst/fcomp` and
+subsequent branch sequence; the stack slot is still displaced because the
+whole-function frame remains different. All four direct `if`/ternary spellings
+in `plague-fade-lifetime-20260923.json` compile equivalently for the match;
+the named-product-plus-helper control is byte-identical to the old source.
+The five-form sweep is recorded in `experiments.jsonl`.
+
+This changes alignment **64.174871% -> 64.308360%** (+16.754 weighted bytes).
+Candidate instructions remain **2,972/3,021**; references improve from
+**505/0/5 to 507/0/5**. The candidate/native frame remains **388/412**
+bytes, the exact prefix is zero, and both exactness flags remain false.
+`crimson match validate`, all **11,854** historic/conventional/laser renderer
+traces, **524** PC24/PC64 ion cases, and **16** focused Plague life/glow traces
+pass. The focused cases include the live `0.4f` gate, fading values, clamp
+boundaries, and NaN. Current source SHA-256:
+`2d55aafcada80da7b2f4801da7a3d6982944a39b971106613c769c6b1932e156`.
+
+On the preceding source baseline, 35 ion start/end/widening combinations
+found no reference-clean winner; the highest score added one mismatch.
+Sharpshooter end-owner and aim-pointer probes restored native-style player
+field addressing locally but lost whole-function alignment and references.
+Seven start-screen forms, six plasma field-alias forms, and five plasma loop
+cursor forms also found no clean gain. The plasma aliases compiled identically;
+the pointer cursors kept the candidate's `speed_scale` base rather than native
+`pos_y`. These controls bound only their tested forms and the pre-Plague
+baseline, not the remaining residual.
+
+The conventional-trail clamp exposes a useful diagnostic seed. Native
+`0x423039..0x423083` copies `life_timer` into a local before clamping. A
+direct two-`if` spelling produces the same instruction sequence in the
+candidate modulo stack homes, but changes the whole-function frame from
+388 to 384 bytes and regresses alignment to **60.781041%**, instructions to
+**2,971/3,021**, and references to **489/0/7**. The four-form
+`conventional-alpha-lifetime-20260923.json` sweep is recorded; the source
+is not retained. The local opcode match should be reconsidered only with
+a separate, evidence-backed allocation/lifetime interaction.

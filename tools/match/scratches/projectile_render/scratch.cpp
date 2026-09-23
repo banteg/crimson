@@ -1017,8 +1017,9 @@ extern "C" void projectile_render(float transition_alpha)
                 62.0f,
                 62.0f);
         } else {
-            float fade = projectile_render_clamp(
-                projectile->pos.tail.vy.life_timer * 2.5f);
+            float fade = projectile->pos.tail.vy.life_timer * 2.5f;
+            if (fade > 1.0f) fade = 1.0f;
+            if (fade < 0.0f) fade = 0.0f;
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, fade * transition_alpha);
             float size = fade * 40.0f + 32.0f;

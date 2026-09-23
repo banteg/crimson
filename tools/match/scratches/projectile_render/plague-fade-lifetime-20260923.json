@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plague-fade-lifetime",
+      "find": "        } else {\n            float fade = projectile_render_clamp(\n                projectile->pos.tail.vy.life_timer * 2.5f);\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, fade * transition_alpha);\n            float size = fade * 40.0f + 32.0f;\n",
+      "replacements": [
+        {
+          "name": "direct-two-if",
+          "text": "        } else {\n            float fade = projectile->pos.tail.vy.life_timer * 2.5f;\n            if (fade > 1.0f) fade = 1.0f;\n            if (fade < 0.0f) fade = 0.0f;\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, fade * transition_alpha);\n            float size = fade * 40.0f + 32.0f;\n"
+        },
+        {
+          "name": "direct-if-else-if",
+          "text": "        } else {\n            float fade = projectile->pos.tail.vy.life_timer * 2.5f;\n            if (fade > 1.0f) fade = 1.0f;\n            else if (fade < 0.0f) fade = 0.0f;\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, fade * transition_alpha);\n            float size = fade * 40.0f + 32.0f;\n"
+        },
+        {
+          "name": "named-product-then-helper",
+          "text": "        } else {\n            float life_product = projectile->pos.tail.vy.life_timer * 2.5f;\n            float fade = projectile_render_clamp(life_product);\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, fade * transition_alpha);\n            float size = fade * 40.0f + 32.0f;\n"
+        },
+        {
+          "name": "braced-direct",
+          "text": "        } else {\n            float fade = projectile->pos.tail.vy.life_timer * 2.5f;\n            if (fade > 1.0f) {\n                fade = 1.0f;\n            } else if (fade < 0.0f) {\n                fade = 0.0f;\n            }\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, fade * transition_alpha);\n            float size = fade * 40.0f + 32.0f;\n"
+        },
+        {
+          "name": "ternary-two-stage",
+          "text": "        } else {\n            float fade = projectile->pos.tail.vy.life_timer * 2.5f;\n            fade = fade > 1.0f ? 1.0f : fade;\n            fade = fade < 0.0f ? 0.0f : fade;\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, fade * transition_alpha);\n            float size = fade * 40.0f + 32.0f;\n"
+        }
+      ]
+    }
+  ]
+}
