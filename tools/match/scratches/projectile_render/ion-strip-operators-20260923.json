@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "start-strip-operators",
+      "find": "                    strip0 -= arc * effect_scale * 10.0f;\n                    strip1 += arc * effect_scale * 10.0f;\n",
+      "replacements": [
+        {
+          "name": "assign-expression",
+          "text": "                    strip0 = strip0 - arc * effect_scale * 10.0f;\n                    strip1 = strip1 + arc * effect_scale * 10.0f;\n"
+        },
+        {
+          "name": "named-result-copy",
+          "text": "                    projectile_render_vec2_t strip0_result =\n                        strip0 - arc * effect_scale * 10.0f;\n                    strip0 = strip0_result;\n                    projectile_render_vec2_t strip1_result =\n                        strip1 + arc * effect_scale * 10.0f;\n                    strip1 = strip1_result;\n"
+        }
+      ]
+    },
+    {
+      "name": "end-strip-operators",
+      "find": "                    strip2 += arc * effect_scale * 10.0f;\n                    strip3 -= arc * effect_scale * 10.0f;\n",
+      "replacements": [
+        {
+          "name": "assign-expression",
+          "text": "                    strip2 = strip2 + arc * effect_scale * 10.0f;\n                    strip3 = strip3 - arc * effect_scale * 10.0f;\n"
+        },
+        {
+          "name": "named-result-copy",
+          "text": "                    projectile_render_vec2_t strip2_result =\n                        strip2 + arc * effect_scale * 10.0f;\n                    strip2 = strip2_result;\n                    projectile_render_vec2_t strip3_result =\n                        strip3 - arc * effect_scale * 10.0f;\n                    strip3 = strip3_result;\n"
+        }
+      ]
+    }
+  ]
+}

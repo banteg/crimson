@@ -788,7 +788,8 @@ extern "C" void projectile_render(float transition_alpha)
         } else {
             grim_interface_ptr->grim_set_rotation(projectile->angle);
             grim_interface_ptr->grim_set_atlas_frame(4, 2);
-            float fade = projectile_render_clamp(life * 2.5f);
+            float fade_input = life * 2.5f;
+            float fade = projectile_render_clamp(fade_input);
 
             projectile_render_vec2_t direction_result(
                 projectile->pos_x - projectile->pos.origin_x,

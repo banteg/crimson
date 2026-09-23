@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pulse-gate",
+      "find": "        if (type_id == PROJECTILE_TYPE_PULSE_GUN) {\n            if (primary->vy.life_timer == 0.4f) {",
+      "replacements": [
+        {
+          "name": "use-cached",
+          "text": "        if (type_id == PROJECTILE_TYPE_PULSE_GUN) {\n            if (life == 0.4f) {"
+        }
+      ]
+    },
+    {
+      "name": "splitter-gate",
+      "find": "        if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {\n            if (primary->vy.life_timer != 0.4f) {",
+      "replacements": [
+        {
+          "name": "use-cached",
+          "text": "        if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {\n            if (life != 0.4f) {"
+        }
+      ]
+    },
+    {
+      "name": "blade-gate",
+      "find": "        if (type_id == PROJECTILE_TYPE_BLADE_GUN) {\n            if (primary->vy.life_timer != 0.4f) {",
+      "replacements": [
+        {
+          "name": "use-cached",
+          "text": "        if (type_id == PROJECTILE_TYPE_BLADE_GUN) {\n            if (life != 0.4f) {"
+        }
+      ]
+    },
+    {
+      "name": "ion-gate",
+      "find": "        if (primary->vy.life_timer == 0.4f) {\n            float effect_scale;",
+      "replacements": [
+        {
+          "name": "use-cached",
+          "text": "        if (life == 0.4f) {\n            float effect_scale;"
+        }
+      ]
+    },
+    {
+      "name": "fade-live",
+      "find": "            float fade = projectile_render_clamp(life * 2.5f);",
+      "replacements": [
+        {
+          "name": "reload-after-callback",
+          "text": "            float fade = projectile_render_clamp(\n                primary->vy.life_timer * 2.5f);"
+        }
+      ]
+    }
+  ]
+}

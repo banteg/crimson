@@ -1565,3 +1565,36 @@ The candidate still has a **388/412-byte** frame, zero exact prefix, five
 reference mismatches, and false body/exact flags. Recovery remains incomplete.
 Current source SHA-256:
 `002ecc37edc65abe7b396c65b6995684cfe1c2c09574fbf9e3e5ee25eb795594`.
+
+## Fading-ion lifetime and strip controls (2026-09-23)
+
+Native `0x4247fb` reloads the fading ion's life timer after the rotation and
+atlas callbacks; the current candidate still uses an earlier cached value.
+Native `0x4249b2..0x424a2c` also branches on Fire Bullets before calculating
+alpha in either color arm. Both remain unresolved: the complete 31-form
+`fading-ion-gate-reload-20260923.json` sweep loses at least **12.072 weighted
+bytes** and adds three reference mismatches even in its best combination.
+The recorded branch-local and inline controls in
+`fading-ion-alpha-order-20260923.json` lose **303.546** and **301.946**
+weighted bytes and each add two reference mismatches. These native
+observations are not overridden by a better whole-function score.
+
+The six-form `fading-ion-clamp-lifetime-20260923.json` sweep found one clean,
+small compiler-layout gain: naming the product of the cached life value and
+`2.5f` changes the candidate's second ion-strip Y widening from loading the
+point before the offset to loading the offset before the point. The latter
+matches native `0x424f09..0x424f14`. The fading clamp's own instructions do
+**not** change, so this does not repair the post-callback life read. Alignment
+changes **64.141498% -> 64.174871%**, gaining **4.189 weighted bytes**;
+instructions stay **2,972/3,021**, references stay **505/0/5**, and the frame
+stays **388/412** bytes. `crimson match validate`, all **11,854** renderer
+fixtures, and **524** PC24/PC64 ion endpoint and strip cases pass.
+
+The four shared/pair arc-product forms in
+`ion-product-lifetime-20260923.json` and eight result-producing strip forms in
+`ion-strip-operators-20260923.json` are also recorded in `experiments.jsonl`.
+Every form loses alignment; the operator forms additionally add reference
+mismatches. These are bounded negative controls on the largest remaining ion
+region, not source recoveries. Exact prefix remains zero and both exactness
+flags remain false. Current source SHA-256:
+`8a49c59b5a075b643928acae594c54071383e094aed3e0b38eed414e59b2fd6e`.

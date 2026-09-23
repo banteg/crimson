@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fading-ion-clamp-lifetime",
+      "find": "            float fade = projectile_render_clamp(life * 2.5f);",
+      "replacements": [
+        {
+          "name": "live-direct",
+          "text": "            float fade = projectile_render_clamp(\n                primary->vy.life_timer * 2.5f);"
+        },
+        {
+          "name": "live-product-local",
+          "text": "            float fade_input = primary->vy.life_timer * 2.5f;\n            float fade = projectile_render_clamp(fade_input);"
+        },
+        {
+          "name": "live-mutable-two-if",
+          "text": "            float fade = primary->vy.life_timer * 2.5f;\n            if (fade > 1.0f) {\n                fade = 1.0f;\n            }\n            if (fade < 0.0f) {\n                fade = 0.0f;\n            }"
+        },
+        {
+          "name": "live-mutable-else-if",
+          "text": "            float fade = primary->vy.life_timer * 2.5f;\n            if (fade > 1.0f) {\n                fade = 1.0f;\n            } else if (fade < 0.0f) {\n                fade = 0.0f;\n            }"
+        },
+        {
+          "name": "live-reference",
+          "text": "            float &life_ref = primary->vy.life_timer;\n            float fade = projectile_render_clamp(life_ref * 2.5f);"
+        },
+        {
+          "name": "cached-product-local",
+          "text": "            float fade_input = life * 2.5f;\n            float fade = projectile_render_clamp(fade_input);"
+        }
+      ]
+    }
+  ]
+}
