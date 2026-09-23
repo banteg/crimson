@@ -1749,3 +1749,37 @@ instructions **2,973 -> 2,981**, and changes references **510/0/3 ->
 all compile identically to the branch-local form. None is retained. These
 negative controls limit the tested source shapes; they do not establish a
 general impossibility or justify changing the native-backed arithmetic.
+
+## Plasma type value lifetime (2026-09-23)
+
+The native plasma loop loads `type_id` once, at `0x4237f4`, and has no other
+`[esi+0x14]` type load before the loop exits at `0x424120`. The subsequent
+type comparisons all precede the selected arm's rendering calls. Copying
+the type value after the active check therefore expresses the observed
+lifetime without reading an inactive record's type. The previous reference
+expressed a live field, though VC6 also emitted one type load for it.
+
+The two-form `projectile-plasma-type-value-ownership-20260923.json` sweep
+selects the indexed value copy. Relative to the prior source, alignment rises
+**65.031698% -> 65.398732%** (+46.066 weighted bytes). Instructions remain
+**2,973/3,021**, references remain **510/0/3**, and the frame remains
+**388/412** bytes. The candidate cursor moves from `projectile_pool + 0x20`
+to `projectile_pool + 0x10`; the native `+0xc` cursor and its two positional
+reference mismatches are still unresolved. The pointer-plus-value control
+regresses to **64.753004%**. On the selected value-copy baseline, the four
+`projectile-plasma-value-pos-owner-20260923.json` pointer/reference aliases
+to `pos_y` or the whole `pos` block all regress; none is retained. The
+three-form `projectile-plasma-flat-field-view-20260923.json` control shows
+that the flat `fields.pos_y` spelling and an entirely flat field view are
+byte-identical to the selected source; flattening only the `pos` fields
+regresses. These controls do not recover the native cursor.
+
+The selected source SHA-256 is
+`dce337dbf3a3d690d563a6dd16f5518d7390cdc61bec79143b88ac90d8b0ee82`.
+All **11,854** historical renderer traces, **608** pinned Fire overlay
+cases, and **524** PC24/PC64 ion endpoint and strip cases agree between native
+and candidate with this source. Its C2 capture passes whole-COFF preservation
+and the missing-stream control. The first observed phase-0 difference keeps
+the same **3,843** nodes but changes their shape; this is compiler evidence
+for the source change, not a reconstruction of native C2 IR. Exact prefix
+remains zero, and both full exactness flags remain false.

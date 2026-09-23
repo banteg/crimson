@@ -327,9 +327,11 @@ extern "C" void projectile_render(float transition_alpha)
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {
-        projectile_type_id_t &type_id = projectile_pool[projectile_index].pos.tail.vy.type_id;
-        if (!projectile_pool[projectile_index].active
-            || !(type_id == PROJECTILE_TYPE_PLASMA_RIFLE
+        if (!projectile_pool[projectile_index].active) {
+            continue;
+        }
+        projectile_type_id_t type_id = projectile_pool[projectile_index].pos.tail.vy.type_id;
+        if (!(type_id == PROJECTILE_TYPE_PLASMA_RIFLE
                 || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN
                 || type_id == PROJECTILE_TYPE_SPIDER_PLASMA
                 || type_id == PROJECTILE_TYPE_SHRINKIFIER
