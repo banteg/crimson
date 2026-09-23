@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-guard-order",
+      "find": "    grim_interface_ptr->grim_begin_batch();\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_type_id_t &type_id = projectile_pool[projectile_index].pos.tail.vy.type_id;\n        if (!projectile_pool[projectile_index].active\n            || !(type_id == PROJECTILE_TYPE_PLASMA_RIFLE\n                || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN\n                || type_id == PROJECTILE_TYPE_SPIDER_PLASMA\n                || type_id == PROJECTILE_TYPE_SHRINKIFIER\n                || type_id == PROJECTILE_TYPE_PLASMA_CANNON)) {\n            continue;\n        }\n\n",
+      "replacements": [
+        {
+          "name": "split-active-first",
+          "text": "    grim_interface_ptr->grim_begin_batch();\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_type_id_t &type_id = projectile_pool[projectile_index].pos.tail.vy.type_id;\n        if (!projectile_pool[projectile_index].active) {\n            continue;\n        }\n        if (!(type_id == PROJECTILE_TYPE_PLASMA_RIFLE\n                || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN\n                || type_id == PROJECTILE_TYPE_SPIDER_PLASMA\n                || type_id == PROJECTILE_TYPE_SHRINKIFIER\n                || type_id == PROJECTILE_TYPE_PLASMA_CANNON)) {\n            continue;\n        }\n\n"
+        },
+        {
+          "name": "move-type-after-active",
+          "text": "    grim_interface_ptr->grim_begin_batch();\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        if (!projectile_pool[projectile_index].active) {\n            continue;\n        }\n        projectile_type_id_t &type_id = projectile_pool[projectile_index].pos.tail.vy.type_id;\n        if (!(type_id == PROJECTILE_TYPE_PLASMA_RIFLE\n                || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN\n                || type_id == PROJECTILE_TYPE_SPIDER_PLASMA\n                || type_id == PROJECTILE_TYPE_SHRINKIFIER\n                || type_id == PROJECTILE_TYPE_PLASMA_CANNON)) {\n            continue;\n        }\n\n"
+        }
+      ]
+    }
+  ]
+}

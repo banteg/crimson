@@ -1713,3 +1713,39 @@ whole-object controls pass; the first observed IR shape difference is phase 0,
 where this larger source rewrite changes the node count from 3,771 to 3,843.
 That trace confirms compilation changed; it does not identify a native
 source-level cause for the later register allocation.
+
+## Plasma cursor and fading ion controls (2026-09-23)
+
+Live native disassembly confirms the plasma cursor starts at
+`projectile_pool + 0xc` at `0x4237e4`, reads active at `esi-0xc` and type at
+`esi+0x14`, advances by `0x40` at `0x424111`, and compares against the
+one-past-`pos_y` address at `0x424114`. Binary Ninja's decompilation gives
+the same `pos_y`-anchored cursor identity. This describes the native loop,
+not a proven original C++ expression. The current candidate instead starts
+at `projectile_pool + 0x20`, reads active at `esi-0x20` and type at `esi`,
+and compares against one-past-`type_id`. Raw COFF relocation/addend checks
+confirm the candidate base.
+
+Five complete mutation sweeps, eleven variants total, are recorded in
+`experiments.jsonl` with the replayable plans
+`projectile-plasma-guard-ownership-20260923.json`,
+`projectile-plasma-pointer-ownership-20260923.json`,
+`projectile-plasma-pointer-pos-owner-20260923.json`,
+`projectile-ion-fade-branch-local-20260923.json`, and
+`projectile-ion-fade-branch-expression-20260923.json`. Splitting the plasma
+active/type guard or moving the type reference below the active check is
+byte-identical. Safe pointer walks over the projectile array and pointer or
+reference aliases to its `pos` block still produce the `+0x20` cursor base.
+The best pointer-walk score is **64.308360%**, below the **65.031698%**
+baseline. Its `508/0/2` reference total loses two clean pairings even though
+one positional mismatch disappears; the raw loop cursor remains wrong.
+
+Native fading ion beam code computes the color alpha within each branch at
+`0x4248d6..0x424af9`. Moving that calculation into both source branches
+improves the local diagnostic region's match ratio from **34.57%** to
+**45.45%**, but lowers whole-function alignment to **62.545818%**, changes
+instructions **2,973 -> 2,981**, and changes references **510/0/3 ->
+496/0/4**. An assigned local, direct call expression, and two-stage local
+all compile identically to the branch-local form. None is retained. These
+negative controls limit the tested source shapes; they do not establish a
+general impossibility or justify changing the native-backed arithmetic.

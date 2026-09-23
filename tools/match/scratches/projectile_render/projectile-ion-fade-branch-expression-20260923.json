@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ion-fade-branch-expression",
+      "find": "            while (along < distance) {\n                float alpha = (along - first) / span\n                    * fade\n                    * transition_alpha;\n                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }\n",
+      "replacements": [
+        {
+          "name": "assigned-alpha",
+          "text": "            while (along < distance) {\n                float alpha;\n                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    alpha = (along - first) / span * fade * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    alpha = (along - first) / span * fade * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }\n"
+        },
+        {
+          "name": "direct-color-expression",
+          "text": "            while (along < distance) {\n                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, (along - first) / span * fade * transition_alpha);\n                } else {\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, (along - first) / span * fade * transition_alpha);\n                }\n"
+        },
+        {
+          "name": "two-stage-branch-alpha",
+          "text": "            while (along < distance) {\n                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {\n                    float factor = (along - first) / span;\n                    float alpha = factor * fade * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 0.6f, 0.1f, alpha);\n                } else {\n                    float factor = (along - first) / span;\n                    float alpha = factor * fade * transition_alpha;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, alpha);\n                }\n"
+        }
+      ]
+    }
+  ]
+}
