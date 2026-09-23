@@ -327,10 +327,8 @@ extern "C" void projectile_render(float transition_alpha)
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {
-        projectile_t *projectile = &projectile_pool[projectile_index];
-        projectile_pos_y_block_t *plasma = &projectile->pos;
-        projectile_type_id_t &type_id = plasma->tail.vy.type_id;
-        if (!projectile->active
+        projectile_type_id_t &type_id = projectile_pool[projectile_index].pos.tail.vy.type_id;
+        if (!projectile_pool[projectile_index].active
             || !(type_id == PROJECTILE_TYPE_PLASMA_RIFLE
                 || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN
                 || type_id == PROJECTILE_TYPE_SPIDER_PLASMA
@@ -339,26 +337,26 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (plasma->tail.vy.life_timer == 0.4f) {
+        if (projectile_pool[projectile_index].pos.tail.vy.life_timer == 0.4f) {
             if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE) {
-                float dx = projectile->pos.origin_x - projectile->pos_x;
-                float dy = projectile->pos.tail.origin_y
-                    - projectile->pos.pos_y;
+                float dx = projectile_pool[projectile_index].pos.origin_x - projectile_pool[projectile_index].pos_x;
+                float dy = projectile_pool[projectile_index].pos.tail.origin_y
+                    - projectile_pool[projectile_index].pos.pos_y;
                 float distance = (float)sqrt(dx * dx + dy * dy);
                 int distance_i = (int)distance;
                 int divisor_i = (int)(
-                    plasma->tail.vy.speed_scale * 2.5f);
+                    projectile_pool[projectile_index].pos.tail.vy.speed_scale * 2.5f);
                 int segment_count = distance_i / divisor_i;
                 if (segment_count > 8) {
                     segment_count = 8;
                 }
 
-                float heading = projectile->angle + 1.5707964f;
+                float heading = projectile_pool[projectile_index].angle + 1.5707964f;
                 float step_x = (float)cos(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.5f;
                 float step_y = (float)sin(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.5f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
@@ -367,9 +365,9 @@ extern "C" void projectile_render(float transition_alpha)
                      ++segment_index) {
                     float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x
+                        camera_offset_x + projectile_pool[projectile_index].pos_x
                             + segment * step_x - 11.0f,
-                        camera_offset_y + projectile->pos.pos_y
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y
                             + segment * step_y - 11.0f,
                         22.0f,
                         22.0f);
@@ -378,38 +376,38 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 28.0f,
-                    camera_offset_y + projectile->pos.pos_y - 28.0f,
+                    camera_offset_x + projectile_pool[projectile_index].pos_x - 28.0f,
+                    camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 28.0f,
                     56.0f,
                     56.0f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.3f);
                 if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x - 128.0f,
-                        camera_offset_y + projectile->pos.pos_y - 128.0f,
+                        camera_offset_x + projectile_pool[projectile_index].pos_x - 128.0f,
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 128.0f,
                         256.0f,
                         256.0f);
                 }
             } else if (type_id == PROJECTILE_TYPE_PLASMA_MINIGUN) {
-                float dx = projectile->pos.origin_x - projectile->pos_x;
-                float dy = projectile->pos.tail.origin_y
-                    - projectile->pos.pos_y;
+                float dx = projectile_pool[projectile_index].pos.origin_x - projectile_pool[projectile_index].pos_x;
+                float dy = projectile_pool[projectile_index].pos.tail.origin_y
+                    - projectile_pool[projectile_index].pos.pos_y;
                 float distance = (float)sqrt(dx * dx + dy * dy);
                 int distance_i = (int)distance;
                 int divisor_i = (int)(
-                    plasma->tail.vy.speed_scale * 2.1f);
+                    projectile_pool[projectile_index].pos.tail.vy.speed_scale * 2.1f);
                 int segment_count = distance_i / divisor_i;
                 if (segment_count > 3) {
                     segment_count = 3;
                 }
 
-                float heading = projectile->angle + 1.5707964f;
+                float heading = projectile_pool[projectile_index].angle + 1.5707964f;
                 float step_x = (float)cos(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 float step_y = (float)sin(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
@@ -418,9 +416,9 @@ extern "C" void projectile_render(float transition_alpha)
                      ++segment_index) {
                     float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x
+                        camera_offset_x + projectile_pool[projectile_index].pos_x
                             + segment * step_x - 6.0f,
-                        camera_offset_y + projectile->pos.pos_y
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y
                             + segment * step_y - 6.0f,
                         12.0f,
                         12.0f);
@@ -429,37 +427,37 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.5f);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 8.0f,
-                    camera_offset_y + projectile->pos.pos_y - 8.0f,
+                    camera_offset_x + projectile_pool[projectile_index].pos_x - 8.0f,
+                    camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 8.0f,
                     16.0f,
                     16.0f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.15f);
                 if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x - 60.0f,
-                        camera_offset_y + projectile->pos.pos_y - 60.0f,
+                        camera_offset_x + projectile_pool[projectile_index].pos_x - 60.0f,
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 60.0f,
                         120.0f,
                         120.0f);
                 }
             } else if (type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
                 int distance_i = (int)projectile_render_vec2_t(
-                    projectile->pos.origin_x - projectile->pos_x,
-                    projectile->pos.tail.origin_y
-                        - projectile->pos.pos_y).length();
+                    projectile_pool[projectile_index].pos.origin_x - projectile_pool[projectile_index].pos_x,
+                    projectile_pool[projectile_index].pos.tail.origin_y
+                        - projectile_pool[projectile_index].pos.pos_y).length();
                 int divisor_i = (int)(
-                    plasma->tail.vy.speed_scale * 3.5f);
+                    projectile_pool[projectile_index].pos.tail.vy.speed_scale * 3.5f);
                 int segment_count = distance_i / divisor_i;
                 if (segment_count > 18) {
                     segment_count = 18;
                 }
 
-                float heading = projectile->angle + 1.5707964f;
+                float heading = projectile_pool[projectile_index].angle + 1.5707964f;
                 float step_x = (float)cos(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.6f;
                 float step_y = (float)sin(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.6f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
@@ -468,9 +466,9 @@ extern "C" void projectile_render(float transition_alpha)
                      ++segment_index) {
                     float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x
+                        camera_offset_x + projectile_pool[projectile_index].pos_x
                             + segment * step_x - 22.0f,
-                        camera_offset_y + projectile->pos.pos_y
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y
                             + segment * step_y - 22.0f,
                         44.0f,
                         44.0f);
@@ -479,37 +477,37 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 42.0f,
-                    camera_offset_y + projectile->pos.pos_y - 42.0f,
+                    camera_offset_x + projectile_pool[projectile_index].pos_x - 42.0f,
+                    camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 42.0f,
                     84.0f,
                     84.0f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
                 if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x - 128.0f,
-                        camera_offset_y + projectile->pos.pos_y - 128.0f,
+                        camera_offset_x + projectile_pool[projectile_index].pos_x - 128.0f,
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 128.0f,
                         256.0f,
                         256.0f);
                 }
             } else if (type_id == PROJECTILE_TYPE_SPIDER_PLASMA) {
                 int distance_i = (int)projectile_render_vec2_t(
-                    projectile->pos.origin_x - projectile->pos_x,
-                    projectile->pos.tail.origin_y
-                        - projectile->pos.pos_y).length();
+                    projectile_pool[projectile_index].pos.origin_x - projectile_pool[projectile_index].pos_x,
+                    projectile_pool[projectile_index].pos.tail.origin_y
+                        - projectile_pool[projectile_index].pos.pos_y).length();
                 int divisor_i = (int)(
-                    plasma->tail.vy.speed_scale * 2.1f);
+                    projectile_pool[projectile_index].pos.tail.vy.speed_scale * 2.1f);
                 int segment_count = distance_i / divisor_i;
                 if (segment_count > 3) {
                     segment_count = 3;
                 }
 
-                float heading = projectile->angle + 1.5707964f;
+                float heading = projectile_pool[projectile_index].angle + 1.5707964f;
                 float step_x = (float)cos(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 float step_y = (float)sin(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
                     0.3f, 1.0f, 0.3f, transition_alpha * 0.4f);
@@ -518,9 +516,9 @@ extern "C" void projectile_render(float transition_alpha)
                      ++segment_index) {
                     float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x
+                        camera_offset_x + projectile_pool[projectile_index].pos_x
                             + segment * step_x - 6.0f,
-                        camera_offset_y + projectile->pos.pos_y
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y
                             + segment * step_y - 6.0f,
                         12.0f,
                         12.0f);
@@ -529,37 +527,37 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_color(
                     0.3f, 1.0f, 0.3f, transition_alpha * 0.5f);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 8.0f,
-                    camera_offset_y + projectile->pos.pos_y - 8.0f,
+                    camera_offset_x + projectile_pool[projectile_index].pos_x - 8.0f,
+                    camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 8.0f,
                     16.0f,
                     16.0f);
                 grim_interface_ptr->grim_set_color(
                     0.3f, 1.0f, 0.3f, transition_alpha * 0.15f);
                 if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x - 60.0f,
-                        camera_offset_y + projectile->pos.pos_y - 60.0f,
+                        camera_offset_x + projectile_pool[projectile_index].pos_x - 60.0f,
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 60.0f,
                         120.0f,
                         120.0f);
                 }
             } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {
                 int distance_i = (int)projectile_render_vec2_t(
-                    projectile->pos.origin_x - projectile->pos_x,
-                    projectile->pos.tail.origin_y
-                        - projectile->pos.pos_y).length();
+                    projectile_pool[projectile_index].pos.origin_x - projectile_pool[projectile_index].pos_x,
+                    projectile_pool[projectile_index].pos.tail.origin_y
+                        - projectile_pool[projectile_index].pos.pos_y).length();
                 int divisor_i = (int)(
-                    plasma->tail.vy.speed_scale * 2.1f);
+                    projectile_pool[projectile_index].pos.tail.vy.speed_scale * 2.1f);
                 int segment_count = distance_i / divisor_i;
                 if (segment_count > 3) {
                     segment_count = 3;
                 }
 
-                float heading = projectile->angle + 1.5707964f;
+                float heading = projectile_pool[projectile_index].angle + 1.5707964f;
                 float step_x = (float)cos(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 float step_y = (float)sin(heading)
-                    * plasma->tail.vy.speed_scale
+                    * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
                     0.3f, 0.3f, 1.0f, transition_alpha * 0.4f);
@@ -568,9 +566,9 @@ extern "C" void projectile_render(float transition_alpha)
                      ++segment_index) {
                     float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x
+                        camera_offset_x + projectile_pool[projectile_index].pos_x
                             + segment * step_x - 6.0f,
-                        camera_offset_y + projectile->pos.pos_y
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y
                             + segment * step_y - 6.0f,
                         12.0f,
                         12.0f);
@@ -579,28 +577,28 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_color(
                     0.3f, 0.3f, 1.0f, transition_alpha * 0.5f);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 8.0f,
-                    camera_offset_y + projectile->pos.pos_y - 8.0f,
+                    camera_offset_x + projectile_pool[projectile_index].pos_x - 8.0f,
+                    camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 8.0f,
                     16.0f,
                     16.0f);
                 grim_interface_ptr->grim_set_color(
                     0.3f, 0.3f, 1.0f, transition_alpha * 0.15f);
                 if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
-                        camera_offset_x + projectile->pos_x - 60.0f,
-                        camera_offset_y + projectile->pos.pos_y - 60.0f,
+                        camera_offset_x + projectile_pool[projectile_index].pos_x - 60.0f,
+                        camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 60.0f,
                         120.0f,
                         120.0f);
                 }
             }
         } else {
             float fade = projectile_render_clamp(
-                plasma->tail.vy.life_timer * 2.5f);
+                projectile_pool[projectile_index].pos.tail.vy.life_timer * 2.5f);
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, fade * transition_alpha);
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 28.0f,
-                camera_offset_y + projectile->pos.pos_y - 28.0f,
+                camera_offset_x + projectile_pool[projectile_index].pos_x - 28.0f,
+                camera_offset_y + projectile_pool[projectile_index].pos.pos_y - 28.0f,
                 56.0f,
                 56.0f);
         }
@@ -1045,15 +1043,14 @@ extern "C" void projectile_render(float transition_alpha)
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {
-        projectile_t *projectile = &projectile_pool[projectile_index];
-        if (projectile->active
+        if (projectile_pool[projectile_index].active
             && fire_type_owner->pos.tail.vy.type_id
                 == PROJECTILE_TYPE_FIRE_BULLETS
-            && projectile->pos.tail.vy.life_timer == 0.4f) {
-            grim_interface_ptr->grim_set_rotation(projectile->angle);
+            && projectile_pool[projectile_index].pos.tail.vy.life_timer == 0.4f) {
+            grim_interface_ptr->grim_set_rotation(projectile_pool[projectile_index].angle);
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->position
+                + *(projectile_render_vec2_t *)&projectile_pool[projectile_index].position
                 - 32.0f;
             grim_interface_ptr->grim_draw_quad(
                 draw_pos.x,

@@ -1640,3 +1640,76 @@ candidate modulo stack homes, but changes the whole-function frame from
 `conventional-alpha-lifetime-20260923.json` sweep is recorded; the source
 is not retained. The local opcode match should be reconsidered only with
 a separate, evidence-backed allocation/lifetime interaction.
+
+## Fire overlay indexed ownership (2026-09-23)
+
+Native starts the Fire Bullets overlay cursor at `0x4253bb` with
+`projectile_pool` and tests the current record's active byte at `[esi]`, life
+at `[esi+0x24]`, angle at `[esi+0x4]`, and position at `[esi+0x8..0xc]`.
+The old candidate anchored `esi` at `projectile_pool+0x24`, leaving the
+initialization and loop-end reference paired with the wrong object offsets.
+Indexing the four current-record accesses from `projectile_pool[index]`
+produces the native pool base and clears both reference mismatches at
+`0x4253bb` and `0x425444`. The separate `fire_type_owner` gate is preserved:
+native still reads the final primary record for that test, and the candidate
+still tests that same record on each iteration.
+
+The complete 15-form `fire-overlay-index-ownership-20260923.json` sweep is
+recorded in `experiments.jsonl`. Every three-of-four indexed subset and the
+fully indexed form compiles to the same improved object; every one- or two-use
+subset is neutral or loses one clean reference. The fully indexed form is
+retained for its direct ownership expression. Four pointer-loop forms instead
+lost over 1,031 weighted bytes and added ten reference mismatches; three
+cross-pass owner forms gained score but added four mismatches, so neither
+control is retained. Named type/life constants and four condition spellings
+were byte-neutral on the indexed candidate. The post-callback fading-ion life
+reload remains independently native-backed, but all 31 updated gate/reload
+combinations on this candidate regress and add reference mismatches.
+
+Alignment moves **64.308360% -> 64.452603%** (+18.104 weighted bytes), and
+references improve **507/0/5 -> 509/0/3**. Candidate instructions fall
+**2,972 -> 2,971** against native's 3,021: the new candidate reuses an
+earlier `0.4f` register value where native loads one at `0x4253c5`.
+`match mutate` therefore reports `instruction-count-further-from-target` and
+does not select an automatic winner. This is a manual, explicit count tradeoff
+for the verified cursor/reference repair, not full-function matching credit.
+The frame remains **388/412** bytes, the exact prefix is zero, and both
+exactness flags remain false.
+
+`crimson match validate`, all **11,854** historic/conventional/laser renderer
+traces, and **608** pinned PC24/PC64 Fire overlay cases pass with source SHA-256
+`472af1acc821d383c5d765f153edb60c15177a71aed2c1f9ed65daf70dfb43ea`.
+The Fire cases check ordered calls, slot-95 gate ownership, pool and write
+state, and independent coordinate oracles. The captured C2 run passes its
+whole-object controls; its first observed shape difference is at phase 0
+(3,769 versus 3,771 nodes). This shows the edit changes compiler IR and later
+allocation, but does not identify a unique original C++ spelling.
+
+## Plasma pass indexed fields (2026-09-23)
+
+The plasma pass held both a current-projectile pointer and a pointer to its
+`pos` block. Replacing every use of those two aliases with an indexed read
+from `projectile_pool[projectile_index]` is source-equivalent for this loop.
+The four-form `plasma-pass-field-ownership-20260923.json` sweep records the
+individual projectile and `pos` alias removals and their combined form. The
+individual forms regress; only the combined form improves. The `type_id`
+reference still names the current record's stored type and is read at the
+same callback boundaries.
+
+From the Fire-indexed baseline, alignment rises **64.452603% -> 65.031698%**
+(+72.682 weighted bytes), candidate instructions rise **2,971 -> 2,973**
+against 3,021, and references improve **509/0/3 -> 510/0/3**. The three
+remaining reference mismatches include the plasma cursor setup and end test
+at `0x4237e4` and `0x424114`: this experiment does not recover that native
+cursor base. The 388/412-byte frame, zero exact prefix, and false exact/body
+flags also remain. The measured gain is an allocation interaction, not proof
+that the native source indexed every access.
+
+The selected source SHA-256 is
+`14ac187e4e108c8f0849f56e097847a0bef67f35017efd22af67c39dab418e53`.
+It passes `crimson match validate`, all **11,854** renderer traces, **608**
+Fire overlay cases, and **524** PC24/PC64 ion endpoint and strip cases. C2
+whole-object controls pass; the first observed IR shape difference is phase 0,
+where this larger source rewrite changes the node count from 3,771 to 3,843.
+That trace confirms compilation changed; it does not identify a native
+source-level cause for the later register allocation.
