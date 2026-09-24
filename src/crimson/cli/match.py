@@ -227,6 +227,19 @@ def _echo_audit_entry(entry: matchlib.MaskedOperandAuditEntry, *, prefix: str = 
     typer.echo(f"{prefix}  candidate: {_reference_text(entry.candidate_references)}")
 
 
+def _echo_structural(structural: matchlib.StructuralDiff) -> None:
+    typer.echo(
+        f"structural={structural.ratio:.2%} changed="
+        f"{structural.changed_target_instructions}/{structural.changed_candidate_instructions} target/candidate insns",
+    )
+    for tag, i1, i2, j1, j2 in structural.hunks:
+        typer.echo(f"  {tag} target[{i1}:{i2}] candidate[{j1}:{j2}]")
+        for line in structural.target_lines[i1:i2]:
+            typer.echo(f"    - {line}")
+        for line in structural.candidate_lines[j1:j2]:
+            typer.echo(f"    + {line}")
+
+
 def _finish_diff(
     result: matchlib.MatchResult,
     *,
@@ -237,6 +250,7 @@ def _finish_diff(
     as_json: bool,
     residual_summary: bool = False,
     flow_graph: bool = False,
+    structural: bool = False,
 ) -> None:
     graph = match_flow_graph.flow_graph_payload(result) if flow_graph else None
     residual = (
@@ -262,6 +276,8 @@ def _finish_diff(
         return
 
     _echo_result(result)
+    if structural and result.ratio != 1.0:
+        _echo_structural(matchlib.structural_diff(result))
     if residual is not None:
         typer.echo("\n" + match_diagnostics.render_residual_summary(residual))
     if graph is not None:
@@ -332,6 +348,11 @@ def cmd_match_diff(
         False, "--flow-graph", help="strict instruction-graph diagnostic instead of diff (--full prints both)",
     ),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
+    structural: bool = typer.Option(
+        False,
+        "--structural",
+        help="also diff with local labels and eax/ecx/edx names generalized (triage only, never match credit)",
+    ),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for mismatch and residual reports"),
     max_regions: int | None = typer.Option(
         None, "--max-regions", min=1, help="maximum regions or entries per residual section (summary default: 8)",
@@ -365,6 +386,7 @@ def cmd_match_diff(
         as_json=as_json,
         residual_summary=residual_summary,
         flow_graph=flow_graph,
+        structural=structural,
     )
 
 
@@ -380,6 +402,11 @@ def cmd_match_scratch(
         False, "--flow-graph", help="strict instruction-graph diagnostic instead of diff (--full prints both)",
     ),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
+    structural: bool = typer.Option(
+        False,
+        "--structural",
+        help="also diff with local labels and eax/ecx/edx names generalized (triage only, never match credit)",
+    ),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for mismatch and residual reports"),
     max_regions: int | None = typer.Option(
         None, "--max-regions", min=1, help="maximum regions or entries per residual section (summary default: 8)",
@@ -422,6 +449,7 @@ def cmd_match_scratch(
         as_json=as_json,
         residual_summary=residual_summary,
         flow_graph=flow_graph,
+        structural=structural,
     )
 
 

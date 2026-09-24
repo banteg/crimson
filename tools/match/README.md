@@ -419,6 +419,14 @@ Run one scratch:
 tools/match/match.sh tools/match/scratches/<function> --regions
 ```
 
+`crimson match scratch|diff --structural` repeats the comparison with local
+label offsets removed and `eax`/`ecx`/`edx` (and their byte/word forms)
+generalized. VC6 hands out those caller-saved registers in rotation, so one
+extra temporary renames every later scratch register and one size change
+relabels every later branch. For example, `player_update` is 64.50% normalized
+but 77.16% structural. The listing prints the remaining structural hunks. It is
+a triage view and never grants matching credit.
+
 Inspect one target through the matching state and all three analysis views:
 
 ```sh

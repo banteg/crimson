@@ -135,6 +135,7 @@ from crimson.match import (
     sort_profile_statuses,
     sort_triage_rows,
     stack_frame_diagnostic_payload,
+    structural_diff,
     triage_row_payload,
     validate_claimed_changes,
     validate_match_claim,
@@ -2604,6 +2605,23 @@ def test_diff_command_fails_on_masked_reference_debt(monkeypatch: pytest.MonkeyP
     assert completed.exit_code == 1
     assert "refs=0/1/0" in completed.output
     assert "unresolved target=0x00401000" in completed.output
+
+
+def test_structural_diff_ignores_scratch_rotation_and_label_offsets() -> None:
+    result = MatchResult(
+        ratio=0.0,
+        prefix_instructions=0,
+        target_lines=("mov eax, dword [esi+0x10]", "jne L1d", "push ebx"),
+        candidate_lines=("mov edx, dword [esi+0x10]", "jne L1f", "push ebx"),
+    )
+    structural = structural_diff(result)
+    assert structural.ratio == 1
+    assert structural.hunks == ()
+
+    result = replace(result, candidate_lines=("mov edx, dword [esi+0x10]", "push ebx"))
+    structural = structural_diff(result)
+    assert structural.changed_target_instructions == 1
+    assert structural.changed_candidate_instructions == 0
 
 
 def test_diff_regions_reports_localized_mismatch() -> None:

@@ -3676,6 +3676,53 @@ def _region_hints(
     return tuple(dict.fromkeys(hints))
 
 
+STRUCTURAL_LABEL_RE = re.compile(r"\bL[0-9a-f]+\b")
+STRUCTURAL_SCRATCH_REGISTERS = (
+    (re.compile(r"\b(?:eax|ecx|edx)\b"), "T"),
+    (re.compile(r"\b(?:ax|cx|dx)\b"), "Tw"),
+    (re.compile(r"\b(?:al|cl|dl)\b"), "Tl"),
+    (re.compile(r"\b(?:ah|ch|dh)\b"), "Th"),
+)
+
+
+def structural_line(text: str) -> str:
+    """Normalized text without local label offsets or caller-saved register names.
+
+    VC6 hands out eax/ecx/edx in rotation, so one extra or missing temporary
+    renames every later scratch register, and one size change relabels every
+    later branch. Removing both leaves the structural instruction stream.
+    """
+    text = STRUCTURAL_LABEL_RE.sub("L", text)
+    for pattern, replacement in STRUCTURAL_SCRATCH_REGISTERS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+@dataclass(frozen=True, slots=True)
+class StructuralDiff:
+    ratio: float
+    target_lines: tuple[str, ...]
+    candidate_lines: tuple[str, ...]
+    hunks: tuple[tuple[str, int, int, int, int], ...]
+
+    @property
+    def changed_target_instructions(self) -> int:
+        return sum(i2 - i1 for _, i1, i2, _, _ in self.hunks)
+
+    @property
+    def changed_candidate_instructions(self) -> int:
+        return sum(j2 - j1 for _, _, _, j1, j2 in self.hunks)
+
+
+def structural_diff(result: MatchResult) -> StructuralDiff:
+    """Diff the structural instruction streams of a match result."""
+    target = tuple(structural_line(line) for line in result.target_lines)
+    candidate = tuple(structural_line(line) for line in result.candidate_lines)
+    matcher = difflib.SequenceMatcher(a=target, b=candidate, autojunk=False)
+    hunks = tuple(opcode for opcode in matcher.get_opcodes() if opcode[0] != "equal")
+    return StructuralDiff(matcher.ratio(), target, candidate, hunks)
+
+
 def diff_regions(
     result: MatchResult,
     *,
