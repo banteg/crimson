@@ -1,5 +1,45 @@
 # quest_spawn_timeline_update
 
+## Decompiled C2 rules for the dead pointer store (2026-09-25)
+
+Binary Ninja decompilation of the pinned C2, cross-checked with preserving traces,
+bounds which source can produce the native `lea edi, [esi+0xc]; mov [esp+0x10], edi;
+mov [esp+0x10], ebx` triplet:
+
+- **Promotion (C2+0x284d8)** promotes every kind-2 memory-symbol operand to a temp
+  unless the operand or symbol is flagged `0x40` (volatile; the IL reader copies the
+  operand flag to the symbol at 0x10719824), the operand type is float (`0x4xxx`) or
+  8 bytes (`__int64`, `double`), or it is a call's first operand. A plain `&local`
+  does not block promotion; `int **unused = &template_id;` is promoted and its dead
+  definition deleted.
+- **Pointer folding (C2+0x306c1, predicate 0x309bb)** substitutes a single-definition
+  LEA whose address parts are all temps into its uses. Symbol-based LEAs
+  (`&quest_spawn_table[i].template_id`) are rejected, but they become group-loop
+  induction pointers and spill the index.
+- **Strength reduction** in the first pass (C2+0x130cb) turns any direct value use of
+  `entry + 0xc` at group level (including a `volatile` store) into an independent
+  induction pointer. `quest_spawn_entry_t *volatile debug_entry = entry;` reproduces
+  the store pair, frame and registers exactly (114 insns, prefix 51) but stores `esi`.
+- **Surviving 4-byte stack stores** therefore need a store created after promotion by
+  lowering a memory intrinsic (0x190) that writes the local through its address.
+  At `/O2` that comes from loop idiom recognition (C2+0x10747ed0 via 0x10745d75) or
+  from IL-reader aggregate copies whose size is not 1, 2, 4 or 8 bytes; small
+  `memcpy` calls and all 4- and 8-byte struct copies are scalarized first. Member
+  stores of memory aggregates are also removed unless the aggregate escapes to a call
+  (the `dx_get_version_from_dxdiag` case, the only other instance of this idiom in
+  either binary).
+
+A byte-copy loop of the pointer plus `if (copied != template_id && entry->count <= 0)
+return;` reproduces all five native signatures (field pointer, dead store, pointer
+loads, 28-byte frame, index in EBP) but stays at prefix 14: structurally only the
+shared EBX zero and the `[edi-8]` y-coordinate base remain. No natural construct in
+the house code produces that copy. About 150 natural forms were ruled out this
+session (structs of 4/8/12 bytes, classes with constructors or destructors under
+`/GX`, reference and pointer-to-pointer helpers, `memcpy` scalar idioms, SDK-style
+reference parameters, sub-object methods, fully indexed and mixed index/pointer
+forms, vec2 component loops, null guards, and `volatile` spellings). Canonical source
+is unchanged.
+
 Latest follow-up: [implicit copy aliases and stack sharing](../../evidence/timeline-copy-aliases-2026-09-22/README.md)
 compares a four-byte end-pointer copy with the earlier pair and guard witnesses.
 The end-pointer copy remains in two pointer-load and two spawn-call alias sets,
