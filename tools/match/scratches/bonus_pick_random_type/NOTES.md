@@ -1,4 +1,39 @@
-# bonus_pick_random_type WIP
+# bonus_pick_random_type
+
+## Exact recovery (2026-09-25)
+
+The quest exclusions are six flat compound rules, in the `perk_can_offer` /
+`weapon_pick_random_available` house style, with the stage-4 Freeze rule
+written after the stage-5 Nuke rule:
+
+```cpp
+hardcore 3.10 Nuke; 2.10 Nuke; hardcore 2.10 Freeze;
+4.10 Nuke; 5.10 Nuke; 4.10 Freeze
+```
+
+This is exact: 162/162 instructions, 20/0/0 references, encoded body exact.
+The rules are mutually exclusive on `quest_stage_major`, so reordering them
+keeps the policy unchanged; no port change is needed.
+
+Mechanism, confirmed with preserving traces and Binary Ninja decompilation of
+the pinned C2:
+
+- The early reverse-postorder rebuild lays the flat rules out in source order,
+  so the stage-4 Freeze test follows the stage-5 test.
+- Value threading then lets stage 4's accept path jump over stage 5 to its own
+  Freeze test, while stage 5's exits jump past that test to the common filters.
+- At C2+0x3663c, the stage-4 jump skips exactly the stage-5 range, whose last
+  node is now a surviving unconditional `jmp common`. The mover relocates
+  stage 5 after the retry backedge. The hardcore stage-2 exit stays
+  ineligible because the common label is preceded by the conditional Freeze
+  rejection.
+
+Keeping the two stage-4 rules adjacent, or using the nested else-if form,
+compiles to the former 75.93% body. Grouping every Nuke rule before every
+Freeze rule regresses to 157 instructions. The historical WIP notes below
+document the search that isolated the mover gate.
+
+## Historical WIP notes
 
 ## Causal layout isolation (2026-09-22)
 

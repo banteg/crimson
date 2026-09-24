@@ -1,5 +1,5 @@
 {
-  "audit_digest": "31157ec9859ee961a8db155186730d5c858e63ed110577bef9c20943c8414264",
+  "audit_digest": "9229a97df67016cf931419ca4c20bb053759c12827559df25d73974793f91123",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -89585,7 +89585,7 @@
           "comdat_selection": 1,
           "function": "bonus_pick_random_type",
           "kind": "section",
-          "logical_section_size": 480,
+          "logical_section_size": 496,
           "object": "tools/match/scratches/bonus_pick_random_type/build/msvc6.5/da6d155f514c3e33/scratch.obj",
           "section": ".text",
           "size": null,
@@ -125797,7 +125797,7 @@
           "comdat_selection": 1,
           "function": "bonus_pick_random_type",
           "kind": "section",
-          "logical_section_size": 480,
+          "logical_section_size": 496,
           "object": "tools/match/scratches/bonus_pick_random_type/build/msvc6.5/da6d155f514c3e33/scratch.obj",
           "section": ".text",
           "size": null,

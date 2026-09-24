@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "31157ec9859ee961a8db155186730d5c858e63ed110577bef9c20943c8414264",
+  "audit_digest": "9229a97df67016cf931419ca4c20bb053759c12827559df25d73974793f91123",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -38236,12 +38236,12 @@
         {
           "path": "tools/match/scratches/bonus_pick_random_type/scratch.cpp",
           "repository_relative": true,
-          "sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42"
+          "sha256": "278c26c54e8a4475dab393d89d5a37654be60f3e130a609cfccf52ee5b33cd45"
         },
         {
           "path": "tools/match/scratches/bonus_pick_random_type/scratch.conf",
           "repository_relative": true,
-          "sha256": "48e9ea5aa3ad85ca39805fecc2078eee7dcf623f175aa8499b48362df3b91891"
+          "sha256": "75c06e4ec64b1cdaa24c7f0b014101c7c47e1cb13f3ac49980f72e256a717515"
         },
         {
           "path": "tools/match/cl.sh",
@@ -38271,7 +38271,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/bonus_pick_random_type/scratch.conf",
-      "config_sha256": "48e9ea5aa3ad85ca39805fecc2078eee7dcf623f175aa8499b48362df3b91891",
+      "config_sha256": "75c06e4ec64b1cdaa24c7f0b014101c7c47e1cb13f3ac49980f72e256a717515",
       "effective_end": 4269652,
       "end": 4269652,
       "function": "bonus_pick_random_type",
@@ -38279,16 +38279,16 @@
         {
           "address": 4269168,
           "canonical_config": "tools/match/scratches/bonus_pick_random_type/scratch.conf",
-          "canonical_config_sha256": "48e9ea5aa3ad85ca39805fecc2078eee7dcf623f175aa8499b48362df3b91891",
+          "canonical_config_sha256": "75c06e4ec64b1cdaa24c7f0b014101c7c47e1cb13f3ac49980f72e256a717515",
           "canonical_scratch": "tools/match/scratches/bonus_pick_random_type",
           "canonical_source": "tools/match/scratches/bonus_pick_random_type/scratch.cpp",
-          "canonical_source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+          "canonical_source_sha256": "278c26c54e8a4475dab393d89d5a37654be60f3e130a609cfccf52ee5b33cd45",
           "effective_end": 4269652,
           "end": 4269652,
-          "experiment_epoch": "371084061f7935718fbd72bf4ab81f21bd12154501a631e05b4d92c7cbe2e367",
+          "experiment_epoch": "38b396c5bbf5033e490116de44dd982856c48b944447d03d64f8e389e4286367",
           "function": "bonus_pick_random_type",
           "match": {
-            "body_byte_exact": false,
+            "body_byte_exact": true,
             "candidate_instructions": 162,
             "masked_mismatches": 0,
             "masked_ok": 20,
@@ -38297,9 +38297,9 @@
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 55,
-            "ratio": 0.7592592592592593,
-            "state": "wip",
+            "prefix_instructions": 162,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 162
           },
           "object_function_symbol": "_bonus_pick_random_type",
@@ -38307,7 +38307,7 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 162,
         "masked_mismatches": 0,
         "masked_ok": 20,
@@ -38316,17 +38316,17 @@
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 55,
-        "ratio": 0.7592592592592593,
-        "state": "wip",
+        "prefix_instructions": 162,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 162
       },
       "object": "tools/match/scratches/bonus_pick_random_type/build/msvc6.5/da6d155f514c3e33/scratch.obj",
       "object_function_symbol": "_bonus_pick_random_type",
-      "object_sha256": "8d819680a0ab1a50585e4a472760158905db1413c81bb0fc7ad5f063448d8532",
+      "object_sha256": "196e06412e507e4e49e26f223f81d668298425ca31ad71e8290368db9c03e726",
       "scratch": "tools/match/scratches/bonus_pick_random_type",
       "source": "tools/match/scratches/bonus_pick_random_type/scratch.cpp",
-      "source_sha256": "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42",
+      "source_sha256": "278c26c54e8a4475dab393d89d5a37654be60f3e130a609cfccf52ee5b33cd45",
       "target_size": 484,
       "translation_unit": {
         "kind": "isolated",
@@ -87509,8 +87509,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 666,
-    "wip": 5
+    "match": 667,
+    "wip": 4
   },
   "translation_units": {
     "cluster_count": 28,

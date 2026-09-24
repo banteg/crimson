@@ -52,33 +52,25 @@ selected:
         }
 
         if (config_blob.game_mode == GAME_MODE_QUEST) {
-            if (config_blob.hardcore && quest_stage_major == 3) {
-                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
-                    continue;
-                }
-            } else if (
-                quest_stage_major == 2 && quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE
-            ) {
+            if (config_blob.hardcore && quest_stage_major == 3 && quest_stage_minor == 10
+                && bonus_id == BONUS_ID_NUKE) {
                 continue;
             }
-
-            if (config_blob.hardcore && quest_stage_major == 2) {
-                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {
-                    continue;
-                }
-            } else if (quest_stage_major == 4) {
-                if (quest_stage_minor == 10) {
-                    if (bonus_id == BONUS_ID_NUKE) {
-                        continue;
-                    }
-                    if (bonus_id == BONUS_ID_FREEZE) {
-                        continue;
-                    }
-                }
-            } else if (quest_stage_major == 5) {
-                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
-                    continue;
-                }
+            if (quest_stage_major == 2 && quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
+                continue;
+            }
+            if (config_blob.hardcore && quest_stage_major == 2 && quest_stage_minor == 10
+                && bonus_id == BONUS_ID_FREEZE) {
+                continue;
+            }
+            if (quest_stage_major == 4 && quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
+                continue;
+            }
+            if (quest_stage_major == 5 && quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
+                continue;
+            }
+            if (quest_stage_major == 4 && quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {
+                continue;
             }
         }
 

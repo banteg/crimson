@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **805/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **806/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**805/810** functions matched exactly (**99.4%**), **307002/341992** code bytes (**89.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**806/810** functions matched exactly (**99.5%**), **307486/341992** code bytes (**89.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **329952/341992** code bytes (**96.5%**).
+Fuzzy-weighted alignment is **330069/341992** code bytes (**96.5%**).
 
-Remaining exact-match debt is **5 functions**, **34990 code bytes**, and **12040 fuzzy-gap bytes**.
+Remaining exact-match debt is **4 functions**, **34506 code bytes**, and **11923 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -30,9 +30,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**5** non-exact scratch-backed functions hold **12040 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
+**4** non-exact scratch-backed functions hold **11923 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **4 functions / 10263 gap bytes**; **1 / 1777** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **3 functions / 10146 gap bytes**; **1 / 1777** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
@@ -41,8 +41,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 1 | crimsonland.exe | player_update | 5771 | semantic-complete | compiler,references | current-active | 9/82 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 2 | crimsonland.exe | projectile_render | 4343 | incomplete | analysis,compiler,references | current-active | 2/98 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 3 | crimsonland.exe | creature_update_all | 1777 | semantic-complete | compiler,references | historical-only | 0/29 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 4 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/11 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
-| 5 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 3/12 | 1 | repeated-variants,variant-errors |
+| 4 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 3/12 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -112,12 +111,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 666/671 | 285837/320827 | 89.1% | 308787/320827 | 96.2% | 671/671 | 320827/320827 | 100.0% | 666/671 |
+| crimsonland.exe | 667/671 | 286321/320827 | 89.2% | 308904/320827 | 96.3% | 671/671 | 320827/320827 | 100.0% | 667/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**666/671** functions (**99.3%**), **285837/320827** bytes (**89.1%**), **308787/320827** fuzzy-weighted bytes (**96.2%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **666/671** scratches verified.
+**667/671** functions (**99.4%**), **286321/320827** bytes (**89.2%**), **308904/320827** fuzzy-weighted bytes (**96.3%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **667/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -324,7 +323,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | bonus_meta_entry_release | 0x00412410 | 36 | 36/36 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | metadata-owned-string-release |
 | match | bonus_meta_register_atexit | 0x00412440 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | bonus-metadata-destructor-registration |
 | match | bonus_meta_table_destroy | 0x00412450 | 20 | 20/20 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-destruction |
-| wip | bonus_pick_random_type | 0x00412470 | 484 | 367/484 | 117 | 162/162 | 75.93% | 55/162 | 20/0/0 |  | gameplay-bonus-selection |
+| match | bonus_pick_random_type | 0x00412470 | 484 | 484/484 | 0 | 162/162 | 100.00% | 162/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | bonus_metadata_init | 0x00412660 | 735 | 735/735 | 0 | 131/131 | 100.00% | 131/131 | 109/0/0 |  | bonus-metadata-initialization |
 | match | bonus_reset_availability | 0x00412940 | 26 | 26/26 | 0 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
 | match | game_mode_label | 0x00412960 | 176 | 176/176 | 0 | 69/69 | 100.00% | 69/69 | 12/0/0 |  | game-mode-display-label |
