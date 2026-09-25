@@ -138,11 +138,11 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t point2;
             projectile_render_vec2_t point3;
             float heading = *aim_heading - 1.5707964f;
+            projectile_render_vec2_t direction(
+                (float)cos(heading), (float)sin(heading));
             projectile_render_vec2_t end_pos =
                 *(projectile_render_vec2_t *)&player->position
-                + projectile_render_vec2_t(
-                      (float)cos(heading), (float)sin(heading))
-                    * 512.0f;
+                + direction * 512.0f;
             float start_heading = heading - 0.150915f;
             // Scale before vector construction: native keeps these trig
             // results wide through FMUL, unlike the end-position sine above.
@@ -153,17 +153,10 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t half_width(
                 (float)cos(*aim_heading) * 1.1f,
                 (float)sin(*aim_heading) * 1.1f);
-            projectile_render_vec2_t start_screen = start_pos;
-            start_screen += camera_offset;
-            point0 = start_screen - half_width;
-            point1 = start_screen + half_width;
-            projectile_render_vec2_t end_screen_result =
-                camera_offset + end_pos;
-            projectile_render_vec2_t end_screen;
-            end_screen.x = end_screen_result.x;
-            end_screen.y = end_screen_result.y;
-            point2 = end_screen + half_width;
-            point3 = end_screen - half_width;
+            point0 = (camera_offset + start_pos) - half_width;
+            point1 = (camera_offset + start_pos) + half_width;
+            point2 = (camera_offset + end_pos) + half_width;
+            point3 = (camera_offset + end_pos) - half_width;
 
             if (player_state_table[0].perk_counts[perk_id_sharpshooter] > 0) {
                 grim_interface_ptr->grim_set_config_var(0x14, 2u);

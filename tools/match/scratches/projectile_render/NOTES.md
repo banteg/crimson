@@ -3,6 +3,17 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Round-3 laser corners (2026-09-26)
+
+The first laser block builds each corner from its own camera-sum expression,
+`(camera_offset + start_pos/end_pos) +/- half_width`. This replaces the
+hand-staged `start_screen` and `end_screen` copies. The aim direction is named
+before scaling: `direction(cos, sin)`, then `player->position + direction *
+512.0f`.
+
+72.77% to **72.88%**; references from `530/0/0` to `536/0/0`. All 12,498 replay
+cases pass.
+
 ## Round-2 plain-source pass (2026-09-26)
 
 The Codex round 2 pass moved the canonical body from 71.38% to **72.77%**, and
