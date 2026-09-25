@@ -151,7 +151,7 @@ native's arm 0, still addressed as `[ecx*8+ADDR]` (g3/g6). Arm 4 needs only the 
 
 ## 6. Acceptance tests
 
-Predictions were written in `scratchpad/aim-chain-mover/predictions.md` before each round was compiled.
+Predictions were written down before each round was compiled.
 Scores are for the whole function, with refs as ok/unresolved/mismatch. Baseline: 70.35%, 799/0/2.
 
 | variant | shape | prediction | observed |
