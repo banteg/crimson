@@ -27,10 +27,9 @@ C2_SHA256 = "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a"
 
 
 def _repo_root(bv) -> Path:
-    bases = [Path(bv.file.filename).resolve().parent]
-    if "__file__" in globals():
-        bases.append(Path(__file__).resolve().parent)
-    bases.append(Path.cwd())
+    # The checkout the script runs from wins, so a worktree applies its own annotations.
+    bases = [Path(__file__).resolve().parent] if "__file__" in globals() else []
+    bases += [Path(bv.file.filename).resolve().parent, Path.cwd()]
     for base in bases:
         for candidate in (base, *base.parents):
             if (candidate / "analysis" / "binary_ninja" / "c2").is_dir():
