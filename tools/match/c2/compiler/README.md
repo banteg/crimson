@@ -36,6 +36,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [guard-placement.md](guard-placement.md) | Where loop-cursor inits land relative to the inverted guard, and how the extra preheader block shifts register priorities |
 | [frontend-ids.md](frontend-ids.md) | How many translation-unit-wide frontend ids each declaration consumes, measured, with a probe to count a header |
 | [codeless-tuples.md](codeless-tuples.md) | Which tuples count toward the 81-node windows without emitting code: parenthesized float expressions make C1 emit a FROUND |
+| [iv-cursor-merge.md](iv-cursor-merge.md) | Why hand-written loop cursors always challenge last in the IV merge, and the pointer-after-test shape that anchors a loop at the struct base |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |

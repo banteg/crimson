@@ -94,5 +94,4 @@ coordinates through one pointer or reference to a vec2.
 
 - In v1, the round-2 `position + 4` has 11 uses while the equivalent round-1 +12 had 21. The pass that CSEs the
   round-2 candidates was not identified.
-- The replay does not split IVs by step, opcode, update block or type before chaining. No traced loop needed that
-  split.
+- Resolved in [iv-cursor-merge.md](iv-cursor-merge.md): two IVs are compared only when step and update block match and their initial values differ by a constant; the replay tool now applies that and handles cursor pseudo-inits.

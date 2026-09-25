@@ -131,8 +131,12 @@ Consequences:
   sits last in P. It becomes the champion, and the earliest round-1 field beats it on the tie. The
   anchor is therefore the **first field accessed**, as long as the round-2 IV has few uses; with many uses it keeps the anchor at `local + k`. That is the struct base when the loop starts
   with `pool[i].active` at offset 0, which explains the "base-anchored" results in the audit.
-- **User cursor with the same step** (for example `++entry`). The user cursor takes part in the same
-  merge. In `quest_spawn_timeline_update` all the field IVs are rebuilt as `entry + k` in the end.
+- **User cursor with the same step** (for example `++entry`). Mode 4 of `collect_iv_candidates` copies a
+  cursor's init to the start of the preheader as a tag-9 pseudo-init, so a hand cursor is always the
+  last challenger, and it merges only when its initial value differs from the field IV's by a constant.
+  In `quest_spawn_timeline_update` the variable-based `entry` does not merge: `entry` and the +20 field
+  IV both survive, and the `entry + k` rebuild happens later in `strength_reduce_address_operands`
+  ([iv-cursor-merge.md](iv-cursor-merge.md)).
 
 "IL order" here means the order the address tuples are evaluated in. For a commutative expression it
 can differ from the source text: `pool[i].x * pool[i].y` evaluates `y` first. Check the order with the

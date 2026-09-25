@@ -3383,14 +3383,14 @@
   },
   "0x10746a2f": {
    "name": "merge_parallel_induction_variables",
-   "comment": "Mode-4 worklist = preheader IV inits pushed in preheader order, popped LIFO: the champion is the LAST init. Challengers (reverse preheader order) with the same step operand/opcode/update block/type are compared: the champion survives only if uses(champion) > uses(challenger), or it is live after the loop, or it has the +0x11 bit-4 flag; otherwise the challenger wins and absorbs the uses (0x10754627 *arg5 += 1). Decides the anchored field offset of pointer IVs (verified with controls, strength-reduction.md)."
+   "comment": "Mode-4 merge: champion = first pop; challenger compared only if types_compatible, same step operand/update opcode/update block, not both live after the loop, and init difference sub_10754157(IL_SUB) folds via sub_10754542 (constant; variable bases do not). Incompatible or winning challengers go to the iv_retry list (a winner followed by the rest of the worklist); the retry list becomes the worklist again in push order. Unlinks the tag-9 preheader pseudo-inits on return (0x10746f7f)."
   },
   "0x10746f93": {
    "name": "reset_iv_worklists"
   },
   "0x10746fb7": {
    "name": "collect_iv_candidates",
-   "comment": "Mode 1: forward walk header..latch, pushes IV*inv / IV+-inv / 4-byte IV cvt candidates onto the LIFO g_iv_worklist (processed in reverse program order). Mode 2: every IV-vs-invariant compare 0x17d in the loop (not only the latch test). Mode 3: IV-pointer stores/copies and intrinsics 0xad/0xac (idiom). Mode 4: preheader `IV = x` inits whose IV has one tag-4 update (merge worklist). Mode 5: preheader IV copies (child loop). Mode 6: shift/scale derived IVs."
+   "comment": "Mode 4 (merge #2 input): first inserts, at the START of the preheader (before **(preheader+0x1c)), a tag-9 copy `sym = src` of each reaching pre-preheader definition of an IV symbol (0x1074751c), then pushes every preheader `IV = x` whose IV has a single in-loop tag-4 def. LIFO worklist, so pre-preheader basic IVs (user cursors, the index) are the last challengers of merge #2. Verified by replaying 71/71 loops (iv-cursor-merge.md)."
   },
   "0x10747720": {
    "name": "iv_worklist_pop"
@@ -6761,6 +6761,8 @@
   "0x107468eb": "IV exit-test analysis needs exactly one exit block, and it must be the latch (bottom-tested loop)",
   "0x107469c1": "IV used in a trip-count compare with size < 4 recorded as narrow (0x107ae1f4)",
   "0x10746b7d": "IV merge: the IV with more in-loop uses (or live after the loop) is kept; on a tie the first-listed IV is eliminated",
+  "0x10746f7f": "merge #2 exit: delete the tag-9 pseudo-inits from the preheader",
+  "0x1074751c": "mode 4: tag-9 pseudo-init of a pre-preheader basic IV, inserted before the first preheader tuple",
   "0x1074781f": "call get_derived_iv: esi = candidate tuple (anchor); observation point used by scripts/c2/iv_trace.py.",
   "0x10747bbc": "strength reduction repeats at most 32 rounds per loop",
   "0x10748cb7": "aggregate parent >0x100 bytes: any overlapping live field blocks the hoist",
