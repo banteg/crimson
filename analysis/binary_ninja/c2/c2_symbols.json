@@ -1534,6 +1534,11 @@
    "name": "symbol_overlap_alias_set",
    "comment": "Bitset union of alias members of all parts overlapping sym, masked by set."
   },
+  "0x1071ad76": {
+   "name": "mark_address_taken_operand",
+   "comment": "Called from compute_alias_points_to. For a kind-3 &symbol operand (op 0x14a) sets sym->parent->flags5 |= 4 (address taken) at 0x1071ae39; recurses through call-argument operand trees. Controls: &x, arrays and structs passed by address carry flags5 0x04 (0x06 with 0x02).",
+   "prototype": "void* __fastcall mark_address_taken_operand(struct c2_operand* op, int32_t arg2)"
+  },
   "0x1071ae54": {
    "name": "alias_cache_node_new",
    "comment": "Allocates an alias-cache list node {next, class_id, symbol_set, key} and links it in front of an existing list."
@@ -2408,7 +2413,8 @@
   },
   "0x10733e75": {
    "name": "count_stack_object_references",
-   "comment": "Walk blocks/tuples; src list then dst list; operand kinds 2,3 (sym), 5,6 (mem +0x20 sym), 11 in call tuples (alias set) -> order_stack_object(obj,1)."
+   "comment": "Runs inside stack_frame_layout_pass (after global/local colouring and G5 splits, before prolog, jump optimizer, finlower, block mover, scheduler). Blocks in list order, tuples forward, src list then dst list. Kinds 2/3 -> sym->parent +1; kinds 5/6 with direct symbol (+0x20) -> parent +1; kind 11 memory effects expand to alias-class members ONLY when the tuple kind is 0x15 (inline asm, IL op 0x191) - calls add nothing. Classes 3/4/5 only; no loop weighting. Verified by observer replay on 1,833 objects and ctl_main/ctl_asm controls.",
+   "prototype": "void __fastcall count_stack_object_references(struct c2_function* fn)"
   },
   "0x10733fbe": {
    "name": "index_stack_objects",
@@ -2796,7 +2802,8 @@
   },
   "0x1073c7e4": {
    "name": "order_stack_object",
-   "comment": "Keeps list 0x1079f220 sorted size asc; new object appended to end of its size group with count=1; re-reference: count+=1 and bubble toward head past same-size nodes with strictly smaller count."
+   "comment": "fastcall(ecx=object, edx=increment 1). Skips the EH record and the !/GX guard local (already homed). List 0x1079f220 size ascending; new object appended to its size group with weight 1; repeat reference moves it before same-size predecessors with strictly smaller weight (equal weights: first to reach wins). Verified by replaying the hook stream.",
+   "prototype": "void __fastcall order_stack_object(struct c2_symbol* obj, int32_t increment)"
   },
   "0x1073c8a5": {
    "name": "insert_stack_object_after",
@@ -4614,6 +4621,11 @@
   "0x10789791": {
    "name": "assign_eh_object_homes",
    "comment": "C++ EH (fn flag 0x10000) objects from list 0x1079bdb0 get homes (fixed, not packed)."
+  },
+  "0x1078b6f6": {
+   "name": "mark_inline_asm_operand_symbols",
+   "comment": "Called from 0x10789f59. For an inline-asm operand list: source symbol operands set flags6 |= 0x10 on every part (0x1078b78c); address operands (kind 3, kind 5 base) set flags5 |= 6; destination symbol/memory operands set flags5 |= 2. Control ctl_asm: locals named in __asm have flags5 0x0a, flags6 0x12.",
+   "prototype": "void __fastcall mark_inline_asm_operand_symbols(struct c2_tuple* tuples)"
   },
   "0x1078b887": {
    "name": "alias_fallback_collect_exposed",
@@ -6466,10 +6478,12 @@
   "0x1072f667": "tie key = ordinal of defining tuple (blocks forward, tuples backward within block; last write wins)",
   "0x1072f957": "/Oy and no EH/naked flags: frame pointer omitted -> ebp allocatable (fn+0x34 |= 0x10)",
   "0x1072fb51": "score>=250 or (no params and >15): 8-byte aligned frame; >=15: tentative score",
+  "0x1072fbbd": "Call to forward_substitute_single_def_ranges. Field pointers assigned from &base[i].f are substituted here unless the optimizer has already value-numbered the address into a temporary (pattern: pointer assignment followed by a direct read of the same field), in which case the temporary is split into region pieces and gets a class-3 stack home.",
   "0x1072fbfd": "class loop: class 1 (x87) first, then class 0 (integer)",
   "0x1072fe16": "empty allowed set -> split instead of colour",
   "0x1072fe5f": "register choice",
   "0x1072fea8": "benefit<0, or ==0 unless single-block non-constant range with >2 refs under /Ot -> unprofitable path",
+  "0x10730721": "forward_substitute_single_def_ranges phase 1 (per source operand of a live range): excluded (lr+5|=4) if used before a def in walk order, used as a non-address value other than a /Ot reg copy, or sub_10731bbf rejects the address use. Destination side (0x1073082f): second def with a different opcode/tree (compare_trees) or a non-foldable address def excludes. lr+0x38 = first def seen; lr+0x14 = last use.",
   "0x10731cec": "byte range: allowed &= {eax,ecx,edx,ebx}",
   "0x10731d04": "frame pointer kept: drop ebp from allowed",
   "0x10731d62": "queue order: priority desc, then tie key desc; equal pair inserted before",
@@ -6479,6 +6493,8 @@
   "0x1073375e": "rotation cursor reset once per function",
   "0x1073386a": "/G5 split cursor reset at each block",
   "0x10733d5a": "packer arg2 = FPO or aligned frame",
+  "0x10733efc": "Tuple kind 0x15 = inline asm (IL op 0x191): only these expand kind-11 memory effects into per-member stack references. Calls (kind 0xe) do not.",
+  "0x10733fa6": "Same inline-asm-only alias expansion for the destination list.",
   "0x1073410c": "frame pointer: framed if locals (fsym+0x5b), flags 0xc0/0x100000, or params used via ebp",
   "0x10734193": "SEH, C++ try (0x10000) or -ZI: force-save ebx,esi,edi",
   "0x107341da": "shrink-wrap callee saves only for /Og, no aligned frame, no SEH/C++ try, no flags 0xc0",
@@ -6575,9 +6591,9 @@
   "0x10748cb7": "aggregate parent >0x100 bytes: any overlapping live field blocks the hoist",
   "0x1074a615": "select threshold index: /Ot ? cpu-4 : 2",
   "0x1074b79f": "local may reuse a dead param home: size<=param slot, no conflict either way (off if fn flags 0x40/0x600000)",
-  "0x1074b833": "density sort only when raw local slot bytes > 0x80",
+  "0x1074b833": "local_bytes > 0x80 -> sort_stack_slots_by_density over local slots only (verified: 11 sorted frames in a 104-scratch sample, projectile_render 0x184).",
   "0x1074b847": "ebp frame: slots 0..n-1 from ebp downward; FPO/aligned: n-1..0 so slot 0 is lowest (esp+0)",
-  "0x1074b872": "FPO/aligned: if any local reused a param slot and local bytes>=0x70, repack without param sharing",
+  "0x1074b872": "FPO/aligned frame that reused a parameter slot and reached local_bytes >= 0x70: repack without parameter reuse (params get no slot and keep their homes). Verified by control ctl_redo (addr moves from +8 to -0x84).",
   "0x1074bbb6": "join slot only if object size <= 2*slot size",
   "0x1074ef04": "switch: ncmp (singles + 2*ranges) < T (4 /Ot, 8 otherwise) -> compare chain",
   "0x1074ef45": "switch /Ot: span < 255 -> jump table regardless of density",
@@ -6640,6 +6656,7 @@
   "0x10784cab": "ALIGN pseudo-op 0x1ba: pad to i[5] with nop tuple",
   "0x10785411": "il_read_tree case 0x37 sub-op 0xc: 0x18b to a label whose fe symbol +0x3e bit 0 is set; not produced by any C/C++ probe",
   "0x1078705c": "return-tail merging only when /Ot is off",
+  "0x1078a262": "Volatile: a kind-2 operand with flags10 0x40 marks sym->parent->flags5 |= 0x40; pass_mark_register_candidates (0x10728530) then never promotes the symbol.",
   "0x1078e70c": "/Os: keep frame pointer if frame refs exceed savings",
   "0x1078e730": "/Ot: give frame pointer back if double-align score >= 2*loop pressure",
   "0x1078facb": "-Loop# (default 100): loop blocks = latch.num - header.num + 1 <= limit -> exact loop-local availability dataflow (0x1070aad7)",

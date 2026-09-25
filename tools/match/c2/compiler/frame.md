@@ -26,7 +26,7 @@ inputs were not traced, and **[L]** means the role is inferred. Addresses are VA
 - Operand kinds that count:
   - kind 2/3 (symbol) → sym+8 (the owning stack object);
   - kind 5/6 memory → +0x20 frame object;
-  - kind 11 call-effect operand of a call tuple (kind 0x15) → **every member of its alias set** (address-taken locals).
+  - kind 11 memory-effect operand of an inline-asm tuple (kind 0x15, IL 0x191) → **every member of its alias set**. Calls add nothing ([frame-model.md](frame-model.md)).
 - Only objects of class 3 (temp), 4 (named local) and 5 (param) are counted. Every reference adds 1; **loop depth is not used**.
 - List order:
   - Size is ascending (+0x20).
@@ -57,7 +57,7 @@ inputs were not traced, and **[L]** means the role is inferred. Addresses are VA
    - **Doubles are only 4-aligned** unless the frame is aligned.
 7. Frame size is set by `compute_frame_size` 0x10734032: fsym+0x5b = `align_up(-cursor, 4)`.
 
-The snail and crimson notes agree with this. Two refinements: the tie-break rule within a size group, and the fact that call alias sets add references.
+The snail and crimson notes agree with this. Two refinements: the tie-break rule within a size group, and the fact that inline-asm blocks add a reference to every member of their alias set.
 
 ## 2. Frame-pointer decisions [H]
 
@@ -227,8 +227,8 @@ An inserted fxch is placed after the previous FP tuple, call, branch, label or `
    - Size groups go in ascending order.
    - Within a size, the higher count goes first.
    - Ties go to whichever object reached the count first.
-   - Call alias sets add a count to every address-taken local on every call.
-   - One extra read, or one extra call while a local's address is taken, can reorder every offset.
+   - Calls add nothing; each inline-asm block adds a count to every member of its alias set.
+   - One extra read can reorder every offset. [frame-model.md](frame-model.md) predicts the layout with `scripts/c2/frame_predict.py`.
 2. **Small frames (raw local bytes ≤ 0x80) are not sorted.** In an ebp frame the smallest objects sit nearest ebp, and arrays and structs sit at the most negative offsets. In an FPO frame the order is the mirror image, so the first slot is at `[esp+0]`.
 3. **Large frames are sorted by density.** The sort is unstable, so reproducing it needs the exact quicksort (0x10761bf0).
 4. **Locals can live in dead parameter homes** (`[ebp+8]`, `[esp+N+4]`). In FPO and aligned frames this reuse is undone once local bytes reach 0x70.

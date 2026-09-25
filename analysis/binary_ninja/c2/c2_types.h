@@ -639,8 +639,8 @@ typedef struct c2_ref_cell {
 struct c2_symbol {
     c2_fe_symbol* fe;       /* 0x00 front-end symbol (null for compiler temps and registers) */
     uint8_t cls;            /* 0x04 1 register, 3 temp, 4 local, 5 param, 12 alias group, 13 constant ... */
-    uint8_t flags5;         /* 0x05 bit0 generated temp */
-    uint8_t flags6;         /* 0x06 */
+    uint8_t flags5;         /* 0x05 bit0 generated temp, 0x02 memory-resident aggregate/C++ temp, 0x04 address taken, 0x20 homed by the stack packer, 0x40 volatile access (no promotion) */
+    uint8_t flags6;         /* 0x06 0x04 conflicts with every stack object, 0x10 read by inline asm */
     uint8_t flags7;         /* 0x07 */
     c2_symbol* parent;      /* 0x08 containing storage (self for primary) */
     c2_symbol* next_part;   /* 0x0c next part of the same parent (sub-register / field) */

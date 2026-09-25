@@ -17,6 +17,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [regalloc.md](regalloc.md) | Webs, global colouring, the chooser, local allocation and eax/ecx/edx rotation, frame pointer, callee-saved registers |
 | [frame.md](frame.md) | Stack slot packing and local offsets, prolog/epilog, final peepholes, EH state, x87 stack |
 | [layout.md](layout.md) | Jump optimizer, tail sinking and cross-jumping, block mover, scheduler, emission |
+| [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
 | [strength-reduction.md](strength-reduction.md) | Where strength reduction and exit-test replacement put IV setups, which field a loop pointer anchors to, and how to write plain indexed loops that reproduce native cursors |
 | [branch-variants.md](branch-variants.md) | Which source jumps emit which IL branch ops, what flag 8 marks, and how to predict block-mover moves in flat rule chains |
@@ -124,9 +125,11 @@ This is a digest; the detailed notes give the evidence and exceptions.
   global allocator. Calls push ranges into esi, edi, ebx and ebp. Priority grows with references and
   loop depth, and falls with every busy block a range lives through. Declaration order acts only through
   ids and the tie key, which is the definition position.
-- **Local offsets** (frame.md): locals are sorted by size, then by reference count. A call counts as a
-  reference to every address-taken local. Frames over 0x80 bytes are re-sorted by density with an
-  unstable quicksort. Dead parameter homes are reused. /Od uses declaration order.
+- **Local offsets** (frame.md, frame-model.md): locals are sorted by size, then by reference count,
+  counted after register allocation with no loop weighting. Calls add no references; inline-asm
+  blocks do. Frames over 0x80 bytes are re-sorted by density with an unstable quicksort. Dead
+  parameter homes are reused. /Od uses declaration order. `scripts/c2/frame_predict.py` reproduces
+  the compiler's own layout for a scratch.
 - **Instruction order** (layout.md): scheduling is local to a basic block, with an 81-node window. The
   priority is height×8192 plus load and float-store bonuses, and ties keep the original order.
   x87 instructions all write ST(0), so the scheduler never reorders them. Their order comes from
