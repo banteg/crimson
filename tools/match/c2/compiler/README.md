@@ -35,6 +35,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [weapon-arm-schedule.md](weapon-arm-schedule.md) | How a cast-inserted FROUND and fst/AGI latency penalties decide integer store placement in a scheduling window, and a tail merge refused at exactly 20 bytes |
 | [guard-placement.md](guard-placement.md) | Where loop-cursor inits land relative to the inverted guard, and how the extra preheader block shifts register priorities |
 | [frontend-ids.md](frontend-ids.md) | How many translation-unit-wide frontend ids each declaration consumes, measured, with a probe to count a header |
+| [codeless-tuples.md](codeless-tuples.md) | Which tuples count toward the 81-node windows without emitting code: parenthesized float expressions make C1 emit a FROUND |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |

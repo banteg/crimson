@@ -112,16 +112,17 @@ Which source constructs produce a FROUND:
 | `(float)int_value` inside an expression | no |
 | A propagation blocked by a possibly-aliasing store between def and use (`v->x = x` in an inline setter blocks propagating `y`) | no. The value stays on the x87 stack instead (§6) |
 
-**C1 explicit casts.** C1 emits 0x162 itself (`il_read_tree`, 0x10714d98) for an explicit narrowing of
-a double expression, e.g. `(float)(d * 2.0)`. In `micro1` this was the only 0x162 in the phase-0 IL.
+**C1 explicit casts.** C1 emits 0x162 itself (`il_read_tree`, 0x10714d98) for `(float)(d * 2.0)`; the
+round comes from the parenthesized operand (see below), so `static_cast<float>(d * 2.0)` emits none. In `micro1` this was the only 0x162 in the phase-0 IL.
 
 **Where it lands.** In the pre-schedule list the marker sits right after the x87 instruction that
 produces the value and before its consumer. It shifts every later window boundary in the same block
 by one node.
 
-**`(float)` on a float expression.** C1 also emits a FROUND for a `(float)` cast applied to an
-expression that is already float (`(float)(y * 15.0f)`); an implicit double→float assignment emits
-none. That FROUND takes its own issue cycle, which can reorder neighbouring integer stores
+**Parenthesized float expressions.** C1 emits a FROUND after every parenthesized float or double
+expression that is not a single variable or field, one per paren level; `(float)(y * 15.0f)` gets its
+FROUND from the parentheses, not the cast, and `float(a + b)` or `static_cast<float>(a + b)` get none
+([codeless-tuples.md](codeless-tuples.md)). That FROUND takes its own issue cycle, which can reorder neighbouring integer stores
 ([weapon-arm-schedule.md](weapon-arm-schedule.md)).
 
 ## 4. Priorities and edges as applied to x87 tuples

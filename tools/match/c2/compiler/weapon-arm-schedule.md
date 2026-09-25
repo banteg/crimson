@@ -80,7 +80,7 @@ The table lists the candidates.
 
 ## 3. Source rule
 
-`(float)(float_expr)` makes C1 emit 0x162 (verified: `il_stage_trace.py --lines 1195-1195` shows the
+`(float)(float_expr)` makes C1 emit 0x162 (the parentheses do it, not the cast; see [codeless-tuples.md](codeless-tuples.md)) (verified: `il_stage_trace.py --lines 1195-1195` shows the
 `round` tuple at the globopt entry dump). This extends [x87-scheduling.md](x87-scheduling.md) §3, which
 lists only the explicit narrowing of a *double* expression.
 

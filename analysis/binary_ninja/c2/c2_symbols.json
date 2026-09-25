@@ -1130,7 +1130,7 @@
   },
   "0x1070f0c7": {
    "name": "factor_out_common_operand",
-   "comment": "Finds a common factor across add terms of opcode op (mul/shl/shr/and) and factors it out via 0x1074a914."
+   "comment": "Finds a common factor across add terms of opcode op (mul/shl/shr/and) and factors it out via 0x1074a914. A bare constant term counts as 1*c: x*4+4, 4*x+4, x*4+1*4 and x/0.25+4 all become (x+1)*4 (verified: returns 1 from factor_common_terms at 0x1070d4ca, in optimize_expression_trees mode 1 before globopt). The factored sum carries no 0x162, unlike the source-level (x+1)*4, whose parentheses make the front end emit a round."
   },
   "0x1070f3c7": {
    "name": "fold_bitfield_merge",
@@ -6554,6 +6554,7 @@
   "0x1070c8b6": "x ^ -1 becomes NOT (0x160)",
   "0x1070cbc8": "unsigned x%2^k becomes x&(2^k-1)",
   "0x1070d12e": "&sym+const folded into symbol piece when offset in bounds and not -dlp",
+  "0x1070d4ca": "factor_out_common_operand(tree, 0x16f mul, 0x161 neg): verified to return 1 for s->c = s->a*4.0f + 4.0f (factored to (a+1)*4 with no FROUND) and 0 for (s->a+1.0f)*4.0f",
   "0x1070d981": "only commutative nodes get their operands sorted",
   "0x1070da92": "stable descending merge sort on packed cost",
   "0x1070db13": "need byte: running max, +1 on ties (depends on operand order)",
@@ -6706,6 +6707,7 @@
   "0x10739630": "constant-only callee-saved register with score<=2 is undone",
   "0x10739652": "/Os: ebp moved to unused ebx/esi/edi",
   "0x1073a1a5": "first pass prefers registers already used in the function",
+  "0x1073a261": "0x162 FROUND nodes that reach the scheduler come from forward propagation and from the front end: every parenthesized non-leaf float/double expression gets one 0x162 per paren level ((a+b)*c, x=(a+b), (float)(a+b)); float(a+b) and static_cast<float>(a+b) get none (verified with preserving sched traces)",
   "0x1073a2b6": "producer 0x162 (FROUND): edge latency 0; a FROUND fed by fmul still issues alone in its cycle, which is how native keeps integer stores behind fstp in player_update's smoke arms",
   "0x1073a6e6": "height = max(succ height + edge latency) + 1",
   "0x1073a80c": "priority = sum shift_signed(term, weight) over bit7/height/outdeg/critical/memread (+ float memwrite)",
