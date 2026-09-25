@@ -6697,6 +6697,7 @@
   "0x107368b9": "mover loop2: scan target block; another label inside sets 'multi-entry' flag (ebp)",
   "0x1073691a": "mover loop2: single-entry block and L->prev is jmp elsewhere -> splice block into jump site",
   "0x10736935": "mover loop2: duplication budget 2 bytes (/Os) or 20 bytes (/Ot), terminator included",
+  "0x1073695f": "block_mover loop-2 duplicate: node_clone (deep copy) of each tuple L->next..term, inserted after J. Runs after register allocation, so the clone keeps the original's assigned registers and consumes no local rotation slot. snail initialize_tip: a 14-byte join block (SetBelow + jmp) after an if/else is cloned into the jumping arm with the join copy's ecx (tail-merge-rotation.md).",
   "0x107369cc": "mover loop2: splice L..terminator after J, delete J",
   "0x10736a5a": "mover loop2: if the last duplicated tuple is a jmp, continue scanning from it",
   "0x107377bd": "prologue release limited to 10 tuples before the prologue-end marker",

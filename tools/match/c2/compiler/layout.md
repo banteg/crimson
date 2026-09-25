@@ -97,7 +97,7 @@ For each tuple J:
    - **Failures:** a conditional branch, a switch, kind 0x18, a pseudo real tuple, or reaching J itself.
    - **Flag:** another label inside the block sets the "multi-entry" flag.
 3. **Move** (0x1073691a): if the block is single-entry and L's previous real tuple is `jmp` to somewhere else (not a ret), the whole block `L..term` is spliced in place of J (0x107369cc).
-4. **Duplicate** (0x10736920): otherwise, if the encoded size of `L->next..term` (terminator included) is ≤ **2 bytes under /Os** or ≤ **20 bytes under /Ot** (0x10736935), the block is cloned after J and J is deleted.
+4. **Duplicate** (0x10736920; the copy is a `node_clone` deep copy, call at 0x1073695f, made after register allocation, so it keeps the original's registers and takes no rotation slot, see [tail-merge-rotation.md](tail-merge-rotation.md)): otherwise, if the encoded size of `L->next..term` (terminator included) is ≤ **2 bytes under /Os** or ≤ **20 bytes under /Ot** (0x10736935), the block is cloned after J and J is deleted.
    - Label references of cloned branches are added.
    - If the tuple before J was a call, a tail-call conversion is attempted.
    - If the last clone is a jmp, scanning continues from it (0x10736a5a), which allows chained duplication.
