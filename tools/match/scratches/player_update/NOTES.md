@@ -2,6 +2,20 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Mode-2 arm-local move (2026-09-26)
+
+Mode 2 now tests `movement_heading != -1.0f` with acceleration first. Each arm
+builds its move vector and calls `player_apply_move_with_spawn_avoidance`; the
+`move_phase` update stays after the if/else. The canonical body moves from
+69.54% to **70.35%**, and references from `790/0/2` to `799/0/2`. The mode-2
+region now matches native instruction for instruction, apart from stack
+displacements.
+
+The call tails always merge: `cross_jump_into_fallthrough` folds the accel arm's
+call into the decel fall-in. The vector builds stay separate because the /Ot
+register rotation gives the two copies different temporaries. crimson-88 traced
+it; see `tools/match/c2/compiler/arm-local-builds.md`.
+
 ## Plain-source pass (2026-09-26)
 
 The Codex pass (`gpt-6-astra`) moved the canonical body from 67.39% to **69.54%**.

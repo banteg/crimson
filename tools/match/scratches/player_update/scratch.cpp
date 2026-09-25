@@ -727,15 +727,7 @@ extern "C" void player_update(void)
                 }
             }
 
-            if (movement_heading == -1.0f) {
-                player_decelerate_move_speed(player);
-                player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
-                    * player->move_speed * scalar * 25.0f;
-                player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
-                    * player->move_speed * scalar * 25.0f;
-            } else {
+            if (movement_heading != -1.0f) {
                 angle_step = player_heading_approach_target(movement_heading);
                 player->aim_heading =
                     player->aim_heading + player_heading_turn_delta;
@@ -751,12 +743,25 @@ extern "C" void player_update(void)
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * movement_heading * scalar
                     * 7.957747f;
+                pu_move_scaled(&move_delta, frame_dt, player->movement);
+                player_apply_move_with_spawn_avoidance(
+                    render_overlay_player_index,
+                    player_position,
+                    &move_delta);
+            } else {
+                player_decelerate_move_speed(player);
+                player->move_dx =
+                    (float)cos(player->heading - 1.5707964f)
+                    * player->move_speed * scalar * 25.0f;
+                player->move_dy =
+                    (float)sin(player->heading - 1.5707964f)
+                    * player->move_speed * scalar * 25.0f;
+                pu_move_scaled(&move_delta, frame_dt, player->movement);
+                player_apply_move_with_spawn_avoidance(
+                    render_overlay_player_index,
+                    player_position,
+                    &move_delta);
             }
-            pu_move_scaled(&move_delta, frame_dt, player->movement);
-            player_apply_move_with_spawn_avoidance(
-                render_overlay_player_index,
-                player_position,
-                &move_delta);
             player->move_phase = frame_dt * player->move_speed * 19.0f
                 + player->move_phase;
         }
