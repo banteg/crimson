@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from crimson import match as matchlib
-from crimson.match_toolchain import file_sha256
+from crimson.match_toolchain import file_sha256, tree_set_sha256
 
 
 @pytest.mark.parametrize("dependency", ["Bin/C2.DLL", "Include/sdk.h", "runner"])
@@ -110,3 +110,15 @@ def test_ci_uses_recorded_epoch_only_from_verified_current_artifacts(
     )
     epochs = matchlib.scratch_experiment_epochs(root, directories=[scratch])
     assert (epochs[scratch.resolve()] == recorded) is (artifact_state == "current")
+
+
+def test_tree_fingerprint_ignores_hidden_entries(tmp_path: Path) -> None:
+    (tmp_path / "Include").mkdir()
+    (tmp_path / "Include/windows.h").write_text("int x;")
+    clean = tree_set_sha256(tmp_path, ("Include",))
+    (tmp_path / "Include/.DS_Store").write_bytes(b"finder")
+    (tmp_path / "Include/.claude").mkdir()
+    (tmp_path / "Include/.claude/state").write_text("tool")
+    assert tree_set_sha256(tmp_path, ("Include",)) == clean
+    (tmp_path / "Include/windows.h").write_text("int y;")
+    assert tree_set_sha256(tmp_path, ("Include",)) != clean

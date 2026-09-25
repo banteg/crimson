@@ -23,7 +23,7 @@
       {
         "path": "tools/match/cl.sh",
         "repository_relative": true,
-        "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+        "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
       },
       {
         "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "04a3c996a08615f415932377ef1b73882d1e07b70bb496c62389b47ab314ca35",
+  "audit_digest": "850055cac42628d103019a919ad7cf2603427e6874138e7f111f9c00e81bf21b",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4295,7 +4295,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4319,7 +4319,7 @@
           "canonical_source_sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37",
           "effective_end": 268439557,
           "end": 268439557,
-          "experiment_epoch": "8902ece6a0f42655625183279ac3984051e0477a8b498f57b42aa365d5ae6d45",
+          "experiment_epoch": "7e9015515f9a4aeb96cdacc3dac7a2131c30d137f9641c64e376c9d33178e0a0",
           "function": "grim_crt_empty_initializer_slot_01_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4398,7 +4398,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4422,7 +4422,7 @@
           "canonical_source_sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295",
           "effective_end": 268439569,
           "end": 268439569,
-          "experiment_epoch": "6e3fbf6f31b582cd6deadf13f6062730161f03d929c6be89ba5d660b71404cb2",
+          "experiment_epoch": "87c6b602bfe3af94c7f5f7b722f9d425422fdaeeb1ee4028c3403cb003bc4d7f",
           "function": "grim_crt_empty_initializer_slot_01",
           "match": {
             "body_byte_exact": true,
@@ -4501,7 +4501,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4525,7 +4525,7 @@
           "canonical_source_sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa",
           "effective_end": 268439589,
           "end": 268439589,
-          "experiment_epoch": "2c21a72d0396226978049403ccd8baa80c5bfd009edad5f5e1a7bb534ce0e04e",
+          "experiment_epoch": "3850d7884501b87342fb7b4287505f168f91c5f2427647009f4518fcf432cb92",
           "function": "grim_crt_empty_initializer_slot_02_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4604,7 +4604,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4628,7 +4628,7 @@
           "canonical_source_sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95",
           "effective_end": 268439601,
           "end": 268439601,
-          "experiment_epoch": "218a5e4a81c97e18d8303967e1624ffe57d8922873919ab495e9b8c79855ec40",
+          "experiment_epoch": "ef3ec9e9ac6d8624dc9ced54cf3c4d3d11f5e465d4879790709d9d43e2f4bf25",
           "function": "grim_crt_empty_initializer_slot_02",
           "match": {
             "body_byte_exact": true,
@@ -4707,7 +4707,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4731,7 +4731,7 @@
           "canonical_source_sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838",
           "effective_end": 268439621,
           "end": 268439621,
-          "experiment_epoch": "684199e8e37b994849d7a0226d33c0c2b3c5fcfed40537a8a69674de15f066d5",
+          "experiment_epoch": "8b9842cb12e851e767fbb0260614334e764a67937fa999e42a71072d9aba5429",
           "function": "grim_crt_empty_initializer_slot_03_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4810,7 +4810,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4834,7 +4834,7 @@
           "canonical_source_sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd",
           "effective_end": 268439633,
           "end": 268439633,
-          "experiment_epoch": "5ec4df20d9f454b311f14536de416b346793ebe2559f03a3660ed2cf8cb49e23",
+          "experiment_epoch": "2e632d13f91670ed091f330fac83274b7dc0114d18411c94f58d2374b2c23056",
           "function": "grim_crt_empty_initializer_slot_03",
           "match": {
             "body_byte_exact": true,
@@ -4913,7 +4913,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -4937,7 +4937,7 @@
           "canonical_source_sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166",
           "effective_end": 268439653,
           "end": 268439653,
-          "experiment_epoch": "aa9921e820dd6b22db5ecaf96bcfb71babe798597351281d968377545e3927c9",
+          "experiment_epoch": "fb73f925b3e3b6425954ac62d7c8ade1845f8831027816cd9b9c22e701a8404a",
           "function": "grim_crt_empty_initializer_slot_04_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5016,7 +5016,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5040,7 +5040,7 @@
           "canonical_source_sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42",
           "effective_end": 268439665,
           "end": 268439665,
-          "experiment_epoch": "0903cf3c4c31ddfd7c4ae7a24e31a597f93d1891c6801060f37b5a8d1b668ef6",
+          "experiment_epoch": "5e6936cc06f053c0e3948313043d9f9ac4fb83b482458f2ff699cb0b0edf5d05",
           "function": "grim_crt_empty_initializer_slot_04",
           "match": {
             "body_byte_exact": true,
@@ -5119,7 +5119,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5143,7 +5143,7 @@
           "canonical_source_sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a",
           "effective_end": 268439685,
           "end": 268439685,
-          "experiment_epoch": "341a68bea173be9414c8e98582519b965f76e00e0b02feb20750d61a76b61edf",
+          "experiment_epoch": "ad9feb031117ca1fc2dfdbb9868ed265156a5faf0ad8312397f13d9bb05478b9",
           "function": "grim_crt_empty_initializer_slot_05_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5222,7 +5222,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5246,7 +5246,7 @@
           "canonical_source_sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4",
           "effective_end": 268439697,
           "end": 268439697,
-          "experiment_epoch": "a4fd49ece863b778a63d87fb9c78bb9aa7305b890667cde6fb6cfba77f51a6b0",
+          "experiment_epoch": "b3405611afb036f83b056e588ded22e956068f443c20404c3473e1816604f20e",
           "function": "grim_crt_empty_initializer_slot_05",
           "match": {
             "body_byte_exact": true,
@@ -5325,7 +5325,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5349,7 +5349,7 @@
           "canonical_source_sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8",
           "effective_end": 268439717,
           "end": 268439717,
-          "experiment_epoch": "b8d1f63f03e84f4acfb8d99a19ec4a134b13a93b964135d8f8611a4160ca946e",
+          "experiment_epoch": "281af1a39f8a9c6f3c614d56feb6919abd7e25985e4e9d7e56a041a88e5a1c41",
           "function": "grim_crt_empty_initializer_slot_06_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5428,7 +5428,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5452,7 +5452,7 @@
           "canonical_source_sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf",
           "effective_end": 268439729,
           "end": 268439729,
-          "experiment_epoch": "910d7e6ea1fd53909f7c8d1b8fa66b143b8d6f0b657a40160ea1c84c3e92f743",
+          "experiment_epoch": "a0114ab7cf97804ef999baa617eae3f918dccd9d9bf964fbe6a9dcf3be9c111b",
           "function": "grim_crt_empty_initializer_slot_06",
           "match": {
             "body_byte_exact": true,
@@ -5531,7 +5531,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5555,7 +5555,7 @@
           "canonical_source_sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229",
           "effective_end": 268439749,
           "end": 268439749,
-          "experiment_epoch": "f4c30e0a131efdd4e74256740c4b7606a95f6aeb28d2a2a8cf789d69d2d10bda",
+          "experiment_epoch": "75ff0fe2eefc2fcdece6f3ba6e065cdc9359c9ed78db3cb8f128c9931add6c9f",
           "function": "grim_crt_empty_initializer_slot_07_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5634,7 +5634,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5658,7 +5658,7 @@
           "canonical_source_sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326",
           "effective_end": 268439761,
           "end": 268439761,
-          "experiment_epoch": "c1c83a7c23107a6ee7f713842c550135848d7026a04afe53a185e58fee47629c",
+          "experiment_epoch": "20228f96ba9bbd82acf9917d4e61056f8e6ab2f7a0e12a2ffb163d8db2bc00a4",
           "function": "grim_crt_empty_initializer_slot_07",
           "match": {
             "body_byte_exact": true,
@@ -5737,7 +5737,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5761,7 +5761,7 @@
           "canonical_source_sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32",
           "effective_end": 268439781,
           "end": 268439781,
-          "experiment_epoch": "ceed1f7a50791ea03a624f5040742c66c274c1a89d1c8c4e6cfaf936fdd11fdd",
+          "experiment_epoch": "78664df5c25bfea64abf2d65139070f627319cd9c15c0d1eb5f61975a848ec2e",
           "function": "grim_crt_empty_initializer_slot_08_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5840,7 +5840,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5864,7 +5864,7 @@
           "canonical_source_sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e",
           "effective_end": 268439793,
           "end": 268439793,
-          "experiment_epoch": "7490f25aef9a74703bac77c93c4cd0f40345391cecfcbf7c97e449c29a00064a",
+          "experiment_epoch": "f5307a8a6cb62c89e3e02917062bf6c1f2bcd1597af7a87c5c819f54f8d4c96d",
           "function": "grim_crt_empty_initializer_slot_08",
           "match": {
             "body_byte_exact": true,
@@ -5943,7 +5943,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -5967,7 +5967,7 @@
           "canonical_source_sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47",
           "effective_end": 268439813,
           "end": 268439813,
-          "experiment_epoch": "066b9e4ef6085fbaebb6d5848ff94fbfb05ff421ed33c5e84abb34a309faa022",
+          "experiment_epoch": "6cda26bccca5fed648b84465b1eac2fb607ce72d16d4493cdfc646d83b38b49f",
           "function": "grim_crt_empty_initializer_slot_09_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6046,7 +6046,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6070,7 +6070,7 @@
           "canonical_source_sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1",
           "effective_end": 268439825,
           "end": 268439825,
-          "experiment_epoch": "ccc1e188c15270e928bdbc8aa869aeb9f31cb502c57c6fd1d2e98e43de2ffd8c",
+          "experiment_epoch": "a207c22914741717c2a52f5f09688e0f1982393e84ae3b1fcec1e8866877a3a6",
           "function": "grim_crt_empty_initializer_slot_09",
           "match": {
             "body_byte_exact": true,
@@ -6149,7 +6149,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6173,7 +6173,7 @@
           "canonical_source_sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1",
           "effective_end": 268439845,
           "end": 268439845,
-          "experiment_epoch": "7342af0961ef37d61b4289ce4dbbf217296c703b144b46e77b03594e456a6ced",
+          "experiment_epoch": "6b5c3590c894ea21486f5f3c7482aa318228fa01e4c39f0f5136a087424eae7a",
           "function": "grim_crt_empty_initializer_slot_10_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6252,7 +6252,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6276,7 +6276,7 @@
           "canonical_source_sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145",
           "effective_end": 268439857,
           "end": 268439857,
-          "experiment_epoch": "c91271989405245b39469e6ef686aa82f0b08fa10788a57a2bd3c6b73aa57171",
+          "experiment_epoch": "5dd2d20035c6a3f2353271f889f16ac067346aeaf97d2d8e97fd297a04950b71",
           "function": "grim_crt_empty_initializer_slot_10",
           "match": {
             "body_byte_exact": true,
@@ -6355,7 +6355,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6379,7 +6379,7 @@
           "canonical_source_sha256": "dcd455c70baa4c4ff1cb87e0e917ed85463771ecca5d7391401efbbb314899bf",
           "effective_end": 268439885,
           "end": 268439885,
-          "experiment_epoch": "5823e9e648e1e11cf1735fc6319a1a7b6ba60e751b86a06c8b432a51e94e8e22",
+          "experiment_epoch": "d959688a94c90d4b30ab835969b99d269e6053f4220fc2e78c2a3b4df11ecb83",
           "function": "grim_missing_frame_callback",
           "match": {
             "body_byte_exact": true,
@@ -6458,7 +6458,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6482,7 +6482,7 @@
           "canonical_source_sha256": "a76195e462cd201b2bd828c26f597fff24464e77128f34ee49179601056e08e1",
           "effective_end": 268439891,
           "end": 268439891,
-          "experiment_epoch": "67b1d60ceb2a7780d69d18a11ef5b1d56b29448cb511d3c172fc6eb836e8549c",
+          "experiment_epoch": "87575937e638fc65e2ad2ada7d1d98eaa5df5cca5efdf051487b4de819bf7a8d",
           "function": "grim_default_device_callback",
           "match": {
             "body_byte_exact": true,
@@ -6561,7 +6561,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6585,7 +6585,7 @@
           "canonical_source_sha256": "b9ca078e15f084cb81c2fc18a6c522777957db1a635df14efd5c625580865e2b",
           "effective_end": 268439905,
           "end": 268439905,
-          "experiment_epoch": "a2e062894aad0621211f49df0c9572d83a4a18f706db0dfb3a88ec0694efead3",
+          "experiment_epoch": "b63cb021e7ba53f161a7403f5b636073dabfdf39e403053a5e832a2ca2bf94c0",
           "function": "grim_noop",
           "match": {
             "body_byte_exact": true,
@@ -6664,7 +6664,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6688,7 +6688,7 @@
           "canonical_source_sha256": "0e68a98e072448fc28f96a70a71c0c55536b75695f99b8fd26725ff1c2d109d2",
           "effective_end": 268441349,
           "end": 268441349,
-          "experiment_epoch": "093fbbb5b6239cfad4910e7e47e36cabc084b4b0302b3b449a7e633e36c04568",
+          "experiment_epoch": "2b37affc429c68a484872f7fc4eb4966075d5de4af02711d24052ed5cdb7e7c7",
           "function": "grim_config_defaults_init_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6767,7 +6767,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6811,7 +6811,7 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "87df5e99079cb58bb481ff3f94019c9f20ce0563791d2e559f26ef8900a7a764",
+          "experiment_epoch": "3149adcd412c1d8ab871bfb7d7366143b88015c17472899480ae85acd098f671",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,
@@ -6890,7 +6890,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -6929,7 +6929,7 @@
           "canonical_source_sha256": "b69f81f0afe689353fd8df59394e3c861a750886b0e601c037eb80e446525fbe",
           "effective_end": 268453872,
           "end": 268453872,
-          "experiment_epoch": "50a7ac16fc4dd4fbfdc91d0a2e6d1b66289924bd7b3e0d033ccb5534eb363733",
+          "experiment_epoch": "59fd385f11dfdb8a03cffe84f540024f491254254c8f4f6201d1c0e7b4deced0",
           "function": "grim_apply_render_state",
           "match": {
             "body_byte_exact": true,
@@ -7008,7 +7008,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7037,7 +7037,7 @@
           "canonical_source_sha256": "72f7f6191100514be03cfc4fd37584baa315797f3c7d39069b062cdb8d6294d5",
           "effective_end": 268453923,
           "end": 268453923,
-          "experiment_epoch": "b09dc9cdeeb680ca29863965bc7dcde3f6469c0c63e727077f64da521297cfee",
+          "experiment_epoch": "25ec7462a3d54474aa914c0e396df3be217f6c1705d2ea064a1e291e669d3659",
           "function": "grim_is_texture_format_supported",
           "match": {
             "body_byte_exact": true,
@@ -7116,7 +7116,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7150,7 +7150,7 @@
           "canonical_source_sha256": "6b6c6ee6868b0e923b5c7b7845e10f4e0e1b4ea083b8b5deb9177dd3d9e2ed59",
           "effective_end": 268454168,
           "end": 268454168,
-          "experiment_epoch": "6a2a7c6b667e986b2a77cfd132cb69d2e318721f9bf6bcb235bd3c8dee13f821",
+          "experiment_epoch": "aea895eeb818ce5887bb1b341d336b52db8668a44f510b374a8091b570cae4a8",
           "function": "grim_select_texture_format",
           "match": {
             "body_byte_exact": true,
@@ -7229,7 +7229,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7258,7 +7258,7 @@
           "canonical_source_sha256": "ac717cd61cd91bd5e296cc3873451d29ae5ca36101ffc2c0a25261cf748259b1",
           "effective_end": 268454250,
           "end": 268454250,
-          "experiment_epoch": "ff038c201c549ced8ac0223236a2a6fd3efe91c8ce54eb88f4cb59a8d1523920",
+          "experiment_epoch": "b4fac70764d3c36a777665655d65c9fbcdf020ca17407950bae77820281d6c65",
           "function": "grim_timing_init",
           "match": {
             "body_byte_exact": true,
@@ -7337,7 +7337,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7366,7 +7366,7 @@
           "canonical_source_sha256": "2ffc340c1a6dd210f202e57fda48dc790e0578596d0431905876c554bd71d6a3",
           "effective_end": 268454472,
           "end": 268454472,
-          "experiment_epoch": "1cb8c70b3f3bf5fdda71e1f8e5533d55568046ab6e6244af12e360dd7f779c28",
+          "experiment_epoch": "bfe671c72b9bbf9a5c6b2d8240c7d27c63cbaa53e06ba6b3bf7e3a105c900415",
           "function": "grim_timing_update",
           "match": {
             "body_byte_exact": true,
@@ -7445,7 +7445,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7479,7 +7479,7 @@
           "canonical_source_sha256": "71c9ffbafc42ae0673708f5a022e2d5aaf28c8f9f3a2e49fd73f196f3708e142",
           "effective_end": 268454563,
           "end": 268454563,
-          "experiment_epoch": "dfd0aac8b1adf3623ae1141a02e648bc80c81948574678dfba7276a2e1346bde",
+          "experiment_epoch": "f3c9271d2c9457aa2bf5d27700fd45e70611b4c6ba81d5506058f459ded8676c",
           "function": "grim_texture_init",
           "match": {
             "body_byte_exact": true,
@@ -7558,7 +7558,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7592,7 +7592,7 @@
           "canonical_source_sha256": "0e4b25e1c7de43398c4a447edd855a831dd607cc220d3f9528dbcd16267c9e97",
           "effective_end": 268454642,
           "end": 268454642,
-          "experiment_epoch": "bbc51ab3befa1aa50bc68962dc56d0f9a4b7f62eb4e855da4a8cbc470f88bc3c",
+          "experiment_epoch": "b94bd547443994ce4dffe85b979bfb6a383439b62b6db5450373df66ea46c9a9",
           "function": "grim_texture_release",
           "match": {
             "body_byte_exact": true,
@@ -7671,7 +7671,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7695,7 +7695,7 @@
           "canonical_source_sha256": "553aa627fc4768f567a3633c4a8bcce7afb0bfea2ca9d273630e1dad2f1db7a1",
           "effective_end": 268454755,
           "end": 268454755,
-          "experiment_epoch": "ac950783d2bc9fcbf873a4ed6083eb520e8517d48b7ff39588425767f7fe12c6",
+          "experiment_epoch": "6b93a6d668984c9727d5fb995293399f36221da92fffaae617628e06d59e97e0",
           "function": "grim_path_has_extension",
           "match": {
             "body_byte_exact": true,
@@ -7778,7 +7778,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7802,7 +7802,7 @@
           "canonical_source_sha256": "21bec78205a884baba9032d460b34b904188436fd182dbc0b21f66fe46fe5609",
           "effective_end": 268455553,
           "end": 268455553,
-          "experiment_epoch": "75d8dcc67cdf6f799250f39ba798769ef8c3430a362315aa3e5b0dfdcc9135d0",
+          "experiment_epoch": "bf53f3bec663573f7e1cb6f6361f97cf83a233c525036803407a505a08ec7e76",
           "function": "grim_decode_jaz_texture",
           "match": {
             "body_byte_exact": true,
@@ -7883,7 +7883,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -7932,7 +7932,7 @@
           "canonical_source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
           "effective_end": 268455609,
           "end": 268455609,
-          "experiment_epoch": "38b100c6c2c613542f65875e965ef732d3b11c114f02a84bcb412828c57a4156",
+          "experiment_epoch": "cf1161a4a7b64485fe0b52a3258969efe38e24858188fdf1bd504f0e8866f05a",
           "function": "grim_jaz_jpeg_error_exit",
           "match": {
             "body_byte_exact": true,
@@ -8015,7 +8015,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8054,7 +8054,7 @@
           "canonical_source_sha256": "4668360ac21bc92b5f8a3eb65c2f123cf40a90989f5b728f9c34c19bd1128212",
           "effective_end": 268456207,
           "end": 268456207,
-          "experiment_epoch": "148024e2504320aef2134aa6c539d97cd734482ddb9f237ddff53ee2f29aaefb",
+          "experiment_epoch": "a837fc412cb090f2ae245f06bbb5fd0c91f49ba225b0c35492c8dee854d8b39b",
           "function": "grim_texture_load_file",
           "match": {
             "body_byte_exact": true,
@@ -8133,7 +8133,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8167,7 +8167,7 @@
           "canonical_source_sha256": "e30a93cea369bd4655b928ebf956a9b00ad72d8625818ac27d953f6e95aa8adf",
           "effective_end": 268456301,
           "end": 268456301,
-          "experiment_epoch": "26d0cccf13d834b4d3ff3f3752509e3127856ee3644f826c6a601e0728a86287",
+          "experiment_epoch": "7a291fd568a8b4c9ee90393876607dab518c96ecfccae10c5c8285436ce6ceba",
           "function": "grim_texture_name_equals",
           "match": {
             "body_byte_exact": true,
@@ -8246,7 +8246,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8280,7 +8280,7 @@
           "canonical_source_sha256": "0ce6338a65cd202fa31e301b746665d9d109f1c21a4c571250a2c0b51afc6917",
           "effective_end": 268456372,
           "end": 268456372,
-          "experiment_epoch": "6dc6d0aa28ba4ecff9f9fb9bcd8f399d1b3317e8059ceef7cdf7e55d453ec122",
+          "experiment_epoch": "49683cd9eeb20f4204e3022a3884a4f3ce14c3293b1ea56962ec9dc9c45dfbdf",
           "function": "grim_find_texture_by_name",
           "match": {
             "body_byte_exact": true,
@@ -8359,7 +8359,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8383,7 +8383,7 @@
           "canonical_source_sha256": "370a003800daf0322732e98e99a7e16fffbf238216a5a8cac6dd6587fe73aac3",
           "effective_end": 268456412,
           "end": 268456412,
-          "experiment_epoch": "6161a50d827e332c7a967f556f630ce93d5ddaf2f917ed4ba4d4c8d28acd2d6b",
+          "experiment_epoch": "d375240a82f9dede99fb91d3211b2678295e540ffe8350b7bc35e7a864d75dea",
           "function": "grim_find_free_texture_slot",
           "match": {
             "body_byte_exact": true,
@@ -8464,7 +8464,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8498,7 +8498,7 @@
           "canonical_source_sha256": "aca05d88ab2656f6ee004aaef6c19a058feca50f5bbcffe16d761fcd8d9b6edd",
           "effective_end": 268456681,
           "end": 268456681,
-          "experiment_epoch": "9a297fa289dceea48d8cf2ca08ccb65ce1243be30bc176c97358679e64ad8610",
+          "experiment_epoch": "1aee00de914a3e79e6359105cec8ba93460d8617f4032599272f61488eb784e2",
           "function": "grim_load_texture_internal",
           "match": {
             "body_byte_exact": true,
@@ -8579,7 +8579,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8613,7 +8613,7 @@
           "canonical_source_sha256": "286a220d3679e3002c231d847ff2d5f57b7dbb25640b123771788a22c7e4263b",
           "effective_end": 268458560,
           "end": 268458560,
-          "experiment_epoch": "43bcfddb0a8020d106c23a66b030a31c846842eb8a55528b904ffd46c51115e1",
+          "experiment_epoch": "20b061f7487f23497a1a643f60df1aaec878998714f53d8f250076fb2bbf4769",
           "function": "grim_state_init",
           "match": {
             "body_byte_exact": true,
@@ -8692,7 +8692,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8716,7 +8716,7 @@
           "canonical_source_sha256": "44f42f149fdded1e2c03a1ca44928b1ef335e67d068a644ab68f8fdd9d63fb9b",
           "effective_end": 268458706,
           "end": 268458706,
-          "experiment_epoch": "42bcd6e5dd587eea516d1be8f163fa34b1cabd8e249128f4e115023c1a9cd328",
+          "experiment_epoch": "3f45506fc3ba309251044fc5381bde87970dc1f47c28a721ba3ad1176caeaac9",
           "function": "grim_lookup_blob_load",
           "match": {
             "body_byte_exact": true,
@@ -8795,7 +8795,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8819,7 +8819,7 @@
           "canonical_source_sha256": "3e7b88768af62d3be6e63aac897629af3a94a9150af43f931ae5e073515f5a9d",
           "effective_end": 268458866,
           "end": 268458866,
-          "experiment_epoch": "b9e6060889b12dc868257c43521f3138f85d2810ecece92a02a0e038d43ff2c2",
+          "experiment_epoch": "7d2fb905a0cd47b92dcb3a2761d350d51a0174696e17aeb86001f9bcfa3d0011",
           "function": "grim_lookup_blob_find",
           "match": {
             "body_byte_exact": true,
@@ -8898,7 +8898,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -8922,7 +8922,7 @@
           "canonical_source_sha256": "e4bb86934322827e1867ad9c559282b81ef618b45213f690f885530ef1b14fa3",
           "effective_end": 268459026,
           "end": 268459026,
-          "experiment_epoch": "ddf1e2b3a96abc09acc2800f6bbdcbc2cb9042f714d49736bdb886adfbf6d53d",
+          "experiment_epoch": "e79fc5c2dc756071180ede10a452303b5dd7af35403ace1816d3ac354e1fba60",
           "function": "grim_lookup_blob_size_for_path",
           "match": {
             "body_byte_exact": true,
@@ -9001,7 +9001,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9030,7 +9030,7 @@
           "canonical_source_sha256": "4db4dd64419086e9017eca019a8fc8ba1afbd678e15d1a4500e5cd86ed17e070",
           "effective_end": 268459072,
           "end": 268459072,
-          "experiment_epoch": "4265e1404a3f4ab421f81b7a95233ef0ae9ed9f5b69661adc9aea57ec40a19ab",
+          "experiment_epoch": "525630c1ce84943fe53de777f86e08778e9066cce87b4c38891b9be10fdbcb1e",
           "function": "grim_set_key_char_buffer",
           "match": {
             "body_byte_exact": true,
@@ -9109,7 +9109,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9138,7 +9138,7 @@
           "canonical_source_sha256": "e0df90be7c689f80a3ec2eddff40e62497eb8033034826315cc890e6dc382024",
           "effective_end": 268459124,
           "end": 268459124,
-          "experiment_epoch": "2627cc645ea47f1a0cb043b179d573b5a181eb18f4c93332e010d0953e260fdc",
+          "experiment_epoch": "e82c9970e7c5c2e6fe373e3a3bb15eb253dff83573175f02391d4b8b76b404e2",
           "function": "grim_get_key_char",
           "match": {
             "body_byte_exact": true,
@@ -9217,7 +9217,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9246,7 +9246,7 @@
           "canonical_source_sha256": "e37cda0f8901f5bbced1225ddcfb73a1f9748d55d0ea850ff5f2e10945cfa5d3",
           "effective_end": 268459144,
           "end": 268459144,
-          "experiment_epoch": "36f206532409f8bb42a00c25697f86b5b58e4b5c9a0285c7fea107636008243b",
+          "experiment_epoch": "68e3474ee68e63d127dd4d6ec69146a842479bd71961047e26a7294e980d9c51",
           "function": "grim_release",
           "match": {
             "body_byte_exact": true,
@@ -9325,7 +9325,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9354,7 +9354,7 @@
           "canonical_source_sha256": "5848ae2a26f2dd7dffc8df189ad5ff309fe0a6eebb49d8b2bc63dab58c636c85",
           "effective_end": 268459164,
           "end": 268459164,
-          "experiment_epoch": "9513d9a3a1beef364d682573991a7fcf82fa4e03869f95a7c98566579bd321be",
+          "experiment_epoch": "03cc626fa08da169c4186b4dd00ffa4bdb9af07e3c1cd769e77492150cbc03c1",
           "function": "grim_set_paused",
           "match": {
             "body_byte_exact": true,
@@ -9433,7 +9433,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9462,7 +9462,7 @@
           "canonical_source_sha256": "60cea3ff2f63d267045eeca109095df0388a4ac82b7ea5b4ee1cffd9c3632cf2",
           "effective_end": 268459175,
           "end": 268459175,
-          "experiment_epoch": "7405b749c7e9b5f2d9d9e0afe52e688fc550d59e6304a2fc65e575a08ad3e84d",
+          "experiment_epoch": "bc34ab0936450b85ec2c1198dfec584c9a3696e85b7172d7d34bba7dc3bbb1bf",
           "function": "grim_get_version",
           "match": {
             "body_byte_exact": true,
@@ -9541,7 +9541,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9580,7 +9580,7 @@
           "canonical_source_sha256": "150afee9fa00587bfb4c704dd456af726e11a9d684ba52d52135e1157fc7a8fb",
           "effective_end": 268460014,
           "end": 268460014,
-          "experiment_epoch": "d9556c057973dc6c75d18297137642172927173bc87913ac1eaac86178dc30cd",
+          "experiment_epoch": "385cc1d9973fb5b248b5e00b1b74f246e6c33a07c3bebc299b460f2aca3a347b",
           "function": "grim_init_system",
           "match": {
             "body_byte_exact": true,
@@ -9659,7 +9659,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9688,7 +9688,7 @@
           "canonical_source_sha256": "238c1f1d2e0075264a6c559e14715eec0e188e8a3e5dd0ae5683ed088fd389c6",
           "effective_end": 268460054,
           "end": 268460054,
-          "experiment_epoch": "c58cbef5f1f93fd2ddac52b68185515a3301caa8f57f0c79803c1844f6365e9b",
+          "experiment_epoch": "6ac95fa151c873fc55479be57e47257f1783a0582ac9405c9080b673468c1fca",
           "function": "grim_shutdown",
           "match": {
             "body_byte_exact": true,
@@ -9767,7 +9767,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9796,7 +9796,7 @@
           "canonical_source_sha256": "a2c494263132a3595b0a0bc6cc3047f31c3b5031326518acbee6ea8d94f4909d",
           "effective_end": 268460072,
           "end": 268460072,
-          "experiment_epoch": "d9bf0d9422ab9c2934ad92c2625be031b82af89832dfe8d7513f26b8c0885197",
+          "experiment_epoch": "e5a0159e442c351dee71235eb1ac7ebd6255a7f5643005e9a26de979d2f4d142",
           "function": "grim_apply_settings",
           "match": {
             "body_byte_exact": true,
@@ -9875,7 +9875,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -9904,7 +9904,7 @@
           "canonical_source_sha256": "25bfd80dfb58ce62123ea564a2783fa4f9562a823d14b4f80a85b61b01535dae",
           "effective_end": 268461404,
           "end": 268461404,
-          "experiment_epoch": "97030f33e3f3f66c4ff5eac03212dfd4ddfee49daf2bee0ef82fcfb0eca62095",
+          "experiment_epoch": "b9cfd2ce571f7e6498f854b74bf762917c112efca78668d1a49983ca5a87afa4",
           "function": "grim_set_texture_stage_ops",
           "match": {
             "body_byte_exact": true,
@@ -9985,7 +9985,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10019,7 +10019,7 @@
           "canonical_source_sha256": "ea26e08afcd16f14c69b2f596aea49412520223c045494a362dfb13614d9ddc4",
           "effective_end": 268462974,
           "end": 268462974,
-          "experiment_epoch": "e62cbb09f974007fdcf56ffe7ccefcebf456e6fca8e0e9f044accd0319b0e7fc",
+          "experiment_epoch": "bc9ff2ad85c608be2e24d1f668e82954d63e8d097dbec132d1b3b9b866319a10",
           "function": "grim_set_config_var",
           "match": {
             "body_byte_exact": true,
@@ -10098,7 +10098,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10127,7 +10127,7 @@
           "canonical_source_sha256": "6c65cddbe3a072092e1ef1f877b7d347bd8b9c649396c4f54b27deb51ef87dc4",
           "effective_end": 268463254,
           "end": 268463254,
-          "experiment_epoch": "49adcb1310408ae5ac76815a7665c6a1902c0f1f05df834bf4d3c8cfea60ac53",
+          "experiment_epoch": "c929a464e3b65e946219690e48e0a28436478f77da449a2880d74ffc60320ec2",
           "function": "grim_get_config_var",
           "match": {
             "body_byte_exact": true,
@@ -10206,7 +10206,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10230,7 +10230,7 @@
           "canonical_source_sha256": "1d26b76ce667c86181f13f410817c5ceffde5471c07a15c61c35c3c13f9636ec",
           "effective_end": 268463270,
           "end": 268463270,
-          "experiment_epoch": "f19f8233631f1ffc79d4617efaea44525c3d0cd36123672f0d1b007780607196",
+          "experiment_epoch": "f74798e4af4f1f1da9d680b3ede898a8306dfb1b34e3697d3e9e03df565eb9f0",
           "function": "grim_get_error_text",
           "match": {
             "body_byte_exact": true,
@@ -10309,7 +10309,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10348,7 +10348,7 @@
           "canonical_source_sha256": "9d6f9c955f06b4f555233954d29c7465d982009d373f342b6941e9cf9bc585d1",
           "effective_end": 268463430,
           "end": 268463430,
-          "experiment_epoch": "ac105d7c28398e8af3ec2ff7dd04c8a99b5bb9860d96ddb2f9c604b8002c4364",
+          "experiment_epoch": "3ab4ceecdeb3c18f8fde7c804d9906a7d4072745a8e9f137591dd44f6497934a",
           "function": "grim_clear_color",
           "match": {
             "body_byte_exact": true,
@@ -10427,7 +10427,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10466,7 +10466,7 @@
           "canonical_source_sha256": "f48bdea96d9bcbb594df59e855fe399647165abae09427c1c2f0ecef6c3af657",
           "effective_end": 268463680,
           "end": 268463680,
-          "experiment_epoch": "848dd54a89d9af00eb69d8cca7323ed7dc3f1c7afed29f6c8a6e63b7d28ce484",
+          "experiment_epoch": "1b73bf6dff2f42b30537c08a387dd628bff6735afe75845e45fa2955420d14dc",
           "function": "grim_set_render_target",
           "match": {
             "body_byte_exact": true,
@@ -10545,7 +10545,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10569,7 +10569,7 @@
           "canonical_source_sha256": "461340a6b5d5368f63ec3e80f0423354f5520053afbbd0aef70a36356adba93c",
           "effective_end": 268463686,
           "end": 268463686,
-          "experiment_epoch": "3dd8b9938b74c267aedfb9e00f58916a75306ff51d1d18862c072c7547ab00d7",
+          "experiment_epoch": "a654b62ebdf6f25ec8738174f2d83035627eabcdfc46addc8d494ba4b8dc2546",
           "function": "grim_get_time_ms",
           "match": {
             "body_byte_exact": true,
@@ -10648,7 +10648,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10677,7 +10677,7 @@
           "canonical_source_sha256": "1ae3cfb029d2d38192c9dc18cf48f488b49d337ef602c1793d1695eba35a6921",
           "effective_end": 268463708,
           "end": 268463708,
-          "experiment_epoch": "c640bbec626523581cb9a77eea9f4290db1dd6093ec3a674d9f10a3c5f546d06",
+          "experiment_epoch": "954ec0845cf152126fc41f11a26b098be2c3a3b5d86db916dd159327ecae4554",
           "function": "grim_set_time_ms",
           "match": {
             "body_byte_exact": true,
@@ -10756,7 +10756,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10780,7 +10780,7 @@
           "canonical_source_sha256": "b49884bf729a96b3dffa41263b291ccfa841c88751726676dbb2420c0b232f53",
           "effective_end": 268463745,
           "end": 268463745,
-          "experiment_epoch": "0c2b404608b3681541d5c5951db8d2c04f58cc5d356a9f736fc8642a910f025f",
+          "experiment_epoch": "7dfef29cf247b5194489b30dd0cf8a480dacfeb180f0641da0e9a6f2f1dd5a9b",
           "function": "grim_get_frame_dt",
           "match": {
             "body_byte_exact": true,
@@ -10859,7 +10859,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10888,7 +10888,7 @@
           "canonical_source_sha256": "07100535c5929bcae0f0fa1606fd6dabfe2e65a5e41effbd3fdc69a6cccc0f60",
           "effective_end": 268463767,
           "end": 268463767,
-          "experiment_epoch": "c2446608654a25637a659724d985cbd2a0171cfff1439f4ae441a3e8f7c7e81e",
+          "experiment_epoch": "f9b406ec7c62df285509d03f77ce966dc34b7fa68bdc58998976eaa23bb67763",
           "function": "grim_get_fps",
           "match": {
             "body_byte_exact": true,
@@ -10967,7 +10967,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -10996,7 +10996,7 @@
           "canonical_source_sha256": "178c7d8f4a6470a21ba9f7c0238c3711122622b564555b81b5097e6ec068f95a",
           "effective_end": 268463854,
           "end": 268463854,
-          "experiment_epoch": "1f5e8fdd36ad85be93dfe884df760d33630ca9841757cecc313e6c8a930900f7",
+          "experiment_epoch": "3398d6885e7947e1f49752712c534e0443c92b180dc11b351a630f0635416d72",
           "function": "grim_joystick_up_active",
           "match": {
             "body_byte_exact": true,
@@ -11075,7 +11075,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11104,7 +11104,7 @@
           "canonical_source_sha256": "731fb0c5df3b77463ebfed7abbf6a2d4e2972935c52d06b1022071438f24e2dd",
           "effective_end": 268463930,
           "end": 268463930,
-          "experiment_epoch": "fa1b0f8539afa3fb8d01b73f95a2f161081db0d1502ab19eb0d738956402e7d1",
+          "experiment_epoch": "857c5b48d0092a39a18b52b8ea58b6b93d6f789053ff9bafc74f6cb65d2e4ed4",
           "function": "grim_joystick_down_active",
           "match": {
             "body_byte_exact": true,
@@ -11183,7 +11183,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11212,7 +11212,7 @@
           "canonical_source_sha256": "cbe85d78a92e0116928f690487dc74c11b9a832386a0d6762081be6d696dcbfa",
           "effective_end": 268464014,
           "end": 268464014,
-          "experiment_epoch": "adf43ec2a08e4e2fd4da52b46d7967222b3a17da880025781fd4577b7b89a592",
+          "experiment_epoch": "5a7469ef9d808a1b35b19a1fd4c00114b92a68c020c4d95c7da9b1835300e5fc",
           "function": "grim_joystick_left_active",
           "match": {
             "body_byte_exact": true,
@@ -11291,7 +11291,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11320,7 +11320,7 @@
           "canonical_source_sha256": "f9d8fb36aea0f232a158ebfd646901f66d08ecac8d5a7d111c4781bca23b9e05",
           "effective_end": 268464090,
           "end": 268464090,
-          "experiment_epoch": "ceeea01b4189645070b354a2f230c971bf159202147937a2cb29b6c319ec96d2",
+          "experiment_epoch": "a6259d70d6b6cfbb92a72e318aff711c45fe78feba0ea673e1da721fee1c2d84",
           "function": "grim_joystick_right_active",
           "match": {
             "body_byte_exact": true,
@@ -11399,7 +11399,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11433,7 +11433,7 @@
           "canonical_source_sha256": "c120c4879e3c190bcb66654bd8c7cc16118e377fc5ed0dcee39d0f69e476368b",
           "effective_end": 268464552,
           "end": 268464552,
-          "experiment_epoch": "b41d1da3f3872a5fc2712378c0e072bd3014182d5842458563de4a0120799a96",
+          "experiment_epoch": "31f37993377347906efcdd7d8c1fb3e3ae9220dd900175df828c3efbeb39f414",
           "function": "grim_is_key_active",
           "match": {
             "body_byte_exact": true,
@@ -11512,7 +11512,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11546,7 +11546,7 @@
           "canonical_source_sha256": "d51b8ebd19391ee83de3b901d4ef49b037d39b3a571de5326b3bb4b9400c270b",
           "effective_end": 268464824,
           "end": 268464824,
-          "experiment_epoch": "cd7974cacab68b3c3d062cef43c48fe9eb3816464c70ee6ece7f957d0b6239a4",
+          "experiment_epoch": "acca9d610e8384a5b01d9dd87183b40f395dab0192a347ed52bdbba06242df0d",
           "function": "grim_get_config_float",
           "match": {
             "body_byte_exact": true,
@@ -11625,7 +11625,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11659,7 +11659,7 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464846,
           "end": 268464846,
-          "experiment_epoch": "db404372aa507046e7e4ee9168ab44c7581242009c811bd5c3abd85f696f6e83",
+          "experiment_epoch": "f26ee365753afd76e9fdcaf994e5990555ada0bc63f849ae16dcdcba09000ecc",
           "function": "grim_get_slot_float",
           "match": {
             "body_byte_exact": true,
@@ -11688,7 +11688,7 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464862,
           "end": 268464862,
-          "experiment_epoch": "ef13bfe6145b2353fb9c16793f1fc2986e9ca928cbf7e84326a814ba359f8a46",
+          "experiment_epoch": "ae3325fad6bc86e9fcb54d6a1ab92d83af98810bd2067dd37017eecfdfdcd7a4",
           "function": "grim_get_slot_int",
           "match": {
             "body_byte_exact": true,
@@ -11717,7 +11717,7 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464882,
           "end": 268464882,
-          "experiment_epoch": "3ba164fe6c401d16d0649b8980c67c768807dbabc1cf134c77d845b6d721dcbc",
+          "experiment_epoch": "22251d4f542308d5b5f5512705a29bb37bb1c66ebbbee0db0bd13b8ad7cb4f46",
           "function": "grim_set_slot_float",
           "match": {
             "body_byte_exact": true,
@@ -11746,7 +11746,7 @@
           "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464914,
           "end": 268464914,
-          "experiment_epoch": "8ac85cd8aca97a55008e7b0a2d820b39da68be54ead581732a4d1e23d0492440",
+          "experiment_epoch": "d9dfe5ca6155c6d6a106e7dfb8e15f6226a4577039f33fd219e90db9ca269ac8",
           "function": "grim_set_slot_int",
           "match": {
             "body_byte_exact": true,
@@ -11827,7 +11827,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11856,7 +11856,7 @@
           "canonical_source_sha256": "007b3b049f385d9d059fcc3720621d3320ff51688162b6a0be7b47d58c9bb608",
           "effective_end": 268464944,
           "end": 268464944,
-          "experiment_epoch": "c7985d88db1d774ca5627de700845f037b7934f1759ecdd2989246ceee23b12c",
+          "experiment_epoch": "2b8be3b8945887e000e9239e1fa655fbf36aac1249c2a2243dbee543e1002cd0",
           "function": "grim_is_key_down",
           "match": {
             "body_byte_exact": true,
@@ -11935,7 +11935,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -11964,7 +11964,7 @@
           "canonical_source_sha256": "cb2752e865827d2ac5c95109d6e1e6d58de3b3cc5bf07879e33ea14c28ab1c4a",
           "effective_end": 268465035,
           "end": 268465035,
-          "experiment_epoch": "36e24aabbf0210a0e0171d5e1d02ff31cc0957601434da05475264f0d031ba16",
+          "experiment_epoch": "7cd013615fb6a098ebaab14fcb7441731b07fd9557ca3a7a3424ba8c9cfae0c5",
           "function": "grim_flush_input",
           "match": {
             "body_byte_exact": true,
@@ -12043,7 +12043,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12072,7 +12072,7 @@
           "canonical_source_sha256": "16e2fbb3748f8f494108a28f0f988f4105c68019c1aa25177a99ba3c703f6509",
           "effective_end": 268465159,
           "end": 268465159,
-          "experiment_epoch": "a871c6e4dc96e86e4a8b4ef6307785a576007630e5892e2ff5498f2b2c3ac508",
+          "experiment_epoch": "34704c0e3b3de941d267364b6f4e6424726bff75fbe5e54a46938642841e43ed",
           "function": "grim_was_key_pressed",
           "match": {
             "body_byte_exact": true,
@@ -12151,7 +12151,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12180,7 +12180,7 @@
           "canonical_source_sha256": "e28a5ff8b17b7e6959ad3b6c23309de449aa3ffdc623b4ff289cbba9a46f42ac",
           "effective_end": 268465206,
           "end": 268465206,
-          "experiment_epoch": "e9566700d21c09e38ecf6d9742d0bff9a407a22266cf440a65d04e6ddbf66446",
+          "experiment_epoch": "19be3a85d8b96dffb0c199fdaba3370f59a54ee470382dd9b6cf8e59a514b49f",
           "function": "grim_is_mouse_button_down",
           "match": {
             "body_byte_exact": true,
@@ -12259,7 +12259,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12288,7 +12288,7 @@
           "canonical_source_sha256": "0951bbe1ac33410298bf494cae489c45777a886a899c0d93dff5580cffc49315",
           "effective_end": 268465347,
           "end": 268465347,
-          "experiment_epoch": "3661ead0291c0649d77aea941c3ee099c558ca66aed74ab4980183298b846336",
+          "experiment_epoch": "3b831bc3eec6946f75f2a2442cf465dcefde717aa93579111e3201d6e42fcdcd",
           "function": "grim_was_mouse_button_pressed",
           "match": {
             "body_byte_exact": true,
@@ -12367,7 +12367,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12396,7 +12396,7 @@
           "canonical_source_sha256": "6d6c6b83bc6bedf7c908aa8a35a90b4b8daade22fdc15b97e172ee3d9cf25a0a",
           "effective_end": 268465367,
           "end": 268465367,
-          "experiment_epoch": "85bb918205cb9cd56bf060d693b040ec852a47df95f99bd8aed033f4817c9795",
+          "experiment_epoch": "ee4caced2723ba5730f276dd6be3f178a01adb6126309d7251391f824f510ff4",
           "function": "grim_get_mouse_dx",
           "match": {
             "body_byte_exact": true,
@@ -12475,7 +12475,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12504,7 +12504,7 @@
           "canonical_source_sha256": "86cb83cdd7ff846d264f635b4bbcc6b0d40c5ef5084f07e29cf4accb9b593f97",
           "effective_end": 268465383,
           "end": 268465383,
-          "experiment_epoch": "58466cb355e24c3403d01ec36788c6639e477e0bb546e76320b0b75f30ff2b9f",
+          "experiment_epoch": "9713b7adf5ad7e8f069413701312851feced98b6f99601549b3dfd5f75ea4ad6",
           "function": "grim_get_mouse_dy",
           "match": {
             "body_byte_exact": true,
@@ -12583,7 +12583,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12612,7 +12612,7 @@
           "canonical_source_sha256": "7308d05d772275153073f7f22c85ac05ac1dde7de96e7ef1625d4c1a6bf03240",
           "effective_end": 268465400,
           "end": 268465400,
-          "experiment_epoch": "8976a659ff1cc67d89a717856ad02a8e39f22a41f0cee28c1827755051c9c8ec",
+          "experiment_epoch": "9aed781728068aea074f0e0ac768995bae961beed67666f0305e698459b86562",
           "function": "grim_get_mouse_dx_indexed",
           "match": {
             "body_byte_exact": true,
@@ -12691,7 +12691,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12720,7 +12720,7 @@
           "canonical_source_sha256": "1facd1136362c3f4d953b169248bec9559da0e024cd3b8bc53bb0bce30de1d70",
           "effective_end": 268465416,
           "end": 268465416,
-          "experiment_epoch": "0b42b11077a9c0d26ba87a95cbb6045cf72546b21cde00453c3d8e9ff1729b7d",
+          "experiment_epoch": "a1bbc9cb9059002898b056d102bd368a9e60d19bc63482eb6171e1f059cf5beb",
           "function": "grim_get_mouse_dy_indexed",
           "match": {
             "body_byte_exact": true,
@@ -12799,7 +12799,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12823,7 +12823,7 @@
           "canonical_source_sha256": "62b031c374cd3d12c366711776f5858384a83f12802011c5ac8f1cb0beb083bd",
           "effective_end": 268465431,
           "end": 268465431,
-          "experiment_epoch": "5a1da18085168d8bbc5d5c54efde82a3f32cd3ecca3b8e70df3868315f7e0b12",
+          "experiment_epoch": "a8ed05ecbf2981610a757f22cbcf40146575c92377284dfb0c6fbe5bdabb3484",
           "function": "grim_get_mouse_x",
           "match": {
             "body_byte_exact": true,
@@ -12902,7 +12902,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -12931,7 +12931,7 @@
           "canonical_source_sha256": "908f1d65d7c8e521de3f954c0794fdab8c62e4bc48a01508e0213fd459375978",
           "effective_end": 268465447,
           "end": 268465447,
-          "experiment_epoch": "07affb88fecc794931da3555df8dc0b4880f6319670359fe60792b2f5c9adaea",
+          "experiment_epoch": "3de774af8bcc4d66257b409c154947ab4d3ab28fb4d12d30a2ecc68676bddc1a",
           "function": "grim_get_mouse_y",
           "match": {
             "body_byte_exact": true,
@@ -13010,7 +13010,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13039,7 +13039,7 @@
           "canonical_source_sha256": "389c0b7204d8f793bfc0526bc17aae68905645c5eaca1a62729db9953daddecf",
           "effective_end": 268465493,
           "end": 268465493,
-          "experiment_epoch": "a255dd232c40755ade528c1f8b39af54e985ac5ec8afbed69c8e84b41b088883",
+          "experiment_epoch": "2d245b931de38d5766d609001451e3844470eaa7582fd61f2870157facab77ca",
           "function": "grim_set_mouse_pos",
           "match": {
             "body_byte_exact": true,
@@ -13118,7 +13118,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13142,7 +13142,7 @@
           "canonical_source_sha256": "144fbc0cdd12058580b5a8e345b560d86a48a9c64108cb2b6705b082054370f9",
           "effective_end": 268465527,
           "end": 268465527,
-          "experiment_epoch": "bac62c21527bd310bcd09babf4cb9147ec91497c267f245182ff79cf1bded154",
+          "experiment_epoch": "13d24d79506c9bc43c6f5146c2b92aff5384c7b35f6cee110a5a997586d19e47",
           "function": "grim_get_mouse_wheel_delta",
           "match": {
             "body_byte_exact": true,
@@ -13221,7 +13221,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13255,7 +13255,7 @@
           "canonical_source_sha256": "91f9939b328a5627aa405dd3e057dcdd139a3d30da919e535494d82ae4647ffd",
           "effective_end": 268465542,
           "end": 268465542,
-          "experiment_epoch": "bf5b74f85dbd0d3cab95bf8046ada76afccda3d125f8a24f9869cc443c990683",
+          "experiment_epoch": "191e053ccb1efe4b0e561bf2ebb50960c756b5dc3db6542013eca3e3daffce81",
           "function": "grim_get_joystick_x",
           "match": {
             "body_byte_exact": true,
@@ -13334,7 +13334,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13368,7 +13368,7 @@
           "canonical_source_sha256": "4aafd795e1ad867f4e3288217747a958bc181f12df576540cf752aa9b3b2b8a5",
           "effective_end": 268465558,
           "end": 268465558,
-          "experiment_epoch": "dbfa9868a52a91bb21ae649c78aa93ec25f43df0a18e5426aa187c4d29f98558",
+          "experiment_epoch": "f208491e92b350d3be94a3342e6cb9ab62cc846cc767487a1d9960a8de0f06aa",
           "function": "grim_get_joystick_y",
           "match": {
             "body_byte_exact": true,
@@ -13447,7 +13447,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13481,7 +13481,7 @@
           "canonical_source_sha256": "10ab13000942205dc530ae9fc59ec950b2576bfb7b06be40be31c7a224684161",
           "effective_end": 268465574,
           "end": 268465574,
-          "experiment_epoch": "786fe0a60cfcd1bd942d040689a86c756c2d54f947e7042baf65f70e1eafca30",
+          "experiment_epoch": "1a932c3d512195e7d880b19ad018c074a89645ab8167851d16617ade613632fd",
           "function": "grim_get_joystick_z",
           "match": {
             "body_byte_exact": true,
@@ -13560,7 +13560,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13594,7 +13594,7 @@
           "canonical_source_sha256": "54fe97609cbc2e48b54301c40758c7a3ce2a5cb2f6544292626aa69a1c0ca320",
           "effective_end": 268465598,
           "end": 268465598,
-          "experiment_epoch": "2c640354bab830b6b5fd1119098c1a916a9b656209c6622df3768ab7480918f7",
+          "experiment_epoch": "f3656681cf205b25dcb7c0276c25f17eb73b755e82f1cbfe3bb23ff58dd92aa6",
           "function": "grim_get_joystick_pov",
           "match": {
             "body_byte_exact": true,
@@ -13673,7 +13673,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13702,7 +13702,7 @@
           "canonical_source_sha256": "f5a6395c3a0d13368a3ead0654072e6be83c44079d56326021b0622949f53fcc",
           "effective_end": 268465616,
           "end": 268465616,
-          "experiment_epoch": "2d2533755b0da5cdf3c247f6c34c981647ab674a34260b7866733a3661a56199",
+          "experiment_epoch": "bcd9ffd4429bc400981e68e0d876ade4a4106c073b0e9578e0ead99b2f799c6e",
           "function": "grim_is_joystick_button_down",
           "match": {
             "body_byte_exact": true,
@@ -13783,7 +13783,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13822,7 +13822,7 @@
           "canonical_source_sha256": "3f9061d1a20154cd62aaab28183442fccee64d9df492148e166908006da40bc6",
           "effective_end": 268465873,
           "end": 268465873,
-          "experiment_epoch": "263c99cf5dcfae5ceabdac04235c6f469f449da3485161c1189476f71dae335d",
+          "experiment_epoch": "1621298867241a4df33f28b21fc4781a6355e321d9ec81e8276be9f5c7636343",
           "function": "grim_create_texture",
           "match": {
             "body_byte_exact": true,
@@ -13901,7 +13901,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -13940,7 +13940,7 @@
           "canonical_source_sha256": "d30b21fc8d5f1ff5b82b4db1b9b6b1fff9548cf7167eea50962add6074a016bf",
           "effective_end": 268465909,
           "end": 268465909,
-          "experiment_epoch": "bf56a81f28339017d9cf4d769c3e0554979766ce10bb589f8cfc84adc5251bde",
+          "experiment_epoch": "0eecc3d8c08e81d0a25c5f5cc8bb59b4678c6a99095c3e3bb389db8ad0f209c8",
           "function": "grim_load_texture",
           "match": {
             "body_byte_exact": true,
@@ -14019,7 +14019,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14058,7 +14058,7 @@
           "canonical_source_sha256": "c846875d3c606bf97c30c185f7aa329fc34b8d2995f9cc41ab6e9d0dc44a217a",
           "effective_end": 268465984,
           "end": 268465984,
-          "experiment_epoch": "bcc16efb3dacbd00831864f997e39ca7259ed6eabf86414a5ac9f274a836f2cb",
+          "experiment_epoch": "e60eb03a32dfb1471c671304f144f351f239db7adcde6518080903997ba9aab3",
           "function": "grim_destroy_texture",
           "match": {
             "body_byte_exact": true,
@@ -14137,7 +14137,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14176,7 +14176,7 @@
           "canonical_source_sha256": "6991a73f98c49c52a037471f5c402ce577821902dc3d338eb6d9d70dd905f31d",
           "effective_end": 268466000,
           "end": 268466000,
-          "experiment_epoch": "de50e10bffcd54a16677a9d6fa9cb8505fe6b94464c7132ff73a946e346593b0",
+          "experiment_epoch": "31ecd70cb72b968b676be5a0d6803ea849efbcd236727fb451cd1be3cdc68def",
           "function": "grim_get_texture_handle",
           "match": {
             "body_byte_exact": true,
@@ -14255,7 +14255,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14294,7 +14294,7 @@
           "canonical_source_sha256": "b7932c7169c22892ac2ce396f152a4ead3eaa92c4ea81945ddff97f84729ec78",
           "effective_end": 268466221,
           "end": 268466221,
-          "experiment_epoch": "9c0defb63b9828979428902711a5c5ebf1eff0f245ae0010c65b1e9c506b271d",
+          "experiment_epoch": "dd6a955f251c4a0fc354b8f543371d0073dc7df23a9c60af3dc945fc1ad630d0",
           "function": "grim_recreate_texture",
           "match": {
             "body_byte_exact": true,
@@ -14373,7 +14373,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14412,7 +14412,7 @@
           "canonical_source_sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf",
           "effective_end": 268466282,
           "end": 268466282,
-          "experiment_epoch": "ee30543b6de5f21e0fee11cfe3f74c0679474e70201e141f8b86a3bc8d33a3d8",
+          "experiment_epoch": "63705fff474794fd9dca7bc5457d4ad4b78dc7801d55cef27f8b43f78fec7eb0",
           "function": "grim_bind_texture",
           "match": {
             "body_byte_exact": true,
@@ -14491,7 +14491,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14520,7 +14520,7 @@
           "canonical_source_sha256": "000956b9cbec0bca5a19934e8bb46e54acd844be0e09b1dd2d4af2e82f9b64aa",
           "effective_end": 268466397,
           "end": 268466397,
-          "experiment_epoch": "9891e472903704260458e50b909a4c6b9b12fc0fe7ca0a5189bfef0fcb86b3fa",
+          "experiment_epoch": "9c38755d16c612dd5ed3ba695938269e48ca0121aa750909f6ad5a9199b2c617",
           "function": "grim_draw_fullscreen_quad",
           "match": {
             "body_byte_exact": true,
@@ -14599,7 +14599,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14633,7 +14633,7 @@
           "canonical_source_sha256": "81e808619ef735fbb39d0b4a160228411d9c8e90116c3ca380a94fef5d066d92",
           "effective_end": 268466605,
           "end": 268466605,
-          "experiment_epoch": "591b66ba5667285e21b67eb6c25af0aea95a9c6a957c8a208285575e201dff30",
+          "experiment_epoch": "1a4bd88a0dc6a9ee58c45d24ac3842831037597ba3da6e101d9d4d2ac04323d2",
           "function": "grim_draw_rect_filled",
           "match": {
             "body_byte_exact": true,
@@ -14712,7 +14712,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14746,7 +14746,7 @@
           "canonical_source_sha256": "f00db954556a79d28505da2789f39657f931d38b54eacb5adcbd5c7de5eeac6c",
           "effective_end": 268466867,
           "end": 268466867,
-          "experiment_epoch": "19170f15ae8fadaf214aea6ddeb0d02ee363de82a4df933c14765607a6351cc1",
+          "experiment_epoch": "2202507fbfc29ab5475fb606d5efffecba9cd48f179179f1b7731a76c0e4d925",
           "function": "grim_draw_fullscreen_color",
           "match": {
             "body_byte_exact": true,
@@ -14825,7 +14825,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14859,7 +14859,7 @@
           "canonical_source_sha256": "6fb93ddbb3e6e76347552009d90e3db9193131214fbf846d65e6c691b7ee1a77",
           "effective_end": 268466974,
           "end": 268466974,
-          "experiment_epoch": "5e895112684cea904c0944996e17d5334442f90dbf0cef4e2ef8ed9537778fe4",
+          "experiment_epoch": "537037a527feedd002211de4dbb8839563abd097afe939e42ffc1b08deecbe12",
           "function": "grim_begin_batch",
           "match": {
             "body_byte_exact": true,
@@ -14938,7 +14938,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -14972,7 +14972,7 @@
           "canonical_source_sha256": "184fefc23c0978ed1186d6fd5bcb522600057dfea270e491e0a6cb3848e36ed5",
           "effective_end": 268467080,
           "end": 268467080,
-          "experiment_epoch": "15eb2bcf0fae7ab44e0a51d6183637c3ff6e4f9583561b7ac89d8e995d3c8847",
+          "experiment_epoch": "3dca49d72bd1db1f55489a78a3cd04e809b0eaa71986247122b1747a1b584be8",
           "function": "grim_end_batch",
           "match": {
             "body_byte_exact": true,
@@ -15051,7 +15051,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15085,7 +15085,7 @@
           "canonical_source_sha256": "cce6ea1f995eff7ee8d7cd0b8943e1db318e48570f811b56c0d09cccf5c22ba3",
           "effective_end": 268467520,
           "end": 268467520,
-          "experiment_epoch": "cad1b203ced1d17ba9c7ba4e003152e4965af943e5fce7ef91bb28941f300af0",
+          "experiment_epoch": "f0b9e121e75e192e3f9dbca31816f2aa08764e2b3167c927a2428f6f9ab4ec74",
           "function": "grim_draw_circle_filled",
           "match": {
             "body_byte_exact": true,
@@ -15164,7 +15164,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15198,7 +15198,7 @@
           "canonical_source_sha256": "78e8ab1e3e366b20aedf5a1e88d38870cbab90035be055b0292ddd0607e6f9a8",
           "effective_end": 268467982,
           "end": 268467982,
-          "experiment_epoch": "a00f3da30e77a4baa1aeff9ba3e8ecfa1251b5770047a7b5da6c033bae15cfff",
+          "experiment_epoch": "fb559ccb134e73b19e073d8ab99e06ac61d5e224e94a44abf3c62ecdd7094ea6",
           "function": "grim_draw_circle_outline",
           "match": {
             "body_byte_exact": true,
@@ -15277,7 +15277,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15301,7 +15301,7 @@
           "canonical_source_sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131",
           "effective_end": 268467989,
           "end": 268467989,
-          "experiment_epoch": "56d7525b10b384b1a1d98ae245364ea510f742f07eb682058b3ac802b1b9e39e",
+          "experiment_epoch": "040db302a02de4a58a9945ad08953a2038e1c46603c5e95417dcf7c10edc9fa9",
           "function": "grim_crt_empty_initializer_slot_12_thunk",
           "match": {
             "body_byte_exact": true,
@@ -15380,7 +15380,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15404,7 +15404,7 @@
           "canonical_source_sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c",
           "effective_end": 268468001,
           "end": 268468001,
-          "experiment_epoch": "0d14b70c4626dec13326c5304d248221ca40d2098182017e3938b06c4db5b6bd",
+          "experiment_epoch": "29368c80b3c5540479a8d28b3521f3c05258c58d336395117ea421588caf8d67",
           "function": "grim_crt_empty_initializer_slot_12",
           "match": {
             "body_byte_exact": true,
@@ -15483,7 +15483,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15512,7 +15512,7 @@
           "canonical_source_sha256": "0bb1a78e95706c7d290d2d123e4ae206e6883595f48baca1d4c599584866c2cd",
           "effective_end": 268468101,
           "end": 268468101,
-          "experiment_epoch": "02d5019f82de317cf34bcffc612fa96d527d481eb6c4bae91a761441cb22e3c7",
+          "experiment_epoch": "6b0516c4be58add5bda9e49c30009e84fda80ceb80b8ce77cdf2a5768b204924",
           "function": "grim_set_rotation",
           "match": {
             "body_byte_exact": true,
@@ -15591,7 +15591,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15620,7 +15620,7 @@
           "canonical_source_sha256": "0fb01e6cb3a3f2282957c33d0174debc35b4f51c2134901debca8078ea465dce",
           "effective_end": 268468278,
           "end": 268468278,
-          "experiment_epoch": "f876cb4289f65f30a155de936854cd1a80c282f381b1d608fd53b8c8ad24e6a3",
+          "experiment_epoch": "3a2682b4ef83f7de7dfd922bcf622992d08e14059a4ca7536663ac6c47163253",
           "function": "grim_set_color",
           "match": {
             "body_byte_exact": true,
@@ -15699,7 +15699,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15728,7 +15728,7 @@
           "canonical_source_sha256": "68cb6535d34b227ed4734b7915004145df93d241c0d7b871d6f8aa18e82258d3",
           "effective_end": 268468392,
           "end": 268468392,
-          "experiment_epoch": "88517d1161fda8fcfbb9f18a2a29c16188cad39a6fe77ab34d8b03c02703e96f",
+          "experiment_epoch": "f2dc09be38f0ff074b658ff0c0100fda67a2565d8a9b7013261f9a8f0c8e4257",
           "function": "grim_set_color_ptr",
           "match": {
             "body_byte_exact": true,
@@ -15807,7 +15807,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -15836,7 +15836,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468534,
           "end": 268468534,
-          "experiment_epoch": "f07a47cd49ce6240072d51f6e3701ed6be3c86d85a97b00bee22016139ef648e",
+          "experiment_epoch": "e0b965e6b96861c059382e79665fbe3d63c51d88e1a221d195e3cc62d6c7a59e",
           "function": "grim_draw_line",
           "match": {
             "body_byte_exact": true,
@@ -15865,7 +15865,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468545,
           "end": 268468545,
-          "experiment_epoch": "e66db6d3a2e585c42da37724ee0b689e9d5c3cbf6bbe0b7c298c1efcd47ddf6d",
+          "experiment_epoch": "47bf72d2a2c339da75e5cda8d2f17765f787f2e2e5a830a4b0c68d696fefa6c2",
           "function": "grim_line_vector_dtor",
           "match": {
             "body_byte_exact": true,
@@ -15894,7 +15894,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468659,
           "end": 268468659,
-          "experiment_epoch": "12bad0b85cbf6dbc424eb457c872b0ab3547659d3aebea6b95232c84317001f7",
+          "experiment_epoch": "44cc6a91293c5b93dcc52d0847966728a71bda831a49d34b84310d6f65b31c01",
           "function": "grim_draw_line_quad",
           "match": {
             "body_byte_exact": true,
@@ -15975,7 +15975,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16004,7 +16004,7 @@
           "canonical_source_sha256": "a87550532ec5d94dfad44f12c19e5d1c6882c565a72ee27524ae8797d2957db5",
           "effective_end": 268468781,
           "end": 268468781,
-          "experiment_epoch": "798255e38d3038f3a2fd9c68008718de1d9b851826eed46c351db3e2d16dac6c",
+          "experiment_epoch": "affc6f3fb223d81470ebb5223f28fc87128730c8d26002519be82fb8cd4093dd",
           "function": "grim_set_color_slot",
           "match": {
             "body_byte_exact": true,
@@ -16083,7 +16083,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16112,7 +16112,7 @@
           "canonical_source_sha256": "c47a7208cfcd734a632f28a0c5d4398767b57b56ca6b5fa4d373790d659e56df",
           "effective_end": 268468923,
           "end": 268468923,
-          "experiment_epoch": "aae7e0637345dfe9ca826f086fbed73ddbc647d9b9276131567b2b7cefb8fc1d",
+          "experiment_epoch": "4138797fb98bd9db0c673717c585afed581a0cccd990ae73c267d1b47cef40a7",
           "function": "grim_set_atlas_frame",
           "match": {
             "body_byte_exact": true,
@@ -16191,7 +16191,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16220,7 +16220,7 @@
           "canonical_source_sha256": "6b3ca09170d02d625ac14dd90a9080236a122e21b0b05621952f734b5120df5e",
           "effective_end": 268469071,
           "end": 268469071,
-          "experiment_epoch": "d425f056d6738b78403ae65538321f56ff4bb32e9306dfa09dfcb29ae2d0b488",
+          "experiment_epoch": "f0caedc8f26a183c92b6f98374aa92ad9393dafdd4c3c470ecd0e896e0365634",
           "function": "grim_set_sub_rect",
           "match": {
             "body_byte_exact": true,
@@ -16299,7 +16299,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16328,7 +16328,7 @@
           "canonical_source_sha256": "b6a83fc01e55de3aae97b406d85edbcdefc1077d6d19258c4239769de9573e60",
           "effective_end": 268469146,
           "end": 268469146,
-          "experiment_epoch": "656c6d9a7366ba9451351e026f5031b8394c5aa39afa4b924d1c56caa0e548e3",
+          "experiment_epoch": "72f458b82d836083c146cf997758dc63f8112616c1b429b6e6802c26f09d5d68",
           "function": "grim_set_uv",
           "match": {
             "body_byte_exact": true,
@@ -16407,7 +16407,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16436,7 +16436,7 @@
           "canonical_source_sha256": "a2949ab76656c2624aafd31ec6b944ce372759c1609463b37534857a7cab1830",
           "effective_end": 268469181,
           "end": 268469181,
-          "experiment_epoch": "acdd2dd65b5a786c92cb7565de0055fab600004b463c2cef8dad826333c1d9fe",
+          "experiment_epoch": "e63aee15c4ac284a3ea1a8b5c34bf04878758975cdec5991e3d9e258aead02e2",
           "function": "grim_set_uv_point",
           "match": {
             "body_byte_exact": true,
@@ -16515,7 +16515,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16549,7 +16549,7 @@
           "canonical_source_sha256": "de576f5600324bdbf81058ba41620d223cf991cdc447a3524cd3dad7e488b252",
           "effective_end": 268469291,
           "end": 268469291,
-          "experiment_epoch": "59cb786b73aca57615f164b23207471f9054ea6d2e0b0f1c36ccfa2adec92458",
+          "experiment_epoch": "748a38e94f6a45da94a423c90604c9e08419096f9794e04816b800040b7d6013",
           "function": "grim_flush_batch",
           "match": {
             "body_byte_exact": true,
@@ -16628,7 +16628,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16657,7 +16657,7 @@
           "canonical_source_sha256": "04b6d8272620702bba3097939f0849a780e54ac47e7eb9b9fd8a090ebcf5328a",
           "effective_end": 268469464,
           "end": 268469464,
-          "experiment_epoch": "b06c961a9fe737a4512c37ff3f2fc2c70d4bfb5dc1d5154b59c497ea630feb50",
+          "experiment_epoch": "35c03612b726de6970f861de272eb1f8b5a1938110c03af58055079e8d4fd047",
           "function": "grim_submit_vertices_offset_color",
           "match": {
             "body_byte_exact": true,
@@ -16736,7 +16736,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16765,7 +16765,7 @@
           "canonical_source_sha256": "ecb4f65e600e8a208efa8350d696da2817952dd9537e1b94265275211954330c",
           "effective_end": 268469690,
           "end": 268469690,
-          "experiment_epoch": "d7a79d76416dca9d20eac3481c73c7bcb18dc5fd81724054dd741cb0c68757d0",
+          "experiment_epoch": "8ede1aadc73c4b492f4eab2b90ba52bad888be24815b5a488989b91cb0f980e2",
           "function": "grim_submit_vertices_transform_color",
           "match": {
             "body_byte_exact": true,
@@ -16844,7 +16844,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16873,7 +16873,7 @@
           "canonical_source_sha256": "ec37ec07ebe7832ef8e80526ba5f7f29f4454e6f0c9923569f1fb384183f70dc",
           "effective_end": 268469888,
           "end": 268469888,
-          "experiment_epoch": "2c0769c78a48705323c1ee8d3cdb60925a46e413d51acb2c533e6ada6cf5a151",
+          "experiment_epoch": "20294bfdbc0f943c2f1ccf2458880759d9c3368c2c20a034cc0fa6d0a23083de",
           "function": "grim_submit_vertices_transform",
           "match": {
             "body_byte_exact": true,
@@ -16952,7 +16952,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -16981,7 +16981,7 @@
           "canonical_source_sha256": "bd4502961b785fafb4d51468c9868ae6a3f366426bf369a096d6ace68c890c0c",
           "effective_end": 268470041,
           "end": 268470041,
-          "experiment_epoch": "93158d8aa7483fc49533f116ec4a4f2e1cf666cc0c2ace590fe3b08f2b04067f",
+          "experiment_epoch": "25d362cc02e08bfd06941d18ea257035b6b8f7b36a01867368062b7bf00da81f",
           "function": "grim_submit_vertices_offset",
           "match": {
             "body_byte_exact": true,
@@ -17060,7 +17060,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17089,7 +17089,7 @@
           "canonical_source_sha256": "d2e187ce9ee1a139f66a54c9b61c21c58ba4092960c3bc29d8ff94b46c8ed35b",
           "effective_end": 268470082,
           "end": 268470082,
-          "experiment_epoch": "83525559932eea452c05f2cc26da30ffa0c19ffec9a345a99cec6bbdad305842",
+          "experiment_epoch": "286d00a406678ef4aaf9382c4c08d7525818bbd5ea81783fb1d0b515e3adb06a",
           "function": "grim_draw_quad_xy",
           "match": {
             "body_byte_exact": true,
@@ -17168,7 +17168,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17197,7 +17197,7 @@
           "canonical_source_sha256": "90cefd64bafded510c90d3da68f6454f9dc1b340e1c277458c8270850aa6d27c",
           "effective_end": 268471049,
           "end": 268471049,
-          "experiment_epoch": "5eaa8eb36272eff73145ff605f65bbb3894f5bb0ab0d697636676070c67f3aa3",
+          "experiment_epoch": "3a86c0dbec5d3c07abb8b18e34539b39fcf59e20bbd7d5317071934ef6c8f69a",
           "function": "grim_draw_quad_rotated_matrix",
           "match": {
             "body_byte_exact": true,
@@ -17276,7 +17276,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17305,7 +17305,7 @@
           "canonical_source_sha256": "d4dd884bbe7ed74287461d0b262f0d7468212e1d1497bb057fa1d030ccc062d7",
           "effective_end": 268471856,
           "end": 268471856,
-          "experiment_epoch": "97accc452c71bc958c79ac45807c2408078cfd844e2a186a22ed16099d85f98f",
+          "experiment_epoch": "b9d872e78d96f500c118592d8a9381e7363fdddd2deafa0f3f8e612f0fb44cb1",
           "function": "grim_draw_quad",
           "match": {
             "body_byte_exact": true,
@@ -17384,7 +17384,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17413,7 +17413,7 @@
           "canonical_source_sha256": "8ca2ffdd830911c3676a5cd349a3ed4974498be18a6cda4d5a9c5a40545f7b40",
           "effective_end": 268471972,
           "end": 268471972,
-          "experiment_epoch": "1d8489312e45b7d3596f60376842a2998f5dbd3740c95f1e6538c477ea55e95e",
+          "experiment_epoch": "c565b14368c6b118ce150ed96f407c4a0032f66083dc1b624c5c967184ff2a18",
           "function": "grim_submit_vertex_raw",
           "match": {
             "body_byte_exact": true,
@@ -17492,7 +17492,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17521,7 +17521,7 @@
           "canonical_source_sha256": "8dd998c04044a904e0cf34b4cc5a9b20dbb80d9327a3288a48ac544c0b8ffc87",
           "effective_end": 268472075,
           "end": 268472075,
-          "experiment_epoch": "57640e88f2c91b35feccf6ce9b4dd6c005014dd1aaa6dc4372be04f25763251b",
+          "experiment_epoch": "8c2cea31406c0c596b682461bb96b3cf39431aba551ed7a40710397e810b0978",
           "function": "grim_submit_quad_raw",
           "match": {
             "body_byte_exact": true,
@@ -17600,7 +17600,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17634,7 +17634,7 @@
           "canonical_source_sha256": "6df340efc986b6dbd479b0af541cab2f42e0eb120b91c22f80e22851e970b1a2",
           "effective_end": 268472436,
           "end": 268472436,
-          "experiment_epoch": "b9fc7bbf2340c7b0062a6245656c4f934d8e29013f1bcb31720684d29e531df4",
+          "experiment_epoch": "a55bd47d3145328979f0b54b72b6cab645244800b3aa53e030b2e3d8e8d215e9",
           "function": "grim_draw_rect_outline",
           "match": {
             "body_byte_exact": true,
@@ -17713,7 +17713,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17747,7 +17747,7 @@
           "canonical_source_sha256": "91324f25ce6020ae4117be370a359044df10879d9de2e48f2a973a3d7dda6655",
           "effective_end": 268473002,
           "end": 268473002,
-          "experiment_epoch": "a55c30625348d3fc417ba45457d7eff309450c54fda4d44858b3600e818a1102",
+          "experiment_epoch": "653fd38ec7afea8811b20d4895e235d9ee714fea0f31aef7a13d3f884922ce21",
           "function": "grim_draw_quad_points",
           "match": {
             "body_byte_exact": true,
@@ -17776,7 +17776,7 @@
           "canonical_source_sha256": "91324f25ce6020ae4117be370a359044df10879d9de2e48f2a973a3d7dda6655",
           "effective_end": 268474042,
           "end": 268474042,
-          "experiment_epoch": "724a0a0504b48033b1e8cf1d66788246d47340a002c0488fdd50e3a1741aa35e",
+          "experiment_epoch": "e2eb24d2310c913f368245180033709ae01fb5a3b9adedfe0cec450ed737685a",
           "function": "grim_draw_text_mono",
           "match": {
             "body_byte_exact": true,
@@ -17857,7 +17857,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17886,7 +17886,7 @@
           "canonical_source_sha256": "928c9213f2b1685d33a138320069adc912cc048fab79196480db0cecdfe9078d",
           "effective_end": 268474146,
           "end": 268474146,
-          "experiment_epoch": "9f4876704bc4fb6118fd285cf86ef2bd5aa862cff9f7077789f0c2c6094047c6",
+          "experiment_epoch": "f38d4d4c07c063414df74729a6e215b043dc00b830c792e35d85077d4c4cfcfc",
           "function": "grim_measure_text_width",
           "match": {
             "body_byte_exact": true,
@@ -17965,7 +17965,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -17994,7 +17994,7 @@
           "canonical_source_sha256": "fb7fbea4a802c42de99beafd8da3906be283ceefb726bb1e904257a6d0ec7fee",
           "effective_end": 268474675,
           "end": 268474675,
-          "experiment_epoch": "924fbe7c7f240338803551859c943c446fd492eb9e80e2382b753a31b6f7e1ff",
+          "experiment_epoch": "7de8ef43958d61d5ba1930d69d18338fde1c0445e6e3ffcf21a292301665165a",
           "function": "grim_draw_text_small",
           "match": {
             "body_byte_exact": true,
@@ -18073,7 +18073,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -18102,7 +18102,7 @@
           "canonical_source_sha256": "8c78e0a0693ee083d9d731980cdc468ce7a2a926ee9afa628870b6372e74a47c",
           "effective_end": 268474740,
           "end": 268474740,
-          "experiment_epoch": "cc1314ce8b3b317fe8167948fdbf3489ec09756b2241e33539f3aa8760d92ee5",
+          "experiment_epoch": "ffa1e86bab3fb80c11d2edc6d66828f65d713a2a8e7d5a87f8937758218fdea1",
           "function": "grim_draw_text_mono_fmt",
           "match": {
             "body_byte_exact": true,
@@ -18181,7 +18181,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -18210,7 +18210,7 @@
           "canonical_source_sha256": "91b7d0f885f6da4b614f8198be0694b83c7cfed9070b63b9874aaf67edd25f84",
           "effective_end": 268474804,
           "end": 268474804,
-          "experiment_epoch": "b2bce52937dc86c3e4db8b3fa44820e4f1455cb66a859c65f977a2b0fb16788a",
+          "experiment_epoch": "668a73a64e4248662732ee139609b46d6a387d93457e653c58e298e39cd069a8",
           "function": "grim_draw_text_small_fmt",
           "match": {
             "body_byte_exact": true,
@@ -18289,7 +18289,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -18318,7 +18318,7 @@
           "canonical_source_sha256": "e26f421e03450fb918a9394b1cd2660837e87bd5e8492ae3107821ce10715cfd",
           "effective_end": 268474911,
           "end": 268474911,
-          "experiment_epoch": "3ed9d93e660b9d75c400d9c046d6a3f66fe7ed1b3a632a5555a21d01be878c67",
+          "experiment_epoch": "635cdcb6f4b45a46243c3aa9c2cf418f8cd1c281e5ec4d3d00ef661661fa4ed5",
           "function": "GRIM__GetInterface",
           "match": {
             "body_byte_exact": true,
@@ -18397,7 +18397,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -18421,7 +18421,7 @@
           "canonical_source_sha256": "f1e859b11c27637429145771eeaa3de93eb65e0d852235d6137544073f6d91dc",
           "effective_end": 268474950,
           "end": 268474950,
-          "experiment_epoch": "b8b39c43a2d118aba50d59f6992783321284d8675f3ca28f2a9a350c82684d38",
+          "experiment_epoch": "a48d9197c859d9d4fcee5b4fcd508c4e4d4f04242bab5ebccf863915806a1dde",
           "function": "DllMain",
           "match": {
             "body_byte_exact": true,
@@ -18504,7 +18504,7 @@
         {
           "path": "tools/match/cl.sh",
           "repository_relative": true,
-          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+          "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
@@ -18528,7 +18528,7 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478483,
           "end": 268478483,
-          "experiment_epoch": "b2d8a8a81f4addecd3f4bc1f3e4fde43c62195b2987f29a72aae15f16c005894",
+          "experiment_epoch": "bcdbf959c9425f09ce120884a935ba697d064bc5625addda0c049acd96dc6654",
           "function": "grim_jaz_decode_scope_init",
           "match": {
             "body_byte_exact": true,
@@ -18557,7 +18557,7 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478517,
           "end": 268478517,
-          "experiment_epoch": "e14713c12c08e87cab3ea1f6da1df1b6faa7d78312c5980b9099d2c37d681164",
+          "experiment_epoch": "0b1eb137ae7af86100c26454985de2543d477b0b72dd52056e2dbaa83b42ac1a",
           "function": "grim_zlib_status_is_error",
           "match": {
             "body_byte_exact": true,
@@ -18586,7 +18586,7 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478588,
           "end": 268478588,
-          "experiment_epoch": "4ffc0f61597cabb83651b5bffef15bc84d89dc0aeca6a296eb546fa6628b650b",
+          "experiment_epoch": "2ef31f399ffacb0b70e698c28fa12e859c2c2de89136312a4694df87f0cd2ab9",
           "function": "grim_zlib_decompress_alloc",
           "match": {
             "body_byte_exact": true,
@@ -18615,7 +18615,7 @@
           "canonical_source_sha256": "7c65277b90b939ee3624b94c55b95279df046de2e00f9099841030d805a7c469",
           "effective_end": 268478658,
           "end": 268478658,
-          "experiment_epoch": "4fd917f794bd0c391746c62f7a590a37076f2dccef8d078f6cef046405e0a621",
+          "experiment_epoch": "1c1b7f32bfc3afc3c739c634ff1a44954cea726d718537ee51180992d175502b",
           "function": "grim_jaz_decompress_payload",
           "match": {
             "body_byte_exact": true,
@@ -18672,7 +18672,7 @@
       {
         "path": "src/crimson/match.py",
         "repository_relative": true,
-        "sha256": "fdba98366e5eb23b42fd75c16727b5320ec1e07b9d34186e215174e7c01f469b"
+        "sha256": "717d2353cb729b401c9237dba5013519ad5d2bb2052825901eef5c2cc8e4ef7c"
       },
       {
         "path": "src/crimson/match_process.py",
@@ -18682,7 +18682,7 @@
       {
         "path": "src/crimson/match_toolchain.py",
         "repository_relative": true,
-        "sha256": "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c"
+        "sha256": "efcdb32f16008ab13285d255cd3f622e26fa131cdc8edc09f5cc64b12cc966f0"
       },
       {
         "path": "src/crimson/native_link.py",
@@ -18734,7 +18734,7 @@
         "mode": 493,
         "path": "tools/match/cl.sh",
         "repository_relative": true,
-        "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+        "sha256": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74"
       },
       "compiler_bundles": [
         {

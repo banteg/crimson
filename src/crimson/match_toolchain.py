@@ -46,7 +46,12 @@ def tree_set_sha256(root: Path, trees: tuple[str, ...]) -> str:
         tree = root / tree_name
         if not tree.is_dir():
             raise ValueError(f"compiler bundle is missing {tree}")
-        files.extend(path for path in tree.rglob("*") if path.is_file())
+        # Hidden entries (.DS_Store, tool state) are never part of a pinned bundle.
+        files.extend(
+            path
+            for path in tree.rglob("*")
+            if path.is_file() and not any(part.startswith(".") for part in path.relative_to(root).parts)
+        )
     return _tree_sha256(root, tuple((path, file_identity(path)) for path in sorted(files)))
 
 

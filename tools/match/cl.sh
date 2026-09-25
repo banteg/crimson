@@ -23,17 +23,13 @@ find_compiler() {
         printf '%s\n' "$MATCH_ROOT/compilers/$MSVC_VER"
         return 0
     fi
-    if [ -f "$REPO_ROOT/../snail-mail/tools/match/compilers/$MSVC_VER/Bin/CL.EXE" ] || [ -f "$REPO_ROOT/../snail-mail/tools/match/compilers/$MSVC_VER/Bin/cl.exe" ]; then
-        printf '%s\n' "$REPO_ROOT/../snail-mail/tools/match/compilers/$MSVC_VER"
-        return 0
-    fi
     return 1
 }
 
 MSVC_ROOT="$(find_compiler || true)"
 if [ -z "$MSVC_ROOT" ]; then
     echo "error: could not find $MSVC_VER/Bin/cl.exe" >&2
-    echo "set CRIMSON_MSVC_ROOT or unpack it under tools/match/compilers/$MSVC_VER" >&2
+    echo "run \`just fetch-compilers\` or set CRIMSON_MSVC_ROOT" >&2
     exit 1
 fi
 

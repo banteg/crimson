@@ -1,0 +1,39 @@
+{
+  "source": "https://github.com/OmniBlade/decomp.me/releases/download/msvcwin9x",
+  "note": "decomp.me production bundles for the Windows 9x MSVC family; each archive extracts to tools/match/compilers/<name>/ with Bin/CL.EXE",
+  "compilers": {
+    "msvc6.0": {
+      "sha256": "5c81e9c2ab0ac5545022c1418a23392cb514db950cf6dcb1f48327270403fcd3",
+      "frontend": 8168,
+      "optimizer": 8168
+    },
+    "msvc6.3": {
+      "sha256": "84f73e718b3671bfd5de3b7764622b07633b572ee826ca3b77602d224c128608",
+      "frontend": 8472,
+      "optimizer": 8447
+    },
+    "msvc6.4": {
+      "sha256": "6d4ef930390ca7481ae5b63ea3bf00d62e0993cd95f1d6f42ba06bb30f993c57",
+      "frontend": 8867,
+      "optimizer": 8799
+    },
+    "msvc6.5": {
+      "sha256": "16f639b7961ca74b938532d912d2bb655d5ea08b01dc2f50e4a180774d138169",
+      "frontend": 8964,
+      "optimizer": 8966
+    },
+    "msvc6.5pp": {
+      "sha256": "0de4c5dc848d59b8af842eb157ffe8b1d24fba6621b18be67ea9932e219ce14e",
+      "frontend": 8964,
+      "optimizer": 9044
+    },
+    "msvc6.6": {
+      "sha256": "0a4cd7628a79067ee62dd90d40d2c027221cc46f530e40d92245ec46d550dd4d",
+      "frontend": 9782,
+      "optimizer": 9782
+    },
+    "msvc7.0": {
+      "sha256": "49eba7f9f72644f6f872a4176baeac544e8b5dfb2be1f47bb4d439b1136ffeac"
+    }
+  }
+}

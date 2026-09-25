@@ -112,17 +112,28 @@ PE, COFF, archive, or other build metadata. `bonus_label_for_entry` is a useful
 profile calibration point: it is exact with `msvc6.5` and `msvc6.6`, but not
 `msvc6.5pp` or `msvc7.0`, and it rejects `/O1`, `/Od`, and `/Oy-`.
 
+The compilers are the decomp.me production bundles from the `msvcwin9x`
+release, pinned by SHA-256 in [compilers.json](compilers.json). Install or
+verify them with:
+
+```sh
+just fetch-compilers            # install missing bundles, verify installed ones
+just fetch-compilers --check    # verify only
+```
+
+The scratches use `msvc6.5`, `msvc6.5pp`, `msvc7.0` and one `msvc6.0` control;
+`msvc6.3`, `msvc6.4` and `msvc6.6` serve attribution sweeps. `msvc7.0ddk`
+(the Windows XP DDK build 9178) is not published and stays a local install.
+
 `tools/match/cl.sh` looks for the compiler in this order:
 
 1. `CRIMSON_MSVC_ROOT` as either a direct compiler root or a parent directory
-   containing `$MSVC_VER/`
+   containing `$MSVC_VER/`. Point it at another checkout's compiler directory
+   to use extra profiles in sweeps.
 2. `tools/match/compilers/$MSVC_VER/`
-3. a sibling Snail Mail checkout at `../snail-mail/tools/match/compilers/$MSVC_VER/`
 
-decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
-`msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`;
-alternate archives remain available for controlled shape experiments.
-Some archives, including the local `msvc7.0` profile, do not carry a complete
+The default dashboard profile is `msvc6.5 /O2 /GB`; alternate archives remain
+available for controlled shape experiments. Some archives, including the `msvc7.0` profile, do not carry a complete
 Platform SDK. The repository's `third_party/headers/` fallbacks therefore
 provide the Win32 declarations used by the corpus and preserve both C vtable
 declarations and C++ COM inheritance. The focused matcher test compiles that

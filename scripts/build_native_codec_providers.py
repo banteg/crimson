@@ -141,10 +141,7 @@ def _run(argv: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> No
 
 
 def _toolchain(derived: dict[str, Any]) -> tuple[Path, Path, Path, dict[str, str]]:
-    compiler_roots = (
-        MATCH_ROOT / "compilers/msvc6.5",
-        REPO_ROOT.parent / "snail-mail/tools/match/compilers/msvc6.5",
-    )
+    compiler_roots = (MATCH_ROOT / "compilers/msvc6.5",)
     compiler_root = next(
         (root for root in compiler_roots if (root / "Bin/CL.EXE").is_file() and (root / "Bin/LIB.EXE").is_file()),
         None,

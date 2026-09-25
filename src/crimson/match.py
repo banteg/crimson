@@ -4893,18 +4893,18 @@ def _scratch_include_headers(
     return tuple(sorted(headers))
 
 
+def _compiler_parent_roots(match_root: Path) -> tuple[Path, ...]:
+    """Directories holding `<compiler>/Bin/CL.EXE`: CRIMSON_MSVC_ROOT, then tools/match/compilers."""
+    configured_root = os.environ.get("CRIMSON_MSVC_ROOT")
+    return (*((Path(configured_root),) if configured_root else ()), match_root / "compilers")
+
+
 def _compiler_executable_path(config: ScratchConfig, match_root: Path) -> Path:
     configured_root = os.environ.get("CRIMSON_MSVC_ROOT")
-    roots: list[Path] = []
-    if configured_root:
-        root = Path(configured_root)
-        roots.extend((root, root / config.compiler))
-    roots.extend(
-        (
-            match_root / "compilers" / config.compiler,
-            REPO_ROOT.parent / "snail-mail" / "tools" / "match" / "compilers" / config.compiler,
-        ),
-    )
+    roots = [
+        *((Path(configured_root),) if configured_root else ()),
+        *(parent / config.compiler for parent in _compiler_parent_roots(match_root)),
+    ]
     for root in roots:
         for name in ("CL.EXE", "cl.exe"):
             candidate = root / "Bin" / name
@@ -6062,12 +6062,8 @@ def evaluate_source_overlay(
 
 
 def available_scratch_compilers(match_root: Path = DEFAULT_MATCH_ROOT) -> tuple[str, ...]:
-    roots = (
-        match_root.resolve() / "compilers",
-        REPO_ROOT.parent / "snail-mail" / "tools" / "match" / "compilers",
-    )
     names: set[str] = set()
-    for root in roots:
+    for root in _compiler_parent_roots(match_root.resolve()):
         if not root.is_dir():
             continue
         for directory in root.iterdir():
