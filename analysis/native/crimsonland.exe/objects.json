@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "0e95b4c4fa8f27fd0dae35fdb6f9baada93eb0efad4aef1ee81328340755c332",
+  "audit_digest": "df9570c8fef798c6d448068d071f1572a453023abc22ea7fed38f88be0c32f17",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -80691,7 +80691,7 @@
         {
           "path": "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp",
           "repository_relative": true,
-          "sha256": "065a9df40d27a52b8249f3ac6813f87c12ab49f5cc9052dbeeca1cfa7bb91858"
+          "sha256": "ec9f20ab655a6c9276c93c3bc45aba052d9df24f48a9139e72d187b1ac0094d8"
         },
         {
           "path": "tools/match/scratches/typo_word_pick_highscore_name/scratch.conf",
@@ -80737,10 +80737,10 @@
           "canonical_config_sha256": "ac6e0d6402b649473a4c6a7abf576b5a502cd93af02e6d8522a39cf3359ae250",
           "canonical_scratch": "tools/match/scratches/typo_word_pick_highscore_name",
           "canonical_source": "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp",
-          "canonical_source_sha256": "065a9df40d27a52b8249f3ac6813f87c12ab49f5cc9052dbeeca1cfa7bb91858",
+          "canonical_source_sha256": "ec9f20ab655a6c9276c93c3bc45aba052d9df24f48a9139e72d187b1ac0094d8",
           "effective_end": 4477705,
           "end": 4477705,
-          "experiment_epoch": "5a68f91b0da3bad336ecccfc5e54363813ca580cc764e0bea7cb774958e8cf1c",
+          "experiment_epoch": "018bbf40e4120a63b9fd2c0fd7cb028ca4e5ff438da03195785363d8377804a3",
           "function": "typo_word_pick_highscore_name",
           "match": {
             "body_byte_exact": true,
@@ -80778,10 +80778,10 @@
       },
       "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
       "object_function_symbol": "_typo_word_pick_highscore_name",
-      "object_sha256": "97ab0db74a2e3416a6818eba2cef52331aeaa7bee49825bddb4464dab454742b",
+      "object_sha256": "16703c20c9de35fc2892c3aecb43b62ef630d60f2b4972f4c6af5bd7733215e5",
       "scratch": "tools/match/scratches/typo_word_pick_highscore_name",
       "source": "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp",
-      "source_sha256": "065a9df40d27a52b8249f3ac6813f87c12ab49f5cc9052dbeeca1cfa7bb91858",
+      "source_sha256": "ec9f20ab655a6c9276c93c3bc45aba052d9df24f48a9139e72d187b1ac0094d8",
       "target_size": 345,
       "translation_unit": {
         "kind": "isolated",
@@ -82517,7 +82517,7 @@
         {
           "path": "tools/match/scratches/ui_element_render/scratch.cpp",
           "repository_relative": true,
-          "sha256": "449016f70cc728c9d4497d0bd97ac1c9ddc644e2b1c0effecb82861cd3c807a8"
+          "sha256": "d916e66fd076b2262c3f5a26382cbd4fc49107734baf9211fc4d3433de019faa"
         },
         {
           "path": "tools/match/scratches/ui_element_render/scratch.conf",
@@ -82573,10 +82573,10 @@
           "canonical_config_sha256": "0fde3c9f0fa2dcdebce3f9027d1576dd5cf8ee84b81253da7d4b13e7fc4ed0d8",
           "canonical_scratch": "tools/match/scratches/ui_element_render",
           "canonical_source": "tools/match/scratches/ui_element_render/scratch.cpp",
-          "canonical_source_sha256": "449016f70cc728c9d4497d0bd97ac1c9ddc644e2b1c0effecb82861cd3c807a8",
+          "canonical_source_sha256": "d916e66fd076b2262c3f5a26382cbd4fc49107734baf9211fc4d3433de019faa",
           "effective_end": 4485961,
           "end": 4485961,
-          "experiment_epoch": "2d3e1749b9e839b98a794aa241c5eb9b78b1dcb4d3994174e8f57c2d01954ff3",
+          "experiment_epoch": "f7b9df159cc39ea35ad559078423c3e44d297466a69dad8946c1d9770306ae74",
           "function": "ui_element_render",
           "match": {
             "body_byte_exact": true,
@@ -82617,7 +82617,7 @@
       "object_sha256": "9423bb3749286ee7e2d254faebd34bafb592a0bbc8470f066e4c00ff0e2b3f07",
       "scratch": "tools/match/scratches/ui_element_render",
       "source": "tools/match/scratches/ui_element_render/scratch.cpp",
-      "source_sha256": "449016f70cc728c9d4497d0bd97ac1c9ddc644e2b1c0effecb82861cd3c807a8",
+      "source_sha256": "d916e66fd076b2262c3f5a26382cbd4fc49107734baf9211fc4d3433de019faa",
       "target_size": 1801,
       "translation_unit": {
         "kind": "isolated",

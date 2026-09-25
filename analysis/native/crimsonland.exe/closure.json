@@ -1,5 +1,5 @@
 {
-  "audit_digest": "0e95b4c4fa8f27fd0dae35fdb6f9baada93eb0efad4aef1ee81328340755c332",
+  "audit_digest": "df9570c8fef798c6d448068d071f1572a453023abc22ea7fed38f88be0c32f17",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -154188,11 +154188,6 @@
         {
           "function": "quest_start_selected",
           "object": "tools/match/scratches/quest_start_selected/build/msvc6.5/cfed3d459a417416/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "typo_word_pick_highscore_name",
-          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
           "weak": false
         },
         {
