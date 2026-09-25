@@ -2,11 +2,41 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Auto-target index loop (2026-09-26)
+
+The auto-target scan is now a plain index loop over `creature_pool`, with
+`const vec2f_t *position = &creature_pool[i].position;` declared after the
+`active`/`health` test and both coordinates read through it. This replaces the
+hand-written cursor and its `(int)candidate < (int)&creature_pool[384]` pointer
+int-cast. The loop now matches native exactly: the cursor is anchored at +0, not
+at `position.y`. The `target_index` distance above it also takes native's x87
+shape. crimson-88 traced the IV merge chain (`answer_pu-autotarget-iv.md`). A
+hand cursor's init is copied to the start of the preheader, so it is always the
+last challenger. The derived +24 lane then wins the chain.
+
+Canonical score: 72.62% to **71.80%**. References go from 840/0/1 to 844/0/1.
+The raw drop is a label-offset artifact: branch labels compare as byte offsets,
+and the old 5-byte-longer loop happened to realign about 250 instructions at
+0x109b..0x14b4. All label-insensitive views improve:
+- labels masked: 81.10 to 81.70%;
+- `--structural`: 82.51 to 83.09%;
+- stack-masked structural: 91.93 to 92.51%.
+
+Also, the weapon-arm smoke lanes are now written `(random_offset.y * 15.0f)`,
+with no float-to-float cast. The object is byte-identical, and the parens alone
+emit the FROUND.
+
+Open: `player->movement = scratch_pos;` instead of the two `move_dx`/`move_dy`
+stores reproduces native's aggregate copy of the zeroed `scratch_pos`. The
+auto-target clamp then no longer reuses a forwarded `ecx = 0`, so it matches
+native too. But with that change the `target_index` sqrt falls back to the old
+x87 shape.
+
 ## Weapon-arm smoke timing (2026-09-26)
 
 In all 11 smoke-sprite weapon arms, the second sprite's Y lane is written
-`move_delta.y = (float)(random_offset.y * 15.0f);`. The cast makes C1 emit a
-FROUND, which takes the scheduler cycle where our build would otherwise issue
+`move_delta.y = (random_offset.y * 15.0f);`. The parenthesized expression makes
+C1 emit a FROUND, which takes the scheduler cycle where our build would otherwise issue
 the previous sprite's color stores ahead of the `fstp`. crimson-88 traced it
 (`answer_weapon-arm-schedule.md`): the color stores are ready at cycle 186
 and the fstp at 187 (fmul-to-fstp latency 3+1). A single-use float local gives
