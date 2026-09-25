@@ -8,14 +8,11 @@ extern "C" void bonus_hud_slot_activate(
     float *timer_ptr,
     float *alt_timer_ptr)
 {
-    int slot_index = 0;
-    bonus_hud_slot_t *slot_cursor = &bonus_hud_slot_table[0];
-    while ((int)slot_cursor < (int)&bonus_hud_slot_table[16]) {
-        if (slot_cursor->active == 0) {
+    int slot_index;
+    for (slot_index = 0; slot_index < 16; slot_index++) {
+        if (bonus_hud_slot_table[slot_index].active == 0) {
             goto slot_found;
         }
-        ++slot_cursor;
-        ++slot_index;
     }
     return;
 
@@ -31,26 +28,16 @@ slot_found:
         slot->slide.alt_timer_ptr = 0;
     }
 
-    slot_index = 0;
-    bonus_hud_slot_t *current_slot = &bonus_hud_slot_table[0];
-    do {
-        if (current_slot->active != 0) {
-            int check_index = 16;
-            bonus_hud_slot_t *scan = &bonus_hud_slot_table[16];
-            do {
-                float *current_timer = current_slot->slide.timer_ptr;
-                float *scanned_timer = scan->slide.timer_ptr;
-                if (current_timer == scanned_timer) {
+    for (slot_index = 0; slot_index < 16; slot_index++) {
+        if (bonus_hud_slot_table[slot_index].active != 0) {
+            for (int check_index = 16; check_index >= 0; check_index--) {
+                if (bonus_hud_slot_table[slot_index].slide.timer_ptr
+                    == bonus_hud_slot_table[check_index].slide.timer_ptr) {
                     if (slot_index != check_index) {
-                        scan->active = 0;
+                        bonus_hud_slot_table[check_index].active = 0;
                     }
                 }
-                --scan;
-                --check_index;
-            } while ((int)scan >= (int)&bonus_hud_slot_table[0]);
+            }
         }
-        ++current_slot;
-        ++slot_index;
-    } while ((int)&current_slot->slide.timer_ptr <
-             (int)&bonus_hud_slot_table[16].slide.timer_ptr);
+    }
 }

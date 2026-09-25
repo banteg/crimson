@@ -2,11 +2,10 @@
 
 void bonus_reset_availability(void)
 {
-    unsigned char *enabled = &bonus_meta_table[0].enabled;
-    do {
-        *enabled = 1;
-        enabled += sizeof(bonus_meta_t);
-    } while ((int)enabled < (int)&bonus_meta_table[15].enabled);
+    int i;
+    for (i = 0; i < 15; i++) {
+        bonus_meta_table[i].enabled = 1;
+    }
 
     bonus_meta_table[BONUS_ID_NONE].enabled = 0;
 }

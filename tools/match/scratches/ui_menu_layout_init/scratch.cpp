@@ -326,11 +326,9 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_table_slot_39 = &ui_element_slot_39;
     ui_element_table_start = &ui_element_slot_40;
 
-    ui_layout_element_t **table_cursor = ui_element_table;
-    do {
-        ui_element_init_defaults(*table_cursor);
-        ++table_cursor;
-    } while ((int)table_cursor < (int)&ui_perk_prompt_element);
+    for (int init_index = 0; init_index < 41; init_index++) {
+        ui_element_init_defaults(ui_element_table[init_index]);
+    }
 
     copy_layer(ui_sign_crimson, ui_sign_crimson_template);
     ui_sign_crimson.pos = ui_layout_vec2_t((float)(config_screen_width + 4), 70.0f);
@@ -603,7 +601,6 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_slot_09.use_offset_render = 1;
     ui_element_slot_28.timeline_end_ms = 500;
 
-    ui_layout_element_t **responsive;
     for (i = 1; i <= 7; ++i) {
         if (config_screen_width <= 640) {
             transform_layers(&ui_element_table[i], 0.9f, 0.0f, (float)((i - 2) * 11));
@@ -700,13 +697,11 @@ extern "C" void ui_menu_layout_init(void)
             = ui_layout_vec2_t((float)(config_screen_width + 50), 40.0f);
     }
 
-    responsive = &ui_element_table_slot_01_main_menu_aux;
-    do {
+    for (int responsive_index = 1; responsive_index < 41; responsive_index++) {
         float responsive_y = (float)config_screen_width * 0.0015625f;
         responsive_y = responsive_y * 150.0f - 150.0f;
-        (*responsive)->pos.y += responsive_y;
-        ++responsive;
-    } while ((int)responsive < (int)&ui_perk_prompt_element);
+        ui_element_table[responsive_index]->pos.y += responsive_y;
+    }
 
     ui_element_slot_40 = ui_element_slot_09;
     ui_element_slot_40.pos
@@ -718,9 +713,7 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_slot_40.use_offset_render = 1;
     ui_element_slot_40.direction_flag = 1;
 
-    table = ui_element_table;
-    do {
-        ui_element_layout_calc(*table);
-        ++table;
-    } while ((int)table < (int)&ui_perk_prompt_element);
+    for (int calc_index = 0; calc_index < 41; calc_index++) {
+        ui_element_layout_calc(ui_element_table[calc_index]);
+    }
 }

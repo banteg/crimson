@@ -2,46 +2,30 @@
 
 void weapon_refresh_available(void)
 {
-    unsigned char *unlocked = &weapon_table[WEAPON_ID_NONE].unlocked;
-    int unlock_count;
-    int index;
-    int one;
-    do {
-        *unlocked = 0;
-        unlocked += sizeof(weapon_stats_t);
-    } while ((int)unlocked < (int)&weapon_table[0x40].unlocked);
+    int i;
 
-    unlock_count = quest_unlock_index;
-    one = 1;
-    weapon_table[WEAPON_ID_PISTOL].unlocked = (unsigned char)one;
-    index = 0;
-    if (unlock_count > 0) {
-        int *unlock_weapon_id = &quest_selected_meta[0].unlock_weapon_id;
-        while (index < unlock_count) {
-            int weapon_id;
-            if ((int)unlock_weapon_id >= (int)&quest_selected_meta[0x32].unlock_weapon_id) {
-                break;
-            }
-            weapon_id = *unlock_weapon_id;
-            unlock_weapon_id += sizeof(quest_meta_t) / sizeof(int);
-            weapon_table[weapon_id].unlocked = (unsigned char)one;
-            ++index;
-        }
+    for (i = 0; i < 0x40; i++) {
+        weapon_table[i].unlocked = 0;
+    }
+
+    weapon_table[WEAPON_ID_PISTOL].unlocked = 1;
+    for (i = 0; i < quest_unlock_index && i < 0x32; i++) {
+        weapon_table[quest_selected_meta[i].unlock_weapon_id].unlocked = 1;
     }
 
     if (config_game_mode == GAME_MODE_SURVIVAL) {
-        weapon_table[WEAPON_ID_ASSAULT_RIFLE].unlocked = (unsigned char)one;
-        weapon_table[WEAPON_ID_SHOTGUN].unlocked = (unsigned char)one;
-        weapon_table[WEAPON_ID_SUBMACHINE_GUN].unlocked = (unsigned char)one;
+        weapon_table[WEAPON_ID_ASSAULT_RIFLE].unlocked = 1;
+        weapon_table[WEAPON_ID_SHOTGUN].unlocked = 1;
+        weapon_table[WEAPON_ID_SUBMACHINE_GUN].unlocked = 1;
     }
 
-    if (!(unsigned char)game_is_full_version()) {
+    if (!game_is_full_version()) {
         quest_unlock_index_full = 0;
         weapon_table[WEAPON_ID_NONE].unlocked = 0;
         return;
     }
     if (quest_unlock_index_full >= 40) {
-        weapon_table[WEAPON_ID_SPLITTER_GUN].unlocked = (unsigned char)one;
+        weapon_table[WEAPON_ID_SPLITTER_GUN].unlocked = 1;
     }
     weapon_table[WEAPON_ID_NONE].unlocked = 0;
 }

@@ -1,5 +1,9 @@
 # `creature_find_nearest`
 
+## Plausibility pass (2026-09-25)
+
+The pointer walk was replaced with an indexed loop that takes `&pool[i].position` into a local, which gives C2 the same base-anchored induction pointer. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Current exact VC6.5 result:
 
 ```txt

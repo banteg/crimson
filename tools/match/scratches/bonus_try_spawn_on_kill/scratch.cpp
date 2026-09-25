@@ -20,7 +20,7 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
          || (player_state_table[1].weapon_id == 1 && config_blob.player_count == 2))
         && (crt_rand() & 3) <= 2) {
         int duplicate_count;
-        bonus_entry_t *scan;
+        int i;
 
         entry = bonus_spawn_at_pos(pos);
         entry->bonus_id = BONUS_ID_WEAPON;
@@ -31,13 +31,11 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
 
         duplicate_count = 0;
         if (entry->bonus_id != BONUS_ID_POINTS) {
-            scan = &bonus_pool[0];
-            do {
-                if (scan->bonus_id == entry->bonus_id) {
+            for (i = 0; i < 16; i++) {
+                if (bonus_pool[i].bonus_id == entry->bonus_id) {
                     ++duplicate_count;
                 }
-                ++scan;
-            } while ((int)scan < (int)&bonus_pool[16]);
+            }
         }
         if (duplicate_count >= 2
             || entry->time.amount == 1
@@ -48,7 +46,7 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
     } else {
         int duplicate_count;
         int roll = crt_rand();
-        bonus_entry_t *scan;
+        int i;
 
         if (roll % 9 != 1 && (player_state_table[0].weapon_id != 1 || crt_rand() % 5 != 1)) {
             if (perk_count_get(perk_id_bonus_magnet) == 0) {
@@ -73,13 +71,11 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
 
         duplicate_count = 0;
         if (entry->bonus_id != BONUS_ID_POINTS) {
-            scan = &bonus_pool[0];
-            do {
-                if (scan->bonus_id == entry->bonus_id) {
+            for (i = 0; i < 16; i++) {
+                if (bonus_pool[i].bonus_id == entry->bonus_id) {
                     ++duplicate_count;
                 }
-                ++scan;
-            } while ((int)scan < (int)&bonus_pool[16]);
+            }
         }
         bool reject = false;
         if (duplicate_count >= 2) {
@@ -104,14 +100,12 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
         effect_template.half_extent.x = 32.0f;
         effect_template.half_extent.y = 32.0f;
 
-        count = 16;
-        do {
+        for (count = 0; count < 16; count++) {
             effect_template_rotation = (float)(crt_rand() & 0x7f) * 0.049087387f;
             effect_template_vel_x = (float)(crt_rand() % 128 - 64);
             effect_template_vel_y = (float)(crt_rand() % 128 - 64);
             effect_template_scale_step = (float)(crt_rand() % 100) * 0.01f + 0.1f;
             effect_spawn(0, pos);
-            --count;
-        } while (count != 0);
+        }
     }
 }

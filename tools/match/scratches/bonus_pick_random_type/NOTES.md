@@ -1,5 +1,9 @@
 # bonus_pick_random_type
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; the fire-bullets scan reads `bonus_pool[i].bonus_id` and `.state` directly instead of punning `state - 4`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 ## Exact recovery (2026-09-25)
 
 The quest exclusions are six flat compound rules, in the `perk_can_offer` /

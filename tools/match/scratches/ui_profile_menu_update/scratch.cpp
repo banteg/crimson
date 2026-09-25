@@ -119,18 +119,9 @@ extern "C" bool ui_profile_menu_update(float *xy, char enabled)
 {
     static profile_text_input_t name_input(
         profile_name_input_buffer, 0x1b, 0x60);
-    int list_count = 0;
-
-    if (config_blob.saved_name_count > 0) {
-        char **item = profile_name_item_ptrs;
-        char *saved_name = config_blob.saved_names[0];
-        int remaining = config_blob.saved_name_count;
-        list_count = remaining;
-        do {
-            *item = saved_name;
-            saved_name += sizeof(config_blob.saved_names[0]);
-            ++item;
-        } while (--remaining != 0);
+    int list_count;
+    for (list_count = 0; list_count < config_blob.saved_name_count; list_count++) {
+        profile_name_item_ptrs[list_count] = config_blob.saved_names[list_count];
     }
     char *add_item = strdup_malloc("<add new named list>");
     profile_name_item_ptrs[list_count] = add_item;

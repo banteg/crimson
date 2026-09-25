@@ -10,7 +10,7 @@ extern "C" int player_apply_move_with_spawn_avoidance(
     creature_t *owner;
     float collision_radius;
     int alternate_weapon_count;
-    creature_spawn_slot_t *slot;
+    int i;
     player_state_t *player = &player_state_table[player_index];
 
     alternate_weapon_count = perk_count_get(perk_id_alternate_weapon);
@@ -21,9 +21,8 @@ extern "C" int player_apply_move_with_spawn_avoidance(
 
     pos->x = pos->x + delta->x;
     pos->y = pos->y + delta->y;
-    slot = creature_spawn_slot_table;
-    do {
-        owner = slot->owner;
+    for (i = 0; i < 0x20; i++) {
+        owner = creature_spawn_slot_table[i].owner;
         if (owner != 0
             && (collision_radius = (owner->size + player->size) * 0.33333334f,
                 probe.x = owner->pos_x - pos->x,
@@ -51,7 +50,6 @@ extern "C" int player_apply_move_with_spawn_avoidance(
                 }
             }
         }
-        ++slot;
-    } while ((int)slot < (int)&creature_spawn_slot_table[0x20]);
+    }
     return 0;
 }

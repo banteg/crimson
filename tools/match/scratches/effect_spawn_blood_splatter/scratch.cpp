@@ -23,8 +23,8 @@ extern "C" void effect_spawn_blood_splatter(
     effect_template.age = age;
 
     float direction_sin = (float)sin(direction);
-    int remaining = 2;
-    do {
+    int i;
+    for (i = 0; i < 2; i++) {
         effect_template.rotation =
             angle + (float)((crt_rand() & 63) - 32) * 0.1f;
 
@@ -40,5 +40,5 @@ extern "C" void effect_spawn_blood_splatter(
         effect_template.scale_step =
             (float)(crt_rand() & 127) * 0.03f + 0.1f;
         effect_spawn(7, pos);
-    } while (--remaining != 0);
+    }
 }

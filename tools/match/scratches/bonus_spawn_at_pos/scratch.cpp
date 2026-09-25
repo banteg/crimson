@@ -6,11 +6,11 @@ inline bonus_entry_t *bonus_spawn_valid_pos(
     const vec2f_t *pos)
 {
     bonus_entry_t *entry = bonus_alloc_slot();
-    bonus_entry_t *scan = &bonus_pool[0];
-    while ((int)scan < (int)&bonus_pool[16]) {
-        if (scan->bonus_id != BONUS_ID_NONE) {
-            float dx = pos->x - scan->time.position.x;
-            float dy = pos->y - scan->time.position.y;
+    for (int i = 0; i < 16; i++) {
+        if (bonus_pool[i].bonus_id != BONUS_ID_NONE) {
+            const vec2f_t *position = &bonus_pool[i].time.position;
+            float dx = pos->x - position->x;
+            float dy = pos->y - position->y;
             float distance_sq = dx * dx;
             distance_sq += dy * dy;
             if ((float)sqrt(distance_sq) < 32.0f) {
@@ -18,7 +18,6 @@ inline bonus_entry_t *bonus_spawn_valid_pos(
                 break;
             }
         }
-        ++scan;
     }
 
     entry->state = 0;

@@ -31,15 +31,11 @@ extern "C" int projectile_spawn(
         }
     }
 
-    index = 0;
-    projectile = projectile_pool;
-    while ((int)projectile < (int)&projectile_pool[0x60]) {
-        if (!projectile->active) {
+    for (index = 0; index < 0x60; index++) {
+        if (!projectile_pool[index].active) {
             result = index;
             goto initialize;
         }
-        ++projectile;
-        ++index;
     }
     result = 0x5f;
 

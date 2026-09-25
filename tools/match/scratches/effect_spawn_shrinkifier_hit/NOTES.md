@@ -1,5 +1,9 @@
 # effect_spawn_shrinkifier_hit
 
+## Plausibility pass (2026-09-25)
+
+Countdown `do`/`while` loops were replaced with counted `for` loops. C2 reverses an unused counted index into the same `dec`/`jne`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x0042f080` (482 bytes).
 
 The impact emits one contracting 36-pixel blue-green core pulse, then four

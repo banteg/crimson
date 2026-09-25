@@ -1,5 +1,9 @@
 # fx_spawn_particle_slow
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 The fixed-pool scan, random replacement on exhaustion, inline four-float
 scale copy, x87 trigonometry, particle initialization, and both RNG uses match
 the shipped function exactly. All 19 masked references resolve to the intended

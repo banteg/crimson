@@ -2,15 +2,13 @@
 
 extern "C" void sfx_release_all(void)
 {
-    sfx_entry_t *entry;
+    int i;
 
     if (config_blob.sound_disabled) {
         return;
     }
-    entry = &sfx_entry_table[0];
-    while ((int)entry < (int)&sfx_entry_table[128]) {
-        sfx_release_entry(entry);
-        ++entry;
+    for (i = 0; i < 128; i++) {
+        sfx_release_entry(&sfx_entry_table[i]);
     }
     console_printf(&console_log_queue, "SFX_Shutdown ()\n");
     console_printf(&console_log_queue, "SFX Released.\n");

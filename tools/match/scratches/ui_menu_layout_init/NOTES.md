@@ -1,5 +1,9 @@
 # `ui_menu_layout_init`
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare. Each loop needs its own index, because reusing the function-level `i` swaps SIB registers in a later block. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 ## Encoded-body exact (2026-09-12)
 
 The retained source now matches all **7,237 encoded bytes** after audited

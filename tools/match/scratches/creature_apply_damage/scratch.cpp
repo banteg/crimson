@@ -1,7 +1,6 @@
 #define creature_apply_damage creature_apply_damage_pointer_abi
 #include "crimsonland_gameplay.h"
 #undef creature_apply_damage
-#include <stddef.h>
 
 struct damage_vec2_t {
     float x;
@@ -43,20 +42,10 @@ extern "C" int creature_apply_damage(
         }
 
         if (perk_count_get(perk_id_living_fortress) != 0) {
-            int player_count = config_blob.player_count;
-            if (player_count > 0) {
-                float *living_fortress_timer =
-                    &player_state_table[0].living_fortress_timer;
-                do {
-                    player_state_t *player = (player_state_t *)(
-                        (char *)living_fortress_timer
-                        - offsetof(player_state_t, living_fortress_timer));
-                    if (player->health > 0.0f) {
-                        damage *= *living_fortress_timer * 0.05f + 1.0f;
-                    }
-                    living_fortress_timer += 0xd8;
-                    --player_count;
-                } while (player_count != 0);
+            for (int i = 0; i < config_blob.player_count; i++) {
+                if (player_state_table[i].health > 0.0f) {
+                    damage *= player_state_table[i].living_fortress_timer * 0.05f + 1.0f;
+                }
             }
         }
 
@@ -114,8 +103,8 @@ extern "C" int creature_apply_damage(
                 effect_template.half_extent.x = 36.0f;
                 effect_template.half_extent.y = 36.0f;
 
-                int count = 5;
-                do {
+                int burst;
+                for (burst = 0; burst < 5; burst++) {
                     effect_template.rotation =
                         (float)(crt_rand() & 0x7f) * 0.049087387f;
                     effect_template.velocity.x =
@@ -127,8 +116,7 @@ extern "C" int creature_apply_damage(
                     effect_spawn(
                         0,
                         &creature_pool[creature_id].position);
-                    --count;
-                } while (count != 0);
+                }
             } else {
                 sfx_play_panned(
                     creature_type_table[

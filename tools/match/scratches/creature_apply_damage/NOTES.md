@@ -1,5 +1,9 @@
 # `creature_apply_damage`
 
+## Plausibility pass (2026-09-25)
+
+Cursor arithmetic (container-of casts, negative offsets or manual strides) was replaced with plain field access in the Living Fortress loop, and both countdowns are counted `for` loops. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x004207c0` (963 bytes).
 
 Live Binary Ninja evidence recovers the complete damage-type perk pipeline,

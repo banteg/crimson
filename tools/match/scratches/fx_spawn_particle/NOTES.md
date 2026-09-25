@@ -1,5 +1,9 @@
 # fx_spawn_particle
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 The fast particle constructor matches the shipped function exactly: 67/67
 instructions and all 18 masked references. It confirms the same fixed-pool
 scan, random replacement, inline four-float scale copy, wide x87 trig, and

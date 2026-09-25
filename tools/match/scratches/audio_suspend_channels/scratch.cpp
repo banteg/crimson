@@ -2,7 +2,7 @@
 
 extern "C" void audio_suspend_channels(void)
 {
-    music_entry_t *entry;
+    int i;
 
     if (!sfx_unmuted_flag
         || config_blob.music_disabled
@@ -10,9 +10,7 @@ extern "C" void audio_suspend_channels(void)
         return;
     }
 
-    entry = &music_entry_table[0];
-    while ((int)entry < (int)&music_entry_table[128]) {
-        sfx_entry_stop(entry);
-        ++entry;
+    for (i = 0; i < 128; i++) {
+        sfx_entry_stop(&music_entry_table[i]);
     }
 }

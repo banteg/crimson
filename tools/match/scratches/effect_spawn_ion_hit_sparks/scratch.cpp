@@ -32,8 +32,8 @@ extern "C" void effect_spawn_ion_hit_sparks(
         return;
     }
 
-    int remaining = count;
-    do {
+    int i;
+    for (i = 0; i < count; i++) {
         effect_template.rotation =
             (float)(crt_rand() & 127) * 0.0490873866f;
         effect_template.velocity.x =
@@ -43,5 +43,5 @@ extern "C" void effect_spawn_ion_hit_sparks(
         effect_template.scale_step =
             ((float)(crt_rand() % 100) * 0.01f + 0.1f) * scale;
         effect_spawn(0, pos);
-    } while (--remaining != 0);
+    }
 }

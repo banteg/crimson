@@ -1,5 +1,9 @@
 # effect_spawn_ion_hit_sparks
 
+## Plausibility pass (2026-09-25)
+
+Countdown `do`/`while` loops were replaced with counted `for` loops. C2 reverses an unused counted index into the same `dec`/`jne`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x0042f540` (378 bytes).
 
 This emitter scales the impact input by 0.8, seeds a translucent blue shared

@@ -1,5 +1,9 @@
 # `perk_apply`
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; cursor arithmetic (container-of casts, negative offsets or manual strides) was replaced with plain field access in the Breathing Room and Bandage loops. The cached `player_count` reload remains because register allocation depends on it. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x004055e0` (885 bytes).
 
 Live Binary Ninja evidence recovers the immediate perk-effect dispatcher. It

@@ -16,14 +16,11 @@ extern "C" int fx_spawn_particle_slow(
     const vec2f_t *unused)
 {
     particle_scale_t scale;
-    int index = 0;
-    particle_t *particle = particle_pool;
-    while ((int)particle < (int)&particle_pool[0x80]) {
-        if (!particle->active) {
+    int index;
+    for (index = 0; index < 0x80; index++) {
+        if (!particle_pool[index].active) {
             goto found;
         }
-        ++particle;
-        ++index;
     }
     index = crt_rand() % 0x80;
 

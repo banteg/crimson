@@ -1,5 +1,9 @@
 # credits_secret_alien_zookeeper_update
 
+## Plausibility pass (2026-09-25)
+
+The board fill and reroll loops are plain nested row/column loops instead of cursor walks with countdowns. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x0040f4f0`, 2,612 bytes and 638
 normalized instructions.
 

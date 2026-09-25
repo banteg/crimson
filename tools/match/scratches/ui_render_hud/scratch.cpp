@@ -450,14 +450,8 @@ extern "C" void ui_render_hud(float transition_alpha)
 
             quest_progress_reserved_zero = 0;
             int queued_creatures = 0;
-            int spawn_count = quest_spawn_count;
-            if (spawn_count > 0) {
-                int *count = &quest_spawn_table[0].count;
-                do {
-                    queued_creatures += *count;
-                    count += 6;
-                    --spawn_count;
-                } while (spawn_count != 0);
+            for (int i = 0; i < quest_spawn_count; i++) {
+                queued_creatures += quest_spawn_table[i].count;
             }
 
             {

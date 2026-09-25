@@ -27,10 +27,10 @@ extern "C" void effect_spawn_freeze_shatter(
         effect_spawn(14, pos);
     }
 
-    int remaining = 4;
-    do {
+    int i;
+    for (i = 0; i < 4; i++) {
         effect_spawn_freeze_shard(
             pos,
             (float)(crt_rand() % 612) * 0.01f);
-    } while (--remaining != 0);
+    }
 }

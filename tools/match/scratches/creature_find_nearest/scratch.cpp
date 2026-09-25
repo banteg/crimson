@@ -39,13 +39,11 @@ extern "C" int creature_find_nearest(
         return best_index;
     }
 
-    int index = 0;
-    creature_t *creature = creature_pool;
-
-    do {
-        if (creature->active && index != exclude_id) {
-            float dx = pos->x - creature->position.x;
-            float dy = pos->y - creature->position.y;
+    for (int index = 0; index < 0x180; index++) {
+        if (creature_pool[index].active && index != exclude_id) {
+            const vec2f_t *position = &creature_pool[index].position;
+            float dx = pos->x - position->x;
+            float dy = pos->y - position->y;
             double live_distance = sqrt(dx * dx + dy * dy);
             float distance = (float)live_distance;
             if ((float)live_distance > min_dist
@@ -54,8 +52,6 @@ extern "C" int creature_find_nearest(
                 best_distance = distance;
             }
         }
-        ++creature;
-        ++index;
-    } while ((int)creature < (int)&creature_pool[0x180]);
+    }
     return best_index;
 }

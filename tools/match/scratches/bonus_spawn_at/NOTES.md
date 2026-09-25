@@ -1,5 +1,9 @@
 # bonus_spawn_at
 
+## Plausibility pass (2026-09-25)
+
+Countdown `do`/`while` loops were replaced with counted `for` loops. C2 reverses an unused counted index into the same `dec`/`jne`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 The native constructor clamps its caller-owned position into the terrain bounds,
 returns the sentinel in Rush mode, initializes a caller-selected bonus entry,
 and uses the metadata default when the duration override is `-1`.

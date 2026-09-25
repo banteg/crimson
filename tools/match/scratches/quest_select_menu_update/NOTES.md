@@ -1,5 +1,9 @@
 # `quest_select_menu_update`
 
+## Plausibility pass (2026-09-25)
+
+The stage digits index `texture_handles.ui_quest_number_textures[stage]` through the original texture owner instead of walking to the next-symbol bound. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 High-value recovery for the 3,436-byte quest-selection callback at
 `0x00447d40`. This is the game-core Quest picker and state router, rather than
 platform or rendering-backend glue.

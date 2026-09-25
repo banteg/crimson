@@ -218,51 +218,47 @@ update_wave_spawns:
     render_overlay_player_index = 0;
     while (survival_spawn_cooldown < 0) {
         int interval = 500 - survival_elapsed_ms / 1800;
-        if (interval < 0) {
-            unsigned int extra_count = (unsigned int)(1 - interval) >> 1;
-            interval += (int)extra_count * 2;
-            do {
-                switch (crt_rand() & 3) {
-                case 0: {
-                    vec2f_t top;
-                    int width = terrain_texture_width;
-                    int roll = crt_rand();
-                    top.x = (float)(roll % width);
-                    top.y = -40.0f;
-                    survival_spawn_creature(&top);
-                    break;
-                }
-                case 1: {
-                    vec2f_t bottom;
-                    int width = terrain_texture_width;
-                    int roll = crt_rand();
-                    bottom.x = (float)(roll % width);
-                    bottom.y = (float)terrain_texture_height + 40.0f;
-                    survival_spawn_creature(&bottom);
-                    break;
-                }
-                case 2: {
-                    vec2f_t left;
-                    int height = terrain_texture_height;
-                    int roll = crt_rand();
-                    left.x = -40.0f;
-                    left.y = (float)(roll % height);
-                    survival_spawn_creature(&left);
-                    break;
-                }
-                case 3: {
-                    vec2f_t right;
-                    int height = terrain_texture_height;
-                    int roll = crt_rand();
-                    float y = (float)(roll % height);
-                    right.x = (float)terrain_texture_width + 40.0f;
-                    right.y = y;
-                    survival_spawn_creature(&right);
-                    break;
-                }
-                }
-                --extra_count;
-            } while (extra_count != 0);
+        while (interval < 0) {
+            switch (crt_rand() & 3) {
+            case 0: {
+                vec2f_t top;
+                int width = terrain_texture_width;
+                int roll = crt_rand();
+                top.x = (float)(roll % width);
+                top.y = -40.0f;
+                survival_spawn_creature(&top);
+                break;
+            }
+            case 1: {
+                vec2f_t bottom;
+                int width = terrain_texture_width;
+                int roll = crt_rand();
+                bottom.x = (float)(roll % width);
+                bottom.y = (float)terrain_texture_height + 40.0f;
+                survival_spawn_creature(&bottom);
+                break;
+            }
+            case 2: {
+                vec2f_t left;
+                int height = terrain_texture_height;
+                int roll = crt_rand();
+                left.x = -40.0f;
+                left.y = (float)(roll % height);
+                survival_spawn_creature(&left);
+                break;
+            }
+            case 3: {
+                vec2f_t right;
+                int height = terrain_texture_height;
+                int roll = crt_rand();
+                float y = (float)(roll % height);
+                right.x = (float)terrain_texture_width + 40.0f;
+                right.y = y;
+                survival_spawn_creature(&right);
+                break;
+            }
+            }
+            interval += 2;
         }
 
         if (interval < 1) {

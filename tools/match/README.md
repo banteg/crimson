@@ -1210,6 +1210,19 @@ normalization exists only for real native functions and globals.
 Record residual mismatches in the scratch directory instead of forcing
 byte-shaped source.
 
+Several byte-shaped forms are unnecessary because stock C2 produces them from
+plain source:
+
+- int-cast pointer walks such as `(int)p < (int)&pool[N]`;
+- countdown `do`/`while (--n)` loops;
+- container-of and negative-offset cursors;
+- constant-register locals such as `int one = 1`;
+- integer puns for float copies.
+
+Write indexed `for` loops and plain field accesses first. The
+[plausibility audit](PLAUSIBILITY-AUDIT-2026-09-25.md) lists the C2
+mechanism behind each shape and the 52 exact scratches rewritten this way.
+
 ## Regression checks
 
 `match checkpoint` compares the checked-in native manifests against `HEAD` by

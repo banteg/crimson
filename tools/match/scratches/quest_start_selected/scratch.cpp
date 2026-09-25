@@ -72,37 +72,21 @@ extern "C" void quest_start_selected(int tier, int index)
         builder(quest_spawn_table, &quest_spawn_count);
     }
 
-    int entry_count = quest_spawn_count;
     quest_spawn_total_creatures = 0;
     quest_spawn_last_time_ms = 0;
-    if (entry_count <= 0) {
-        return;
-    }
-
-    int *count_cursor = &quest_spawn_table[0].count;
-    int entries_left = entry_count;
-    do {
-        int template_id;
-        if (config_hardcore) {
-            if (count_cursor[0] > 1) {
-                template_id = count_cursor[-2];
-                if (template_id != 0x3c) {
-                    if (template_id == 0x2b) {
-                        count_cursor[0] += 2;
-                    } else {
-                        count_cursor[0] += 8;
-                    }
-                }
+    for (int i = 0; i < quest_spawn_count; i++) {
+        if (config_hardcore && quest_spawn_table[i].count > 1
+            && quest_spawn_table[i].template_id != 0x3c) {
+            if (quest_spawn_table[i].template_id == 0x2b) {
+                quest_spawn_table[i].count += 2;
+            } else {
+                quest_spawn_table[i].count += 8;
             }
         }
 
-        quest_spawn_total_creatures += count_cursor[0];
-        int trigger_time_ms = count_cursor[-1];
-        if (quest_spawn_last_time_ms < trigger_time_ms) {
-            quest_spawn_last_time_ms = trigger_time_ms;
+        quest_spawn_total_creatures += quest_spawn_table[i].count;
+        if (quest_spawn_last_time_ms < quest_spawn_table[i].trigger_time_ms) {
+            quest_spawn_last_time_ms = quest_spawn_table[i].trigger_time_ms;
         }
-
-        count_cursor += sizeof(quest_spawn_entry_t) / sizeof(int);
-        --entries_left;
-    } while (entries_left != 0);
+    }
 }

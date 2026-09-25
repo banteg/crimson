@@ -2,15 +2,11 @@
 
 extern "C" void projectile_reset_pools(void)
 {
-    projectile_t *projectile = projectile_pool;
-    do {
-        projectile->active = 0;
-        ++projectile;
-    } while ((int)projectile < (int)&projectile_pool[0x60]);
-
-    particle_t *particle = particle_pool;
-    do {
-        particle->active = 0;
-        ++particle;
-    } while ((int)particle < (int)&particle_pool[0x80]);
+    int i;
+    for (i = 0; i < 0x60; i++) {
+        projectile_pool[i].active = 0;
+    }
+    for (i = 0; i < 0x80; i++) {
+        particle_pool[i].active = 0;
+    }
 }

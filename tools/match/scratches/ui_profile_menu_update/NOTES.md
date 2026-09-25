@@ -1,5 +1,9 @@
 # `ui_profile_menu_update`
 
+## Plausibility pass (2026-09-25)
+
+The saved-name copy is `for (list_count = 0; list_count < saved_name_count; list_count++)` instead of a guarded countdown with two cursors. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x004443c0` (1033 bytes).
 
 Live Binary Ninja evidence recovers the complete saved-profile selector used

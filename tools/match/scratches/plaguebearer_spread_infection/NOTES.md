@@ -1,5 +1,9 @@
 # plaguebearer_spread_infection
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; `register` was dropped. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 The recovered source preserves the native fixed-pool scan, strict 45-unit
 distance test, first-hit return, and two-way infection propagation through
 pool indices. The MSVC 6.5 `/O2 /GB` candidate matches all 64 instructions and

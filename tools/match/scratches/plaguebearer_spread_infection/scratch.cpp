@@ -12,20 +12,16 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
 
 extern "C" int plaguebearer_spread_infection(int creature_id)
 {
-    register int other_id = 0;
-    creature_t *creature = creature_pool;
-
-    while ((int)creature < (int)&creature_pool[0x180]) {
-        if (creature->active) {
+    int other_id;
+    for (other_id = 0; other_id < 0x180; other_id++) {
+        if (creature_pool[other_id].active) {
             if (vec2_distance(
-                    &creature->position,
+                    &creature_pool[other_id].position,
                     &creature_pool[creature_id].position
                 ) < 45.0f) {
                 goto found;
             }
         }
-        ++creature;
-        ++other_id;
     }
 
     return 0;

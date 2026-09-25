@@ -1,5 +1,9 @@
 # `tutorial_timeline_update`
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; stage 1 runs its body inside the player loop, then returns. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x00408990` (2,907 bytes).
 
 The current source is **byte-for-byte exact** under the default VC6.5 profile:

@@ -36,9 +36,8 @@ static __inline void ui_element_set_hover_focus(ui_element_t *element)
     ui_element_hover_focus_ptr = element;
     ui_element_hover_focus_index = 0;
 
-    ui_element_t **cursor = &ui_element_table_end;
-    do {
-        ui_element_t *candidate = *cursor;
+    for (int i = 0; i < 41; i++) {
+        ui_element_t *candidate = ui_element_table[i];
         if (candidate->enabled) {
             if (state != GAME_STATE_MAIN_MENU
                 || candidate->on_activate != 0) {
@@ -48,8 +47,7 @@ static __inline void ui_element_set_hover_focus(ui_element_t *element)
                 ++ui_element_hover_focus_index;
             }
         }
-        ++cursor;
-    } while ((int)cursor < (int)&ui_perk_prompt_element);
+    }
 }
 
 static __inline void ui_element_set_rotation(

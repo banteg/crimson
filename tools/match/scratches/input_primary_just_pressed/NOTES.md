@@ -1,5 +1,9 @@
 # input_primary_just_pressed
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; the `key_state` byte round-trips were also dropped. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x00446030..0x004460ec` (188 bytes).
 Binary Ninja presents cdecl `int32_t()`, but a C++ `bool` return is the natural
 ABI spelling that reproduces the native byte result in `al`.

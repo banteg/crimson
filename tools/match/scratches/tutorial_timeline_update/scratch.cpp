@@ -190,50 +190,46 @@ extern "C" void tutorial_timeline_update(void)
     }
 
     if (tutorial_stage_state.index == 1) {
-        player_input_t *input = &player_state_table[0].input;
-        while ((!grim_interface_ptr->grim_is_key_active(input->move_key_forward) &&
-                !grim_interface_ptr->grim_is_key_active(input->move_key_backward) &&
-                !grim_interface_ptr->grim_is_key_active(input->turn_key_left) &&
-                !grim_interface_ptr->grim_is_key_active(input->turn_key_right)) ||
-               tutorial_stage_state.transition_timer != -1) {
-            input = (player_input_t *)((char *)input + sizeof(player_state_t));
-            if ((int)&input->move_key_backward >=
-                (int)&player_state_table[2].input.move_key_backward) {
+        for (int i = 0; i < 2; i++) {
+            if ((grim_interface_ptr->grim_is_key_active(player_state_table[i].input.move_key_forward)
+                || grim_interface_ptr->grim_is_key_active(player_state_table[i].input.move_key_backward)
+                || grim_interface_ptr->grim_is_key_active(player_state_table[i].input.turn_key_left)
+                || grim_interface_ptr->grim_is_key_active(player_state_table[i].input.turn_key_right))
+                && tutorial_stage_state.transition_timer == -1) {
+                tutorial_stage_state.transition_timer = -1000;
+                sfx_play(sfx_ui_levelup, 1.0f);
+                tutorial_vec2_t bonus_pos0;
+                tutorial_vec2_t bonus_pos1;
+                tutorial_vec2_t bonus_pos2;
+                bonus_pos0.set(260.0f, 260.0f);
+                bonus_pool[0].bonus_id = BONUS_ID_POINTS;
+                bonus_pool[0].time.time_left = 100.0f;
+                bonus_pool[0].time.time_max = 100.0f;
+                bonus_pool[0].state = 0;
+                bonus_pool[0].time.amount = 500;
+                *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;
+                effect_spawn_burst(&bonus_pool[0].time.position, 12);
+
+                bonus_pos1.set(600.0f, 400.0f);
+                bonus_pool[1].bonus_id = BONUS_ID_POINTS;
+                bonus_pool[1].time.time_left = 100.0f;
+                bonus_pool[1].time.time_max = bonus_pool[0].time.time_left;
+                bonus_pool[1].state = 0;
+                bonus_pool[1].time.amount = 1000;
+                *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;
+                effect_spawn_burst(&bonus_pool[1].time.position, 12);
+
+                bonus_pos2.set(300.0f, 400.0f);
+                bonus_pool[2].bonus_id = BONUS_ID_POINTS;
+                bonus_pool[2].time.time_left = 100.0f;
+                bonus_pool[2].time.time_max = bonus_pool[0].time.time_left;
+                bonus_pool[2].state = 0;
+                bonus_pool[2].time.amount = 500;
+                *(tutorial_vec2_t *)&bonus_pool[2].time.position = bonus_pos2;
+                effect_spawn_burst(&bonus_pool[2].time.position, 12);
                 return;
             }
         }
-
-        tutorial_stage_state.transition_timer = -1000;
-        sfx_play(sfx_ui_levelup, 1.0f);
-        tutorial_vec2_t bonus_pos0;
-        tutorial_vec2_t bonus_pos1;
-        tutorial_vec2_t bonus_pos2;
-        bonus_pos0.set(260.0f, 260.0f);
-        bonus_pool[0].bonus_id = BONUS_ID_POINTS;
-        bonus_pool[0].time.time_left = 100.0f;
-        bonus_pool[0].time.time_max = 100.0f;
-        bonus_pool[0].state = 0;
-        bonus_pool[0].time.amount = 500;
-        *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;
-        effect_spawn_burst(&bonus_pool[0].time.position, 12);
-
-        bonus_pos1.set(600.0f, 400.0f);
-        bonus_pool[1].bonus_id = BONUS_ID_POINTS;
-        bonus_pool[1].time.time_left = 100.0f;
-        bonus_pool[1].time.time_max = bonus_pool[0].time.time_left;
-        bonus_pool[1].state = 0;
-        bonus_pool[1].time.amount = 1000;
-        *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;
-        effect_spawn_burst(&bonus_pool[1].time.position, 12);
-
-        bonus_pos2.set(300.0f, 400.0f);
-        bonus_pool[2].bonus_id = BONUS_ID_POINTS;
-        bonus_pool[2].time.time_left = 100.0f;
-        bonus_pool[2].time.time_max = bonus_pool[0].time.time_left;
-        bonus_pool[2].state = 0;
-        bonus_pool[2].time.amount = 500;
-        *(tutorial_vec2_t *)&bonus_pool[2].time.position = bonus_pos2;
-        effect_spawn_burst(&bonus_pool[2].time.position, 12);
         return;
     }
 
@@ -251,9 +247,8 @@ extern "C" void tutorial_timeline_update(void)
     }
 
     if (tutorial_stage_state.index == 3) {
-        int *fire_key = &player_state_table[0].input.fire_key;
-        do {
-            if (grim_interface_ptr->grim_is_key_active(*fire_key) &&
+        for (int fire_index = 0; fire_index < 2; fire_index++) {
+            if (grim_interface_ptr->grim_is_key_active(player_state_table[fire_index].input.fire_key) &&
                 tutorial_stage_state.transition_timer == -1) {
                 tutorial_stage_state.transition_timer = -1000;
                 sfx_play(sfx_ui_levelup, 1.0f);
@@ -267,8 +262,7 @@ extern "C" void tutorial_timeline_update(void)
                     SPAWN_ID_ALIEN_CONST_GREEN_24,
                     (const vec2f_t *)&tutorial_vec2_t(-154.0f, 612.0f), 3.14159274f);
             }
-            fire_key += sizeof(player_state_t) / sizeof(int);
-        } while ((int)fire_key < (int)&player_state_table[2].input.fire_key);
+        }
         return;
     }
 

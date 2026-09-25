@@ -2,10 +2,9 @@
 
 void ui_elements_reset_state(void)
 {
-    ui_element_t **element = ui_element_table;
-    do {
-        (*element)->active = 0;
-        (*element)->hover_amount = 0;
-        ++element;
-    } while ((int)element < (int)&ui_element_table[41]);
+    int i;
+    for (i = 0; i < 41; i++) {
+        ui_element_table[i]->active = 0;
+        ui_element_table[i]->hover_amount = 0;
+    }
 }

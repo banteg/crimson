@@ -4,13 +4,11 @@ extern "C" bonus_id_t bonus_pick_random_type(void)
 {
     int retries = 0;
     bool has_fire_bullets_drop = false;
-    unsigned char *bonus_state = &bonus_pool[0].state;
-    do {
-        if (*(bonus_id_t *)(bonus_state - 4) == BONUS_ID_FIRE_BULLETS && !*bonus_state) {
+    for (int i = 0; i < 0x10; i++) {
+        if (bonus_pool[i].bonus_id == BONUS_ID_FIRE_BULLETS && !bonus_pool[i].state) {
             has_fire_bullets_drop = true;
         }
-        bonus_state += sizeof(bonus_entry_t);
-    } while ((int)bonus_state < (int)&bonus_pool[0x10].state);
+    }
 
     bonus_id_t bonus_id;
     do {

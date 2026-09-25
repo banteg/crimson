@@ -282,30 +282,19 @@ void gameplay_reset_state(void)
         player->low_health_timer = 100.0f;
         player->fire_bullets_timer = 0.0f;
     }
-
-    bonus_entry_t *bonus = &bonus_pool[0];
-    do {
-        bonus->bonus_id = BONUS_ID_NONE;
-        ++bonus;
-    } while ((int)bonus < (int)&bonus_pool[16]);
-
-    projectile_t *projectile = &projectile_pool[0];
-    do {
-        projectile->active = 0;
-        ++projectile;
-    } while ((int)projectile < (int)&projectile_pool[0x60]);
-
-    sprite_effect_t *sprite = &sprite_effect_pool[0];
-    do {
-        sprite->active = 0;
-        ++sprite;
-    } while ((int)sprite < (int)&sprite_effect_pool[0x180]);
-
-    secondary_projectile_t *secondary = &secondary_projectile_pool[0];
-    do {
-        secondary->active = 0;
-        ++secondary;
-    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);
+    int i;
+    for (i = 0; i < 16; ++i) {
+        bonus_pool[i].bonus_id = BONUS_ID_NONE;
+    }
+    for (i = 0; i < 0x60; ++i) {
+        projectile_pool[i].active = 0;
+    }
+    for (i = 0; i < 0x180; ++i) {
+        sprite_effect_pool[i].active = 0;
+    }
+    for (i = 0; i < 0x40; ++i) {
+        secondary_projectile_pool[i].active = 0;
+    }
 
     for (int creature_id = 0; creature_id < 0x180; ++creature_id) {
         creature_pool[creature_id].hit_flash_timer = 0.0f;
@@ -320,12 +309,9 @@ void gameplay_reset_state(void)
         creature_pool[creature_id].flags = 0;
         creature_pool[creature_id].anim_phase = (float)(crt_rand() % 31);
     }
-
-    creature_spawn_slot_t *spawn = &creature_spawn_slot_table[0];
-    do {
-        spawn->owner = 0;
-        ++spawn;
-    } while ((int)spawn < (int)&creature_spawn_slot_table[32]);
+    for (i = 0; i < 32; ++i) {
+        creature_spawn_slot_table[i].owner = 0;
+    }
 
     fx_queue_rotated = 0;
     fx_queue_count = 0;

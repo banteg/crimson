@@ -9,16 +9,14 @@ extern "C" int fx_spawn_secondary_projectile(
     secondary_projectile_type_id_t type_id
 )
 {
-    int index = 0;
+    int index;
     float vel_x;
     float vel_y;
-    secondary_projectile_t *projectile = secondary_projectile_pool;
-    while ((int)projectile < (int)&secondary_projectile_pool[0x40]) {
-        if (!projectile->active) {
+    secondary_projectile_t *projectile;
+    for (index = 0; index < 0x40; index++) {
+        if (!secondary_projectile_pool[index].active) {
             goto found;
         }
-        ++projectile;
-        ++index;
     }
     index = 0x3f;
 

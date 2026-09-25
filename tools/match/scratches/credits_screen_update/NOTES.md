@@ -1,5 +1,9 @@
 # `credits_screen_update`
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x0040d800` (1857 bytes).
 
 Live Binary Ninja HLIL/disassembly and the shipped credits port recover the

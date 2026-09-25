@@ -1,5 +1,5 @@
 {
-  "audit_digest": "9229a97df67016cf931419ca4c20bb053759c12827559df25d73974793f91123",
+  "audit_digest": "0e95b4c4fa8f27fd0dae35fdb6f9baada93eb0efad4aef1ee81328340755c332",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -65358,30 +65358,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 4780392,
-          "data_binding_kind": "definition",
-          "data_name": "ui_element_table_end",
-          "data_storage_address": 4780392,
-          "data_storage_name": "ui_element_table_end",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 164,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "?ui_element_table_end@@3PAUui_element_t@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 5050860,
           "data_binding_kind": "definition",
           "data_name": "ui_focus_timer_ms",
@@ -112398,30 +112374,6 @@
     {
       "definitions": [
         {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780556,
-          "data_binding_kind": "definition",
-          "data_name": "ui_perk_prompt_element",
-          "data_storage_address": 4780556,
-          "data_storage_name": "ui_perk_prompt_element",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 792,
-          "weak": false
-        }
-      ],
-      "name": "_ui_perk_prompt_element"
-    },
-    {
-      "definitions": [
-        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -123836,37 +123788,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 4780392,
-          "data_binding_kind": "definition",
-          "data_name": "ui_element_table_end",
-          "data_storage_address": 4780392,
-          "data_storage_name": "ui_element_table_end",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 164,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "?ui_element_table_end@@3PAUui_element_t@@A",
-      "referenced_by": [
-        {
-          "function": "ui_element_update",
-          "object": "tools/match/scratches/ui_element_update/build/msvc6.5/a318de6a66cdf621/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 5050860,
           "data_binding_kind": "definition",
           "data_name": "ui_focus_timer_ms",
@@ -124021,11 +123942,6 @@
         {
           "function": "ui_element_render",
           "object": "tools/match/scratches/ui_element_render/build/msvc6.5/08af1c47f64a7719/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "ui_element_update",
-          "object": "tools/match/scratches/ui_element_update/build/msvc6.5/a318de6a66cdf621/scratch.obj",
           "weak": false
         }
       ]
@@ -166674,6 +166590,11 @@
       "name": "_ui_element_table",
       "referenced_by": [
         {
+          "function": "ui_element_update",
+          "object": "tools/match/scratches/ui_element_update/build/msvc6.5/a318de6a66cdf621/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "ui_elements_max_timeline",
           "object": "tools/match/scratches/ui_elements_max_timeline/build/msvc6.5/8221566a6191f66f/scratch.obj",
           "weak": false
@@ -166686,6 +166607,11 @@
         {
           "function": "ui_elements_update_and_render",
           "object": "tools/match/scratches/ui_elements_update_and_render/build/msvc6.5/8bb7f5348eef4acf/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "ui_get_element_index",
+          "object": "tools/match/scratches/ui_get_element_index/build/msvc6.5/645a73576dcd14dc/scratch.obj",
           "weak": false
         }
       ]
@@ -166717,11 +166643,6 @@
         {
           "function": "game_state_set",
           "object": "tools/match/scratches/game_state_set/build/msvc6.5/49d7f1558f743c2d/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "ui_get_element_index",
-          "object": "tools/match/scratches/ui_get_element_index/build/msvc6.5/645a73576dcd14dc/scratch.obj",
           "weak": false
         }
       ]
@@ -168346,37 +168267,6 @@
         {
           "function": "ui_text_input_render",
           "object": "tools/match/scratches/ui_text_input_render/build/msvc6.5/d0ec14789956908c/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780556,
-          "data_binding_kind": "definition",
-          "data_name": "ui_perk_prompt_element",
-          "data_storage_address": 4780556,
-          "data_storage_name": "ui_perk_prompt_element",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 792,
-          "weak": false
-        }
-      ],
-      "name": "_ui_perk_prompt_element",
-      "referenced_by": [
-        {
-          "function": "ui_get_element_index",
-          "object": "tools/match/scratches/ui_get_element_index/build/msvc6.5/645a73576dcd14dc/scratch.obj",
           "weak": false
         }
       ]
@@ -171693,7 +171583,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2963,
+    "defined_symbols": 2961,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -171702,7 +171592,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 570,
     "reference_exports_closed": true,
-    "resolved_symbols": 1267,
+    "resolved_symbols": 1265,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

@@ -271,17 +271,13 @@ extern "C" void credits_secret_alien_zookeeper_update(void)
         }
     }
 
-    int *fill_cell = credits_secret_board;
-    do {
-        int fill_count = 6;
-        do {
-            if (*fill_cell == -1) {
-                *fill_cell = crt_rand() % 5;
+    for (int fill_row = 0; fill_row < 6; fill_row++) {
+        for (int fill_column = 0; fill_column < 6; fill_column++) {
+            if (credits_secret_board[fill_row * 6 + fill_column] == -1) {
+                credits_secret_board[fill_row * 6 + fill_column] = crt_rand() % 5;
             }
-            ++fill_cell;
-            --fill_count;
-        } while (fill_count != 0);
-    } while ((int)fill_cell < (int)(credits_secret_board + 36));
+        }
+    }
 
     static credits_secret_button_t reset_button;
     reset_button.label = "Reset";
@@ -290,15 +286,11 @@ extern "C" void credits_secret_alien_zookeeper_update(void)
         int match_index = 0;
         unsigned char match_direction = 0;
         do {
-            int *reroll_cell = credits_secret_board;
-            do {
-                int reroll_count = 6;
-                do {
-                    *reroll_cell = crt_rand() % 5;
-                    ++reroll_cell;
-                    --reroll_count;
-                } while (reroll_count != 0);
-            } while ((int)reroll_cell < (int)(credits_secret_board + 36));
+            for (int reroll_row = 0; reroll_row < 6; reroll_row++) {
+                for (int reroll_column = 0; reroll_column < 6; reroll_column++) {
+                    credits_secret_board[reroll_row * 6 + reroll_column] = crt_rand() % 5;
+                }
+            }
         } while (credits_secret_match3_find(
             (int (*)[6])credits_secret_board, &match_index, &match_direction));
 

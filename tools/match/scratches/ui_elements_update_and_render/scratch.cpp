@@ -69,12 +69,10 @@ extern "C" void ui_elements_update_and_render(void)
         return;
     }
 
-    ui_element_t **element = &ui_element_table[40];
-    do {
-        ui_element_update(*element);
-        ui_element_render(*element);
-        --element;
-    } while ((int)element >= (int)ui_element_table);
+    for (int i = 40; i >= 0; i--) {
+        ui_element_update(ui_element_table[i]);
+        ui_element_render(ui_element_table[i]);
+    }
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     if (game_state_id == GAME_STATE_QUIT_TRANSITION) {

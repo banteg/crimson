@@ -2,15 +2,13 @@
 
 extern "C" void music_release_all(void)
 {
-    music_entry_t *entry;
+    int i;
 
     if (!sfx_unmuted_flag) {
         return;
     }
-    entry = &music_entry_table[0];
-    while ((int)entry < (int)&music_entry_table[128]) {
-        sfx_release_entry(entry);
-        ++entry;
+    for (i = 0; i < 128; i++) {
+        sfx_release_entry(&music_entry_table[i]);
     }
     console_log_queue.flush_log("console.log");
 }

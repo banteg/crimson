@@ -116,14 +116,13 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
 
     if (bonus_freeze_timer > 0.0f) {
         vec2f_t *pos = &creature->position;
-        int count = 8;
-        do {
+        int i;
+        for (i = 0; i < 8; i++) {
             effect_spawn_freeze_shard(
                 pos,
                 (float)(crt_rand() % 612) * 0.01f
             );
-            --count;
-        } while (count != 0);
+        }
 
         effect_spawn_freeze_shatter(
             pos,

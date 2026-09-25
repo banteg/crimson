@@ -50,15 +50,13 @@ extern "C" bonus_entry_t *bonus_spawn_at(
         effect_template.half_extent.y = 32.0f;
     }
 
-    count = 16;
-    do {
+    for (count = 0; count < 16; count++) {
         effect_template_rotation = (float)(crt_rand() & 0x7f) * 0.049087387f;
         effect_template_vel_x = (float)(crt_rand() % 128 - 64);
         effect_template_vel_y = (float)(crt_rand() % 128 - 64);
         effect_template_scale_step = (float)(crt_rand() % 100) * 0.01f + 0.1f;
         effect_spawn(0, pos);
-        --count;
-    } while (count != 0);
+    }
 
     return entry;
 }

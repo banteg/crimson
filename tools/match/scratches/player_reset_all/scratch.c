@@ -58,7 +58,6 @@ void player_reset_all(void)
 
         {
             int reset_index = render_overlay_player_index;
-            int alt_reload_time;
 
             player_state_table[reset_index].size = 48.0f;
             player_state_table[reset_index].speed_multiplier = 2.0f;
@@ -76,10 +75,10 @@ void player_reset_all(void)
             player_state_table[reset_index].alt_clip_size = (float)weapon_table[1].clip_size;
             player_state_table[reset_index].alt_reload_active = 0;
             player_state_table[reset_index].alt_ammo = player_state_table[reset_index].alt_clip_size;
-            alt_reload_time = *(int *)&weapon_table[1].reload_time;
+
             player_state_table[reset_index].alt_reload_timer = 0.0f;
             player_state_table[reset_index].alt_shot_cooldown = 0.0f;
-            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;
+            player_state_table[reset_index].alt_reload_timer_max = weapon_table[1].reload_time;
             player_state_table[reset_index].shot_cooldown = 0.8f;
             player_state_table[reset_index].weapon_id = 1;
             player_state_table[reset_index].reset_reserved_zero = 0;
@@ -97,11 +96,9 @@ void player_reset_all(void)
         }
 
         {
-            unsigned char *collision_flag = &creature_pool[0].collision_flag;
-            do {
-                *collision_flag = 0;
-                collision_flag += sizeof(creature_t);
-            } while ((int)collision_flag < (int)&creature_pool[0x180].collision_flag);
+            for (int creature_index = 0; creature_index < 0x180; ++creature_index) {
+                creature_pool[creature_index].collision_flag = 0;
+            }
         }
 
         render_overlay_player_index += 1;

@@ -5,11 +5,9 @@ int fx_spawn_sprite(
     const vec2f_t *vel,
     float scale)
 {
-    int index = 0;
-    sprite_effect_t *entry = &sprite_effect_pool[0];
-
-    for (; (int)entry < (int)&sprite_effect_pool[0x180]; ++entry, ++index) {
-        if (!entry->active) {
+    int index;
+    for (index = 0; index < 0x180; index++) {
+        if (!sprite_effect_pool[index].active) {
             goto allocated;
         }
     }

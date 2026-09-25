@@ -1,5 +1,4 @@
 #include "crimsonland_gameplay.h"
-#include <stddef.h>
 
 extern "C" {
 extern int perk_id_fatal_lottery;
@@ -24,8 +23,6 @@ extern "C" void perk_apply(int perk_id)
     int i;
     int weapon_id;
     int experience;
-    float *cursor;
-    creature_t *creature;
 
     sfx_play(sfx_ui_bonus, 1.0f);
     player_state_table[0].perk_counts[perk_id] += 1;
@@ -39,21 +36,17 @@ extern "C" void perk_apply(int perk_id)
             player_state_table[0].health = -1.0f;
         }
     } else if (perk_id == perk_id_lifeline_50_50) {
-        i = 0;
-        creature = creature_pool;
-        do {
+        for (i = 0; i < 384; i++) {
             if ((i & 1) != 0
-                && creature->active != 0
-                && creature->health <= 500.0f
-                && (creature->flags & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
-                creature->active = 0;
+                && creature_pool[i].active != 0
+                && creature_pool[i].health <= 500.0f
+                && (creature_pool[i].flags & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
+                creature_pool[i].active = 0;
                 effect_spawn_burst(
-                    &creature->position,
+                    &creature_pool[i].position,
                     4);
             }
-            ++creature;
-            ++i;
-        } while ((int)creature < (int)&creature_pool[384]);
+        }
     } else if (perk_id == perk_id_thick_skinned) {
         for (i = 0; i < config_player_count; ++i) {
             if (player_state_table[i].health > 0.0f) {
@@ -69,16 +62,11 @@ extern "C" void perk_apply(int perk_id)
             player_state_table[i].health -= player_state_table[i].health * 0.6666667f;
         }
 
-        cursor = &creature_pool[0].lifecycle_stage;
-        do {
-            creature_t *cursor_creature = (creature_t *)(
-                (char *)cursor
-                - offsetof(creature_t, lifecycle_stage));
-            if (cursor_creature->active != 0) {
-                *cursor -= frame_dt;
+        for (i = 0; i < 384; i++) {
+            if (creature_pool[i].active != 0) {
+                creature_pool[i].lifecycle_stage -= frame_dt;
             }
-            cursor += sizeof(creature_t) / sizeof(*cursor);
-        } while ((int)cursor < (int)&creature_pool[384].lifecycle_stage);
+        }
         bonus_spawn_guard = 0;
     } else {
         if (perk_id == perk_id_random_weapon) {
@@ -133,25 +121,13 @@ extern "C" void perk_apply(int perk_id)
     }
 
     if (perk_id == perk_id_bandage) {
-        i = 0;
-        if (player_count > 0) {
-            cursor = &player_state_table[0].health;
-            do {
-                value = (float)(crt_rand() % 50) + 1.0f;
-                value *= *cursor;
-                *cursor = value;
-                if (value > 100.0f) {
-                    *cursor = 100.0f;
-                }
-                player_state_t *player = (player_state_t *)(
-                    (char *)cursor - offsetof(player_state_t, health));
-                effect_spawn_burst(
-                    &player->position,
-                    8);
-                player_count = config_player_count;
-                ++i;
-                cursor += sizeof(player_state_t) / sizeof(*cursor);
-            } while (i < player_count);
+        for (i = 0; i < player_count; ++i) {
+            player_state_table[i].health *= (float)(crt_rand() % 50) + 1.0f;
+            if (player_state_table[i].health > 100.0f) {
+                player_state_table[i].health = 100.0f;
+            }
+            effect_spawn_burst(&player_state_table[i].position, 8);
+            player_count = config_player_count;
         }
     }
 

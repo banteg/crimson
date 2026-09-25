@@ -1,5 +1,9 @@
 # `controls_menu_update`
 
+## Plausibility pass (2026-09-25)
+
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare for the per-frame rebind item reset. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 ## Exact match
 
 MSVC 6.5 with `/O2 /GB /W3 /GR-` reproduces all 21,289 native bytes under

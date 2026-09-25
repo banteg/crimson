@@ -472,13 +472,10 @@ extern "C" void controls_menu_update(void)
     }
 
     {
-        ui_menu_item_t *item = controls_rebind_items;
-        do {
-            item->enabled = 1;
-            item->activated = 0;
-            ++item;
-        } while ((int)&item->activated
-            < (int)&controls_rebind_items[15].activated);
+        for (int item_index = 0; item_index < 15; item_index++) {
+            controls_rebind_items[item_index].enabled = 1;
+            controls_rebind_items[item_index].activated = 0;
+        }
     }
 
     {

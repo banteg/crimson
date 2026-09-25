@@ -4,6 +4,8 @@
 
 #define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
 #include "crimsonland_config_owner.h"
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
 
 extern IGrim2D_cpp *grim_interface_ptr;
 
@@ -94,13 +96,7 @@ struct quest_select_button_t {
 extern "C" {
 extern ui_element_t ui_element_slot_37;
 extern ui_element_t ui_sign_crimson;
-extern int ui_text_quest_texture;
-extern int ui_digit_1_texture;
-extern int ui_digit_2_texture;
-extern int ui_digit_3_texture;
-extern int ui_digit_4_texture;
-extern int ui_digit_5_texture;
-extern int ui_hud_arrow_texture;
+
 extern int quest_select_stage_major;
 extern int quest_select_stage_minor_index;
 extern game_status_t game_status_blob;
@@ -191,12 +187,11 @@ extern "C" void quest_select_menu_update(void)
     grim_interface_ptr->grim_end_batch();
 
     int hovered_stage = -1;
-    int stage = 1;
-    int *digit_texture = &ui_digit_1_texture;
+    int stage;
     position.x += 64.0f;
     position.x += 16.0f;
     float icon_y = position.y + 3.0f;
-    do {
+    for (stage = 1; stage < 6; stage++) {
         if (ui_mouse_x <= position.x
             || ui_mouse_y <= position.y
             || position.x + 32.0f <= ui_mouse_x
@@ -217,8 +212,9 @@ extern "C" void quest_select_menu_update(void)
             icon_scale = 0.800000012f;
         }
 
-        if ((int)digit_texture < (int)&ui_hud_arrow_texture) {
-            grim_interface_ptr->grim_bind_texture(*digit_texture, 0);
+        if (stage < 6) {
+            grim_interface_ptr->grim_bind_texture(
+                texture_handles.ui_quest_number_textures[stage], 0);
         } else {
             grim_interface_ptr->grim_bind_texture(ui_digit_4_texture, 0);
         }
@@ -231,9 +227,7 @@ extern "C" void quest_select_menu_update(void)
             icon_size);
         position.x += 36.0f;
         grim_interface_ptr->grim_end_batch();
-        ++digit_texture;
-        ++stage;
-    } while ((int)digit_texture < (int)&ui_hud_arrow_texture);
+    }
 
     position.x -= 36.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);

@@ -76,19 +76,17 @@ extern "C" void effect_spawn_explosion_burst(
     int detail = config_blob.detail_preset;
     int count = explosion_debris_count(detail);
 
-    if (count > 0) {
-        do {
-            effect_template.rotation =
-                (float)(crt_rand() % 314) * 0.02f;
-            effect_template.velocity.x =
-                (float)((crt_rand() & 63) * 2 - 64);
-            effect_template.velocity.y =
-                (float)((crt_rand() & 63) * 2 - 64);
-            effect_template.scale_step =
-                (float)((crt_rand() - 3) & 7) * scale;
-            effect_template.rotation_step =
-                (float)((crt_rand() + 3) & 7);
-            effect_spawn(12, pos);
-        } while (--count != 0);
+    for (int i = 0; i < count; i++) {
+        effect_template.rotation =
+            (float)(crt_rand() % 314) * 0.02f;
+        effect_template.velocity.x =
+            (float)((crt_rand() & 63) * 2 - 64);
+        effect_template.velocity.y =
+            (float)((crt_rand() & 63) * 2 - 64);
+        effect_template.scale_step =
+            (float)((crt_rand() - 3) & 7) * scale;
+        effect_template.rotation_step =
+            (float)((crt_rand() + 3) & 7);
+        effect_spawn(12, pos);
     }
 }

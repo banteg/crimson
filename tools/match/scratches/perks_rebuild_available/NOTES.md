@@ -1,5 +1,9 @@
 # perks_rebuild_available
 
+## Plausibility pass (2026-09-25)
+
+The whole function is now plain source: indexed loops, `i < perk_id_max + 1`, direct `= 1` stores and a `quest_unlock_index && i < 50` bound. The `one` register local, the scaled Antiperk index and the cursor guard below were unnecessary. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x0042fc30` (181 bytes, 52
 instructions).
 

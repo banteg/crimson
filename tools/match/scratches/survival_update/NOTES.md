@@ -1,5 +1,9 @@
 # survival_update
 
+## Plausibility pass (2026-09-25)
+
+The extra-spawn countdown and its closed-form `(1 - interval) >> 1` trip count are a plain `while (interval < 0) { ...; interval += 2; }` loop, which C2 reduces to the same code. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 High-value recovery for the 2,102-byte Survival-mode coordinator at
 `0x00407cd0`.
 

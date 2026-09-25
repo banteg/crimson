@@ -1,5 +1,9 @@
 # `quest_start_selected`
 
+## Plausibility pass (2026-09-25)
+
+Cursor arithmetic (container-of casts, negative offsets or manual strides) was replaced with plain field access and a counted `for` loop over `quest_spawn_table`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+
 Native target: `crimsonland.exe` at `0x0043a790` (434 bytes, 116
 instructions).
 

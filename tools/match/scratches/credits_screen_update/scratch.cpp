@@ -209,13 +209,12 @@ extern "C" void credits_screen_update(void) {
         position.y += 250.0f;
         ui_button_update((float *)&position, (ui_button_t *)&back_button);
 
-        credits_line_t *line = credits_line_table;
-        while ((int)line < (int)(credits_line_table + 0x100)) {
-            if (line->text != 0 && strchr(line->text, 'o') != 0 &&
-                (line->flags & 4) == 0) {
+        for (int line = 0; line < 0x100; line++) {
+            if (credits_line_table[line].text != 0
+                && strchr(credits_line_table[line].text, 'o') != 0
+                && (credits_line_table[line].flags & 4) == 0) {
                 goto check_actions;
             }
-            ++line;
         }
 
         if (!credits_secret_unlock_flag) {
