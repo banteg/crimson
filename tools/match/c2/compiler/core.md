@@ -62,7 +62,7 @@ Code tests kind sets with `1<<kind` masks: 0xffe = operand (1..11), 0x6 = kinds 
 | 0x1e | 0x10 | list cell | `tuple_push_cell20` 0x10707b50 | +0xc value |
 
 **Tuple flags (+9).** Bit 0 means the tuple has operand lists (a "real" tuple). Bit 1 means the label is
-referenced by the reader. Bit 3 is set on ops 0x187..0x18c. Operand byte +0x10 bit 0x20 marks the base/index of a
+referenced by the reader. Bit 3 marks the EH and no-return branches 0x187..0x18c ([branch-variants.md](branch-variants.md)). Operand byte +0x10 bit 0x20 marks the base/index of a
 memory operand. Operand byte +0x11 bit 0x20 means the base/index are not duplicated in the src list.
 The high nibble of +0x11 on a compare's destination holds the relation (1..6).
 
@@ -125,7 +125,7 @@ label tuple, and the tuple's +0x1c lists the referrers. `label_remove_ref` 0x107
 | 0x184 | CALL | |
 | 0x185 | CJUMP | lowered to `jcc`; the condition is in the type field, remapped for unsigned via 0x107a02e8 |
 | 0x186 | JUMP | lowered to `jmp` |
-| 0x187..0x18c | branch variants | 0x188/0x189 have their own free/clone handlers; 0x18b branches also fall through; semantics unknown |
+| 0x187..0x18c | EH and no-return branches | 0x187 catch return, 0x188/0x189 `__finally` call/return, 0x18a unused, 0x18b exception edge, 0x18c no-return exit; see [branch-variants.md](branch-variants.md) |
 | 0x18d | SWITCH | small switches become compare chains (`lower_switch_chain` 0x1074f970) |
 | 0x18f | unknown | kind 0x10 |
 | 0x190 | INTRINSIC | memset/memcpy/atan2 and similar |
@@ -207,7 +207,7 @@ There are two record families.
   | +8 | predecessor edges |
   | +0xc | successor edges |
   | +0x10 / +0x14 | RPO prev / next (DFS parent and iterator while walking) |
-  | +0x18 | flags (bit 0 visited; 0x1000000 = contains op 0x187) |
+  | +0x18 | flags (bit 0 visited; 0x1000000 = ends in a catch return, op 0x187) |
   | +0x1c | head (kind-0x19 boundary tuple) |
   | +0x20 | end (the next block's boundary, exclusive) |
   | +0x60 | dominator bitvector |
@@ -279,7 +279,7 @@ There are two record families.
 ## Open questions
 
 - Operand kind 8 (op 0x147) and opcodes 0x151, 0x152, 0x155..0x157, 0x165, 0x167..0x169, 0x178, 0x17e..0x183,
-  0x187..0x18c (only 0x18b is partly understood), 0x18f, 0x191 and most EH ops are unresolved.
+  0x18f, 0x191 and most EH ops are unresolved. The branch ops 0x187..0x18c are decoded in [branch-variants.md](branch-variants.md).
 - The +0x20 field of the label tuple, the remaining fields of the 0x54 symbol (+0x18, +0x2c..+0x4c), and
   +0x24..+0x5f of the block.
 - The front-end class numbering beyond 1/3/4/14 is unknown. The byte at +0x30 of label symbols (checked

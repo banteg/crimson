@@ -17,6 +17,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [regalloc.md](regalloc.md) | Webs, global colouring, the chooser, local allocation and eax/ecx/edx rotation, frame pointer, callee-saved registers |
 | [frame.md](frame.md) | Stack slot packing and local offsets, prolog/epilog, final peepholes, EH state, x87 stack |
 | [layout.md](layout.md) | Jump optimizer, tail sinking and cross-jumping, block mover, scheduler, emission |
+| [branch-variants.md](branch-variants.md) | Which source jumps emit which IL branch ops, what flag 8 marks, and how to predict block-mover moves in flat rule chains |
 
 ## Binary Ninja annotations
 

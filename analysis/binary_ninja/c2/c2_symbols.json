@@ -439,7 +439,7 @@
   "0x10703aa7": {
    "name": "tuple_new_branch",
    "prototype": "c2_tuple* __fastcall tuple_new_branch(uint32_t op, uint16_t type, c2_node* target, c2_operand* cond, uint32_t cc, void* insert_fn, c2_tuple* anchor)",
-   "comment": "kind-0x11 branch: target (label tuple -> label-ref operand), optional condition operand + condition cell; ops 0x187..0x18c set +9 bit3."
+   "comment": "Kind-0x11 branch. Ops 0x187..0x18c (CATCH_RETURN, FINALLY_CALL, FINALLY_RET, unused 0x18a, EH_EDGE, NORETURN_EXIT) set +9 bit 3 (0x10703b84). This is the only place bit 3 is set. Bit-3 branches are never deleted, inverted, threaded or retargeted by the optimizers, and are never J for block_mover. Ordinary C/C++ jumps are 0x185/0x186 with bit 3 clear."
   },
   "0x10703ba0": {
    "name": "symbol_get_part",
@@ -921,7 +921,7 @@
   },
   "0x10708fa7": {
    "name": "thread_jumps_at_block_end",
-   "comment": "threads successor chains of trivial conditional blocks (<=10 hops, 0x10709618) when compare is known; fall-through successor only with /Ot"
+   "comment": "Threads successor chains of trivial compare+branch blocks (<=10 hops, follow_trivial_branch_chain) when the compare is known from CSE facts; fall-through successor only with /Ot. A bypassed fall-through edge becomes a new machine jmp (op 0x10, flags 0x01) from tuple_new_jmp_before at 0x10709567, carrying the C2 line of the block it is inserted before. This is the origin of bonus_pick_random_type's block_mover J (trace-verified)."
   },
   "0x10709618": {
    "name": "follow_trivial_branch_chain",
@@ -1430,10 +1430,12 @@
    "name": "tuple_10714779"
   },
   "0x1071492c": {
-   "name": "analyze_return_paths"
+   "name": "analyze_return_paths",
+   "comment": "Return-path analysis behind warn_missing_return_value; reads edge flag 0x40 (set by mark_abnormal_edges for EH_EDGE/NORETURN_EXIT/0x18e edges). Static reading."
   },
   "0x10714af8": {
-   "name": "mark_abnormal_edges"
+   "name": "mark_abnormal_edges",
+   "comment": "If the block's last real tuple has bit 3 and is IL 0x18b EH_EDGE or 0x18c NORETURN_EXIT, sets flag 0x40 on the edge to the branch target's block (0x10714b38). A switch with op 0x18e sets 0x40 on each entry of its list at +0xc (0x10795f44). Static reading."
   },
   "0x10714b3d": {
    "name": "tuple_sets_return_value",
@@ -1564,6 +1566,10 @@
   "0x1071be3d": {
    "name": "operand_for_fe_symbol",
    "comment": "Kind-2 operand for a front-end symbol (op from class table 0x107a02fc)."
+  },
+  "0x1071be88": {
+   "name": "reader_read_call",
+   "comment": "il_read_tree case 0x2e (0x107157a6). Builds the IL CALL 0x184 (or the intrinsic path 0x190). After a call whose callee fe symbol has +0x14 bit 0x80 (__declspec(noreturn)), it pushes IL 0x18c NORETURN_EXIT to g_return_label (0x1071c369). It does the same after intrinsic id 0x151 (0x10785a25, unidentified). Trace-verified with noreturn and throw probes."
   },
   "0x1071c77f": {
    "name": "reader_1071c77f"
@@ -4058,7 +4064,8 @@
    "comment": "unwind map = states*8 bytes; __unwindtable$/__tryblocktable$/__catchsym$ names only with -ZI."
   },
   "0x10761233": {
-   "name": "ehexcept_10761233"
+   "name": "ehexcept_10761233",
+   "comment": "C++ EH (called from cxx_eh_lower_scopes 0x1075f419). Creates IL 0x187 CATCH_RETURN at 0x107887b7: the end of a catch block, whose label operand is the continuation. Emitted as 'mov eax, OFFSET continuation; ret' in the catch funclet (trace+objdump verified with /GX)."
   },
   "0x1076150a": {
    "name": "ehexcept_1076150a"
@@ -4242,6 +4249,11 @@
   },
   "0x10766db8": {
    "name": "except_10766db8"
+  },
+  "0x10766dd7": {
+   "name": "seh_lower_try_markers",
+   "comment": "Called by seh_lower_try_regions (0x10766bde). Walks the tuple list and lowers the SEH pseudo-ops 0x192..0x199 into labels, state pseudo-ops and branches. Creates IL 0x188 FINALLY_CALL (0x10787b97), 0x189 FINALLY_RET (0x10787c34), 0x18b EH_EDGE (0x10766fc5) and 0x186 jumps. Trace-verified: FINALLY_CALL/FINALLY_RET/EH_EDGE appear between read_function_il and cfg_rebuild in __try/__finally probes.",
+   "prototype": "void __fastcall seh_lower_try_markers(c2_function* fn)"
   },
   "0x10767186": {
    "name": "seh_lower_scope_ops"
@@ -4557,6 +4569,21 @@
    "name": "find_complementary_branch_before",
    "comment": "Finds jcc with inverse condition just before label whose target is right after the given jcc."
   },
+  "0x10787dae": {
+   "name": "seh_forget_finally_call",
+   "comment": "node_free hook for IL 0x188 FINALLY_CALL (0x10701b5f -> 0x1077e49b): walks the SEH try records at 0x1079bc90, and for type-2 (try/finally) records clears the list cell (record word 0x11) that points at this tuple.",
+   "prototype": "void* __fastcall seh_forget_finally_call(c2_tuple* t)"
+  },
+  "0x10787dd8": {
+   "name": "seh_register_finally_call_clone",
+   "comment": "node_clone hook for IL 0x188 (0x10701fb5 -> 0x1077e562): adds a cell for the clone to the try record's FINALLY_CALL list (word 0x11), next to the original's cell.",
+   "prototype": "void* __fastcall seh_register_finally_call_clone(c2_tuple* original, c2_tuple* clone)"
+  },
+  "0x10787e1c": {
+   "name": "seh_forget_finally_ret",
+   "comment": "node_free hook for IL 0x189 FINALLY_RET (0x10701b6b -> 0x1077e48f): finds the type-2 SEH try record whose word 0x12 is this tuple and clears it.",
+   "prototype": "void* __fastcall seh_forget_finally_ret(c2_tuple* t)"
+  },
   "0x10789791": {
    "name": "assign_eh_object_homes",
    "comment": "C++ EH (fn flag 0x10000) objects from list 0x1079bdb0 get homes (fixed, not packed)."
@@ -4636,6 +4663,11 @@
   "0x10794e0f": {
    "name": "basic_function_pass",
    "comment": "VB (-basic) only, sym flag 0x1000; not analysed."
+  },
+  "0x10795a89": {
+   "name": "seh_add_finally_entry_edge",
+   "comment": "Called from seh_lower_try_markers (/Og only, 0x10787be8): moves the __finally marker before the next label and adds an IL 0x18b EH_EDGE from the try-begin pseudo-op 0x192 to that label (0x10795ad3). Static reading.",
+   "prototype": "c2_tuple* __fastcall seh_add_finally_entry_edge(c2_function* fn, c2_tuple* finally_marker)"
   },
   "0x10795f68": {
    "name": "report_missing_return"
@@ -4980,6 +5012,10 @@
   "0x1079bc8c": {
    "name": "g_block_count",
    "type": "int32_t"
+  },
+  "0x1079bc90": {
+   "name": "g_seh_try_records",
+   "comment": "Linked list of SEH try records. Word 1 is the type (2 = try/finally), word 0x11 is the list of FINALLY_CALL (0x188) tuples, word 0x12 is the FINALLY_RET (0x189) tuple. Used by node_free/node_clone and seh_lower_local_unwinds."
   },
   "0x1079bcfc": {
    "name": "g_ehfuncinfo_symbol",
@@ -6291,12 +6327,14 @@
   "0x10701a85": "size = g_node_size_by_kind[kind]",
   "0x10701c99": "per-kind free dispatch (byte table 0x1070284c indexed by kind-1)",
   "0x107038f5": "label symbol ref_count (+0x3a) ++",
+  "0x10703b84": "ops 0x187..0x18c -> flags |= 8 (EH / no-return branch; see tools/match/c2/compiler/branch-variants.md)",
   "0x10703b86": "ops 0x187..0x18c: tuple flags bit3",
   "0x10703f84": "size 2 -> align 2, size 1 -> no align, else default 4 (8 for doubles in aligned frames)",
   "0x1070446b": "C4702 unreachable code (level 4) for the first real non-branch tuple of a dead block",
   "0x107044f5": "DFS: block not yet visited",
   "0x107048f1": "Without forced preheaders: one is created only if the previous block is in another loop or a jump enters the header",
   "0x10704a1a": "EH functions: extra loop handling via 0x10791e88",
+  "0x10704f75": "block ends in IL 0x187 CATCH_RETURN -> block flags |= 0x1000000",
   "0x10704f90": "EH nesting: 0x192/0x1a4 ++, 0x194/0x196 --, 0x1a5 conditional --",
   "0x10705772": "Branch to the physical next block is deleted",
   "0x10705827": "jcc over a lone jmp is inverted unless the jmp block is a loop latch",
@@ -6305,6 +6343,7 @@
   "0x10707bdb": "expression hash = (op + type&0xfff) mod 101",
   "0x10707dba": "commutative ops also match swapped operands",
   "0x10709064": "fall-through successor threaded only with /Ot",
+  "0x10709567": "new machine jmp for a threaded fall-through edge (bonus_pick_random_type's mover J is created here)",
   "0x1070968c": "jump-threading chain limit: 10 hops",
   "0x1070a3bf": "call kills: temp-sourced expressions (phase 1) or all available expressions (full mode)",
   "0x1070bc95": "kinds 0xd-0xf,0x11-0x14 forced to roots (+0x12=1)",
@@ -6347,6 +6386,7 @@
   "0x10713537": "loop header: iterative avail dataflow (0x1070aad7) only if g_cse_full_mode and loop blocks (tail RPO - head RPO + 1) <= -Loop# (default 100); else conservative entry set",
   "0x10713a3b": "0x16b block copy of size 1, 2 or 4 becomes a scalar 0x15b assign",
   "0x107153ce": "IL record 0x2b switch: selector copied to a fresh temp, body read, then switch lowered",
+  "0x107163b1": "il_read_tree case 0x4c (__assume): pseudo 0x1ac/0x1ab, and 0x18c NORETURN_EXIT when the operand is constant 0 (trace-verified with __assume(0))",
   "0x107191b5": "More than 0x2710 real tuples: /Oa disabled and coarse alias fallback for this function",
   "0x1071e163": "cross_jump_pair: /Os (Ot==0) merges unconditionally",
   "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",
@@ -6370,6 +6410,7 @@
   "0x1072a06f": "signed mod by 2^k only under /Ot -> pseudo 0x166/0x183 (and/jns/dec/or/inc)",
   "0x1072a157": "zero-extend: movzx when dest is 16-bit or /Ot off",
   "0x1072a15f": "/Ot zero-extend: dword-readable src -> mov+and 0xff/0xffff, else xor r,r + mov r8",
+  "0x1072a3a6": "lower_int_tuple: 0x187..0x18c are left unchanged (0x185 -> jcc, 0x186 -> jmp in place)",
   "0x1072b547": "mul folds into scale only for 1/2/4/8",
   "0x1072b639": "shl folds into scale only for count 1..3",
   "0x1072ba7d": "base+disp: dest==base temp -> add/sub imm; else lea",
@@ -6418,13 +6459,14 @@
   "0x10735c3a": "sub esp,4 -> push ecx (always); sub esp,8 -> push ecx x2 when !/Ot",
   "0x10735d9f": "/Og tail call: call f; [no-op movs/jumps]; ret 0 -> jmp f",
   "0x10735f14": "!/Op: fstp m; fld m -> fst m (disabled by /Op)",
+  "0x10735f9d": "IL 0x18b EH_EDGE deleted here (final_lowering_peepholes), before jump_optimize #2",
   "0x10736088": "(/G6 or /Ot) movzx r,x -> xor r,r; mov r8,x when source does not use r",
   "0x107366fc": "function end: last real tuple (skipping 0x16, dead labels, _epop) is a call -> tail-call attempt",
   "0x10736749": "mover loop1: J->next must be a label",
   "0x10736765": "mover loop1: J->next != L (not a jump-to-next) and L must lie after J",
-  "0x10736787": "mover loop1: L->prev must be an unconditional jmp (not 0x18b) or ret (kind 0xf)",
+  "0x10736787": "L->prev test: kind 0x11, cond 0, op != 0x18b, or kind 0xf. A bit-3 0x18c NORETURN_EXIT passes (trace-verified, probe m4)",
   "0x107367a7": "mover loop1: find first jmp/ret after L (conditional branches and labels skipped)",
-  "0x107367ce": "mover loop1: move [J->next..L->prev] right after that terminator, then delete J",
+  "0x107367ce": "loop-1 range move; bonus_pick_random_type moves its stage-5 rule here, J = the threaded stage-4 Nuke fall-out jmp",
   "0x10736826": "mover loop2: delete jump-to-next first",
   "0x107368b9": "mover loop2: scan target block; another label inside sets 'multi-entry' flag (ebp)",
   "0x1073691a": "mover loop2: single-entry block and L->prev is jmp elsewhere -> splice block into jump site",
@@ -6453,6 +6495,7 @@
   "0x1073cb9a": "after edx cursor wraps to eax",
   "0x1073d746": "cross_jump_into_fallthrough: conditional branches only matched when Ot==0",
   "0x1073e078": "if the last released prologue tuple is >=40 tuples from function start after scheduling, move released tuples back",
+  "0x1073ee62": "IL 0x18c NORETURN_EXIT deleted at emission (emits no bytes)",
   "0x1073f035": "local-label jcc starts as SHORT (0x113)",
   "0x1073f04f": "local-label jmp starts as SHORT (0x115)",
   "0x1073f20b": "/Ot+/Og: jump table (_data dword after class-2 label) aligned to 4 with nop fill",
@@ -6512,6 +6555,7 @@
   "0x10755ad7": "small-block predicate: const count && (count>>2) <= 4 (copy) or <= 5 (memset) -> no rep prefix",
   "0x10755ae9": "memset path: stos (0x3b) / rep stos (0x111), fill reg EAX",
   "0x10755d1a": "tail: count&2 -> movsw (or word reg move), count&1 -> movsb",
+  "0x1075872e": "SEH functions: seh_lower_local_unwinds lowers 0x188 -> call $finally, 0x189 -> ret (between finlower and jump_optimize #2)",
   "0x1075a012": "binary split: dense-prefix gap limit 3",
   "0x1075a088": "binary split: dense prefix must exceed T cases, else split at n/2",
   "0x1075a1cf": "power-of-two divisors left for lowering",
@@ -6548,6 +6592,7 @@
   "0x1077ca40": "!/Ot: mov r,imm8 -> push imm; pop r",
   "0x1077cc25": "!/Ot: call; add esp,4 -> call; pop ecx (8 -> pop ecx x2)",
   "0x10784cab": "ALIGN pseudo-op 0x1ba: pad to i[5] with nop tuple",
+  "0x10785411": "il_read_tree case 0x37 sub-op 0xc: 0x18b to a label whose fe symbol +0x3e bit 0 is set; not produced by any C/C++ probe",
   "0x1078705c": "return-tail merging only when /Ot is off",
   "0x1078e70c": "/Os: keep frame pointer if frame refs exceed savings",
   "0x1078e730": "/Ot: give frame pointer back if double-align score >= 2*loop pressure",
@@ -6555,6 +6600,7 @@
   "0x1078ff9f": "fwd-prop: float (0x4000) defs not substituted under /Op or -basic",
   "0x107911bb": "trip count constant 0 or 1: back edge removed (loop body runs once)",
   "0x10792d0a": "C4756 only when mode==2, once per tuple",
-  "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes"
+  "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes",
+  "0x10724689": "Allocator helper (from build_split_pieces and insert_upward_exposed_reloads). A predecessor block with flags 0x1000000 (ends in IL 0x187 CATCH_RETURN) forces split_edge_with_new_block (0x10724712). Static reading."
  }
 }

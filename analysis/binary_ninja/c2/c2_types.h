@@ -88,11 +88,11 @@ typedef enum c2_opcode {
     IL_CALL = 0x184,
     IL_CJUMP = 0x185,
     IL_JUMP = 0x186,
-    IL_BRANCH_187 = 0x187,
-    IL_BRANCH_188 = 0x188,
-    IL_BRANCH_189 = 0x189,
-    IL_BRANCH_18B = 0x18b,
-    IL_BRANCH_18C = 0x18c,
+    IL_CATCH_RETURN = 0x187, /* end of a catch block: mov eax, OFFSET continuation; ret */
+    IL_FINALLY_CALL = 0x188, /* call $finally */
+    IL_FINALLY_RET = 0x189, /* ret ending a __finally block */
+    IL_EH_EDGE = 0x18b, /* flow-graph-only exception edge; falls through; deleted in final lowering */
+    IL_NORETURN_EXIT = 0x18c, /* after noreturn calls, throw, __assume(0); emits no bytes */
     IL_SWITCH = 0x18d,
     IL_SWITCH_18E = 0x18e,
     IL_OP_18F = 0x18f,
@@ -474,7 +474,7 @@ struct c2_node {
     c2_node* next;          /* 0x00 list link (operand list or tuple list) */
     c2_opcode opcode;       /* 0x04 x86 op (<0x145) or IL/operand op (>=0x145) */
     c2_node_kind kind;         /* 0x08 c2_node_kind */
-    uint8_t flags;          /* 0x09 tuples: bit0 has operand lists, bit1 label referenced, bit3 set for ops 0x187..0x18c */
+    uint8_t flags;          /* 0x09 tuples: bit0 has operand lists, bit1 label referenced, bit3 EH/no-return branch (ops 0x187..0x18c), never threaded, inverted or moved */
     uint16_t type;          /* 0x0a type code: high nibble class (1 int,2 unsigned,3 pointer,4 float,5 aggregate,6 effect,8 flags), low 12 bits size in bytes; branches: condition code */
 };
 
@@ -747,7 +747,7 @@ struct c2_block {
     c2_edge* succs;         /* 0x0c linked via edge.next_succ */
     c2_block* rpo_prev;     /* 0x10 also DFS parent while walking */
     c2_block* rpo_next;     /* 0x14 also DFS successor iterator */
-    uint32_t flags;         /* 0x18 bit0 visited, 0x1000000 ends in op 0x187 */
+    uint32_t flags;         /* 0x18 bit0 visited, 0x1000000 ends in IL_CATCH_RETURN */
     c2_tuple* head;         /* 0x1c block boundary tuple (kind 0x19) */
     c2_tuple* end;          /* 0x20 next block's boundary */
     uint8_t pad_24[0x3c];   /* 0x24 */

@@ -98,7 +98,7 @@ Steps: `insert_prolog_epilog_markers 0x107054a4` (0x1b4 after the entry tuple, 0
 4. When `allow_inversion` is set: `invert_loops_recursive 0x10712d99 -> invert_loop 0x107447ad`.
 5. `simplify_flow_graph 0x10705641`. Loop headers are never touched. Per block it tries, in order:
    - Delete a branch or switch whose every edge goes to the next block (`0x1070573c`).
-   - Invert `jcc L1; jmp L2; L1:` into `jncc L2` (`0x1070577f`). This is not done when the jmp block is a loop latch or pinned (flag 8), or when both jumps target the same label.
+   - Invert `jcc L1; jmp L2; L1:` into `jncc L2` (`0x1070577f`). This is not done when the jmp block is a loop latch or an EH/no-return branch (flag 8, ops 0x187..0x18c), or when both jumps target the same label.
    - Collapse blocks that hold only labels and markers (`0x10705845`).
    - Delete an unreferenced label (`0x10704144`).
    - Delete an empty block, or merge a block whose single successor is the next block, when that block is only entered from it (`0x1070535d`).
@@ -112,7 +112,7 @@ Steps: `insert_prolog_epilog_markers 0x107054a4` (0x1b4 after the entry tuple, 0
 Conditions:
 - g_loop_inversion_enabled (0x107ac08c) is set. 0x1071bc73 sets it for every function; it is cleared only for -ehopt functions whose symbol has flag +0x73 bit8.
 - The loop is not irreducible.
-- The header's last tuple is a conditional branch (kind 0x11, cond != 0 or opcode 0x18b) that is not pinned (+9 bit3).
+- The header's last tuple is a conditional branch (kind 0x11, cond != 0 or opcode 0x18b) that is not an EH/no-return branch (+9 bit3).
 - The branch target is outside the loop, and it is either at top level or directly in the parent loop.
 - The latch ends in an unconditional `jmp` that has an edge to the header.
 - The header has no kind-0x15 tuple and no kind-0x12 op 0xde (`0x10744ae2`).

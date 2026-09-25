@@ -48,7 +48,7 @@ late (0x1073eb93); see section 11.
 - Compare and control flow:
   - 0x17d cmp
   - 0x184 call; 0x185 jcc (condition remapped signed->unsigned via 0x107a02e8 for unsigned operands); 0x186 jmp
-  - 0x18b conditional-branch variant; 0x18d switch; 0x18f select
+  - 0x18b exception edge ([branch-variants.md](branch-variants.md)); 0x18d switch; 0x18f select
 - Other:
   - 0x178 copy that also produces flags / fixed register (low confidence)
   - 0x190 intrinsic (id at +0x20); 0x192..0x19a and 0x1a5 are EH; 0x1a7 lowered to x86 `ret` (opcode 8) with a 0 operand (medium); 0x1a8 bitfield/union merge; 0x1ab/0x1ac unreachable/assume
@@ -271,7 +271,7 @@ duplicated.
 - sizeopt helpers 0x1072a86d/0x1072a97d/0x1072a9c6/0x1072aa01/0x1072cdec were not read in depth.
 - 0x107294f3 is read as return-tail merging from its structure (exit label, jmp 0x186, new temp). The
   exact equality criteria are in 0x1070e8ba/0x1077f13c, which were not read.
-- IL 0x178, 0x18b and 0x1a8 semantics are low confidence.
+- IL 0x178 and 0x1a8 semantics are low confidence.
 - Two calling-convention codes (0x18, 0x40) are unresolved.
 
 

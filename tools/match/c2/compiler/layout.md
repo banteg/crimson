@@ -84,7 +84,7 @@ For each tuple J:
 1. J must be `jmp L`: kind 0x11, condition 0, opcode not 0x18b, label operand, byte+9 bit 3 clear.
 2. J->next must be a label (0x10736749) and must not be L itself.
 3. L must lie after J (forward scan 0x10736777).
-4. L->prev must be an unconditional jmp (not 0x18b) or a **ret (kind 0xf)** (0x10736787).
+4. L->prev must be an unconditional jmp (not 0x18b), a **ret (kind 0xf)** (0x10736787), or a no-return exit (op 0x18c).
 5. The first jmp or ret **after L** is then found. Conditional branches and labels are skipped. If there is none, the anchor is the function end.
 6. `[J->next .. L->prev]` is moved right after that terminator (0x107367ce), and J is deleted.
 7. Scanning resumes at the moved range's head, so the moved code is processed again.
@@ -238,7 +238,7 @@ For each tuple J:
 
 ## Open questions and uncertainty
 
-- **Opcode 0x18c/0x18b:** what these IL branch pseudo-ops are (0x18b is treated as a conditional branch; 0x18c is deleted at emission). EH-related is my guess.
+- **Opcode 0x18c/0x18b:** resolved in [branch-variants.md](branch-variants.md). 0x18b is an exception edge that final lowering deletes before the mover runs; 0x18c is the no-return exit after `noreturn` calls and `throw`. Ordinary source jumps are always 0x185/0x186.
 - **Call byte+0x24 == 4:** the tail-call precondition. Its producer was not traced.
 - **Initial RPO edge order:** the order in which successors are created, which decides RPO placement, was not traced to the block builder. The empirical rule from crimson's layout traces ("RPO follows source order") stands.
 - **`hoist_join_instruction` 0x1073d7fe, `late_stack_temp_forwarding` 0x1073e591 and `post_schedule_merge_moves` 0x1073e113:** the patterns are only partly decoded.
