@@ -391,7 +391,7 @@
   "0x107038d5": {
    "name": "label_add_ref",
    "prototype": "c2_node* __fastcall label_add_ref(c2_tuple* label, c2_node* referrer)",
-   "comment": "Push kind-0x1c ref cell (referencing node) on label +0x1c list; ++label sym refcount (+0x3a)."
+   "comment": "Existing name kept. Prepends a kind-0x1c ref cell (referrer at +0xc) to label +0x1c list (newest reference first); ++label sym refcount (+0x3a). Reference order feeds cross_jump_label_refs (aim-chain-mover.md)."
   },
   "0x107038fa": {
    "name": "operand_new_labelref",
@@ -669,7 +669,7 @@
   },
   "0x10705224": {
    "name": "label_retarget_all_refs",
-   "comment": "Retargets every branch referencing label ecx to label edx."
+   "comment": "Existing name kept. Repeatedly takes the head of label ecx's reference list and tuple_retarget()s it to label edx; tuple_retarget -> label_add_ref prepends, so the moved group lands at the front of edx's list in reversed order. This reversal decides which copy cross_jump_label_refs keeps (earlier reference survives). Verified on player_update aim chain (aim-chain-mover.md)."
   },
   "0x1070527b": {
    "name": "delete_unreachable_block"
@@ -6577,9 +6577,12 @@
   "0x1071b0ee": "Tuple-level budget: records_created < 0x400 - g_alias_class_count, unsigned; inert when the class count exceeds 0x400 (0x417 in Snail initialize_game_assets_and_world).",
   "0x1071b20e": "cmp ecx,0x60: per-class field-record cap. The list walk counts entries; a new (start,size) is refused once 96 records exist, and the access keeps its bare class (verified: 96 records in Snail initialize_game_assets_and_world class 0x2d3, then 187 capped).",
   "0x1071b24b": "Only the destination pass (j == 0) marks the class as written; classes without a ranged destination access lose their records at 0x1071b312.",
+  "0x1071e08a": "cross_jump_pair backward match: tuples_equal(J1-side, J2-side); the first 0 ends the match. Traced with scripts/c2/xjump_trace.py (aim-chain-mover.md).",
   "0x1071e163": "cross_jump_pair: /Os (Ot==0) merges unconditionally",
+  "0x1071e19f": "/Ot profitability: tuple_encoded_length over matched tuples starting at the earliest matched one; loop stops once the sum reaches 20, merge needs sum + max(J1.w12, J2.w12) > 20. player_update p1: 3+3+3+3+3+3+2 = 20 -> refused; g6: atan2 3+3+2+3+2+6+6 = 25 -> merged.",
   "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",
   "0x1071e1ef": "cross_jump_pair /Ot: merge if bytes + max(jmp counters) > 20, else fall back to last jmp/switch boundary",
+  "0x1071e25e": "Merge: tuple_range_free(J1-side matched range, J1) after tuple_retarget(J1, label_after_or_create(J2-side stop)); the later reference in L's list (J1) loses its copy unless the roles were swapped (only J2's stop tuple is a jmp/ret).",
   "0x107232b2": "PUSHARG: 1/2-byte symbol argument -> symbol_get_part(sym, dword, 4) = 4-byte container; the local becomes part +0 (why a bool pushed to a bool param is read as a dword)",
   "0x107237c8": "allowed set starts as class set",
   "0x10724689": "Allocator helper (from build_split_pieces and insert_upward_exposed_reloads). A predecessor block with flags 0x1000000 (ends in IL 0x187 CATCH_RETURN) forces split_edge_with_new_block (0x10724712). Static reading.",
