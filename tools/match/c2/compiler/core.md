@@ -102,7 +102,7 @@ label tuple, and the tuple's +0x1c lists the referrers. `label_remove_ref` 0x107
 | 0x15f | CONVERT | `convert_operand` 0x10710180; lowered to movzx/movsx/and |
 | 0x160 | NOT | reader unary; `not` |
 | 0x161 | NEG | reader unary; `neg` |
-| 0x162 | FROUND | float precision/round (reader case 0x3c); medium confidence |
+| 0x162 | FROUND | float round marker; emits no code. Mostly inserted by forward propagation, by C1 only for explicit `(float)` casts of doubles ([x87-scheduling.md](x87-scheduling.md)) |
 | 0x163 | LOADCONST | register ← constant (allocator); medium |
 | 0x164 | SPILLSTORE | symbol ← register (color.c); medium |
 | 0x166 | MODPOW2 | produced by MOD lowering; low |

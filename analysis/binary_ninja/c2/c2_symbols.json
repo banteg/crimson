@@ -1341,7 +1341,7 @@
   "0x10711afa": {
    "name": "forward_propagate_definitions",
    "prototype": "void __fastcall forward_propagate_definitions(c2_function* fn)",
-   "comment": "globopt forward substitution: a variable def with exactly one reaching use (use marked last-use) is moved (tree) to the use and the def deleted"
+   "comment": "globopt forward substitution: a variable def with exactly one reaching use is moved (tree) to the use and the def deleted. Inserts 0x15f when the use type differs, a 0x15b copy when the use operand needs one, and ALWAYS a 0x162 round marker for type class 0x4000 (0x10712643, line = use line). This is the main source of FROUND pseudo tuples (inline ctor/function parameters, single-use float locals)."
   },
   "0x107129c1": {
    "name": "mark_tree_materialize",
@@ -2506,7 +2506,7 @@
   },
   "0x10737a97": {
    "name": "sched_window_worth_scheduling",
-   "comment": "True if window has >=2 real tuples (and does not start at 0x1b5)."
+   "comment": "True if the window does not start at 0x1b5 and has >= 2 tuples with operands (flags bit 0) before its last node; the last node is not counted, so a cmp;jcc window is left unscheduled. (fp_mode path 0x1077abe5 is dead.)"
   },
   "0x10737ad8": {
    "name": "tuple_encoded_length",
@@ -2595,7 +2595,7 @@
   },
   "0x10739b58": {
    "name": "sched_node_latency",
-   "comment": "latency_table[dst op].+0 + sched_latency_adjust."
+   "comment": "latency_table[dst op].+0 + sched_latency_adjust; opcodes >= 0x144 (IL pseudo ops such as 0x162) get only the adjustment."
   },
   "0x10739b8a": {
    "name": "sched_latency_adjust",
@@ -2658,6 +2658,10 @@
    "name": "sched_memory_deps_on_stores",
    "comment": "Edges from prior stores that may alias (operands_may_alias / 0x1071d500)."
   },
+  "0x1073a4d4": {
+   "name": "sched_set_output_dep_latency",
+   "comment": "WAW (kind 4) edges from sched_deps_on_prior_defs: raises edge latency to the per-CPU minimum (short table 0x107a2de0[cpu]) unless the producer is a call (kind 0xe), the consumer is fxch (0x5f), the register is cc (g_reg_symbols[0x42]), the producer is a 0x162 round marker, or 0x1073a2de(reg, edge) returns nonzero (not decoded)."
+  },
   "0x1073a531": {
    "name": "sched_record_memory_access",
    "comment": "Appends a memory access record to load/store lists."
@@ -2668,7 +2672,7 @@
   },
   "0x1073a684": {
    "name": "sched_compute_priorities",
-   "comment": "height = max(succ.height+edge latency)+1; critical-path flag; priority = weighted sum\n(weights per CPU from 0x107a0d98, shift-based)."
+   "comment": "height = max(succ.height+edge latency)+1; priority = sum shift_signed(term, weight) over feeds-jcc, height, out_degree, critical, reads_mem, plus writes_mem only when the tuple type class is 0x4000 (float store bonus). /G5: height<<13 + reads_mem<<16 + float_store<<16 + out_degree>>5; verified against traced priorities."
   },
   "0x1073a849": {
    "name": "sched_mark_branch_feeders",
@@ -2676,7 +2680,7 @@
   },
   "0x1073a91f": {
    "name": "sched_fp_adjust_edges",
-   "comment": "x87-related edge additions when g_sched_fp_mode/0x10799254 set."
+   "comment": "Runs in integer mode whenever the function uses FP (0x10799254 = fn+0x34 bit 3), not only in the dead fp_mode. For 0x162 FROUND nodes calls sched_bypass_round_marker_edges; for other float tuples adds RAW edges (read, not trace-verified) between float tuples sharing a value parent (loop 0x1073a9ed)."
   },
   "0x1073a9fb": {
    "name": "sched_break_dep_by_displacement",
@@ -3653,6 +3657,11 @@
   "0x10751ea0": {
    "name": "schedmd_10751ea0"
   },
+  "0x10752183": {
+   "name": "sched_remove_edge",
+   "comment": "Removes a DAG edge: from.out_degree(+0x22)--, to.preds_left(+0x20)--, to.bypassable(+0x24)-- when edge+0x16 has a rewrite kind, cfg_edge_remove, edge count 0x1079f184--.",
+   "prototype": "int32_t __fastcall sched_remove_edge(c2_sched_edge* edge)"
+  },
   "0x10752210": {
    "name": "dag_10752210"
   },
@@ -4174,7 +4183,7 @@
   },
   "0x10763d93": {
    "name": "lower_x87_binary_op",
-   "comment": "Binary fadd/fsub/fmul/fdiv: loads left operand, right from memory or stack; chooses reversed/popping form via 0x1076450b"
+   "comment": "Binary fadd/fsub/fmul/fdiv. Neither src a stack temp (class-3 temp with def): fld first src, second is memory. Only second on stack: op st0,[first] with reversed form and swapped srcs (commutative order invisible). Only first on stack: op st0,second. Both on stack: top of g_fp_lower_stack_syms is st0, other st(1), popping form via select_x87_arith_form. Storage of x87 values = g_reg_symbols[0x1f] (ST0), [0x20] (ST1)."
   },
   "0x10763ea3": {
    "name": "materialize_float_constant",
@@ -4206,6 +4215,11 @@
   "0x107645d8": {
    "name": "allocate_x87_live_ranges",
    "comment": "Float-class path (st(0) caching of float ranges in loops), ends with fold_x87_copy_sequences."
+  },
+  "0x107657b0": {
+   "name": "sched_bypass_round_marker_edges",
+   "comment": "Called by sched_fp_adjust_edges for each 0x162 FROUND node (arg2 = parent of the FROUND's value symbol). Each out-edge whose target is a float tuple that does not read that value is removed (sched_remove_edge) and the FROUND's in-edges are re-added from its predecessors to the target. Result: a FROUND keeps only its producer edge and an edge to a direct reader; otherwise it floats with height 1 (priority 8192 on /G5). Verified: ui_element_render window 36 has fadd->fld edges of kind 7 (RAW included) in place of FROUND->fld.",
+   "prototype": "void __fastcall sched_bypass_round_marker_edges(c2_sched_node* node, c2_symbol* value_parent)"
   },
   "0x10765881": {
    "name": "build_helper_call",
@@ -4915,6 +4929,10 @@
    "name": "g_sched_issue_width",
    "type": "int16_t"
   },
+  "0x10799254": {
+   "name": "g_sched_fn_uses_fp",
+   "comment": "fn+0x34 bit 3 (function uses x87), set by sched_init_cpu_model at 0x10737634; enables sched_fp_adjust_edges in integer-mode scheduling."
+  },
   "0x10799278": {
    "name": "g_sched_latency_table"
   },
@@ -5349,6 +5367,10 @@
    "name": "g_sched_cycle",
    "type": "int"
   },
+  "0x1079f23c": {
+   "name": "g_sched_window_end",
+   "comment": "Last tuple of the current window (sched_find_window_end result, 0x10737558)."
+  },
   "0x1079f240": {
    "name": "g_sched_graph"
   },
@@ -5361,6 +5383,10 @@
   },
   "0x1079f25c": {
    "name": "g_sched_ready_tail"
+  },
+  "0x1079f268": {
+   "name": "g_sched_window_start",
+   "comment": "First tuple of the current scheduling window (stored at 0x10737543 before sched_find_window_end)."
   },
   "0x1079f270": {
    "name": "g_sched_fp_mode",
@@ -6392,6 +6418,7 @@
   "0x10711f82": "fwd-prop: use wider than def -> reject (only narrowing substitution)",
   "0x10712164": "call/0x187: all pending single-use defs are killed",
   "0x107123bb": "defs of variables live-out of the block are not substituted",
+  "0x10712643": "0x162 FROUND inserted before the use for every float-class (0x4000) forward-propagated def; counts as a scheduling-window node, emits no code.",
   "0x10712d51": "Exit block is forced to the end of the RPO block list",
   "0x107132b1": "invariant candidate: symbol operands must be in loop+0x34 (not killed in the loop)",
   "0x10713311": "operand kind table 0x10714208: kinds 1/2 check symbol, 3-5 and 7-9 ok, kind 6 (indirect memory) blocks the candidate",
@@ -6488,6 +6515,7 @@
   "0x107369cc": "mover loop2: splice L..terminator after J, delete J",
   "0x10736a5a": "mover loop2: if the last duplicated tuple is a jmp, continue scanning from it",
   "0x107377bd": "prologue release limited to 10 tuples before the prologue-end marker",
+  "0x10737a55": "81-node cap: nodes 0..80 are walked; on the 82nd the window ends at its prev. Every tuple kind counts (pseudo ops, FROUND, _epush/_epop).",
   "0x10737a58": "scheduling window: at most 81 nodes (i<=0x50), ends at branch/switch/label",
   "0x10737ac6": "window scheduled only if it has >=2 real tuples",
   "0x10737dc3": "acc,imm form skipped when imm fits in imm8 (so 83 /r ib is chosen)",
@@ -6572,6 +6600,7 @@
   "0x10755ad7": "small-block predicate: const count && (count>>2) <= 4 (copy) or <= 5 (memset) -> no rep prefix",
   "0x10755ae9": "memset path: stos (0x3b) / rep stos (0x111), fill reg EAX",
   "0x10755d1a": "tail: count&2 -> movsw (or word reg move), count&1 -> movsb",
+  "0x10758522": "xor edx,edx: fp_mode is always 0; this is the only call of schedule_instructions, so the fp_mode=1 scheduler path (0x1077ac93, 0x1077ae14, 0x10794d5e) is dead.",
   "0x1075872e": "SEH functions: seh_lower_local_unwinds lowers 0x188 -> call $finally, 0x189 -> ret (between finlower and jump_optimize #2)",
   "0x1075a012": "binary split: dense-prefix gap limit 3",
   "0x1075a088": "binary split: dense prefix must exceed T cases, else split at n/2",
@@ -6617,6 +6646,7 @@
   "0x1078ff9f": "fwd-prop: float (0x4000) defs not substituted under /Op or -basic",
   "0x107911bb": "trip count constant 0 or 1: back edge removed (loop body runs once)",
   "0x10792d0a": "C4756 only when mode==2, once per tuple",
-  "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes"
+  "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes",
+  "0x10794d5e": "fp_mode-only window end (balanced x87 depth after >= 80 nodes); unreachable because fp_mode is always 0."
  }
 }

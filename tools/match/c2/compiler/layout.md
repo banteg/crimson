@@ -114,7 +114,7 @@ For each tuple J:
 ## 4. Scheduler 0x107374aa (schedmd.c/dag.c)
 
 ### Scope
-- The driver always calls it with fp_mode=0. The x87 path (0x1077ac93/0x1077ae14) is not reached from the driver.
+- The driver always calls it with fp_mode=0, so the x87 path (0x1077ac93/0x1077ae14) is dead. In FP functions `sched_fp_adjust_edges` still runs and rewires FROUND (0x162) edges; see [x87-scheduling.md](x87-scheduling.md).
 - The CPU model comes from /G# (0x107ac0b0, **default 5**).
   - Index = max(G-3, 0).
   - Issue width: 2/1/2/3 for G3/G4/G5/G6.
@@ -137,7 +137,7 @@ For each tuple J:
 - A window runs from the node after the previous window.
 - It ends at the first branch, switch or label, which is **included** as the last node.
 - It also ends before the epilogue marker 0x1b5 or the function-end marker, or after **81 nodes**. All nodes count toward the 81, including pseudo-ops such as 0x162.
-- A window is only scheduled if it has ≥ 2 real tuples (0x10737a97).
+- A window is only scheduled if it has ≥ 2 tuples with operands, not counting its last node (0x10737a97); a `cmp; jcc` window is never scheduled.
 
 ### DAG (`sched_build_dependency_graph` 0x107396f6)
 - **Nodes:** one per tuple. `seq` (+0x36) is the creation index.
@@ -243,5 +243,5 @@ For each tuple J:
 - **Initial RPO edge order:** the order in which successors are created, which decides RPO placement, was not traced to the block builder. The empirical rule from crimson's layout traces ("RPO follows source order") stands.
 - **`hoist_join_instruction` 0x1073d7fe, `late_stack_temp_forwarding` 0x1073e591 and `post_schedule_merge_moves` 0x1073e113:** the patterns are only partly decoded.
 - **Edge kinds 0x20, 0x40 and 0x80 in the DAG:** the direction of the memory and anti edge kinds is inferred from call sites, not fully verified.
-- **fp_mode=1 scheduler path:** probably dead, since the driver passes 0. It may be reachable through the other jump_optimize caller 0x10760803 path, which I did not check.
+- **fp_mode=1 scheduler path:** dead; the only call passes 0 (0x10758522). x87 order is fixed before scheduling ([x87-scheduling.md](x87-scheduling.md)).
 - **0x107ac384/0x107ac388:** exact meaning. They are related to esp-frame tracking.

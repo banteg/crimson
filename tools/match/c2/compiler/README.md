@@ -17,6 +17,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [regalloc.md](regalloc.md) | Webs, global colouring, the chooser, local allocation and eax/ecx/edx rotation, frame pointer, callee-saved registers |
 | [frame.md](frame.md) | Stack slot packing and local offsets, prolog/epilog, final peepholes, EH state, x87 stack |
 | [layout.md](layout.md) | Jump optimizer, tail sinking and cross-jumping, block mover, scheduler, emission |
+| [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
 | [strength-reduction.md](strength-reduction.md) | Where strength reduction and exit-test replacement put IV setups, which field a loop pointer anchors to, and how to write plain indexed loops that reproduce native cursors |
 | [branch-variants.md](branch-variants.md) | Which source jumps emit which IL branch ops, what flag 8 marks, and how to predict block-mover moves in flat rule chains |
 
@@ -128,6 +129,8 @@ This is a digest; the detailed notes give the evidence and exceptions.
   unstable quicksort. Dead parameter homes are reused. /Od uses declaration order.
 - **Instruction order** (layout.md): scheduling is local to a basic block, with an 81-node window. The
   priority is height×8192 plus load and float-store bonuses, and ties keep the original order.
+  x87 instructions all write ST(0), so the scheduler never reorders them. Their order comes from
+  the expression sort, forward propagation and lowering ([x87-scheduling.md](x87-scheduling.md)).
 - **/O1 versus /O2** (frame.md, lowering.md, layout.md): `leave`, `pop ecx` cleanup, `movzx`, `idiv`
   for constant divisors, and always cross-jumping mark /O1. `mov esp,ebp`, `xor`/byte-`mov`
   zero-extension, magic divides, 16-byte padding and duplicated epilogues mark /O2.

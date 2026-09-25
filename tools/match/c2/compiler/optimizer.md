@@ -395,7 +395,7 @@ These events kill a pending def (status 0xb):
 Commit step:
 - A pair fires only if the use operand is a last use (+0x11 & 0x10).
 - `range_free_of_conflicts` 0x10742ad4 must find no overlapping write or read between the def and the use.
-- The def's expression tree is **moved to just before the use** (`move_expression_tree_before` 0x1071d548). The operand is replaced, with a conversion added when the widths differ (0x15f, or 0x162 for float), and the original def is deleted.
+- The def's expression tree is **moved to just before the use** (`move_expression_tree_before` 0x1071d548). The operand is replaced, with a conversion added when integer widths differ (0x15f); every propagated float-class def gets a 0x162 round marker ([x87-scheduling.md](x87-scheduling.md)), and the original def is deleted.
 - Touched tuples are re-simplified (0x10710fef, and 0x107081d7 for branches).
 
 ### Value numbering `assign_expression_owners` 0x10711209 and the expression hash
