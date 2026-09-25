@@ -3,6 +3,19 @@
 Native target: `crimsonland.exe` at `0x00428390` (4,582-byte manifest extent,
 1,148 instructions in the current Binary Ninja analysis).
 
+## Alpha wrapper instead of `memcpy` (2026-09-25)
+
+The alive tint's alpha is now a one-float wrapper member,
+`player_render_alpha_t a`, assigned in the constructor body as
+`a = player_render_alpha_t(alpha);`. The `memcpy` byte copy is gone and the
+result is still byte-exact (1148/1148, `340/0/0`). The implicit 4-byte
+aggregate copy is read as an integer copy of the float parameter. That copy is
+returned to memory during live-range building, and late register CSE forwards
+its load, which leaves native's dead `[esp+0x24]` store while esi keeps the
+value ([post-promotion-stores.md](../../c2/compiler/post-promotion-stores.md)).
+Plain float spellings stop at 96.73%. The sections below describe the earlier
+`memcpy` form.
+
 ## Exact recovery (2026-09-12)
 
 The [float-sine and vector-value proof](../../evidence/overlay-exact-2026-09-12/README.md)

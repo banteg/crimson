@@ -110,17 +110,23 @@ static __inline float player_render_distance(
     return (float)sqrt(dy * dy + dx * dx);
 }
 
+struct player_render_alpha_t {
+    float value;
+    player_render_alpha_t() {}
+    player_render_alpha_t(float v) : value(v) {}
+};
+
 struct player_render_tint_t {
     float r;
     float g;
     float b;
-    float a;
+    player_render_alpha_t a;
 
     player_render_tint_t(
         float red, float green, float blue, float alpha)
         : r(red), g(green), b(blue)
     {
-        memcpy(&a, &alpha, sizeof(a));
+        a = player_render_alpha_t(alpha);
     }
 };
 
@@ -317,18 +323,18 @@ extern "C" void player_render_overlays(void)
         sprite_size);
 
     player_render_tint_t tint(1.0f, 1.0f, 1.0f, transition_alpha);
-    grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a);
+    grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a.value);
     if (config_player_count > 1) {
         if (render_overlay_player_index == 0) {
             tint.r = 0.3f;
             tint.g = 0.3f;
             tint.b = 1.0f;
-            grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a);
+            grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a.value);
         } else {
             tint.r = 1.0f;
             tint.g = 0.55f;
             tint.b = 0.35f;
-            grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a);
+            grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a.value);
         }
     }
     player_render_set_uv(player_overlay_torso_uv8, frame);
