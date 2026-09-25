@@ -2,6 +2,22 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Aim chain as flat rules (2026-09-26)
+
+The aim-scheme chain is written as flat `if (aim_scheme == N)` rules in native
+order (0, 4, 3, 1, then POV for the rest). Arms 0 and 4 end with their own
+`player->aim = scratch_pos;` struct copy and `aim_heading = atan2(...)`.
+
+In native, `cross_jump_pair` merges arm 4's heading tail into arm 0's copy,
+and the shared heading after the chain stays at L207e. crimson-88 traced it (see
+`answer_aim-chain-mover` and `scripts/c2/xjump_trace.py`). The flat rules order
+the exit jumps so that arm 4 loses its copy, as native does. An else-if chain
+would make arm 0 lose it instead.
+
+Score: 70.49% to 70.51%, 2 mismatches, with native's block layout. A variant
+with the extra heading only in arm 0 scores 70.65%, but it keeps the wrong
+layout, so it is not used.
+
 ## Fire-section spellings (2026-09-26)
 
 The alternate-weapon swap reads `weapon_id` through an `int *weapon_id` field

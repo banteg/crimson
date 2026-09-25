@@ -920,15 +920,21 @@ extern "C" void player_update(void)
         && config_aim_schemes[render_overlay_player_index] != 5) {
         int aim_scheme = config_aim_schemes[render_overlay_player_index];
         if (aim_scheme == 0) {
-            scratch_pos.y =
-                player_aim_screen_x[render_overlay_player_index * 2 + 1]
-                - camera_offset_y;
-            scratch_pos.x =
-                player_aim_screen_x[render_overlay_player_index * 2]
-                - camera_offset_x;
-            player->aim.x = scratch_pos.x;
-            player->aim.y = scratch_pos.y;
-        } else if (aim_scheme == 4) {
+            player_update_vec2_t *mouse_screen =
+                (player_update_vec2_t *)&player_aim_screen_x[
+                    render_overlay_player_index * 2];
+            player_update_vec2_set(
+                &scratch_pos,
+                mouse_screen->x - camera_offset_x,
+                mouse_screen->y - camera_offset_y);
+            player->aim = scratch_pos;
+            player->aim_heading =
+                (float)atan2(
+                    player_position->y - player->aim.y,
+                    player_position->x - player->aim.x)
+                - 1.5707964f;
+        }
+        if (aim_scheme == 4) {
             movement_input.y = grim_interface_ptr->grim_get_config_float(
                 player->input.axis_aim_y);
             movement_input.x = grim_interface_ptr->grim_get_config_float(
@@ -942,12 +948,18 @@ extern "C" void player_update(void)
             D3DXVec2Normalize(&movement_input, &movement_input);
             scalar = scalar * cv_padAimDistMul->value + 42.0f;
             move_delta.x = scalar * movement_input.x;
-            scratch_pos.y =
-                scalar * movement_input.y + player_position->y;
-            scratch_pos.x = move_delta.x + player_position->x;
-            player->aim.x = scratch_pos.x;
-            player->aim.y = scratch_pos.y;
-        } else if (aim_scheme == 3) {
+            player_update_vec2_set(
+                &scratch_pos,
+                move_delta.x + player_position->x,
+                scalar * movement_input.y + player_position->y);
+            player->aim = scratch_pos;
+            player->aim_heading =
+                (float)atan2(
+                    player_position->y - player->aim.y,
+                    player_position->x - player->aim.x)
+                - 1.5707964f;
+        }
+        if (aim_scheme == 3) {
             movement_input.y =
                 player_aim_screen_x[render_overlay_player_index * 2 + 1]
                 - 200.0f;
@@ -981,7 +993,8 @@ extern "C" void player_update(void)
                 player_aim_screen_x[render_overlay_player_index * 2 + 1] =
                     scratch_pos.y;
             }
-        } else if (aim_scheme == 1) {
+        }
+        if (aim_scheme == 1) {
             int move_mode =
                 config_movement_schemes[render_overlay_player_index];
             if (move_mode == 1 || move_mode == 2) {
@@ -1003,7 +1016,8 @@ extern "C" void player_update(void)
                 player->aim.x = scratch_pos.x;
                 player->aim.y = scratch_pos.y;
             }
-        } else {
+        }
+        if (aim_scheme != 0 && aim_scheme != 4 && aim_scheme != 3 && aim_scheme != 1) {
             if (input_aim_pov_left_active()) {
                 player->aim_heading =
                     player->aim_heading - frame_dt * 4.0f;
