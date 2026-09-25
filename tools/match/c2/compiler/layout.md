@@ -66,14 +66,14 @@ After a change the sweep resumes at `jump_opt_restart_point` 0x1073c2e4, the nea
   - If J2's matched run is bounded by a jmp or ret, the roles are swapped: the side that is fully covered gets deleted.
   - **Profitability:**
     - /Os merges always (0x1071e163).
-    - /Ot merges only if the encoded bytes of the matched code, plus max(jmp+0x12 counters), exceed **20 bytes** (0x1071e1c2/0x1071e1ef). Otherwise it truncates the match at the last jmp or switch boundary seen inside the match, if there was one.
+    - /Ot merges only if the encoded bytes of the matched code, plus max(jmp+0x12 counters), exceed **20 bytes** (0x1071e1c2/0x1071e1ef). The running sum stops at the first point ≥ 20 and must be strictly greater, so a tail of exactly 20 bytes never merges; J2's counter becomes max(20, total + J2's counter). An identical whole block always merges. Otherwise it truncates the match at the last jmp or switch boundary seen inside the match, if there was one ([aggregate-temporaries.md](aggregate-temporaries.md)).
 - **`sink_common_tail_pair` 0x1074d84f** (driven by 0x1073d2c5, only when L's previous real tuple is ret or jmp, so nothing falls into L). This is the **tail sinking** mechanism.
   - For two jumps J1 and J2 to L with a common tail, J2's copy of the tail is **moved to just before L** with `tuple_move_range`, so it falls through into L.
   - J1's copy is deleted.
   - Both jumps are retargeted to the label at the head of the moved tail.
   - Pairs are tried in the order i<j over the label reference list, and the first success wins. There is **no size threshold**.
   - Matching continues across calls and conditional branches. These only set a flag that triggers label fix-ups in 0x1071deda.
-- **`cross_jump_into_fallthrough` 0x1073d701:** takes `...X; jmp L` where L's fall-in path also ends in `...X`. The copy before the jmp is deleted and the jmp is retargeted above X at L. Conditional branches inside the match are allowed only under /Os (0x1073d746).
+- **`cross_jump_into_fallthrough` 0x1073d701** (no size threshold): takes `...X; jmp L` where L's fall-in path also ends in `...X`. The copy before the jmp is deleted and the jmp is retargeted above X at L. Conditional branches inside the match are allowed only under /Os (0x1073d746).
 - **`hoist_common_successor_heads` 0x1073cf09:** applies to `jcc L` where L has one reference and no fall-in (`label_single_ref_no_fallthrough` 0x1073cfca). The identical leading instructions of the fall-through path and of L are kept once: the jcc is moved below them (0x10702bf8) and L's copy is deleted. Instructions that touch the branch's operand stop the match (0x10733683).
 
 ## 2. Block mover 0x1073663c (/Og, after jump_optimize #2)

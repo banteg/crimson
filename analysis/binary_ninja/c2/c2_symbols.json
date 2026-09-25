@@ -937,11 +937,11 @@
   },
   "0x10709b5a": {
    "name": "find_available_copy_source",
-   "comment": "copy/const propagation: available x=y (dst +0x3c list) lets x be replaced by y; not for doubles-as-constants, aggregates, volatile"
+   "comment": "Copy propagation. A use of x becomes y when a copy x = y is available (copy lists at +0x3c, reached through the part's parent chain). It works for field copies (0x15b on aggregate parts) and for aggregate block copies (0x16b) feeding field reads, and it follows chains (a copy of a copy ends at the original). Aggregate reads cannot be rewritten into three field sources, so field copies whose destination is later block-copied survive. Trace-verified with vector operator temporaries in initialize_worm_path_template_pair."
   },
   "0x1070a0d8": {
    "name": "avail_transfer_tuple",
-   "comment": "gen/kill of available expressions: writes kill sym +0x44 sets (+overlapping fields), memory writes kill alias-class sets, calls kill temp-sourced exprs or all (full mode)"
+   "comment": "gen/kill of available expressions. A write to a symbol clears its +0x44 kill set and those of overlapping parts of the same parent, so a write to one field of a block-copy destination kills that block copy for all lanes. Memory-resident parts (flags5 & 2) also clear g_alias_class_kill_sets2[class]; memory writes clear alias-class sets; calls clear temp-sourced expressions (phase 1) or everything (full mode). The block-copy kill is trace-verified: `v = a + b; v += c;` rewrites only the x-lane read."
   },
   "0x1070a45a": {
    "name": "block_first_assignment",
@@ -1560,7 +1560,7 @@
   },
   "0x1071afd0": {
    "name": "alias_collect_field_classes",
-   "comment": "Field alias collector: walks the IL list, marks address-escaping symbols (opcodes 0x16a/0x16b/0x1aa set storage flag byte +5 bit 2), and (only when /Oa is off, arg4 == 0) for kind-6 operands whose class >= arg3 buckets (offset,size) ranges from memory_operand_field_range per base class while fewer than 0x400 - g_alias_class_count fields exist. New field ids start at g_alias_class_count; overlapping ranges of one parent get each other's bit in g_alias_secondary_records (bit index saturates at 31). A second pass rewrites each operand's +0x1c to its field id. Verified with scripts/c2/alias_trace.py (creature_update_all: 8-10 fields, parent a265 bits 0/1/2 for target (0x50,8), position (0x14,8), radius (0x88,4))."
+   "comment": "Field alias collector (/Oa off: arg4 == 0). First walk: for each real tuple in IL order, the dst list (+0x1c) then the src list (+0x18); each kind-6 operand with class >= arg3 (the symbol-class count, 0x1079d6a0) and (op+0x10 & 0x80) == 0 asks memory_operand_field_range for (start, size). Per class, new ranges are PREPENDED to a list; the lookup walk counts entries and refuses a new range once 96 exist (cmp ecx,0x60 at 0x1071b20e), so a class has at most 96 records and later new ranges keep the bare class. Tuple-level total cap: records_created < 0x400 - g_alias_class_count (unsigned, 0x1071b0ee), inert when the class count exceeds 0x400. Records survive only for classes that had a ranged DESTINATION access (bitset_set on the dst pass only, 0x1071b24b); other classes are canonicalised to the first class with an equal symbol set. Ids: g_alias_class_count upwards, per class head first (newest record = lowest id), bit = min(list position, 31). Second walk rewrites operand +0x1c to the record id. Verified with scripts/c2/field_records.py: Snail initialize_game_assets_and_world class 0x2d3 (_this) has 96 new, 18 reuse, 187 capped ranges; creature_update_all _alternate_pos (src only) is canonicalised to a3 with no fields."
   },
   "0x1071b95b": {
    "name": "function_reset_state",
@@ -1668,7 +1668,7 @@
   },
   "0x1071dfc6": {
    "name": "cross_jump_pair",
-   "comment": "Backward-matches code before two jmps to the same label; deletes one copy and retargets its jmp\ninto the other copy. /Os: always; /Ot: only if saved >20 bytes or match reaches a jmp/ret."
+   "comment": "Backward-matches the code before two jmps (J1=ecx, J2=edx) to the same label with tuples_equal. If the first unmatched tuple on either side is an unconditional jmp or ret (whole block covered), it merges at any size. Otherwise, under /Ot, it sums tuple_encoded_length of the matched real tuples from the first matched tuple forward and stops as soon as the sum reaches 20. It merges only if sum + max(J1.w12, J2.w12) > 20 (strict), so a tail whose running sum lands exactly on 20 is never merged with zero counters. After a partial merge it sets J2.w12 = max(20, total + J2.w12). Trace-verified on set_immediate_blend_mode: a 20-byte case-6 tail is refused, and a 21-byte control merges."
   },
   "0x1071e2c5": {
    "name": "simplify_conversion",
@@ -1788,7 +1788,7 @@
   },
   "0x10723155": {
    "name": "legalize_operand_forms",
-   "comment": "Late operand fixups; e.g. IL 0x176 mod -> div/idiv with result taken from EDX (table 0x107ac178)."
+   "comment": "Late operand fixups. IL 0x15a PUSHARG with esp dst: argument retyped to dword; a kind-1/2 symbol source is replaced by symbol_get_part(sym, dword, 4), so a 1-byte local (bool) gets a 4-byte container symbol that takes its name and the local becomes part +0 (trace-verified in lower_pending_arg_copies). IL 0x176 mod -> div/idiv with result from EDX (table 0x107ac178); shift counts -> cl."
   },
   "0x107235ba": {
    "name": "find_dst_reg_operand",
@@ -1918,7 +1918,7 @@
   },
   "0x10725751": {
    "name": "memory_operand_saving",
-   "comment": "/Ot: 2 for non-constants; constants 0/1. /Os: bytes of memory-operand encoding (4 absolute, 1+ebp_alloc stack)."
+   "comment": "/Ot: non-constant 2. Constant: other operand = dst if g_x86_op_flags bit 0x800 (pure-destination op, e.g. mov), else src[0] (push: the constant itself); cmp X,0 -> 0; other kind 2 -> 1; kind 6 with direct symbol or nonzero disp -> 1; else 0 (and a physical-register partner gets +0x11|=0x80). /Os: bytes of memory-operand encoding (4 absolute, 1+ebp_alloc stack)."
   },
   "0x107257e9": {
    "name": "add_register_preference",
@@ -2036,15 +2036,15 @@
   },
   "0x1072795a": {
    "name": "promote_immediates_to_candidates",
-   "comment": "Walks tuples; eligible immediates/address constants become constant-symbol candidates (0x10727f41); marks partially-accessed symbols (+5|=0x80). Returns count+1."
+   "comment": "Walks real tuples in IL order. First scans dsts: a dst narrower than 4 bytes (kind 1 with placeholder home, or kind 2) that is a part of a larger symbol and not class 3 marks the root partially written (root+5 |= 0x80). Then each kind-7 source allowed by 0x10727e73, and each symbol/code address outside call/branch tuples, is replaced by a constant-symbol operand (0x10727f41) that keeps the immediate's type (a byte store makes the value's range byte-only). lea is skipped. Returns count+1."
   },
   "0x10727bd3": {
    "name": "assign_candidate_indices",
-   "comment": "Gives each promotable symbol (temps/locals/params, size<4 or non-overlapping) a 0x18-byte candidate info at sym+0x30 with a running index."
+   "comment": "Gives each promotable symbol a 0x18-byte candidate info at sym+0x30 with a running index. A part narrower than 4 bytes normally gets no index: +0x34 points at the smallest containing part (usually the root) and its references are tracked as that symbol. If the root is marked partially written (+5&0x80, from 0x1072795a) each part gets its own index; the mark is cleared afterwards."
   },
   "0x10727e73": {
    "name": "tuple_allows_constant_candidate",
-   "comment": "Predicate: may this tuple's immediate be replaced by a register candidate (excludes imul3/imul2/shld/shrd, ebp/esp dst, some zero forms)."
+   "comment": "Refuses: mov R,0 / cmp R,0 only when R is a kind-1 operand with a physical-register home (home class != 2; the candidate placeholder 0x107ae040 has class 2, so mov candidate,0 is allowed); add/sub with esp/ebp dst; enter, imul (6, 0xa3, 0xc1), ret, in, out, rcl..shr (0x25..0x2b), shld/shrd, 0x11a, 0x166, 0x178. Everything else (push, xchg, and/or/xor/test, stores) is allowed. Table 0x10728190/0x107281a0."
   },
   "0x10727f41": {
    "name": "make_constant_candidate_operand",
@@ -2286,7 +2286,7 @@
   },
   "0x1072e7cb": {
    "name": "insert_upward_exposed_reloads",
-   "comment": "Per block forward: first use of a candidate not live-in gets a 0x163 reload inserted before it; records def tuple/def count in candidate info."
+   "comment": "Per block forward, avail = live-in (+0x40), pending persists across blocks: a use of an unavailable candidate inserts a 0x163 reload (0x107249b8); a def or reload sets pending; a use while available clears it; a def/reload while pending, and every candidate still pending and not live-out at block end (pending &= ~live-out +0x44), goes to demote_unused_candidate_def 0x107318e5. Records the last def/reload at cand info+0x10 and the def count at +8."
   },
   "0x1072ed0d": {
    "name": "compute_reaching_def_webs",
@@ -2345,6 +2345,11 @@
   "0x1073168d": {
    "name": "merge_defs_into_web",
    "comment": "Assigns/merges def numbers into a symbol's web list (candinfo+0xc) during 0x1072ed0d."
+  },
+  "0x107318e5": {
+   "name": "demote_unused_candidate_def",
+   "prototype": "void __fastcall demote_unused_candidate_def(c2_function* fn, c2_symbol* sym, c2_tuple* where)",
+   "comment": "Undoes the pending def/reload recorded at candidate info+0x10 when it was never used as a register: a 0x163 reload is freed (uses read memory), a constant load is reverted to immediates, a dead single-def temp is deleted, a local's def gets operand_make_sym (becomes a memory store). Called from insert_upward_exposed_reloads on a second def/reload while pending (0x1072e8ef, 0x1072ea89) and at block end for every candidate still pending and not live-out (0x1072eb81, where=0). Trace-verified: all byte stores of a bool passed to a bool param are demoted here (constant-candidates.md)."
   },
   "0x10731a50": {
    "name": "has_intervening_base_definition",
@@ -2877,7 +2882,7 @@
   },
   "0x1073d211": {
    "name": "cross_jump_label_refs",
-   "comment": "For label L: pairwise cross-jumping over all unconditional jumps to L (ref-list order)\nusing cross_jump_pair; per-jump byte counters in jmp+0x12."
+   "comment": "For label L: clears the word +0x12 byte counter of every eligible jmp in L's reference list, then takes each reference in list order (newest jump first) as an anchor and tries cross_jump_pair(later_ref, anchor) against every later reference. Each anchor is retired after one pass. Trace-verified (il_stage_trace --preset jumpopt)."
   },
   "0x1073d2c5": {
    "name": "sink_common_tails_of_label",
@@ -2902,7 +2907,7 @@
   },
   "0x1073d701": {
    "name": "cross_jump_into_fallthrough",
-   "comment": "jmp L: common code before the jmp and before L (fall-in path) is deleted on the jmp side and the\njmp retargeted to a new label above the copy at L. Cond branches only matched under /Os."
+   "comment": "jmp L: common code before the jmp and before L (the fall-in path) is deleted on the jmp side, and the jmp is retargeted to a new label above the copy at L. There is no size threshold: one matching tuple is enough. Block mover loop 2 later copies tails of 20 bytes or less back. Conditional branches are matched only under /Os. Trace-verified on set_immediate_blend_mode."
   },
   "0x1073d7fe": {
    "name": "hoist_join_instruction",
@@ -3988,11 +3993,11 @@
   },
   "0x1075d2d5": {
    "name": "alias_class_for_memory_base",
-   "comment": "compute_alias_points_to helper for kind-6 operands when /Oa is off (arg3 == 0 path; /Oa uses 0x1074e598). Walks the base temp to its named register-candidate pointer roots (0x1071ae81); with exactly one root returns alias_class_for_symbol_set(root, points-to set), which is cached per root pointer, so every access derived from the same named pointer shares one class. Unknown roots allocate fresh ids. Verified: in creature_update_all every creatures[i].f operand has class 180 and *position has 207, both with symbol set {creature_pool}."
+   "comment": "compute_alias_points_to helper for kind-6 operands when /Oa is off (arg3 == 0 path; /Oa uses 0x1074e598). Walks the base temp to its named register-candidate pointer roots (0x1071ae81); with exactly one root returns alias_class_for_symbol_set(root, points-to set), cached per root pointer, so every access derived from the same named pointer shares one class. With an unknown source (-1, e.g. a variable array index even if later constant-propagated) and a non-empty set it allocates a FRESH class per operand with no cache and no 0x400 check (0x1075d350..0x1075d3c6). Verified: each `path_pairs[k].x` access with `int k = 24` shifts all later pointer classes by one. Verified: in creature_update_all every creatures[i].f operand has class 180 and *position has 207, both with symbol set {creature_pool}."
   },
   "0x1075d456": {
    "name": "alias_class_for_symbol_set",
-   "comment": "Allocates or looks up an alias class id for a set of symbols: iterates the bitset (0x1070260e), returns 2 when empty, reuses a cached id from a list at *(ctx+0x30)+8 when an equal set exists, otherwis"
+   "comment": "Class for one root pointer symbol and its points-to set: looks up the root's cache list (sym+0x30 -> +8, nodes from alias_cache_node_new) by equal set and key; on a miss allocates g_alias_class_count++, but returns class 1 (conflicts with everything) when the count is already >= 0x400 (0x1075d4dd -> 0x1078a7ee); returns 2 for an empty set. Verified: Snail initialize_game_assets_and_world reaches 0x417 classes; _texture_ref/_fringe_bod/_border lookups return 1, and one extra earlier class makes _golb_shot's second class 1, flipping the function's register allocation (99.56% -> 80.67%)."
   },
   "0x1075d624": {
    "name": "alias_resolve_single_symbol_set",
@@ -5217,6 +5222,10 @@
    "name": "g_aliased_syms",
    "comment": "address-taken/aliased variables (medium-low); excluded from forward propagation"
   },
+  "0x1079d6a0": {
+   "name": "g_alias_symbol_class_count",
+   "comment": "g_alias_class_count after symbol classes are assigned (0x10718f3c); alias_collect_field_classes only collects fields for classes >= this value."
+  },
   "0x1079d6a8": {
    "name": "g_alias_class_skip_index",
    "comment": "Class index the field collector skips to arg3 at (likely first class of the current function)."
@@ -5547,7 +5556,7 @@
   "0x107a0494": {
    "name": "g_x86_op_flags",
    "type": "uint32_t[0x145]",
-   "comment": "per machine op flags (0xc0000000 side effects, 0x40, 1 float)"
+   "comment": "per machine op flags (0xc0000000 side effects, 0x40, 1 float; 0x800 = pure-destination op whose dst is not read: mov, movzx/movsx, lea, pop, setcc, cmov, x87 stores - memory_operand_saving then inspects the dst; 0x400 = /G5 memory-operand split candidate)"
   },
   "0x107a09a8": {
    "name": "g_cond_swapped_operands",
@@ -6553,17 +6562,23 @@
   "0x1071888b": "recursive inliner call on the callee body: depth+1, budget/number of call sites",
   "0x10718df5": "inline recursion guard: a callee whose fe_function+0x73 bit 0x10 is set (being expanded) is only collected when the inline_recursion pragma state is on. This keeps a nested `vector constructor iterator` (member array inside an array element) out of line.",
   "0x107191b5": "More than 0x2710 real tuples: /Oa disabled and coarse alias fallback for this function",
-  "0x1071b0ee": "Field budget: fields are collected only while count < 0x400 - g_alias_class_count.",
+  "0x1071b0ee": "Tuple-level budget: records_created < 0x400 - g_alias_class_count, unsigned; inert when the class count exceeds 0x400 (0x417 in Snail initialize_game_assets_and_world).",
+  "0x1071b20e": "cmp ecx,0x60: per-class field-record cap. The list walk counts entries; a new (start,size) is refused once 96 records exist, and the access keeps its bare class (verified: 96 records in Snail initialize_game_assets_and_world class 0x2d3, then 187 capped).",
+  "0x1071b24b": "Only the destination pass (j == 0) marks the class as written; classes without a ranged destination access lose their records at 0x1071b312.",
   "0x1071e163": "cross_jump_pair: /Os (Ot==0) merges unconditionally",
   "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",
   "0x1071e1ef": "cross_jump_pair /Ot: merge if bytes + max(jmp counters) > 20, else fall back to last jmp/switch boundary",
+  "0x107232b2": "PUSHARG: 1/2-byte symbol argument -> symbol_get_part(sym, dword, 4) = 4-byte container; the local becomes part +0 (why a bool pushed to a bool param is read as a dword)",
   "0x107237c8": "allowed set starts as class set",
   "0x10724689": "Allocator helper (from build_split_pieces and insert_upward_exposed_reloads). A predecessor block with flags 0x1000000 (ends in IL 0x187 CATCH_RETURN) forces split_edge_with_new_block (0x10724712). Static reading.",
   "0x10724c1c": "block weight w = 1<<loop_depth under /Ot, else 1",
   "0x10725417": "priority += P*w*S for ranges referenced in the block (P = #ranges referenced in block)",
   "0x1072545b": "live-through without reference: priority -= P*w",
+  "0x10725789": "g_x86_op_flags bit 0x800: other operand is the dst; otherwise src[0]",
   "0x107277f4": "exit tail must have <= 2 real tuples (the 2 is (/Ot?1:0)+1, always 2 here)",
   "0x1072785c": "duplicate only if predecessors*tail_len <= 8",
+  "0x107279b0": "root+5 |= 0x80: a non-temp part narrower than its parent is written (partial write). The part then gets its own candidate index (0x10727bd3) and, if never read at its own width, its defs are demoted to memory stores at block end.",
+  "0x10727d0f": "root marked partially written (+5&0x80) -> the part gets its own candidate index; otherwise +0x34 = smallest containing part",
   "0x107280d0": "new constant candidate symbol (class 0xd) per distinct value",
   "0x107284d8": "Per-operand decision: one symbol can have a promoted view (a uint copy view of a float, a 4-byte aggregate) and an unpromoted float or 8-byte view of the same bytes. Operands created later (lowering) are not marked here; build_live_ranges re-examines them (traced with scripts/c2/store_trace.py).",
   "0x1072867b": "sizeopt fixpoint limit 50 iterations (ICE sizeopt.c:69)",
@@ -6591,6 +6606,7 @@
   "0x1072e0f7": "0x15a argument copy becomes push (opcode 0xd)",
   "0x1072e22b": "short args promoted to dword push",
   "0x1072e7cb": "Traced (boundary): after this call a promoted uint view is back in memory form when an overlapping float view of the same object is stored in memory (4-byte aggregate copy of a float member; player_render_overlays alpha).",
+  "0x1072eb81": "block end: each candidate still pending (def/reload never used) and not live-out -> demote_unused_candidate_def(fn, sym, 0)",
   "0x1072f667": "tie key = ordinal of defining tuple (blocks forward, tuples backward within block; last write wins)",
   "0x1072f6cc": "Store-back: a promoted definition gets a 0x164 'home <- lr' after it when its storage is read later as memory (a kind-2 read of an overlapping part, or the alias class of an indirect read or call), when the operand is volatile (+0x11 & 8), or when the parent has flags6 & 1. Traced: (float)s on a promoted int inserts one after each definition; global colouring then demotes s.",
   "0x1072f957": "/Oy and no EH/naked flags: frame pointer omitted -> ebp allocatable (fn+0x34 |= 0x10)",
@@ -6746,6 +6762,7 @@
   "0x1075b25f": "__int64 shl/shr by constant >=32 inlined only under /Og; smaller constants and variable counts call __allshl/__allshr/__aullshr",
   "0x1075b39e": "64-bit ==/!= against constant 0 or -1: or/and the halves then a single compare",
   "0x1075b499": "64-bit relational compare: cmp high + signed jcc (two branches), then cmp low + unsigned jcc",
+  "0x1075d4dd": "Class budget: once g_alias_class_count >= 0x400 a new root/points-to class is class 1 (universal). Verified by trace on Snail initialize_game_assets_and_world.",
   "0x1075f8f4": "new state's toState = enclosing state or -1",
   "0x10760547": "__$EHRec gets saved-esp slot when fn flag 0x10000 (try/catch)",
   "0x107606f0": "EH state store as byte when old state known and high 24 bits equal",

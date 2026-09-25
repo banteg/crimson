@@ -293,7 +293,7 @@ def lineage(events: list[dict], ordinal: int, jump_id: int, line: int) -> dict:
                 seen = True
             elif e["phase"] == born:
                 break
-            elif seen and e["phase"] in CREATORS:
+            elif seen and e["phase"] in CREATORS and e["new"] is not None:
                 new = e["nodes"][e["new"]]
                 if new["id"] == jump_id and new["line"] == line:
                     creator = CREATORS[e["phase"]]

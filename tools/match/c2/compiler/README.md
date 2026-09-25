@@ -23,6 +23,9 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [x87-spills.md](x87-spills.md) | The x87 register allocator: candidate scores, the nesting test, splits, and when floats live in memory or dead parameter homes |
 | [post-promotion-stores.md](post-promotion-stores.md) | Every path that creates a stack store after register promotion, and why dead home stores survive |
 | [small-aggregate-copies.md](small-aggregate-copies.md) | How 8-byte copies lower and why alias classes, not addresses, decide whether their loads group |
+| [constant-candidates.md](constant-candidates.md) | Which immediate uses save or cost in constant register candidates, and how byte-argument locals get their stores demoted to memory |
+| [alias-field-records.md](alias-field-records.md) | Alias field records: the 96-per-class cap, the 0x400 class limit, and what inlined helpers count against `this` |
+| [aggregate-temporaries.md](aggregate-temporaries.md) | By-value struct results and copy propagation, plus switch-tail cross-jumping and short-circuit block order |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
 | [strength-reduction.md](strength-reduction.md) | Where strength reduction and exit-test replacement put IV setups, which field a loop pointer anchors to, and how to write plain indexed loops that reproduce native cursors |

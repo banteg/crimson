@@ -125,7 +125,7 @@ Transformation:
 - There is **no size limit** on the duplicated header.
 
 ### Other early passes
-- `0x10718eaf compute_alias_classes`: computes alias classes for symbols and fields and a points-to solution per block. The /Oa-only refinements are 0x1074df1d and 0x1074e18f. `0x107190b8` counts real tuples: **> 10000 (0x2710) disables /Oa for the function** and switches to the coarse fallback 0x1078b887. The field-class budget (0x1071afd0, 0x400 ids) is described in crimson's `tools/match/evidence/spawn-exact-2026-09-13`.
+- `0x10718eaf compute_alias_classes`: computes alias classes for symbols and fields and a points-to solution per block. The /Oa-only refinements are 0x1074df1d and 0x1074e18f. `0x107190b8` counts real tuples: **> 10000 (0x2710) disables /Oa for the function** and switches to the coarse fallback 0x1078b887. The field-class budget (0x1071afd0, 0x400 ids) is described in crimson's `tools/match/evidence/spawn-exact-2026-09-13`. Each class also keeps at most 96 field records (0x1071b20e), records survive only for a class with a ranged store, and once 0x400 classes exist `alias_class_for_symbol_set` 0x1075d456 hands out class 1, which conflicts with everything ([alias-field-records.md](alias-field-records.md)).
 - `0x10712b1a eliminate_tail_recursion` (only with /Og):
   - Walks back from the exit block through label-only/jmp-only blocks (`0x10712ca3`).
   - A block qualifies when it ends in a call to the current function. The call may be followed by `tmp = call; ret tmp`, where the returned temp (class 3) is the call's result, and by a trailing jmp.
