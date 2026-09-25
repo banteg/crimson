@@ -86,10 +86,14 @@ Notable behavior that the plain forms make visible:
   Plain, reference-parameter, POD and temporary-copy forms all reach 96.73%.
   The store matches the post-promotion copy-lowering mechanism (a `0x190`
   intrinsic).
-- **`typo_word_pick_highscore_name`.** The plain nested loops reach 98.37%;
-  only the two entry stores (`accepted_count` and the cache IV) are swapped.
-- **`ui_element_render`.** A plain vertex loop reaches 99.62%; one
-  commutative `fadd` swaps operands.
+- **`typo_word_pick_highscore_name`.** Settled: plain nested loops that index
+  `highscore_table[record_index]` directly are byte-exact. A `record` local
+  reaches 98.37% because the derived IVs are created in reverse order of last
+  use ([strength-reduction.md](c2/compiler/strength-reduction.md)).
+- **`ui_element_render`.** Settled: all three alpha loops are plain indexed
+  loops and byte-exact. Converting only one or two of them swaps one `fadd`,
+  because commutative x87 operands sort by symbol id mod 8
+  ([x87-scheduling.md](c2/compiler/x87-scheduling.md)).
 - **`effect_spawn_splitter_hit_burst`.** A `for` inside the `count > 0`
   guard re-tests the count after `ftol`. The guarded countdown stays.
 - **`controls_menu_update`.** The axis-peak scan walks seven separately

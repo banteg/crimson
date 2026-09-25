@@ -7,6 +7,20 @@ emitted references resolved and equal, and `body_byte_exact=true` for the
 1,801-byte native body. The recovery sections below retain historical
 experiments and baselines.
 
+## Plain alpha loops (2026-09-25)
+
+The three vertex-alpha walks are now plain indexed loops over
+`overlay_vertices[i]` and `enabled_overlay_vertices[i]`. The hand-written
+cursors, countdowns and the back-reference through
+`ui_menu_item_subtemplate_block_t` are gone, and the result is still byte-exact
+(521/521, `65/0/0`). Converting only one or two loops swaps one commutative
+`fadd`. VC6 orders two memory `fadd` operands by the operands' symbol ids
+modulo 8, and every named loop local shifts the ids of the later inline copies
+by one slot. Converting all three restores native's ordering. See
+[x87-scheduling.md](../../c2/compiler/x87-scheduling.md). The section on SDK
+expression temporaries below says the expression form itself is required.
+That is too strong: the x87 order depends only on the slot count modulo 8.
+
 Live Binary Ninja and IDA evidence recovers the game-owned UI element render
 state machine: optional point-filter setup, keyboard-focus activation, panel
 texture rendering, offset animation, counter/overlay texture rendering, and

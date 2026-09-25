@@ -88,22 +88,15 @@ extern "C" void ui_element_render(ui_element_t *element)
             element->hover_amount = ui_focus_timer_ms;
         }
         if (!element->on_activate) {
-            unsigned char *color_alpha =
-                &element->overlay_vertices[0].color_a;
             for (int vertex = 0; vertex < 4; ++vertex) {
-                *color_alpha = 200;
-                color_alpha += sizeof(ui_element_vertex_t);
+                element->overlay_vertices[vertex].color_a = 200;
             }
         } else {
-            ui_element_vertex_t *vertex_cursor =
-                &element->overlay_vertices[0];
-            int remaining_vertices = 4;
-            do {
-                (vertex_cursor++)->color_a =
+            for (int hover_vertex = 0; hover_vertex < 4; ++hover_vertex) {
+                element->overlay_vertices[hover_vertex].color_a =
                     (unsigned char)(
                         element->hover_amount * 155 / 1000 + 100);
-                --remaining_vertices;
-            } while (remaining_vertices);
+            }
         }
     }
 
@@ -251,19 +244,12 @@ extern "C" void ui_element_render(ui_element_t *element)
 
     if (element->time_since_ready >= 0
         && element->time_since_ready <= 0xff) {
-        unsigned char *enabled_alpha =
-            &element->enabled_overlay_vertices[0].color_a;
-        int remaining_vertices = 4;
-        do {
-            *(enabled_alpha
-              - sizeof(ui_menu_item_subtemplate_block_t)) =
-                (unsigned char)(
-                    255 - element->time_since_ready / 2);
-            --remaining_vertices;
-            *enabled_alpha = (unsigned char)(
-                255 - element->time_since_ready / 2);
-            enabled_alpha += sizeof(ui_element_vertex_t);
-        } while (remaining_vertices);
+        for (int enabled_vertex = 0; enabled_vertex < 4; ++enabled_vertex) {
+            element->overlay_vertices[enabled_vertex].color_a =
+                (unsigned char)(255 - element->time_since_ready / 2);
+            element->enabled_overlay_vertices[enabled_vertex].color_a =
+                (unsigned char)(255 - element->time_since_ready / 2);
+        }
     }
 
     ui_render_matrix_t rotation =

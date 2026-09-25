@@ -48859,7 +48859,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 123,
-        "candidate_object_sha256": "faec33a0693ca531e6123f6c65ec43ba53595082e5f05f1646d2e98bc560a668",
+        "candidate_object_sha256": "c5e1b55f6f760d3c015c3b176f5be17f46a1875042fb2fad7dab344dd906a883",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -49403,7 +49403,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 521,
-        "candidate_object_sha256": "f4571c34bbc1cb744062624c457b3ea5de8d7ecb95340ef0b343d48675f58033",
+        "candidate_object_sha256": "ffbd0442442137b1b3b7c8090e2cf72dd689a40b234a3af9ff8f4c0366fb64ce",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -110923,7 +110923,7 @@
   "identities": {
     "inventory": "d3f5b7c0b16f8b76988f540dabba711baa52f189b80aa03fa96c66428b575e02",
     "inventory_policy": "curated-functions-v1; executable-gaps-unresolved-v1",
-    "scoring": "8de0cdee31946f2da6d28126cbe691deaf1aa53553aeb551f1eb93b0dd160a84",
+    "scoring": "c42aeaed6be62872ce710fb3f7cd60b0548ae9b562f37c53379f28326c36e899",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1",
     "target": {
       "game_bins/crimsonland/1.9.93-gog/crimsonland.exe": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
@@ -110961,7 +110961,7 @@
     "src/crimson/match_mutation.py": "571fbc374c0e08f119e43c01b46d9dd1e84f76b97fe62fcd951c8fdb6c5cf61d",
     "src/crimson/match_process.py": "fd03b1caa44ba5d757a02f90f54d5645a4d01444eb04cbd0fbe50b8417c693f6",
     "src/crimson/match_regressions.py": "563702d40c48480ece78ed05f3d71241dee52df8e56ebf0b34c94073083e16da",
-    "src/crimson/match_report.py": "482fb2f741aba6979c1279b77a3a900b66eb7959a5091e5ee5a7afccb7750adc",
+    "src/crimson/match_report.py": "6cb7451b3d79446aa1b1a0dfbdb52a629ccb5e8676160e4158eb1bc10137ab9a",
     "src/crimson/match_report_accounting.py": "bdf9dff18dc1feb4051a8ac4aa347e88b37c69166f0a2dc5cb58d69434b0e74a",
     "src/crimson/match_toolchain.py": "24dbf591caa7c793af07b6e54e7a2a6b58f5d4fc67fc2234ac902086af384e2c",
     "src/crimson/native_link.py": "6b525a4cf757b66603d2b0a9ec0d50c7e1f1270f03190a4a6dae7a062776f5ee",
@@ -114272,7 +114272,7 @@
     "tools/match/scratches/typo_word_pick_fragment/scratch.conf": "a474f0d2f367d86ffa86e9fc2331c9677910ab957f2c8cc021c25f0c39067716",
     "tools/match/scratches/typo_word_pick_fragment/scratch.cpp": "6bec780580fabdc63faa4982f8cd779964ce5a451f4d0b50d4fce16a786819fe",
     "tools/match/scratches/typo_word_pick_highscore_name/scratch.conf": "ac6e0d6402b649473a4c6a7abf576b5a502cd93af02e6d8522a39cf3359ae250",
-    "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp": "065a9df40d27a52b8249f3ac6813f87c12ab49f5cc9052dbeeca1cfa7bb91858",
+    "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp": "ec9f20ab655a6c9276c93c3bc45aba052d9df24f48a9139e72d187b1ac0094d8",
     "tools/match/scratches/ui_button_update/scratch.conf": "059ecf3d98a825cb85aa11b4a0542e6bdd4b786df42ea4f5314cc287efe75f5f",
     "tools/match/scratches/ui_button_update/scratch.cpp": "427f5a12a97cef6b1e56a418f96fc336dc7d3c5edcb623826a219c391065a83b",
     "tools/match/scratches/ui_callback_noop/scratch.conf": "bff5b2ccb6e8d42afdf4bff59573a4e2ae5e7a4e24978aa84f53bb2bdbfd2ec9",
@@ -114300,7 +114300,7 @@
     "tools/match/scratches/ui_element_load/scratch.conf": "c680583be357b69b7b74929fe36ffc76d65b8332ba65762ddaea02b33d80fe0f",
     "tools/match/scratches/ui_element_load/scratch.cpp": "b50c355b7664c18e8a7e53ab93383feb3be1c4a95b3ac3b840f1301ffaf6ba32",
     "tools/match/scratches/ui_element_render/scratch.conf": "0fde3c9f0fa2dcdebce3f9027d1576dd5cf8ee84b81253da7d4b13e7fc4ed0d8",
-    "tools/match/scratches/ui_element_render/scratch.cpp": "449016f70cc728c9d4497d0bd97ac1c9ddc644e2b1c0effecb82861cd3c807a8",
+    "tools/match/scratches/ui_element_render/scratch.cpp": "d916e66fd076b2262c3f5a26382cbd4fc49107734baf9211fc4d3433de019faa",
     "tools/match/scratches/ui_element_set_rect/scratch.conf": "26171ada05e7d36c2d1972405cf5a8ed67dbb99a52fc707eaff48e6335ed5ce0",
     "tools/match/scratches/ui_element_set_rect/scratch.cpp": "ead99e33f50859e1e7bef17f3a568ffcc57ff22291dcd33e554cb2e5f98ac13a",
     "tools/match/scratches/ui_element_update/scratch.conf": "3b961536cf8d4572dd646390794e4e47a1baacf39a7a83a8577f93440f1a1383",

@@ -31,10 +31,13 @@ match=100.00% prefix=123/123 target_insns=123 candidate_insns=123 refs=20/0/0
   Selection returns that base slot without consuming RNG when the count is not
   positive; otherwise one `rand() % count` draw selects a 32-byte slot.
 
-The guarded nonempty-cache loop is represented as a single post-tested search:
-the cursor comparison guarantees at least one entry, and the body exits after
-the accepted-count bound. Capturing the old destination before advancing the
-cursor, incrementing the count, and then copying reproduces VC6's inline
+The scan is written as plain nested `for` loops that index
+`highscore_table[record_index]` at every use. Strength reduction turns them into
+native's cursor walk and its `(int)cursor > (int)&cache` guard. A `record` local for
+the current row reaches 98.37%: the two entry stores come out swapped, because the
+cache IV is created before the table IV
+([strength-reduction.md](../../c2/compiler/strength-reduction.md)). Taking the old
+cache slot with `accepted_count++` inside the `strcpy` reproduces VC6's inline
 `strcpy` scheduling exactly. The thunk name is material reference evidence: a
 direct call to the implementation is instruction-identical but points at
 `0x0043afa0` instead of the native jump thunk at `0x0043b800`.
