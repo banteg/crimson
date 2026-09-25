@@ -2,6 +2,39 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Two-lane vector setter (2026-09-25)
+
+Native has 71 "two lanes held on the stack" x87 sites: `fld a.y; fop b.y;
+fld a.x; fop b.x; fstp v.x; fstp v.y`. crimson-88's x87 note
+(`tools/match/c2/compiler/x87-scheduling.md` §6) traces the shape to an inline
+two-argument setter. C1 evaluates the arguments right to left, and the store
+through `v` blocks forward propagation of the Y argument.
+
+The scratch now uses one `player_update_vec2_set(&v, x, y)` helper for these
+pairs:
+- the 54 muzzle-position pairs `v.x = movement_input.x + player_position->x`;
+- the hand-ordered "y first" pairs;
+- three auto-move pairs and the aim-to-target delta.
+
+The projectile-spawn arms share one function-scope `spawn_pos`: with a
+block-local per arm, C2 proves the X store cannot alias the Y value and
+propagates it.
+
+Two aim-screen pairs (`player_aim_screen_x[...] - camera_offset_*`) also take
+the setter shape natively, but converting them raises reference mismatches from
+2 to 6 (the camera loads reorder), so they stay as scalar assignments.
+
+Score: 64.50% to 67.03% normalized, with references unchanged at 2
+mismatches. Stack-masked structural and x87-only similarity also rise.
+
+Open:
+- The movement arms' `frame_dt * move_d{x,y}` vectors. `const float
+  movement_dt = frame_dt;` plus the setter reproduces native's per-arm
+  sequence at two arms and raises the normalized score to 66.82%, but it lowers
+  the structural and x87 scores.
+- Moving the move call into each branch (native tail-merges per-branch calls)
+  drops the score, so it is not applied.
+
 This is the central per-player simulation routine. Live Binary Ninja evidence,
 the raw Ghidra export, and the existing parity port agree on the recovered
 phases:

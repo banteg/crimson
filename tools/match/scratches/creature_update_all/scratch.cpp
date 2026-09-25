@@ -38,6 +38,13 @@ struct creature_vec2_t {
         return creature_vec2_t(x * scale, y * scale);
     }
 
+    creature_vec2_t &operator-=(const creature_vec2_t &other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
 };
 
 static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
@@ -130,7 +137,7 @@ extern "C" void creature_update_all(void)
 
             if (bonus_freeze_timer <= 0.0f) {
                 health = &creatures[creature_index].health;
-                if (*health <= 0.0f
+                if (creatures[creature_index].health <= 0.0f
                     && creatures[creature_index].lifecycle_stage == 16.0f) {
                     creatures[creature_index].lifecycle_stage -= frame_dt;
                 }
@@ -156,10 +163,10 @@ extern "C" void creature_update_all(void)
                     if (creatures[creature_index].link_index < 0) {
                         creatures[creature_index].link_index += frame_dt_ms;
                         if (creatures[creature_index].link_index >= 0) {
+                            int hold_ms = crt_rand() & 0x1ff;
                             creatures[creature_index].ai_mode =
                                 CREATURE_AI_HOLD_TIMER;
-                            creatures[creature_index].link_index =
-                                (crt_rand() & 0x1ff) + 500;
+                            creatures[creature_index].link_index = hold_ms + 500;
                         }
                     } else {
                         creatures[creature_index].link_index -= frame_dt_ms;
@@ -179,8 +186,8 @@ extern "C" void creature_update_all(void)
                     signed char current_player =
                         creatures[creature_index].target_player;
                     int current_player_index = (int)current_player;
-                    vec2f_t *position =
-                        &creatures[creature_index].position;
+                    creature_t *creature = &creatures[creature_index];
+                    vec2f_t *position = &creatures[creature_index].position;
                     distance = vec2_distance(
                         &player_state_table[current_player_index].position,
                         position);
@@ -194,9 +201,9 @@ extern "C" void creature_update_all(void)
                                     &player_state_table[1 - current_player_index].position;
                                 alternate_distance = vec2_distance(alternate_pos, position);
                                 if (alternate_distance < distance) {
+                                    distance = alternate_distance;
                                     creatures[creature_index].target_player =
                                         1 - current_player;
-                                    distance = alternate_distance;
                                 }
                             }
                         } else {
@@ -223,9 +230,9 @@ extern "C" void creature_update_all(void)
                     }
 
                     lifecycle_stage = &creatures[creature_index].lifecycle_stage;
-                    if (*lifecycle_stage == 16.0f) {
+                    if (creatures[creature_index].lifecycle_stage == 16.0f) {
                         collision_flag = &creatures[creature_index].collision_flag;
-                        if (*collision_flag) {
+                        if (creatures[creature_index].collision_flag) {
                             float collision_timer =
                                 creatures[creature_index].collision_timer - frame_dt;
                             creatures[creature_index].collision_timer = collision_timer;
@@ -248,11 +255,11 @@ extern "C" void creature_update_all(void)
                             }
                         }
 
-                        creatures[creature_index].force_target = 0;
-                        move_scale = 1.0f;
                         float phase_angle =
                             (float)creatures[creature_index].phase_seed * 3.7f;
                         phase_angle = phase_angle * 3.1415927f;
+                        creatures[creature_index].force_target = 0;
+                        move_scale = 1.0f;
 
                         if (creature_index
                             == player_state_table[0].evil_eyes_target_creature) {
@@ -261,14 +268,14 @@ extern "C" void creature_update_all(void)
 
                         int ai_mode = creatures[creature_index].ai_mode;
                         if (ai_mode == CREATURE_AI_ORBIT_PLAYER) {
-                            current_player_index =
-                                creatures[creature_index].target_player;
                             if (distance > 800.0f) {
+                                current_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
                                     player_state_table[current_player_index].position.x;
                                 creatures[creature_index].target_y =
                                     player_state_table[current_player_index].position.y;
                             } else {
+                                current_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
                                     (float)cos(phase_angle) * distance * 0.85f
                                     + player_state_table[current_player_index].position.x;
@@ -286,14 +293,14 @@ extern "C" void creature_update_all(void)
                                 (float)sin(phase_angle) * distance * 0.9f
                                 + player_state_table[current_player_index].position.y;
                         } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_TIGHT) {
-                            current_player_index =
-                                creatures[creature_index].target_player;
                             if (distance > 800.0f) {
+                                current_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
                                     player_state_table[current_player_index].position.x;
                                 creatures[creature_index].target_y =
                                     player_state_table[current_player_index].position.y;
                             } else {
+                                current_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
                                     (float)cos(phase_angle) * distance * 0.55f
                                     + player_state_table[current_player_index].position.x;
@@ -344,14 +351,14 @@ extern "C" void creature_update_all(void)
                         if (ai_mode == CREATURE_AI_LINK_GUARD) {
                             linked_index = creatures[creature_index].link_index;
                             if (creature_pool[linked_index].health > 0.0f) {
-                                current_player_index =
-                                    creatures[creature_index].target_player;
                                 if (distance > 800.0f) {
+                                    current_player_index = creatures[creature_index].target_player;
                                     creatures[creature_index].target_x =
                                         player_state_table[current_player_index].position.x;
                                     creatures[creature_index].target_y =
                                         player_state_table[current_player_index].position.y;
                                 } else {
+                                    current_player_index = creatures[creature_index].target_player;
                                     creatures[creature_index].target_x =
                                         (float)cos(phase_angle) * distance * 0.85f
                                         + player_state_table[current_player_index].position.x;
@@ -378,15 +385,11 @@ extern "C" void creature_update_all(void)
                                     creatures[creature_index].ai_mode =
                                         CREATURE_AI_ORBIT_PLAYER;
                                 } else {
-                                    creature_vec2_t hold_position = *(creature_vec2_t *)position;
-                                    *(creature_vec2_t *)&creatures[creature_index].target_x =
-                                        hold_position;
-                                    creatures[creature_index].orbit_radius.radius -= frame_dt;
+                                    creature->orbit_radius.radius -= frame_dt;
+                                    creature->target_position = creature->position;
                                 }
                             } else {
-                                creature_vec2_t hold_position = *(creature_vec2_t *)position;
-                                *(creature_vec2_t *)&creatures[creature_index].target_x =
-                                    hold_position;
+                                creature->target_position = creature->position;
                             }
                         } else if (ai_mode == CREATURE_AI_ORBIT_LINK) {
                             linked_index = creatures[creature_index].link_index;
@@ -446,15 +449,15 @@ extern "C" void creature_update_all(void)
                             if (position->x < creatures[creature_index].size) {
                                 position->x = creatures[creature_index].size;
                             }
-                            if (position->y < creatures[creature_index].size) {
-                                position->y = creatures[creature_index].size;
+                            if (creatures[creature_index].pos_y < creatures[creature_index].size) {
+                                creatures[creature_index].pos_y = creatures[creature_index].size;
                             }
                             float max_pos = 1024.0f - creatures[creature_index].size;
                             if (position->x > max_pos) {
                                 position->x = max_pos;
                             }
-                            if (position->y > max_pos) {
-                                position->y = max_pos;
+                            if (creatures[creature_index].pos_y > max_pos) {
+                                creatures[creature_index].pos_y = max_pos;
                             }
 
                             if ((flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
@@ -523,7 +526,7 @@ extern "C" void creature_update_all(void)
                         }
 
                         float *size = &creatures[creature_index].size;
-                        float anim_scale = 30.0f / *size;
+                        float anim_scale = 30.0f / creatures[creature_index].size;
                         if ((creatures[creature_index].flags
                                 & CREATURE_FLAG_ANIM_PING_PONG) == 0
                             || (creatures[creature_index].flags
@@ -556,7 +559,7 @@ extern "C" void creature_update_all(void)
 
                         attack_cooldown =
                             &creatures[creature_index].attack_cooldown;
-                        if (*attack_cooldown > 0.0f) {
+                        if (creatures[creature_index].attack_cooldown > 0.0f) {
                             *attack_cooldown -= frame_dt;
                         } else {
                             *attack_cooldown = 0.0f;
@@ -564,12 +567,9 @@ extern "C" void creature_update_all(void)
 
                         signed char *target_player =
                             &creatures[creature_index].target_player;
-                        current_player_index = (int)*target_player;
                         float interaction_distance = creature_vec2_length(
                             *(creature_vec2_t *)position
-                            - *(creature_vec2_t *)&player_state_table[
-                                current_player_index
-                            ].position);
+                            - *(creature_vec2_t *)&player_state_table[*target_player].position);
 
                         if (interaction_distance < 100.0f
                             && perk_count_get(perk_id_radioactive) != 0) {
@@ -651,12 +651,9 @@ extern "C" void creature_update_all(void)
 
                         if (*size > 16.0f) {
                             if (interaction_distance < 30.0f
-                                && player_state_table[
-                                    (int)*target_player
-                                ].health > 0.0f
+                                && player_state_table[*target_player].health > 0.0f
                                 && bonus_energizer_timer <= 0.0f) {
                                 if (*attack_cooldown <= 0.0f) {
-                                    current_player_index = (int)*target_player;
                                     sfx_play_panned(
                                         creature_type_table[
                                             creatures[creature_index].type_id
@@ -670,7 +667,7 @@ extern "C" void creature_update_all(void)
                                             2,
                                             creature_vec2_t());
                                     }
-                                    if (player_state_table[current_player_index].shield_timer
+                                    if (player_state_table[*target_player].shield_timer
                                         <= 0.0f) {
                                         if (perk_count_get(perk_id_toxic_avenger) != 0) {
                                             creatures[creature_index].flags |= 3;
@@ -681,27 +678,22 @@ extern "C" void creature_update_all(void)
                                     }
 
                                     player_take_damage(
-                                        current_player_index,
+                                        *target_player,
                                         creatures[creature_index].contact_damage);
                                     creature_vec2_t contact_delta =
-                                        *(creature_vec2_t *)&player_state_table[
-                                            (int)*target_player
-                                        ].position
+                                        *(creature_vec2_t *)&player_state_table[*target_player].position
                                         - *(creature_vec2_t *)position;
                                     D3DXVec2Normalize(
                                         (vec2f_t *)&contact_delta,
                                         (vec2f_t *)&contact_delta);
                                     creature_vec2_t impact =
-                                        *(creature_vec2_t *)&player_state_table[
-                                            current_player_index
-                                        ].position
+                                        *(creature_vec2_t *)&player_state_table[*target_player].position
                                         + contact_delta * 3.0f;
                                     fx_queue_add_random((vec2f_t *)&impact);
                                     *attack_cooldown += 1.0f;
                                 }
 
-                                current_player_index = (int)*target_player;
-                                if (player_state_table[current_player_index].plaguebearer_active
+                                if (player_state_table[*target_player].plaguebearer_active
                                     && *health < 150.0f
                                     && plaguebearer_infection_count < 50) {
                                     *collision_flag = 1;
@@ -715,39 +707,32 @@ extern "C" void creature_update_all(void)
                             *lifecycle_stage -= frame_dt;
                         }
                     } else if (*lifecycle_stage > 0.0f) {
-                        *lifecycle_stage -= frame_dt * 28.0f;
-                        if (*lifecycle_stage <= 0.0f) {
+                        float corpse_stage = *lifecycle_stage - frame_dt * 28.0f;
+                        *lifecycle_stage = corpse_stage;
+                        if (corpse_stage <= 0.0f) {
                             if (!config_violence_disabled) {
                                 unsigned char corpse_queued;
                                 if ((creatures[creature_index].flags
                                         & CREATURE_FLAG_ANIM_PING_PONG) == 0
                                     || (creatures[creature_index].flags
                                         & CREATURE_FLAG_ANIM_LONG_STRIP) != 0) {
-                                    float corpse_size =
-                                        creatures[creature_index].size;
-                                    float corpse_heading =
-                                        creatures[creature_index].heading;
                                     corpse_queued = fx_queue_add_rotated(
                                         *(creature_vec2_t *)position
                                             - creature_vec2_t(
-                                                corpse_size * 0.5f,
-                                                corpse_size * 0.5f),
+                                                creatures[creature_index].size * 0.5f,
+                                                creatures[creature_index].size * 0.5f),
                                         &creatures[creature_index].color,
-                                        corpse_heading,
-                                        corpse_size,
+                                        creatures[creature_index].heading,
+                                        creatures[creature_index].size,
                                         creatures[creature_index].type_id);
                                 } else {
-                                    float corpse_width =
-                                        creatures[creature_index].size;
-                                    float corpse_heading =
-                                        creatures[creature_index].heading;
                                     corpse_queued = fx_queue_add_rotated(
                                         *(creature_vec2_t *)position
                                             - creature_vec2_t(
-                                                corpse_width * 0.5f,
-                                                corpse_width * 0.5f),
+                                                creatures[creature_index].size * 0.5f,
+                                                creatures[creature_index].size * 0.5f),
                                         &creatures[creature_index].color,
-                                        corpse_heading,
+                                        creatures[creature_index].heading,
                                         creatures[creature_index].size,
                                         7);
                                 }
@@ -795,13 +780,13 @@ extern "C" void creature_update_all(void)
                                 double corpse_heading =
                                     creatures[creature_index].heading - 1.5707964f;
                                 creatures[creature_index].vel_x =
-                                    (float)cos(corpse_heading) * *lifecycle_stage
+                                    (float)cos(corpse_heading) * corpse_stage
                                     * frame_dt * 9.0f;
                                 creatures[creature_index].vel_y =
-                                    (float)sin(corpse_heading) * *lifecycle_stage
+                                    (float)sin(corpse_heading) * corpse_stage
                                     * frame_dt * 9.0f;
-                                position->x -= creatures[creature_index].vel_x;
-                                position->y -= creatures[creature_index].vel_y;
+                                *(creature_vec2_t *)position -=
+                                    *(creature_vec2_t *)&creatures[creature_index].velocity;
                             } else {
                                 creatures[creature_index].vel_x = 0.0f;
                                 creatures[creature_index].vel_y = 0.0f;

@@ -2,7 +2,43 @@
 
 Native target: `crimsonland.exe` at `0x00426220` (5,330 bytes).
 
-## Current state: pool base pointer (2026-09-22)
+## Exact recovery (2026-09-25)
+
+The canonical source is **exact**: 1,338/1,338 instructions, references
+`440/0/0`, `body_byte_exact=True`, 0x7c frame. It started at 66.67%.
+
+The first pass started from crimson-88's y10 frame-model variant (68.30%), where
+the next read of each retained field pointer is a direct `creatures[i].field`
+access. It then removed cached or copied values that native does not have, which
+brought the score to 99.78%:
+
+- the corpse `fx_queue_add_rotated` calls read `size` and `heading` straight
+  from the creature, with no float locals;
+- the attack block reads `*target_player` at every use. Native reloads it through
+  EBX after each call, so the cached `current_player_index` was wrong;
+- the orbit and link-guard arms read `target_player` inside each branch of the
+  `distance > 800` test, which schedules the load after the compare;
+- the bounds clamp reads x through `position` and y as `creatures[i].pos_y`;
+- the hold-timer copies drop their `hold_position` temporaries;
+- the corpse slide keeps the decremented stage in a float local and subtracts
+  velocity with `creature_vec2_t::operator-=`;
+- the link timer draws `hold_ms = crt_rand() & 0x1ff` before setting
+  `ai_mode`, and the alternate-player switch assigns `distance` before
+  flipping `target_player`.
+
+crimson-88 closed the last residual, the load and store order of the two
+hold-timer copies (`tools/match/c2/compiler/`, `scripts/c2/alias_trace.py`):
+
+- **The fix:** a named `creature_t *creature = &creatures[creature_index];` next to
+  `position`, with both copies written `creature->target_position =
+  creature->position;`.
+- **Why:** C2 compares two memory operands only by alias class. `creatures[i].f`
+  (variable index) and `*position` both point into `creature_pool`, so their
+  classes intersect and add dependence edges. Through one named pointer, the
+  target, position and radius fields are disjoint records of one class. The
+  edges vanish, and the /G5 scheduler groups the loads as native does.
+
+## Earlier state: pool base pointer (2026-09-22)
 
 [The pool-base evidence](../../evidence/creature-pool-base-2026-09-22/README.md)
 recovers native scaled creature addressing with a stock source form: a local

@@ -88,6 +88,15 @@ int fx_spawn_secondary_projectile(
     secondary_projectile_type_id_t type_id);
 }
 
+static __inline void player_update_vec2_set(
+    player_update_vec2_t *v,
+    float x,
+    float y)
+{
+    v->x = x;
+    v->y = y;
+}
+
 static __inline void player_accelerate_move_speed(player_state_t *player)
 {
     if (player_state_table[0].perk_counts[perk_id_long_distance_runner] > 0) {
@@ -131,6 +140,7 @@ extern "C" void player_update(void)
     player_update_vec2_t movement_input;
     player_update_vec2_t scratch_pos;
     player_update_vec2_t move_delta;
+    player_update_vec2_t spawn_pos;
     bool auto_fire;
     bool normal_fire_ready;
     bool perk_fire_ready;
@@ -500,10 +510,10 @@ extern "C" void player_update(void)
             player->move_phase =
                 frame_dt * player->move_speed * 19.0f + player->move_phase;
         } else if (move_mode == 3) {
-            movement_input.y = -grim_interface_ptr->grim_get_config_float(
-                player->input.axis_move_y);
-            movement_input.x = -grim_interface_ptr->grim_get_config_float(
-                player->input.axis_move_x);
+            player_update_vec2_set(
+                &movement_input,
+                -grim_interface_ptr->grim_get_config_float( player->input.axis_move_x),
+                -grim_interface_ptr->grim_get_config_float( player->input.axis_move_y));
 
             if ((float)sqrt(
                     movement_input.x * movement_input.x
@@ -762,10 +772,10 @@ extern "C" void player_update(void)
                 scratch_pos.y = player_position->y - 512.0f;
                 scratch_pos.x = player_position->x - 512.0f;
             } else {
-                scratch_pos.y = player_position->y
-                    - creature_pool[player->auto_target].position.y;
-                scratch_pos.x = player_position->x
-                    - creature_pool[player->auto_target].position.x;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    player_position->x - creature_pool[player->auto_target].position.x,
+                    player_position->y - creature_pool[player->auto_target].position.y);
             }
             movement_input.x = scratch_pos.x;
             movement_input.y = scratch_pos.y;
@@ -1004,10 +1014,10 @@ extern "C" void player_update(void)
         }
     } else {
         int target_index = player->auto_target;
-        movement_input.y =
-            creature_pool[target_index].position.y - player->aim.y;
-        movement_input.x =
-            creature_pool[target_index].position.x - player->aim.x;
+        player_update_vec2_set(
+            &movement_input,
+            creature_pool[target_index].position.x - player->aim.x,
+            creature_pool[target_index].position.y - player->aim.y);
         scalar = (float)sqrt(
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
@@ -1150,8 +1160,10 @@ extern "C" void player_update(void)
             effect_template.scale_step = 0.0f;
             effect_template.rotation_step =
                 ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 14.0f;
-            scratch_pos.x = movement_input.x + player_position->x;
-            scratch_pos.y = movement_input.y + player_position->y;
+            player_update_vec2_set(
+                &scratch_pos,
+                movement_input.x + player_position->x,
+                movement_input.y + player_position->y);
             effect_spawn(0x12, &scratch_pos);
         }
 
@@ -1168,8 +1180,10 @@ extern "C" void player_update(void)
 
         random_offset.x = player->aim.x;
         random_offset.y = player->aim.y;
-        move_delta.x = random_offset.x - player_position->x;
-        move_delta.y = random_offset.y - player_position->y;
+        player_update_vec2_set(
+            &move_delta,
+            random_offset.x - player_position->x,
+            random_offset.y - player_position->y);
         angle_step = vec2_length(&move_delta) * 0.5f;
         float spread_angle =
             (float)(crt_rand() & 0x1ff) * 0.012271847f;
@@ -1213,8 +1227,10 @@ extern "C" void player_update(void)
                  ++pellet_index) {
                 scalar = (float)(crt_rand() % 200 - 100) * 0.0015f
                     + angle_step;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &scratch_pos,
                     scalar,
@@ -1224,8 +1240,10 @@ extern "C" void player_update(void)
 
             move_delta.x = (float)cos(movement_heading) * 25.0f;
             move_delta.y = (float)sin(movement_heading) * 25.0f;
-            scratch_pos.x = movement_input.x + player_position->x;
-            scratch_pos.y = movement_input.y + player_position->y;
+            player_update_vec2_set(
+                &scratch_pos,
+                movement_input.x + player_position->x,
+                movement_input.y + player_position->y);
             int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
             sprite_effect_pool[effect_index].color_r = 0.5f;
             sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1249,9 +1267,10 @@ extern "C" void player_update(void)
                 1.0f);
 
             if (player->weapon_id == WEAPON_ID_SHRINKIFIER_5K) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
@@ -1261,8 +1280,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1270,16 +1291,20 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
             } else if (player->weapon_id == WEAPON_ID_PISTOL) {
-                move_delta.y = movement_input.y + player_position->y;
-                move_delta.x = movement_input.x + player_position->x;
+                player_update_vec2_set(
+                    &move_delta,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &move_delta,
                     angle_step,
@@ -1289,8 +1314,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1298,8 +1325,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1310,8 +1339,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1319,16 +1350,19 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
@@ -1339,8 +1373,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1348,8 +1384,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.25f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1358,8 +1396,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 12;
                 do {
-                    move_delta.y = movement_input.y + player_position->y;
-                    move_delta.x = movement_input.x + player_position->x;
+                    player_update_vec2_set(
+                        &move_delta,
+                        movement_input.x + player_position->x,
+                        movement_input.y + player_position->y);
                     int projectile_index = projectile_spawn(
                         &move_delta,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
@@ -1374,8 +1414,10 @@ extern "C" void player_update(void)
             } else if (player->weapon_id == WEAPON_ID_JACKHAMMER) {
                 move_delta.x = (float)cos(movement_heading) * 15.0f;
                 move_delta.y = (float)sin(movement_heading) * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1384,8 +1426,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 4;
                 do {
-                    move_delta.y = movement_input.y + player_position->y;
-                    move_delta.x = movement_input.x + player_position->x;
+                    player_update_vec2_set(
+                        &move_delta,
+                        movement_input.x + player_position->x,
+                        movement_input.y + player_position->y);
                     int projectile_index = projectile_spawn(
                         &move_delta,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
@@ -1402,8 +1446,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1411,8 +1457,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.26f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1421,8 +1469,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 12;
                 do {
-                    move_delta.y = movement_input.y + player_position->y;
-                    move_delta.x = movement_input.x + player_position->x;
+                    player_update_vec2_set(
+                        &move_delta,
+                        movement_input.x + player_position->x,
+                        movement_input.y + player_position->y);
                     int projectile_index = projectile_spawn(
                         &move_delta,
                         (float)(crt_rand() % 200 - 100) * 0.004f
@@ -1435,8 +1485,10 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_FLAMETHROWER) {
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 fx_spawn_particle(
                     &scratch_pos,
                     movement_heading - 1.5707964f,
@@ -1444,8 +1496,10 @@ extern "C" void player_update(void)
                     1.0f);
                 scalar = 0.1f;
             } else if (player->weapon_id == WEAPON_ID_HR_FLAMER) {
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 owner_id = fx_spawn_particle(
                     &scratch_pos,
                     movement_heading - 1.5707964f,
@@ -1456,8 +1510,10 @@ extern "C" void player_update(void)
                 }
                 scalar = 0.1f;
             } else if (player->weapon_id == WEAPON_ID_BLOW_TORCH) {
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 owner_id = fx_spawn_particle(
                     &scratch_pos,
                     movement_heading - 1.5707964f,
@@ -1472,8 +1528,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1481,124 +1539,145 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_SUBMACHINE_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_MULTI_PLASMA) {
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &scratch_pos,
                     angle_step - 0.31415927f,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &scratch_pos,
                     angle_step - 0.5235988f,
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &scratch_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &scratch_pos,
                     angle_step + 0.5235988f,
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &scratch_pos,
                     angle_step + 0.31415927f,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_PULSE_GUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PULSE_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_BLADE_GUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_BLADE_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_SPLITTER_GUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_SPLITTER_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ION_RIFLE) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ION_RIFLE,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ION_MINIGUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ION_MINIGUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ION_CANNON) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ION_CANNON,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_CANNON) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
@@ -1607,8 +1686,10 @@ extern "C" void player_update(void)
             } else if (player->weapon_id == WEAPON_ID_ION_SHOTGUN) {
                 int pellet_count = 8;
                 do {
-                    scratch_pos.x = movement_input.x + player_position->x;
-                    scratch_pos.y = movement_input.y + player_position->y;
+                    player_update_vec2_set(
+                        &scratch_pos,
+                        movement_input.x + player_position->x,
+                        movement_input.y + player_position->y);
                     int projectile_index = projectile_spawn(
                         &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.0026f
@@ -1621,9 +1702,10 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 80) * 0.01f + 1.4f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
@@ -1634,8 +1716,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1643,8 +1727,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.33f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1653,8 +1739,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 6;
                 do {
-                    scratch_pos.x = movement_input.x + player_position->x;
-                    scratch_pos.y = movement_input.y + player_position->y;
+                    player_update_vec2_set(
+                        &scratch_pos,
+                        movement_input.x + player_position->x,
+                        movement_input.y + player_position->y);
                     int projectile_index = projectile_spawn(
                         &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.002f
@@ -1671,8 +1759,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1680,16 +1770,19 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.33f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.263f;
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
@@ -1700,8 +1793,10 @@ extern "C" void player_update(void)
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1709,24 +1804,29 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.34f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.283f;
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MINI_ROCKET_SWARMERS) {
                 random_offset.x = (float)cos(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1734,8 +1834,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.34f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1748,8 +1850,10 @@ extern "C" void player_update(void)
                 int rocket_count = 0;
                 if (0.0f < player->ammo) {
                     do {
-                        move_delta.y = movement_input.y + player_position->y;
-                        move_delta.x = movement_input.x + player_position->x;
+                        player_update_vec2_set(
+                            &move_delta,
+                            movement_input.x + player_position->x,
+                            movement_input.y + player_position->y);
                         fx_spawn_secondary_projectile(&move_delta, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
                         rocket_heading = rocket_heading + movement_heading;
                         ++rocket_count;
@@ -1759,23 +1863,29 @@ extern "C" void player_update(void)
             } else if (player->weapon_id == WEAPON_ID_ROCKET_MINIGUN) {
                 move_delta.x = (float)cos(movement_heading) * 25.0f;
                 move_delta.y = (float)sin(movement_heading) * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.34f;
-                move_delta.y = movement_input.y + player_position->y;
-                move_delta.x = movement_input.x + player_position->x;
+                player_update_vec2_set(
+                    &move_delta,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
             } else if (player->weapon_id == WEAPON_ID_SEEKER_ROCKETS) {
                 random_offset.x = (float)cos(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
                 random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -1783,20 +1893,25 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.31f;
                 move_delta.x = random_offset.x * 15.0f;
                 move_delta.y = random_offset.y * 15.0f;
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.243f;
-                move_delta.y = movement_input.y + player_position->y;
-                move_delta.x = movement_input.x + player_position->x;
+                player_update_vec2_set(
+                    &move_delta,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &spawn_pos,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &spawn_pos,
                     angle_step,
@@ -1805,8 +1920,10 @@ extern "C" void player_update(void)
             } else if (player->weapon_id == WEAPON_ID_PLASMA_SHOTGUN) {
                 int pellet_count = 14;
                 do {
-                    move_delta.x = movement_input.x + player_position->x;
-                    move_delta.y = movement_input.y + player_position->y;
+                    player_update_vec2_set(
+                        &move_delta,
+                        movement_input.x + player_position->x,
+                        movement_input.y + player_position->y);
                     int projectile_index = projectile_spawn(
                         &move_delta,
                         (float)((crt_rand() & 0xff) - 0x80) * 0.002f
@@ -1819,24 +1936,30 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {
-                move_delta.y = movement_input.y + player_position->y;
-                move_delta.x = movement_input.x + player_position->x;
+                player_update_vec2_set(
+                    &move_delta,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &move_delta,
                     angle_step,
                     PROJECTILE_TYPE_PLAGUE_SPREADER,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_RAINBOW_GUN) {
-                move_delta.y = movement_input.y + player_position->y;
-                move_delta.x = movement_input.x + player_position->x;
+                player_update_vec2_set(
+                    &move_delta,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 projectile_spawn(
                     &move_delta,
                     angle_step,
                     PROJECTILE_TYPE_RAINBOW_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {
-                move_delta.x = movement_input.x + player_position->x;
-                move_delta.y = movement_input.y + player_position->y;
+                player_update_vec2_set(
+                    &move_delta,
+                    movement_input.x + player_position->x,
+                    movement_input.y + player_position->y);
                 fx_spawn_particle_slow(
                     &move_delta,
                     angle_step - 1.5707964f,
