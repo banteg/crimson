@@ -2,6 +2,38 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Flat aim schemes (2026-09-26)
+
+crimson-88's g6 pass (`answer_pu-g6-merges.md`) lands on top of the index loop:
+**71.80% to 73.64%**, references 844/0/1 to **855/0/0**. Every step was
+predicted before it was compiled:
+
+- **Flat aim chain.** The aim schemes are separate `if (aim_scheme == N)`
+  blocks, and arms 0 and 4 each end with their own `aim_heading` atan2.
+  This is the flat-rule layout that solved `bonus_pick`.
+- **Arm 4 (pad).** `scalar = get(axis_aim_y); movement_input.y = scalar;`.
+  This supplies native's missing rotation pick: g6 had been one register
+  behind from arm 4 on. The clamp is
+  `if (1.0f < length) scalar = 1.0f; else scalar = length;`, which gives
+  native's held `fcomp st(1)`. The `length > 1.0f` and `?:` forms do not.
+- **Mode-4 accelerate turn pair** is stored in `movement_input`. That adds
+  frame weight, so `movement_input` keeps its slot above `scratch_pos`.
+- **Arms 3, 1 and POV** use the setter plus `player->aim = scratch_pos`, and
+  the arm-3 normalize block is written back as a struct copy into the screen
+  array. These give native's int copies. Arm 3's head reads through a
+  `stick_screen` vec2 pointer, which gives native's held lanes.
+- **Aim heading temp** lives in `previous_pos.x`, which is dead by then and is
+  native's slot. It was in `random_offset.x`.
+- **Auto-target loop** is written as `do { ... } while (creature_index < 384);`.
+  The `for` form scores 72.96%, 849/0/1 with the rest of this pass.
+
+Movement twins, from crimson-88: cross-jump compares stack operands by
+symbol. Two arms that build into the same `move_delta` object match all the
+way (byte sum 22 > 20) and merge. Native presumably builds into block-scoped
+vectors that share one slot. The open lead is splitting `move_delta` into
+block-scoped vectors across the whole function. Splitting only the movement
+arms grows the frame.
+
 ## Auto-target index loop (2026-09-26)
 
 The auto-target scan is now a plain index loop over `creature_pool`, with
