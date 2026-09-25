@@ -972,7 +972,7 @@ extern "C" void projectile_render(float transition_alpha)
                 60.0f,
                 60.0f);
 
-            float phase = (float)projectile_index + plague_phase;
+            double phase = (float)projectile_index + plague_phase;
             float phase_cos = (float)cos(phase);
             grim_interface_ptr->grim_draw_quad(
                 camera_offset_x + projectile->pos_x

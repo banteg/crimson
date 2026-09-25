@@ -3,6 +3,15 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Double orbit phase (2026-09-26)
+
+In the plague orbit block, `phase` is a `double`: `double phase =
+(float)projectile_index + plague_phase;`. It only feeds `cos`/`sin` and the
++120°/+240° offsets. A sweep of all 30 float locals to `double`, one at a time,
+found it the only gain: 72.88% to **73.35%**, with references at `532/0/0`. A
+second `double` on top of it changes nothing. The frame stays 0x184 against
+native's 0x19c.
+
 ## Round-3 laser corners (2026-09-26)
 
 The first laser block builds each corner from its own camera-sum expression,

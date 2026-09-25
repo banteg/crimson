@@ -1,5 +1,5 @@
 {
-  "audit_digest": "be9cd27b5fa3d68bbafd8ba6d209355a4208185a2b58f498219e0cedc667aa9f",
+  "audit_digest": "3b2552ee9b60701d82db5213d94eed9dce2a91d8cf786bdc12aa45c7574845cf",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -74285,24 +74285,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "__real@4@4000860a920000000000",
-          "comdat_selection": 2,
-          "function": "projectile_render",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@4000860a920000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "__real@4@40008666660000000000",
           "comdat_selection": 2,
           "function": "projectile_render",
@@ -75507,24 +75489,6 @@
         }
       ],
       "name": "__real@4@40018000000000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4001860a920000000000",
-          "comdat_selection": 2,
-          "function": "projectile_render",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@4001860a920000000000"
     },
     {
       "definitions": [
@@ -88478,6 +88442,24 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "__real@8@4000860a920000000000",
+          "comdat_selection": 2,
+          "function": "projectile_render",
+          "kind": "section",
+          "logical_section_size": 8,
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "__real@8@4000860a920000000000"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "__real@8@40018000000000000000",
           "comdat_selection": 2,
           "function": null,
@@ -88495,6 +88477,24 @@
         }
       ],
       "name": "__real@8@40018000000000000000"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@8@4001860a920000000000",
+          "comdat_selection": 2,
+          "function": "projectile_render",
+          "kind": "section",
+          "logical_section_size": 8,
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "__real@8@4001860a920000000000"
     },
     {
       "definitions": [
