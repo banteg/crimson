@@ -233,5 +233,5 @@ near the call site for inlined code. player_update takes about 10 s.
   `build_block_alias_sets` and `compute_alias_points_to`.
 - Why a lane read through a reference (`m.y`) reloads the just-stored `move_dy`, while
   `player->move_dy` is forwarded from st(0).
-- Why native keeps the 11 arms separate where the `scaled` form lets C2 cross-jump them. The likely
+- Answered in [arm-local-builds.md](arm-local-builds.md): the /Ot local register rotation gives each arm's build different registers, so cross-jumping stops at the push unless the rotation distance is a multiple of 3. Original question: why native keeps the 11 arms separate where the `scaled` form lets C2 cross-jump them. The likely
   cause is per-arm push registers after allocation. See [layout.md](layout.md).

@@ -73,7 +73,7 @@ After a change the sweep resumes at `jump_opt_restart_point` 0x1073c2e4, the nea
   - Both jumps are retargeted to the label at the head of the moved tail.
   - Pairs are tried in the order i<j over the label reference list, and the first success wins. There is **no size threshold**.
   - Matching continues across calls and conditional branches. These only set a flag that triggers label fix-ups in 0x1071deda.
-- **`cross_jump_into_fallthrough` 0x1073d701** (no size threshold): takes `...X; jmp L` where L's fall-in path also ends in `...X`. The copy before the jmp is deleted and the jmp is retargeted above X at L. Conditional branches inside the match are allowed only under /Os (0x1073d746).
+- **`cross_jump_into_fallthrough` 0x1073d701** (no size threshold; this is what merges per-arm calls in an if/else whose last arm falls through, see [arm-local-builds.md](arm-local-builds.md)): takes `...X; jmp L` where L's fall-in path also ends in `...X`. The copy before the jmp is deleted and the jmp is retargeted above X at L. Conditional branches inside the match are allowed only under /Os (0x1073d746).
 - **`hoist_common_successor_heads` 0x1073cf09:** applies to `jcc L` where L has one reference and no fall-in (`label_single_ref_no_fallthrough` 0x1073cfca). The identical leading instructions of the fall-through path and of L are kept once: the jcc is moved below them (0x10702bf8) and L's copy is deleted. Instructions that touch the branch's operand stop the match (0x10733683).
 
 ## 2. Block mover 0x1073663c (/Og, after jump_optimize #2)

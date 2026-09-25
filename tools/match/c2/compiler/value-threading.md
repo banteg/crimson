@@ -152,7 +152,7 @@ The variants are copies of the canonical scratch.cpp and scratch.conf. Only the 
 | base `== -1.0f {decel} else {accel}` | all three threaded; mover PASS on pi's jmp; pi falls into accel; `[2.356, 3.927, test, decel]` after a jmp inside accel | 67.39%, refs 785/0/2. Trace: `jmp@1438 line 582`, `jmp@1441 line 581` and `jmp@1444 line 586` (born in `thread_jumps_at_block_end`) all PASS. `MOVE [1439..1475] -> after jmp line 598`, which is inside the inlined `player_accelerate_move_speed` | no: pi falls through |
 | inv `!= -1.0f {accel} else {decel}` | all three threaded; all gates `target-prev-cond-jcc`; native shape | **67.45%**, refs 785/0/3. The trace shows the three jumps with `target-prev-cond-jcc`. The listing has `mov [esp+0x14], pi; jmp L; mov .., 2.356; jmp L; mov .., 3.927; jmp L; fld; fcomp; fnstsw; test ah,0x40; jne decel; L: mov ecx,[esp+0x14]; push ecx; call`, the same as native 0x414a78..0x414ab0 apart from the frame offset 0x14/0x18 | **yes** |
 | `!(h == -1.0f) {accel} else {decel}` | identical to inv | identical normalized listing, 67.45% | yes |
-| inv + apply_move pushed into each arm | – | 66.74%, refs 776/0/4 | – |
+| inv + apply_move pushed into each arm | – | 66.74%, refs 776/0/4 (older base; on 8439eb73c it is 70.35%, 799/0/2, see [arm-local-builds.md](arm-local-builds.md)) | – |
 | base + apply_move pushed into each arm | – | 66.70%, refs 777/0/4 | – |
 | `double movement_heading` (control) | I predicted that double would block threading, following optimizer.md's "no double constant propagation". **Wrong.** | 50.66%. The stores still thread: `fld qword const; jmp accel`, with the pi store falling into accel | no |
 
