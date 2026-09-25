@@ -1,5 +1,5 @@
 {
-  "audit_digest": "af3c7a42e620e9923004b0b69365f4271342df77865e0d9645e4a85a504962f6",
+  "audit_digest": "603e7e0c30468e79b4118fe914813b8049ef09c9e5d79233878450a3eb93a79f",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -103368,7 +103368,7 @@
           "comdat_selection": 1,
           "function": "projectile_render",
           "kind": "section",
-          "logical_section_size": 12384,
+          "logical_section_size": 12400,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
           "section": ".text",
           "size": null,
@@ -151443,7 +151443,7 @@
           "comdat_selection": 1,
           "function": "projectile_render",
           "kind": "section",
-          "logical_section_size": 12384,
+          "logical_section_size": 12400,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
           "section": ".text",
           "size": null,

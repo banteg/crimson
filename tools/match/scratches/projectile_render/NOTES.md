@@ -3,6 +3,22 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Round-2 plain-source pass (2026-09-26)
+
+The Codex round 2 pass moved the canonical body from 71.38% to **72.77%**, and
+references from `523/0/1` to a clean `530/0/0`.
+
+The changes:
+- the laser's `end_pos` and `start_pos` read `player->position` directly (no
+  player-position cache);
+- a `const float *aim_heading = &player->aim_heading` field pointer restores
+  native's aim-heading loop anchor;
+- the conventional projectile pass reuses the function-local `fade`, clamped with
+  two `if`s, instead of a separate `alpha`.
+
+All 12,498 replay cases pass. Open: native's frame is 0x19c against ours 0x184,
+and the laser camera-sum store/copy sequence around native #132-#139.
+
 ## Plasma cursor anchor (2026-09-26)
 
 The plasma loop declares `const vec2f_t *position =

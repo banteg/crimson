@@ -1071,17 +1071,18 @@ extern "C" void player_update(void)
                         player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
                     player_alt_weapon_swap_cooldown_ms <= 0))
             && grim_interface_ptr->grim_is_key_active(config_key_reload)) {
-            int swap_weapon_id = player->weapon_id;
-            player->weapon_id = player->alt_weapon_id;
+            int *weapon_id = &player->weapon_id;
+            int swap_weapon_id = *weapon_id;
+            *weapon_id = player->alt_weapon_id;
             player->alt_weapon_id = swap_weapon_id;
 
             float swap_clip_size = player->alt_clip_size;
             player->alt_clip_size = player->clip_size;
             player->clip_size = swap_clip_size;
 
-            unsigned char swap_reload_active = player->alt_reload_active;
-            player->alt_reload_active = player->reload_active;
-            player->reload_active = swap_reload_active;
+            unsigned char swap_reload_active = player->reload_active;
+            player->reload_active = player->alt_reload_active;
+            player->alt_reload_active = swap_reload_active;
 
             float swap_ammo = player->alt_ammo;
             player->alt_ammo = player->ammo;
@@ -1101,7 +1102,7 @@ extern "C" void player_update(void)
             player->reload_timer_max = swap_reload_timer_max;
 
             sfx_play_panned(
-                weapon_table[player->weapon_id].reload_sfx_id,
+                weapon_table[*weapon_id].reload_sfx_id,
                 player_position,
                 1.0f);
             *shot_cooldown = *shot_cooldown + 0.1f;
@@ -1128,11 +1129,11 @@ extern "C" void player_update(void)
                         - weapon_table[player->weapon_id].reload_time * 200.0f;
                 }
             } else if (perk_count_get(perk_id_ammunition_within) != 0) {
-                player_take_damage(
-                    render_overlay_player_index,
-                    weapon_ammo_class[player->weapon_id].ammo_class == 1
-                        ? 0.15f
-                        : 1.0f);
+                if (weapon_ammo_class[player->weapon_id].ammo_class == 1) {
+                    player_take_damage(render_overlay_player_index, 0.15f);
+                } else {
+                    player_take_damage(render_overlay_player_index, 1.0f);
+                }
             }
             if (player->experience < 0) {
                 player->experience = 0;

@@ -2,6 +2,14 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Fire-section spellings (2026-09-26)
+
+The alternate-weapon swap reads `weapon_id` through an `int *weapon_id` field
+pointer, as native's `lea eax, [edi+0x2c0]` shows, and swaps `reload_active`
+primary-first. The Ammunition Within penalty is two `player_take_damage` calls
+in an if/else (0.15 / 1.0). Native pushes the arguments per branch and merges
+the call. Together: 70.35% to 70.49%, references unchanged at 2 mismatches.
+
 ## Mode-2 arm-local move (2026-09-26)
 
 Mode 2 now tests `movement_heading != -1.0f` with acceleration first. Each arm

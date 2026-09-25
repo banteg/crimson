@@ -131,29 +131,28 @@ extern "C" void projectile_render(float transition_alpha)
          player_index < config_blob.player_count;
          ++player_index) {
         player_state_t *player = &player_state_table[player_index];
+        const float *aim_heading = &player->aim_heading;
         if (player->health > 0.0f) {
             projectile_render_vec2_t point0;
             projectile_render_vec2_t point1;
             projectile_render_vec2_t point2;
             projectile_render_vec2_t point3;
-            float heading = player->aim_heading - 1.5707964f;
-            projectile_render_vec2_t player_pos =
-                *(projectile_render_vec2_t *)&player->position;
+            float heading = *aim_heading - 1.5707964f;
             projectile_render_vec2_t end_pos =
-                player_pos
+                *(projectile_render_vec2_t *)&player->position
                 + projectile_render_vec2_t(
                       (float)cos(heading), (float)sin(heading))
                     * 512.0f;
             float start_heading = heading - 0.150915f;
             // Scale before vector construction: native keeps these trig
             // results wide through FMUL, unlike the end-position sine above.
-            projectile_render_vec2_t start_pos = player_pos;
+            projectile_render_vec2_t start_pos = *(projectile_render_vec2_t *)&player->position;
             start_pos += projectile_render_vec2_t(
                 (float)cos(start_heading) * 15.0f,
                 (float)sin(start_heading) * 15.0f);
             projectile_render_vec2_t half_width(
-                (float)cos(player->aim_heading) * 1.1f,
-                (float)sin(player->aim_heading) * 1.1f);
+                (float)cos(*aim_heading) * 1.1f,
+                (float)sin(*aim_heading) * 1.1f);
             projectile_render_vec2_t start_screen = start_pos;
             start_screen += camera_offset;
             point0 = start_screen - half_width;
@@ -208,12 +207,13 @@ extern "C" void projectile_render(float transition_alpha)
             projectile->active = 0;
         }
 
-        float alpha = projectile_render_clamp(
-            tail->life_timer);
+        fade = tail->life_timer;
+        if (fade > 1.0f) fade = 1.0f;
+        if (fade < 0.0f) fade = 0.0f;
         grim_interface_ptr->grim_set_color_slot(
-            2, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);
+            2, 0.5f, 0.5f, 0.5f, fade * transition_alpha);
         grim_interface_ptr->grim_set_color_slot(
-            3, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);
+            3, 0.5f, 0.5f, 0.5f, fade * transition_alpha);
 
         type_id = tail->type_id;
         projectile_render_vec2_t point0;
@@ -252,9 +252,9 @@ extern "C" void projectile_render(float transition_alpha)
                 - (*(projectile_render_vec2_t *)&projectile->pos.tail.velocity * 1.2f);
         } else if (type_id == PROJECTILE_TYPE_GAUSS_GUN) {
             grim_interface_ptr->grim_set_color_slot(
-                2, 0.2f, 0.5f, 1.0f, alpha);
+                2, 0.2f, 0.5f, 1.0f, fade);
             grim_interface_ptr->grim_set_color_slot(
-                3, 0.2f, 0.5f, 1.0f, alpha);
+                3, 0.2f, 0.5f, 1.0f, fade);
             point0 =
                 (camera_offset + *(projectile_render_vec2_t *)&projectile->pos.origin)
                 - (*(projectile_render_vec2_t *)&projectile->pos.tail.velocity * 1.1f);
