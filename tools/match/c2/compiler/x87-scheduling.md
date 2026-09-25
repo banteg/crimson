@@ -182,6 +182,14 @@ inspected.
 
 ## 5. Commutative fadd/fmul operand order, end to end
 
+**Equal-shape expression operands** (for example the two squares in `sqrt(dy*dy + dx*dx)`) tie on
+need and size, so the 16-bit tuple hash decides; higher sorts first and ties keep source order. For
+`t*t` of a compiler (CSE) temp the key is `(192*id + 0x2a) & 0xffff`, which wraps about every 341
+ids, so an unrelated change in the number of earlier temps can flip the order. Named float locals
+hash by their small local ids (`96*id + 0x2a`) and do not wrap in practice, so spelling the
+differences as named locals pins the order; local ids follow first reference, not declaration. This
+rule predicted all 79 two-square sites in 20 player_update builds.
+
 1. **Sort.** The final pre-lowering sort leaves commutative operands in descending packed-key order.
    It is stable, so equal keys keep source order (for `x + other.x`, `this` first).
    - **Two memory leaves with a symbol base and displacement 0:** key
