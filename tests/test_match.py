@@ -2623,6 +2623,14 @@ def test_structural_diff_ignores_scratch_rotation_and_label_offsets() -> None:
     assert structural.changed_target_instructions == 1
     assert structural.changed_candidate_instructions == 0
 
+    result = replace(
+        result,
+        target_lines=("fstp dword [esp+0x14]",),
+        candidate_lines=("fstp dword [esp+0x18]",),
+    )
+    assert structural_diff(result).ratio == 0
+    assert structural_diff(result, mask_stack=True).ratio == 1
+
 
 def test_diff_regions_reports_localized_mismatch() -> None:
     target = bytes.fromhex("558bec31c040c3")

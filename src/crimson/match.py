@@ -3677,6 +3677,7 @@ def _region_hints(
 
 
 STRUCTURAL_LABEL_RE = re.compile(r"\bL[0-9a-f]+\b")
+STRUCTURAL_STACK_RE = re.compile(r"\besp\+0x[0-9a-f]+\b")
 STRUCTURAL_SCRATCH_REGISTERS = (
     (re.compile(r"\b(?:eax|ecx|edx)\b"), "T"),
     (re.compile(r"\b(?:ax|cx|dx)\b"), "Tw"),
@@ -3685,7 +3686,7 @@ STRUCTURAL_SCRATCH_REGISTERS = (
 )
 
 
-def structural_line(text: str) -> str:
+def structural_line(text: str, *, mask_stack: bool = False) -> str:
     """Normalized text without local label offsets or caller-saved register names.
 
     VC6 hands out eax/ecx/edx in rotation, so one extra or missing temporary
@@ -3693,6 +3694,8 @@ def structural_line(text: str) -> str:
     later branch. Removing both leaves the structural instruction stream.
     """
     text = STRUCTURAL_LABEL_RE.sub("L", text)
+    if mask_stack:
+        text = STRUCTURAL_STACK_RE.sub("esp+S", text)
     for pattern, replacement in STRUCTURAL_SCRATCH_REGISTERS:
         text = pattern.sub(replacement, text)
     return text
@@ -3714,10 +3717,14 @@ class StructuralDiff:
         return sum(j2 - j1 for _, _, _, j1, j2 in self.hunks)
 
 
-def structural_diff(result: MatchResult) -> StructuralDiff:
-    """Diff the structural instruction streams of a match result."""
-    target = tuple(structural_line(line) for line in result.target_lines)
-    candidate = tuple(structural_line(line) for line in result.candidate_lines)
+def structural_diff(result: MatchResult, *, mask_stack: bool = False) -> StructuralDiff:
+    """Diff the structural instruction streams of a match result.
+
+    ``mask_stack`` also removes ESP-relative displacements, separating frame-layout
+    differences (which local owns which slot) from instruction structure.
+    """
+    target = tuple(structural_line(line, mask_stack=mask_stack) for line in result.target_lines)
+    candidate = tuple(structural_line(line, mask_stack=mask_stack) for line in result.candidate_lines)
     matcher = difflib.SequenceMatcher(a=target, b=candidate, autojunk=False)
     hunks = tuple(opcode for opcode in matcher.get_opcodes() if opcode[0] != "equal")
     return StructuralDiff(matcher.ratio(), target, candidate, hunks)

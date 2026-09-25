@@ -425,7 +425,11 @@ generalized. VC6 hands out those caller-saved registers in rotation, so one
 extra temporary renames every later scratch register and one size change
 relabels every later branch. For example, `player_update` is 64.50% normalized
 but 77.16% structural. The listing prints the remaining structural hunks. It is
-a triage view and never grants matching credit.
+a triage view and never grants matching credit. It also prints
+`structural_stack_masked`, which additionally masks ESP displacements to
+separate frame layout (which local owns which slot) from instruction structure:
+`projectile_render` is 65.40% normalized, 72.41% structural and 90.19% with
+stack offsets masked, so most of its residual is slot assignment.
 
 Inspect one target through the matching state and all three analysis views:
 
