@@ -82,11 +82,12 @@ Notable behavior that the plain forms make visible:
   `memcpy` label copies are retained: every plainer copy loses the integer
   register candidate (82.8–90.4%). See
   [plain-float-sources.md](c2/compiler/plain-float-sources.md).
-- **`player_render_overlays` alpha byte copy.** Retained. Native stores
+- **`player_render_overlays` alpha byte copy.** Retained for now. Native stores
   `tint.a` to a shared stack slot, and it also keeps the value in a register.
-  Plain, reference-parameter, POD and temporary-copy forms all reach 96.73%.
-  The store matches the post-promotion copy-lowering mechanism (a `0x190`
-  intrinsic).
+  An alpha wrapper type copied implicitly into the tint
+  (`player_render_alpha_t a` member, constructed from `transition_alpha`) is
+  byte-exact without `memcpy`; plain float spellings reach 96.73%
+  ([post-promotion-stores.md](c2/compiler/post-promotion-stores.md)).
 - **`typo_word_pick_highscore_name`.** Settled: plain nested loops that index
   `highscore_table[record_index]` directly are byte-exact. A `record` local
   reaches 98.37% because the derived IVs are created in reverse order of last

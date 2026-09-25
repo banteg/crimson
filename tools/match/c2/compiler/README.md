@@ -19,6 +19,10 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [layout.md](layout.md) | Jump optimizer, tail sinking and cross-jumping, block mover, scheduler, emission |
 | [array-constructors.md](array-constructors.md) | How `T arr[N];` with an inline constructor becomes the `*_global_init` countdowns (C1XX `??_H` plus C2 inlining), and what the native relink needs to use real array definitions |
 | [plain-float-sources.md](plain-float-sources.md) | Plain replacements for retained float spellings: single-use float locals as FROUND owners, guard folding for countdown loops, why `memcpy` label copies stay |
+| [x87-held-lanes.md](x87-held-lanes.md) | When a two-lane vector build keeps both x87 products live (forward-propagation alias refusal), with the player_update per-arm shape |
+| [x87-spills.md](x87-spills.md) | The x87 register allocator: candidate scores, the nesting test, splits, and when floats live in memory or dead parameter homes |
+| [post-promotion-stores.md](post-promotion-stores.md) | Every path that creates a stack store after register promotion, and why dead home stores survive |
+| [small-aggregate-copies.md](small-aggregate-copies.md) | How 8-byte copies lower and why alias classes, not addresses, decide whether their loads group |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
 | [strength-reduction.md](strength-reduction.md) | Where strength reduction and exit-test replacement put IV setups, which field a loop pointer anchors to, and how to write plain indexed loops that reproduce native cursors |

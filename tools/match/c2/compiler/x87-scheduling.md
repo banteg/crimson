@@ -220,8 +220,9 @@ Blocks are 32 slots, so a shift of s moves every residue by s mod 8.
   - C1 evaluates the arguments right to left. The Y parameter's forward propagation is blocked by the
     store through `v` before its use, so Y stays on the stack. X is propagated and gets a FROUND.
   - Two scalar assignments give `fld; fadd; fstp` per lane instead.
-- **Value kept on the stack vs stored and reloaded** (x87 live-range caching, `allocate_x87_live_ranges`
-  0x107645d8, `x87_keep_float_temp_on_stack` 0x10763c4e). See the projectile_render survey below.
+- **Value kept on the stack vs stored and reloaded:** decided by the x87 allocator
+  `allocate_x87_live_ranges` 0x107645d8 (scores, nesting test, splits); see [x87-spills.md](x87-spills.md).
+  `x87_keep_float_temp_on_stack` 0x10763c4e only turns a float memory-to-memory copy into integer moves.
 
 ## 7. Acceptance tests
 
@@ -286,15 +287,17 @@ The separator's Y `fadd [14.0]` is native #75.
   - Replacing the scalar pair at source lines 1264-1265 (`scratch_pos.x/.y = movement_input + *player_position`,
     native 0x416c25) with an inline two-argument setter reproduces native's exact x87 shape at that
     site (prediction written first).
-  - The whole-function score fell to 63.97%, because that site shares CSE with the repeated
-    `scratch_pos` sums nearby. The owner spelling has to cover the whole group.
+  - The whole-function score fell to 63.97% when only that site changed. Converting every site of
+    the kind raises it (66.31%); the hold also needs a function-scope destination and lanes read
+    through a computed pointer ([x87-held-lanes.md](x87-held-lanes.md)).
   - The scheduler-only differences (fst/fcom order) already match native.
 - **projectile_render** (65.40%). No two-lane sites, and fxch and st(i) counts match native closely.
   - The x87 residue is value lifetime. At native 0x4247fb the clamped `fade` is a memory variable:
     `fst [fade]; fcomp [1.0]; ...; mov [fade],1.0; fld [fade]; fcomp [0.0]`. Ours keeps the helper's
     result in st(0): `fcom; fstp st(0); fld const`.
   - An in-place clamp of a local compiles to the identical object (negative control). Native's `fade`
-    must be something that is not an x87 register candidate. Open.
+    is an x87 candidate that either scores 0 or less or fails the nesting test
+    ([x87-spills.md](x87-spills.md)); `scripts/c2/x87_alloc_trace.py` shows which. Open.
 
 ## Tool
 

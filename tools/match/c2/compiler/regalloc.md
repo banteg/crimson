@@ -43,6 +43,11 @@ The driver is 0x10757fc2. The steps in order:
 
 ## 2. Building candidates and webs (0x10726d75)
 
+`build_live_ranges` also re-examines kind-2 operands created by lowering. It inserts store-backs
+(0x1072f6cc) when stored bytes are later read as memory (another typed view, an indirect read or a
+call alias), for volatile operands, and for parents with `flags6 & 1`, and returns overlapping typed
+views and escaped locals to memory ([post-promotion-stores.md](post-promotion-stores.md)).
+
 1. The class register sets are initialised once (0x10757353):
    - class 0 (integer) = {eax,ecx,edx,ebx,ebp,esi,edi}
    - class 1 (x87) = {}

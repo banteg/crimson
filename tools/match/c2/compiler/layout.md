@@ -144,7 +144,7 @@ For each tuple J:
 - **Barriers** (0x1073a59a) are created for: ret, branch, switch, 0x14, 0x15, 0x17, 0x18, 0x19, label, 0x16 (except 0x1bc), calls, opcodes 0x166/cli/sti, and any operand with the volatile bit (operand byte+0x10 & 0x40). Every sink node before a barrier gets an order edge (0x80000) to it.
 - **Register edges:** RAW = 1, WAR = 2, WAW = 4.
   - `fxch` and `xor r,r` read no sources (0x10739c44).
-- **Memory edges:** these use `operands_may_alias`, plus field ranges (0x1071d788) when 0x107adfe0 is set.
+- **Memory edges:** two memory operands are compared only by alias class id (`operands_may_alias` → `alias_classes_intersect`), never by base or displacement. Field classes come from 0x1071afd0/0x1075d788; 0x1071d788 serves symbol-versus-memory checks. Edge kinds are 0x20 store→load, 0x40 load→store, 0x80 store→store ([small-aggregate-copies.md](small-aggregate-copies.md)).
 - **Latency:** RAW edge latency = producer latency plus a CPU-specific penalty (0x1073a261; AGI on P5). A producer that is a 0x162 round marker contributes 0.
 - **Dependence breaking** (`sched_break_dep_by_displacement` 0x1073a9fb):
   - Consider a RAW or WAR edge between an add/sub/inc/dec/lea/push/pop of a base register (esp included) and a memory operand based on that register.

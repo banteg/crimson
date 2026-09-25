@@ -356,7 +356,7 @@ Identified by behavior (the name table 0x107a3ac0 seems off by one, so treat nam
 - 0x1072c993: indirections (0x14c) whose pointer is `add p,const` or `lea` get folded into [base+index*scale+disp] memory operands (post-lowering address folding).
 
 ### Matching implications
-- Struct copies of exactly 1/2/4/8 bytes are scalar moves. 3/5/6/7 and 9+ bytes go through movs.
+- Struct copies of exactly 1/2/4/8 bytes are scalar moves. 3/5/6/7 and 9+ bytes go through movs. The globopt already scalarizes 4-byte copies and 8-byte int/pointer structs; an 8-byte float pair reaches lowering and comes out `ld lo; st lo; ld hi; st hi`, grouped only when alias classes allow it ([small-aggregate-copies.md](small-aggregate-copies.md)).
 - Under /O2 on G5/G6, constant memcpy/memset up to 19/23 bytes becomes register mov/store sequences. /O1 or /G3 gives `movsd` chains instead. Anything larger gives `rep movsd` plus movsw/movsb tails.
 - For inlined byte memcpy with variable n, the `shr ecx,2 / and ecx,3` pair gives it away.
 - strcmp against a literal gives `repe cmpsb` with an immediate count, not a byte loop.

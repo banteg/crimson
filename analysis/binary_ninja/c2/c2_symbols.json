@@ -237,12 +237,12 @@
   },
   "0x107026f4": {
    "name": "alias_classes_intersect",
-   "comment": "Do two alias class ids share members (bitmap AND over 0x1079d678 table)."
+   "comment": "Equal ids or id 1: intersect. Ids >= g_alias_class_count are field classes: two fields of the same parent (with 0x107adff0 set) intersect iff overlap_mask(a) has bit(b); otherwise both ids are mapped to their parents and the parents' symbol sets (0x1079d678, dense bitvecs) are ANDed. Verified: fields of one parent get no scheduler edge; a field of `position` against the whole class of `creatures` (both {creature_pool}) does."
   },
   "0x10702771": {
    "name": "operands_may_alias",
    "prototype": "int __fastcall operands_may_alias(c2_operand* a, c2_operand* b)",
-   "comment": "Conservative may-alias test between two operands (kinds 1..0xb, alias classes, symbol overlap)."
+   "comment": "Conservative may-alias test between two operands (kinds 1..0xb, alias classes, symbol overlap). Two kind-6 memory operands: alias_classes_intersect(a+0x1c, b+0x1c) only; base registers and displacements are never compared ([esi+0x88] vs [esi+0x50] alias when their classes intersect; verified in creature_update_all window 94)."
   },
   "0x107027b2": {
    "name": "symbols_overlap",
@@ -1341,7 +1341,7 @@
   "0x10711afa": {
    "name": "forward_propagate_definitions",
    "prototype": "void __fastcall forward_propagate_definitions(c2_function* fn)",
-   "comment": "globopt forward substitution: a variable def with exactly one reaching use is moved (tree) to the use and the def deleted. Inserts 0x15f when the use type differs, a 0x15b copy when the use operand needs one, and ALWAYS a 0x162 round marker for type class 0x4000 (0x10712643, line = use line). This is the main source of FROUND pseudo tuples (inline ctor/function parameters, single-use float locals)."
+   "comment": "Single-def/single-use candidates: clone the def tree, check range_free_of_conflicts on the use (0x10712713) and on def->next..use (0x107125d8, skipped when def->next == use), then move_expression_tree_before 0x1071d548 and insert 0x15f/0x15b/0x162 (FROUND at 0x10712643 for float class). A refused move leaves the def in place; for x87 values that is the held-lane shape (tools/match/c2/compiler/x87-held-lanes.md)."
   },
   "0x107129c1": {
    "name": "mark_tree_materialize",
@@ -1554,9 +1554,13 @@
    "name": "alias_cache_node_new",
    "comment": "Allocates an alias-cache list node {next, class_id, symbol_set, key} and links it in front of an existing list."
   },
+  "0x1071ae81": {
+   "name": "alias_find_base_pointer_roots",
+   "comment": "Recursive walk over the defining tuple of a memory base temp: each kind-1/2 source that is itself a defined temp recurses; each named source with flags5&8 (register-candidate pointer) contributes symbol_overlap_alias_set() to *out_set and becomes *out_root; returns the number of roots, 0 for none, -1 for an unknown source (non-candidate symbol, memory operand, call/0x17d def). Read; consistent with the per-root classes observed for creatures/position/creature."
+  },
   "0x1071afd0": {
    "name": "alias_collect_field_classes",
-   "comment": "Field alias collector: walks the IL list, marks address-escaping symbols (opcodes 0x16a/0x16b/0x1aa set storage flag byte +5 bit 2), and for kind-6 memory operands buckets (offset,size) fields per bas"
+   "comment": "Field alias collector: walks the IL list, marks address-escaping symbols (opcodes 0x16a/0x16b/0x1aa set storage flag byte +5 bit 2), and (only when /Oa is off, arg4 == 0) for kind-6 operands whose class >= arg3 buckets (offset,size) ranges from memory_operand_field_range per base class while fewer than 0x400 - g_alias_class_count fields exist. New field ids start at g_alias_class_count; overlapping ranges of one parent get each other's bit in g_alias_secondary_records (bit index saturates at 31). A second pass rewrites each operand's +0x1c to its field id. Verified with scripts/c2/alias_trace.py (creature_update_all: 8-10 fields, parent a265 bits 0/1/2 for target (0x50,8), position (0x14,8), radius (0x88,4))."
   },
   "0x1071b95b": {
    "name": "function_reset_state",
@@ -2673,7 +2677,7 @@
   },
   "0x1073a471": {
    "name": "sched_memory_deps_on_stores",
-   "comment": "Edges from prior stores that may alias (operands_may_alias / 0x1071d500)."
+   "comment": "Edges from prior stores that may alias (operands_may_alias / 0x1071d500). Observed edge kinds: 0x20 store->later load, 0x40 load->later store, 0x80 store->later store (kinds OR with register kinds, e.g. 0x41)."
   },
   "0x1073a4d4": {
    "name": "sched_set_output_dep_latency",
@@ -3107,7 +3111,8 @@
   },
   "0x10742ad4": {
    "name": "range_free_of_conflicts",
-   "comment": "true if no tuple in [start,end) writes something overlapping def's operands or reads def's dst (0x10702771 overlap test)"
+   "comment": "Range is [first, last->next). Returns 0 if any real tuple's dst may alias tree's src or dst, or its src may alias tree's dst (operands_may_alias 0x10702771 at 0x10742b0a/0x10742b47/0x10742b65). Called by forward_propagate_definitions at 0x10712713 (use's own root tree) and 0x107125d8 (def->next .. use). Verified by fwdprop_trace on player_update: a store to an address-taken function-scope local fails the y-lane range against [player+0x20].",
+   "prototype": "int __fastcall range_free_of_conflicts(c2_tuple* first, c2_tuple* last, c2_tuple* tree)"
   },
   "0x10742b8a": {
    "name": "warning_state_lookup",
@@ -3666,7 +3671,7 @@
   },
   "0x10751e0d": {
    "name": "lower_small_block_copy_as_scalar",
-   "comment": "IL 0x16a/0x16b of size 1/2/4/8 (pow2, no count operand) -> scalar 0x15a push / 0x15b assign, then re-lowered"
+   "comment": "IL 0x16a/0x16b of size 1/2/4/8 (pow2, no count operand) -> scalar 0x15a push / 0x15b assign, then re-lowered. An 8-byte memory-to-memory copy goes through the __int64 path as two halves in order lo-load, lo-store, hi-load, hi-store (type 0x5004 each, both keeping the 8-byte operand's alias class); only the scheduler can group the loads. Verified by trace."
   },
   "0x10751e6f": {
    "name": "arg_stack_size",
@@ -3981,6 +3986,10 @@
    "name": "hoist_defining_tuples",
    "comment": "Recursively move defining tuples of kind-1/2 srcs before t, adjusting +0x12."
   },
+  "0x1075d2d5": {
+   "name": "alias_class_for_memory_base",
+   "comment": "compute_alias_points_to helper for kind-6 operands when /Oa is off (arg3 == 0 path; /Oa uses 0x1074e598). Walks the base temp to its named register-candidate pointer roots (0x1071ae81); with exactly one root returns alias_class_for_symbol_set(root, points-to set), which is cached per root pointer, so every access derived from the same named pointer shares one class. Unknown roots allocate fresh ids. Verified: in creature_update_all every creatures[i].f operand has class 180 and *position has 207, both with symbol set {creature_pool}."
+  },
   "0x1075d456": {
    "name": "alias_class_for_symbol_set",
    "comment": "Allocates or looks up an alias class id for a set of symbols: iterates the bitset (0x1070260e), returns 2 when empty, reuses a cached id from a list at *(ctx+0x30)+8 when an equal set exists, otherwis"
@@ -3991,7 +4000,7 @@
   },
   "0x1075d788": {
    "name": "memory_operand_field_range",
-   "comment": "Called by the field alias collector with a kind-6 operand; returns nonzero and (offset,size) when the memory reference addresses a determinable field of its base."
+   "comment": "Field range of a kind-6 operand for the field collector. Succeeds only if (a) the base symbol has no def and flags5&8 (a named register-candidate pointer): offset = disp; or (b) the base temp is defined by 0x16d/0x16e of (kind-2 named pointer with flags5&8, kind-7 constant): offset = +/-const + disp. Size = operand type & 0xfff (8 for a 0x5008 block copy). Verified: creature->f and *position get fields; creatures[i].f (base = (creatures + i*152) + off) never does."
   },
   "0x1075d816": {
    "name": "inline_unbind_written_formals",
@@ -4028,6 +4037,11 @@
   },
   "0x1075ec11": {
    "name": "emit_1075ec11"
+  },
+  "0x1075ec2e": {
+   "name": "mark_region_symbols_memory_resident",
+   "comment": "Read (static). Walks tuples from arg1 up to arg2. With arg3: every destination kind-2 symbol or kind-6 memory symbol gets flags5 |= 2 on all parts. With arg4: every source kind-3 (address) or kind-5 address-form symbol gets flags5 |= 2 and, when g_opt_eh_enabled is 0, flags6 |= 1. Called by count_tuples_and_scan_calls for IL 0x192 (dests), 0x1a0 (both) and 0x1a4 (dests, only without EH). build_live_ranges tests flags6 & 1 at 0x1072f68f/0x1072f6da to store back every definition.",
+   "prototype": "void __stdcall mark_region_symbols_memory_resident(c2_tuple *first, c2_tuple *end, int mark_destinations, int mark_address_sources)"
   },
   "0x1075edb3": {
    "name": "create_frame_eh_record",
@@ -4249,7 +4263,36 @@
   },
   "0x107645d8": {
    "name": "allocate_x87_live_ranges",
-   "comment": "Float-class path (st(0) caching of float ranges in loops), ends with fold_x87_copy_sequences."
+   "comment": "The x87 register allocator for every float candidate (not only loop caching). Called from global_color_registers when class-1 candidates exist (or fn uses FP with g_fp_loop_list and !/Op). Tag depths/split at calls (0x10764745), score (0x107649da), queue (0x10764f67), prune benefit<=0 to memory (0x1076504d), then per range in priority order: x87_range_fits_stack (0x1076590f) -> reg=ST0 + x87_commit_range_to_stack (0x10765d51), else split at the conflict markers and re-score the pieces. Verified with scripts/c2/x87_alloc_trace.py on snail draw_textured_quad_immediate, update_subgoldy, update_backdrop (exact) and micro float/double/loop functions."
+  },
+  "0x10764745": {
+   "name": "x87_tag_depths_and_split_at_calls",
+   "prototype": "struct c2_bitset* __fastcall x87_tag_depths_and_split_at_calls(struct c2_function* fn, struct c2_bitset* candidates)",
+   "comment": "Backward walk per block: writes the x87 expression-temp depth after each tuple into tuple +0x12/+0x13 (0 = statement boundary), sets float last-use flags (operand +0x11 bit 0x10), and inserts split markers for candidates live across a non-intrinsic call, around a float call nested in an expression, or where depth reaches 8. Returns the set of ranges to split (spared by the first prune). Verified with scripts/c2/x87_alloc_trace.py on snail draw_textured_quad_immediate, update_subgoldy, update_backdrop (exact) and micro float/double/loop functions."
+  },
+  "0x107649da": {
+   "name": "x87_score_live_ranges",
+   "prototype": "void __fastcall x87_score_live_ranges(struct c2_function* fn, struct c2_bitset* ranges)",
+   "comment": "priority = benefit = sum over references * (1<<loop_depth under /Ot): def +2 float/+4 double (0x10764ed6); non-last use 0 float/+1 double (0x107658a0); last use that is fld feeding fcom/fcomp/fst/fstp (0x10764f18) +1/+2 (0x107658d6), any other last use 0; reload 0x163 -1/-2; spill store 0x164 -2/-4; each exit edge where the range dies unused -1. Also hoists reloads to the expression start. Traced: float h 3, double h 9, loop float 4, window(3 defs,1 dying edge) 5, speed 1."
+  },
+  "0x10764ed6": {
+   "name": "x87_def_benefit",
+   "comment": "/Ot: 4 for a double, 2 for a float (also 2 for class 7/8 symbols and non-parameters in 0x600000-aligned frames); without /Ot 3 or 6. Used for defs (+) and spill stores (-). Traced values: float def 2, double def 4."
+  },
+  "0x10764f18": {
+   "name": "x87_result_feeds_store_or_compare",
+   "prototype": "int32_t __fastcall x87_result_feeds_store_or_compare(struct c2_tuple* t)",
+   "comment": "True when t's destination is a class-3 stack temp read by the next tuple as its first source and that tuple is fcom/fcomp/fst/fstp (table 0x10766750 over opcodes 0x5c..0x63). Gate for counting a last use in x87_score_live_ranges."
+  },
+  "0x10764f67": {
+   "name": "x87_queue_live_ranges",
+   "prototype": "struct c2_live_range* __fastcall x87_queue_live_ranges(struct c2_bitset* ranges, struct c2_live_range* queue)",
+   "comment": "Merges ranges into the queue sorted by priority desc, ties by tie_key desc (latest block, then earliest def); adds a block-end sentinel end point when a range has none; clears the input set. Verified with scripts/c2/x87_alloc_trace.py on snail draw_textured_quad_immediate, update_subgoldy, update_backdrop (exact) and micro float/double/loop functions."
+  },
+  "0x1076504d": {
+   "name": "x87_prune_unprofitable_ranges",
+   "prototype": "struct c2_live_range* __fastcall x87_prune_unprofitable_ranges(struct c2_function* fn, struct c2_live_range* queue, struct c2_bitset* spared)",
+   "comment": "Removes every queued range with benefit <= 0 (unless in spared, the pending-split set of the first pass): deletes its reload/spill tuples and turns its operands back into symbol operands (operand_make_sym), i.e. the variable lives in memory. Verified with scripts/c2/x87_alloc_trace.py on snail draw_textured_quad_immediate, update_subgoldy, update_backdrop (exact) and micro float/double/loop functions."
   },
   "0x107657b0": {
    "name": "sched_bypass_round_marker_edges",
@@ -4259,6 +4302,24 @@
   "0x10765881": {
    "name": "build_helper_call",
    "comment": "Turns tuple into a call to a runtime helper symbol (e.g. __ftol, __CIsin) with given arg bytes"
+  },
+  "0x107658a0": {
+   "name": "x87_use_benefit",
+   "comment": "/Ot: 1 for a double use, 0 for a float (also 0 for class 7/8 and non-parameters in aligned frames); without /Ot 1 or 4. Traced: float uses add nothing, each double use +1."
+  },
+  "0x107658d6": {
+   "name": "x87_fld_last_use_benefit",
+   "comment": "/Ot: 2 double / 1 float. Gain for a last use that is an fld feeding fcom/fcomp/fst/fstp, and the cost of a reload 0x163. Traced: float +1 (micro, update_backdrop), double +2, reload -1."
+  },
+  "0x1076590f": {
+   "name": "x87_range_fits_stack",
+   "prototype": "int32_t __fastcall x87_range_fits_stack(struct c2_function* fn, struct c2_live_range* lr, struct c2_bitset* on_stack)",
+   "comment": "LIFO test against ranges already on ST. Fails (0) and marks split points when: a placed range live at our def dies inside our range at a different end (0x10765b68), a placed range live at our def has any end where we are live (0x10765ba7), a placed range born inside us outlives us and the REGUSE end extension 0x1077999d fails (0x1077860e), our last-use expression defines another candidate (0x10765cc4), or multiple defs disagree in depth (0x10778756). Ranges ending at the same tuple nest. Verified with scripts/c2/x87_alloc_trace.py on snail draw_textured_quad_immediate, update_subgoldy, update_backdrop (exact) and micro float/double/loop functions."
+  },
+  "0x10765d51": {
+   "name": "x87_commit_range_to_stack",
+   "prototype": "struct c2_bitset* __fastcall x87_commit_range_to_stack(struct c2_function* fn, struct c2_live_range* lr, struct c2_bitset* on_stack, struct c2_bitset* all_ranges)",
+   "comment": "After lr gets ST0: inserts an explicit pop fstp st(0) <- lr (0x63) after the expression closing each end point (the trailing fstp st(0) in listings; traced), then simulates the stack through lr's blocks raising depth tags; at depth 8 splits not-yet-placed ranges at the next statement boundary (read). Returns ranges to split."
   },
   "0x10766278": {
    "name": "x87_eliminate_fld_stack_copy",
@@ -4284,6 +4345,11 @@
   "0x107664fc": {
    "name": "x87_restore_stack_order",
    "comment": "At block end insert fxch pairs until stack matches entry snapshot."
+  },
+  "0x107665d8": {
+   "name": "x87_split_if_live_at",
+   "prototype": "int32_t __fastcall x87_split_if_live_at(struct c2_tuple* t, struct c2_live_range* lr)",
+   "comment": "If lr is live just before t (block live-in/defs/last uses), inserts a split marker for lr at t (and around later uses in the same expression when t is an fstp to a candidate), flags the block 0x40000 and returns 1 (conflict). Traced at every LIFO failure."
   },
   "0x10766770": {
    "name": "clear_frame_operand_adjustments",
@@ -5164,7 +5230,7 @@
   },
   "0x1079d6bc": {
    "name": "g_alias_secondary_records",
-   "comment": "Pointer to 12-byte records for handles >= limit; record +0 is the primary table index."
+   "comment": "Array of 12-byte field-class records indexed by (id - g_alias_class_count): {parent class id, bit index (<=31), overlap mask of fields of the same parent}. Verified with alias_trace.py (creature_update_all: parent 265, bits 0/1/2, masks 1/2/4)."
   },
   "0x1079d6c8": {
    "name": "g_local_conflicts",
@@ -5466,7 +5532,8 @@
    "comment": "inverse condition code"
   },
   "0x107a0230": {
-   "name": "g_type_is_register_candidate"
+   "name": "g_type_is_register_candidate",
+   "comment": "Indexed by type_class_index 0x107059ef. 1: int and uint of 1/2/4 bytes (6/8 -> 0), float 4/8/other, pointer 4 (other sizes -> 0), aggregate 1/2/4 (other sizes -> 0), type classes 8, 9, 0xa. 0: type classes 6 and 7. pass_mark_register_candidates additionally rejects float (0x4000) operands. Traced: 0x5004 and 0x2004 views promoted, 0x1008 and 0x4004 not."
   },
   "0x107a02e8": {
    "name": "g_unsigned_cc",
@@ -6244,6 +6311,10 @@
    "name": "g_alias_class_max",
    "comment": "Highest alias id after field collection (= base count + new fields - 1); observed 1006/1009/1007."
   },
+  "0x107adff0": {
+   "name": "g_alias_field_overlap_test",
+   "comment": "When nonzero, alias_classes_intersect compares two field classes of the same parent by overlap bits instead of parent sets. Observed 1 for creature_update_all (/O2 /GB)."
+  },
   "0x107adff4": {
    "name": "g_local_register_order",
    "type": "int32_t[8]",
@@ -6410,6 +6481,8 @@
  "comments": {
   "0x10701a85": "size = g_node_size_by_kind[kind]",
   "0x10701c99": "per-kind free dispatch (byte table 0x1070284c indexed by kind-1)",
+  "0x10702771": "Local symbol vs kind-6 indirect: symbol_in_alias_class. Address-taken function-scope locals are members of the class of reads through computed or loaded pointers (&table[i], *global_ptr), but not of the class of reads through incoming parameter pointers or of block-scoped locals (x87-held-lanes.md \u00a73)",
+  "0x10702d60": "kind 6 vs kind 6: alias_classes_intersect(a->alias_class, b->alias_class); displacements are not compared.",
   "0x107038f5": "label symbol ref_count (+0x3a) ++",
   "0x10703b84": "ops 0x187..0x18c -> flags |= 8 (EH / no-return branch; see tools/match/c2/compiler/branch-variants.md)",
   "0x10703b86": "ops 0x187..0x18c: tuple flags bit3",
@@ -6464,7 +6537,9 @@
   "0x10711f82": "fwd-prop: use wider than def -> reject (only narrowing substitution)",
   "0x10712164": "call/0x187: all pending single-use defs are killed",
   "0x107123bb": "defs of variables live-out of the block are not substituted",
+  "0x107125d8": "range_free_of_conflicts(def->next, use->prev, tree): any aliasing store between the def and its use blocks forward propagation (held x87 lane)",
   "0x10712643": "0x162 FROUND inserted before the use for every float-class (0x4000) forward-propagated def; counts as a scheduling-window node, emits no code.",
+  "0x10712713": "range_free_of_conflicts(use_root, use_root, tree): the use's own tree must not clobber the propagated tree's inputs",
   "0x10712d51": "Exit block is forced to the end of the RPO block list",
   "0x107132b1": "invariant candidate: symbol operands must be in loop+0x34 (not killed in the loop)",
   "0x10713311": "operand kind table 0x10714208: kinds 1/2 check symbol, 3-5 and 7-9 ok, kind 6 (indirect memory) blocks the candidate",
@@ -6478,6 +6553,7 @@
   "0x1071888b": "recursive inliner call on the callee body: depth+1, budget/number of call sites",
   "0x10718df5": "inline recursion guard: a callee whose fe_function+0x73 bit 0x10 is set (being expanded) is only collected when the inline_recursion pragma state is on. This keeps a nested `vector constructor iterator` (member array inside an array element) out of line.",
   "0x107191b5": "More than 0x2710 real tuples: /Oa disabled and coarse alias fallback for this function",
+  "0x1071b0ee": "Field budget: fields are collected only while count < 0x400 - g_alias_class_count.",
   "0x1071e163": "cross_jump_pair: /Os (Ot==0) merges unconditionally",
   "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",
   "0x1071e1ef": "cross_jump_pair /Ot: merge if bytes + max(jmp counters) > 20, else fall back to last jmp/switch boundary",
@@ -6489,6 +6565,7 @@
   "0x107277f4": "exit tail must have <= 2 real tuples (the 2 is (/Ot?1:0)+1, always 2 here)",
   "0x1072785c": "duplicate only if predecessors*tail_len <= 8",
   "0x107280d0": "new constant candidate symbol (class 0xd) per distinct value",
+  "0x107284d8": "Per-operand decision: one symbol can have a promoted view (a uint copy view of a float, a 4-byte aggregate) and an unpromoted float or 8-byte view of the same bytes. Operands created later (lowering) are not marked here; build_live_ranges re-examines them (traced with scripts/c2/store_trace.py).",
   "0x1072867b": "sizeopt fixpoint limit 50 iterations (ICE sizeopt.c:69)",
   "0x1072868c": "sizeopt: 16-bit narrowing pass only without /Ot",
   "0x107290e8": "mul strength reduction: int class, not 0x1008 (__int64)",
@@ -6513,7 +6590,9 @@
   "0x1072df63": "caller pops (add esp,N) only for conv 0/0x40 and callee without flag 0x80",
   "0x1072e0f7": "0x15a argument copy becomes push (opcode 0xd)",
   "0x1072e22b": "short args promoted to dword push",
+  "0x1072e7cb": "Traced (boundary): after this call a promoted uint view is back in memory form when an overlapping float view of the same object is stored in memory (4-byte aggregate copy of a float member; player_render_overlays alpha).",
   "0x1072f667": "tie key = ordinal of defining tuple (blocks forward, tuples backward within block; last write wins)",
+  "0x1072f6cc": "Store-back: a promoted definition gets a 0x164 'home <- lr' after it when its storage is read later as memory (a kind-2 read of an overlapping part, or the alias class of an indirect read or call), when the operand is volatile (+0x11 & 8), or when the parent has flags6 & 1. Traced: (float)s on a promoted int inserts one after each definition; global colouring then demotes s.",
   "0x1072f957": "/Oy and no EH/naked flags: frame pointer omitted -> ebp allocatable (fn+0x34 |= 0x10)",
   "0x1072fb51": "score>=250 or (no params and >15): 8-byte aligned frame; >=15: tentative score",
   "0x1072fbbd": "Call to forward_substitute_single_def_ranges. Field pointers assigned from &base[i].f are substituted here unless the optimizer has already value-numbered the address into a temporary (pattern: pointer assignment followed by a direct read of the same field), in which case the temporary is split into region pieces and gets a class-3 stack home.",
@@ -6656,6 +6735,8 @@
   "0x10755ad7": "small-block predicate: const count && (count>>2) <= 4 (copy) or <= 5 (memset) -> no rep prefix",
   "0x10755ae9": "memset path: stos (0x3b) / rep stos (0x111), fill reg EAX",
   "0x10755d1a": "tail: count&2 -> movsw (or word reg move), count&1 -> movsb",
+  "0x10756886": "A 4-byte memcpy with a literal size never reaches this path: it is read as 0x16b and the global optimizer scalarizes it. A memcpy whose size is a variable stays a 0x190 intrinsic until lower_intrinsic even when the size folds to a constant (traced).",
+  "0x107584f9": "late_register_value_cse call. Traced: removes the load of a stack slot stored earlier in the same extended block (mov r,[slot] -> mov r,reg) but never the store. Runs after frame layout, so the slot keeps its store/load pair in the packer. Source of dead home stores such as player_render_overlays [esp+0x24].",
   "0x10758522": "xor edx,edx: fp_mode is always 0; this is the only call of schedule_instructions, so the fp_mode=1 scheduler path (0x1077ac93, 0x1077ae14, 0x10794d5e) is dead.",
   "0x1075872e": "SEH functions: seh_lower_local_unwinds lowers 0x188 -> call $finally, 0x189 -> ret (between finlower and jump_optimize #2)",
   "0x1075a012": "binary split: dense-prefix gap limit 3",
@@ -6677,6 +6758,9 @@
   "0x107635af": "unsigned 32-bit -> float: build 64-bit temp {lo=x, hi=0} then fild qword",
   "0x107636c4": "float->int: __ftol call unless -QIfist (0x107ac088) and dest not unsigned __int64; -QIfist uses fistp qword temp + mov low dword",
   "0x10764561": "fldz/fld1 only when !/Ot; /Ot loads 0.0/1.0 from memory constants",
+  "0x1076462e": "First prune: ranges with benefit <= 0 become memory variables unless they are in the pending call/depth split set.",
+  "0x107646b0": "Prune after a split: whole queue, no protection. Def piece of a float = +2 def -2 spill (+1 if last use is fld into fcom/fst/fstp); reload piece = -1 (+1 same).",
+  "0x107646c6": "x87_range_fits_stack: 1 -> lr->reg = &g_reg_symbols[0x1f] (ST0), commit; 0 -> lr requeued at head and split next iteration (pieces re-scored and pruned without protection; float reload pieces score <= 0, so the variable normally ends up in memory).",
   "0x1076a56f": "__int64 multiply of two 32-bit-sized operands -> single imul/mul; else __allmul",
   "0x1076ad33": "/GZ fill: <16 bytes direct imm stores",
   "0x1076ae9e": "/GZ rep stosd: save ecx for fastcall/thiscall",
