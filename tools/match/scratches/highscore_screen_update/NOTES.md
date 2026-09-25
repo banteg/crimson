@@ -2,6 +2,20 @@
 
 Native target: `crimsonland.exe` at `0x004423d0` (8,026 bytes).
 
+## Plain float locals (2026-09-25)
+
+Both `double` intermediates are gone and the result is still byte-exact
+(2004/2004, `639/0/0`). The checkbox copies the panel X through a single-use
+`float x_value`. The separator uses `float center_offset = 128 - title_width / 2`.
+Each single-use float local is forward-propagated with a FROUND round marker.
+That marker keeps the checkbox copy on the x87 stack and moves the 81-node
+window boundary exactly as the `double` did
+([plain-float-sources.md](../../c2/compiler/plain-float-sources.md),
+[x87-scheduling.md](../../c2/compiler/x87-scheduling.md)). The `memcpy` label
+copies stay. A plain float assignment (82.9%), an assignment before the branch
+(90.4%), a struct copy (86.8%) and a field copy (82.8%) all lose the integer
+EDI candidate. The section below describes the earlier `double` form.
+
 ## Complete stock match — 2026-09-22
 
 The canonical scratch now matches all **2,004 instructions / 8,026 bytes**,

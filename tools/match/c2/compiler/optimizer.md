@@ -51,7 +51,7 @@ Other notes:
    - A `t = e; v = t` copy is coalesced.
    - A single-def/single-last-use temp is forward-substituted only within the same innermost loop, when its def dominates the use, and with no call or aliased memory access in between.
    - So splitting an expression into a named local usually vanishes, but not across calls, aliasing stores or loop boundaries.
-6. **CSE runs in two sweeps.** The final sweep kills everything at a call.
+6. **CSE runs in two sweeps.** The final sweep kills available expressions at a call. Branch-condition facts are different: a dominating `count > 0` still folds a later `0 < count` across a call ([plain-float-sources.md](plain-float-sources.md)); the folding site is not identified.
    - Loops of more than `-Loop#` (default 100) blocks get only conservative availability and **no IV or strength-reduction work**.
 7. **Induction variables.**
    - The IV, strength-reduction and pointer-conversion pipeline needs a bottom-tested loop (usually produced by inversion) whose only exit is the latch.

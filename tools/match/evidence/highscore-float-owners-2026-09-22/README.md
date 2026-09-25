@@ -1,5 +1,11 @@
 # Highscore complete stock match
 
+The canonical scratch has since replaced both `double` intermediates with
+single-use `float` locals ([plain-float-sources.md](../../c2/compiler/plain-float-sources.md)).
+A float centering local is exact when written as `128 - title_width / 2`; the
+failed float control below used `128 - title_half_width`. This directory
+records the 2026-09-22 witness.
+
 `separator-double-center` reproduces the complete native
 `highscore_screen_update` at `0x4423d0`: **2,004 instructions / 8,026 bytes**,
 with both normalized exactness and relocation-aware encoded-body identity.

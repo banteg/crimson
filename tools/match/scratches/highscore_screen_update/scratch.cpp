@@ -225,9 +225,9 @@ extern "C" void highscore_screen_update(void)
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
     {
-        double center_offset = 128 - title_half_width;
+        float center_offset = 128 - title_width / 2;
         highscore_vec2_t separator(
-            position.x + (float)center_offset,
+            position.x + center_offset,
             position.y + 14.0f);
         grim_interface_ptr->grim_draw_rect_outline(
             (float *)&separator, (float)title_width, 1.0f);
@@ -563,9 +563,9 @@ play_game_done:
         float filter_x;
         {
             static highscore_checkbox_t online_scores_checkbox;
-            double x_value = right_panel.x;
-            filter_x = (float)x_value;
-            highscore_vec2_t widget_position((float)x_value, right_panel.y);
+            float x_value = right_panel.x;
+            filter_x = x_value;
+            highscore_vec2_t widget_position(filter_x, right_panel.y);
             online_scores_checkbox.label = "Show internet scores";
             online_scores_checkbox.checked = config_blob.show_online_scores;
             if (ui_checkbox_update(

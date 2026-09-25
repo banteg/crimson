@@ -78,9 +78,10 @@ Notable behavior that the plain forms make visible:
 ## Retained or open
 
 - **`highscore_screen_update` float controls.** The two `double`
-  intermediates and the `memcpy` label copies are retained. A plain
-  assignment drops the match to 82.9%. See
-  `evidence/highscore-float-owners-2026-09-22`.
+  intermediates became single-use `float` locals, still byte-exact. The
+  `memcpy` label copies are retained: every plainer copy loses the integer
+  register candidate (82.8–90.4%). See
+  [plain-float-sources.md](c2/compiler/plain-float-sources.md).
 - **`player_render_overlays` alpha byte copy.** Retained. Native stores
   `tint.a` to a shared stack slot, and it also keeps the value in a register.
   Plain, reference-parameter, POD and temporary-copy forms all reach 96.73%.
@@ -94,8 +95,8 @@ Notable behavior that the plain forms make visible:
   loops and byte-exact. Converting only one or two of them swaps one `fadd`,
   because commutative x87 operands sort by symbol id mod 8
   ([x87-scheduling.md](c2/compiler/x87-scheduling.md)).
-- **`effect_spawn_splitter_hit_burst`.** A `for` inside the `count > 0`
-  guard re-tests the count after `ftol`. The guarded countdown stays.
+- **`effect_spawn_splitter_hit_burst`.** Settled: a plain `for` with the
+  `(int)radius` cast inside the body is byte-exact and needs no guard.
 - **`controls_menu_update`.** The axis-peak scan walks seven separately
   declared globals, so it needs an array owner first.
 - **`projectile_update`.** Twelve countdowns remain. Auto-converting them

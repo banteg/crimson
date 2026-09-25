@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "df9570c8fef798c6d448068d071f1572a453023abc22ea7fed38f88be0c32f17",
+  "audit_digest": "b46360277fa5c49ed02645818dc43dd344e46a71506172a8b8cf4ac6c8ae45fc",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -60088,7 +60088,7 @@
         {
           "path": "tools/match/scratches/effect_spawn_splitter_hit_burst/scratch.c",
           "repository_relative": true,
-          "sha256": "968e0c4ad9ab09a4c23197635f57f8f6edacdca8f2e11e381933d7464ca2816b"
+          "sha256": "cbae9135109e730231afbe7cfc727c3f9250ea0b4b3d36efd48a7c549ecf037a"
         },
         {
           "path": "tools/match/scratches/effect_spawn_splitter_hit_burst/scratch.conf",
@@ -60134,10 +60134,10 @@
           "canonical_config_sha256": "16651429353150b1797e8123acaefa464189dd655287a067aef01df0b91b6508",
           "canonical_scratch": "tools/match/scratches/effect_spawn_splitter_hit_burst",
           "canonical_source": "tools/match/scratches/effect_spawn_splitter_hit_burst/scratch.c",
-          "canonical_source_sha256": "968e0c4ad9ab09a4c23197635f57f8f6edacdca8f2e11e381933d7464ca2816b",
+          "canonical_source_sha256": "cbae9135109e730231afbe7cfc727c3f9250ea0b4b3d36efd48a7c549ecf037a",
           "effective_end": 4388157,
           "end": 4388157,
-          "experiment_epoch": "3e6743157e37ff75a3cbb2270a532a667a37edfaa1735bc7bdaf1d7e8225c8b2",
+          "experiment_epoch": "eb3d46f94fccf7c2479d697b36df5faf8025f77dfa5d1fd117de38b6e365d55e",
           "function": "effect_spawn_splitter_hit_burst",
           "match": {
             "body_byte_exact": true,
@@ -60178,7 +60178,7 @@
       "object_sha256": "3f0ed10c3abf2606caa5116343015343979973b0b7fd860f0fdfcd64e87dadd3",
       "scratch": "tools/match/scratches/effect_spawn_splitter_hit_burst",
       "source": "tools/match/scratches/effect_spawn_splitter_hit_burst/scratch.c",
-      "source_sha256": "968e0c4ad9ab09a4c23197635f57f8f6edacdca8f2e11e381933d7464ca2816b",
+      "source_sha256": "cbae9135109e730231afbe7cfc727c3f9250ea0b4b3d36efd48a7c549ecf037a",
       "target_size": 333,
       "translation_unit": {
         "kind": "isolated",
@@ -79710,7 +79710,7 @@
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f"
+          "sha256": "23c8182609d89afe4ee98e1ee1e9266a26d4e0b0ceeb8f57f7c44af063fc732f"
         },
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.conf",
@@ -79771,10 +79771,10 @@
           "canonical_config_sha256": "8bc1ee5c791d2602733505ea8019084c0c9aa9be6b740bb8c8b56577ba762dec",
           "canonical_scratch": "tools/match/scratches/highscore_screen_update",
           "canonical_source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-          "canonical_source_sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f",
+          "canonical_source_sha256": "23c8182609d89afe4ee98e1ee1e9266a26d4e0b0ceeb8f57f7c44af063fc732f",
           "effective_end": 4473642,
           "end": 4473642,
-          "experiment_epoch": "39d594199fb9db58732a336e1583ec0fc2cc45338ee9ce962c3d514c11385573",
+          "experiment_epoch": "cf11d99da0fe0f3ebeae4651cbba68872b63bb9e00abc2002d78ff5565f848cc",
           "function": "highscore_screen_update",
           "match": {
             "body_byte_exact": true,
@@ -80076,7 +80076,7 @@
       "object_sha256": "0c694ed3b350c1bc8d3dd050ebff87335e4374fbcf3c81c47cec96185e6e3751",
       "scratch": "tools/match/scratches/highscore_screen_update",
       "source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-      "source_sha256": "2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f",
+      "source_sha256": "23c8182609d89afe4ee98e1ee1e9266a26d4e0b0ceeb8f57f7c44af063fc732f",
       "target_size": 8026,
       "translation_unit": {
         "config": "tools/native/translation_units/crimsonland.exe.json",
