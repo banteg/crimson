@@ -55,8 +55,8 @@ Other notes:
    - Loops of more than `-Loop#` (default 100) blocks get only conservative availability and **no IV or strength-reduction work**.
 7. **Induction variables.**
    - The IV, strength-reduction and pointer-conversion pipeline needs a bottom-tested loop (usually produced by inversion) whose only exit is the latch.
-   - `a[i]` is turned into pointer IVs, and when two IVs have the same step, one is merged away (the survivor is picked by use count or by being live after the loop).
-   - An extra `break` or a second exit disables all of it.
+   - `a[i]` is turned into pointer IVs, and when two IVs have the same step, one is merged away. With equal use counts the anchor is the second field address in IL order ([strength-reduction.md](strength-reduction.md)).
+   - An extra `break` or a second exit only removes the trip count: countdown conversion, final-value replacement and empty-loop deletion are lost, but SR, IV merging and exit-test replacement still run.
 
 ---
 ## A. Flow graph, block order and loop layout (fg.c side)
@@ -555,7 +555,7 @@ Scope: loop-invariant code motion, reassociation, induction variables (IVs), str
 3. **`find_basic_induction_variables` 0x10746521.**
    - Candidates are variables (kind 2) of type class 1..3 assigned by 0x15b or add/sub in blocks directly in this loop. Assign tags 1 and 0xe don't count.
    - Pruning repeats until stable. Every in-loop def must be `iv = iv2` or `iv = iv2 ± inv` (for sub, the IV must be on the left). Any other def, such as a mul or a call result, removes the candidate.
-4. **Exit-test analysis: `analyze_loop_exit_test` 0x107468aa.** All of the following must hold:
+4. **Exit-test analysis: `analyze_loop_exit_test` 0x107468aa.** It succeeds unless the trip count is the constant 0 or 1. The conditions below gate only the trip count (verified in [strength-reduction.md](strength-reduction.md)):
    - exactly one exit block, and it is the latch (a bottom-tested loop);
    - the header's only preds are the preheader and the latch;
    - the latch branch tests `IV rel invariant`; the operands are swapped (and the condition reversed) if needed.
@@ -570,10 +570,10 @@ Scope: loop-invariant code motion, reassociation, induction variables (IVs), str
    - Each candidate becomes `dst = D`, where D = `get_derived_iv` 0x10753def(op, a, b). D is a value-numbered expression symbol, so equal expressions such as two `i*4` share one D.
    - D is initialised at the preheader end. After every update of the base IV, `D = D ± step·inv` is inserted.
    - **`merge_parallel_induction_variables` 0x10746a2f** (mode 4). Two IVs with the same update opcode, step operand, update block and compatible type are merged as `j = i + (init_j - init_i)` (0x10754157 / 0x10754542 / 0x10754627).
-     - **Tie-break**: the IV with more in-loop uses, or one that is live after the loop, survives. On equal counts the first-listed IV is eliminated.
+     - **Tie-break** (traced): the first champion is the last preheader init; challengers come in reverse preheader order and win ties; the survivor accumulates the loser's uses (0x10754627). An IV live after the loop, or with strictly more uses, survives.
    - `remove_dead_iv_code` 0x10747dda runs liveness with dead-store deletion until stable, which removes IV updates that became unused.
    - `convert_loop_stores_to_block_op` 0x10747ed0 (mode 3, low confidence) handles IV-pointer stores/copies and per-iteration memset/memcpy (intrinsic 0xad/0xac) when a trip count exists.
-   - **`replace_loop_exit_tests` 0x107482cd → `rewrite_exit_test_with_derived_iv` 0x10752a50** (globlopt.c:3975). `iv rel lim` becomes `D rel f(lim)`; the relation flips for a negative int scale.
+   - **`replace_loop_exit_tests` 0x107482cd → `rewrite_exit_test_with_derived_iv` 0x10752a50** (globlopt.c:3975). `iv rel lim` becomes `D rel f(lim)`; the relation flips for a negative int scale. It rewrites every IV-vs-invariant compare that feeds a branch, keeps the compare's signedness, and fires only when the new limit folds to one operand (a constant limit).
    - **`strength_reduce_address_operands` 0x10748429** (globlopt.c:8467):
      - Memory operands `[base+idx<<s+disp]` whose base or index is an IV are rebuilt as an explicit address temp by `materialize_memory_address` 0x107547f2 (globlopt.c:7862), and become `[temp]`.
      - The shift/scale-derived IVs from mode 6 (0x179..0x17b, with a power-of-two check) are also handled here.
@@ -585,9 +585,8 @@ Scope: loop-invariant code motion, reassociation, induction variables (IVs), str
 
 ### Matching implications (source rewrites that flip decisions)
 
-- **Loop form matters.** IV, SR, LFTR, count-down and final-value work only on loops whose single exit is the latch.
-  - A `for` or `while` loop reaches that shape through loop inversion (0x10712d99). Any `break`, `return` or `goto` out of the body adds an exit, and then only invariant hoisting runs.
-  - An exit test in the middle of the loop, such as `for(;;){ if(..) break; ...}`, has the same effect.
+- **Loop form matters.** Count-down, final-value and empty-loop deletion need a trip count, which needs a loop whose single exit is the latch.
+  - A `for` or `while` loop reaches that shape through loop inversion (0x10712d99). A `break`, `return` or `goto` out of the body, or a mid-loop exit test, removes the trip count; SR, IV merging and exit-test replacement still run ([strength-reduction.md](strength-reduction.md)).
 - **Loop size.** Loops over 100 blocks (including inlined code, switch arms and `?:`) get no IV/SR at all, and in phase 3 only coarse invariant availability.
 - **Index vs pointer.** An `a[i]` memory operand with IV i is turned into an address temp and a pointer IV, as long as i is a clean basic IV. Hand-written pointer loops and index loops can therefore converge, or diverge if either form fails the IV rules:
   - volatile, address-taken or aliased i;
@@ -596,7 +595,7 @@ Scope: loop-invariant code motion, reassociation, induction variables (IVs), str
   - i a field of a union or of an 8-byte struct;
   - a mul/call def of i;
   - `i = c - i`.
-- **Several IVs with the same step** (`p++` and `i++`) are merged. The survivor is the one with more uses, or the one live after the loop. Adding a use after the loop, or reordering uses, flips which register variable remains.
+- **Several IVs with the same step** (`p++` and `i++`) are merged. The survivor is the one with more uses, or the one live after the loop; on a tie, the rule in [strength-reduction.md](strength-reduction.md) applies. Adding a use after the loop, or reordering uses, flips which register variable remains.
 - **A counter used only for the trip** (`for(i=0;i<n;i++) body-not-using-i`) becomes a down-counting 32-bit counter, `dec` then `jnz`. Using i anywhere in the body prevents that.
 - **Shared scaled indexes.** Identical scaled index expressions in one loop (`a[i]`, `b[i]` with the same element size) share one derived IV. Different element sizes create separate derived IVs, which means more registers.
 - **Hoisting of `x = inv`.** It needs x not live on loop entry and the defining block to dominate all exits.

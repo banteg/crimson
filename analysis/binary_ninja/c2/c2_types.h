@@ -554,7 +554,7 @@ struct c2_tuple {
     c2_tuple* prev;         /* 0x0c */
     uint16_t line;          /* 0x10 source line relative to function start */
     uint8_t field_12;       /* 0x12 */
-    uint8_t pad_13;         /* 0x13 */
+    uint8_t iv_tag;         /* 0x13 4 = IV update pair (t = iv +- step; iv = t), 9 = scratch preheader copy (loop opts) */
     uint32_t aux;           /* 0x14 kind-specific (CSE value, block for 0x19/0x1a, payload for markers) */
     c2_operand* src;        /* 0x18 source operand list */
     c2_operand* dst;        /* 0x1c destination operand list */
@@ -652,7 +652,7 @@ struct c2_symbol {
     int32_t size;           /* 0x20 bytes (bits for register class) */
     int32_t offset;         /* 0x24 offset in parent (bits for registers) */
     int32_t frame_offset;   /* 0x28 locals: frame offset after stack layout; registers: x86 encoding; free-list link while free */
-    c2_symbol* frame_next;  /* 0x2c stack layout order list */
+    c2_symbol* frame_next;  /* 0x2c stack layout order list; derived-IV list link during IV optimisation */
     c2_symbol* frame_prev;  /* 0x30 */
     int32_t ref_weight;     /* 0x34 stack layout reference count; registers: constant score; optimizer: CSE list */
     int32_t frame_index;    /* 0x38 */
@@ -660,7 +660,7 @@ struct c2_symbol {
     c2_bitset* set_40;      /* 0x40 */
     uint32_t field_44;      /* 0x44 */
     uint32_t field_48;      /* 0x48 */
-    uint32_t field_4c;      /* 0x4c */
+    void* def_list;         /* 0x4c {next, tuple} list of defining tuples */
     void* use_list;         /* 0x50 */
 };
 

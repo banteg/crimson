@@ -1294,6 +1294,10 @@
   "0x10710de6": {
    "name": "refill_list_node_pool"
   },
+  "0x10710e22": {
+   "name": "list_node_push",
+   "comment": "Takes a node from g_list_node_free (refilling the pool if empty), sets node->next = arg1 (old head) and node->value = arg2, returns the node as the new head. Used by iv_worklist_push / iv_retry_list_push, so both lists are LIFO."
+  },
   "0x10710e4d": {
    "name": "tuple_get_block",
    "prototype": "c2_block* __fastcall tuple_get_block(c2_tuple* t)",
@@ -3226,7 +3230,7 @@
   },
   "0x10744cc6": {
    "name": "set_preheader_insert_point",
-   "comment": "0x1079f0ec = preheader end marker (loop+0x10 -> +0x20)."
+   "comment": "g_preheader_insert_point = preheader->+0x20, the block's end sentinel (mode 4 walks +0x1c..+0x20); SR/LTR create inits with tuple_insert_before(insert point), i.e. appended to the preheader end, after hoisted invariants and after the entry code of the previous block."
   },
   "0x10744cd3": {
    "name": "hoist_invariants_in_block",
@@ -3315,25 +3319,29 @@
   },
   "0x107468aa": {
    "name": "analyze_loop_exit_test",
-   "comment": "Needs one exit, and it must be the latch; latch branch compares IV with an invariant; computes trip count into loop+0x28."
+   "comment": "Returns 1 unless the trip count is the constant 0 or 1 (then the back edge is removed and it returns 0). The one-exit-equal-latch, header-pred, IV-vs-invariant latch compare and trip-count checks only decide whether loop+0x28 (trip count) and loop+0x2c (exit compare) are recorded; SR, merge and LTR run either way (traced: loops with break/return still get pointer IVs and LTR)."
   },
   "0x10746a2f": {
    "name": "merge_parallel_induction_variables",
-   "comment": "IVs with the same step and update block: rewrite one as other + (init difference). Keeps the one with more uses or that is live after the loop."
+   "comment": "Mode-4 worklist = preheader IV inits pushed in preheader order, popped LIFO: the champion is the LAST init. Challengers (reverse preheader order) with the same step operand/opcode/update block/type are compared: the champion survives only if uses(champion) > uses(challenger), or it is live after the loop, or it has the +0x11 bit-4 flag; otherwise the challenger wins and absorbs the uses (0x10754627 *arg5 += 1). Decides the anchored field offset of pointer IVs (verified with controls, strength-reduction.md)."
   },
   "0x10746f93": {
    "name": "reset_iv_worklists"
   },
   "0x10746fb7": {
    "name": "collect_iv_candidates",
-   "comment": "mode 1 SR ops, 2 IV compares, 3 IV stores/memset/memcpy, 4 IV pairs, 5 preheader IV copies (child loop), 6 shift/scale derived IVs."
+   "comment": "Mode 1: forward walk header..latch, pushes IV*inv / IV+-inv / 4-byte IV cvt candidates onto the LIFO g_iv_worklist (processed in reverse program order). Mode 2: every IV-vs-invariant compare 0x17d in the loop (not only the latch test). Mode 3: IV-pointer stores/copies and intrinsics 0xad/0xac (idiom). Mode 4: preheader `IV = x` inits whose IV has one tag-4 update (merge worklist). Mode 5: preheader IV copies (child loop). Mode 6: shift/scale derived IVs."
   },
   "0x10747720": {
    "name": "iv_worklist_pop"
   },
+  "0x1074773b": {
+   "name": "list_node_pop",
+   "comment": "Pops the head: *out = head->value, returns head->next, returns the node to g_list_node_free. With list_node_push this makes the IV worklists LIFO (traced: SR candidates are processed in reverse program order)."
+  },
   "0x1074775c": {
    "name": "strength_reduce_loop",
-   "comment": "globlopt.c:3305/3346. Up to 32 rounds: IV*inv / IV+inv / IV conversion -> derived IV temp, initialised in the preheader and updated after each IV update."
+   "comment": "globlopt.c:3305/3346. Up to 32 rounds; each round resets the derived list (0x10746f93), collects mode-1 candidates, pops them LIFO, value-numbers each into a derived IV (0x10753def), then appends one preheader init per derived IV in derived-list (creation) order before g_preheader_insert_point and inserts D = D +- step after each base-IV update. Round-1 results (i*S) make i*S + &base a round-2 candidate."
   },
   "0x10747c9a": {
    "name": "cleanup_preheader_after_sr"
@@ -3351,7 +3359,7 @@
   },
   "0x10747ed0": {
    "name": "convert_loop_stores_to_block_op",
-   "comment": "Loop-idiom candidates (IV-pointer stores/copies, memset 0xad / memcpy 0xac intrinsics) given a trip count. Details unverified."
+   "comment": "Loop idiom conversion (needs a trip count). Traced: turns the timeline four-byte witness's per-byte pointer copy loop into the 0x190 copy intrinsic whose lowering leaves the unpromoted dead home store; the only IV-pipeline step seen to create such a store."
   },
   "0x107482cd": {
    "name": "replace_loop_exit_tests",
@@ -3390,7 +3398,8 @@
    "name": "add_symbol_loop_def"
   },
   "0x10748e12": {
-   "name": "iv_worklist_push"
+   "name": "iv_worklist_push",
+   "comment": "Prepends through list_node_push 0x10710e22: the IV worklist is LIFO."
   },
   "0x10748e25": {
    "name": "operand_live_after_loop",
@@ -3697,7 +3706,7 @@
   },
   "0x10752a50": {
    "name": "rewrite_exit_test_with_derived_iv",
-   "comment": "globlopt.c:3975. iv REL lim -> d REL f(lim); flips the relation for a negative int scale."
+   "comment": "globlopt.c:3975. iv REL lim -> D REL f(lim); the compare's type becomes (old & 0xf000) | (D type & 0xfff), so an int index keeps signed jl/jge and an unsigned index gives jb; reverses the branch for a negative int scale. Only reached when 0x10752e60 finds a derived IV whose rewritten limit folds to one operand (constant limit)."
   },
   "0x107530cb": {
    "name": "iv_retry_list_push"
@@ -3721,13 +3730,17 @@
   },
   "0x10753def": {
    "name": "get_derived_iv",
-   "comment": "Value-numbers (op,a,b) to an expression symbol; flags it derived IV (+0x32 bit0) or invariant (bit1) and links it on 0x107ae220."
+   "comment": "Value-numbers (op,a,b) to an expression symbol (equal expressions share one D, created at the first pop = last occurrence in program order); flags it derived IV (+0x32 bit0) or invariant (bit1) and appends it to g_derived_iv_head/tail through sym+0x2c (frame_next reused as the link). List order = preheader init order."
   },
   "0x10753f2e": {
    "name": "map_iv_update_opcode"
   },
   "0x10754381": {
    "name": "misc_10754381"
+  },
+  "0x10754627": {
+   "name": "rewrite_iv_uses_from_survivor",
+   "comment": "merge_parallel_induction_variables helper: rewrites each use of IV arg2->dst->sym as (arg3->dst->sym + arg4), increments *arg5 once per redirected use (the survivor's running use count), then deletes the eliminated IV's update and its preheader init when possible. The accumulation is why a tie winner beats every later single-use challenger (see strength-reduction.md rule A)."
   },
   "0x107547f2": {
    "name": "materialize_memory_address",
@@ -6392,6 +6405,7 @@
   "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",
   "0x1071e1ef": "cross_jump_pair /Ot: merge if bytes + max(jmp counters) > 20, else fall back to last jmp/switch boundary",
   "0x107237c8": "allowed set starts as class set",
+  "0x10724689": "Allocator helper (from build_split_pieces and insert_upward_exposed_reloads). A predecessor block with flags 0x1000000 (ends in IL 0x187 CATCH_RETURN) forces split_edge_with_new_block (0x10724712). Static reading.",
   "0x10724c1c": "block weight w = 1<<loop_depth under /Ot, else 1",
   "0x10725417": "priority += P*w*S for ranges referenced in the block (P = #ranges referenced in block)",
   "0x1072545b": "live-through without reference: priority -= P*w",
@@ -6520,6 +6534,7 @@
   "0x1074518b": "-Loop# gate: IV/strength-reduction pipeline 0x10745d75 only for loops of <= 100 blocks",
   "0x10745425": "count-down conversion only if the IV has no in-loop use besides its exit compare and its own update",
   "0x10745537": "final-value replacement: single def (tag 4 assign) and single use (tag 4 add); update must precede the exit compare",
+  "0x10745db5": "analyze_loop_exit_test result only gates SR when the trip count is constant 0/1; see function comment.",
   "0x1074642e": "fields of 8-byte (0x1008/0x2008) aggregates are excluded from IV candidates",
   "0x10746568": "assigns tagged 1 or 0xe do not make a var an IV candidate",
   "0x1074659e": "IV candidate type nibble must be 1..3 (int-like/pointer); float and 64-bit excluded",
@@ -6527,6 +6542,7 @@
   "0x107468eb": "IV exit-test analysis needs exactly one exit block, and it must be the latch (bottom-tested loop)",
   "0x107469c1": "IV used in a trip-count compare with size < 4 recorded as narrow (0x107ae1f4)",
   "0x10746b7d": "IV merge: the IV with more in-loop uses (or live after the loop) is kept; on a tie the first-listed IV is eliminated",
+  "0x1074781f": "call get_derived_iv: esi = candidate tuple (anchor); observation point used by scripts/c2/iv_trace.py.",
   "0x10747bbc": "strength reduction repeats at most 32 rounds per loop",
   "0x10748cb7": "aggregate parent >0x100 bytes: any overlapping live field blocks the hoist",
   "0x1074a615": "select threshold index: /Ot ? cpu-4 : 2",
@@ -6546,6 +6562,7 @@
   "0x107514dc": "mul decomposition budget: /Os 2, /Ot&&G<=4 max(log2,3)+6, else 10",
   "0x10751a60": "shift by <=3 via lea scales, larger via shl",
   "0x10751bc8": "decomposition kept only if strictly cheaper (first found wins ties)",
+  "0x10752e60": "LTR derived-IV chooser: for each derived IV of the basic IV, combines the limit with the derived expression through 0x10754157 and accepts only when the result folds to IL_ASSIGN (a single operand), keeping the best 0x1075408c score. A variable limit (n*S + &base) never folds, so no LTR (controls k1/k2/m1).",
   "0x1075383a": "trip count needs IV, limit and step sizes <= 4 bytes",
   "0x10753e50": "derived expression with any non-invariant operand becomes a derived IV (+0x32 bit0); otherwise an invariant expr (bit1)",
   "0x10754cdf": "strcmp (0xa5) with string literal operand rewritten to memcmp-like 0xaa with length strlen+1",
@@ -6600,7 +6617,6 @@
   "0x1078ff9f": "fwd-prop: float (0x4000) defs not substituted under /Op or -basic",
   "0x107911bb": "trip count constant 0 or 1: back edge removed (loop body runs once)",
   "0x10792d0a": "C4756 only when mode==2, once per tuple",
-  "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes",
-  "0x10724689": "Allocator helper (from build_split_pieces and insert_upward_exposed_reloads). A predecessor block with flags 0x1000000 (ends in IL 0x187 CATCH_RETURN) forces split_edge_with_new_block (0x10724712). Static reading."
+  "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes"
  }
 }
