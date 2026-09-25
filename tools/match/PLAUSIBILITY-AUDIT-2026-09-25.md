@@ -101,5 +101,8 @@ Notable behavior that the plain forms make visible:
 - **`projectile_update`.** Twelve countdowns remain. Auto-converting them
   loses three references.
 - **`*_global_init` countdowns.** These are compiler-generated array
-  constructor loops for statics with constructors. The plausible source is
-  the array definition itself, which is a structural change for later.
+  constructor loops for statics with constructors. A plain `T arr[N];` with an
+  inline constructor reproduces all 13 initializers and their thunks
+  byte-exact, with `SYMBOL='_$E1'`/`'_$E2'`. Adopting them needs native relink
+  clusters and data-definition ownership first
+  ([array-constructors.md](c2/compiler/array-constructors.md)).

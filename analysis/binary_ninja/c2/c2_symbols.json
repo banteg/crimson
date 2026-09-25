@@ -1491,8 +1491,19 @@
    "comment": "Install the function scope table (0x1079a1cc)."
   },
   "0x107180fd": {
-   "name": "function_prepare_temps",
-   "comment": "Per-function setup after reading: temp sizing, clear symbol flags."
+   "name": "inline_function_calls",
+   "comment": "Rename from function_prepare_temps: its main job is running the inliner for one function. It resets arena 4, sets g_inline_total_size to the function's own inline size (fe_function+0x6d), computes budget = clamp(2*size, 1000, 35000), sets 0x107ae240=1 and calls inline_expand_calls(fn, depth 1, budget, 0) (callsite 0x10718134). Only afterwards does it clear bits 0x82 on every symbol chunk entry. Called per function from compile_functions 0x107580fa, before the first stock pass hook. Traced: scripts/c2/inline_trace.py hooks 0x107580fa (ecx = function) and 0x10718134 (budget 0x3e8 for small functions).",
+   "prototype": "int __fastcall inline_function_calls(struct c2_function* fn)"
+  },
+  "0x107181a8": {
+   "name": "inline_expand_calls",
+   "comment": "The C2 inliner (P2/inline.c). ecx = function, edx = depth (1 at top level), stack: size budget, flag. Sets callee fe_function+0x73 bit 0x10 (expansion in progress) on entry and clears it on exit. Collects call sites with inline_collect_call_sites, and for each: checks size (fe+0x6d <= 0x28 or budget) and the global cap 35000 (g_inline_total_size), warns C4710/C4714 (warning(4, 0x2c6 + 4*forceinline)) or C4711 (0x2c7), reads the callee IL (read_function_il), binds address-constant actuals (0x1075bdb3/0x1075d816/0x1075d889), recurses into the callee body with depth+1 (callsite 0x1071888b), substitutes formals (inline_substitute_formals, callsite 0x10718940) and splices the body in place of the call. Traced: vector-constructor-iterator arrays expand at depths 2 (??_H) and 3 (element ctor).",
+   "prototype": "int __fastcall inline_expand_calls(struct c2_function* fn, int depth, int budget, int flag)"
+  },
+  "0x10718a2a": {
+   "name": "inline_collect_call_sites",
+   "comment": "Walks the function's tuples and returns a list of inlinable call tuples (kind 0xe). The callee is either a direct function operand (kind 4, fe storage_flags bit 0x4000) or a symbol operand whose bound value is such a function (the address-propagated member-function pointer case). Skips callees whose fe_function+0x73 bit 0x10 is set (already being expanded) unless the inline_recursion pragma state (aux from marker tuple op 0x1b8, bits 8..11) is non-zero; skips callees with EH bits (0x300) when the caller has none, and callees over the /Os size threshold (0x10799280). Consumes (frees) the 0x1b8 markers. Verified by the nested member-array experiment: without the pragma the inner ??_H is not collected; with #pragma inline_recursion(on) it expands (depths 2..5).",
+   "prototype": "void** __fastcall inline_collect_call_sites(struct c2_function* fn, int* count, int flag)"
   },
   "0x10718eaf": {
    "name": "compute_alias_classes",
@@ -3953,8 +3964,15 @@
   "0x1075b97c": {
    "name": "report_uninitialized_uses"
   },
+  "0x1075bdb3": {
+   "name": "inline_bind_address_actuals",
+   "comment": "For each actual of the call whose value is an address operand (kind mask 0x18), stores it in the matching formal's +0x2c slot and counts it (returns the count). Static reading; its effect (the member-function pointer becoming a direct, inlinable call inside ??_H) is traced by inline_trace.py.",
+   "prototype": "int inline_bind_address_actuals(struct c2_function* callee, struct c2_tuple* entry, struct c2_tuple* call)"
+  },
   "0x1075c9b0": {
-   "name": "inline_1075c9b0"
+   "name": "inline_substitute_formals",
+   "comment": "Rename from inline_1075c9b0: replaces uses of the inlinee's formal symbols (class 5) by the bound actual operands (register temp, symbol part, int/float constant), recursing into nested bodies (op 0x1a0) and op 0x1ab; ICE inline.c line 0x679 on an unexpected operand kind. Called once per expansion from 0x10718940 (traced).",
+   "prototype": "void __fastcall inline_substitute_formals(struct c2_tuple* first)"
   },
   "0x1075cc23": {
    "name": "inline_1075cc23"
@@ -3974,6 +3992,16 @@
   "0x1075d788": {
    "name": "memory_operand_field_range",
    "comment": "Called by the field alias collector with a kind-6 operand; returns nonzero and (offset,size) when the memory reference addresses a determinable field of its base."
+  },
+  "0x1075d816": {
+   "name": "inline_unbind_written_formals",
+   "comment": "Clears the +0x2c binding of every bound formal that the inlinee writes (as a dst, or through a kind-3 operand) and returns the remaining count. Static reading.",
+   "prototype": "int inline_unbind_written_formals(struct c2_tuple* entry, int count)"
+  },
+  "0x1075d889": {
+   "name": "inline_propagate_address_formals",
+   "comment": "Replaces each use of a bound formal (class 5 symbol with a SYMADDR binding) in the inlinee IL by the bound address operand, recursing into op 0x1a0 and 0x1ab bodies. This is what turns `(t->*__f)()` in the vector constructor iterator into a direct call of the element constructor before the recursive expansion. Static reading plus traced effect.",
+   "prototype": "void inline_propagate_address_formals(struct c2_tuple* entry)"
   },
   "0x1075dbf8": {
    "name": "getattr_1075dbf8"
@@ -5375,6 +5403,11 @@
    "type": "int32_t",
    "comment": "Always 0 (only zeroed)"
   },
+  "0x1079f234": {
+   "name": "g_inline_total_size",
+   "type": "int32_t",
+   "comment": "Running size of the function being compiled plus everything inlined into it; initialised to fe_function+0x6d by inline_function_calls, incremented by each inlinee's size, compared with 35000 (0x88b8) before expanding a call. Static reading."
+  },
   "0x1079f238": {
    "name": "g_sched_cycle",
    "type": "int"
@@ -6439,6 +6472,10 @@
   "0x10713a3b": "0x16b block copy of size 1, 2 or 4 becomes a scalar 0x15b assign",
   "0x107153ce": "IL record 0x2b switch: selector copied to a fresh temp, body read, then switch lowered",
   "0x107163b1": "il_read_tree case 0x4c (__assume): pseudo 0x1ac/0x1ab, and 0x18c NORETURN_EXIT when the operand is constant 0 (trace-verified with __assume(0))",
+  "0x10718134": "top-level inliner call: inline_expand_calls(fn, 1, clamp(2*size,1000,35000), 0)",
+  "0x107181ca": "fe_function+0x73 |= 0x10: expansion in progress (cleared at 0x107181fc)",
+  "0x1071888b": "recursive inliner call on the callee body: depth+1, budget/number of call sites",
+  "0x10718df5": "inline recursion guard: a callee whose fe_function+0x73 bit 0x10 is set (being expanded) is only collected when the inline_recursion pragma state is on. This keeps a nested `vector constructor iterator` (member array inside an array element) out of line.",
   "0x107191b5": "More than 0x2710 real tuples: /Oa disabled and coarse alias fallback for this function",
   "0x1071e163": "cross_jump_pair: /Os (Ot==0) merges unconditionally",
   "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",

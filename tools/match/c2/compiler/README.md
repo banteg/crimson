@@ -17,6 +17,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [regalloc.md](regalloc.md) | Webs, global colouring, the chooser, local allocation and eax/ecx/edx rotation, frame pointer, callee-saved registers |
 | [frame.md](frame.md) | Stack slot packing and local offsets, prolog/epilog, final peepholes, EH state, x87 stack |
 | [layout.md](layout.md) | Jump optimizer, tail sinking and cross-jumping, block mover, scheduler, emission |
+| [array-constructors.md](array-constructors.md) | How `T arr[N];` with an inline constructor becomes the `*_global_init` countdowns (C1XX `??_H` plus C2 inlining), and what the native relink needs to use real array definitions |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
 | [strength-reduction.md](strength-reduction.md) | Where strength reduction and exit-test replacement put IV setups, which field a loop pointer anchors to, and how to write plain indexed loops that reproduce native cursors |

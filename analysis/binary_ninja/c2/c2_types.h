@@ -696,9 +696,12 @@ typedef struct __attribute__((packed)) c2_fe_function {
     uint32_t exp_il_offset; /* 0x4f offset in 'exp il' stream */
     uint32_t sym_il_offset; /* 0x53 offset in 'sym il' stream */
     void* func_info;        /* 0x57 */
-    uint8_t pad_5b[0x14];   /* 0x5b */
+    uint32_t frame_size;    /* 0x5b written by compute_frame_size */
+    uint8_t pad_5f[0xc];    /* 0x5f */
+    int16_t param_count;    /* 0x6b compared with the call site's argument tuples before inlining (inferred) */
+    int16_t inline_size;    /* 0x6d inliner size estimate, summed into g_inline_total_size */
     c2_fe_symbol* next_function; /* 0x6f function list link (g_function_list) */
-    uint32_t func_flags;    /* 0x73 bit0 PCH stream, bit1 compiled, bit5 has body, 0x300 EH bits */
+    uint32_t func_flags;    /* 0x73 bit0 PCH stream, bit1 compiled, bit5 has body, 0x300 EH bits, 0x10 inline expansion in progress, 0x2000 __forceinline */
     uint32_t pad_77;        /* 0x77 */
 } c2_fe_function;
 
