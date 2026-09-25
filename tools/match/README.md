@@ -585,6 +585,11 @@ uv run crimson match report --refresh -j 8
 git add analysis/decomp/1.9.93.json
 ```
 
+The evidence pins tracked inputs only, so stage new scratches and headers before
+refreshing. `--refresh` refuses to run while untracked report inputs exist; stage or
+remove the files it lists. Other people's uncommitted work in the same checkout
+therefore never enters the evidence.
+
 This is separate from the internal `port` dashboard. The
 [decomp.dev report contract](../../analysis/decomp/README.md) defines the full
 denominator, source-only matched/fuzzy credit, and zero linked credit until

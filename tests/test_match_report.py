@@ -147,8 +147,9 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
 
 
 def test_added_and_deleted_build_inputs_invalidate_snapshot(tmp_path: Path) -> None:
-    # Exercise real git file enumeration: new untracked source counts as an
-    # input, and a deleted tracked source cannot leave a publishable snapshot.
+    # Exercise real git file enumeration: an untracked source is reported but not
+    # pinned, a staged one is pinned, and a deleted tracked source cannot leave a
+    # publishable snapshot.
     import shutil
     import subprocess
 
@@ -158,8 +159,12 @@ def test_added_and_deleted_build_inputs_invalidate_snapshot(tmp_path: Path) -> N
     source = tmp_path / "tools/match/scratches/example/scratch.c"
     source.parent.mkdir(parents=True)
     source.write_text("void example(void) {}")
-    assert source.relative_to(tmp_path).as_posix() in report.repository_inputs(tmp_path)
+    relative = source.relative_to(tmp_path).as_posix()
+    assert relative not in report.repository_inputs(tmp_path)
+    assert report.untracked_inputs(tmp_path) == [relative]
     subprocess.run([git, "-C", str(tmp_path), "add", "."], check=True)
+    assert relative in report.repository_inputs(tmp_path)
+    assert report.untracked_inputs(tmp_path) == []
     source.unlink()
     with pytest.raises(ValueError, match="missing report input"):
         report.repository_inputs(tmp_path)

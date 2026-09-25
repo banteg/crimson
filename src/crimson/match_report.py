@@ -24,7 +24,7 @@ DEFAULT_REPORT = matchlib.REPO_ROOT / "artifacts" / "decomp" / "report.json"
 
 
 def _input_path(path: str) -> bool:
-    """Pin relevant code/config, including newly added or removed scratches."""
+    """Pin relevant code/config, including newly staged or removed scratches."""
     p = Path(path)
     if path in {
         "pyproject.toml", "uv.lock", "analysis/library_provenance.json", "analysis/matching_scope.json",
@@ -42,18 +42,21 @@ def _input_path(path: str) -> bool:
     )
 
 
-def repository_inputs(root: Path = matchlib.REPO_ROOT) -> dict[str, str]:
+def _git_input_paths(root: Path, *selection: str) -> list[str]:
     git = shutil.which("git")
     if git is None:
         raise ValueError("git not found")
-    result = subprocess.run(
-        [git, "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-        cwd=root,
-        capture_output=True,
-        check=True,
-    )
-    paths = sorted({p for p in result.stdout.decode().split("\0") if p and _input_path(p)})
-    return {p: _required_hash(root / p) for p in paths}
+    result = subprocess.run([git, "ls-files", *selection, "-z"], cwd=root, capture_output=True, check=True)
+    return sorted({p for p in result.stdout.decode().split("\0") if p and _input_path(p)})
+
+
+def repository_inputs(root: Path = matchlib.REPO_ROOT) -> dict[str, str]:
+    """Hash tracked inputs only, so another checkout user's uncommitted files never enter the evidence."""
+    return {p: _required_hash(root / p) for p in _git_input_paths(root, "--cached")}
+
+
+def untracked_inputs(root: Path = matchlib.REPO_ROOT) -> list[str]:
+    return _git_input_paths(root, "--others", "--exclude-standard")
 
 
 def _required_hash(path: Path) -> str:
@@ -120,6 +123,11 @@ def _external_inputs(
 
 
 def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, Any]:
+    if untracked := untracked_inputs():
+        raise ValueError(
+            "untracked report inputs would be evaluated but not pinned; stage or remove these files: "
+            + ", ".join(untracked[:8]),
+        )
     before = repository_inputs()
     configs = [
         matchlib.load_scratch_config(p.parent)
