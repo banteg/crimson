@@ -1292,7 +1292,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1326,7 +1326,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1351,7 +1351,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1385,7 +1385,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.25f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1458,7 +1458,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.26f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1540,7 +1540,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.23f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1728,7 +1728,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.33f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1771,7 +1771,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.33f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1805,7 +1805,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.34f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1835,7 +1835,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.34f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1894,7 +1894,7 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.31f;
                 move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.y = (float)(random_offset.y * 15.0f);
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,

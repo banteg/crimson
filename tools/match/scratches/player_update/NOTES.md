@@ -2,6 +2,24 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Weapon-arm smoke timing (2026-09-26)
+
+In all 11 smoke-sprite weapon arms, the second sprite's Y lane is written
+`move_delta.y = (float)(random_offset.y * 15.0f);`. The cast makes C1 emit a
+FROUND, which takes the scheduler cycle where our build would otherwise issue
+the previous sprite's color stores ahead of the `fstp`. crimson-88 traced it
+(`answer_weapon-arm-schedule.md`): the color stores are ready at cycle 186
+and the fstp at 187 (fmul-to-fstp latency 3+1). A single-use float local gives
+the identical object.
+
+72.09% to **72.62%**; references stay at 1 mismatch. It must go in all 11 arms;
+the pistol arm alone drops the score.
+
+Open: native tail-merges the second sprite across arms. Ours is refused
+because `cross_jump_pair`'s byte sum reaches exactly 20 where it needs more
+than 20. The lead is native keeping cos/sin as scalars instead of the
+address-taken `random_offset` vector.
+
 ## Movement arms (2026-09-26)
 
 crimson-88's movement pass (`answer_player-update-arms.md`) moved the canonical
