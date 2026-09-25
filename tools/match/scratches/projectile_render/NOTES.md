@@ -3,6 +3,21 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Plasma cursor anchor (2026-09-26)
+
+The plasma loop declares `const vec2f_t *position =
+&projectile_pool[projectile_index].position;` and reads every `pos_x` / `pos.pos_y`
+through it. This moves the strength-reduced cursor to native's +0xc anchor:
+`mov esi, projectile_pos_y` at 0x4237e4, and the end compare at 0x424114.
+
+The canonical body moves from 69.82% to **71.38%**, and references from
+`521/0/3` to `523/0/1`.
+
+The anchor comes from C2's IV merge chain (`merge_parallel_induction_variables`;
+see `tools/match/c2/compiler/strength-reduction.md` and
+`scripts/c2/iv_merge_chain.py`). Through the pointer, `position+4` becomes a
+second-round IV that survives the merge. crimson-88 traced and verified it.
+
 ## Plain-source pass (2026-09-26)
 
 The Codex pass (`gpt-6-astra`) moved the canonical body from 65.40% to **69.82%**.

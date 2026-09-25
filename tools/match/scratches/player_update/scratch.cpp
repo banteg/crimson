@@ -148,7 +148,6 @@ extern "C" void player_update(void)
     player_update_vec2_t movement_input;
     player_update_vec2_t scratch_pos;
     player_update_vec2_t move_delta;
-    player_update_vec2_t spawn_pos;
     bool auto_fire;
     bool normal_fire_ready;
     bool perk_fire_ready;
@@ -491,6 +490,10 @@ extern "C" void player_update(void)
                             * player->move_speed * movement_heading
                             * scalar * 7.957747f;
                         pu_move_scaled(&movement_input, frame_dt, player->movement);
+                        player_apply_move_with_spawn_avoidance(
+                            render_overlay_player_index,
+                            player_position,
+                            &movement_input);
                         moving_to_target = true;
                     }
                 }
@@ -507,12 +510,12 @@ extern "C" void player_update(void)
                 const float movement_dt = frame_dt;
                 movement_input.x = movement_dt * player->move_dx;
                 movement_input.y = movement_dt * player->move_dy;
+                player_apply_move_with_spawn_avoidance(
+                    render_overlay_player_index,
+                    player_position,
+                    &movement_input);
             }
 
-            player_apply_move_with_spawn_avoidance(
-                render_overlay_player_index,
-                player_position,
-                &movement_input);
             player->move_phase =
                 frame_dt * player->move_speed * 19.0f + player->move_phase;
         } else if (move_mode == 3) {
@@ -521,6 +524,7 @@ extern "C" void player_update(void)
                 -grim_interface_ptr->grim_get_config_float( player->input.axis_move_x),
                 -grim_interface_ptr->grim_get_config_float( player->input.axis_move_y));
 
+            movement_heading = -1.0f;
             if ((float)sqrt(
                     movement_input.x * movement_input.x
                     + movement_input.y * movement_input.y)
@@ -532,33 +536,24 @@ extern "C" void player_update(void)
                 while (movement_heading < 0.0f) {
                     movement_heading = movement_heading + 6.2831855f;
                 }
-                if (movement_heading != -1.0f) {
-                    angle_step = player_heading_approach_target(
-                        movement_heading);
-                    player_accelerate_move_speed(player);
-                    player_apply_move_speed_cap(player);
+            }
 
-                    movement_heading = 3.1415927f - angle_step;
-                    player->move_dx =
-                        (float)cos(player->heading - 1.5707964f)
-                        * player->move_speed * movement_heading * scalar
-                        * 7.957747f;
-                    player->move_dy =
-                        (float)sin(player->heading - 1.5707964f)
-                        * player->move_speed * movement_heading * scalar
-                        * 7.957747f;
-                    pu_move_scaled(&move_delta, frame_dt, player->movement);
-                } else {
-                    player_decelerate_move_speed(player);
-                    player->move_dx =
-                        (float)cos(player->heading - 1.5707964f)
-                        * player->move_speed * scalar * 25.0f;
-                    player->move_dy =
-                        (float)sin(player->heading - 1.5707964f)
-                        * player->move_speed * scalar * 25.0f;
-                    move_delta.x = frame_dt * player->move_dx;
-                    move_delta.y = frame_dt * player->move_dy;
-                }
+            if (movement_heading != -1.0f) {
+                angle_step = player_heading_approach_target(
+                    movement_heading);
+                player_accelerate_move_speed(player);
+                player_apply_move_speed_cap(player);
+
+                movement_heading = 3.1415927f - angle_step;
+                player->move_dx =
+                    (float)cos(player->heading - 1.5707964f)
+                    * player->move_speed * movement_heading * scalar
+                    * 7.957747f;
+                player->move_dy =
+                    (float)sin(player->heading - 1.5707964f)
+                    * player->move_speed * movement_heading * scalar
+                    * 7.957747f;
+                pu_move_scaled(&move_delta, frame_dt, player->movement);
             } else {
                 player_decelerate_move_speed(player);
                 player->move_dx =
@@ -626,6 +621,10 @@ extern "C" void player_update(void)
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
+                player_apply_move_with_spawn_avoidance(
+                    render_overlay_player_index,
+                    player_position,
+                    &move_delta);
             } else if (grim_interface_ptr->grim_is_key_active(
                            player->input.move_key_backward)
                 || (config_player_count == 1
@@ -640,6 +639,10 @@ extern "C" void player_update(void)
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * -25.0f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
+                player_apply_move_with_spawn_avoidance(
+                    render_overlay_player_index,
+                    player_position,
+                    &move_delta);
             } else {
                 if (!turned) {
                     player->turn_speed = 1.0f;
@@ -654,12 +657,12 @@ extern "C" void player_update(void)
                 const float movement_dt = frame_dt;
                 move_delta.x = movement_dt * player->move_dx;
                 move_delta.y = movement_dt * player->move_dy;
+                player_apply_move_with_spawn_avoidance(
+                    render_overlay_player_index,
+                    player_position,
+                    &move_delta);
             }
 
-            player_apply_move_with_spawn_avoidance(
-                render_overlay_player_index,
-                player_position,
-                &move_delta);
             player->move_phase = movement_heading * player->move_speed * frame_dt
                 * 19.0f + player->move_phase;
         } else if (move_mode == 2) {
@@ -785,15 +788,7 @@ extern "C" void player_update(void)
                 movement_input.x) - 1.5707964f;
         }
 
-        if (movement_heading == -1.0f) {
-            player_decelerate_move_speed(player);
-            player->move_dx =
-                (float)cos(player->heading - 1.5707964f)
-                * player->move_speed * scalar * 25.0f;
-            player->move_dy =
-                (float)sin(player->heading - 1.5707964f)
-                * player->move_speed * scalar * 25.0f;
-        } else {
+        if (movement_heading != -1.0f) {
             angle_step = player_heading_approach_target(
                 movement_heading);
             player_accelerate_move_speed(player);
@@ -808,6 +803,14 @@ extern "C" void player_update(void)
                 (float)sin(player->heading - 1.5707964f)
                 * player->move_speed * movement_heading * scalar
                 * 7.957747f;
+        } else {
+            player_decelerate_move_speed(player);
+            player->move_dx =
+                (float)cos(player->heading - 1.5707964f)
+                * player->move_speed * scalar * 25.0f;
+            player->move_dy =
+                (float)sin(player->heading - 1.5707964f)
+                * player->move_speed * scalar * 25.0f;
         }
         pu_move_scaled(&move_delta, frame_dt, player->movement);
         player_apply_move_with_spawn_avoidance(
@@ -1013,26 +1016,26 @@ extern "C" void player_update(void)
             player->aim.y = scratch_pos.y;
         }
     } else {
-        int target_index = player->auto_target;
+        vec2f_t *auto_aim = &player->aim;
         player_update_vec2_set(
             &movement_input,
-            creature_pool[target_index].position.x - player->aim.x,
-            creature_pool[target_index].position.y - player->aim.y);
+            creature_pool[player->auto_target].position.x - auto_aim->x,
+            creature_pool[player->auto_target].position.y - auto_aim->y);
         scalar = (float)sqrt(
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
-        if (scalar >= 4.0f) {
+        if (!(scalar >= 4.0f)) {
+            auto_aim->x = creature_pool[player->auto_target].position.x;
+            auto_aim->y = creature_pool[player->auto_target].position.y;
+        } else {
             D3DXVec2Normalize(&movement_input, &movement_input);
             angle_step = (scalar * 6.0f) * frame_dt;
             move_delta.x = movement_input.x * angle_step;
-            move_delta.y = movement_input.y * angle_step;
-            player->aim.x = player->aim.x + move_delta.x;
-            player->aim.y = player->aim.y + move_delta.y;
-        } else {
-            player->aim.x = creature_pool[target_index].position.x;
-            player->aim.y = creature_pool[target_index].position.y;
+            float aim_step_y = movement_input.y * angle_step;
+            auto_aim->x = auto_aim->x + move_delta.x;
+            auto_aim->y = auto_aim->y + aim_step_y;
         }
-        if (scalar < 128.0f && creature_pool[target_index].health > 0.0f) {
+        if (scalar < 128.0f && creature_pool[player->auto_target].health > 0.0f) {
             auto_fire = true;
         }
     }
@@ -1268,11 +1271,11 @@ extern "C" void player_update(void)
 
             if (player->weapon_id == WEAPON_ID_SHRINKIFIER_5K) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_SHRINKIFIER,
                     owner_id);
@@ -1360,11 +1363,11 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_ASSAULT_RIFLE,
                     owner_id);
@@ -1549,21 +1552,21 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_SUBMACHINE_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
@@ -1615,71 +1618,71 @@ extern "C" void player_update(void)
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_PULSE_GUN) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_PULSE_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_BLADE_GUN) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_BLADE_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_SPLITTER_GUN) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_SPLITTER_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ION_RIFLE) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_ION_RIFLE,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ION_MINIGUN) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_ION_MINIGUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ION_CANNON) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_ION_CANNON,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_CANNON) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_CANNON,
                     owner_id);
@@ -1703,11 +1706,11 @@ extern "C" void player_update(void)
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
@@ -1780,11 +1783,11 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.263f;
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_GAUSS_GUN,
                     owner_id);
@@ -1814,10 +1817,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.283f;
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
-                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);
+                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MINI_ROCKET_SWARMERS) {
                 random_offset.x = (float)cos(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
@@ -1909,11 +1912,11 @@ extern "C" void player_update(void)
                 fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {
                 player_update_vec2_set(
-                    &spawn_pos,
+                    &random_offset,
                     movement_input.x + player_position->x,
                     movement_input.y + player_position->y);
                 projectile_spawn(
-                    &spawn_pos,
+                    &random_offset,
                     angle_step,
                     PROJECTILE_TYPE_PISTOL,
                     owner_id);

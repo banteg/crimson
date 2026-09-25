@@ -2,6 +2,29 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Plain-source pass (2026-09-26)
+
+The Codex pass (`gpt-6-astra`) moved the canonical body from 67.39% to **69.54%**.
+References went from `785/0/2` to `790/0/2`, and the frame now matches native at
+0x48. The exact prefix grew from 1 to 7 instructions, and x87-only similarity
+rose from 0.868 to 0.919.
+
+The changes:
+- `spawn_pos` is removed; one-shot projectile positions reuse `random_offset`,
+  which is rebuilt before each call;
+- mode 3 has one decelerate block, with `movement_heading` starting at the -1
+  sentinel;
+- modes 1 and 4 place the move call with their vector build (both together;
+  either alone adds reference mismatches);
+- the demo arm tests `movement_heading != -1.0f` with acceleration first;
+- auto-aim reads `player->auto_target` at use;
+- auto-aim's Y step is a scalar local;
+- a named `auto_aim` pointer is used, with the close-target copy first.
+
+The mode-2 turn pair (crimson-88, `x87-memory-values.md`) on top of this base
+reaches 69.40%, or 69.47% with the mode-2 inversion but 3 mismatches, so it is
+not applied.
+
 ## Two-lane vector setter (2026-09-25)
 
 Native has 71 "two lanes held on the stack" x87 sites: `fld a.y; fop b.y;
