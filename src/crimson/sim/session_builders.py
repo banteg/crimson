@@ -97,7 +97,6 @@ def build_quest_session(
     for player in world.players:
         weapon_assign_player(player, weapon_id, state=world.state)
 
-    world.creatures.capture_spawn_events_authoritative = False
     quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
     mode_runtime = QuestSessionRuntime(spawn=quest_state)
     session = DeterministicSession(

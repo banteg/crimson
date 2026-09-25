@@ -9,6 +9,8 @@ import msgspec
 class ViewContext(msgspec.Struct, frozen=True):
     assets_dir: Path = Path("artifacts") / "assets"
     preserve_bugs: bool = False
+    # Write per-tick replay checkpoint sidecars for parity debugging.
+    replay_checkpoints: bool = False
 
 
 class View(Protocol):

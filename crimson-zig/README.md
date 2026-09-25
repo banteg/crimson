@@ -159,8 +159,14 @@ Supported native replay/runtime modes today:
 
 The native verifier/info stack now:
 
-- decodes `.crd` payloads in Zig,
-- runs the shared deterministic runtime,
+- decodes format v20 `.crd` payloads in Zig (`docs/formats/replay.md`),
+  rejecting any payload that is not the canonical encoding of its value,
+- runs the shared deterministic runtime, rejecting illegal perk commands and
+  ticks after the run ended,
+- derives the `RunResult` and compares it with the recorded one:
+  `replay verify --format json` emits the same schema-3 payload as the Python
+  verifier and exits 0 (`ok`, or `partial` under `--max-ticks`), 3
+  (`result_mismatch`) or 1 (invalid replay),
 - supports RNG tracing via `replay verify --trace-rng` and
   `replay benchmark --trace-rng`,
 - emits Python-readable trace payloads,
@@ -183,7 +189,8 @@ Current freestanding exports:
 - `crimson_last_error_json(out_ptr, out_len) -> i32`
 
 The replay verify/info and checkpoint verify exports accept an optional JSON
-options object with `max_ticks`. The replay benchmark export accepts
+options object with `max_ticks`. `crimson_verify_replay_json` returns the
+schema-3 verify payload (a `max_ticks` prefix reports status `partial`). The replay benchmark export accepts
 `max_ticks`, `runs`, `warmup_runs`, and `trace_rng`; freestanding WASM has no
 host clock, so callers that need wall-time measurements should time the export
 externally.

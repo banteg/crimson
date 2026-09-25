@@ -15,10 +15,9 @@ from crimson.sim.input_providers import PerkPickCommand
 
 from ._helpers import (
     build_replay,
-    inject_tick_commands,
+    with_tick_commands,
     write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
-    write_current_missing_perk_choice_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
     write_replay,
@@ -74,9 +73,10 @@ def test_zig_replay_benchmark_emits_json_payload(tmp_path: Path) -> None:
         "render_telemetry_out": None,
         "render_charts_out_dir": None,
     }
-    assert payload["run_result"]["ticks"] == 2
-    assert "creature_kill_count" in payload["run_result"]
-    assert "kills" not in payload["run_result"]
+    assert payload["ticks"] == 2
+    assert payload["run_result"]["outcome"] == "incomplete"
+    assert payload["run_result"]["kills"] == 0
+    assert len(payload["run_result"]["players"]) == 1
     assert payload["benchmark"]["sample_count"] == 2
     assert len(payload["benchmark"]["samples"]) == 2
     assert "run_index" not in payload["benchmark"]["samples"][0]
@@ -110,7 +110,7 @@ def test_zig_replay_benchmark_accepts_relative_base_dir(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["status"] == "ok"
     assert payload["replay"] == f"{relative_base}/replays/relative.crd"
-    assert payload["run_result"]["ticks"] == 2
+    assert payload["ticks"] == 2
 
 
 def test_zig_replay_benchmark_matches_python_stable_json_payload(tmp_path: Path) -> None:
@@ -126,7 +126,7 @@ def test_zig_replay_benchmark_matches_python_stable_json_payload(tmp_path: Path)
 
     python_payload = json.loads(python_result.output)
     zig_payload = json.loads(zig_result.stdout)
-    for key in ("schema_version", "status", "replay", "settings", "run_result", "profile", "render_telemetry"):
+    for key in ("schema_version", "status", "replay", "settings", "ticks", "run_result", "profile", "render_telemetry"):
         assert zig_payload[key] == python_payload[key]
     assert zig_payload["benchmark"]["sample_count"] == python_payload["benchmark"]["sample_count"]
     assert zig_payload["benchmark"]["samples"][0].keys() == python_payload["benchmark"]["samples"][0].keys()
@@ -149,6 +149,7 @@ def test_zig_replay_benchmark_matches_python_tutorial_run_result(tmp_path: Path)
     zig_payload = json.loads(zig_result.stdout)
     assert zig_payload["replay"] == python_payload["replay"]
     assert zig_payload["settings"] == python_payload["settings"]
+    assert zig_payload["ticks"] == python_payload["ticks"]
     assert zig_payload["run_result"] == python_payload["run_result"]
 
 
@@ -174,7 +175,7 @@ def test_zig_replay_benchmark_supports_trace_rng(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     payload = json.loads(result.stdout)
     assert payload["settings"]["trace_rng"] is True
-    assert payload["run_result"]["ticks"] == 2
+    assert payload["ticks"] == 2
     assert payload["benchmark"]["sample_count"] == 1
 
 
@@ -191,7 +192,7 @@ def test_zig_replay_benchmark_writes_json_out(tmp_path: Path) -> None:
     assert f"json_report={json_out}" in result.stdout
     payload = json.loads(json_out.read_text(encoding="utf-8"))
     assert payload["benchmark"]["sample_count"] == 1
-    assert payload["run_result"]["ticks"] == 2
+    assert payload["ticks"] == 2
 
 
 def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) -> None:
@@ -242,103 +243,39 @@ def test_zig_replay_benchmark_supports_native_profile_summary(tmp_path: Path) ->
     assert profile_payload["hotspots"][0]["function"] == "runReplayWithOptions"
 
 
-def test_zig_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
+def test_zig_replay_benchmark_rejects_illegal_perk_commands(tmp_path: Path) -> None:
+    replay = with_tick_commands(
+        build_replay(mode=GameMode.SURVIVAL, ticks=1),
+        0,
+        [PerkPickCommand(player_index=0, choice_index=0)],
+    )
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
 
-    result = _run_zig_replay_benchmark(
-        [str(replay_path), "--runs", "1", "--warmup-runs", "0", "--format", "json"],
-    )
+    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0", "--format", "json"])
 
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    payload = json.loads(result.stdout)
-    assert payload["status"] == "ok"
-    assert payload["run_result"]["ticks"] == 1
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr == "replay benchmark failed: tick 0: perk_pick without a pending perk\n"
 
 
-def test_zig_replay_benchmark_reports_tick_player_count_detail(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("writer", "detail"),
+    [
+        (write_current_bad_tick_player_count_replay, "ticks[0] has 0 player inputs, expected 1"),
+        (write_current_bad_event_player_index_replay, "ticks[0].commands[0].player_index 1 is outside 0..0"),
+        (write_current_typo_event_replay, "ticks[0].commands[0] Typ-o commands require game_mode_id=TYPO"),
+        (write_current_unknown_command_replay, "ticks[0].commands[0] has unknown type 'network_ping'"),
+    ],
+)
+def test_zig_replay_benchmark_reports_invalid_replay_detail(tmp_path: Path, writer, detail: str) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_current_bad_tick_player_count_replay(
-        tmp_path,
-        replay=replay,
-        name="bad-tick-player-count.crd",
-    )
+    replay_path = writer(tmp_path, replay=replay, name="invalid.crd")
 
     result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert "replay benchmark failed: replay tick 0 has 0 players, expected 1" in result.stderr
-    assert "canonical wire shape" not in result.stderr
-
-
-def test_zig_replay_benchmark_reports_event_shape_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_current_missing_perk_choice_replay(
-        tmp_path,
-        replay=replay,
-        name="missing-perk-choice.crd",
-    )
-
-    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay benchmark failed: replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
-        in result.stderr
-    )
-    assert "canonical wire shape" not in result.stderr
-
-
-def test_zig_replay_benchmark_reports_event_player_index_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_current_bad_event_player_index_replay(
-        tmp_path,
-        replay=replay,
-        name="event-player-index.crd",
-    )
-
-    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay benchmark failed: replay prelude player_index out of range: 1 "
-        "(player_count=1, tick=0, event=perk_menu_open)"
-    ) in result.stderr
-    assert "native replay benchmark" not in result.stderr
-
-
-def test_zig_replay_benchmark_reports_event_kind_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_current_typo_event_replay(tmp_path, replay=replay, name="event-kind.crd")
-
-    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay benchmark failed: replay command invalid for game mode: "
-        "type=typo_char tick=0 command_index=0 game_mode=survival"
-    ) in result.stderr
-    assert "replay events include invalid kinds or values for this mode" not in result.stderr
-
-
-def test_zig_replay_benchmark_reports_unknown_command_as_replay_failure(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_current_unknown_command_replay(tmp_path, replay=replay, name="unknown-command.crd")
-
-    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay benchmark failed: replay command type is unknown: "
-        "type=network_ping tick=0 command_index=0"
-    ) in result.stderr
-    assert "native replay benchmark" not in result.stderr
+    assert result.stderr == f"replay benchmark failed: {detail}\n"
 
 
 def test_zig_replay_benchmark_rejects_render_mode(tmp_path: Path) -> None:

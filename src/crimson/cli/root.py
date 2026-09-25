@@ -266,6 +266,11 @@ def cmd_game(
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
     rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
+    replay_checkpoints: bool = typer.Option(
+        False,
+        "--replay-checkpoints",
+        help="write per-tick checkpoint sidecars next to saved replays (parity debugging)",
+    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -294,6 +299,7 @@ def cmd_game(
         debug=debug,
         rtx=bool(rtx),
         preserve_bugs=bool(preserve_bugs),
+        replay_checkpoints=bool(replay_checkpoints),
     )
     run_game(config)
 

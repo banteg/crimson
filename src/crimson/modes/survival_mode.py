@@ -19,6 +19,7 @@ from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
+from ..sim.run_result import death_transition_ready
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSessionRuntime, SurvivalSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -76,12 +77,6 @@ class SurvivalMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
-    def _replay_claimed_stats_complete(self) -> bool:
-        return bool(self._game_over_active)
-
-    def _replay_claimed_stats_elapsed_ms(self) -> int:
-        return int(self._session_elapsed_ms())
-
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
         score = int(self.player.experience)
@@ -96,7 +91,7 @@ class SurvivalMode(BaseGameplayMode):
         )
 
     def _perk_menu_closed(self) -> None:
-        self._perk_prompt.reset_if_pending(pending_count=int(self.state.perk_selection.pending_count))
+        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
 
     def _update_perk_ui(
         self,
@@ -106,7 +101,7 @@ class SurvivalMode(BaseGameplayMode):
         allow_pulse: bool = True,
     ) -> None:
         perk_ctx = self._perk_menu_ui_context()
-        pending_count = int(self.state.perk_selection.pending_count)
+        pending_count = self._ui_pending_perk_count()
         any_alive = self._any_player_alive()
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
         self._perk_prompt.begin_frame()
@@ -194,17 +189,22 @@ class SurvivalMode(BaseGameplayMode):
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
+                self._debug_cheat_used()
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
                 self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
+                self._debug_cheat_used()
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
                 self.audio_bridge.play_sfx(SfxId.UI_LEVELUP)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+                self._debug_cheat_used()
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+                self._debug_cheat_used()
                 self._debug_cycle_weapon(1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
+                self._debug_cheat_used()
                 self.player.experience += 5000
                 survival_check_level_up(self.player, self.state.perk_selection)
 
@@ -225,14 +225,7 @@ class SurvivalMode(BaseGameplayMode):
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
-        dead_players = 0
-        for player in self.sim_world.players:
-            if float(player.health) > 0.0:
-                return False
-            dead_players += 1
-            if float(player.death_timer) >= 0.0:
-                return False
-        return dead_players > 0
+        return death_transition_ready(self.sim_world.players)
 
     def _enter_game_over(self) -> None:
         if self._game_over_active:
@@ -380,7 +373,7 @@ class SurvivalMode(BaseGameplayMode):
         if not self._game_over_active:
             self._perk_prompt.draw(
                 ctx=self._perk_menu_ui_context(),
-                pending_count=int(self.state.perk_selection.pending_count),
+                pending_count=self._ui_pending_perk_count(),
                 any_alive=self._any_player_alive(),
                 menu_active=self._perk_menu.active,
                 config=self.config,

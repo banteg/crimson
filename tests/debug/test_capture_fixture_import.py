@@ -8,6 +8,7 @@ from typing import Self
 import msgspec
 import pytest
 
+from crimson.dbg.capture_replay import CAPTURE_REPLAY_FORMAT_VERSION, CaptureReplay, CaptureTick
 from crimson.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
 from crimson.dbg.schema import (
     TRACE_FORMAT_VERSION,
@@ -18,7 +19,8 @@ from crimson.dbg.schema import (
     TraceTickRange,
 )
 from crimson.game_modes import GameMode
-from crimson.replay.types import Replay, ReplayHeader, ReplayTick
+from crimson.persistence.save_status import GameStatusData
+from crimson.sim.run_spec import RunSpec
 from scripts import import_capture_fixtures
 
 
@@ -56,13 +58,15 @@ def _meta(*, replay_sha256: str) -> TraceMeta:
     )
 
 
-def _replay() -> Replay:
-    return Replay(
-        header=ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1),
-        ticks=[
-            ReplayTick(dt=0.0, inputs=[[0.0, 0.0, 0.0, 0.0, 0]], prelude=[], postlude=[], commands=[]),
-            ReplayTick(dt=0.0, inputs=[[0.0, 0.0, 0.0, 0.0, 0]], prelude=[], postlude=[], commands=[]),
-        ],
+def _capture() -> CaptureReplay:
+    return CaptureReplay(
+        format_version=CAPTURE_REPLAY_FORMAT_VERSION,
+        capture_format_version=FRIDA_CAPTURE_FORMAT_VERSION,
+        tick_rate=60,
+        run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1),
+        status=GameStatusData(),
+        creature_pool=(),
+        ticks=[CaptureTick(dt=0.0, inputs=[(0.0, 0.0, 0.0, 0.0, 0)]) for _ in range(2)],
     )
 
 
@@ -91,21 +95,21 @@ def test_capture_fixture_import_preserves_full_contiguous_pair(
     fixture_dir = tmp_path / "fixtures"
     capture_dir.mkdir()
     cdt_path = capture_dir / "gameplay_diff_capture.survival.run1.cdt"
-    crd_path = cdt_path.with_suffix(".crd")
+    capture_path = cdt_path.with_suffix(".ccr")
     cdt_bytes = b"full-current-cdt"
-    crd_bytes = b"full-current-crd"
+    capture_bytes = b"full-current-ccr"
     cdt_path.write_bytes(cdt_bytes)
-    crd_path.write_bytes(crd_bytes)
-    meta = _meta(replay_sha256=hashlib.sha256(crd_bytes).hexdigest())
+    capture_path.write_bytes(capture_bytes)
+    meta = _meta(replay_sha256=hashlib.sha256(capture_bytes).hexdigest())
 
     monkeypatch.setattr(import_capture_fixtures, "TraceReader", _reader_type(meta))
-    monkeypatch.setattr(import_capture_fixtures, "load_replay_file", lambda _path: _replay())
+    monkeypatch.setattr(import_capture_fixtures, "load_capture_replay_file", lambda _path: _capture())
     monkeypatch.setattr(import_capture_fixtures, "_first_rng_draw", lambda _path: None)
 
     case = import_capture_fixtures.import_run(cdt_path, fixtures_dir=fixture_dir)
 
     assert (fixture_dir / cdt_path.name).read_bytes() == cdt_bytes
-    assert (fixture_dir / crd_path.name).read_bytes() == crd_bytes
+    assert (fixture_dir / capture_path.name).read_bytes() == capture_bytes
     assert case["trace_tick_range"] == {"start_tick": 0, "end_tick": 1, "tick_count": 2}
 
 
@@ -115,11 +119,11 @@ def test_capture_fixture_import_rejects_mismatched_replay_hash(
 ) -> None:
     cdt_path = tmp_path / "gameplay_diff_capture.survival.run1.cdt"
     cdt_path.write_bytes(b"current-cdt")
-    cdt_path.with_suffix(".crd").write_bytes(b"current-crd")
+    cdt_path.with_suffix(".ccr").write_bytes(b"current-ccr")
     meta = _meta(replay_sha256="0" * 64)
 
     monkeypatch.setattr(import_capture_fixtures, "TraceReader", _reader_type(meta))
-    monkeypatch.setattr(import_capture_fixtures, "load_replay_file", lambda _path: _replay())
+    monkeypatch.setattr(import_capture_fixtures, "load_capture_replay_file", lambda _path: _capture())
 
     with pytest.raises(RuntimeError, match="replay_sha256 does not match"):
         import_capture_fixtures.import_run(cdt_path, fixtures_dir=tmp_path / "fixtures")
@@ -131,12 +135,12 @@ def test_capture_fixture_import_requires_full_trace_decode(
 ) -> None:
     cdt_path = tmp_path / "gameplay_diff_capture.survival.run1.cdt"
     cdt_path.write_bytes(b"current-cdt")
-    crd_path = cdt_path.with_suffix(".crd")
-    crd_path.write_bytes(b"current-crd")
-    meta = _meta(replay_sha256=hashlib.sha256(crd_path.read_bytes()).hexdigest())
+    capture_path = cdt_path.with_suffix(".ccr")
+    capture_path.write_bytes(b"current-ccr")
+    meta = _meta(replay_sha256=hashlib.sha256(capture_path.read_bytes()).hexdigest())
 
     monkeypatch.setattr(import_capture_fixtures, "TraceReader", _reader_type(meta, decoded_ticks=1))
-    monkeypatch.setattr(import_capture_fixtures, "load_replay_file", lambda _path: _replay())
+    monkeypatch.setattr(import_capture_fixtures, "load_capture_replay_file", lambda _path: _capture())
 
     with pytest.raises(RuntimeError, match="decoded trace tick count does not match metadata"):
         import_capture_fixtures.import_run(cdt_path, fixtures_dir=tmp_path / "fixtures")
@@ -148,9 +152,9 @@ def test_capture_fixture_import_requires_current_frida_version(
 ) -> None:
     cdt_path = tmp_path / "gameplay_diff_capture.survival.run1.cdt"
     cdt_path.write_bytes(b"current-cdt")
-    crd_path = cdt_path.with_suffix(".crd")
-    crd_path.write_bytes(b"current-crd")
-    meta = _meta(replay_sha256=hashlib.sha256(crd_path.read_bytes()).hexdigest())
+    capture_path = cdt_path.with_suffix(".ccr")
+    capture_path.write_bytes(b"current-ccr")
+    meta = _meta(replay_sha256=hashlib.sha256(capture_path.read_bytes()).hexdigest())
     meta = msgspec.structs.replace(
         meta,
         producer=msgspec.structs.replace(
@@ -160,7 +164,7 @@ def test_capture_fixture_import_requires_current_frida_version(
     )
 
     monkeypatch.setattr(import_capture_fixtures, "TraceReader", _reader_type(meta))
-    monkeypatch.setattr(import_capture_fixtures, "load_replay_file", lambda _path: _replay())
+    monkeypatch.setattr(import_capture_fixtures, "load_capture_replay_file", lambda _path: _capture())
 
     with pytest.raises(RuntimeError, match=rf"must use Frida format {FRIDA_CAPTURE_FORMAT_VERSION}"):
         import_capture_fixtures.import_run(cdt_path, fixtures_dir=tmp_path / "fixtures")
@@ -172,16 +176,16 @@ def test_capture_fixture_import_requires_replay_aligned_seed_source(
 ) -> None:
     cdt_path = tmp_path / "gameplay_diff_capture.survival.run1.cdt"
     cdt_path.write_bytes(b"current-cdt")
-    crd_path = cdt_path.with_suffix(".crd")
-    crd_path.write_bytes(b"current-crd")
-    meta = _meta(replay_sha256=hashlib.sha256(crd_path.read_bytes()).hexdigest())
+    capture_path = cdt_path.with_suffix(".ccr")
+    capture_path.write_bytes(b"current-ccr")
+    meta = _meta(replay_sha256=hashlib.sha256(capture_path.read_bytes()).hexdigest())
     meta = msgspec.structs.replace(
         meta,
         source=msgspec.structs.replace(meta.source, run_start_seed_source="session_srand_seed"),
     )
 
     monkeypatch.setattr(import_capture_fixtures, "TraceReader", _reader_type(meta))
-    monkeypatch.setattr(import_capture_fixtures, "load_replay_file", lambda _path: _replay())
+    monkeypatch.setattr(import_capture_fixtures, "load_capture_replay_file", lambda _path: _capture())
     monkeypatch.setattr(import_capture_fixtures, "_first_rng_draw", lambda _path: None)
 
     with pytest.raises(RuntimeError, match="seed source must be 'rng_state_before_bootstrap'"):

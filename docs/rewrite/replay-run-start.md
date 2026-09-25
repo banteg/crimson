@@ -8,10 +8,11 @@ tags:
 # Replay run start
 
 The native game has one shared reset/startup path and a quest-specific second
-prelude. The current replay format records the exact state needed at our chosen
+prelude. Replays and capture replays record the exact state needed at our chosen
 run boundary instead of trying to reconstruct earlier menu history.
 
-For original captures that boundary is:
+For original captures that boundary, stored in the debug-only capture replay
+(`.ccr`), is:
 
 - the CRT RNG state immediately before the run's first terrain draw
 - the creature-pool residue present at that point
@@ -23,9 +24,8 @@ earlier startup work may already have consumed draws before gameplay begins.
 Frida therefore records `rng_state_before_bootstrap`,
 `rng_state_after_bootstrap`, and `rng_bootstrap_calls`. Finalization requires
 the complete boundary to form an exact LCG chain and stores the before-state as
-`ReplayHeader.seed`. Original captures always set
-`ReplayHeader.preserve_bugs=true`; run settings are copied exactly instead of
-falling back to rewrite defaults.
+the run seed. Original captures always set `preserve_bugs=true`; run settings
+are copied exactly instead of falling back to rewrite defaults.
 
 ## Native startup shape
 
@@ -67,14 +67,13 @@ same gameplay behavior.
 
 The current boundary is the state latched just before the first run terrain
 draw. For native captures, creature slots can still contain reset-relevant
-residue at that point, so the raw `run_start.pool_residue` is copied to
-`ReplayHeader.initial_creature_pool`. A port-recorded replay uses `None` and
-starts from a fresh pool.
+residue at that point, so the raw `run_start.pool_residue` is copied into the
+capture replay. Port replays carry no residue and start from a fresh pool.
 
 ```mermaid
 flowchart LR
     A["Native startup and menu history"] --> B["Run-setup RNG latch"]
-    C["Captured creature-pool residue"] --> D["ReplayHeader"]
+    C["Captured creature-pool residue"] --> D["Capture replay"]
     B --> D
     E["Mode, status, and quest settings"] --> D
     D --> F["Shared replay session builder"]
@@ -88,42 +87,37 @@ deterministic.
 ## Settings during a run
 
 Simulation detail and violence settings stay fixed at the values in the
-starting `RunSpec`/`ReplayHeader`. Changing effect density in Options applies
+starting `RunSpec`. Changing effect density in Options applies
 to the next game: changing these values mid-run would change RNG consumption
 without a corresponding replay operation. Visual-only flags, audio volume,
 and input preferences can still apply live.
 
 ## Current replay contract
 
-Only the current [replay/trace formats](trace-format-alignment.md#current-only-contract) are supported. A `ReplayHeader` includes
-the run seed/state, mode, player count, status, quest settings, and optional
-initial creature-pool residue.
-The file envelope is exactly one zstd frame containing the typed msgpack replay;
-raw msgpack, concatenated frames, trailing bytes, and invalid frame checksums are
-rejected. Checkpoint sidecars use the same single-frame rule with checkpoint
-format 5. Replay envelopes are capped at 65 MiB compressed and 64 MiB decoded;
-checkpoint envelopes are capped at 257 MiB compressed and 256 MiB decoded in
-both Python and Zig.
+Only the current [replay/trace formats](trace-format-alignment.md#current-only-contract) are supported;
+the replay layout itself is specified in [Replays](../formats/replay.md). A
+replay's `RunSpec` holds the run seed, mode, player count, the run-relevant
+status fields, and quest and presentation settings; port runs always start from
+a fresh creature pool. Replay envelopes are capped at 65 MiB compressed and
+64 MiB decoded. Checkpoint sidecars use the same single-frame zstd rule with
+checkpoint format 5, capped at 257 MiB compressed and 256 MiB decoded in both
+Python and Zig.
 
-Every `ReplayTick` carries:
+Every tick runs at the fixed float32 1/60 s delta and carries one f32-quantized
+packed input row per player plus an ordered command list. Perk commands apply
+before frame timing is derived, so a Reflex Boosted pick affects the same tick
+in live play and playback, and each pick's immediate effects see the timing
+established by earlier picks. Typ-o commands apply after the mode's pre-step
+hook. Live play and playback share one command handler.
 
-- `dt`: the exact finite, non-negative f32 delta
-- `inputs`: one f32-quantized packed input row per player
-- `prelude`: ordered `game_frame_rng_advance`, `perk_menu_open`, and `perk_pick` operations
-  applied before simulation
-- `postlude`: ordered `perk_menu_open` operations applied after simulation while
-  tick RNG tracing remains active
-- `commands`: Typ-o commands applied as part of the tick
-
-Live perk commands use the same ordered handler as the recorded prelude.
-Simulation timing is calculated after those commands, so a Reflex Boosted pick
-affects the same tick in live play and playback. Each pick's immediate effects
-see the timing established by earlier picks. Live and recorded operations have the same phase ordering.
-
-The Frida capture producer writes the same five values in each raw tick's
-`channels.replay_step`. Finalization uses that channel to build the CRD sidecar,
-and CDT preserves it for direct comparison with replay-recorded
-traces.
+Original captures also need native frame deltas, top-level RNG draws made
+between ticks, and perk-menu activity observed inside a tick. The Frida capture
+producer writes them in each raw tick's `channels.replay_step` (`dt`, `inputs`,
+`prelude`, `postlude`, `commands`). Finalization uses that channel to build the
+capture replay, and CDT preserves it for direct comparison with recorded
+traces. Prelude operations run between ticks, outside the tick RNG trace;
+postlude menu opens run after simulation, inside it. Replays never carry these
+operations.
 
 There is no independent replay-input stream or inferred movement input.
 `replay_step` is the single authority for what drove the tick.
@@ -168,8 +162,8 @@ compatibility code from masking a parity difference.
 
 ## Shared port startup
 
-`sim.run_spec.RunSpec` describes the pre-start inputs; `ReplayHeader` adds only
-recording metadata. `sim.run_init.initialize_run` constructs the world and mode
+`sim.run_spec.RunSpec` describes the pre-start inputs; a replay adds only
+recording metadata and its result. `sim.run_init.initialize_run` constructs the world and mode
 session for all five gameplay modes and playback. It consumes generic terrain,
 then the quest score tag, quest terrain and spawn draws when applicable, before
 assigning starting weapons. The returned terrain setup is consumed separately by
@@ -178,8 +172,8 @@ the renderer.
 Live play binds the actual save object; replay binds a detached copy of the same
 pre-start snapshot. Starting weapon usage and quest play counters are applied
 once on both paths. Snapshotting after weapon assignment would count it twice
-on replay. Native creature residue is an explicit `RunSpec` input, while port
-runs always allocate fresh pools. The reset and residue types live in the
+on replay. Native creature residue is an explicit `initialize_run` input supplied
+only by capture replays, while port runs always allocate fresh pools. The reset and residue types live in the
 simulation layer without importing the replay codec.
 
 `tests/replay/test_live_run_start.py` compares complete session state at startup

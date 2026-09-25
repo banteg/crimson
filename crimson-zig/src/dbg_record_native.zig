@@ -19,9 +19,7 @@ const ParseOutcome = union(enum) {
 };
 
 const VerifyRecordPayload = struct {
-    run_result: struct {
-        ticks: i32,
-    },
+    ticks_simulated: i32,
 };
 
 pub fn runDbgRecord(
@@ -71,7 +69,7 @@ fn runNativeRecord(
     defer stdout_buf.deinit();
     const writer = &stdout_buf.writer;
 
-    const ticks = parsed.value.run_result.ticks;
+    const ticks = parsed.value.ticks_simulated;
     const end_tick = if (ticks > 0) ticks - 1 else -1;
     try writer.print("trace={s}\n", .{request.out_path});
     try writer.print("ticks start=0 end={d} count={d}\n", .{ end_tick, ticks });

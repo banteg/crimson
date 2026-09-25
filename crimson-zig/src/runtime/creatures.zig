@@ -1,5 +1,4 @@
 const std = @import("std");
-const replay_codec = @import("../replay_codec.zig");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
@@ -143,51 +142,6 @@ pub fn resolveNativeTargetPlayer(
     return target_index;
 }
 
-pub fn applyPoolResidue(
-    pool: *CreaturePool,
-    residue: []const replay_codec.ReplayCreatureSlotResidue,
-) void {
-    // Native creature_reset_all clears `active` and detaches linked spawn-slot
-    // owners; the other creature fields persist. Seed those fields so stale
-    // reads (link_index, target_heading, AI7 timers, ...) match the original.
-    for (residue) |slot| {
-        if (slot.index < 0 or slot.index >= pool.entries.len) continue;
-        const entry = &pool.entries[@intCast(slot.index)];
-        entry.* = .{
-            .active = false,
-            .type_id = slot.type_id,
-            .pos = .{ .x = slot.pos.x, .y = slot.pos.y },
-            .target = .{ .x = slot.target.x, .y = slot.target.y },
-            .target_offset = .{ .x = slot.target_offset.x, .y = slot.target_offset.y },
-            .heading = slot.heading,
-            .target_heading = slot.target_heading,
-            .phase_seed = slot.phase_seed,
-            .anim_phase = slot.anim_phase,
-            .vel = .{ .x = slot.vel.x, .y = slot.vel.y },
-            .force_target = slot.force_target,
-            .target_player = slot.target_player,
-            .ai_mode = std.enums.fromInt(spawn_mod.CreatureAiMode, slot.ai_mode) orelse .orbit_player,
-            .link_index = slot.link_index,
-            .orbit_angle = slot.orbit_angle,
-            .orbit_radius = @bitCast(slot.orbit_radius_u32),
-            .ranged_projectile_type = @bitCast(slot.orbit_radius_u32),
-            .hp = slot.hp,
-            .max_hp = slot.max_hp,
-            .move_speed = slot.move_speed,
-            .reward_value = slot.reward_value,
-            .size = slot.size,
-            .tint = .{ slot.tint_r, slot.tint_g, slot.tint_b, slot.tint_a },
-            .contact_damage = slot.contact_damage,
-            .plague_infected = slot.collision_flag != 0,
-            .collision_timer = slot.collision_timer,
-            .lifecycle_stage = slot.lifecycle_stage,
-            .attack_cooldown = slot.attack_cooldown,
-            .hit_flash_timer = slot.hit_flash_timer,
-            .flags = @bitCast(slot.flags),
-        };
-    }
-}
-
 pub const ShotResolutionResult = struct {
     hits: i32 = 0,
     deaths: i32 = 0,
@@ -222,7 +176,6 @@ pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
     update_tick: i32 = 0,
-    capture_spawn_events_authoritative: bool = false,
     hardcore: bool = false,
     demo_mode_active: bool = false,
     quest_fail_retry_count: i32 = 0,
@@ -235,7 +188,6 @@ pub const CreaturePool = struct {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
         self.kill_count = 0;
         self.update_tick = 0;
-        self.capture_spawn_events_authoritative = false;
         self.hardcore = false;
         self.demo_mode_active = false;
         self.quest_fail_retry_count = 0;
@@ -2320,9 +2272,7 @@ pub const CreaturePool = struct {
 
                 // Native ticks an owner-bound spawn slot here, after the
                 // spawner's clamp/movement and inside the global Freeze gate.
-                if (!self.capture_spawn_events_authoritative and
-                    creature.link_index >= 0)
-                {
+                if (creature.link_index >= 0) {
                     const slot_idx: usize = @intCast(creature.link_index);
                     if (slot_idx < self.spawn_slot_count and
                         self.spawn_slots[slot_idx].owner_creature == @as(i32, @intCast(idx)))
@@ -5215,22 +5165,15 @@ test "full creature pool declines spawns without replacing a live entry" {
     try std.testing.expectEqual(max_creatures, pool.activeCount());
 }
 
-test "pool residue restores creature tint and hit flash" {
+test "slot allocation resets the hit flash of an inactive slot" {
     var pool: CreaturePool = .{};
     const tint = [4]f32{ 0.125, 0.25, 0.5, 0.75 };
-
-    applyPoolResidue(&pool, &.{.{
-        .index = 3,
-        .tint_r = tint[0],
-        .tint_g = tint[1],
-        .tint_b = tint[2],
-        .tint_a = tint[3],
-        .hit_flash_timer = 0.125,
-    }});
+    pool.entries[3].tint = tint;
+    pool.entries[3].hit_flash_timer = 0.125;
 
     try std.testing.expectEqual(tint, pool.entries[3].tint);
     try std.testing.expectEqual(@as(f32, 0.125), pool.entries[3].hit_flash_timer);
-    // Allocation resets the flash even when that inactive slot held residue.
+    // Allocation resets the flash even when the inactive slot held one.
     const slot = pool.spawnInitAt(3, .{
         .origin_template_id = -1,
         .pos = .{ .x = 0, .y = 0 },

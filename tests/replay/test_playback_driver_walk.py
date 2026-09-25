@@ -10,7 +10,7 @@ from crimson.replay.driver.playback_driver import (
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
-from tests.support.replay_runner_helpers import _blank_survival_replay
+from tests.support.replay_runner_helpers import _blank_survival_replay, finish_replay
 
 
 class _ExperienceWalkObserver(PlaybackWalkObserver):
@@ -42,8 +42,8 @@ class _WalkedTickObserver(PlaybackWalkObserver):
 
 
 def test_playback_driver_walk_observer_sees_pre_and_post_step_world(mocker) -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
+    rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = finish_replay(rec)
     driver = build_verify_playback_driver(replay)
     observed_before: list[int] = []
     observed_after: list[int] = []
@@ -69,8 +69,8 @@ def test_playback_driver_walk_observer_sees_pre_and_post_step_world(mocker) -> N
 
 
 def test_playback_driver_walk_progress_uses_absolute_completed_tick_indexes() -> None:
-    _header, rec = _blank_survival_replay(ticks=4, seed=0x1234)
-    replay = rec.finish()
+    rec = _blank_survival_replay(ticks=4, seed=0x1234)
+    replay = finish_replay(rec)
     driver = build_verify_playback_driver(replay)
     progress_ticks: list[int] = []
 
@@ -85,8 +85,8 @@ def test_playback_driver_walk_progress_uses_absolute_completed_tick_indexes() ->
 
 
 def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
-    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    replay = rec.finish()
+    rec = _blank_survival_replay(ticks=3, seed=0x1234)
+    replay = finish_replay(rec)
     driver = build_verify_playback_driver(replay)
     walked_ticks: list[int] = []
 
@@ -105,8 +105,8 @@ def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
 
 
 def test_playback_driver_walk_rejects_invalid_ranges() -> None:
-    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    replay = rec.finish()
+    rec = _blank_survival_replay(ticks=3, seed=0x1234)
+    replay = finish_replay(rec)
     driver = build_verify_playback_driver(replay)
 
     with pytest.raises(ReplayRunnerError, match="invalid start_tick"):
@@ -117,20 +117,18 @@ def test_playback_driver_walk_rejects_invalid_ranges() -> None:
 
 
 def test_playback_driver_walk_chunking_matches_full_run_result() -> None:
-    _header, rec = _blank_survival_replay(ticks=5, seed=0x1234)
-    replay = rec.finish()
+    rec = _blank_survival_replay(ticks=5, seed=0x1234)
+    replay = finish_replay(rec)
 
     full_driver = build_verify_playback_driver(replay)
-    full_walk = full_driver.walk_ticks()
-    full_result = full_driver.build_run_result(ticks=full_walk.ticks_completed)
+    full_driver.walk_ticks()
+    full_result = full_driver.build_result()
 
     chunked_driver = build_verify_playback_driver(replay)
     chunk0 = chunked_driver.walk_ticks(start_tick=0, stop_tick=2)
     chunk1 = chunked_driver.walk_ticks(start_tick=chunk0.next_tick_index, stop_tick=4)
     chunk2 = chunked_driver.walk_ticks(start_tick=chunk1.next_tick_index, stop_tick=10)
-    chunked_result = chunked_driver.build_run_result(
-        ticks=chunk0.ticks_completed + chunk1.ticks_completed + chunk2.ticks_completed,
-    )
+    chunked_result = chunked_driver.build_result()
 
     assert chunk2 == PlaybackWalkResult(start_tick=4, next_tick_index=5, ticks_completed=1)
     assert chunked_result == full_result

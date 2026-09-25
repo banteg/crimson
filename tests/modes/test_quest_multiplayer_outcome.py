@@ -73,4 +73,4 @@ def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: P
     assert int(reset_spy.call_args.kwargs["seed"]) == int(seed_before_run)
     assert int(reset_spy.call_args.kwargs["seed"]) != 101
     assert mode._replay_recorder is not None
-    assert int(mode._replay_recorder.header.seed) == int(seed_before_run)
+    assert int(mode._replay_recorder.run.seed) == int(seed_before_run)

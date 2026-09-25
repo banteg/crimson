@@ -22,8 +22,8 @@ from crimson.replay.driver.replay_benchmark import (
     ReplayRenderTelemetryTopTick,
 )
 from crimson.replay.driver.replay_render import ReplayRenderResult
-from crimson.replay.driver.setup import RunResult
 from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
 from crimson.weapons import WeaponId
 from tests.replay.cli._helpers import (
     build_replay as _build_replay,
@@ -38,6 +38,26 @@ from tests.replay.cli._helpers import (
     write_replay as _write_replay,
 )
 from tests.support.replay_runner_helpers import _run_verify_playback
+
+
+def _run_result(*, elapsed_ms: int, score_xp: int, kills: int, shots_fired: int, shots_hit: int) -> RunResult:
+    return RunResult(
+        outcome=RunOutcome.INCOMPLETE,
+        elapsed_ms=elapsed_ms,
+        kills=kills,
+        rng_state=123,
+        pending_perks=0,
+        quest_final_ms=None,
+        players=(
+            PlayerRunResult(
+                experience=score_xp,
+                health=100.0,
+                shots_fired=shots_fired,
+                shots_hit=shots_hit,
+                most_used_weapon_id=WeaponId.PISTOL,
+            ),
+        ),
+    )
 
 
 def test_replay_benchmark_human_success_outputs_throughput_stats(tmp_path: Path) -> None:
@@ -98,7 +118,8 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
     assert len(payload["benchmark"]["samples"]) == 2
     assert payload["profile"] is None
     assert payload["render_telemetry"] is None
-    assert payload["run_result"]["ticks"] == 2
+    assert payload["ticks"] == 2
+    assert payload["run_result"] == json.loads(msgspec.json.encode(replay.result))
 
 
 def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker) -> None:
@@ -107,24 +128,14 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
     run_replay_render_benchmark = mocker.patch.object(
         replay_benchmark_mod,
         "run_replay_render_benchmark",
         return_value=ReplayBenchmarkResult(
+            ticks=3,
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
@@ -156,7 +167,7 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["settings"]["mode"] == "render"
-    assert payload["run_result"]["score_xp"] == 42
+    assert payload["run_result"]["players"][0]["experience"] == 42
     run_replay_render_benchmark.assert_called_once()
     kwargs = run_replay_render_benchmark.call_args.kwargs
     assert kwargs["runs"] == 1
@@ -173,24 +184,14 @@ def test_replay_benchmark_render_mode_defaults_to_single_run_no_warmup(tmp_path:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
     run_replay_render_benchmark = mocker.patch.object(
         replay_benchmark_mod,
         "run_replay_render_benchmark",
         return_value=ReplayBenchmarkResult(
+            ticks=3,
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
@@ -228,24 +229,14 @@ def test_replay_benchmark_render_mode_passes_rtx_flag(tmp_path: Path, mocker) ->
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
     run_replay_render_benchmark = mocker.patch.object(
         replay_benchmark_mod,
         "run_replay_render_benchmark",
         return_value=ReplayBenchmarkResult(
+            ticks=3,
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
@@ -281,24 +272,14 @@ def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
     run_replay_benchmark = mocker.patch.object(
         replay_benchmark_mod,
         "run_replay_benchmark",
         return_value=ReplayBenchmarkResult(
+            ticks=3,
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
@@ -335,24 +316,14 @@ def test_replay_benchmark_headless_human_format_enables_progress(tmp_path: Path,
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
     run_replay_benchmark = mocker.patch.object(
         replay_benchmark_mod,
         "run_replay_benchmark",
         return_value=ReplayBenchmarkResult(
+            ticks=3,
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
@@ -428,18 +399,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
     telemetry_frame = ReplayRenderTelemetryFrame(
@@ -475,6 +435,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
         replay_benchmark_mod,
         "run_replay_render_benchmark",
         return_value=ReplayBenchmarkResult(
+            ticks=3,
             run_result=run_result,
             samples=(sample,),
             wall_ms=aggregate,
@@ -533,18 +494,7 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=3,
-        elapsed_ms=50,
-        score_xp=42,
-        creature_kill_count=1,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=2,
-        shots_hit=1,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     run_replay_render_video = mocker.patch.object(
         replay_render_mod,
         "run_replay_render_video",
@@ -554,6 +504,7 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
             fps=60,
             width=1280,
             height=720,
+            ticks=3,
             run_result=run_result,
         ),
     )
@@ -660,18 +611,7 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker)
     out_path = tmp_path / "exports" / "clip.mp4"
     ffmpeg_path = tmp_path / "bin" / "ffmpeg"
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=2,
-        elapsed_ms=33,
-        score_xp=0,
-        creature_kill_count=0,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=0,
-        shots_hit=0,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=33, score_xp=0, kills=0, shots_fired=0, shots_hit=0)
     run_replay_render_video = mocker.patch.object(
         replay_render_mod,
         "run_replay_render_video",
@@ -681,6 +621,7 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker)
             fps=60,
             width=1024,
             height=768,
+            ticks=2,
             run_result=run_result,
         ),
     )
@@ -713,18 +654,7 @@ def test_replay_render_supports_mute_audio_flag(tmp_path: Path, mocker) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
-    run_result = RunResult(
-        game_mode_id=GameMode.SURVIVAL,
-        tick_rate=60,
-        ticks=2,
-        elapsed_ms=33,
-        score_xp=0,
-        creature_kill_count=0,
-        most_used_weapon_id=WeaponId.PISTOL,
-        shots_fired=0,
-        shots_hit=0,
-        rng_state=123,
-    )
+    run_result = _run_result(elapsed_ms=33, score_xp=0, kills=0, shots_fired=0, shots_hit=0)
     run_replay_render_video = mocker.patch.object(
         replay_render_mod,
         "run_replay_render_video",
@@ -734,6 +664,7 @@ def test_replay_render_supports_mute_audio_flag(tmp_path: Path, mocker) -> None:
             fps=60,
             width=1024,
             height=768,
+            ticks=2,
             run_result=run_result,
         ),
     )
@@ -841,7 +772,7 @@ def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) ->
     assert profile_out.is_file()
 
 
-def test_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
+def test_replay_benchmark_rejects_perk_pick_without_pending_perk(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     _inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -860,7 +791,8 @@ def test_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
         ],
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
+    assert "without a pending perk" in result.output
 
 
 def test_replay_benchmark_rejects_removed_lenient_events_option(tmp_path: Path) -> None:

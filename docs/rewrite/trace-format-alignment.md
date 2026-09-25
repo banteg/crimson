@@ -12,7 +12,8 @@ used for parity work:
 
 1. Original executable capture through Frida JSONL, finalized by
    `src/crimson/dbg/frida_finalize.py`.
-2. Python replay recording through `src/crimson/dbg/record.py`.
+2. Python recording of replays and capture replays through
+   `src/crimson/dbg/record.py`.
 3. Zig replay recording through `crimson-zig/src/cdt_trace.zig`.
 
 Frida JSONL remains a producer-private transport. Once a run becomes a `.cdt`,
@@ -26,7 +27,8 @@ all consumers see the same typed tick data and no producer-specific aliases.
 | Frida evidence sidecar | 3 | `src/crimson/dbg/frida_finalize.py` |
 | CDT container | 2 | `src/crimson/dbg/schema.py` |
 | CDT payload schema | 19 | `src/crimson/dbg/schema.py` |
-| CRD replay | 19 | `src/crimson/replay/types.py` |
+| CRD replay | 20 | `src/crimson/replay/types.py` |
+| Capture replay | 1 | `src/crimson/dbg/capture_replay.py` |
 
 These artifacts are throwaway debugging data. Readers and finalizers require
 exactly these versions; they do not translate, normalize, or salvage an older
@@ -71,14 +73,22 @@ only what existed after the tick:
 
 - `dt`: the exact f32 frame delta used by replay
 - `inputs`: one input row per player with movement, aim, and flags
-- `prelude`: ordered native frame-RNG advances and perk operations applied before simulation
+- `prelude`: ordered native frame-RNG advances and perk operations applied
+  between ticks, outside the tick RNG trace
 - `postlude`: perk-menu generation applied after simulation while tick RNG
   tracing remains active
-- `commands`: Typ-o commands applied as part of the tick
+- `commands`: replay commands (perk and Typ-o) applied as part of the tick
 
-The generated `.crd` sidecar and replay-recorded `.cdt` both derive from this
-same payload. There is no separate `replay_inputs` field in the raw tick
+Original captures fill `dt`, `prelude` and `postlude` from native evidence and
+never carry `commands`; the generated `.ccr` capture replay and its recorded
+`.cdt` both derive from this same payload. Replays step a fixed 60 Hz schedule,
+so their traces report `dt = float32(1/60)`, tick rate 60 and empty `prelude`
+and `postlude`. There is no separate `replay_inputs` field in the raw tick
 contract.
+
+`TraceMeta.status` is the full save-status blob for captures. Replay traces
+carry the run's unlock indices and weapon usage counts with every other status
+field zero.
 
 ### Movement state
 
@@ -119,26 +129,31 @@ supported.
 
 ### Frida original capture
 
-Capture format 27 emits typed lifecycle rows and canonical tick channels. The
-finalizer validates them, writes one CDT/CRD pair per completed run, and writes
-a sibling typed evidence sidecar containing the producer-only rows used to
-explain how canonical values were derived. The CDT, CRD, RNG report, and typed
-evidence sidecar publish as one rollback-safe artifact bundle.
+The capture emits typed lifecycle rows and canonical tick channels. The
+finalizer validates them, writes one CDT and capture replay (`.ccr`) pair per
+completed run, and writes a sibling typed evidence sidecar containing the
+producer-only rows used to explain how canonical values were derived. The CDT,
+capture replay, RNG report, and typed evidence sidecar publish as one
+rollback-safe artifact bundle.
 
-Run-start creature-pool residue is copied into the replay header when present.
-That preserves original state which survives the native reset and avoids
+The capture replay is a debug-only container: zstd-compressed canonical
+MessagePack holding the run settings, the complete status blob, the run-start
+creature-pool residue and per-tick `dt`, `inputs`, `prelude` and `postlude`.
+Residue preserves original state which survives the native reset and avoids
 reconstructing it from the first post-tick snapshot.
 
-### Python replay recorder
+### Python recorder
 
 Python records the same replay step, checkpoint, simulation state, entity, RNG,
-and timing evidence while it executes a CRD replay. Metadata identifies the
-replay fingerprint and implementation, and is validated through the same typed
-`TraceMeta` contract.
+and timing evidence while it executes a CRD replay or a capture replay.
+Capture replays use the captured, already perk-transformed deltas and replay
+native menu activity verbatim. Metadata identifies the source fingerprint and
+implementation, and is validated through the same typed `TraceMeta` contract.
 
 ### Zig replay recorder
 
-Zig writes the same CDT v2/schema 19 chunks and channel payloads. Use
+Zig writes the same CDT v2/schema 19 chunks and channel payloads for CRD
+replays; capture replays record only through Python. Use
 `crimson-zig dbg record <replay.crd> --out <trace.cdt>` to record and
 `crimson-zig dbg verify` to check that its compiled schema and replay versions
 match the owned contract.

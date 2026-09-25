@@ -12,11 +12,11 @@ import msgspec
 
 from ...render.pipeline import RaylibDrawScope, RenderPipeline
 from ...render.sink import VideoSink, VideoTransport
-from ...replay import Replay
+from ...replay import REPLAY_TICK_RATE, Replay
+from ...sim.run_result import RunResult
 from .playback_driver import build_verify_playback_driver
 from .progress import ReplayRenderPhase as ReplayRenderPhase  # noqa: PLC0414 - public re-export
 from .progress import ReplayRenderProgress
-from .setup import RunResult
 
 X264Preset = Literal[
     "ultrafast",
@@ -47,6 +47,7 @@ class ReplayRenderResult(msgspec.Struct, frozen=True):
     fps: int
     width: int
     height: int
+    ticks: int
     run_result: RunResult
 
 
@@ -158,11 +159,13 @@ def run_replay_render_video(
         raise ReplayRenderError(f"output exists: {out_path} (pass --overwrite to replace)")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    baseline_result = build_verify_playback_driver(
+    baseline_driver = build_verify_playback_driver(
         replay,
         max_ticks=max_ticks,
         trace_rng=bool(trace_rng),
-    ).run()
+    )
+    baseline_result = baseline_driver.run()
+    baseline_ticks = int(baseline_driver.tick_limit)
 
     runtime_base_dir = Path(base_dir)
     runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir
@@ -286,9 +289,7 @@ def run_replay_render_video(
                 mode = None
 
             if capture_audio:
-                replay_tick_rate = replay.header.tick_rate
-                if replay_tick_rate <= 0:
-                    raise ReplayRenderError(f"invalid replay tick_rate for audio pass: {replay_tick_rate}")
+                replay_tick_rate = REPLAY_TICK_RATE
                 captured_audio = _capture_replay_audio_track(
                     rl=rl,
                     ctx=ctx,
@@ -350,6 +351,7 @@ def run_replay_render_video(
         fps=fps,
         width=capture_width,
         height=capture_height,
+        ticks=baseline_ticks,
         run_result=baseline_result,
     )
 

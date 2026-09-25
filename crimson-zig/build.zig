@@ -223,9 +223,24 @@ pub fn build(b: *std.Build) void {
     const root_lib_tests = b.addTest(.{ .root_module = root_lib_test_module });
     const run_root_lib_tests = b.addRunArtifact(root_lib_tests);
 
+    // The wasm ABI exports run natively under test.
+    const wasm_exports_test_module = b.createModule(.{
+        .link_libc = true,
+        .root_source_file = b.path("src/wasm_exports.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "crimson_zig", .module = mod },
+            .{ .name = "msgpack", .module = msgpack_dep.module("msgpack") },
+        },
+    });
+    const wasm_exports_tests = b.addTest(.{ .root_module = wasm_exports_test_module });
+    const run_wasm_exports_tests = b.addRunArtifact(wasm_exports_tests);
+
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_root_lib_tests.step);
+    test_step.dependOn(&run_wasm_exports_tests.step);
 
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,

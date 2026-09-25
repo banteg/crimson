@@ -109,12 +109,6 @@ class RushMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
-    def _replay_claimed_stats_complete(self) -> bool:
-        return bool(self._game_over_active)
-
-    def _replay_claimed_stats_elapsed_ms(self) -> int:
-        return int(self._session_elapsed_ms())
-
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
         kills = int(self.creatures.kill_count)

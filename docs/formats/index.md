@@ -15,6 +15,10 @@ These pages document original Crimsonland (Windows binary) file and asset format
 - [Local high scores](highscores.md) — Score history, ranking, and date selection
 - [Fonts](fonts.md) — Bitmap font data (glyph widths)
 
+## Port formats
+
+- [Replays](replay.md) — Recorded runs and their verifiable results
+
 ## Related
 
 - [Extraction pipeline](pipeline.md) — CLI tool for unpacking and converting assets

@@ -50,7 +50,7 @@ pub const FrameInput = struct {
     player_count: usize = 0,
     perk_choice_index: ?i32 = null,
     perk_menu_active: bool = false,
-    typo_char: ?u8 = null,
+    typo_char: ?u21 = null,
     typo_backspace: bool = false,
     typo_submit: bool = false,
 };
@@ -288,8 +288,10 @@ pub const LiveRunner = struct {
         if (self.session.game_mode == .typo) {
             if (input.typo_backspace) {
                 typo_runtime.applyBackspaceCommand(&self.session.state);
-            } else if (input.typo_char) |ch| {
-                typo_runtime.applyCharCommand(&self.session.state, ch);
+            } else if (input.typo_char) |codepoint| {
+                var encoded: [4]u8 = undefined;
+                const len = std.unicode.utf8Encode(codepoint, &encoded) catch unreachable;
+                typo_runtime.applyCharCommand(&self.session.state, encoded[0..len]);
             }
             if (input.typo_submit) {
                 typo_runtime.applySubmitCommand(&self.session.state, &self.session.creatures);

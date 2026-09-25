@@ -6,12 +6,11 @@ from pathlib import Path
 import msgspec
 import pytest
 
+from crimson.dbg.capture_replay import CAPTURE_REPLAY_FORMAT_VERSION, load_capture_replay_file
 from crimson.dbg.diff import diff_traces
 from crimson.dbg.record import record_replay_to_trace
 from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import TraceReader, iter_trace_ticks
-from crimson.replay.codec import load_replay_file
-from crimson.replay.types import REPLAY_FORMAT_VERSION
 
 FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "captures"
 MANIFEST_PATH = FIXTURE_DIR / "manifest.json"
@@ -23,7 +22,7 @@ if not MANIFEST_PATH.is_file():
     )
 
 MANIFEST = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-assert int(MANIFEST["format_version"]) == 1
+assert int(MANIFEST["format_version"]) == 2
 CASES = {case["name"]: case for case in MANIFEST["cases"]}
 
 pytestmark = [pytest.mark.replay_fixture]
@@ -39,10 +38,9 @@ def _candidate_trace(case: dict, recorded: dict[str, Path], tmp_path_factory: py
     if name in recorded:
         return recorded[name]
     work_dir = tmp_path_factory.mktemp(f"capture_{name}")
-    replay_path = FIXTURE_DIR / case["crd"]
     candidate_cdt = work_dir / "candidate.cdt"
     record_replay_to_trace(
-        replay_path=replay_path,
+        replay_path=FIXTURE_DIR / case["ccr"],
         out_path=candidate_cdt,
         warnings_out=[],
     )
@@ -64,12 +62,12 @@ def test_fixture_metadata_matches_manifest(name: str) -> None:
         assert int(trace.meta.trace_schema_version) == int(TRACE_SCHEMA_VERSION)
         assert int(case["trace_format_version"]) == int(TRACE_FORMAT_VERSION)
         assert int(case["trace_schema_version"]) == int(TRACE_SCHEMA_VERSION)
-    replay = load_replay_file(FIXTURE_DIR / case["crd"])
-    assert int(replay.header.seed) == int(case["seed"])
-    assert int(replay.header.game_mode_id) == int(case["game_mode_id"])
-    assert int(replay.header.replay_format_version) == int(REPLAY_FORMAT_VERSION)
-    assert int(case["replay_format_version"]) == int(REPLAY_FORMAT_VERSION)
-    assert len(replay.ticks) == int(case["tick_count"])
+    capture = load_capture_replay_file(FIXTURE_DIR / case["ccr"])
+    assert int(capture.run.seed) == int(case["seed"])
+    assert int(capture.run.game_mode_id) == int(case["game_mode_id"])
+    assert int(capture.format_version) == int(CAPTURE_REPLAY_FORMAT_VERSION)
+    assert int(case["capture_replay_format_version"]) == int(CAPTURE_REPLAY_FORMAT_VERSION)
+    assert len(capture.ticks) == int(case["tick_count"])
 
 
 @pytest.mark.parametrize(

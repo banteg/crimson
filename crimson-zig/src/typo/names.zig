@@ -1,14 +1,18 @@
 const std = @import("std");
+const replay_codec = @import("../replay_codec.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const spawn_mod = @import("../runtime/spawn.zig");
 
-pub const name_max_chars: usize = 16;
-pub const max_dictionary_words: usize = 2048;
-pub const max_highscore_names: usize = 512;
+pub const name_max_chars = replay_codec.typo_name_max_chars;
+pub const highscore_name_max_chars = replay_codec.typo_highscore_name_max_chars;
+pub const max_dictionary_words = replay_codec.max_typo_dictionary_words;
+pub const max_highscore_names = replay_codec.max_typo_highscore_names;
 pub const max_name_entries: usize = 0x180;
 
-const NameStorage = [name_max_chars]u8;
+/// Holds any built name: four dictionary words, or a whole score-table name.
 const candidate_storage_len: usize = name_max_chars * 4;
+/// Names are stored whole; a name the length rule gave up on can be long.
+const NameStorage = [candidate_storage_len]u8;
 const name_parts = [_][]const u8{
     "lamb",  "gun",   "head", "tail",   "leg",   "nose",  "road",  "stab", "high",   "low",
     "hat",   "pie",   "hand", "jack",   "cube",  "ice",   "cow",   "king", "lord",   "mate",
@@ -29,12 +33,11 @@ fn sliceStorage(storage: *const NameStorage) []const u8 {
 
 fn copyIntoStorage(storage: *NameStorage, text: []const u8) void {
     zeroStorage(storage);
-    const len = @min(text.len, storage.len);
-    @memcpy(storage[0..len], text[0..len]);
+    @memcpy(storage[0..text.len], text);
 }
 
 pub const CreatureNameTable = struct {
-    names: [max_name_entries]NameStorage = [_]NameStorage{[_]u8{0} ** name_max_chars} ** max_name_entries,
+    names: [max_name_entries]NameStorage = [_]NameStorage{[_]u8{0} ** candidate_storage_len} ** max_name_entries,
 
     pub fn clearAll(self: *CreatureNameTable) void {
         for (&self.names) |*name| zeroStorage(name);
@@ -250,4 +253,19 @@ test "creature name table can assign and resolve random names" {
     const assigned = names.assignRandom(0, &rng, 130, active[0..], &.{}, &.{"Alpha"});
     try std.testing.expect(assigned.len > 0);
     try std.testing.expect(names.findByName(assigned, active[0..]) != null);
+}
+
+test "score-table picks index the whole list and long names are stored whole" {
+    var rng = spawn_mod.Crand.init(7);
+    var expected_rng = rng;
+    const pool = [_][]const u8{ "Al", "B" ** 20, "Cy" };
+    const expected = pool[expected_rng.randTagged(rng_callers.typo_word_pick_highscore_name) % pool.len];
+    try std.testing.expectEqualStrings(expected, pickHighscoreName(&rng, &pool));
+
+    var names: CreatureNameTable = .{};
+    var active = [_]bool{false} ** max_name_entries;
+    active[5] = true;
+    const long_name = "sixteen." ** 8;
+    copyIntoStorage(&names.names[5], long_name[0..candidate_storage_len]);
+    try std.testing.expectEqual(@as(?usize, 5), names.findByName(long_name[0..candidate_storage_len], active[0..]));
 }

@@ -13,7 +13,7 @@ const input_codes = @import("input_codes.zig");
 const local_input = cz.local_input;
 const live_audio = @import("audio/live_audio.zig");
 const quest_level_mod = cz.quest_level;
-const quest_results = @import("quest_results.zig");
+const quest_results = cz.quest_results;
 const rng_callers = cz.rng_caller_static;
 const runtime_bootstrap = cz.bootstrap;
 const runtime_paths = cz.runtime_paths;
@@ -45,7 +45,6 @@ const runtime_session = cz.session;
 const state_mod = cz.state;
 const terrain_fx_mod = cz.terrain_fx;
 const tutorial_runtime = cz.tutorial_runtime;
-const typo_names = cz.typo_names;
 const ui_formatting = cz.ui_formatting;
 
 const single_player_alt_move_codes = [_]i32{ 0xC8, 0xD0, 0xCB, 0xCD };
@@ -3374,9 +3373,6 @@ fn liveRuntimeErrorDetail(err: anyerror) []const u8 {
         error.InvalidTickRate => "Run configuration has an invalid tick rate.",
         error.UnsupportedGameMode => "Run configuration uses an unsupported game mode.",
         error.InvalidQuestSpawnTable => "Quest spawn table is invalid.",
-        error.UnsupportedEventKind => "Runtime event kind is not supported in this mode.",
-        error.UnsupportedEventPlayerIndex => "Runtime event references an out-of-range player.",
-        error.InvalidCaptureEnumValue => "Runtime capture payload contains an invalid enum value.",
         error.InvalidSpawnTemplate => "Runtime spawn payload references an invalid creature template.",
         else => @errorName(err),
     };
@@ -3567,18 +3563,15 @@ fn collectTypoDictionaryWords(
     while (lines.next()) |raw_line| {
         const comment_cut = std.mem.indexOfScalar(u8, raw_line, '#') orelse raw_line.len;
         const text = std.mem.trim(u8, raw_line[0..comment_cut], &std.ascii.whitespace);
-        if (text.len == 0 or text.len >= typo_names.name_max_chars) continue;
+        if (!cz.replay_codec.isTypoDictionaryWord(text)) continue;
         const gop = try seen.getOrPut(text);
         if (gop.found_existing) continue;
         gop.value_ptr.* = {};
         try out.append(allocator, text);
     }
+    out.shrinkRetainingCapacity(@min(out.items.len, cz.replay_codec.max_typo_dictionary_words));
 
     return bytes;
-}
-
-fn isTypoHighscoreNameChar(ch: u8) bool {
-    return std.ascii.isAlphabetic(ch) or ch == '.';
 }
 
 fn collectTypoHighscoreNames(
@@ -3607,20 +3600,13 @@ fn collectTypoHighscoreNames(
 
     for (table.items) |record| {
         const name = record.name();
-        if (name.len == 0) continue;
-        var valid = true;
-        for (name) |ch| {
-            if (!isTypoHighscoreNameChar(ch)) {
-                valid = false;
-                break;
-            }
-        }
-        if (!valid) continue;
+        if (!cz.replay_codec.isTypoHighscoreName(name)) continue;
         const gop = try seen.getOrPut(name);
         if (gop.found_existing) continue;
         gop.value_ptr.* = {};
         try out.append(allocator, name);
     }
+    out.shrinkRetainingCapacity(@min(out.items.len, cz.replay_codec.max_typo_highscore_names));
 }
 
 fn loadTypoSourcesIntoState(
@@ -4848,7 +4834,6 @@ test "asset load errors use user-facing details" {
 
 test "live runtime errors use user-facing details" {
     try std.testing.expectEqualStrings("Run configuration has an invalid player count.", liveRuntimeErrorDetail(error.InvalidPlayerCount));
-    try std.testing.expectEqualStrings("Runtime event references an out-of-range player.", liveRuntimeErrorDetail(error.UnsupportedEventPlayerIndex));
     try std.testing.expectEqualStrings("Runtime spawn payload references an invalid creature template.", liveRuntimeErrorDetail(error.InvalidSpawnTemplate));
     try std.testing.expectEqualStrings("Unable to load Typ'o'Shooter sources: access denied.", typoSourceErrorDetail(error.AccessDenied));
     try std.testing.expectEqualStrings("Typ'o'Shooter high score file has an invalid record size.", typoSourceErrorDetail(error.InvalidSize));
@@ -6246,8 +6231,8 @@ fn drawSliderRow(assets: *const window_assets.RuntimeAssets, pos: rl.Vector2, co
 fn questProgressRatio(session: *const runtime_session.DeterministicSession) ?f32 {
     if (session.game_mode != .quests) return null;
     if (session.quest_completed or session.quest_completion_transition_ms >= 0.0) return 1.0;
-    if (session.reset_quest_spawn_entries_len == 0) return null;
-    const last_trigger_ms = session.quest_spawn_entries_storage[session.reset_quest_spawn_entries_len - 1].trigger_ms;
+    if (session.quest_spawn_entries_len == 0) return null;
+    const last_trigger_ms = session.quest_spawn_entries_storage[session.quest_spawn_entries_len - 1].trigger_ms;
     if (last_trigger_ms <= 0) return null;
     return std.math.clamp(session.quest_spawn_timeline_ms / @as(f32, @floatFromInt(last_trigger_ms)), @as(f32, 0.0), @as(f32, 1.0));
 }
@@ -7036,7 +7021,6 @@ fn drawTutorialPromptButtons(gameplay: *const GameplayScreen, assets: *const win
 fn zeroSessionSummary() runtime_session.SessionSummary {
     return .{
         .ticks_processed = 0,
-        .event_index = 0,
         .elapsed_ms_sim = 0,
         .perk_menu_open_count = 0,
         .perk_pick_count = 0,

@@ -52,7 +52,7 @@ test {
     _ = cz.perks;
     _ = cz.persistence;
     _ = cz.projectiles;
-    _ = @import("quest_results.zig");
+    _ = cz.quest_results;
     _ = cz.quest_level;
     _ = cz.quest_spawn_logic_full;
     _ = cz.quest_spawn_native;
@@ -1440,7 +1440,7 @@ test "aggregate dbg health summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "health.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1483,7 +1483,7 @@ test "aggregate dbg tick summarizes native CDT tick" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "tick.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1524,7 +1524,7 @@ test "aggregate dbg diff compares native CDT traces" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "diff.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1565,7 +1565,7 @@ test "aggregate dbg bisect compares native CDT traces" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "bisect.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1606,7 +1606,7 @@ test "aggregate dbg focus compares one native CDT tick" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "focus.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1647,7 +1647,7 @@ test "aggregate dbg entity summarizes native CDT entity" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "entity.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1688,7 +1688,7 @@ test "aggregate dbg query filters native CDT rows" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "query.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try cz.replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try cz.replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();

@@ -26,10 +26,9 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..perks.selection import perk_selection_open_choices
 from ..persistence.highscores import HighScoreRecord
-from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
-from ..replay import Replay, ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, dump_replay
+from ..replay import Replay, ReplayCodecError, ReplayRecorder, dump_replay_file
 from ..replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
     ReplayCheckpoint,
@@ -63,14 +62,13 @@ from ..sim.input_providers import (
     PerkPickCommand,
 )
 from ..sim.run_init import PreparedRun, initialize_run
-from ..sim.run_spec import RunSpec
+from ..sim.run_result import RunResult, build_run_result
+from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickRunner
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.hud import HudState, draw_target_health_bar
-from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
-from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
 
 if TYPE_CHECKING:
@@ -186,8 +184,10 @@ class BaseGameplayMode:
         self._run_reset_seed = 0
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
-        self._replay_checkpoints_sample_rate = 60
+        # Checkpoint sidecars are a parity-debugging aid; off unless requested.
+        self._replay_checkpoints_enabled = bool(ctx.replay_checkpoints)
         self._replay_checkpoints_last_tick: int | None = None
+        self._replay_result: RunResult | None = None
         self._runtime_updates_per_frame = 0
         self._input_stall_count = 0
         self._ticks_advanced_per_frame = 0
@@ -479,6 +479,33 @@ class BaseGameplayMode:
             provider.submit_command(command)
         self._queued_input_commands.clear()
 
+    def _debug_cheat_used(self) -> None:
+        """Stop recording: cheats change the run outside recorded ticks, so the replay could not verify."""
+
+        if self._replay_recorder is None:
+            return
+        self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
+        self._replay_result = None
+        if self._console is not None:
+            self._console.log.log("replay: recording stopped (debug cheat used)")
+
+    def _ui_pending_perk_count(self) -> int:
+        """Pending perks the UI may offer right now.
+
+        Picks apply at the start of the next tick, and at high frame rates a
+        frame can run no ticks. Until a queued pick applies, the prompt stays
+        closed: the pick may spend the last pending perk or kill every player,
+        and the recorded commands must stay legal against the state they meet.
+        """
+
+        provider = self._tick_input_provider
+        queued = [*self._queued_input_commands, *(provider.queued_commands if provider is not None else ())]
+        if any(isinstance(command, PerkPickCommand) for command in queued):
+            return 0
+        return int(self.state.perk_selection.pending_count)
+
     def record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
         self.enqueue_input_command(
             PerkPickCommand(
@@ -495,23 +522,10 @@ class BaseGameplayMode:
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self.sim_world.presentation_elapsed_ms)
 
-    def _replay_claimed_stats_complete(self) -> bool:
-        return False
-
-    def _replay_claimed_stats_elapsed_ms(self) -> int:
-        return int(self._replay_checkpoint_elapsed_ms())
-
-    def _replay_claimed_shots(self) -> tuple[int, int]:
-        return shots_from_state(self.state, player_index=int(self.player.index))
-
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
         mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
         return f"{mode_name}_{stamp}"
-
-    def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
-        _ = recorder
-        return False
 
     def _record_replay_checkpoint(
         self,
@@ -524,9 +538,9 @@ class BaseGameplayMode:
         recorder = self._replay_recorder
         if recorder is None:
             return
-        if tick_index < 0:
+        if tick_index < 0 or not self._replay_checkpoints_enabled:
             return
-        if not force and (tick_index % int(self._replay_checkpoints_sample_rate or 1)) != 0:
+        if not force and (tick_index % DEFAULT_CHECKPOINT_SAMPLE_RATE) != 0:
             return
         if self._replay_checkpoints_last_tick == int(tick_index):
             return
@@ -545,40 +559,16 @@ class BaseGameplayMode:
         recorder = self._replay_recorder
         if recorder is None:
             return
-        if self._replay_skip_save_when_empty(recorder=recorder):
-            self._replay_recorder = None
-            self._replay_checkpoints.clear()
-            self._replay_checkpoints_last_tick = None
+        if recorder.tick_index <= 0:
+            # Nothing was simulated (e.g. a run left before its first tick).
+            self._reset_replay_capture_state(clear_recorder=True)
             return
 
         self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
-        replay = recorder.finish()
+        result = self._replay_result
+        assert result is not None, "a non-empty recording has a result snapshot"
+        replay = recorder.finish(result)
 
-        shots_fired, shots_hit = self._replay_claimed_shots()
-        most_used_weapon_id = most_used_weapon_id_for_player(
-            self.state,
-            player_index=int(self.player.index),
-            fallback_weapon_id=self.player.weapon.weapon_id,
-        )
-        claimed_stats = ReplayClaimedStatsSnapshot(
-            complete=bool(self._replay_claimed_stats_complete()),
-            ticks=int(recorder.tick_index),
-            elapsed_ms=int(self._replay_claimed_stats_elapsed_ms()),
-            score_xp=int(self.player.experience),
-            kills=int(self.creatures.kill_count),
-            most_used_weapon_id=most_used_weapon_id,
-            shots_fired=int(shots_fired),
-            shots_hit=int(shots_hit),
-        )
-        replay = msgspec.structs.replace(
-            replay,
-            header=msgspec.structs.replace(
-                replay.header,
-                claimed_stats=claimed_stats,
-            ),
-        )
-
-        data = dump_replay(replay)
         stamp = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y%m%d_%H%M%S")
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
@@ -588,23 +578,32 @@ class BaseGameplayMode:
         while path.exists():
             path = replay_dir / f"{base_name}_{counter}.crd"
             counter += 1
-        path.write_bytes(data)
+        try:
+            dump_replay_file(path, replay)
+        except ReplayCodecError as exc:
+            # Only a run of many hours outgrows the format's size ceiling.
+            self._reset_replay_capture_state(clear_recorder=True)
+            if self._console is not None:
+                self._console.log.log(f"replay: not saved ({exc})")
+                self._console.log.flush()
+            return
+        saved = [path]
 
-        checkpoints_path = default_checkpoints_path(path)
-        dump_checkpoints_file(
-            checkpoints_path,
-            ReplayCheckpoints(
-                version=CHECKPOINTS_FORMAT_VERSION,
-                sample_rate=int(self._replay_checkpoints_sample_rate or 0),
-                checkpoints=list(self._replay_checkpoints),
-            ),
-        )
-        self._replay_recorder = None
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
+        if self._replay_checkpoints_enabled:
+            checkpoints_path = default_checkpoints_path(path)
+            dump_checkpoints_file(
+                checkpoints_path,
+                ReplayCheckpoints(
+                    version=CHECKPOINTS_FORMAT_VERSION,
+                    sample_rate=DEFAULT_CHECKPOINT_SAMPLE_RATE,
+                    checkpoints=list(self._replay_checkpoints),
+                ),
+            )
+            saved.append(checkpoints_path)
+        self._reset_replay_capture_state(clear_recorder=True)
         if self._console is not None:
-            self._console.log.log(f"replay: saved {path}")
-            self._console.log.log(f"replay: saved {checkpoints_path}")
+            for saved_path in saved:
+                self._console.log.log(f"replay: saved {saved_path}")
             self._console.log.flush()
 
     def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
@@ -681,28 +680,27 @@ class BaseGameplayMode:
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
             quest_level=quest_level,
-            tick_rate=self._gameplay_tick_rate(),
-            quest_fail_retry_count=self.quest_fail_retry_count,
+            player_count=self._runtime_player_count(),
             hardcore=self.hardcore,
             preserve_bugs=self.state.preserve_bugs,
+            demo=self.demo_mode_active,
+            quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,
-            world_size=self.world_size,
-            player_count=self._runtime_player_count(),
-            status=GameStatusData() if status is None else status.as_data(),
+            status=RunStatus() if status is None else RunStatus.from_status_data(status.as_data()),
             typo_dictionary_words=dictionary_words,
             typo_highscore_names=highscore_names,
         )
-        prepared = initialize_run(spec, status=status, demo_mode_active=self.demo_mode_active)
+        prepared = initialize_run(spec, status=status)
         self.sim_world.load_world_state(prepared.session.world)
         self._status_sim = prepared.session.world.state.status
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
-        self._replay_recorder = ReplayRecorder(msgspec.convert(spec, type=ReplayHeader, from_attributes=True))
-        self._replay_checkpoints_sample_rate = DEFAULT_CHECKPOINT_SAMPLE_RATE
+        self._replay_recorder = ReplayRecorder(spec)
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
+        self._replay_result = None
         return prepared
 
     def resume(self) -> None:
@@ -856,6 +854,7 @@ class BaseGameplayMode:
             self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
+        self._replay_result = None
 
     def _ensure_tick_runner(self, *, session: DeterministicSession) -> tuple[TickRunner, LocalInputProvider]:
         if self._tick_runner is not None and self._tick_runner_session is session:
@@ -943,8 +942,15 @@ class BaseGameplayMode:
             )
             self._ticks_advanced_per_frame += 1
             self._record_replay_checkpoint_from_tick(tick_index=result.replay_tick_index, tick=result.payload)
+            outcome = result.payload.outcome
+            if recorder is not None:
+                # The replay result is the state after the last recorded tick:
+                # UI work between ticks (perk menu previews, the high-score tag
+                # draw at game over) must not leak into it.
+                self._replay_result = build_run_result(session, outcome=outcome or session.end_outcome())
             # Mode callbacks can save the finished replay; record this tick first.
-            return self._on_tick_applied(result.payload, tick_dt)
+            # The run's final tick also ends the batch.
+            return self._on_tick_applied(result.payload, tick_dt) and outcome is None
 
         sim_ns_start = time.perf_counter_ns()
         advance = advance_tick_runner_frame(

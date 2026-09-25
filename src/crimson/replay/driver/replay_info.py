@@ -9,10 +9,9 @@ import msgspec
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
-from ...replay import Replay
+from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.hooks import TickResult
 from ...sim.input_providers import (
-    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
     TypoBackspaceCommand,
     TypoCharCommand,
@@ -36,7 +35,6 @@ ReplayInfoCoreEventKind = Literal[
 ReplayInfoExtraEventKind = Literal[
     "creature_deaths",
     "perk_menu_open",
-    "game_frame_rng_advance",
     "typo_backspace",
     "typo_char",
     "typo_submit",
@@ -137,19 +135,7 @@ def _append_extra_replay_commands(
     if not include_extra_events:
         return
     for cmd in commands:
-        if isinstance(cmd, GameFrameRngAdvanceOperation):
-            _append_event(
-                timeline,
-                tick_index=tick_index,
-                elapsed_ms=elapsed_ms,
-                kind="game_frame_rng_advance",
-                player_index=None,
-                detail=f"replay advanced {cmd.frames} native frame RNG side effect(s)",
-                data={"frames": cmd.frames},
-                player_filter=player_filter,
-                include_extra_events=True,
-            )
-        elif isinstance(cmd, PerkMenuOpenCommand):
+        if isinstance(cmd, PerkMenuOpenCommand):
             _append_event(
                 timeline,
                 tick_index=tick_index,
@@ -378,9 +364,9 @@ def _validate_player_filter(*, replay: Replay, player_index: int | None) -> int 
         return None
     if player_index < 0:
         raise ReplayRunnerError(f"invalid player_index filter: {player_index}")
-    if replay.header.player_count > 0 and player_index >= replay.header.player_count:
+    if replay.run.player_count > 0 and player_index >= replay.run.player_count:
         raise ReplayRunnerError(
-            f"player_index filter out of range: {player_index} (player_count={replay.header.player_count})",
+            f"player_index filter out of range: {player_index} (player_count={replay.run.player_count})",
         )
     return player_index
 
@@ -408,7 +394,7 @@ def collect_replay_info(
 
         elapsed_ms = int(tick.elapsed_ms)
         _append_extra_replay_commands(
-            commands=(*source_tick.prelude, *source_tick.commands),
+            commands=source_tick.commands,
             tick_index=int(source_tick.tick_index),
             elapsed_ms=elapsed_ms,
             timeline=timeline,
@@ -421,7 +407,7 @@ def collect_replay_info(
             elapsed_ms=elapsed_ms,
             timeline=timeline,
             pickups=tick.events.pickups,
-            preserve_bugs=replay.header.preserve_bugs,
+            preserve_bugs=replay.run.preserve_bugs,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
@@ -445,17 +431,8 @@ def collect_replay_info(
             before=before,
             after=after,
             timeline=timeline,
-            preserve_bugs=replay.header.preserve_bugs,
-            violence_disabled=replay.header.violence_disabled,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-
-        _append_extra_replay_commands(
-            commands=source_tick.postlude,
-            tick_index=int(source_tick.tick_index),
-            elapsed_ms=elapsed_ms,
-            timeline=timeline,
+            preserve_bugs=replay.run.preserve_bugs,
+            violence_disabled=replay.run.violence_disabled,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
@@ -475,13 +452,12 @@ def collect_replay_info(
     walk_result = driver.walk_ticks(
         observer=_ReplayInfoWalkObserver(),
     )
-    run_result = driver.build_run_result(ticks=int(walk_result.ticks_completed))
 
     return ReplayInfoResult(
         game_mode_id=mode,
-        tick_rate=replay.header.tick_rate,
+        tick_rate=REPLAY_TICK_RATE,
         ticks_simulated=int(walk_result.ticks_completed),
-        elapsed_ms=int(run_result.elapsed_ms),
+        elapsed_ms=int(driver.elapsed_ms),
         player_count=len(driver.world.players),
         timeline=timeline,
     )

@@ -16,8 +16,8 @@ fn typeclickSfx(
     return .ui_typeclick_02;
 }
 
-pub fn applyCharCommand(state: *state_mod.GameplayState, ch: u8) void {
-    if (ch == 0) return;
+/// Type one UTF-8 encoded character.
+pub fn applyCharCommand(state: *state_mod.GameplayState, ch: []const u8) void {
     state.typo.typing.pushChar(ch);
     state.sfx_queue.append(typeclickSfx(state, rng_callers.typo_gameplay_typeclick_char));
 }
@@ -31,28 +31,28 @@ pub fn applySubmitCommand(
     state: *state_mod.GameplayState,
     creatures: *const creatures_mod.CreaturePool,
 ) void {
-    const entered = state.typo.typing.submit(false) orelse return;
+    const typo = &state.typo;
+    if (typo.typing.text_len == 0) return;
     state.sfx_queue.append(.ui_typeenter);
 
     var active_mask = [_]bool{false} ** creatures_mod.max_creatures;
     for (creatures.entries, 0..) |entry, idx| {
         active_mask[idx] = entry.active;
     }
-
-    if (std.mem.eql(u8, entered, "reload")) {
-        state.typo.pending_reload = true;
+    // A creature name wins over the "reload" word, and every submit cancels
+    // the actions pending from earlier submits.
+    const target_idx = typo.names.findByName(typo.typing.slice(), active_mask[0..]);
+    const entered = typo.typing.submit(target_idx != null).?;
+    typo.pending_fire_target_active = false;
+    typo.pending_reload = false;
+    if (target_idx) |idx| {
+        const creature = creatures.entries[idx];
+        typo.pending_fire_target_active = true;
+        typo.pending_fire_target_x = creature.pos.x;
+        typo.pending_fire_target_y = creature.pos.y;
         return;
     }
-
-    if (state.typo.names.findByName(entered, active_mask[0..])) |idx| {
-        const creature = creatures.entries[idx];
-        if (creature.active) {
-            state.typo.pending_fire_target_active = true;
-            state.typo.pending_fire_target_x = creature.pos.x;
-            state.typo.pending_fire_target_y = creature.pos.y;
-            state.typo.typing.match_count += 1;
-        }
-    }
+    if (std.mem.eql(u8, entered, "reload")) typo.pending_reload = true;
 }
 
 pub fn beforeStep(
@@ -189,4 +189,30 @@ test "typo spawn naming ignores current xp until score staging" {
     try std.testing.expectEqual(state_a.rng.state, state_b.rng.state);
     try std.testing.expectEqualStrings(state_a.typo.names.nameSlice(0), state_b.typo.names.nameSlice(0));
     try std.testing.expectEqualStrings(state_a.typo.names.nameSlice(1), state_b.typo.names.nameSlice(1));
+}
+
+test "submit matches a creature name before the reload word and cancels pending actions" {
+    var state = state_mod.GameplayState.init(1);
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[3].active = true;
+    creatures.entries[3].pos = .{ .x = 40.0, .y = 50.0 };
+    @memcpy(state.typo.names.names[3][0.."reload".len], "reload");
+
+    for ("reload") |ch| applyCharCommand(&state, &.{ch});
+    applySubmitCommand(&state, &creatures);
+    try std.testing.expect(state.typo.pending_fire_target_active);
+    try std.testing.expect(!state.typo.pending_reload);
+    try std.testing.expectEqual(@as(f32, 40.0), state.typo.pending_fire_target_x);
+    try std.testing.expectEqual(@as(i32, 1), state.typo.typing.match_count);
+
+    applyCharCommand(&state, "b");
+    applySubmitCommand(&state, &creatures);
+    try std.testing.expect(!state.typo.pending_fire_target_active);
+    try std.testing.expect(!state.typo.pending_reload);
+    try std.testing.expectEqual(@as(i32, 2), state.typo.typing.submit_count);
+
+    creatures.entries[3].active = false;
+    for ("reload") |ch| applyCharCommand(&state, &.{ch});
+    applySubmitCommand(&state, &creatures);
+    try std.testing.expect(state.typo.pending_reload);
 }

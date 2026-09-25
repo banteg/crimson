@@ -3,6 +3,7 @@ const msgpack = @import("msgpack");
 const crimson_zig = @import("crimson_zig");
 const checkpoint_diff_native = crimson_zig.checkpoint_diff_native;
 const replay_codec = crimson_zig.replay_codec;
+const replay_runner = crimson_zig.replay_runner;
 const replay_benchmark_native = crimson_zig.replay_benchmark_native;
 const replay_info_native = crimson_zig.replay_info_native;
 const verify_native = crimson_zig.verify_native;
@@ -486,7 +487,7 @@ fn buildErrorPayload(allocator: std.mem.Allocator, message: []const u8) ![]u8 {
 }
 
 test "crimson_verify_replay_json returns required size and copies payload for supported replay" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const required_or_error = crimson_verify_replay_json(
@@ -513,9 +514,11 @@ test "crimson_verify_replay_json returns required size and copies payload for su
     );
     try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
     try std.testing.expectEqual(@as(i32, 0), crimson_last_error_json(0, 0));
-    try std.testing.expect(std.mem.indexOf(u8, out, "\"schema_version\":2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"schema_version\":3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"status\":\"ok\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"replay\":\"<wasm>\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, out, "\"run_result\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"result\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"recorded\":") != null);
 }
 
 test "crimson_verify_replay_json rejects invalid options json" {
@@ -541,7 +544,7 @@ test "crimson_verify_replay_json rejects invalid options json" {
 }
 
 test "crimson_verify_replay_json honors max_ticks option" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const opts = "{\"max_ticks\":1}";
@@ -568,11 +571,12 @@ test "crimson_verify_replay_json honors max_ticks option" {
         out.len,
     );
     try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
-    try std.testing.expect(std.mem.indexOf(u8, out, "\"ticks\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"status\":\"partial\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"ticks_simulated\":1") != null);
 }
 
 test "crimson_info_replay_json returns replay info payload" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const opts = "{\"max_ticks\":1}";
@@ -608,7 +612,7 @@ test "crimson_info_replay_json returns replay info payload" {
 }
 
 test "crimson_info_replay_json accepts info-specific options" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const opts = "{\"player_index\":1,\"verbose\":true}";
@@ -682,13 +686,13 @@ test "crimson_info_replay_json exposes detailed replay info failures" {
         std.mem.indexOf(
             u8,
             out[0..required_len],
-            "\"message\":\"replay info failed: replay payload does not match format 17 msgpack schema\"",
+            "\"message\":\"replay info failed: replay payload must be a map\"",
         ) != null,
     );
 }
 
 test "crimson_benchmark_replay_json returns benchmark payload" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const opts = "{\"max_ticks\":1,\"runs\":1,\"warmup_runs\":0}";
@@ -814,7 +818,7 @@ test "crimson_diff_checkpoints_json returns checkpoint diff payload" {
 }
 
 test "crimson_verify_checkpoints_text reports checkpoint mismatch through last error" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
     const checkpoints = try buildTestCheckpointsPayload(std.testing.allocator, 999);
     defer std.testing.allocator.free(checkpoints);
@@ -843,7 +847,7 @@ test "crimson_verify_checkpoints_text reports checkpoint mismatch through last e
 }
 
 test "crimson_verify_checkpoints_json reports checkpoint mismatch through last error" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
     const checkpoints = try buildTestCheckpointsPayload(std.testing.allocator, 999);
     defer std.testing.allocator.free(checkpoints);

@@ -3,20 +3,28 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import msgspec
 from click import unstyle
 from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import (
-    GameFrameRngAdvanceOperation,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-)
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 
 from ._helpers import build_replay, inject_tick_commands, write_replay
+
+
+def _grant_pending_perk_before_first_tick(mocker) -> None:
+    import crimson.replay.driver.replay_info as replay_info_mod
+
+    real_step_tick = replay_info_mod.PlaybackDriver.step_tick
+
+    def _step_tick(self, tick_index: int):
+        if tick_index == 0:
+            self.world.state.perk_selection.pending_count = 1
+        return real_step_tick(self, tick_index)
+
+    mocker.patch.object(replay_info_mod.PlaybackDriver, "step_tick", autospec=True, side_effect=_step_tick)
 
 
 def test_replay_info_human_success_outputs_timeline_header(tmp_path: Path) -> None:
@@ -96,7 +104,7 @@ def test_replay_info_json_out_works_for_human_and_json(tmp_path: Path) -> None:
     assert file_payload == stdout_payload
 
 
-def test_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
+def test_replay_info_rejects_perk_pick_without_pending_perk(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -104,7 +112,8 @@ def test_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
 
     result = runner.invoke(app, ["replay", "info", str(replay_path)])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
+    assert "without a pending perk" in result.output
 
 
 def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> None:
@@ -167,7 +176,8 @@ def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
         assert payload["summary"]["ticks_simulated"] == 2
 
 
-def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
+def test_replay_info_player_index_filter_limits_events(tmp_path: Path, mocker) -> None:
+    _grant_pending_perk_before_first_tick(mocker)
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
     inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0), PerkMenuOpenCommand(player_index=1)])
     replay_path = write_replay(tmp_path, replay=replay, name="survival-2p.crd")
@@ -194,13 +204,10 @@ def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
     assert all(int(event["player_index"]) == 1 for event in player_events)
 
 
-def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path: Path) -> None:
+def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path: Path, mocker) -> None:
+    _grant_pending_perk_before_first_tick(mocker)
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
-    replay.ticks[0] = msgspec.structs.replace(
-        replay.ticks[0],
-        prelude=[GameFrameRngAdvanceOperation(frames=2), *replay.ticks[0].prelude],
-    )
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -218,7 +225,6 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
     default_payload = json.loads(default_result.output)
     default_kinds = {event["kind"] for event in default_payload["timeline"]}
     assert "perk_menu_open" not in default_kinds
-    assert "game_frame_rng_advance" not in default_kinds
 
     verbose_result = runner.invoke(
         app,
@@ -235,6 +241,3 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
     verbose_payload = json.loads(verbose_result.output)
     verbose_kinds = {event["kind"] for event in verbose_payload["timeline"]}
     assert "perk_menu_open" in verbose_kinds
-    assert "game_frame_rng_advance" in verbose_kinds
-    rng_event = next(event for event in verbose_payload["timeline"] if event["kind"] == "game_frame_rng_advance")
-    assert rng_event["data"] == {"frames": 2}

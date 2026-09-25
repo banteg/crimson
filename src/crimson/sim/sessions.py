@@ -21,7 +21,6 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
-from ..rng_caller_static import RngCallerStatic
 from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..weapon_runtime import weapon_assign_player
@@ -30,16 +29,14 @@ from ..weapons import WeaponId
 from .input import PlayerInput
 from .input_providers import (
     GameCommand,
-    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
     PerkPickCommand,
-    ReplayPostludeOperation,
-    ReplayPreludeOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
 )
 from .presentation_step import plan_world_presentation_step
+from .run_result import RunOutcome, all_players_dead, death_transition_ready
 from .step_pipeline import (
     DeterministicStepResult,
     PresentationRngTrace,
@@ -60,6 +57,12 @@ class DeterministicSessionTick(DeterministicStepResult):
     elapsed_ms: float = 0.0
     creature_count_world_step: int = 0
     quest_completed: bool = False
+    # Set on the tick that ends the run; a valid replay ends on this tick.
+    outcome: RunOutcome | None = None
+
+
+class IllegalCommandError(ValueError):
+    """A command the live UI could not have issued in the current state."""
 
 
 # ---------------------------------------------------------------------------
@@ -232,9 +235,23 @@ class SessionModeRuntime(msgspec.Struct):
     def post_step(self, ctx: PostStepContext) -> None:
         _ = ctx
 
+    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
+        """Outcome when this tick ends the run in live play, else None."""
+
+        _ = world
+        return None
+
+    def end_outcome(self, world: WorldState) -> RunOutcome:
+        """Outcome of a run whose recording stops after the current tick."""
+
+        return self.terminal_outcome(world) or RunOutcome.INCOMPLETE
+
 
 class SurvivalSessionRuntime(SessionModeRuntime):
     spawn: SurvivalSpawnState = msgspec.field(default_factory=SurvivalSpawnState)
+
+    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
+        return RunOutcome.DEATH if death_transition_ready(world.players) else None
 
     def needs_mid_step(self) -> bool:
         return True
@@ -259,6 +276,10 @@ class RushSessionRuntime(SessionModeRuntime):
     def mid_step(self, ctx: MidStepContext) -> None:
         rush_mid_step(ctx, self.spawn)
 
+    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
+        # Rush ends as soon as nobody is alive; there is no death animation hold.
+        return RunOutcome.DEATH if all_players_dead(world.players) else None
+
 
 class QuestSessionRuntime(SessionModeRuntime):
     spawn: QuestSpawnState
@@ -268,6 +289,19 @@ class QuestSessionRuntime(SessionModeRuntime):
 
     def mid_step(self, ctx: MidStepContext) -> None:
         quest_mid_step(ctx, self.spawn)
+
+    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
+        if self.spawn.completed:
+            return RunOutcome.QUEST_COMPLETED
+        return RunOutcome.DEATH if death_transition_ready(world.players) else None
+
+    def end_outcome(self, world: WorldState) -> RunOutcome:
+        # The failed-quest countdown keeps running while paused, so a failed
+        # run may close between ticks before the death animation finishes.
+        outcome = self.terminal_outcome(world)
+        if outcome is not None:
+            return outcome
+        return RunOutcome.DEATH if all_players_dead(world.players) else RunOutcome.INCOMPLETE
 
 
 class TypoSessionRuntime(SessionModeRuntime):
@@ -288,6 +322,10 @@ class TypoSessionRuntime(SessionModeRuntime):
     def post_step(self, ctx: PostStepContext) -> None:
         typo_post_step(ctx)
 
+    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
+        # Typ-o stops simulating on death; the death animation plays outside ticks.
+        return RunOutcome.DEATH if all_players_dead(world.players) else None
+
 
 class TutorialSessionRuntime(SessionModeRuntime):
     world: WorldState
@@ -300,6 +338,10 @@ class TutorialSessionRuntime(SessionModeRuntime):
 
     def post_step(self, ctx: PostStepContext) -> None:
         tutorial_post_step(ctx)
+
+    def end_outcome(self, world: WorldState) -> RunOutcome:
+        # The tutorial has no terminal tick: players leave it from the UI.
+        return RunOutcome.TUTORIAL_COMPLETED if int(world.state.tutorial.stage_index) >= 8 else RunOutcome.INCOMPLETE
 
 
 class _SessionWorldMidStepRuntime(WorldMidStepRuntime):
@@ -355,6 +397,10 @@ class DeterministicSession(msgspec.Struct):
     defer_camera_shake_update: bool = False
     finalize_post_render_lifecycle: bool = False
     elapsed_uses_raw_dt: bool = False
+    # Reject perk commands the live UI cannot issue (they would otherwise no-op
+    # or reroll perk choices). Original-capture playback replays native menu
+    # activity verbatim and disables this.
+    strict_commands: bool = True
 
     # Mutable timing
     elapsed_ms: float = 0.0
@@ -377,15 +423,43 @@ class DeterministicSession(msgspec.Struct):
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
         )
 
-    def _apply_command(self, command: GameCommand, *, dt: float) -> SfxId | None:
+    @property
+    def run_elapsed_ms(self) -> float:
+        """Elapsed run time as scored: the spawn timeline for quests, session time otherwise."""
+
+        mode_runtime = self.mode_runtime
+        if isinstance(mode_runtime, QuestSessionRuntime):
+            return float(mode_runtime.spawn.spawn_timeline_ms)
+        return float(self.elapsed_ms)
+
+    def terminal_outcome(self) -> RunOutcome | None:
+        return self.mode_runtime.terminal_outcome(self.world)
+
+    def end_outcome(self) -> RunOutcome:
+        return self.mode_runtime.end_outcome(self.world)
+
+    def _require_perk_command_allowed(self, name: str) -> None:
+        # The perk prompt only offers the menu while a perk is pending and a
+        # player is alive; each command is checked against the state left by
+        # the commands before it.
+        if not self.strict_commands:
+            return
+        if int(self.world.state.perk_selection.pending_count) <= 0:
+            raise IllegalCommandError(f"{name} without a pending perk")
+        if all_players_dead(self.world.players):
+            raise IllegalCommandError(f"{name} while every player is dead")
+
+    def apply_command(self, command: GameCommand, *, dt: float) -> SfxId | None:
+        perk_state = self.world.state.perk_selection
         match command:
             case PerkPickCommand(choice_index=choice_index):
+                self._require_perk_command_allowed("perk_pick")
                 # Each pick sees any timing changes made by earlier picks.
                 timing = self.timing_for_dt(dt)
                 picked = perk_selection_pick(
                     self.world.state,
                     self.world.players,
-                    self.world.state.perk_selection,
+                    perk_state,
                     choice_index,
                     game_mode=self.game_mode,
                     player_count=len(self.world.players),
@@ -393,66 +467,25 @@ class DeterministicSession(msgspec.Struct):
                     creatures=self.world.creatures.entries,
                     refresh_choices=False,
                 )
+                if picked is None and self.strict_commands:
+                    raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
                 return SfxId.UI_BONUS if picked is not None else None
             case PerkMenuOpenCommand():
+                self._require_perk_command_allowed("perk_menu_open")
                 perk_selection_open_choices(
                     self.world.state,
                     self.world.players,
-                    self.world.state.perk_selection,
+                    perk_state,
                     game_mode=self.game_mode,
                     player_count=len(self.world.players),
                 )
             case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
                 if self.game_mode != GameMode.TYPO:
-                    raise RuntimeError(f"Typ-o command in non-Typo session: {type(command).__name__}")
+                    raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
                 apply_typo_command(self.world, command)
             case _:
                 raise RuntimeError(f"unhandled command type: {type(command).__name__}")
         return None
-
-    def apply_replay_prelude(
-        self,
-        *,
-        dt: float,
-        operations: list[ReplayPreludeOperation],
-    ) -> list[SfxId]:
-        """Apply ordered between-tick replay operations outside the tick RNG trace."""
-
-        post_apply_sfx: list[SfxId] = []
-        for operation in operations:
-            match operation:
-                case GameFrameRngAdvanceOperation(frames=frames):
-                    if int(frames) <= 0:
-                        raise RuntimeError(
-                            f"replay game_frame_rng_advance frames must be > 0, got {frames}",
-                        )
-                    for _ in range(int(frames)):
-                        self.world.state.rng.rand_tagged(
-                            RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED,
-                        )
-                case PerkPickCommand() | PerkMenuOpenCommand():
-                    sfx = self._apply_command(operation, dt=dt)
-                    if sfx is not None:
-                        post_apply_sfx.append(sfx)
-                case _:
-                    raise RuntimeError(f"unhandled replay prelude operation: {type(operation).__name__}")
-        return post_apply_sfx
-
-    def apply_replay_postlude(self, *, operations: list[ReplayPostludeOperation]) -> None:
-        """Apply operations observed after simulation but before the native tick returns."""
-
-        for operation in operations:
-            match operation:
-                case PerkMenuOpenCommand():
-                    perk_selection_open_choices(
-                        self.world.state,
-                        self.world.players,
-                        self.world.state.perk_selection,
-                        game_mode=self.game_mode,
-                        player_count=len(self.world.players),
-                    )
-                case _:
-                    raise RuntimeError(f"unhandled replay postlude operation: {type(operation).__name__}")
 
     def step_tick(
         self,
@@ -468,7 +501,7 @@ class DeterministicSession(msgspec.Struct):
         for command in commands or ():
             match command:
                 case PerkPickCommand() | PerkMenuOpenCommand():
-                    sfx = self._apply_command(command, dt=dt)
+                    sfx = self.apply_command(command, dt=dt)
                     if sfx is not None:
                         post_apply_sfx.append(sfx)
                 case _:
@@ -480,7 +513,7 @@ class DeterministicSession(msgspec.Struct):
         mode_runtime = self.mode_runtime
         mode_runtime.before_step()
         for command in tick_commands:
-            self._apply_command(command, dt=dt)
+            self.apply_command(command, dt=dt)
 
         tick_inputs = inputs
         if tick_inputs is not None:
@@ -608,6 +641,7 @@ class DeterministicSession(msgspec.Struct):
         step.elapsed_ms = self.elapsed_ms
         step.creature_count_world_step = creature_count_world_step
         step.quest_completed = quest_spawn is not None and quest_spawn.completed
+        step.outcome = self.terminal_outcome()
         step.presentation = msgspec.structs.replace(
             step.presentation,
             camera=camera_update_for_players(self.world.players, state.camera_shake_offset),

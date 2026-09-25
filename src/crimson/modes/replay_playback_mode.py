@@ -22,6 +22,8 @@ from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
+    REPLAY_TICK_DT,
+    REPLAY_TICK_RATE,
     Replay,
     load_replay_file,
     warn_on_game_version_mismatch,
@@ -36,6 +38,7 @@ from ..sim.batch_apply import (
     apply_presentation_outputs,
 )
 from ..sim.clock import FixedStepClock
+from ..sim.run_spec import WORLD_SIZE
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -294,13 +297,10 @@ class ReplayPlaybackMode:
         self._replay = replay
         warn_on_game_version_mismatch(replay, action="playback")
 
-        tick_rate = int(replay.header.tick_rate)
-        if tick_rate <= 0:
-            raise ValueError(f"invalid tick_rate: {tick_rate}")
-        self._tick_rate = tick_rate
-        self._dt = 1.0 / float(tick_rate)
+        self._tick_rate = REPLAY_TICK_RATE
+        self._dt = REPLAY_TICK_DT
         self._dt_accum = 0.0
-        self._clock = FixedStepClock(tick_rate=int(tick_rate))
+        self._clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
         self._frame_index = 0
         self._tick_index = 0
         self._finished = False
@@ -309,23 +309,23 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._driver = None
 
-        world_size = float(replay.header.world_size)
+        world_size = WORLD_SIZE
         audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
-        audio_rng = Crand(int(replay.header.seed) & 0xFFFFFFFF)
+        audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
         self._audio = audio
         self._audio_rng = audio_rng
         self._register_replay_audio_commands()
         self._load_game_tune_queue()
 
-        quest_fail_retry_count = int(replay.header.quest_fail_retry_count)
-        hardcore = bool(replay.header.hardcore)
-        preserve_bugs = bool(replay.header.preserve_bugs)
+        quest_fail_retry_count = int(replay.run.quest_fail_retry_count)
+        hardcore = bool(replay.run.hardcore)
+        preserve_bugs = bool(replay.run.preserve_bugs)
         rtx_mode = mode_from_rtx_flag(self._rtx)
         replay_config = msgspec.structs.replace(
             self._config,
             display=msgspec.structs.replace(
                 self._config.display,
-                violence_disabled=int(replay.header.violence_disabled),
+                violence_disabled=int(replay.run.violence_disabled),
             ),
         )
 
@@ -343,8 +343,8 @@ class ReplayPlaybackMode:
         )
         self._runtime = runtime
         runtime.reset(
-            seed=int(replay.header.seed),
-            player_count=int(replay.header.player_count),
+            seed=int(replay.run.seed),
+            player_count=int(replay.run.player_count),
         )
         runtime.open_runtime()
 
@@ -354,12 +354,11 @@ class ReplayPlaybackMode:
                 replay,
                 max_ticks=self._max_ticks,
                 trace_rng=bool(self._trace_rng),
-                world_size=float(world_size),
             )
             driver = self._driver
             sim_world.load_world_state(driver.world)
         except ReplayRunnerError as exc:  # pragma: no cover
-            raise ValueError(f"unsupported replay game_mode_id: {int(replay.header.game_mode_id)}") from exc
+            raise ValueError(f"unsupported replay game_mode_id: {int(replay.run.game_mode_id)}") from exc
 
         self._hud_state.preserve_bugs = bool(sim_world.state.preserve_bugs)
 
@@ -549,7 +548,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_title(self) -> None:
         replay = self._replay
-        if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
+        if replay is None or replay.run.game_mode_id != GameMode.QUESTS:
             return
         font = self._grim_mono
         if font is None:
@@ -571,7 +570,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_complete_banner(self) -> None:
         replay = self._replay
-        if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
+        if replay is None or replay.run.game_mode_id != GameMode.QUESTS:
             return
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before replay quest banner draw"
@@ -628,7 +627,7 @@ class ReplayPlaybackMode:
         players = sim_world.players
         assert players, "Replay runtime must have at least one player before draw"
         self._draw_world(draw_aim_indicators=True)
-        mode_id = replay.header.game_mode_id
+        mode_id = replay.run.game_mode_id
         show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
         hud_flags = hud_flags_for_game_mode(mode_id)
         quest_progress_ratio: float | None = None

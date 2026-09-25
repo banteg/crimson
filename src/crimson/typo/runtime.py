@@ -147,17 +147,11 @@ def typo_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> li
 
     typo = world.state.typo
     primary = inputs[0]
-    aim = primary.aim
-    fire_down = bool(primary.fire_down)
-    fire_pressed = bool(primary.fire_pressed)
-    reload_pressed = bool(primary.reload_pressed)
-
-    if typo.pending_fire_target is not None:
-        aim = typo.pending_fire_target
-        fire_down = True
-        fire_pressed = True
-    if typo.pending_reload:
-        reload_pressed = True
+    # Typ-o fires and reloads only through typed words; player fire/reload
+    # input has no effect.
+    aim = primary.aim if typo.pending_fire_target is None else typo.pending_fire_target
+    fire_down = fire_pressed = typo.pending_fire_target is not None
+    reload_pressed = bool(typo.pending_reload)
 
     typo.pending_fire_target = None
     typo.pending_reload = False

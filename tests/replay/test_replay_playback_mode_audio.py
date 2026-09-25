@@ -6,13 +6,13 @@ from types import SimpleNamespace
 from typing import Protocol
 from unittest.mock import call
 
-import msgspec
 import pytest
 
+from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
 from crimson.quests.level import QuestLevel
 from crimson.render.world.viewport import ViewTransform
-from crimson.replay import Replay, ReplayHeader, ReplayTick
+from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.world.sim_world_state import SimWorldState
@@ -23,13 +23,7 @@ from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.support.builders import FakePlaybackDriver
-
-
-def _replay_with_ticks(tick_count: int, *, game_mode_id: int = 0) -> Replay:
-    return Replay(
-        header=ReplayHeader(game_mode_id=replay_playback_mode.GameMode(int(game_mode_id)), seed=0),
-        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
-    )
+from tests.support.replay_runner_helpers import idle_replay
 
 
 def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value: object) -> None:
@@ -41,11 +35,7 @@ def test_replay_render_uses_recorded_gore_setting(mocker, replay_playback_view, 
     view, _console = replay_playback_view
     viewer_config = view._config
     viewer_config.display.violence_disabled = 1 - recorded_gore
-    replay = _replay_with_ticks(0, game_mode_id=1)
-    replay = msgspec.structs.replace(
-        replay,
-        header=msgspec.structs.replace(replay.header, violence_disabled=recorded_gore),
-    )
+    replay = idle_replay(0, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0, violence_disabled=recorded_gore))
     mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
     mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
@@ -173,7 +163,7 @@ def test_replay_playback_load_game_tune_queue_execs_script(mocker, replay_playba
 
 def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view) -> None:
     view, _console = replay_playback_view
-    _set_private(view, "_replay", _replay_with_ticks(4))
+    _set_private(view, "_replay", idle_replay(4))
 
     view._tick_index = 2
     assert view._replay_progress_ratio() == 0.5
@@ -208,7 +198,7 @@ def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, repl
 
 def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
-    _set_private(view, "_replay", _replay_with_ticks(5))
+    _set_private(view, "_replay", idle_replay(5))
     audio_bridge = _AudioBridgeStub()
     _set_private(
         view,
@@ -249,7 +239,7 @@ def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> 
 
 def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
-    _set_private(view, "_replay", _replay_with_ticks(3))
+    _set_private(view, "_replay", idle_replay(3))
     audio_bridge = _AudioBridgeStub()
     _set_private(
         view,
@@ -301,7 +291,7 @@ def test_skip_forward_consumes_terrain_fx_each_tick_when_render_ready(replay_pla
         fx_textures=object(),
         consume_terrain_fx_hook=_consume_terrain_fx,
     )
-    _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
+    _set_private(view, "_replay", idle_replay(len(replay_inputs)))
     _set_private(
         view,
         "_runtime",
@@ -332,7 +322,7 @@ def test_skip_forward_consumes_terrain_fx_each_tick_when_render_not_ready(replay
         nonlocal consume_calls
         consume_calls += 1
 
-    _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
+    _set_private(view, "_replay", idle_replay(len(replay_inputs)))
     _set_private(
         view,
         "_runtime",
@@ -362,7 +352,7 @@ def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_vie
     _set_private(
         view,
         "_replay",
-        _replay_with_ticks(1, game_mode_id=int(replay_playback_mode.GameMode.QUESTS)),
+        idle_replay(1, run=RunSpec(game_mode_id=GameMode.QUESTS, seed=0, quest_level=QuestLevel(1, 1))),
     )
     _set_private(view, "_grim_mono", object())
     _set_private(view, "_quest_title", "Castle Keep")
@@ -388,7 +378,7 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_pl
     _set_private(
         view,
         "_replay",
-        _replay_with_ticks(1, game_mode_id=int(replay_playback_mode.GameMode.QUESTS)),
+        idle_replay(1, run=RunSpec(game_mode_id=GameMode.QUESTS, seed=0, quest_level=QuestLevel(1, 1))),
     )
     texture = object()
     _set_private(

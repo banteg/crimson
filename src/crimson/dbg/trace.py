@@ -17,8 +17,14 @@ import msgspec
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..replay.types import input_flags_validation_error
-from ..sim.input_providers import GameFrameRngAdvanceOperation, PerkMenuOpenCommand, PerkPickCommand
-from .canonical_channels import entity_uid
+from ..sim.input_providers import (
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+    TypoBackspaceCommand,
+    TypoCharCommand,
+    TypoSubmitCommand,
+)
+from .canonical_channels import GameFrameRngAdvanceOperation, entity_uid
 from .schema import (
     CHUNK_KIND_FOOTER,
     CHUNK_KIND_META,
@@ -47,6 +53,7 @@ _META_DECODER = msgspec.msgpack.Decoder(type=TraceMeta)
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _REPLAY_BLOCK_DECODER = msgspec.msgpack.Decoder(type=TickBlock)
 _FOOTER_DECODER = msgspec.msgpack.Decoder(type=TraceFooter)
+_TYPO_COMMANDS = (TypoCharCommand, TypoBackspaceCommand, TypoSubmitCommand)
 
 
 class TraceError(ValueError):
@@ -359,8 +366,10 @@ def validate_tick_record(row: TickRecord, *, meta: TraceMeta | None = None) -> N
             raise TraceError(
                 f"tick {tick}: replay_step.commands[{command_index}].player_index={player_index} is out of range",
             )
-    if step.commands and int(row.mode_id) != int(GameMode.TYPO):
-        raise TraceError(f"tick {tick}: replay_step.commands require Typ-o mode")
+        if isinstance(command, PerkPickCommand) and not (0 <= int(command.choice_index) < 7):
+            raise TraceError(f"tick {tick}: replay_step.commands[{command_index}].choice_index must be in 0..6")
+        if isinstance(command, _TYPO_COMMANDS) and int(row.mode_id) != int(GameMode.TYPO):
+            raise TraceError(f"tick {tick}: replay_step.commands[{command_index}] Typ-o command requires Typ-o mode")
 
     checkpoint = channels.checkpoint
     if int(checkpoint.tick_index) != tick:

@@ -1,7 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const rng_callers = @import("../rng_caller_static.zig");
-const replay_codec = @import("../replay_codec.zig");
 
 const player_runtime = @import("player.zig");
 const spawn_mod = @import("spawn.zig");
@@ -99,33 +98,6 @@ pub fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
         .major = major,
         .minor = minor,
     };
-}
-
-pub fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
-    if (parseQuestLevel(header.quest_level)) |parsed| {
-        if (parsed.major >= 1 and parsed.major <= 5 and parsed.minor >= 1 and parsed.minor <= 10) {
-            return parsed.major * 100 + parsed.minor;
-        }
-    }
-    if (header.seed > @as(u32, @intCast(std.math.maxInt(i32)))) return null;
-    const seed_i32: i32 = @intCast(header.seed);
-    const major = @divTrunc(seed_i32, 100);
-    const minor = @mod(seed_i32, 100);
-    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
-    return major * 100 + minor;
-}
-
-pub fn applyQuestStageFromHeader(
-    state: *state_mod.GameplayState,
-    header: replay_codec.ReplayHeader,
-) void {
-    if (resolveQuestLevelKey(header)) |level_key| {
-        state.quest_stage_major = @divTrunc(level_key, 100);
-        state.quest_stage_minor = @mod(level_key, 100);
-        return;
-    }
-    state.quest_stage_major = 0;
-    state.quest_stage_minor = 0;
 }
 
 pub fn enforceRushLoadout(players: []state_mod.PlayerState) void {

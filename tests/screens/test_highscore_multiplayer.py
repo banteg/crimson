@@ -67,4 +67,3 @@ def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker, make_m
     assert record is not None
     assert record.survival_elapsed_ms == 4321
     assert mode._replay_checkpoint_elapsed_ms() == 4321.0
-    assert mode._replay_claimed_stats_elapsed_ms() == 4321

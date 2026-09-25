@@ -1,5 +1,5 @@
 const std = @import("std");
-const native_math = @import("crimson_zig").native_math;
+const native_math = @import("runtime/native_math.zig");
 
 pub const QuestFinalTime = struct {
     base_time_ms: i32,

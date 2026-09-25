@@ -59,6 +59,7 @@ pub fn buildQuestSpawnTableWithHardcore(
     return .{
         .entries = out_entries[0..len],
         .start_weapon_id = descriptor.start_weapon_id,
+        .rng_state = rng.state,
     };
 }
 

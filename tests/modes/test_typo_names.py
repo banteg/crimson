@@ -204,4 +204,4 @@ def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(mocke
 
     assert mode.state.typo.highscore_names == ("Alpha", "Beta.Test")
     assert mode._replay_recorder is not None
-    assert mode._replay_recorder.header.typo_highscore_names == ("Alpha", "Beta.Test")
+    assert mode._replay_recorder.run.typo_highscore_names == ("Alpha", "Beta.Test")

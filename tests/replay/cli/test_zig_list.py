@@ -7,24 +7,22 @@ import subprocess
 from pathlib import Path
 
 import msgspec
+import pytest
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayClaimedStatsSnapshot
-from crimson.weapons import WeaponId
+from crimson.replay import encode_replay_payload
 
 from ._helpers import (
     build_replay,
-    write_current_bad_bootstrap_seed_replay,
-    write_current_bad_claimed_stats_replay,
     write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
     write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
-    write_current_string_quest_level_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
+    write_payload_bytes,
     write_replay,
 )
 
@@ -45,7 +43,7 @@ def test_zig_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     assert "nested/nested.crd" in result.stdout
     assert "zeta.crd" in result.stdout
     assert "survival" in result.stdout
-    assert replay.header.game_version in result.stdout
+    assert replay.game_version in result.stdout
     assert re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", result.stdout) is not None
     assert "count=3 parsed=3 errors=0" in result.stdout
     assert f"replays_dir={tmp_path / 'replays'}" in result.stdout
@@ -79,95 +77,44 @@ def test_zig_replay_list_keeps_listing_when_replay_is_invalid(tmp_path: Path) ->
     assert "count=2 parsed=1 errors=1" in result.stdout
 
 
-def test_zig_replay_list_reports_tick_player_count_detail(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("writer", "detail"),
+    [
+        (write_current_bad_tick_player_count_replay, "ticks[0] has 0 player inputs, expected 1"),
+        (
+            write_current_missing_perk_choice_replay,
+            "ticks[0].commands[0] must have exactly the keys type, player_index, choice_index",
+        ),
+        (write_current_unknown_command_replay, "ticks[0].commands[0] has unknown type 'network_ping'"),
+        (write_current_bad_event_player_index_replay, "ticks[0].commands[0].player_index 1 is outside 0..0"),
+        (write_current_typo_event_replay, "ticks[0].commands[0] Typ-o commands require game_mode_id=TYPO"),
+        (write_current_missing_quest_level_replay, "run.quest_level must be set for quests and only for quests"),
+    ],
+)
+def test_zig_replay_list_reports_invalid_replay_detail(tmp_path: Path, writer, detail: str) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_bad_tick_player_count_replay(
+    writer(tmp_path / "replays", replay=replay, name="invalid.crd")
+
+    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert "invalid.crd invalid - - - - -" in result.stdout
+    assert f"warning: invalid.crd: {detail}" in result.stdout
+    assert "count=1 parsed=0 errors=1" in result.stdout
+
+
+def test_zig_replay_list_reports_non_canonical_payload(tmp_path: Path) -> None:
+    payload = encode_replay_payload(build_replay(mode=GameMode.SURVIVAL, ticks=1))
+    write_payload_bytes(
         tmp_path / "replays",
-        replay=replay,
-        name="bad-tick-player-count.crd",
+        payload=payload.replace(b"\xacplayer_count\x01", b"\xacplayer_count\xcc\x01", 1),
+        name="non-canonical.crd",
     )
 
     result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "bad-tick-player-count.crd invalid - - - - -" in result.stdout
-    assert "warning: bad-tick-player-count.crd: replay tick 0 has 0 players, expected 1" in result.stdout
-    assert "canonical wire shape" not in result.stdout
-
-
-def test_zig_replay_list_reports_event_shape_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_missing_perk_choice_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="missing-perk-choice.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "missing-perk-choice.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: missing-perk-choice.crd: "
-        "replay prelude perk_pick missing choice_index: tick=0 operation_index=0" in result.stdout
-    )
-    assert "canonical wire shape" not in result.stdout
-
-
-def test_zig_replay_list_reports_unknown_command_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_unknown_command_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="unknown-command.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "unknown-command.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: unknown-command.crd: replay command type is unknown: type=network_ping tick=0 command_index=0"
-    ) in result.stdout
-    assert "replay events include an unknown command kind" not in result.stdout
-
-
-def test_zig_replay_list_reports_event_player_index_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_bad_event_player_index_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="event-player-index.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "event-player-index.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: event-player-index.crd: replay prelude player_index out of range: 1 "
-        "(player_count=1, tick=0, event=perk_menu_open)"
-    ) in result.stdout
-    assert "out-of-range player_index" not in result.stdout
-
-
-def test_zig_replay_list_reports_event_kind_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_typo_event_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="event-kind.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "event-kind.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: event-kind.crd: replay command invalid for game mode: "
-        "type=typo_char tick=0 command_index=0 game_mode=survival"
-    ) in result.stdout
-    assert "replay events include invalid kinds or values for this mode" not in result.stdout
+    assert "warning: non-canonical.crd: replay payload is not canonically encoded" in result.stdout
 
 
 def test_zig_replay_list_sorts_in_reverse_chronological_order(tmp_path: Path) -> None:
@@ -195,23 +142,6 @@ def test_zig_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) 
     assert "quest 3.10 2p" in result.stdout
 
 
-def test_zig_replay_list_rejects_string_quest_level(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.QUESTS, ticks=1, quest_level="1.1")
-    write_current_string_quest_level_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="quest-string-level.crd",
-        quest_level="1.1",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "quest-string-level.crd invalid - - - - -" in result.stdout
-    assert "warning: quest-string-level.crd: replay payload does not match format 17 msgpack schema" in result.stdout
-    assert "count=1 parsed=0 errors=1" in result.stdout
-
-
 def test_zig_replay_list_reports_single_player_mode_count_detail(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     write_current_mode_player_count_replay(
@@ -226,102 +156,34 @@ def test_zig_replay_list_reports_single_player_mode_count_detail(tmp_path: Path)
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "typo-multiplayer.crd invalid - - - - -" in result.stdout
-    assert "warning: typo-multiplayer.crd: Typ-o replays require player_count == 1" in result.stdout
+    assert "warning: typo-multiplayer.crd: typo replays require player_count == 1" in result.stdout
     assert "count=1 parsed=0 errors=1" in result.stdout
 
 
-def test_zig_replay_list_reports_old_ruleset_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay = msgspec.structs.replace(
-        replay,
-        header=msgspec.structs.replace(replay.header, game_version="0.6.9"),
-    )
-    write_replay(tmp_path / "replays", replay=replay, name="old-ruleset.crd")
+def test_zig_replay_list_accepts_any_game_version(tmp_path: Path) -> None:
+    replay = msgspec.structs.replace(build_replay(mode=GameMode.SURVIVAL, ticks=1), game_version="0.6.9")
+    write_replay(tmp_path / "replays", replay=replay, name="old-version.crd")
 
     result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "old-ruleset.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: old-ruleset.crd: native replay tools require latest ruleset replays unless preserve_bugs is set"
-    ) in result.stdout
-    assert "count=1 parsed=0 errors=1" in result.stdout
+    assert re.search(r"old-version\.crd survival 0\.6\.9 1 0\.0s 0 0 ", result.stdout) is not None
+    assert "count=1 parsed=1 errors=0" in result.stdout
 
 
-def test_zig_replay_list_reports_missing_quest_level_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_missing_quest_level_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="missing-quest-level.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "missing-quest-level.crd invalid - - - - -" in result.stdout
-    assert "warning: missing-quest-level.crd: quest replays require a valid header.quest_level" in result.stdout
-    assert "native runtime limitation" not in result.stdout
-
-
-def test_zig_replay_list_reports_invalid_claimed_stats_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_bad_claimed_stats_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="bad-claimed-stats.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "bad-claimed-stats.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: bad-claimed-stats.crd: replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired"
-    ) in result.stdout
-    assert "native runtime limitation" not in result.stdout
-
-
-def test_zig_replay_list_rejects_legacy_bootstrap_fields(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    write_current_bad_bootstrap_seed_replay(
-        tmp_path / "replays",
-        replay=replay,
-        name="bad-bootstrap-seed.crd",
-    )
-
-    result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
-
-    assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "bad-bootstrap-seed.crd invalid - - - - -" in result.stdout
-    assert ("warning: bad-bootstrap-seed.crd: replay payload does not match format 17 msgpack schema") in result.stdout
-    assert "native runtime limitation" not in result.stdout
-
-
-def test_zig_replay_list_uses_header_claimed_stats(tmp_path: Path) -> None:
+def test_zig_replay_list_uses_recorded_result(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    player = msgspec.structs.replace(replay.result.players[0], experience=1234)
     replay = msgspec.structs.replace(
         replay,
-        header=msgspec.structs.replace(
-            replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
-                complete=True,
-                ticks=2,
-                elapsed_ms=33,
-                score_xp=1234,
-                kills=56,
-                most_used_weapon_id=WeaponId.PISTOL,
-                shots_fired=10,
-                shots_hit=8,
-            ),
-        ),
+        result=msgspec.structs.replace(replay.result, kills=56, players=(player,)),
     )
-    write_replay(tmp_path / "replays", replay=replay, name="claimed.crd")
+    write_replay(tmp_path / "replays", replay=replay, name="recorded.crd")
 
     result = _run_zig_replay_list(["--base-dir", str(tmp_path)])
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert re.search(r"claimed\.crd survival \S+ 2 0\.0s 1234 56 ", result.stdout) is not None
+    assert re.search(r"recorded\.crd survival \S+ 2 0\.0s 1234 56 ", result.stdout) is not None
 
 
 def test_zig_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:
@@ -362,16 +224,16 @@ def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
     assert payload["rows"][0]["replay"] in {"ok.crd", "broken.crd"}
     ok_row = next(row for row in payload["rows"] if row["replay"] == "ok.crd")
     assert ok_row["mode"] == "survival"
-    assert ok_row["game_version"] == replay.header.game_version
+    assert ok_row["game_version"] == replay.game_version
     assert ok_row["ticks"] == "2"
     assert isinstance(ok_row["modified_ns"], int)
     assert ok_row["parse_error"] is None
     broken_row = next(row for row in payload["rows"] if row["replay"] == "broken.crd")
     assert broken_row["mode"] == "invalid"
-    assert broken_row["parse_error"] == "unable to inflate replay zstd payload"
+    assert broken_row["parse_error"] == "replay must use the zstd envelope"
     unknown_row = next(row for row in payload["rows"] if row["replay"] == "unknown-command.crd")
     assert unknown_row["mode"] == "invalid"
-    assert unknown_row["parse_error"] == "replay command type is unknown: type=network_ping tick=0 command_index=0"
+    assert unknown_row["parse_error"] == "ticks[0].commands[0] has unknown type 'network_ping'"
     assert json.loads(json_out.read_text(encoding="utf-8")) == payload
 
 

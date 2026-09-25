@@ -12,7 +12,6 @@ from typing import Any, BinaryIO, Protocol
 import msgspec
 import zstandard as zstd
 
-from crimson.sim.run_spec import CreatureSlotResidue
 from grim.geom import Vec2
 
 from ..game_modes import GameMode
@@ -23,19 +22,16 @@ from ..persistence.save_status import (
     GameStatusData,
 )
 from ..quests.level import QuestLevel
+from ..replay import PackedTickInputs
 from ..replay.checkpoints import ReplayCheckpoint
-from ..replay.codec import dump_replay_file
-from ..replay.types import Replay, ReplayHeader, ReplayTick, quantize_f32
-from ..sim.input_providers import (
-    GameFrameRngAdvanceOperation,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-    ReplayPostludeOperation,
-    ReplayPreludeOperation,
-    ReplayTickCommand,
-)
+from ..replay.types import quantize_f32
+from ..sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from ..sim.run_spec import WORLD_SIZE, RunSpec, RunStatus
+from ..sim.world_reset import CreatureSlotResidue
 from .canonical_channels import (
     EntitySamplesSnapshot,
+    GameFrameRngAdvanceOperation,
+    PreludeOperation,
     ReplayStepSnapshot,
     RngStreamRow,
     SimStateSnapshot,
@@ -44,6 +40,14 @@ from .canonical_channels import (
     SnapshotPlayer,
     SnapshotRgba,
     TimingSampleRow,
+)
+from .capture_replay import (
+    CAPTURE_MODES,
+    CAPTURE_REPLAY_FORMAT_VERSION,
+    CAPTURE_REPLAY_SUFFIX,
+    CaptureReplay,
+    CaptureTick,
+    dump_capture_replay_file,
 )
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -74,7 +78,6 @@ _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change"
 # Replay RNG starts from the state latched before the first bootstrap draw.
 _RUN_SETUP_SEED_SOURCE = "rng_state_before_bootstrap"
 _FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7"
-_SUPPORTED_CAPTURE_MODES = frozenset((int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)))
 
 
 def _lcg_step_u32(state: int) -> int:
@@ -455,7 +458,7 @@ class _RunEndRow(
     ticks_written: int
     reason: str
     global_tick_index: int
-    trailing_prelude: list[ReplayPreludeOperation]
+    trailing_prelude: list[PreludeOperation]
     rng_outside_tail: _OutsideRngBag
 
 
@@ -495,7 +498,7 @@ _CAPTURE_ROW_DECODER = msgspec.json.Decoder(type=_CaptureRow)
 class FinalizedTrace(msgspec.Struct, frozen=True):
     run_id: int
     out_path: Path
-    replay_path: Path
+    capture_path: Path
     evidence_path: Path
     tick_count: int
     mode_id: int
@@ -533,11 +536,7 @@ class _OpenRun(msgspec.Struct):
     pool_residue: tuple[CreatureSlotResidue, ...]
     tick_count: int = 0
     next_local_tick: int = 0
-    replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
-    replay_dt: list[float] = msgspec.field(default_factory=list)
-    replay_prelude: list[list[ReplayPreludeOperation]] = msgspec.field(default_factory=list)
-    replay_postlude: list[list[ReplayPostludeOperation]] = msgspec.field(default_factory=list)
-    replay_commands: list[list[ReplayTickCommand]] = msgspec.field(default_factory=list)
+    capture_ticks: list[CaptureTick] = msgspec.field(default_factory=list)
     evidence_count: int = 0
     global_tick_first: int | None = None
     global_tick_last: int | None = None
@@ -842,14 +841,8 @@ def _validate_run_settings(settings: _RunSettingsRow, *, field: str) -> GameStat
         raise FridaFinalizeError(f"{field}.detail_preset must be in 1..5")
     if int(settings.violence_disabled) not in (0, 1):
         raise FridaFinalizeError(f"{field}.violence_disabled must be 0 or 1")
-    if not math.isfinite(float(settings.world_size)) or float(settings.world_size) <= 0.0:
-        raise FridaFinalizeError(f"{field}.world_size must be finite and positive")
-    try:
-        canonical_world_size = quantize_f32(float(settings.world_size))
-    except OverflowError as exc:
-        raise FridaFinalizeError(f"{field}.world_size must fit in f32") from exc
-    if canonical_world_size != float(settings.world_size):
-        raise FridaFinalizeError(f"{field}.world_size must be canonical f32")
+    if float(settings.world_size) != WORLD_SIZE:
+        raise FridaFinalizeError(f"{field}.world_size must be {WORLD_SIZE}")
     return _capture_status(settings.status, field=f"{field}.status")
 
 
@@ -858,7 +851,7 @@ def _replay_tick_inputs_from_step(
     *,
     expected_players: int,
     field: str,
-) -> list[list[float | int]]:
+) -> PackedTickInputs:
     if not math.isfinite(float(replay_step.dt)) or float(replay_step.dt) < 0.0:
         raise FridaFinalizeError(f"{field}.dt must be finite and >= 0")
     if float(replay_step.dt) != quantize_f32(float(replay_step.dt)):
@@ -867,7 +860,7 @@ def _replay_tick_inputs_from_step(
         raise FridaFinalizeError(
             f"{field}.inputs must contain {int(expected_players)} player rows, got {len(replay_step.inputs)}",
         )
-    out: list[list[float | int]] = []
+    out: PackedTickInputs = []
     for player_index, sample in enumerate(replay_step.inputs):
         player_field = f"{field}.inputs[{player_index}]"
         scalars = (
@@ -882,7 +875,7 @@ def _replay_tick_inputs_from_step(
             if float(scalar_value) != quantize_f32(float(scalar_value)):
                 raise FridaFinalizeError(f"{player_field}.{scalar_name} must already be canonical f32")
         flags = _capture_u32(sample.flags, field=f"{player_field}.flags")
-        out.append([float(sample.move_x), float(sample.move_y), float(sample.aim_x), float(sample.aim_y), flags])
+        out.append((float(sample.move_x), float(sample.move_y), float(sample.aim_x), float(sample.aim_y), flags))
     return out
 
 
@@ -891,7 +884,7 @@ def _validate_replay_prelude(
     *,
     expected_players: int,
     field: str,
-) -> list[ReplayPreludeOperation]:
+) -> list[PreludeOperation]:
     prelude = list(tick_row.channels.replay_step.prelude)
     _validate_replay_prelude_operations(
         prelude,
@@ -902,7 +895,7 @@ def _validate_replay_prelude(
 
 
 def _validate_replay_prelude_operations(
-    prelude: list[ReplayPreludeOperation],
+    prelude: list[PreludeOperation],
     *,
     expected_players: int,
     field: str,
@@ -947,7 +940,7 @@ def _validate_rng_transition(
 def _validate_outside_rng_bag(
     bag: _OutsideRngBag,
     *,
-    prelude: list[ReplayPreludeOperation],
+    prelude: list[PreludeOperation],
     field: str,
     expected_start: int | None = None,
     expected_end: int | None = None,
@@ -1361,7 +1354,6 @@ def _build_meta(
     run: _OpenRun,
     tick_count: int,
     replay_sha256: str,
-    replay_tick_rate: int,
 ) -> TraceMeta:
     producer_platform = str(session_start.platform)
     producer_arch = str(session_start.arch)
@@ -1389,7 +1381,7 @@ def _build_meta(
             mtime_ns=raw_fingerprint.mtime_ns,
             kind="capture",
             replay_sha256=str(replay_sha256),
-            tick_rate=int(replay_tick_rate),
+            tick_rate=int(run.tick_rate),
             mode_id=int(run.mode_id),
             seed=int(run.replay_seed),
             player_count=int(run.replay_player_count),
@@ -1499,30 +1491,9 @@ def _write_run_trace(
     if not run.evidence_stream.closed:
         run.evidence_stream.flush()
         run.evidence_stream.close()
-    if int(run.replay_player_count) <= 0:
-        raise FridaFinalizeError(f"run {run.run_id}: invalid replay player_count={run.replay_player_count}")
-    if len(run.replay_inputs) != int(run.tick_count):
+    if len(run.capture_ticks) != int(run.tick_count):
         raise FridaFinalizeError(
-            f"run {run.run_id}: replay_inputs count {len(run.replay_inputs)} does not match tick_count {run.tick_count}",
-        )
-    if len(run.replay_dt) != int(run.tick_count):
-        raise FridaFinalizeError(
-            f"run {run.run_id}: replay_dt count {len(run.replay_dt)} does not match tick_count {run.tick_count}",
-        )
-    if len(run.replay_prelude) != int(run.tick_count):
-        raise FridaFinalizeError(
-            f"run {run.run_id}: replay_prelude count {len(run.replay_prelude)} "
-            f"does not match tick_count {run.tick_count}",
-        )
-    if len(run.replay_postlude) != int(run.tick_count):
-        raise FridaFinalizeError(
-            f"run {run.run_id}: replay_postlude count {len(run.replay_postlude)} "
-            f"does not match tick_count {run.tick_count}",
-        )
-    if len(run.replay_commands) != int(run.tick_count):
-        raise FridaFinalizeError(
-            f"run {run.run_id}: replay_commands count {len(run.replay_commands)} "
-            f"does not match tick_count {run.tick_count}",
+            f"run {run.run_id}: capture tick count {len(run.capture_ticks)} does not match tick_count {run.tick_count}",
         )
     out_path = _run_output_path(
         raw_path=raw_path,
@@ -1532,51 +1503,42 @@ def _write_run_trace(
         quest_stage_minor=int(run.quest_stage_minor),
         counters=counters,
     )
-    replay_path = Path(out_path).with_suffix(".crd")
+    capture_path = Path(out_path).with_suffix(CAPTURE_REPLAY_SUFFIX)
     evidence_path = Path(out_path).with_suffix(".evidence.msgpack.zst")
     is_quest_run = (
         int(run.mode_id) == int(_GAME_MODE_QUESTS) and int(run.quest_stage_major) > 0 and int(run.quest_stage_minor) > 0
     )
-    replay_header = ReplayHeader(
+    run_spec = RunSpec(
         game_mode_id=GameMode(int(run.mode_id)),
         player_count=int(run.replay_player_count),
         quest_level=(QuestLevel(int(run.quest_stage_major), int(run.quest_stage_minor)) if is_quest_run else None),
         preserve_bugs=True,
-        tick_rate=int(run.tick_rate),
         seed=int(run.replay_seed),
         quest_fail_retry_count=int(run.quest_fail_retry_count),
         hardcore=bool(run.hardcore),
         detail_preset=int(run.detail_preset),
         violence_disabled=int(run.violence_disabled),
-        world_size=float(run.world_size),
-        status=run.status,
+        status=RunStatus.from_status_data(run.status),
     )
-    replay_header = msgspec.structs.replace(
-        replay_header,
-        initial_creature_pool=run.pool_residue,
+    dump_capture_replay_file(
+        capture_path,
+        CaptureReplay(
+            format_version=CAPTURE_REPLAY_FORMAT_VERSION,
+            capture_format_version=FRIDA_CAPTURE_FORMAT_VERSION,
+            tick_rate=int(run.tick_rate),
+            run=run_spec,
+            status=run.status,
+            creature_pool=run.pool_residue,
+            ticks=run.capture_ticks,
+        ),
     )
-    replay_ticks = [
-        ReplayTick(
-            inputs=run.replay_inputs[i],
-            dt=run.replay_dt[i],
-            prelude=run.replay_prelude[i],
-            postlude=run.replay_postlude[i],
-            commands=run.replay_commands[i],
-        )
-        for i in range(run.tick_count)
-    ]
-    dump_replay_file(
-        replay_path,
-        Replay(header=replay_header, ticks=replay_ticks),
-    )
-    replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
+    replay_sha256 = hashlib.sha256(capture_path.read_bytes()).hexdigest()
     meta = _build_meta(
         raw_fingerprint=raw_fingerprint,
         session_start=session_start,
         run=run,
         tick_count=int(run.tick_count),
         replay_sha256=replay_sha256,
-        replay_tick_rate=int(replay_header.tick_rate),
     )
     summary = write_trace_iter(
         out_path,
@@ -1597,7 +1559,7 @@ def _write_run_trace(
     return FinalizedTrace(
         run_id=int(run.run_id),
         out_path=Path(out_path),
-        replay_path=Path(replay_path),
+        capture_path=Path(capture_path),
         evidence_path=Path(evidence_path),
         tick_count=int(run.tick_count),
         mode_id=int(run.mode_id),
@@ -1617,7 +1579,7 @@ def _staged_artifact_pairs(
         staged_rng_path = trace.out_path.with_suffix(".rng_evidence.json")
         for staged_path in (
             trace.out_path,
-            trace.replay_path,
+            trace.capture_path,
             staged_rng_path,
             trace.evidence_path,
         ):
@@ -1680,7 +1642,7 @@ def _publish_staged_traces(
         msgspec.structs.replace(
             staged,
             out_path=Path(output_root) / staged.out_path.name,
-            replay_path=Path(output_root) / staged.replay_path.name,
+            capture_path=Path(output_root) / staged.capture_path.name,
             evidence_path=Path(output_root) / staged.evidence_path.name,
         )
         for staged in staged_traces
@@ -1778,8 +1740,8 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}].reason must be one of {sorted(_RUN_START_REASONS)!r}",
                             )
                         mode_id = int(run_start.mode_id)
-                        if mode_id not in _SUPPORTED_CAPTURE_MODES:
-                            supported = sorted(_SUPPORTED_CAPTURE_MODES)
+                        if mode_id not in CAPTURE_MODES:
+                            supported = sorted(int(mode) for mode in CAPTURE_MODES)
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}] unsupported mode_id={mode_id}; "
                                 f"Frida replay capture supports only {supported!r}",
@@ -1928,11 +1890,14 @@ def finalize_frida_jsonl_to_traces(
                             rng_stream=channels.rng_stream,
                             field=f"{raw_path}.lines[{line_no}]",
                         )
-                        active_run.replay_inputs.append(list(replay_inputs))
-                        active_run.replay_dt.append(float(tick_row.channels.replay_step.dt))
-                        active_run.replay_prelude.append(list(replay_prelude))
-                        active_run.replay_postlude.append(list(tick_row.channels.replay_step.postlude))
-                        active_run.replay_commands.append(list(tick_row.channels.replay_step.commands))
+                        active_run.capture_ticks.append(
+                            CaptureTick(
+                                dt=float(tick_row.channels.replay_step.dt),
+                                inputs=replay_inputs,
+                                prelude=replay_prelude,
+                                postlude=list(tick_row.channels.replay_step.postlude),
+                            ),
+                        )
                         tick = TickRecord(
                             tick_index=int(tick_row.tick_index),
                             elapsed_ms=int(tick_row.elapsed_ms),

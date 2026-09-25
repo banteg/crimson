@@ -37,7 +37,7 @@ pub fn transformPrimaryInput(
     state: *state_mod.GameplayState,
     input: player_runtime.GameInput,
 ) player_runtime.GameInput {
-    state.tutorial.move_active_this_tick = input.move_x * input.move_x + input.move_y * input.move_y > 0.0;
+    state.tutorial.move_active_this_tick = input.move_x != 0.0 or input.move_y != 0.0;
     state.tutorial.fire_active_this_tick = input.flags.fire_pressed or input.flags.fire_down;
     return input;
 }

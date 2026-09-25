@@ -8,7 +8,8 @@ from typing import cast
 import pytest
 import zstandard as zstd
 
-from crimson.dbg.canonical_channels import entity_uid
+from crimson.dbg.canonical_channels import GameFrameRngAdvanceOperation, entity_uid
+from crimson.dbg.capture_replay import load_capture_replay_file
 from crimson.dbg.frida_finalize import (
     FRIDA_CAPTURE_FORMAT_VERSION,
     FRIDA_RUNTIME_VERSION,
@@ -18,13 +19,8 @@ from crimson.dbg.frida_finalize import (
 )
 from crimson.dbg.trace import load_trace
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
-from crimson.replay.codec import load_replay_file
 from crimson.replay.types import quantize_f32
-from crimson.sim.input_providers import (
-    GameFrameRngAdvanceOperation,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-)
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 
@@ -627,7 +623,7 @@ def _run_end_row(
     return row
 
 
-def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_writes_trace_and_capture_replay_and_deletes_raw(tmp_path: Path) -> None:
     frame_state_1 = (777 * 214013 + 2531011) & 0xFFFFFFFF
     frame_state_2 = (frame_state_1 * 214013 + 2531011) & 0xFFFFFFFF
     raw_path = _write_jsonl(
@@ -647,7 +643,6 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                     hardcore=True,
                     detail_preset=2,
                     violence_disabled=1,
-                    world_size=2048.0,
                 ),
             ),
             {
@@ -771,31 +766,32 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
 
     out_trace = result.traces[0]
     assert out_trace.tick_count == 2
-    assert out_trace.replay_path.is_file()
+    assert out_trace.capture_path.suffix == ".ccr"
 
-    replay = load_replay_file(out_trace.replay_path)
-    assert replay.header.game_mode_id == 1
-    assert replay.header.seed == 777
-    assert replay.header.player_count == 1
-    assert replay.header.preserve_bugs is True
-    assert replay.header.quest_fail_retry_count == 3
-    assert replay.header.hardcore is True
-    assert replay.header.detail_preset == 2
-    assert replay.header.violence_disabled == 1
-    assert replay.header.world_size == 2048.0
-    assert replay.header.status.quest_unlock_index == 7
-    assert replay.header.status.weapon_usage_counts[1] == 17
-    assert replay.header.status.quest_play_counts[3] == 9
-    assert replay.header.status.reserved_seed_words == bytes(range(int(RESERVED_SEED_WORDS_BYTE_SIZE)))
-    assert len(replay.ticks) == 2
+    capture = load_capture_replay_file(out_trace.capture_path)
+    assert capture.capture_format_version == CAPTURE_FORMAT_VERSION
+    assert capture.run.game_mode_id == 1
+    assert capture.run.seed == 777
+    assert capture.run.player_count == 1
+    assert capture.run.preserve_bugs is True
+    assert capture.run.quest_fail_retry_count == 3
+    assert capture.run.hardcore is True
+    assert capture.run.detail_preset == 2
+    assert capture.run.violence_disabled == 1
+    assert capture.run.status.quest_unlock_index == 7
+    assert capture.run.status.weapon_usage_counts[1] == 17
+    assert capture.status.quest_play_counts[3] == 9
+    assert capture.status.reserved_seed_words == bytes(range(int(RESERVED_SEED_WORDS_BYTE_SIZE)))
+    assert len(capture.ticks) == 2
 
     meta, ticks, footer = load_trace(out_trace.out_path)
     assert footer.tick_count == 2
     assert meta.producer.impl == "frida_original"
     assert meta.source.kind == "capture"
     assert meta.source.player_count == 1
-    assert meta.source.tick_rate == replay.header.tick_rate
-    assert meta.source.replay_sha256 == hashlib.sha256(out_trace.replay_path.read_bytes()).hexdigest()
+    assert meta.source.tick_rate == capture.tick_rate
+    assert meta.status == capture.status
+    assert meta.source.replay_sha256 == hashlib.sha256(out_trace.capture_path.read_bytes()).hexdigest()
     assert ticks[0].channels.checkpoint.tick_index == 0
     assert ticks[1].channels.checkpoint.tick_index == 1
     assert ticks[0].channels.replay_step.dt == quantize_f32(0.016)
@@ -805,11 +801,11 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert ticks[0].channels.replay_step.postlude == [PerkMenuOpenCommand(player_index=0)]
     assert ticks[1].channels.replay_step.prelude == [PerkPickCommand(player_index=0, choice_index=1)]
     assert ticks[0].channels.replay_step.inputs[0].flags == 0
-    assert replay.ticks[0].dt == ticks[0].channels.replay_step.dt
-    assert replay.ticks[0].inputs[0] == [0.0, 0.0, 0.0, 0.0, 0]
-    assert replay.ticks[0].prelude == ticks[0].channels.replay_step.prelude
-    assert replay.ticks[0].postlude == ticks[0].channels.replay_step.postlude
-    assert replay.ticks[1].prelude == ticks[1].channels.replay_step.prelude
+    assert capture.ticks[0].dt == ticks[0].channels.replay_step.dt
+    assert capture.ticks[0].inputs[0] == (0.0, 0.0, 0.0, 0.0, 0)
+    assert capture.ticks[0].prelude == ticks[0].channels.replay_step.prelude
+    assert capture.ticks[0].postlude == ticks[0].channels.replay_step.postlude
+    assert capture.ticks[1].prelude == ticks[1].channels.replay_step.prelude
 
     player0 = ticks[0].channels.sim_state.players[0]
     assert player0.heading == 0.0
@@ -849,7 +845,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert evidence.header.module_hash == "cafebabe"
     assert evidence.header.raw_sha256 == raw_sha256
     assert evidence.header.trace_sha256 == hashlib.sha256(out_trace.out_path.read_bytes()).hexdigest()
-    assert evidence.header.replay_sha256 == hashlib.sha256(out_trace.replay_path.read_bytes()).hexdigest()
+    assert evidence.header.replay_sha256 == hashlib.sha256(out_trace.capture_path.read_bytes()).hexdigest()
     assert evidence.footer.global_tick_first == 100
     assert evidence.footer.global_tick_last == 101
     private = evidence.ticks[0].evidence.checkpoint_private
@@ -910,7 +906,7 @@ def test_finalize_frida_jsonl_to_traces_preserves_menu_postlude_then_next_tick_p
 
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
-    replay = load_replay_file(result.traces[0].replay_path)
+    capture = load_capture_replay_file(result.traces[0].capture_path)
     _meta, ticks, _footer = load_trace(result.traces[0].out_path)
     menu_open = PerkMenuOpenCommand(player_index=0)
     pick = PerkPickCommand(player_index=0, choice_index=4)
@@ -918,8 +914,8 @@ def test_finalize_frida_jsonl_to_traces_preserves_menu_postlude_then_next_tick_p
     assert ticks[0].channels.replay_step.postlude == [menu_open]
     assert ticks[1].channels.replay_step.prelude == [pick]
     assert ticks[1].channels.replay_step.postlude == []
-    assert replay.ticks[0].postlude == [menu_open]
-    assert replay.ticks[1].prelude == [pick]
+    assert capture.ticks[0].postlude == [menu_open]
+    assert capture.ticks[1].prelude == [pick]
 
 
 def test_finalize_frida_jsonl_to_traces_preserves_numeric_rng_caller(tmp_path: Path) -> None:
@@ -999,7 +995,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_active_run_when_capture_abruptly
     with pytest.raises(FridaFinalizeError, match="ended with active run 4"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
     assert not list((tmp_path / "out").glob("*.cdt"))
-    assert not list((tmp_path / "out").glob("*.crd"))
+    assert not list((tmp_path / "out").glob("*.ccr"))
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_noncontiguous_local_tick_index(tmp_path: Path) -> None:
@@ -1023,7 +1019,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_noncontiguous_local_tick_index(t
     with pytest.raises(FridaFinalizeError, match="tick_index=1 does not match expected local tick 0"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
     assert not list((tmp_path / "out").glob("*.cdt"))
-    assert not list((tmp_path / "out").glob("*.crd"))
+    assert not list((tmp_path / "out").glob("*.ccr"))
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_noncontiguous_global_tick_index(tmp_path: Path) -> None:
@@ -1047,7 +1043,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_noncontiguous_global_tick_index(
     with pytest.raises(FridaFinalizeError, match="global_tick_index=41 does not match expected global tick 40"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
     assert not list((tmp_path / "out").glob("*.cdt"))
-    assert not list((tmp_path / "out").glob("*.crd"))
+    assert not list((tmp_path / "out").glob("*.ccr"))
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_capture_with_no_finalized_runs(tmp_path: Path) -> None:
@@ -1168,11 +1164,11 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
         "capture.rush.run1.cdt",
         "capture.survival.run1.cdt",
     ]
-    replay_names = sorted(trace.replay_path.name for trace in result.traces)
-    assert replay_names == [
-        "capture.quest_1_5.run1.crd",
-        "capture.rush.run1.crd",
-        "capture.survival.run1.crd",
+    capture_names = sorted(trace.capture_path.name for trace in result.traces)
+    assert capture_names == [
+        "capture.quest_1_5.run1.ccr",
+        "capture.rush.run1.ccr",
+        "capture.survival.run1.ccr",
     ]
 
 
@@ -1347,7 +1343,7 @@ def _current_session_start_row() -> dict[str, object]:
     return _session_start_row()
 
 
-def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_capture_replay(tmp_path: Path) -> None:
     run_start = _run_start_row(
         run_id=1,
         mode_id=1,
@@ -1377,9 +1373,8 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
     )
 
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
-    replay = load_replay_file(result.traces[0].replay_path)
-    pool = replay.header.initial_creature_pool
-    assert pool is not None
+    capture = load_capture_replay_file(result.traces[0].capture_path)
+    pool = capture.creature_pool
     assert len(pool) == 2
     assert pool[0].phase_seed == 383
     assert pool[0].link_index == 3
@@ -2002,7 +1997,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_error_without_partial_output
     with pytest.raises(FridaFinalizeError, match="run error='samples.secondary_projectiles"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
     assert not list((tmp_path / "out").glob("*.cdt"))
-    assert not list((tmp_path / "out").glob("*.crd"))
+    assert not list((tmp_path / "out").glob("*.ccr"))
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_removed_session_end_row(tmp_path: Path) -> None:
@@ -2076,8 +2071,8 @@ def test_finalize_frida_jsonl_to_traces_seeds_replay_from_pre_bootstrap_rng_stat
 
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
-    replay = load_replay_file(result.traces[0].replay_path)
-    assert replay.header.seed == 999
+    capture = load_capture_replay_file(result.traces[0].capture_path)
+    assert capture.run.seed == 999
     meta, _ticks, _footer = load_trace(result.traces[0].out_path)
     assert meta.source.seed == 999
     assert meta.source.run_start_seed_source == "rng_state_before_bootstrap"
@@ -2141,10 +2136,10 @@ def test_finalize_frida_jsonl_to_traces_requires_captured_first_tick_frame_rng_a
 
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
-    replay = load_replay_file(result.traces[0].replay_path)
+    capture = load_capture_replay_file(result.traces[0].capture_path)
     _meta, ticks, _footer = load_trace(result.traces[0].out_path)
-    assert replay.ticks[0].prelude == [GameFrameRngAdvanceOperation(frames=1)]
-    assert ticks[0].channels.replay_step.prelude == replay.ticks[0].prelude
+    assert capture.ticks[0].prelude == [GameFrameRngAdvanceOperation(frames=1)]
+    assert ticks[0].channels.replay_step.prelude == capture.ticks[0].prelude
 
 
 def test_finalize_frida_jsonl_to_traces_accepts_rng_owned_by_perk_operation(tmp_path: Path) -> None:
@@ -2180,8 +2175,8 @@ def test_finalize_frida_jsonl_to_traces_accepts_rng_owned_by_perk_operation(tmp_
 
     result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
-    replay = load_replay_file(result.traces[0].replay_path)
-    assert replay.ticks[0].prelude == [PerkMenuOpenCommand(player_index=0)]
+    capture = load_capture_replay_file(result.traces[0].capture_path)
+    assert capture.ticks[0].prelude == [PerkMenuOpenCommand(player_index=0)]
 
 
 def test_finalize_frida_jsonl_to_traces_validates_rng_owned_by_trailing_operation(tmp_path: Path) -> None:
@@ -2516,7 +2511,7 @@ def test_finalize_frida_jsonl_to_traces_rolls_back_bundle_publish(
     output_dir.mkdir()
     artifact_names = (
         "capture.survival.run1.cdt",
-        "capture.survival.run1.crd",
+        "capture.survival.run1.ccr",
         "capture.survival.run1.rng_evidence.json",
         "capture.survival.run1.evidence.msgpack.zst",
     )
@@ -2528,7 +2523,7 @@ def test_finalize_frida_jsonl_to_traces_rolls_back_bundle_publish(
 
     def fail_second_staged_replace(source: Path, target: Path) -> Path:
         nonlocal failed
-        if not failed and source.parent.name == "output" and source.suffix == ".crd":
+        if not failed and source.parent.name == "output" and source.suffix == ".ccr":
             failed = True
             raise OSError("injected publish failure")
         return original_replace(source, target)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -8,6 +9,7 @@ import pytest
 import crimson.dbg.record as dbg_record
 from crimson.dbg.canonical_channels import (
     EntitySamplesSnapshot,
+    ReplayStepSnapshot,
     SimStateSnapshot,
     SnapshotBonusTimers,
     SnapshotGameplay,
@@ -19,7 +21,7 @@ from crimson.dbg.canonical_channels import (
 from crimson.dbg.schema import TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import load_trace
 from crimson.game_modes import GameMode
-from crimson.persistence.save_status import GameStatusData
+from crimson.replay import REPLAY_TICK_DT, REPLAY_TICK_RATE
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayCheckpointVec2,
@@ -27,9 +29,9 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from crimson.replay.types import Replay, ReplayHeader, ReplayTick
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.weapons import WeaponId
+from tests.replay.cli._helpers import build_replay
 
 
 def test_bonus_timer_ms_matches_frida_nearest_millisecond_encoding() -> None:
@@ -39,20 +41,11 @@ def test_bonus_timer_ms_matches_frida_nearest_millisecond_encoding() -> None:
 
 
 def test_canonical_elapsed_ms_uses_unscaled_replay_clock() -> None:
-    replay = Replay(
-        header=ReplayHeader(
-            game_mode_id=GameMode.SURVIVAL,
-            seed=0x1234,
-            status=GameStatusData(),
-        ),
-        ticks=[
-            ReplayTick(dt=0.1, inputs=[]),
-            ReplayTick(dt=0.09, inputs=[]),
-            ReplayTick(dt=0.087, inputs=[]),
-        ],
-    )
+    steps = [
+        ReplayStepSnapshot(dt=dt, inputs=[], prelude=[], postlude=[], commands=[]) for dt in (0.1, 0.09, 0.087)
+    ]
 
-    assert dbg_record._canonical_elapsed_ms_by_tick(replay) == [100, 190, 277]
+    assert dbg_record._canonical_elapsed_ms_by_tick(steps) == [100, 190, 277]
 
 
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:
@@ -133,14 +126,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
 ) -> None:
     replay_path = tmp_path / "sample.crd"
     replay_path.write_bytes(b"fake")
-    replay = Replay(
-        header=ReplayHeader(
-            game_mode_id=GameMode.SURVIVAL,
-            seed=0x1234,
-            status=GameStatusData(),
-        ),
-        ticks=[ReplayTick(dt=0.016, inputs=[[0.0, 0.0, 0.0, 0.0, 0]])],
-    )
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
 
     class _FakeDriver:
         def build_checkpoint(self, *, tick_result) -> ReplayCheckpoint:
@@ -189,7 +175,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
                     bonuses=SimpleNamespace(reflex_boost=0.0),
                 ),
             )
-            observer.before_tick(0, world, 0.016)
+            observer.before_tick(0, world, REPLAY_TICK_DT)
             observer.after_tick(tick_result, world)
             observer.rng_trace(
                 tick_result,
@@ -197,8 +183,11 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
             )
             return SimpleNamespace()
 
-    monkeypatch.setattr(dbg_record, "load_replay_file", lambda _path: replay)
-    monkeypatch.setattr(dbg_record, "build_verify_playback_driver", lambda *_args, **_kwargs: _FakeDriver())
+    monkeypatch.setattr(
+        dbg_record,
+        "_load_recording",
+        lambda _path: (dbg_record._replay_recording(replay), _FakeDriver()),
+    )
     monkeypatch.setattr(
         dbg_record,
         "_entity_samples_for_world",
@@ -261,7 +250,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     assert summary.meta.trace_schema_version == TRACE_SCHEMA_VERSION
     meta, ticks, footer = load_trace(tmp_path / "sample.cdt")
     assert meta.trace_schema_version == TRACE_SCHEMA_VERSION
-    assert meta.status == replay.header.status
+    assert meta.status == replay.run.status.as_status_data()
     assert footer.tick_count == 1
     assert ticks[0].channels.rng_stream[0].caller is None
     assert len(ticks[0].channels.timing_samples) == 1
@@ -359,7 +348,6 @@ def test_zig_dbg_record_cli_writes_cdt_trace(tmp_path: Path) -> None:
 
 def _write_zig_compatible_msgpack_replay(path: Path, *, player_count: int) -> None:
     from crimson.replay.codec import dump_replay_file
-    from tests.replay.cli._helpers import build_replay
 
     dump_replay_file(path, build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=player_count))
 
@@ -367,7 +355,6 @@ def _write_zig_compatible_msgpack_replay(path: Path, *, player_count: int) -> No
 def test_quest_recording_preserves_scaled_simulation_clock(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     from crimson.replay.codec import dump_replay_file
     from crimson.replay.driver.playback_driver import build_verify_playback_driver
-    from tests.replay.cli._helpers import build_replay
 
     replay_path, out_path = tmp_path / "quest.crd", tmp_path / "quest.cdt"
     dump_replay_file(replay_path, build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1"))
@@ -384,3 +371,51 @@ def test_quest_recording_preserves_scaled_simulation_clock(monkeypatch: pytest.M
     assert [tick.elapsed_ms for tick in ticks] == [5, 10]
     assert [tick.channels.checkpoint.elapsed_ms for tick in ticks] == [5, 10]
     assert [tick.dt_ms_i32 for tick in ticks] == [16, 16]
+
+
+def test_port_replay_trace_reports_the_fixed_step_boundary(tmp_path: Path) -> None:
+    from crimson.replay.codec import dump_replay_file
+    from tests.replay.cli._helpers import build_typo_submit_replay
+
+    replay = build_typo_submit_replay(word="ab")
+    replay_path, out_path = tmp_path / "typo.crd", tmp_path / "typo.cdt"
+    dump_replay_file(replay_path, replay)
+    dbg_record.record_replay_to_trace(replay_path=replay_path, out_path=out_path)
+
+    meta, ticks, _ = load_trace(out_path)
+    assert meta.source.tick_rate == REPLAY_TICK_RATE
+    assert meta.status == replay.run.status.as_status_data()
+    steps = [tick.channels.replay_step for tick in ticks]
+    assert [step.commands for step in steps] == [list(tick.commands) for tick in replay.ticks]
+    assert all(step.dt == REPLAY_TICK_DT and not step.prelude and not step.postlude for step in steps)
+    assert {tick.dt_ms_i32 for tick in ticks} == {16}
+
+
+def test_capture_replay_trace_reports_the_captured_boundary(tmp_path: Path) -> None:
+    from crimson.dbg.canonical_channels import GameFrameRngAdvanceOperation
+    from crimson.dbg.capture_replay import dump_capture_replay_file
+    from crimson.sim.input_providers import PerkMenuOpenCommand
+    from tests.debug.test_capture_replay import build_capture
+
+    capture = build_capture(
+        prelude={1: [GameFrameRngAdvanceOperation(frames=1)]},
+        postlude={2: [PerkMenuOpenCommand(player_index=0)]},
+    )
+    capture_path, out_path = tmp_path / "run.ccr", tmp_path / "run.cdt"
+    dump_capture_replay_file(capture_path, capture)
+    dbg_record.record_replay_to_trace(replay_path=capture_path, out_path=out_path)
+
+    meta, ticks, _ = load_trace(out_path)
+    assert meta.source.tick_rate == capture.tick_rate
+    assert meta.source.replay_sha256 == hashlib.sha256(capture_path.read_bytes()).hexdigest()
+    assert meta.status == capture.status
+    for tick, captured in zip(ticks, capture.ticks, strict=True):
+        step = tick.channels.replay_step
+        assert (step.dt, step.prelude, step.postlude, step.commands) == (
+            captured.dt,
+            captured.prelude,
+            captured.postlude,
+            [],
+        )
+    with pytest.raises(ValueError, match="python impl"):
+        dbg_record.record_replay_to_trace(replay_path=capture_path, out_path=out_path, impl="zig")

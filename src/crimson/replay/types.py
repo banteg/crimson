@@ -5,22 +5,20 @@ import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
 
 import msgspec
 
 from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
-from ..msgspec_types import NonNegativeInt
-from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
+from ..sim.input_providers import GameCommand
+from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
-from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
-from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 19
-
-WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
+REPLAY_FORMAT_VERSION = 20
+# Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
+REPLAY_TICK_RATE = 60
+REPLAY_TICK_DT = float(f32(1.0 / REPLAY_TICK_RATE))
 
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
@@ -77,8 +75,6 @@ def input_flags_validation_error(flags: int) -> str | None:
     return None
 
 
-type InputQuantization = Literal["f32"]
-
 _RELEASE_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
 
@@ -97,12 +93,25 @@ def _head_points_at_release_tag(*, version: str, repo_root: Path, git_exe: str) 
     return str(version) in tags or f"v{version}" in tags
 
 
+def _tree_is_dirty(*, repo_root: Path, git_exe: str) -> bool:
+    """Return True when game sources differ from HEAD, including new unignored files."""
+
+    out = subprocess.check_output(
+        [git_exe, "status", "--porcelain", "--", "src"],
+        cwd=repo_root,
+        stderr=subprocess.DEVNULL,
+    )
+    return bool(out.strip())
+
+
 @lru_cache(maxsize=1)
 def current_replay_game_version() -> str:
-    """Return replay header `game_version`.
+    """Return replay `game_version`.
 
     - Release-tagged HEAD: "<version>"
     - Git checkout non-release: "<version>+g<short_sha>"
+    - Modified game sources append ".dirty": the commit alone no longer
+      identifies the simulation that recorded the replay.
     - No git metadata: "<version>"
     """
 
@@ -122,17 +131,13 @@ def current_replay_game_version() -> str:
         build = out.decode("utf-8", errors="replace").strip()
         if not build:
             return version
-        if _head_points_at_release_tag(version=version, repo_root=repo_root, git_exe=git_exe):
+        dirty = _tree_is_dirty(repo_root=repo_root, git_exe=git_exe)
+        if not dirty and _head_points_at_release_tag(version=version, repo_root=repo_root, git_exe=git_exe):
             return version
-        if "+" in version:
-            return f"{version}.g{build}"
-        return f"{version}+g{build}"
+        separator = "." if "+" in version else "+"
+        return f"{version}{separator}g{build}" + (".dirty" if dirty else "")
     except (OSError, subprocess.CalledProcessError):
         return version
-
-
-def _default_game_version() -> str:
-    return current_replay_game_version()
 
 
 def quantize_f32(value: float) -> float:
@@ -225,71 +230,25 @@ def unpack_input_mode_flags(flags: int) -> tuple[MovementControlType | None, Aim
     return move_mode, aim_scheme
 
 
-type PackedPlayerInput = list[float | int]
+# `(move_x, move_y, aim_x, aim_y, flags)`; axes are canonical float32 values.
+type PackedPlayerInput = tuple[float, float, float, float, int]
 type PackedTickInputs = list[PackedPlayerInput]
 
 
-def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float, float, float, int]:
-    """Decode a compact replay input row into scalar values.
+class ReplayTick(msgspec.Struct, frozen=True, array_like=True, forbid_unknown_fields=True):
+    """One fixed-dt simulation tick: per-player inputs, then ordered commands.
 
-    Stored shape is `[move_x, move_y, aim_x, aim_y, flags]`.
-    Returns `(move_x, move_y, aim_x, aim_y, flags)`.
+    Perk commands apply at the start of the tick, before timing is derived;
+    Typ-o commands apply after the mode's pre-step hook.
     """
 
-    def _require_num_f(value: object, *, field: str) -> float:
-        if isinstance(value, bool):
-            raise TypeError(f"{field} must be numeric, got bool")
-        if isinstance(value, (int, float)):
-            return float(value)
-        raise TypeError(f"{field} must be numeric")
-
-    def _require_num_i(value: object, *, field: str) -> int:
-        if isinstance(value, bool):
-            raise TypeError(f"{field} must be numeric, got bool")
-        if isinstance(value, int):
-            return int(value)
-        if isinstance(value, float):
-            return int(value)
-        raise TypeError(f"{field} must be numeric")
-
-    if len(packed) != 5:
-        raise ValueError(f"packed replay input must have 5 fields, got {len(packed)}")
-
-    mx = _require_num_f(packed[0], field="move_x")
-    my = _require_num_f(packed[1], field="move_y")
-    ax = _require_num_f(packed[2], field="aim_x")
-    ay = _require_num_f(packed[3], field="aim_y")
-    flags = _require_num_i(packed[4], field="flags")
-
-    return mx, my, ax, ay, flags
-
-
-class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    complete: bool = False
-    ticks: NonNegativeInt = 0
-    elapsed_ms: NonNegativeInt = 0
-    score_xp: NonNegativeInt = 0
-    kills: NonNegativeInt = 0
-    most_used_weapon_id: WeaponId = WeaponId.NONE
-    shots_fired: NonNegativeInt = 0
-    shots_hit: NonNegativeInt = 0
-
-
-class ReplayHeader(RunSpec, frozen=True, forbid_unknown_fields=True):
-    replay_format_version: int = REPLAY_FORMAT_VERSION
-    game_version: str = msgspec.field(default_factory=_default_game_version)
-    claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
-    input_quantization: InputQuantization = "f32"
-
-
-class ReplayTick(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    dt: float
     inputs: PackedTickInputs
-    prelude: list[ReplayPreludeOperation] = []
-    postlude: list[ReplayPostludeOperation] = []
-    commands: list[ReplayTickCommand] = []
+    commands: list[GameCommand] = []
 
 
 class Replay(msgspec.Struct, forbid_unknown_fields=True):
-    header: ReplayHeader
+    format_version: int
+    game_version: str
+    run: RunSpec
+    result: RunResult
     ticks: list[ReplayTick]

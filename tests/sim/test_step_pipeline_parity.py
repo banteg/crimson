@@ -9,19 +9,14 @@ from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.replay import (
-    Replay,
-    ReplayHeader,
-    ReplayRecorder,
-    unpack_input_flags,
-    unpack_packed_player_input,
-)
+from crimson.replay import Replay, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.replay.driver.playback_driver import build_runtime_playback_driver, build_verify_playback_driver
 from crimson.sim.input import PlayerInput
+from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.replay_runner_helpers import _run_verify_playback
+from tests.support.replay_runner_helpers import _run_verify_playback, unverified_replay
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -34,14 +29,13 @@ def _checkpoint_state_projection(checkpoint: ReplayCheckpoint) -> dict[str, obje
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
     game_mode = GameMode(int(mode))
-    header = ReplayHeader(
-        game_mode_id=game_mode,
-        seed=int(seed),
-        quest_level=(QuestLevel(1, 1) if game_mode == GameMode.QUESTS else None),
-        tick_rate=60,
-        player_count=1,
+    rec = ReplayRecorder(
+        RunSpec(
+            game_mode_id=game_mode,
+            seed=int(seed),
+            quest_level=(QuestLevel(1, 1) if game_mode == GameMode.QUESTS else None),
+        ),
     )
-    rec = ReplayRecorder(header)
     for idx in range(int(ticks)):
         rec.record_tick(
             [
@@ -53,25 +47,7 @@ def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
                 ),
             ],
         )
-    return rec.finish()
-
-
-def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
-    packed_tick = replay.ticks[int(tick_index)].inputs
-    inputs: list[PlayerInput] = []
-    for packed in packed_tick:
-        mx, my, ax, ay, flags = unpack_packed_player_input(packed)
-        fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(int(flags))
-        inputs.append(
-            PlayerInput(
-                move=Vec2(float(mx), float(my)),
-                aim=Vec2(float(ax), float(ay)),
-                fire_down=bool(fire_down),
-                fire_pressed=bool(fire_pressed),
-                reload_pressed=bool(reload_pressed),
-            ),
-        )
-    return inputs
+    return unverified_replay(rec)
 
 
 def _live_runtime_checkpoints(
@@ -86,7 +62,6 @@ def _live_runtime_checkpoints(
         replay,
         max_ticks=None,
         trace_rng=False,
-        world_size=float(replay.header.world_size),
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )
@@ -174,7 +149,6 @@ def test_runtime_playback_driver_matches_verify_terrain_fx_output() -> None:
         replay,
         max_ticks=None,
         trace_rng=False,
-        world_size=float(replay.header.world_size),
     )
     verify_driver = build_verify_playback_driver(replay)
 
@@ -188,8 +162,8 @@ def test_quest_live_vs_headless_tick_pipeline() -> None:
     replay = _build_replay(mode=int(GameMode.QUESTS), ticks=6, seed=101)
     spawn_entries = _quest_spawn_entries(
         level="1.1",
-        player_count=int(replay.header.player_count),
-        seed=int(replay.header.seed),
+        player_count=int(replay.run.player_count),
+        seed=int(replay.run.seed),
     )
 
     live = _live_quest_checkpoints(replay, spawn_entries=spawn_entries)

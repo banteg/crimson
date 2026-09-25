@@ -46,7 +46,7 @@ def _first_diff_path(detail: BuiltinObject | None) -> str | None:
 
 @dbg_app.command("record")
 def cmd_dbg_record(
-    replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
+    replay_file: Path = typer.Argument(..., help="replay (.crd) or original capture replay (.ccr)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
     impl: Literal["python", "zig"] = typer.Option(
         "python",
@@ -54,7 +54,7 @@ def cmd_dbg_record(
         help="recording backend implementation",
     ),
 ) -> None:
-    """Run replay simulation and record a CDT trace."""
+    """Run replay or capture simulation and record a CDT trace."""
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
     from ..replay.driver.setup import ReplayRunnerError

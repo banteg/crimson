@@ -18,7 +18,7 @@ import crimson.world.audio_bridge as audio_bridge_module
 import crimson.world.standalone_tick_harness as standalone_tick_harness_module
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
-from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
+from crimson.replay import REPLAY_TICK_RATE, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.frame_pump import advance_tick_runner_frame
 from crimson.sim.hooks import TickResult
@@ -27,6 +27,7 @@ from crimson.sim.input_providers import (
     LocalInputProvider,
 )
 from crimson.sim.presentation_step import DeterministicPresentationPlan
+from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from crimson.world.audio_bridge import AudioBridge
@@ -41,6 +42,7 @@ from grim.view import ViewContext
 from tests.support.audio import sfx_ids
 from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.builders.session import make_session
+from tests.support.replay_runner_helpers import finish_replay
 
 
 def _assets_dir() -> Path:
@@ -124,18 +126,16 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
 ) -> None:
     tick_count = 10
     input_row = [PlayerInput(aim=Vec2(512.0, 512.0))]
-    header = ReplayHeader(
+    run = RunSpec(
         game_mode_id=GameMode.SURVIVAL,
         seed=0xBEEF,
-        tick_rate=60,
         player_count=1,
-        world_size=1024.0,
         detail_preset=5,
         violence_disabled=0,
     )
-    recorder = ReplayRecorder(header)
+    recorder = ReplayRecorder(run)
 
-    live_session, _sim_world = make_session(seed=int(header.seed))
+    live_session, _sim_world = make_session(seed=int(run.seed))
     live_provider = LocalInputProvider(
         player_count=1,
         runtime=StaticLocalInputRuntime(inputs=tuple(input_row)),
@@ -145,7 +145,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
         input_provider=live_provider,
         config=TickRunnerConfig(),
     )
-    live_clock = FixedStepClock(tick_rate=int(header.tick_rate))
+    live_clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
     live_frame_index = 0
     live_next_tick_index = 0
 
@@ -163,7 +163,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
         assert batch.ticks_completed == 1
         live_tick_indices.append(int(batch.completed_results[0].source_tick.tick_index))
 
-    replay = recorder.finish()
+    replay = finish_replay(recorder)
     replay_path = tmp_path / "contract_live_to_replay.crd"
     dump_replay_file(replay_path, replay)
 

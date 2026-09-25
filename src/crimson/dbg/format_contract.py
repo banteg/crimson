@@ -19,7 +19,7 @@ from ..replay.checkpoints import (
     ReplayPlayerCheckpoint,
 )
 from ..replay.codec import MAX_REPLAY_FILE_BYTES, MAX_REPLAY_PAYLOAD_BYTES
-from ..replay.types import REPLAY_FORMAT_VERSION, ReplayTick
+from ..replay.types import REPLAY_FORMAT_VERSION
 from . import frida_finalize as frida_format
 from .canonical_channels import (
     BonusEntitySample,
@@ -125,13 +125,9 @@ def format_contract_errors() -> list[str]:
     """Return every current-format wiring mismatch across Python, Frida, and Zig."""
 
     errors: list[str] = []
-    for label, struct_type in (
-        ("Python ReplayTick", ReplayTick),
-        ("Python ReplayStepSnapshot", ReplayStepSnapshot),
-    ):
-        fields = _field_names(struct_type)
-        if fields != _TICK_BOUNDARY_FIELDS:
-            errors.append(f"{label} fields are {fields!r}, expected {_TICK_BOUNDARY_FIELDS!r}")
+    fields = _field_names(ReplayStepSnapshot)
+    if fields != _TICK_BOUNDARY_FIELDS:
+        errors.append(f"Python ReplayStepSnapshot fields are {fields!r}, expected {_TICK_BOUNDARY_FIELDS!r}")
 
     frida_source = (_REPO_ROOT / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
     frida_version = _source_int(
@@ -291,13 +287,9 @@ def format_contract_errors() -> list[str]:
         if actual is not None and actual != expected:
             errors.append(f"{label} is {actual}, expected {expected}")
 
-    for source, name in (
-        (replay_source, "ReplayTickCurrentWire"),
-        (cdt_source, "ReplayStepSnapshot"),
-    ):
-        fields = _zig_struct_fields(source, name=name, errors=errors)
-        if fields is not None and fields != _TICK_BOUNDARY_FIELDS:
-            errors.append(f"Zig {name} fields are {fields!r}, expected {_TICK_BOUNDARY_FIELDS!r}")
+    zig_step_fields = _zig_struct_fields(cdt_source, name="ReplayStepSnapshot", errors=errors)
+    if zig_step_fields is not None and zig_step_fields != _TICK_BOUNDARY_FIELDS:
+        errors.append(f"Zig ReplayStepSnapshot fields are {zig_step_fields!r}, expected {_TICK_BOUNDARY_FIELDS!r}")
 
     zig_channels = re.search(
         r'^pub const trace_required_channels = "([^"]+)";$',

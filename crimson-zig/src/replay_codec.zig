@@ -1,24 +1,34 @@
+//! Replay format v20 (`docs/formats/replay.md`): one zstd frame holding a
+//! canonical msgpack payload.
+//!
+//! The reader accepts exactly the byte strings that equal the canonical
+//! encoding of the value they decode to: keys in declared order, minimal
+//! integer and length headers, float64 floats holding exact f32 values.
 const std = @import("std");
-const msgpack = @import("msgpack");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 19;
+pub const replay_format_version: i32 = 20;
+pub const tick_rate: i32 = 60;
+/// Every replay tick advances the simulation by this delta.
+pub const tick_dt: f32 = 1.0 / @as(f32, @floatFromInt(tick_rate));
+/// Every run plays in the native 1024x1024 arena.
+pub const world_size: f32 = 1024.0;
 pub const weapon_usage_count: usize = 53;
-pub const quest_play_count: usize = 91;
-pub const status_reserved_seed_words_byte_size: usize = 16;
 pub const max_players: usize = 4;
 pub const perk_choice_slot_count: usize = 7;
 pub const zstd_magic = [_]u8{ 0x28, 0xB5, 0x2F, 0xFD };
 pub const max_replay_payload_bytes: usize = 64 * 1024 * 1024;
 pub const max_replay_file_bytes: usize = 65 * 1024 * 1024;
-const canonical_tick_dt_f64: f64 = @as(f32, 1.0 / 60.0);
-pub const latest_ruleset_game_version_prefixes = [_][]const u8{
-    "0.9.",
-    "0.10.",
-};
-const msgpack_bin8: u8 = 0xC4;
-const msgpack_bin16: u8 = 0xC5;
-const msgpack_bin32: u8 = 0xC6;
+/// Largest decompression window a replay's zstd frame may declare.
+pub const max_zstd_window_bytes: u64 = std.compress.zstd.default_window_len;
+/// Typ-o name sources are plain ASCII with capped counts and lengths, so every
+/// port agrees on them and can use fixed storage.
+pub const max_typo_dictionary_words: usize = 2048;
+pub const max_typo_highscore_names: usize = 512;
+/// Creature names must be shorter than this; dictionary words are too.
+pub const typo_name_max_chars: usize = 16;
+/// Score-table names hold up to 31 bytes.
+pub const typo_highscore_name_max_chars: usize = 31;
 
 pub const fire_down_flag: u32 = 1 << 0;
 pub const fire_pressed_flag: u32 = 1 << 1;
@@ -51,147 +61,218 @@ const supported_input_flags_mask: u32 = fire_down_flag |
     aim_scheme_present_flag |
     (aim_scheme_mask << aim_scheme_shift);
 
-pub const ReplayCodecError = error{
-    InvalidMsgpack,
-    InvalidHeaderValue,
-    InvalidClaimedStats,
-    MissingHeaderField,
-    MissingQuestLevel,
-    TypoMultiplayer,
-    TutorialMultiplayer,
-    UnsupportedGameMode,
-    UnsupportedReplayFormatVersion,
-    UnsupportedInputShape,
-    UnsupportedEventShape,
-    UnsupportedEventKind,
-    UnknownCommandKind,
-    UnsupportedInputQuantization,
-    InvalidZstdPayload,
-    PayloadTooLarge,
-    OutOfMemory,
+/// Full msgpack integer range (i64 min through u64 max); unconstrained
+/// integer fields keep it so every canonical value round-trips.
+pub const Int = std.meta.Int(.signed, 65);
+
+pub const QuestLevel = struct {
+    major: u8,
+    minor: u8,
 };
 
-pub const ReplayStatus = struct {
+pub const RunStatus = struct {
     quest_unlock_index: i32 = 0,
     quest_unlock_index_full: i32 = 0,
     weapon_usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count,
-    quest_play_counts: [quest_play_count]u32 = [_]u32{0} ** quest_play_count,
-    mode_play_survival: i32 = 0,
-    mode_play_rush: i32 = 0,
-    mode_play_typo: i32 = 0,
-    mode_play_other: i32 = 0,
-    play_time_ms: i32 = 0,
-    reserved_seed_words: [status_reserved_seed_words_byte_size]u8 = [_]u8{0} ** status_reserved_seed_words_byte_size,
-
-    pub fn msgpackWrite(self: ReplayStatus, packer: anytype) !void {
-        try packer.writeMapHeader(10);
-        try packer.writeString("quest_unlock_index");
-        try packer.writeInt(self.quest_unlock_index);
-        try packer.writeString("quest_unlock_index_full");
-        try packer.writeInt(self.quest_unlock_index_full);
-        try packer.writeString("weapon_usage_counts");
-        try packer.writeArray(u32, self.weapon_usage_counts[0..]);
-        try packer.writeString("quest_play_counts");
-        try packer.writeArray(u32, self.quest_play_counts[0..]);
-        try packer.writeString("mode_play_survival");
-        try packer.writeInt(self.mode_play_survival);
-        try packer.writeString("mode_play_rush");
-        try packer.writeInt(self.mode_play_rush);
-        try packer.writeString("mode_play_typo");
-        try packer.writeInt(self.mode_play_typo);
-        try packer.writeString("mode_play_other");
-        try packer.writeInt(self.mode_play_other);
-        try packer.writeString("play_time_ms");
-        try packer.writeInt(self.play_time_ms);
-        try packer.writeString("reserved_seed_words");
-        try packer.writeBinary(self.reserved_seed_words[0..]);
-    }
 };
 
-pub const ReplayClaimedStats = struct {
-    complete: bool = false,
-    ticks: i32 = 0,
-    elapsed_ms: i64 = 0,
-    score_xp: i64 = 0,
-    kills: i32 = 0,
-    most_used_weapon_id: i32 = 0,
-    shots_fired: i32 = 0,
-    shots_hit: i32 = 0,
-};
-
-pub const ReplayHeader = struct {
-    game_mode_id: i32,
+pub const RunSpec = struct {
+    game_mode: game_ids.GameModeId,
     seed: u32,
-    replay_format_version: i32,
-    quest_level: []u8,
+    quest_level: ?QuestLevel = null,
+    player_count: u8 = 1,
+    hardcore: bool = false,
+    preserve_bugs: bool = false,
+    demo: bool = false,
+    quest_fail_retry_count: i32 = 0,
+    detail_preset: i32 = 5,
+    violence_disabled: i32 = 0,
+    status: RunStatus = .{},
     typo_dictionary_words: []const []const u8 = &.{},
     typo_highscore_names: []const []const u8 = &.{},
-    game_version: []u8,
-    tick_rate: i32,
-    quest_fail_retry_count: i32,
-    hardcore: bool,
-    preserve_bugs: bool,
-    detail_preset: i32,
-    violence_disabled: i32,
-    world_size: f32,
-    player_count: i32,
-    status: ReplayStatus,
-    claimed_stats: ReplayClaimedStats = .{},
-    input_quantization: []u8,
-    // Preserve the v15 wire distinction: null means no captured residue,
-    // while an empty array is an explicit captured empty pool.
-    initial_creature_pool: ?[]const ReplayCreatureSlotResidue = null,
+};
 
-    pub fn deinit(self: ReplayHeader, allocator: std.mem.Allocator) void {
-        allocator.free(self.quest_level);
-        freeStringSliceList(allocator, self.typo_dictionary_words);
-        freeStringSliceList(allocator, self.typo_highscore_names);
-        allocator.free(self.game_version);
-        allocator.free(self.input_quantization);
-        if (self.initial_creature_pool) |pool| {
-            if (pool.len > 0) allocator.free(pool);
+pub const RunOutcome = enum {
+    death,
+    quest_completed,
+    tutorial_completed,
+    incomplete,
+};
+
+pub const PlayerResult = struct {
+    experience: Int,
+    health: f32,
+    shots_fired: Int,
+    shots_hit: Int,
+    most_used_weapon_id: game_ids.WeaponId,
+};
+
+pub const RunResult = struct {
+    outcome: RunOutcome,
+    elapsed_ms: Int,
+    kills: Int,
+    rng_state: u32,
+    pending_perks: Int,
+    quest_final_ms: ?Int,
+    player_count: usize,
+    players_buffer: [max_players]PlayerResult = undefined,
+
+    pub fn players(self: *const RunResult) []const PlayerResult {
+        return self.players_buffer[0..self.player_count];
+    }
+
+    /// JSON with the wire keys and order; `health` prints the exact f32 value.
+    pub fn jsonStringify(self: RunResult, jws: anytype) !void {
+        try jws.beginObject();
+        try jws.objectField("outcome");
+        try jws.write(@tagName(self.outcome));
+        try jws.objectField("elapsed_ms");
+        try jws.write(self.elapsed_ms);
+        try jws.objectField("kills");
+        try jws.write(self.kills);
+        try jws.objectField("rng_state");
+        try jws.write(self.rng_state);
+        try jws.objectField("pending_perks");
+        try jws.write(self.pending_perks);
+        try jws.objectField("quest_final_ms");
+        try jws.write(self.quest_final_ms);
+        try jws.objectField("players");
+        try jws.beginArray();
+        for (self.players()) |player| {
+            try jws.beginObject();
+            try jws.objectField("experience");
+            try jws.write(player.experience);
+            try jws.objectField("health");
+            // Integral values keep a fractional part, as Python prints floats.
+            const health: f64 = player.health;
+            if (@trunc(health) == health and @abs(health) < 1e16) {
+                try jws.print("{d}.0", .{health});
+            } else {
+                try jws.print("{d}", .{health});
+            }
+            try jws.objectField("shots_fired");
+            try jws.write(player.shots_fired);
+            try jws.objectField("shots_hit");
+            try jws.write(player.shots_hit);
+            try jws.objectField("most_used_weapon_id");
+            try jws.write(@intFromEnum(player.most_used_weapon_id));
+            try jws.endObject();
         }
+        try jws.endArray();
+        try jws.endObject();
+    }
+
+    pub fn eql(self: *const RunResult, other: *const RunResult) bool {
+        inline for (.{ "outcome", "elapsed_ms", "kills", "rng_state", "pending_perks", "quest_final_ms", "player_count" }) |field| {
+            if (!std.meta.eql(@field(self, field), @field(other, field))) return false;
+        }
+        for (self.players(), other.players()) |expected, actual| {
+            if (!std.meta.eql(expected, actual)) return false;
+        }
+        return true;
+    }
+
+    /// Field paths where two results differ, in declared order (`players`
+    /// alone when the counts differ). Paths are allocated from `arena`.
+    pub fn mismatches(self: *const RunResult, arena: std.mem.Allocator, other: *const RunResult) ![]const []const u8 {
+        var paths: std.ArrayList([]const u8) = .empty;
+        inline for (.{ "outcome", "elapsed_ms", "kills", "rng_state", "pending_perks", "quest_final_ms" }) |field| {
+            if (!std.meta.eql(@field(self, field), @field(other, field))) try paths.append(arena, field);
+        }
+        if (self.player_count != other.player_count) {
+            try paths.append(arena, "players");
+            return paths.items;
+        }
+        for (self.players(), other.players(), 0..) |expected, actual, index| {
+            inline for (std.meta.fields(PlayerResult)) |field| {
+                if (!std.meta.eql(@field(expected, field.name), @field(actual, field.name))) {
+                    try paths.append(arena, try std.fmt.allocPrint(arena, "players[{d}]." ++ field.name, .{index}));
+                }
+            }
+        }
+        return paths.items;
     }
 };
 
-fn dupStringSliceList(
-    allocator: std.mem.Allocator,
-    values: []const []const u8,
-) ReplayCodecError![]const []const u8 {
-    if (values.len == 0) return &.{};
-
-    const out = allocator.alloc([]const u8, values.len) catch return error.OutOfMemory;
-    var built: usize = 0;
-    errdefer {
-        for (out[0..built]) |entry| allocator.free(entry);
-        allocator.free(out);
-    }
-
-    for (values, 0..) |value, idx| {
-        out[idx] = allocator.dupe(u8, value) catch return error.OutOfMemory;
-        built += 1;
-    }
-    return out;
-}
-
-fn freeStringSliceList(
-    allocator: std.mem.Allocator,
-    values: []const []const u8,
-) void {
-    if (values.len == 0) return;
-    for (values) |value| allocator.free(value);
-    allocator.free(values);
-}
-
-pub const ReplayPlayerInput = struct {
-    move_x: f32,
-    move_y: f32,
-    aim_x: f32,
-    aim_y: f32,
-    flags: u32,
+pub const PlayerInput = struct {
+    move_x: f32 = 0.0,
+    move_y: f32 = 0.0,
+    aim_x: f32 = 0.0,
+    aim_y: f32 = 0.0,
+    flags: u32 = 0,
 };
 
-pub const ReplayTickInputs = []ReplayPlayerInput;
+pub const Command = union(enum) {
+    perk_menu_open: struct { player_index: u8 },
+    perk_pick: struct { player_index: u8, choice_index: u8 },
+    /// `ch` is exactly one UTF-8 encoded code point.
+    typo_char: struct { player_index: u8, ch: []const u8 },
+    typo_backspace: struct { player_index: u8 },
+    typo_submit: struct { player_index: u8 },
+
+    pub fn playerIndex(self: Command) u8 {
+        return switch (self) {
+            inline else => |command| command.player_index,
+        };
+    }
+
+    pub fn isTypo(self: Command) bool {
+        return switch (self) {
+            .typo_char, .typo_backspace, .typo_submit => true,
+            .perk_menu_open, .perk_pick => false,
+        };
+    }
+};
+
+pub const Replay = struct {
+    game_version: []const u8,
+    run: RunSpec,
+    result: RunResult,
+    /// Tick-major, `run.player_count` inputs per tick.
+    inputs: []const PlayerInput,
+    commands: []const Command = &.{},
+    /// Exclusive end of each tick's slice of `commands`.
+    command_ends: []const u32,
+    /// Owns every decoded slice; hand-built replays leave it empty.
+    arena: std.heap.ArenaAllocator.State = .init,
+
+    pub fn deinit(self: Replay, allocator: std.mem.Allocator) void {
+        self.arena.promote(allocator).deinit();
+    }
+
+    pub fn tickCount(self: Replay) usize {
+        return self.command_ends.len;
+    }
+
+    pub fn tickInputs(self: Replay, tick_index: usize) []const PlayerInput {
+        const count: usize = self.run.player_count;
+        return self.inputs[tick_index * count ..][0..count];
+    }
+
+    pub fn tickCommands(self: Replay, tick_index: usize) []const Command {
+        const start = if (tick_index == 0) 0 else self.command_ends[tick_index - 1];
+        return self.commands[start..self.command_ends[tick_index]];
+    }
+};
+
+/// Human-readable reason for the last `error.InvalidReplay`.
+pub const Diagnostic = struct {
+    buffer: [256]u8 = undefined,
+    len: usize = 0,
+
+    pub fn message(self: *const Diagnostic) []const u8 {
+        return self.buffer[0..self.len];
+    }
+
+    pub fn set(self: *Diagnostic, comptime fmt: []const u8, args: anytype) error{InvalidReplay} {
+        // An overlong message keeps its truncated prefix.
+        self.len = (std.fmt.bufPrint(&self.buffer, fmt, args) catch @as([]u8, &self.buffer)).len;
+        return error.InvalidReplay;
+    }
+};
+
+pub const DecodeError = error{ InvalidReplay, OutOfMemory };
+pub const InflateError = error{ InvalidZstdPayload, PayloadTooLarge, OutOfMemory };
 
 pub const InputFlags = struct {
     fire_down: bool,
@@ -232,1060 +313,67 @@ pub fn unpackInputFlags(flags: u32) InputFlags {
     return decoded;
 }
 
-pub fn isLatestRulesetGameVersion(game_version: []const u8) bool {
-    for (latest_ruleset_game_version_prefixes) |prefix| {
-        if (std.mem.startsWith(u8, game_version, prefix)) return true;
+/// Reason a packed flag word is invalid, phrased like the Python validator.
+pub fn inputFlagsError(flags: Int) ?[]const u8 {
+    if (flags < 0 or flags > std.math.maxInt(u32)) return "contain unsupported bits";
+    const value: u32 = @intCast(flags);
+    if ((value & ~supported_input_flags_mask) != 0) return "contain unsupported bits";
+    const move_key_bits = move_forward_flag | move_backward_flag | turn_left_flag | turn_right_flag;
+    if ((value & move_keys_present_flag) == 0 and (value & move_key_bits) != 0) {
+        return "set movement-key values without MOVE_KEYS_PRESENT";
     }
-    return false;
-}
-
-pub const ReplayToolKind = enum {
-    verifier,
-    replay_list,
-    replay_info,
-    benchmark,
-};
-
-pub fn unsupportedReplayHeaderDetail(
-    header: ReplayHeader,
-    tick_count: usize,
-    tool_kind: ReplayToolKind,
-) ?[]const u8 {
-    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3 and header.game_mode_id != 4 and header.game_mode_id != 8) {
-        return "native replay tools support only survival/rush/quest/typo/tutorial modes";
+    const move_mode_value = (value >> move_mode_shift) & move_mode_mask;
+    if ((value & move_mode_present_flag) == 0 and move_mode_value != 0) {
+        return "set a movement mode without MOVE_MODE_PRESENT";
     }
-    if (header.game_mode_id == @intFromEnum(game_ids.GameModeId.typo) and header.player_count != 1) {
-        return "Typ-o replays require player_count == 1";
+    if ((value & move_mode_present_flag) != 0 and move_mode_value > 5) return "contain an invalid movement mode";
+    const aim_scheme_value = (value >> aim_scheme_shift) & aim_scheme_mask;
+    if ((value & aim_scheme_present_flag) == 0 and aim_scheme_value != 0) {
+        return "set an aim scheme without AIM_SCHEME_PRESENT";
     }
-    if (header.game_mode_id == @intFromEnum(game_ids.GameModeId.tutorial) and header.player_count != 1) {
-        return "tutorial replays require player_count == 1";
-    }
-    if (isMissingQuestLevel(header.game_mode_id, header.quest_level)) {
-        return "quest replays require a valid header.quest_level";
-    }
-    if (header.player_count < 1 or header.player_count > 4) {
-        return "native replay tools support only 1-4 player replays";
-    }
-    if (!std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "native replay tools support only f32 input quantization";
-    }
-    if (tick_count > std.math.maxInt(i32)) {
-        return switch (tool_kind) {
-            .verifier => "replay has too many ticks for current native verifier",
-            .replay_list => "replay has too many ticks for current native replay list",
-            .replay_info => "replay has too many ticks for current native replay info",
-            .benchmark => "replay has too many ticks for current native benchmark",
-        };
-    }
-    if (!header.preserve_bugs and !isLatestRulesetGameVersion(header.game_version)) {
-        return "native replay tools require latest ruleset replays unless preserve_bugs is set";
-    }
+    if ((value & aim_scheme_present_flag) != 0 and aim_scheme_value == 6) return "contain an invalid aim scheme";
     return null;
 }
 
-fn isMissingQuestLevel(game_mode_id: i32, quest_level: []const u8) bool {
-    return game_mode_id == @intFromEnum(game_ids.GameModeId.quests) and
-        std.mem.trim(u8, quest_level, " \t\r\n").len == 0;
+pub fn isTypoDictionaryWord(text: []const u8) bool {
+    if (text.len == 0 or text.len >= typo_name_max_chars) return false;
+    for (text) |ch| {
+        if (ch < 0x20 or ch > 0x7e) return false;
+    }
+    return true;
 }
 
-fn validateModePlayerCount(game_mode_id: i32, player_count: i32) ReplayCodecError!void {
-    const game_mode = std.enums.fromInt(game_ids.GameModeId, game_mode_id) orelse return error.UnsupportedGameMode;
-    switch (game_mode) {
-        .typo => if (player_count != 1) return error.TypoMultiplayer,
-        .tutorial => if (player_count != 1) return error.TutorialMultiplayer,
-        .survival, .rush, .quests => {},
+pub fn isTypoHighscoreName(text: []const u8) bool {
+    if (text.len == 0 or text.len > typo_highscore_name_max_chars) return false;
+    for (text) |ch| {
+        if (!std.ascii.isAlphabetic(ch) and ch != '.') return false;
     }
+    return true;
 }
 
-fn validateClaimedStats(claimed_stats: ReplayClaimedStats) ReplayCodecError!void {
-    if (claimed_stats.ticks < 0 or
-        claimed_stats.elapsed_ms < 0 or
-        claimed_stats.score_xp < 0 or
-        claimed_stats.kills < 0 or
-        std.enums.fromInt(game_ids.WeaponId, claimed_stats.most_used_weapon_id) == null or
-        claimed_stats.shots_fired < 0 or
-        claimed_stats.shots_hit < 0)
-    {
-        return error.InvalidHeaderValue;
-    }
-    if (claimed_stats.shots_hit > claimed_stats.shots_fired) {
-        return error.InvalidClaimedStats;
-    }
-}
-
-pub const PerkPickEvent = struct {
-    tick_index: usize,
-    player_index: i32,
-    choice_index: i32,
-};
-
-pub const PerkMenuOpenEvent = struct {
-    tick_index: usize,
-    player_index: i32,
-};
-
-pub const GameFrameRngAdvancePrelude = struct {
-    tick_index: usize,
-    frames: u32,
-};
-
-pub const PerkMenuOpenPrelude = struct {
-    tick_index: usize,
-    player_index: i32,
-};
-
-pub const PerkPickPrelude = struct {
-    tick_index: usize,
-    player_index: i32,
-    choice_index: i32,
-};
-
-pub const ReplayPreludeOp = union(enum) {
-    game_frame_rng_advance: GameFrameRngAdvancePrelude,
-    perk_menu_open: PerkMenuOpenPrelude,
-    perk_pick: PerkPickPrelude,
-
-    pub fn tickIndex(self: ReplayPreludeOp) usize {
-        return switch (self) {
-            inline else => |op| op.tick_index,
-        };
-    }
-};
-
-pub const ReplayPostludeOp = struct {
-    tick_index: usize,
-    player_index: i32,
-
-    pub fn tickIndex(self: ReplayPostludeOp) usize {
-        return self.tick_index;
-    }
-};
-
-pub const TypoCharEvent = struct {
-    tick_index: usize,
-    player_index: i32,
-    ch: u8,
-};
-
-pub const TypoBackspaceEvent = struct {
-    tick_index: usize,
-    player_index: i32,
-};
-
-pub const TypoSubmitEvent = struct {
-    tick_index: usize,
-    player_index: i32,
-};
-
-pub const max_capture_spawns_per_event: usize = 256;
-pub const max_capture_added_head_rows_per_event: usize = 256;
-pub const max_capture_state_transition_rows_per_event: usize = 64;
-pub const max_capture_bootstrap_perk_pairs_per_player: usize = 96;
-
-pub const CaptureBootstrapQuestSession = struct {
-    spawn_timeline_ms: f32 = 0.0,
-    no_creatures_timer_ms: f32 = 0.0,
-    completion_transition_ms: f32 = -1.0,
-};
-
-pub const CaptureBootstrapPlayerPerkPair = struct {
-    perk_id: i32 = 0,
-    count: i32 = 0,
-};
-
-pub const CaptureBootstrapPlayerPerkCounts = struct {
-    pair_count: usize = 0,
-    pairs: [max_capture_bootstrap_perk_pairs_per_player]CaptureBootstrapPlayerPerkPair = [_]CaptureBootstrapPlayerPerkPair{
-        .{},
-    } ** max_capture_bootstrap_perk_pairs_per_player,
-};
-
-pub const CaptureBootstrapPlayer = struct {
-    weapon_id: i32 = 1,
-    pos_x: f32 = 0.0,
-    pos_y: f32 = 0.0,
-    health: f32 = 100.0,
-    ammo: f32 = 0.0,
-    experience: i32 = 0,
-    level: i32 = 1,
-    clip_size: ?i32 = null,
-    reload_active: ?bool = null,
-    reload_timer: ?f32 = null,
-    reload_timer_max: ?f32 = null,
-    shot_cooldown: ?f32 = null,
-    spread_heat: ?f32 = null,
-    aim_x: ?f32 = null,
-    aim_y: ?f32 = null,
-    aim_heading: ?f32 = null,
-    alt_weapon_id: ?i32 = null,
-    alt_clip_size: ?i32 = null,
-    alt_ammo: ?f32 = null,
-    alt_reload_active: ?bool = null,
-    alt_reload_timer: ?f32 = null,
-    alt_reload_timer_max: ?f32 = null,
-    alt_shot_cooldown: ?f32 = null,
-    shield_ms: ?i32 = null,
-    fire_bullets_ms: ?i32 = null,
-    speed_bonus_ms: ?i32 = null,
-    hot_tempered_timer: ?f32 = null,
-    man_bomb_timer: ?f32 = null,
-    living_fortress_timer: ?f32 = null,
-    fire_cough_timer: ?f32 = null,
-};
-
-pub const CaptureBootstrapEvent = struct {
-    tick_index: usize,
-    elapsed_ms: i32 = 0,
-    score_xp: i32 = 0,
-    perk_pending: i32 = 0,
-    perk_pending_count: i32 = 0,
-    perk_choices_dirty: bool = false,
-    perk_choice_count: usize = 0,
-    perk_choices: [7]i32 = [_]i32{0} ** 7,
-    player_count: usize = 0,
-    players: [max_players]CaptureBootstrapPlayer = [_]CaptureBootstrapPlayer{
-        .{},
-    } ** max_players,
-    digital_move_enabled_by_player: [max_players]bool = [_]bool{false} ** max_players,
-    player_perk_counts: [max_players]CaptureBootstrapPlayerPerkCounts = [_]CaptureBootstrapPlayerPerkCounts{
-        .{},
-    } ** max_players,
-    weapon_power_up_ms: ?i32 = null,
-    reflex_boost_ms: ?i32 = null,
-    energizer_ms: ?i32 = null,
-    double_experience_ms: ?i32 = null,
-    freeze_ms: ?i32 = null,
-    perk_interval_man_bomb: ?f32 = null,
-    perk_interval_fire_cough: ?f32 = null,
-    perk_interval_hot_tempered: ?f32 = null,
-    quest_session: ?CaptureBootstrapQuestSession = null,
-};
-
-pub const CapturePerkApplyEvent = struct {
-    tick_index: usize,
-    perk_id: i32,
-    outside_before: bool = false,
-    pending_before: ?i32 = null,
-    pending_after: ?i32 = null,
-};
-
-pub const CapturePerkPendingEvent = struct {
-    tick_index: usize,
-    perk_pending: i32,
-};
-
-pub const CaptureCreatureSpawnRow = struct {
-    template_id: i32 = 0,
-    pos_x: f32 = 0.0,
-    pos_y: f32 = 0.0,
-    heading: f32 = 0.0,
-};
-
-pub const CaptureCreatureAddedHeadRow = struct {
-    index: i32 = -1,
-    has_heading: bool = false,
-    heading: f32 = 0.0,
-    has_target_heading: bool = false,
-    target_heading: f32 = 0.0,
-    has_ai_mode: bool = false,
-    ai_mode: i32 = 0,
-    has_link_index: bool = false,
-    link_index: i32 = 0,
-    has_hp: bool = false,
-    hp: f32 = 0.0,
-    has_lifecycle_stage: bool = false,
-    lifecycle_stage: f32 = 0.0,
-    has_orbit_angle: bool = false,
-    orbit_angle: f32 = 0.0,
-    has_orbit_radius: bool = false,
-    orbit_radius: f32 = 0.0,
-    has_flags: bool = false,
-    flags: i32 = 0,
-    has_type_id: bool = false,
-    type_id: i32 = 0,
-    has_pos: bool = false,
-    pos_x: f32 = 0.0,
-    pos_y: f32 = 0.0,
-};
-
-pub const CaptureCreatureSpawnEvent = struct {
-    tick_index: usize,
-    spawn_count: usize = 0,
-    spawns: [max_capture_spawns_per_event]CaptureCreatureSpawnRow = [_]CaptureCreatureSpawnRow{
-        .{},
-    } ** max_capture_spawns_per_event,
-    added_head_count: usize = 0,
-    added_head: [max_capture_added_head_rows_per_event]CaptureCreatureAddedHeadRow = [_]CaptureCreatureAddedHeadRow{
-        .{},
-    } ** max_capture_added_head_rows_per_event,
-};
-
-pub const CaptureStateTransitionRow = struct {
-    target_state: i32,
-    has_before_state: bool = false,
-    before_state: i32 = 0,
-    has_after_state: bool = false,
-    after_state: i32 = 0,
-};
-
-pub const CaptureStateTransitionEvent = struct {
-    tick_index: usize,
-    transition_count: usize = 0,
-    transitions: [max_capture_state_transition_rows_per_event]CaptureStateTransitionRow = [_]CaptureStateTransitionRow{
-        .{ .target_state = 0 },
-    } ** max_capture_state_transition_rows_per_event,
-};
-
-pub const ReplayEvent = union(enum) {
-    perk_pick: PerkPickEvent,
-    perk_menu_open: PerkMenuOpenEvent,
-    typo_char: TypoCharEvent,
-    typo_backspace: TypoBackspaceEvent,
-    typo_submit: TypoSubmitEvent,
-    capture_bootstrap: CaptureBootstrapEvent,
-    capture_perk_apply: CapturePerkApplyEvent,
-    capture_perk_pending: CapturePerkPendingEvent,
-    capture_creature_spawn: CaptureCreatureSpawnEvent,
-    capture_state_transition: CaptureStateTransitionEvent,
-
-    pub fn tickIndex(self: ReplayEvent) usize {
-        return switch (self) {
-            .perk_pick => |event| event.tick_index,
-            .perk_menu_open => |event| event.tick_index,
-            .typo_char => |event| event.tick_index,
-            .typo_backspace => |event| event.tick_index,
-            .typo_submit => |event| event.tick_index,
-            .capture_bootstrap => |event| event.tick_index,
-            .capture_perk_apply => |event| event.tick_index,
-            .capture_perk_pending => |event| event.tick_index,
-            .capture_creature_spawn => |event| event.tick_index,
-            .capture_state_transition => |event| event.tick_index,
-        };
-    }
-};
-
-pub fn replayEventPlayerIndexFailureDetail(
-    allocator: std.mem.Allocator,
-    player_count: i32,
-    events: []const ReplayEvent,
-) !?[]u8 {
-    for (events) |event| {
-        const player_index = replayEventPlayerIndex(event) orelse continue;
-        if (player_index < 0 or player_index >= player_count) {
-            const detail = try std.fmt.allocPrint(
-                allocator,
-                "replay event player_index out of range: {d} (player_count={d}, tick={d}, event={s})",
-                .{ player_index, player_count, event.tickIndex(), replayEventKindName(event) },
-            );
-            return detail;
-        }
-    }
-    return null;
-}
-
-pub fn replayEventOrderingFailureDetail(
-    allocator: std.mem.Allocator,
-    events: []const ReplayEvent,
-) !?[]u8 {
-    var previous_tick: ?usize = null;
-    for (events, 0..) |event, event_index| {
-        const tick_index = event.tickIndex();
-        if (previous_tick) |prev_tick| {
-            if (tick_index < prev_tick) {
-                const detail = try std.fmt.allocPrint(
-                    allocator,
-                    "replay events are not ordered in canonical tick order: tick={d} follows tick={d} (event_index={d}, event={s})",
-                    .{ tick_index, prev_tick, event_index, replayEventKindName(event) },
-                );
-                return detail;
-            }
-        }
-        previous_tick = tick_index;
-    }
-    return null;
-}
-
-pub fn replayEventKindFailureDetail(
-    allocator: std.mem.Allocator,
-    game_mode_id: i32,
-    events: []const ReplayEvent,
-) !?[]u8 {
-    const game_mode = std.enums.fromInt(game_ids.GameModeId, game_mode_id) orelse return null;
-    for (events, 0..) |event, event_index| {
-        if (replayEventKindAllowedInMode(event, game_mode)) continue;
-        const detail = try std.fmt.allocPrint(
-            allocator,
-            "replay event kind invalid for game mode: event={s} tick={d} event_index={d} game_mode={s}",
-            .{ replayEventKindName(event), event.tickIndex(), event_index, @tagName(game_mode) },
-        );
-        return detail;
-    }
-    return null;
-}
-
-pub fn replayInputShapeFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    return currentReplayInputShapeFailureDetail(allocator, payload);
-}
-
-pub fn replayEventShapeFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    return currentReplayEventShapeFailureDetail(allocator, payload);
-}
-
-pub fn replayUnknownCommandFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    for (decoded.value.ticks, 0..) |tick, tick_index| {
-        for (tick.commands, 0..) |command, command_index| {
-            if (currentCommandKindKnown(command.type)) continue;
-            return std.fmt.allocPrint(
-                allocator,
-                "replay command type is unknown: type={s} tick={d} command_index={d}",
-                .{ command.type, tick_index, command_index },
-            ) catch return error.OutOfMemory;
-        }
-    }
-
-    return null;
-}
-
-pub fn replayCommandKindFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const game_mode = std.enums.fromInt(game_ids.GameModeId, decoded.value.header.game_mode_id) orelse return null;
-    for (decoded.value.ticks, 0..) |tick, tick_index| {
-        for (tick.commands, 0..) |command, command_index| {
-            if (!currentCommandKindKnown(command.type)) {
-                return std.fmt.allocPrint(
-                    allocator,
-                    "replay command type is unknown: type={s} tick={d} command_index={d}",
-                    .{ command.type, tick_index, command_index },
-                ) catch return error.OutOfMemory;
-            }
-            if (game_mode == .typo) continue;
-            return std.fmt.allocPrint(
-                allocator,
-                "replay command invalid for game mode: type={s} tick={d} command_index={d} game_mode={s}",
-                .{ command.type, tick_index, command_index, @tagName(game_mode) },
-            ) catch return error.OutOfMemory;
-        }
-    }
-    return null;
-}
-
-fn replayEventKindAllowedInMode(event: ReplayEvent, game_mode: game_ids.GameModeId) bool {
-    return switch (event) {
-        .typo_char,
-        .typo_backspace,
-        .typo_submit,
-        => game_mode == .typo,
-        .capture_perk_apply,
-        .capture_perk_pending,
-        => game_mode != .rush,
-        .perk_pick,
-        .perk_menu_open,
-        .capture_bootstrap,
-        .capture_creature_spawn,
-        .capture_state_transition,
-        => true,
+pub fn outcomeAllowed(game_mode: game_ids.GameModeId, outcome: RunOutcome) bool {
+    return switch (outcome) {
+        .incomplete => true,
+        .death => game_mode != .tutorial,
+        .quest_completed => game_mode == .quests,
+        .tutorial_completed => game_mode == .tutorial,
     };
 }
 
-fn replayEventPlayerIndex(event: ReplayEvent) ?i32 {
-    return switch (event) {
-        .perk_pick => |payload| payload.player_index,
-        .perk_menu_open => |payload| payload.player_index,
-        .typo_char => |payload| payload.player_index,
-        .typo_backspace => |payload| payload.player_index,
-        .typo_submit => |payload| payload.player_index,
-        .capture_bootstrap,
-        .capture_perk_apply,
-        .capture_perk_pending,
-        .capture_creature_spawn,
-        .capture_state_transition,
-        => null,
-    };
-}
-
-fn replayEventKindName(event: ReplayEvent) []const u8 {
-    return switch (event) {
-        .perk_pick => "perk_pick",
-        .perk_menu_open => "perk_menu_open",
-        .typo_char => "typo_char",
-        .typo_backspace => "typo_backspace",
-        .typo_submit => "typo_submit",
-        .capture_bootstrap => "capture_bootstrap",
-        .capture_perk_apply => "capture_perk_apply",
-        .capture_perk_pending => "capture_perk_pending",
-        .capture_creature_spawn => "capture_creature_spawn",
-        .capture_state_transition => "capture_state_transition",
-    };
-}
-
-pub const ReplayEventSummary = struct {
-    total_count: usize = 0,
-    game_frame_rng_advance_count: usize = 0,
-    perk_menu_open_count: usize = 0,
-    perk_pick_count: usize = 0,
-    typo_char_count: usize = 0,
-    typo_backspace_count: usize = 0,
-    typo_submit_count: usize = 0,
-    capture_bootstrap_count: usize = 0,
-    capture_perk_apply_count: usize = 0,
-    capture_perk_pending_count: usize = 0,
-    capture_creature_spawn_count: usize = 0,
-    capture_state_transition_count: usize = 0,
-};
-
-pub const Replay = struct {
-    header: ReplayHeader,
-    inputs: []ReplayTickInputs,
-    dt: []f32,
-    prelude: []ReplayPreludeOp = &.{},
-    postlude: []ReplayPostludeOp = &.{},
-    events: []ReplayEvent,
-
-    pub fn deinit(self: Replay, allocator: std.mem.Allocator) void {
-        self.header.deinit(allocator);
-        for (self.inputs) |tick| allocator.free(tick);
-        allocator.free(self.inputs);
-        allocator.free(self.dt);
-        if (self.prelude.len > 0) allocator.free(self.prelude);
-        if (self.postlude.len > 0) allocator.free(self.postlude);
-        allocator.free(self.events);
-    }
-
-    pub fn tickCount(self: Replay) usize {
-        return self.inputs.len;
-    }
-
-    pub fn summarizeEvents(self: Replay) ReplayEventSummary {
-        var summary: ReplayEventSummary = .{
-            .total_count = self.prelude.len + self.postlude.len + self.events.len,
-        };
-        for (self.prelude) |op| countReplayPrelude(&summary, op);
-        summary.perk_menu_open_count += self.postlude.len;
-        for (self.events) |event| {
-            countReplayEvent(&summary, event);
-        }
-        return summary;
-    }
-};
-
-pub const ReplaySummary = struct {
-    header: ReplayHeader,
-    tick_count: usize,
-    events: ReplayEventSummary,
-
-    pub fn deinit(self: ReplaySummary, allocator: std.mem.Allocator) void {
-        self.header.deinit(allocator);
-    }
-};
-
-pub const ReplayStatusCurrentWire = struct {
-    quest_unlock_index: i32 = 0,
-    quest_unlock_index_full: i32 = 0,
-    weapon_usage_counts: []const u32 = &.{},
-    quest_play_counts: []const u32 = &([_]u32{0} ** quest_play_count),
-    mode_play_survival: i32 = 0,
-    mode_play_rush: i32 = 0,
-    mode_play_typo: i32 = 0,
-    mode_play_other: i32 = 0,
-    play_time_ms: i32 = 0,
-    reserved_seed_words: BinaryBytes = .{ .data = &([_]u8{0} ** status_reserved_seed_words_byte_size) },
-
-    pub fn msgpackRead(unpacker: anytype) !ReplayStatusCurrentWire {
-        const field_count = try unpacker.readMapHeader(u16);
-        if (field_count != 10) return error.InvalidFormat;
-        var field_name_buf: [64]u8 = undefined;
-        var status: ReplayStatusCurrentWire = .{};
-        var fields_seen: u16 = 0;
-
-        for (0..field_count) |_| {
-            const field_name = try unpacker.readStringInto(&field_name_buf);
-            if (std.mem.eql(u8, field_name, "quest_unlock_index")) {
-                fields_seen |= 1 << 0;
-                status.quest_unlock_index = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "quest_unlock_index_full")) {
-                fields_seen |= 1 << 1;
-                status.quest_unlock_index_full = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "weapon_usage_counts")) {
-                fields_seen |= 1 << 2;
-                status.weapon_usage_counts = try readExactU32Array(unpacker);
-            } else if (std.mem.eql(u8, field_name, "quest_play_counts")) {
-                fields_seen |= 1 << 3;
-                status.quest_play_counts = try readExactU32Array(unpacker);
-            } else if (std.mem.eql(u8, field_name, "mode_play_survival")) {
-                fields_seen |= 1 << 4;
-                status.mode_play_survival = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "mode_play_rush")) {
-                fields_seen |= 1 << 5;
-                status.mode_play_rush = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "mode_play_typo")) {
-                fields_seen |= 1 << 6;
-                status.mode_play_typo = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "mode_play_other")) {
-                fields_seen |= 1 << 7;
-                status.mode_play_other = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "play_time_ms")) {
-                fields_seen |= 1 << 8;
-                status.play_time_ms = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "reserved_seed_words")) {
-                fields_seen |= 1 << 9;
-                status.reserved_seed_words = .{ .data = try readExactBinary(unpacker) };
-            } else {
-                return error.UnknownStructField;
-            }
-        }
-
-        if (fields_seen != (1 << 10) - 1) return error.MissingStructFields;
-        return status;
-    }
-};
-
-pub const ReplayClaimedStatsWire = struct {
-    complete: bool = false,
-    ticks: i32 = 0,
-    elapsed_ms: i64 = 0,
-    score_xp: i64 = 0,
-    kills: i32 = 0,
-    most_used_weapon_id: i32 = 0,
-    shots_fired: i32 = 0,
-    shots_hit: i32 = 0,
-
-    pub fn msgpackRead(unpacker: anytype) !ReplayClaimedStatsWire {
-        const field_count = try unpacker.readMapHeader(u16);
-        if (field_count != 8) return error.InvalidFormat;
-        var field_name_buf: [64]u8 = undefined;
-        var stats: ReplayClaimedStatsWire = .{};
-        var fields_seen: u8 = 0;
-
-        for (0..field_count) |_| {
-            const field_name = try unpacker.readStringInto(&field_name_buf);
-            if (std.mem.eql(u8, field_name, "complete")) {
-                fields_seen |= 1 << 0;
-                stats.complete = try unpacker.readBool(bool);
-            } else if (std.mem.eql(u8, field_name, "ticks")) {
-                fields_seen |= 1 << 1;
-                stats.ticks = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "elapsed_ms")) {
-                fields_seen |= 1 << 2;
-                stats.elapsed_ms = try unpacker.readInt(i64);
-            } else if (std.mem.eql(u8, field_name, "score_xp")) {
-                fields_seen |= 1 << 3;
-                stats.score_xp = try unpacker.readInt(i64);
-            } else if (std.mem.eql(u8, field_name, "kills")) {
-                fields_seen |= 1 << 4;
-                stats.kills = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "most_used_weapon_id")) {
-                fields_seen |= 1 << 5;
-                stats.most_used_weapon_id = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "shots_fired")) {
-                fields_seen |= 1 << 6;
-                stats.shots_fired = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "shots_hit")) {
-                fields_seen |= 1 << 7;
-                stats.shots_hit = try unpacker.readInt(i32);
-            } else {
-                return error.UnknownStructField;
-            }
-        }
-
-        if (fields_seen != std.math.maxInt(u8)) return error.MissingStructFields;
-        return stats;
-    }
-};
-
-const ReplayVec2Wire = struct {
-    x: f64,
-    y: f64,
-};
-
-pub const ReplayVec2 = struct {
-    x: f32 = 0.0,
-    y: f32 = 0.0,
-};
-
-const ReplayCreatureSlotResidueWire = struct {
-    index: i32,
-    phase_seed: i32,
-    state_flag: u8,
-    collision_flag: u8,
-    collision_timer: f64,
-    lifecycle_stage: f64,
-    pos: ReplayVec2Wire,
-    vel: ReplayVec2Wire,
-    hp: f64,
-    max_hp: f64,
-    heading: f64,
-    target_heading: f64,
-    size: f64,
-    hit_flash_timer: f64,
-    tint_r: f64,
-    tint_g: f64,
-    tint_b: f64,
-    tint_a: f64,
-    force_target: u8,
-    target: ReplayVec2Wire,
-    contact_damage: f64,
-    move_speed: f64,
-    attack_cooldown: f64,
-    reward_value: f64,
-    type_id: i32,
-    target_player: i32,
-    link_index: i32,
-    target_offset: ReplayVec2Wire,
-    orbit_angle: f64,
-    orbit_radius_u32: u32,
-    flags: i32,
-    ai_mode: i32,
-    anim_phase: f64,
-};
-
-pub const ReplayCreatureSlotResidue = struct {
-    index: i32,
-    phase_seed: i32 = 0,
-    state_flag: u8 = 0,
-    collision_flag: u8 = 0,
-    collision_timer: f32 = 0.0,
-    lifecycle_stage: f32 = 0.0,
-    pos: ReplayVec2 = .{},
-    vel: ReplayVec2 = .{},
-    hp: f32 = 0.0,
-    max_hp: f32 = 0.0,
-    heading: f32 = 0.0,
-    target_heading: f32 = 0.0,
-    size: f32 = 0.0,
-    hit_flash_timer: f32 = 0.0,
-    tint_r: f32 = 0.0,
-    tint_g: f32 = 0.0,
-    tint_b: f32 = 0.0,
-    tint_a: f32 = 0.0,
-    force_target: u8 = 0,
-    target: ReplayVec2 = .{},
-    contact_damage: f32 = 0.0,
-    move_speed: f32 = 0.0,
-    attack_cooldown: f32 = 0.0,
-    reward_value: f32 = 0.0,
-    type_id: i32 = 0,
-    target_player: i32 = 0,
-    link_index: i32 = 0,
-    target_offset: ReplayVec2 = .{},
-    orbit_angle: f32 = 0.0,
-    orbit_radius_u32: u32 = 0,
-    flags: i32 = 0,
-    ai_mode: i32 = 0,
-    anim_phase: f32 = 0.0,
-};
-
-const QuestLevelCurrentWire = struct {
-    major: i32,
-    minor: i32,
-};
-
-pub const ReplayHeaderCurrentWire = struct {
-    game_mode_id: i32,
-    seed: u32,
-    replay_format_version: i32,
-    quest_level: ?QuestLevelCurrentWire = null,
-    typo_dictionary_words: []const []const u8 = &.{},
-    typo_highscore_names: []const []const u8 = &.{},
-    game_version: []const u8 = "",
-    tick_rate: i32 = 60,
-    quest_fail_retry_count: i32 = 0,
-    hardcore: bool = false,
-    preserve_bugs: bool = false,
-    detail_preset: i32 = 5,
-    violence_disabled: i32 = 0,
-    world_size: f64 = 1024.0,
-    player_count: i32 = 1,
-    status: ReplayStatusCurrentWire = .{},
-    claimed_stats: ReplayClaimedStatsWire,
-    input_quantization: []const u8 = "f32",
-    initial_creature_pool: ?[]const ReplayCreatureSlotResidueWire = null,
-
-    pub fn msgpackFormat() msgpack.StructFormat {
-        return .{ .as_map = .{ .key = .field_name, .omit_nulls = false } };
-    }
-
-    pub fn msgpackRead(unpacker: anytype) !ReplayHeaderCurrentWire {
-        const field_count = try unpacker.readMapHeader(u16);
-        if (field_count != 19) return error.InvalidFormat;
-        var field_name_buf: [64]u8 = undefined;
-        var header: ReplayHeaderCurrentWire = undefined;
-        var fields_seen: u32 = 0;
-
-        for (0..field_count) |_| {
-            const field_name = try unpacker.readStringInto(&field_name_buf);
-            if (std.mem.eql(u8, field_name, "game_mode_id")) {
-                fields_seen |= 1 << 0;
-                header.game_mode_id = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "seed")) {
-                fields_seen |= 1 << 1;
-                header.seed = try unpacker.readInt(u32);
-            } else if (std.mem.eql(u8, field_name, "replay_format_version")) {
-                fields_seen |= 1 << 2;
-                header.replay_format_version = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "quest_level")) {
-                fields_seen |= 1 << 3;
-                header.quest_level = try unpacker.read(?QuestLevelCurrentWire);
-            } else if (std.mem.eql(u8, field_name, "typo_dictionary_words")) {
-                fields_seen |= 1 << 4;
-                header.typo_dictionary_words = try unpacker.read([]const []const u8);
-            } else if (std.mem.eql(u8, field_name, "typo_highscore_names")) {
-                fields_seen |= 1 << 5;
-                header.typo_highscore_names = try unpacker.read([]const []const u8);
-            } else if (std.mem.eql(u8, field_name, "game_version")) {
-                fields_seen |= 1 << 6;
-                header.game_version = try unpacker.read([]const u8);
-            } else if (std.mem.eql(u8, field_name, "tick_rate")) {
-                fields_seen |= 1 << 7;
-                header.tick_rate = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "quest_fail_retry_count")) {
-                fields_seen |= 1 << 8;
-                header.quest_fail_retry_count = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "hardcore")) {
-                fields_seen |= 1 << 9;
-                header.hardcore = try unpacker.readBool(bool);
-            } else if (std.mem.eql(u8, field_name, "preserve_bugs")) {
-                fields_seen |= 1 << 10;
-                header.preserve_bugs = try unpacker.readBool(bool);
-            } else if (std.mem.eql(u8, field_name, "detail_preset")) {
-                fields_seen |= 1 << 11;
-                header.detail_preset = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "violence_disabled")) {
-                fields_seen |= 1 << 12;
-                header.violence_disabled = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "world_size")) {
-                fields_seen |= 1 << 13;
-                header.world_size = try unpacker.readFloat(f64);
-            } else if (std.mem.eql(u8, field_name, "player_count")) {
-                fields_seen |= 1 << 14;
-                header.player_count = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "status")) {
-                fields_seen |= 1 << 15;
-                header.status = try unpacker.read(ReplayStatusCurrentWire);
-            } else if (std.mem.eql(u8, field_name, "claimed_stats")) {
-                fields_seen |= 1 << 16;
-                header.claimed_stats = try unpacker.read(ReplayClaimedStatsWire);
-            } else if (std.mem.eql(u8, field_name, "input_quantization")) {
-                fields_seen |= 1 << 17;
-                header.input_quantization = try unpacker.read([]const u8);
-            } else if (std.mem.eql(u8, field_name, "initial_creature_pool")) {
-                fields_seen |= 1 << 18;
-                header.initial_creature_pool = try unpacker.read(?[]const ReplayCreatureSlotResidueWire);
-            } else {
-                return error.UnknownStructField;
-            }
-        }
-
-        if (fields_seen != (1 << 19) - 1) return error.MissingStructFields;
-        return header;
-    }
-};
-
-const ReplayInputWire = struct {
-    move_x: f64,
-    move_y: f64,
-    aim_x: f64,
-    aim_y: f64,
-    flags: i32,
-
-    pub fn msgpackFormat() msgpack.StructFormat {
-        return .{ .as_array = .{} };
-    }
-};
-
-const GameFrameRngAdvancePreludeWire = struct {
-    frames: i32,
-};
-
-const PerkMenuOpenPreludeWire = struct {
-    player_index: i32,
-};
-
-const PerkPickPreludeWire = struct {
-    player_index: i32,
-    choice_index: ?i32 = null,
-};
-
-const ReplayPreludeCurrentWire = union(enum) {
-    game_frame_rng_advance: GameFrameRngAdvancePreludeWire,
-    perk_menu_open: PerkMenuOpenPreludeWire,
-    perk_pick: PerkPickPreludeWire,
-
-    pub fn msgpackFormat() msgpack.UnionFormat {
-        return .{ .as_tagged = .{
-            .tag_field = "type",
-            .tag_value = .field_name,
-        } };
-    }
-};
-
-const ReplayPostludeCurrentWire = union(enum) {
-    perk_menu_open: PerkMenuOpenPreludeWire,
-
-    pub fn msgpackFormat() msgpack.UnionFormat {
-        return .{ .as_tagged = .{
-            .tag_field = "type",
-            .tag_value = .field_name,
-        } };
-    }
-};
-
-pub const ReplayCommandCurrentWire = struct {
-    type: []const u8,
-    player_index: i32 = 0,
-    choice_index: ?i32 = null,
-    ch: ?[]const u8 = null,
-
-    pub fn msgpackWrite(self: ReplayCommandCurrentWire, packer: anytype) !void {
-        const has_choice = self.choice_index != null;
-        const has_ch = self.ch != null;
-        if (has_choice and has_ch) return error.InvalidFormat;
-        try packer.writeMapHeader(if (has_choice or has_ch) 3 else 2);
-        try packer.writeString("type");
-        try packer.writeString(self.type);
-        try packer.writeString("player_index");
-        try packer.writeInt(self.player_index);
-        if (self.choice_index) |choice_index| {
-            try packer.writeString("choice_index");
-            try packer.writeInt(choice_index);
-        } else if (self.ch) |ch| {
-            try packer.writeString("ch");
-            try packer.writeString(ch);
-        }
-    }
-
-    pub fn msgpackRead(unpacker: anytype) !ReplayCommandCurrentWire {
-        const field_count = try unpacker.readMapHeader(u16);
-        if (field_count != 2 and field_count != 3) return error.InvalidFormat;
-        var field_name_buf: [32]u8 = undefined;
-        var command: ReplayCommandCurrentWire = .{ .type = "" };
-        var fields_seen: u8 = 0;
-
-        for (0..field_count) |_| {
-            const field_name = try unpacker.readStringInto(&field_name_buf);
-            if (std.mem.eql(u8, field_name, "type")) {
-                fields_seen |= 1 << 0;
-                command.type = try unpacker.read([]const u8);
-            } else if (std.mem.eql(u8, field_name, "player_index")) {
-                fields_seen |= 1 << 1;
-                command.player_index = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "choice_index")) {
-                fields_seen |= 1 << 2;
-                command.choice_index = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "ch")) {
-                fields_seen |= 1 << 3;
-                command.ch = try unpacker.read([]const u8);
-            } else {
-                return error.UnknownStructField;
-            }
-        }
-
-        if ((fields_seen & 0b0011) != 0b0011) return error.MissingStructFields;
-        if (std.mem.eql(u8, command.type, "perk_pick")) {
-            if (fields_seen != 0b0011 and fields_seen != 0b0111) return error.InvalidFormat;
-        } else if (std.mem.eql(u8, command.type, "typo_char")) {
-            if (fields_seen != 0b0011 and fields_seen != 0b1011) return error.InvalidFormat;
-        } else if (currentCommandKindKnown(command.type)) {
-            if (fields_seen != 0b0011) return error.InvalidFormat;
-        } else if ((fields_seen & 0b1100) == 0b1100) {
-            return error.InvalidFormat;
-        }
-        return command;
-    }
-};
-
-pub const BinaryBytes = struct {
-    data: []const u8,
-
-    pub fn msgpackWrite(self: BinaryBytes, packer: anytype) !void {
-        try packer.writeBinary(self.data);
-    }
-
-    pub fn msgpackRead(unpacker: anytype) !BinaryBytes {
-        return .{ .data = try readExactBinary(unpacker) };
-    }
-};
-
-fn readExactBinary(unpacker: anytype) ![]const u8 {
-    const header = try unpacker.reader.takeByte();
-    const len = switch (header) {
-        msgpack_bin8 => try readPackedInt(u8, unpacker.reader),
-        msgpack_bin16 => try readPackedInt(u16, unpacker.reader),
-        msgpack_bin32 => try readPackedInt(u32, unpacker.reader),
-        else => return error.InvalidFormat,
-    };
-
-    const bytes = try unpacker.allocator.alloc(u8, len);
-    errdefer unpacker.allocator.free(bytes);
-    try unpacker.reader.readSliceAll(bytes);
-    return bytes;
-}
-
-fn readExactU32Array(unpacker: anytype) ![]const u32 {
-    const len = try msgpack.unpackArrayHeader(unpacker.reader, u32);
-    const out = try unpacker.allocator.alloc(u32, len);
-    errdefer unpacker.allocator.free(out);
-    for (out) |*item| {
-        item.* = try unpacker.readInt(u32);
-    }
-    return out;
-}
-
-fn readPackedInt(comptime T: type, reader: *std.Io.Reader) !T {
-    var buf: [@sizeOf(T)]u8 = undefined;
-    try reader.readSliceAll(&buf);
-    return std.mem.readInt(T, &buf, .big);
-}
-
-const ReplayTickCurrentWire = struct {
-    dt: f64,
-    inputs: []const ReplayInputWire,
-    prelude: []const ReplayPreludeCurrentWire,
-    postlude: []const ReplayPostludeCurrentWire,
-    commands: []const ReplayCommandCurrentWire,
-};
-
-const ReplayCurrentWire = struct {
-    header: ReplayHeaderCurrentWire,
-    ticks: []const ReplayTickCurrentWire,
-};
+// ---------------------------------------------------------------------------
+// Envelope
+// ---------------------------------------------------------------------------
 
 pub fn isZstdPayload(bytes: []const u8) bool {
-    if (bytes.len < zstd_magic.len) return false;
-    return std.mem.eql(u8, bytes[0..zstd_magic.len], zstd_magic[0..]);
+    return std.mem.startsWith(u8, bytes, &zstd_magic);
 }
 
+/// Inflate every zstd frame in `compressed` (checkpoint sidecars).
 pub fn inflateZstdPayload(
     allocator: std.mem.Allocator,
     compressed: []const u8,
     max_output_bytes: usize,
-) ReplayCodecError![]u8 {
+) InflateError![]u8 {
     var input: std.Io.Reader = .fixed(compressed);
     var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
     var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
@@ -1303,17 +391,17 @@ pub fn inflateZstdPayload(
         if (n == 0) break;
         total += n;
         if (total > max_output_bytes) return error.PayloadTooLarge;
-        out.appendSlice(allocator, chunk[0..n]) catch return error.OutOfMemory;
+        try out.appendSlice(allocator, chunk[0..n]);
     }
 
-    return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
+    return out.toOwnedSlice(allocator);
 }
 
 fn inflateSingleZstdFramePayload(
     allocator: std.mem.Allocator,
     compressed: []const u8,
     max_output_bytes: usize,
-) ReplayCodecError![]u8 {
+) InflateError![]u8 {
     var input: std.Io.Reader = .fixed(compressed);
     var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
     var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
@@ -1339,7 +427,7 @@ fn inflateSingleZstdFramePayload(
             },
         };
         if (chunk_writer.end > max_output_bytes - output.items.len) return error.PayloadTooLarge;
-        output.appendSlice(allocator, chunk[0..chunk_writer.end]) catch return error.OutOfMemory;
+        try output.appendSlice(allocator, chunk[0..chunk_writer.end]);
     }
 
     if (input.seek != compressed.len) return error.InvalidZstdPayload;
@@ -1352,115 +440,58 @@ fn inflateSingleZstdFramePayload(
             compressed[input.seek - @sizeOf(u32) ..][0..@sizeOf(u32)],
             .little,
         );
-        const actual: u32 = @truncate(std.hash.XxHash64.hash(
-            0,
-            output.items,
-        ));
+        const actual: u32 = @truncate(std.hash.XxHash64.hash(0, output.items));
         if (actual != expected) return error.InvalidZstdPayload;
     }
-    return output.toOwnedSlice(allocator) catch return error.OutOfMemory;
+    return output.toOwnedSlice(allocator);
 }
 
-/// Decode the only supported on-disk replay envelope.
-///
-/// `parseReplay` and `parseReplaySummary` intentionally continue to accept raw
-/// msgpack payloads for in-memory callers and tests. File-facing commands must
-/// pass through this function so raw or otherwise non-zstd payloads cannot be mistaken for
-/// current replay files.
+/// Decode the only supported on-disk envelope: exactly one zstd frame.
 pub fn inflateZstdFilePayload(
     allocator: std.mem.Allocator,
     compressed: []const u8,
     max_output_bytes: usize,
-) ReplayCodecError![]u8 {
+) InflateError![]u8 {
     if (!isZstdPayload(compressed)) return error.InvalidZstdPayload;
     return inflateSingleZstdFramePayload(allocator, compressed, max_output_bytes);
 }
 
-pub fn parseReplaySummary(
+/// Return the msgpack payload of a replay file.
+pub fn inflateReplayFile(
     allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!ReplaySummary {
-    if (try tryParseCurrentReplaySummary(allocator, payload)) |summary| {
-        return summary;
+    file_bytes: []const u8,
+    diagnostic: *Diagnostic,
+) DecodeError![]u8 {
+    if (file_bytes.len > max_replay_file_bytes) {
+        return diagnostic.set("replay file too large (> {d} bytes)", .{max_replay_file_bytes});
     }
-    return error.InvalidMsgpack;
+    if (!isZstdPayload(file_bytes)) return diagnostic.set("replay must use the zstd envelope", .{});
+    var header_reader: std.Io.Reader = .fixed(file_bytes[zstd_magic.len..]);
+    if (std.compress.zstd.Decompress.Frame.Zstandard.Header.decode(&header_reader)) |header| {
+        if ((header.windowSize() orelse 0) > max_zstd_window_bytes) {
+            return diagnostic.set("replay zstd frame window exceeds {d} MiB", .{max_zstd_window_bytes / (1024 * 1024)});
+        }
+    } else |_| {}
+    return inflateSingleZstdFramePayload(allocator, file_bytes, max_replay_payload_bytes) catch |err| switch (err) {
+        error.OutOfMemory => error.OutOfMemory,
+        error.InvalidZstdPayload => diagnostic.set("invalid replay zstd payload", .{}),
+        error.PayloadTooLarge => diagnostic.set("replay payload too large (> {d} bytes)", .{max_replay_payload_bytes}),
+    };
 }
 
-pub fn parseReplay(
+pub fn loadReplay(
     allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!Replay {
-    if (try tryParseCurrentReplay(allocator, payload)) |replay| {
-        return replay;
-    }
-    return error.InvalidMsgpack;
-}
-
-pub fn buildSmokeTestReplayPayload(allocator: std.mem.Allocator) ![]u8 {
-    return buildSmokeTestReplayPayloadForMode(allocator, @intFromEnum(game_ids.GameModeId.survival));
-}
-
-fn buildSmokeTestReplayPayloadForMode(allocator: std.mem.Allocator, game_mode_id: i32) ![]u8 {
-    // Small canonical replay payload used by ABI/tests that need real msgpack replay bytes
-    // without depending on checked-in fixture encodings.
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const tick0 = [_]ReplayInputWire{
-        .{
-            .move_x = 0.0,
-            .move_y = 0.0,
-            .aim_x = 0.0,
-            .aim_y = 0.0,
-            .flags = 0,
-        },
-    };
-    const tick1 = [_]ReplayInputWire{
-        .{
-            .move_x = 0.0,
-            .move_y = 0.0,
-            .aim_x = 0.0,
-            .aim_y = 0.0,
-            .flags = 0,
-        },
-    };
-    const ticks = [_]ReplayTickCurrentWire{
-        .{ .dt = canonical_tick_dt_f64, .inputs = tick0[0..], .prelude = &.{}, .postlude = &.{}, .commands = &.{} },
-        .{ .dt = canonical_tick_dt_f64, .inputs = tick1[0..], .prelude = &.{}, .postlude = &.{}, .commands = &.{} },
-    };
-    const replay: ReplayCurrentWire = .{
-        .header = .{
-            .game_mode_id = game_mode_id,
-            .seed = 1,
-            .replay_format_version = replay_format_version,
-            .quest_level = null,
-            .game_version = "0.9.0",
-            .tick_rate = 60,
-            .quest_fail_retry_count = 0,
-            .hardcore = false,
-            .preserve_bugs = false,
-            .detail_preset = 5,
-            .violence_disabled = 0,
-            .world_size = 1024.0,
-            .player_count = 1,
-            .status = .{
-                .quest_unlock_index = 0,
-                .quest_unlock_index_full = 0,
-                .weapon_usage_counts = usage_counts[0..],
-            },
-            .claimed_stats = .{},
-            .input_quantization = "f32",
-        },
-        .ticks = ticks[0..],
-    };
-
-    var writer: std.Io.Writer.Allocating = .init(allocator);
-    errdefer writer.deinit();
-    try msgpack.encode(replay, &writer.writer);
-    return writer.toOwnedSlice();
+    file_bytes: []const u8,
+    diagnostic: *Diagnostic,
+) DecodeError!Replay {
+    const payload = try inflateReplayFile(allocator, file_bytes, diagnostic);
+    defer allocator.free(payload);
+    return decodePayload(allocator, payload, diagnostic);
 }
 
 /// Build a valid zstd file envelope using raw blocks.
 ///
-/// This keeps test and embedding callers independent of a zstd compressor
+/// This keeps tests and embedding callers independent of a zstd compressor
 /// while exercising the same mandatory envelope as real `.crd` files.
 pub fn wrapZstdFilePayload(
     allocator: std.mem.Allocator,
@@ -1477,942 +508,952 @@ pub fn wrapZstdFilePayload(
         try writer.writer.writeByte(@intCast(payload.len));
     } else if (payload.len <= 65_791) {
         try writer.writer.writeByte(0x60);
-        var content_size: [2]u8 = undefined;
-        std.mem.writeInt(u16, &content_size, @intCast(payload.len - 256), .little);
-        try writer.writer.writeAll(&content_size);
+        try writer.writer.writeInt(u16, @intCast(payload.len - 256), .little);
     } else {
         try writer.writer.writeByte(0xA0);
-        var content_size: [4]u8 = undefined;
-        std.mem.writeInt(u32, &content_size, @intCast(payload.len), .little);
-        try writer.writer.writeAll(&content_size);
+        try writer.writer.writeInt(u32, @intCast(payload.len), .little);
     }
 
     const max_raw_block_len: usize = 128 * 1024;
     var offset: usize = 0;
-    while (offset < payload.len or (payload.len == 0 and offset == 0)) {
-        const remaining = payload.len - offset;
-        const block_len = @min(remaining, max_raw_block_len);
-        const last: u32 = @intFromBool(offset + block_len == payload.len);
-        const block_header: u32 = last | (@as(u32, @intCast(block_len)) << 3);
-        const header_bytes = [_]u8{
-            @truncate(block_header),
-            @truncate(block_header >> 8),
-            @truncate(block_header >> 16),
-        };
-        try writer.writer.writeAll(&header_bytes);
+    while (true) {
+        const block_len = @min(payload.len - offset, max_raw_block_len);
+        const last = offset + block_len == payload.len;
+        const block_header: u24 = @intFromBool(last) | (@as(u24, @intCast(block_len)) << 3);
+        try writer.writer.writeInt(u24, block_header, .little);
         try writer.writer.writeAll(payload[offset .. offset + block_len]);
         offset += block_len;
-        if (last != 0) break;
+        if (last) break;
     }
 
     return writer.toOwnedSlice();
 }
 
-pub fn buildSmokeTestReplayFile(allocator: std.mem.Allocator) ![]u8 {
-    const payload = try buildSmokeTestReplayPayload(allocator);
-    defer allocator.free(payload);
-    return wrapZstdFilePayload(allocator, payload);
+// ---------------------------------------------------------------------------
+// Decoding
+// ---------------------------------------------------------------------------
+
+const replay_keys = [_][]const u8{ "format_version", "game_version", "run", "result", "ticks" };
+const run_keys = [_][]const u8{
+    "game_mode_id",  "seed",                   "quest_level",           "player_count",
+    "hardcore",      "preserve_bugs",          "demo",                  "quest_fail_retry_count",
+    "detail_preset", "violence_disabled",      "status",                "typo_dictionary_words",
+    "typo_highscore_names",
+};
+const quest_level_keys = [_][]const u8{ "major", "minor" };
+const status_keys = [_][]const u8{ "quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts" };
+const result_keys = [_][]const u8{ "outcome", "elapsed_ms", "kills", "rng_state", "pending_perks", "quest_final_ms", "players" };
+const player_result_keys = [_][]const u8{ "experience", "health", "shots_fired", "shots_hit", "most_used_weapon_id" };
+const axis_names = [_][]const u8{ "move_x", "move_y", "aim_x", "aim_y" };
+
+// Smallest possible encodings, used to bound declared lengths by the bytes left.
+const min_player_input_bytes = 1 + 4 * 9 + 1;
+const min_tick_bytes = 1 + 1 + 1;
+const min_command_bytes = 1 + 5 + 10 + 13 + 1;
+
+const Reader = struct {
+    bytes: []const u8,
+    pos: usize = 0,
+    arena: std.mem.Allocator,
+    diagnostic: *Diagnostic,
+    /// Field path of the value being read (`run.seed`), for error messages.
+    path: [96]u8 = undefined,
+    path_len: usize = 0,
+
+    fn fail(self: *Reader, comptime fmt: []const u8, args: anytype) error{InvalidReplay} {
+        return self.diagnostic.set(fmt, args);
+    }
+
+    /// Fail with a message about the current field path.
+    fn failAt(self: *Reader, comptime detail: []const u8, args: anytype) error{InvalidReplay} {
+        const path = if (self.path_len == 0) "replay payload" else self.path[0..self.path_len];
+        return self.diagnostic.set("{s}" ++ detail, .{path} ++ args);
+    }
+
+    fn noncanonical(self: *Reader) error{InvalidReplay} {
+        return self.fail("replay payload is not canonically encoded", .{});
+    }
+
+    /// Point the path at a child of the path prefix `base`.
+    fn at(self: *Reader, comptime fmt: []const u8, base: usize, args: anytype) void {
+        const tail = self.path[base..];
+        self.path_len = base + (std.fmt.bufPrint(tail, fmt, args) catch tail).len;
+    }
+
+    fn take(self: *Reader, n: usize) error{InvalidReplay}![]const u8 {
+        if (n > self.bytes.len - self.pos) return self.fail("invalid replay payload: truncated msgpack data", .{});
+        const result = self.bytes[self.pos..][0..n];
+        self.pos += n;
+        return result;
+    }
+
+    fn byte(self: *Reader) error{InvalidReplay}!u8 {
+        return (try self.take(1))[0];
+    }
+
+    fn uint(self: *Reader, comptime T: type) error{InvalidReplay}!T {
+        return std.mem.readInt(T, (try self.take(@sizeOf(T)))[0..@sizeOf(T)], .big);
+    }
+
+    fn int(self: *Reader) error{InvalidReplay}!Int {
+        const tag = try self.byte();
+        const value: Int = switch (tag) {
+            0x00...0x7f => tag,
+            0xe0...0xff => @as(i8, @bitCast(tag)),
+            0xcc => try self.uint(u8),
+            0xcd => try self.uint(u16),
+            0xce => try self.uint(u32),
+            0xcf => try self.uint(u64),
+            0xd0 => @as(i8, @bitCast(try self.uint(u8))),
+            0xd1 => try self.uint(i16),
+            0xd2 => try self.uint(i32),
+            0xd3 => try self.uint(i64),
+            else => return self.failAt(" must be an integer", .{}),
+        };
+        if (intTag(value) != tag) return self.noncanonical();
+        return value;
+    }
+
+    fn intIn(self: *Reader, comptime T: type) error{InvalidReplay}!T {
+        return std.math.cast(T, try self.int()) orelse
+            self.failAt(" must be in {d}..{d}", .{ std.math.minInt(T), std.math.maxInt(T) });
+    }
+
+    fn intBetween(self: *Reader, low: i32, high: i32) error{InvalidReplay}!i32 {
+        const value = try self.int();
+        if (value < low or value > high) return self.failAt(" must be in {d}..{d}", .{ low, high });
+        return @intCast(value);
+    }
+
+    fn float32(self: *Reader) error{InvalidReplay}!f32 {
+        switch (try self.byte()) {
+            0xcb => {},
+            // Integers and float32 decode as floats but never re-encode canonically.
+            0x00...0x7f, 0xe0...0xff, 0xca, 0xcc...0xd3 => return self.noncanonical(),
+            else => return self.failAt(" must be a float", .{}),
+        }
+        const value: f64 = @bitCast(try self.uint(u64));
+        if (!std.math.isFinite(value)) return self.failAt(" must be finite", .{});
+        if (@abs(value) > std.math.floatMax(f32)) return self.failAt(" is outside the f32 range", .{});
+        const narrowed: f32 = @floatCast(value);
+        if (@as(f64, narrowed) != value) return self.failAt(" must be a canonical f32", .{});
+        return narrowed;
+    }
+
+    fn boolean(self: *Reader) error{InvalidReplay}!bool {
+        return switch (try self.byte()) {
+            0xc2 => false,
+            0xc3 => true,
+            else => self.failAt(" must be a bool", .{}),
+        };
+    }
+
+    fn nil(self: *Reader) error{InvalidReplay}!bool {
+        if (self.pos == self.bytes.len or self.bytes[self.pos] != 0xc0) return false;
+        self.pos += 1;
+        return true;
+    }
+
+    /// Length from a str/array/map header, which must be the shortest one.
+    fn length(self: *Reader, comptime header: LengthHeader) error{InvalidReplay}!usize {
+        const tag = try self.byte();
+        const len: usize = if (tag >= header.fix and tag < header.fix + header.fix_limit)
+            tag - header.fix
+        else if (header.tag8 != null and tag == header.tag8.?)
+            try self.uint(u8)
+        else if (tag == header.tag16)
+            try self.uint(u16)
+        else if (tag == header.tag32)
+            try self.uint(u32)
+        else
+            return self.failAt(" must be " ++ header.noun, .{});
+        if (header.tag(len) != tag) return self.noncanonical();
+        return len;
+    }
+
+    fn string(self: *Reader) error{InvalidReplay}![]const u8 {
+        const bytes = try self.take(try self.length(string_header));
+        if (!std.unicode.utf8ValidateSlice(bytes)) return self.failAt(" is not valid UTF-8", .{});
+        return bytes;
+    }
+
+    /// Array length, bounded by the bytes left before any allocation.
+    fn array(self: *Reader, min_element_bytes: usize) error{InvalidReplay}!usize {
+        const len = try self.length(array_header);
+        if (len > (self.bytes.len - self.pos) / min_element_bytes) {
+            return self.fail("invalid replay payload: truncated msgpack data", .{});
+        }
+        return len;
+    }
+
+    fn arrayOf(self: *Reader, len: usize) error{InvalidReplay}!void {
+        const actual = try self.array(1);
+        if (actual != len) return self.failAt(" must have {d} items, got {d}", .{ len, actual });
+    }
+
+    /// Enter a map whose keys must be exactly `keys`, in order; returns the
+    /// path prefix its fields extend.
+    fn map(self: *Reader, comptime keys: []const []const u8) error{InvalidReplay}!usize {
+        if (try self.length(map_header) != keys.len) {
+            return self.failAt(" must have exactly the keys {s}", .{comptime keyList(keys)});
+        }
+        return self.path_len;
+    }
+
+    fn key(self: *Reader, comptime expected: []const u8, base: usize) error{InvalidReplay}!void {
+        self.path_len = base;
+        const actual = try self.string();
+        if (!std.mem.eql(u8, actual, expected)) {
+            return self.failAt(" has key `{s}` where `{s}` belongs", .{ actual, expected });
+        }
+        self.at("{s}" ++ expected, base, .{if (base == 0) "" else "."});
+    }
+};
+
+fn keyList(comptime keys: []const []const u8) []const u8 {
+    var text: []const u8 = keys[0];
+    for (keys[1..]) |name| text = text ++ ", " ++ name;
+    return text;
 }
 
-fn currentReplayInputShapeFailureDetail(
+fn intTag(value: Int) u8 {
+    if (value >= 0) {
+        if (value <= 0x7f) return @intCast(value);
+        if (value <= std.math.maxInt(u8)) return 0xcc;
+        if (value <= std.math.maxInt(u16)) return 0xcd;
+        if (value <= std.math.maxInt(u32)) return 0xce;
+        return 0xcf;
+    }
+    if (value >= -32) return @bitCast(@as(i8, @intCast(value)));
+    if (value >= std.math.minInt(i8)) return 0xd0;
+    if (value >= std.math.minInt(i16)) return 0xd1;
+    if (value >= std.math.minInt(i32)) return 0xd2;
+    return 0xd3;
+}
+
+/// The msgpack header family of a string, array or map.
+const LengthHeader = struct {
+    fix: u8,
+    fix_limit: usize,
+    tag8: ?u8,
+    tag16: u8,
+    tag32: u8,
+    noun: []const u8,
+
+    /// The shortest header tag for `len`.
+    fn tag(comptime self: LengthHeader, len: usize) u8 {
+        if (len < self.fix_limit) return self.fix + @as(u8, @intCast(len));
+        if (self.tag8 != null and len <= std.math.maxInt(u8)) return self.tag8.?;
+        if (len <= std.math.maxInt(u16)) return self.tag16;
+        return self.tag32;
+    }
+};
+const string_header: LengthHeader = .{ .fix = 0xa0, .fix_limit = 32, .tag8 = 0xd9, .tag16 = 0xda, .tag32 = 0xdb, .noun = "a string" };
+const array_header: LengthHeader = .{ .fix = 0x90, .fix_limit = 16, .tag8 = null, .tag16 = 0xdc, .tag32 = 0xdd, .noun = "an array" };
+const map_header: LengthHeader = .{ .fix = 0x80, .fix_limit = 16, .tag8 = null, .tag16 = 0xde, .tag32 = 0xdf, .noun = "a map" };
+
+/// Decode and validate a canonical replay payload.
+pub fn decodePayload(
     allocator: std.mem.Allocator,
     payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const wire = decoded.value;
-    const player_count = try parseI32(wire.header.player_count);
-    if (player_count <= 0) return null;
-    const expected_players: usize = @intCast(player_count);
-
-    for (wire.ticks, 0..) |tick, tick_idx| {
-        if (tick.inputs.len != expected_players) {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay tick {d} has {d} players, expected {d}",
-                .{ tick_idx, tick.inputs.len, expected_players },
-            ) catch return error.OutOfMemory;
-        }
-        const dt = canonicalF32(tick.dt) orelse {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay tick {d} dt must already be exactly representable as f32",
-                .{tick_idx},
-            ) catch return error.OutOfMemory;
-        };
-        if (dt < 0.0) {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay tick {d} dt must be finite and >= 0",
-                .{tick_idx},
-            ) catch return error.OutOfMemory;
-        }
-        for (tick.inputs, 0..) |input, player_idx| {
-            const fields = [_]struct { name: []const u8, value: f64 }{
-                .{ .name = "move_x", .value = input.move_x },
-                .{ .name = "move_y", .value = input.move_y },
-                .{ .name = "aim_x", .value = input.aim_x },
-                .{ .name = "aim_y", .value = input.aim_y },
-            };
-            for (fields) |field| {
-                _ = canonicalF32(field.value) orelse {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay tick {d} player {d} {s} must already be exactly representable as f32",
-                        .{ tick_idx, player_idx, field.name },
-                    ) catch return error.OutOfMemory;
-                };
-            }
-        }
-    }
-
-    return null;
+    diagnostic: *Diagnostic,
+) DecodeError!Replay {
+    var arena: std.heap.ArenaAllocator = .init(allocator);
+    errdefer arena.deinit();
+    // Decoded strings slice into this copy, so the replay outlives `payload`.
+    const bytes = try arena.allocator().dupe(u8, payload);
+    var reader: Reader = .{ .bytes = bytes, .arena = arena.allocator(), .diagnostic = diagnostic };
+    var replay = try readReplay(&reader);
+    if (reader.pos != bytes.len) return diagnostic.set("invalid replay payload: trailing bytes after the replay", .{});
+    replay.arena = arena.state;
+    return replay;
 }
 
-fn validateCurrentTicks(
-    wire_ticks: []const ReplayTickCurrentWire,
-    player_count: i32,
-    game_mode_id: i32,
-) ReplayCodecError!void {
-    if (wire_ticks.len == 0) return error.UnsupportedInputShape;
-    const expected_players: usize = @intCast(player_count);
-    for (wire_ticks) |tick| {
-        if (tick.commands.len > 0 and game_mode_id != @intFromEnum(game_ids.GameModeId.typo)) {
-            return error.UnsupportedEventKind;
-        }
-        const dt = canonicalF32(tick.dt) orelse return error.UnsupportedInputShape;
-        if (dt < 0.0) return error.UnsupportedInputShape;
-        if (tick.inputs.len != expected_players) return error.UnsupportedInputShape;
-        for (tick.inputs) |input| {
-            _ = canonicalF32(input.move_x) orelse return error.UnsupportedInputShape;
-            _ = canonicalF32(input.move_y) orelse return error.UnsupportedInputShape;
-            _ = canonicalF32(input.aim_x) orelse return error.UnsupportedInputShape;
-            _ = canonicalF32(input.aim_y) orelse return error.UnsupportedInputShape;
-            _ = try parseInputFlagsValue(input.flags);
-        }
+fn readReplay(r: *Reader) DecodeError!Replay {
+    const base = try r.map(&replay_keys);
+    try r.key("format_version", base);
+    const version = try r.int();
+    if (version != replay_format_version) return r.fail("unsupported replay format version: {d}", .{version});
+    try r.key("game_version", base);
+    const game_version = try r.string();
+    if (game_version.len == 0) return r.fail("game_version must be non-empty", .{});
+    try r.key("run", base);
+    const run = try readRun(r);
+    try r.key("result", base);
+    const result = try readResult(r, run);
+    try r.key("ticks", base);
+    const player_count: usize = run.player_count;
+    const tick_count = try r.array(min_tick_bytes);
+    if (tick_count == 0) return r.fail("replay must contain at least one tick", .{});
+
+    const command_ends = try r.arena.alloc(u32, tick_count);
+    // Inputs and commands grow as they are read, so memory stays
+    // proportional to the payload rather than to declared lengths.
+    var inputs: std.ArrayList(PlayerInput) = .empty;
+    var commands: std.ArrayList(Command) = .empty;
+    for (0..tick_count) |tick_index| {
+        r.at("ticks[{d}]", 0, .{tick_index});
+        try readTick(r, run, try inputs.addManyAsSlice(r.arena, player_count), &commands);
+        command_ends[tick_index] = @intCast(commands.items.len);
     }
-}
-
-fn parseCurrentEventSummary(
-    wire_ticks: []const ReplayTickCurrentWire,
-    player_count: i32,
-) ReplayCodecError!ReplayEventSummary {
-    var summary: ReplayEventSummary = .{};
-    for (wire_ticks, 0..) |tick, tick_index| {
-        for (tick.prelude) |wire_op| {
-            const op = try parseCurrentPrelude(wire_op, tick_index, player_count);
-            summary.total_count += 1;
-            countReplayPrelude(&summary, op);
-        }
-        for (tick.postlude) |wire_op| {
-            _ = try parseCurrentPostlude(wire_op, tick_index, player_count);
-            summary.total_count += 1;
-            summary.perk_menu_open_count += 1;
-        }
-        for (tick.commands) |command| {
-            const event = try parseCurrentCommand(command, tick_index, player_count);
-            summary.total_count += 1;
-            countReplayEvent(&summary, event);
-        }
-    }
-    return summary;
-}
-
-fn countReplayPrelude(summary: *ReplayEventSummary, op: ReplayPreludeOp) void {
-    switch (op) {
-        .game_frame_rng_advance => summary.game_frame_rng_advance_count += 1,
-        .perk_menu_open => summary.perk_menu_open_count += 1,
-        .perk_pick => summary.perk_pick_count += 1,
-    }
-}
-
-fn countReplayEvent(summary: *ReplayEventSummary, event: ReplayEvent) void {
-    switch (event) {
-        .perk_pick => summary.perk_pick_count += 1,
-        .perk_menu_open => summary.perk_menu_open_count += 1,
-        .typo_char => summary.typo_char_count += 1,
-        .typo_backspace => summary.typo_backspace_count += 1,
-        .typo_submit => summary.typo_submit_count += 1,
-        .capture_bootstrap => summary.capture_bootstrap_count += 1,
-        .capture_perk_apply => summary.capture_perk_apply_count += 1,
-        .capture_perk_pending => summary.capture_perk_pending_count += 1,
-        .capture_creature_spawn => summary.capture_creature_spawn_count += 1,
-        .capture_state_transition => summary.capture_state_transition_count += 1,
-    }
-}
-
-fn buildInputsCurrent(
-    allocator: std.mem.Allocator,
-    wire_ticks: []const ReplayTickCurrentWire,
-) ReplayCodecError![]ReplayTickInputs {
-    const out = allocator.alloc(ReplayTickInputs, wire_ticks.len) catch return error.OutOfMemory;
-    var built: usize = 0;
-    errdefer {
-        for (0..built) |idx| allocator.free(out[idx]);
-        allocator.free(out);
-    }
-
-    for (wire_ticks, 0..) |tick, tick_idx| {
-        const tick_inputs = allocator.alloc(ReplayPlayerInput, tick.inputs.len) catch return error.OutOfMemory;
-        errdefer allocator.free(tick_inputs);
-        for (tick.inputs, 0..) |wire_input, player_idx| {
-            tick_inputs[player_idx] = .{
-                .move_x = canonicalF32(wire_input.move_x) orelse return error.UnsupportedInputShape,
-                .move_y = canonicalF32(wire_input.move_y) orelse return error.UnsupportedInputShape,
-                .aim_x = canonicalF32(wire_input.aim_x) orelse return error.UnsupportedInputShape,
-                .aim_y = canonicalF32(wire_input.aim_y) orelse return error.UnsupportedInputShape,
-                .flags = try parseInputFlagsValue(wire_input.flags),
-            };
-        }
-        out[tick_idx] = tick_inputs;
-        built += 1;
-    }
-    return out;
-}
-
-fn buildEventsCurrent(
-    allocator: std.mem.Allocator,
-    wire_ticks: []const ReplayTickCurrentWire,
-    player_count: i32,
-) ReplayCodecError![]ReplayEvent {
-    var total_count: usize = 0;
-    for (wire_ticks) |tick| total_count += tick.commands.len;
-
-    const events = allocator.alloc(ReplayEvent, total_count) catch return error.OutOfMemory;
-    errdefer allocator.free(events);
-
-    var event_index: usize = 0;
-    for (wire_ticks, 0..) |tick, tick_index| {
-        for (tick.commands) |command| {
-            events[event_index] = try parseCurrentCommand(command, tick_index, player_count);
-            event_index += 1;
-        }
-    }
-    return events;
-}
-
-fn buildPreludeCurrent(
-    allocator: std.mem.Allocator,
-    wire_ticks: []const ReplayTickCurrentWire,
-    player_count: i32,
-) ReplayCodecError![]ReplayPreludeOp {
-    var total_count: usize = 0;
-    for (wire_ticks) |tick| total_count += tick.prelude.len;
-    if (total_count == 0) return &.{};
-
-    const prelude = allocator.alloc(ReplayPreludeOp, total_count) catch return error.OutOfMemory;
-    errdefer allocator.free(prelude);
-
-    var op_index: usize = 0;
-    for (wire_ticks, 0..) |tick, tick_index| {
-        for (tick.prelude) |wire_op| {
-            prelude[op_index] = try parseCurrentPrelude(wire_op, tick_index, player_count);
-            op_index += 1;
-        }
-    }
-    return prelude;
-}
-
-fn buildPostludeCurrent(
-    allocator: std.mem.Allocator,
-    wire_ticks: []const ReplayTickCurrentWire,
-    player_count: i32,
-) ReplayCodecError![]ReplayPostludeOp {
-    var total_count: usize = 0;
-    for (wire_ticks) |tick| total_count += tick.postlude.len;
-    if (total_count == 0) return &.{};
-
-    const postlude = allocator.alloc(ReplayPostludeOp, total_count) catch return error.OutOfMemory;
-    errdefer allocator.free(postlude);
-
-    var op_index: usize = 0;
-    for (wire_ticks, 0..) |tick, tick_index| {
-        for (tick.postlude) |wire_op| {
-            postlude[op_index] = try parseCurrentPostlude(wire_op, tick_index, player_count);
-            op_index += 1;
-        }
-    }
-    return postlude;
-}
-
-fn buildDtCurrent(
-    allocator: std.mem.Allocator,
-    wire_ticks: []const ReplayTickCurrentWire,
-) ReplayCodecError![]f32 {
-    const out = allocator.alloc(f32, wire_ticks.len) catch return error.OutOfMemory;
-    errdefer allocator.free(out);
-    for (wire_ticks, 0..) |tick, idx| {
-        out[idx] = canonicalF32(tick.dt) orelse return error.UnsupportedInputShape;
-    }
-    return out;
-}
-
-fn parseCurrentPrelude(
-    wire_op: ReplayPreludeCurrentWire,
-    tick_index: usize,
-    player_count: i32,
-) ReplayCodecError!ReplayPreludeOp {
-    return switch (wire_op) {
-        .game_frame_rng_advance => |op| blk: {
-            if (op.frames <= 0) return error.UnsupportedEventShape;
-            break :blk .{ .game_frame_rng_advance = .{
-                .tick_index = tick_index,
-                .frames = @intCast(op.frames),
-            } };
-        },
-        .perk_menu_open => |op| blk: {
-            if (op.player_index < 0 or op.player_index >= player_count) {
-                return error.UnsupportedEventShape;
-            }
-            break :blk .{ .perk_menu_open = .{
-                .tick_index = tick_index,
-                .player_index = op.player_index,
-            } };
-        },
-        .perk_pick => |op| blk: {
-            if (op.player_index < 0 or op.player_index >= player_count) {
-                return error.UnsupportedEventShape;
-            }
-            const choice_index = op.choice_index orelse return error.UnsupportedEventShape;
-            if (choice_index < 0 or choice_index >= @as(i32, @intCast(perk_choice_slot_count))) {
-                return error.UnsupportedEventShape;
-            }
-            break :blk .{ .perk_pick = .{
-                .tick_index = tick_index,
-                .player_index = op.player_index,
-                .choice_index = choice_index,
-            } };
-        },
-    };
-}
-
-fn parseCurrentPostlude(
-    wire_op: ReplayPostludeCurrentWire,
-    tick_index: usize,
-    player_count: i32,
-) ReplayCodecError!ReplayPostludeOp {
-    return switch (wire_op) {
-        .perk_menu_open => |op| {
-            if (op.player_index < 0 or op.player_index >= player_count) {
-                return error.UnsupportedEventShape;
-            }
-            return .{
-                .tick_index = tick_index,
-                .player_index = op.player_index,
-            };
-        },
-    };
-}
-
-fn parseCurrentCommand(
-    command: ReplayCommandCurrentWire,
-    tick_index: usize,
-    player_count: i32,
-) ReplayCodecError!ReplayEvent {
-    if (command.player_index < 0 or command.player_index >= player_count) {
-        return error.UnsupportedEventShape;
-    }
-    if (std.mem.eql(u8, command.type, "typo_char")) {
-        const raw = command.ch orelse return error.UnsupportedEventShape;
-        if (raw.len != 1) return error.UnsupportedEventShape;
-        return .{ .typo_char = .{
-            .tick_index = tick_index,
-            .player_index = command.player_index,
-            .ch = raw[0],
-        } };
-    }
-    if (std.mem.eql(u8, command.type, "typo_backspace")) {
-        return .{ .typo_backspace = .{
-            .tick_index = tick_index,
-            .player_index = command.player_index,
-        } };
-    }
-    if (std.mem.eql(u8, command.type, "typo_submit")) {
-        return .{ .typo_submit = .{
-            .tick_index = tick_index,
-            .player_index = command.player_index,
-        } };
-    }
-    return error.UnknownCommandKind;
-}
-
-fn currentCommandKindKnown(command_type: []const u8) bool {
-    return std.mem.eql(u8, command_type, "typo_char") or
-        std.mem.eql(u8, command_type, "typo_backspace") or
-        std.mem.eql(u8, command_type, "typo_submit");
-}
-
-fn currentReplayEventShapeFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const player_count = decoded.value.header.player_count;
-    for (decoded.value.ticks, 0..) |tick, tick_index| {
-        for (tick.prelude, 0..) |wire_op, operation_index| {
-            switch (wire_op) {
-                .game_frame_rng_advance => |op| {
-                    if (op.frames <= 0) {
-                        return std.fmt.allocPrint(
-                            allocator,
-                            "replay prelude game_frame_rng_advance frames must be > 0: frames={d} tick={d} operation_index={d}",
-                            .{ op.frames, tick_index, operation_index },
-                        ) catch return error.OutOfMemory;
-                    }
-                },
-                .perk_menu_open => |op| {
-                    if (op.player_index < 0 or op.player_index >= player_count) {
-                        return std.fmt.allocPrint(
-                            allocator,
-                            "replay prelude player_index out of range: {d} (player_count={d}, tick={d}, event=perk_menu_open)",
-                            .{ op.player_index, player_count, tick_index },
-                        ) catch return error.OutOfMemory;
-                    }
-                },
-                .perk_pick => |op| {
-                    if (op.player_index < 0 or op.player_index >= player_count) {
-                        return std.fmt.allocPrint(
-                            allocator,
-                            "replay prelude player_index out of range: {d} (player_count={d}, tick={d}, event=perk_pick)",
-                            .{ op.player_index, player_count, tick_index },
-                        ) catch return error.OutOfMemory;
-                    }
-                    const choice_index = op.choice_index orelse {
-                        return std.fmt.allocPrint(
-                            allocator,
-                            "replay prelude perk_pick missing choice_index: tick={d} operation_index={d}",
-                            .{ tick_index, operation_index },
-                        ) catch return error.OutOfMemory;
-                    };
-                    if (choice_index < 0 or choice_index >= @as(i32, @intCast(perk_choice_slot_count))) {
-                        return std.fmt.allocPrint(
-                            allocator,
-                            "replay prelude perk_pick choice_index must be in 0..6: choice_index={d} tick={d} operation_index={d}",
-                            .{ choice_index, tick_index, operation_index },
-                        ) catch return error.OutOfMemory;
-                    }
-                },
-            }
-        }
-        for (tick.postlude) |wire_op| {
-            switch (wire_op) {
-                .perk_menu_open => |op| {
-                    if (op.player_index < 0 or op.player_index >= player_count) {
-                        return std.fmt.allocPrint(
-                            allocator,
-                            "replay postlude player_index out of range: {d} (player_count={d}, tick={d}, event=perk_menu_open)",
-                            .{ op.player_index, player_count, tick_index },
-                        ) catch return error.OutOfMemory;
-                    }
-                },
-            }
-        }
-        for (tick.commands, 0..) |command, command_index| {
-            if (command.player_index < 0 or command.player_index >= player_count) {
-                return std.fmt.allocPrint(
-                    allocator,
-                    "replay command player_index out of range: {d} (player_count={d}, tick={d}, type={s})",
-                    .{ command.player_index, player_count, tick_index, command.type },
-                ) catch return error.OutOfMemory;
-            }
-            if (std.mem.eql(u8, command.type, "typo_char")) {
-                const raw = command.ch orelse {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay command typo_char missing ch: tick={d} command_index={d}",
-                        .{ tick_index, command_index },
-                    ) catch return error.OutOfMemory;
-                };
-                if (raw.len != 1) {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay command typo_char ch must be exactly one byte: tick={d} command_index={d} length={d}",
-                        .{ tick_index, command_index, raw.len },
-                    ) catch return error.OutOfMemory;
-                }
-            }
-        }
-    }
-
-    return null;
-}
-
-fn freeInputs(allocator: std.mem.Allocator, inputs: []ReplayTickInputs) void {
-    for (inputs) |tick| allocator.free(tick);
-    allocator.free(inputs);
-}
-
-fn isSupportedReplayFormatVersion(version: i32) bool {
-    return version == replay_format_version;
-}
-
-fn tryParseCurrentReplaySummary(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?ReplaySummary {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const wire = decoded.value;
-    const header = try buildHeaderCurrent(allocator, wire.header);
-    errdefer header.deinit(allocator);
-    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
-        return error.UnsupportedReplayFormatVersion;
-    }
-
-    const tick_count = wire.ticks.len;
-    try validateCurrentTicks(wire.ticks, header.player_count, header.game_mode_id);
     return .{
-        .header = header,
-        .tick_count = tick_count,
-        .events = try parseCurrentEventSummary(wire.ticks, header.player_count),
+        .game_version = game_version,
+        .run = run,
+        .result = result,
+        .inputs = inputs.items,
+        .commands = commands.items,
+        .command_ends = command_ends,
     };
 }
 
-fn tryParseCurrentReplay(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?Replay {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
+fn readRun(r: *Reader) DecodeError!RunSpec {
+    const base = try r.map(&run_keys);
+    var run: RunSpec = .{ .game_mode = .survival, .seed = 0 };
 
-    const wire = decoded.value;
-    const header = try buildHeaderCurrent(allocator, wire.header);
-    errdefer header.deinit(allocator);
-    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
-        return error.UnsupportedReplayFormatVersion;
+    try r.key("game_mode_id", base);
+    const mode_id = try r.int();
+    run.game_mode = std.enums.fromInt(game_ids.GameModeId, mode_id) orelse
+        return r.failAt(" {d} is not a replayable mode", .{mode_id});
+    try r.key("seed", base);
+    run.seed = try r.intIn(u32);
+    try r.key("quest_level", base);
+    if (!try r.nil()) {
+        const level_base = try r.map(&quest_level_keys);
+        try r.key("major", level_base);
+        const major = try r.int();
+        try r.key("minor", level_base);
+        const minor = try r.int();
+        r.path_len = level_base;
+        if (major < 1 or major > 5 or minor < 1 or minor > 10) return r.failAt(" must be 1..5 / 1..10", .{});
+        run.quest_level = .{ .major = @intCast(major), .minor = @intCast(minor) };
+    }
+    if ((run.quest_level != null) != (run.game_mode == .quests)) {
+        return r.fail("run.quest_level must be set for quests and only for quests", .{});
+    }
+    try r.key("player_count", base);
+    const player_count = try r.int();
+    if (player_count < 1 or player_count > max_players) return r.failAt(" must be in 1..{d}", .{max_players});
+    run.player_count = @intCast(player_count);
+    if ((run.game_mode == .typo or run.game_mode == .tutorial) and run.player_count != 1) {
+        return r.fail("{s} replays require player_count == 1", .{@tagName(run.game_mode)});
+    }
+    try r.key("hardcore", base);
+    run.hardcore = try r.boolean();
+    try r.key("preserve_bugs", base);
+    run.preserve_bugs = try r.boolean();
+    try r.key("demo", base);
+    run.demo = try r.boolean();
+    try r.key("quest_fail_retry_count", base);
+    run.quest_fail_retry_count = try r.intBetween(0, std.math.maxInt(i32));
+    try r.key("detail_preset", base);
+    run.detail_preset = try r.intBetween(1, 5);
+    try r.key("violence_disabled", base);
+    run.violence_disabled = try r.intBetween(0, std.math.maxInt(u8));
+
+    try r.key("status", base);
+    const status_base = try r.map(&status_keys);
+    try r.key("quest_unlock_index", status_base);
+    run.status.quest_unlock_index = try r.intIn(i32);
+    try r.key("quest_unlock_index_full", status_base);
+    run.status.quest_unlock_index_full = try r.intIn(i32);
+    try r.key("weapon_usage_counts", status_base);
+    try r.arrayOf(weapon_usage_count);
+    const counts_base = r.path_len;
+    for (&run.status.weapon_usage_counts, 0..) |*count, index| {
+        r.at("[{d}]", counts_base, .{index});
+        count.* = try r.intIn(u32);
     }
 
-    try validateCurrentTicks(wire.ticks, header.player_count, header.game_mode_id);
-    const prelude = try buildPreludeCurrent(allocator, wire.ticks, header.player_count);
-    errdefer if (prelude.len > 0) allocator.free(prelude);
-    const postlude = try buildPostludeCurrent(allocator, wire.ticks, header.player_count);
-    errdefer if (postlude.len > 0) allocator.free(postlude);
-    const inputs = try buildInputsCurrent(allocator, wire.ticks);
-    errdefer freeInputs(allocator, inputs);
-    const dt = try buildDtCurrent(allocator, wire.ticks);
-    errdefer allocator.free(dt);
-    const events = try buildEventsCurrent(allocator, wire.ticks, header.player_count);
-    errdefer allocator.free(events);
+    try r.key("typo_dictionary_words", base);
+    run.typo_dictionary_words = try readStrings(isTypoDictionaryWord, " must be 1..15 printable ASCII characters", r, max_typo_dictionary_words);
+    try r.key("typo_highscore_names", base);
+    run.typo_highscore_names = try readStrings(isTypoHighscoreName, " must be 1..31 ASCII letters or '.'", r, max_typo_highscore_names);
+    return run;
+}
 
+fn readStrings(
+    comptime valid: fn ([]const u8) bool,
+    comptime invalid_detail: []const u8,
+    r: *Reader,
+    max_count: usize,
+) DecodeError![]const []const u8 {
+    const count = try r.array(1);
+    if (count > max_count) return r.failAt(" has {d} entries, expected at most {d}", .{ count, max_count });
+    const base = r.path_len;
+    const items = try r.arena.alloc([]const u8, count);
+    for (items, 0..) |*item, index| {
+        r.at("[{d}]", base, .{index});
+        item.* = try r.string();
+        if (!valid(item.*)) return r.failAt(invalid_detail, .{});
+    }
+    return items;
+}
+
+fn readResult(r: *Reader, run: RunSpec) DecodeError!RunResult {
+    const base = try r.map(&result_keys);
+    var result: RunResult = undefined;
+
+    try r.key("outcome", base);
+    const outcome = try r.string();
+    result.outcome = std.meta.stringToEnum(RunOutcome, outcome) orelse
+        return r.failAt(" '{s}' is not a run outcome", .{outcome});
+    if (!outcomeAllowed(run.game_mode, result.outcome)) {
+        return r.failAt(" '{s}' is invalid for {s}", .{ outcome, @tagName(run.game_mode) });
+    }
+    try r.key("elapsed_ms", base);
+    result.elapsed_ms = try r.int();
+    try r.key("kills", base);
+    result.kills = try r.int();
+    try r.key("rng_state", base);
+    result.rng_state = try r.intIn(u32);
+    try r.key("pending_perks", base);
+    result.pending_perks = try r.int();
+    try r.key("quest_final_ms", base);
+    result.quest_final_ms = if (try r.nil()) null else try r.int();
+    if ((result.quest_final_ms != null) != (result.outcome == .quest_completed)) {
+        return r.failAt(" must be set only for completed quests", .{});
+    }
+    try r.key("players", base);
+    result.player_count = try r.array(1);
+    if (result.player_count != run.player_count) {
+        return r.failAt(" has {d} entries, expected {d}", .{ result.player_count, run.player_count });
+    }
+    const players_base = r.path_len;
+    for (result.players_buffer[0..result.player_count], 0..) |*player, index| {
+        r.at("[{d}]", players_base, .{index});
+        const player_base = try r.map(&player_result_keys);
+        try r.key("experience", player_base);
+        player.experience = try r.int();
+        try r.key("health", player_base);
+        player.health = try r.float32();
+        try r.key("shots_fired", player_base);
+        player.shots_fired = try r.int();
+        try r.key("shots_hit", player_base);
+        player.shots_hit = try r.int();
+        try r.key("most_used_weapon_id", player_base);
+        const weapon_id = try r.int();
+        player.most_used_weapon_id = std.enums.fromInt(game_ids.WeaponId, weapon_id) orelse
+            return r.failAt(" {d} is not a weapon id", .{weapon_id});
+    }
+    return result;
+}
+
+fn readTick(r: *Reader, run: RunSpec, inputs: []PlayerInput, commands: *std.ArrayList(Command)) DecodeError!void {
+    const base = r.path_len;
+    try r.arrayOf(2);
+    const input_count = try r.array(min_player_input_bytes);
+    if (input_count != inputs.len) {
+        return r.failAt(" has {d} player inputs, expected {d}", .{ input_count, inputs.len });
+    }
+    for (inputs, 0..) |*input, player_index| {
+        r.at(".inputs[{d}]", base, .{player_index});
+        const input_base = r.path_len;
+        try r.arrayOf(5);
+        var axes: [4]f32 = undefined;
+        for (&axes, axis_names) |*axis, name| {
+            r.at(".{s}", input_base, .{name});
+            axis.* = try r.float32();
+        }
+        r.at(".flags", input_base, .{});
+        const flags = try r.int();
+        if (inputFlagsError(flags)) |detail| {
+            return r.failAt(" {s}: {s}0x{x}", .{ detail, if (flags < 0) "-" else "", @abs(flags) });
+        }
+        input.* = .{ .move_x = axes[0], .move_y = axes[1], .aim_x = axes[2], .aim_y = axes[3], .flags = @intCast(flags) };
+    }
+
+    r.path_len = base;
+    for (0..try r.array(min_command_bytes)) |command_index| {
+        r.at(".commands[{d}]", base, .{command_index});
+        try commands.append(r.arena, try readCommand(r, run));
+    }
+}
+
+fn readCommand(r: *Reader, run: RunSpec) DecodeError!Command {
+    // Peek the `type` tag first: it decides which keys the map must hold.
+    const start = r.pos;
+    const base = r.path_len;
+    _ = try r.length(map_header);
+    try r.key("type", base);
+    const type_name = try r.string();
+    r.path_len = base;
+    const tag = std.meta.stringToEnum(std.meta.Tag(Command), type_name) orelse
+        return r.failAt(" has unknown type '{s}'", .{type_name});
+    r.pos = start;
+
+    const command: Command = switch (tag) {
+        inline .perk_menu_open, .typo_backspace, .typo_submit => |kind| blk: {
+            _ = try r.map(&.{ "type", "player_index" });
+            break :blk @unionInit(Command, @tagName(kind), .{ .player_index = try readCommandPlayer(r, run, base) });
+        },
+        .perk_pick => blk: {
+            _ = try r.map(&.{ "type", "player_index", "choice_index" });
+            const player_index = try readCommandPlayer(r, run, base);
+            try r.key("choice_index", base);
+            const choice_index = try r.int();
+            if (choice_index < 0 or choice_index >= perk_choice_slot_count) {
+                return r.failAt(" must be in 0..{d}", .{perk_choice_slot_count - 1});
+            }
+            break :blk .{ .perk_pick = .{ .player_index = player_index, .choice_index = @intCast(choice_index) } };
+        },
+        .typo_char => blk: {
+            _ = try r.map(&.{ "type", "player_index", "ch" });
+            const player_index = try readCommandPlayer(r, run, base);
+            try r.key("ch", base);
+            const ch = try r.string();
+            if ((std.unicode.utf8CountCodepoints(ch) catch unreachable) != 1) {
+                return r.failAt(" must be exactly one character", .{});
+            }
+            break :blk .{ .typo_char = .{ .player_index = player_index, .ch = ch } };
+        },
+    };
+    r.path_len = base;
+    if (command.isTypo() and run.game_mode != .typo) return r.failAt(" Typ-o commands require game_mode_id=TYPO", .{});
+    return command;
+}
+
+fn readCommandPlayer(r: *Reader, run: RunSpec, base: usize) DecodeError!u8 {
+    try r.key("type", base);
+    _ = try r.string();
+    try r.key("player_index", base);
+    const player_index = try r.int();
+    if (player_index < 0 or player_index >= run.player_count) {
+        return r.failAt(" {d} is outside 0..{d}", .{ player_index, run.player_count - 1 });
+    }
+    return @intCast(player_index);
+}
+
+// ---------------------------------------------------------------------------
+// Encoding
+// ---------------------------------------------------------------------------
+
+const Writer = struct {
+    out: *std.Io.Writer,
+
+    fn int(self: Writer, value: Int) std.Io.Writer.Error!void {
+        const tag = intTag(value);
+        try self.out.writeByte(tag);
+        switch (tag) {
+            0xcc => try self.out.writeInt(u8, @intCast(value), .big),
+            0xcd => try self.out.writeInt(u16, @intCast(value), .big),
+            0xce => try self.out.writeInt(u32, @intCast(value), .big),
+            0xcf => try self.out.writeInt(u64, @intCast(value), .big),
+            0xd0 => try self.out.writeInt(i8, @intCast(value), .big),
+            0xd1 => try self.out.writeInt(i16, @intCast(value), .big),
+            0xd2 => try self.out.writeInt(i32, @intCast(value), .big),
+            0xd3 => try self.out.writeInt(i64, @intCast(value), .big),
+            else => {},
+        }
+    }
+
+    fn float(self: Writer, value: f32) std.Io.Writer.Error!void {
+        try self.out.writeByte(0xcb);
+        try self.out.writeInt(u64, @bitCast(@as(f64, value)), .big);
+    }
+
+    fn boolean(self: Writer, value: bool) std.Io.Writer.Error!void {
+        try self.out.writeByte(if (value) 0xc3 else 0xc2);
+    }
+
+    fn nil(self: Writer) std.Io.Writer.Error!void {
+        try self.out.writeByte(0xc0);
+    }
+
+    fn length(self: Writer, comptime header: LengthHeader, len: usize) std.Io.Writer.Error!void {
+        const tag = header.tag(len);
+        try self.out.writeByte(tag);
+        if (header.tag8 != null and tag == header.tag8.?) {
+            try self.out.writeInt(u8, @intCast(len), .big);
+        } else if (tag == header.tag16) {
+            try self.out.writeInt(u16, @intCast(len), .big);
+        } else if (tag == header.tag32) {
+            try self.out.writeInt(u32, @intCast(len), .big);
+        }
+    }
+
+    fn string(self: Writer, value: []const u8) std.Io.Writer.Error!void {
+        try self.length(string_header, value.len);
+        try self.out.writeAll(value);
+    }
+
+    fn array(self: Writer, len: usize) std.Io.Writer.Error!void {
+        try self.length(array_header, len);
+    }
+
+    fn map(self: Writer, len: usize) std.Io.Writer.Error!void {
+        try self.length(map_header, len);
+    }
+
+    fn strings(self: Writer, values: []const []const u8) std.Io.Writer.Error!void {
+        try self.array(values.len);
+        for (values) |value| try self.string(value);
+    }
+};
+
+/// Canonical msgpack encoding of `replay` (which must already be valid).
+pub fn encodePayload(allocator: std.mem.Allocator, replay: Replay) ![]u8 {
+    var buffer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer buffer.deinit();
+    const w: Writer = .{ .out = &buffer.writer };
+    const run = replay.run;
+
+    try w.map(replay_keys.len);
+    try w.string("format_version");
+    try w.int(replay_format_version);
+    try w.string("game_version");
+    try w.string(replay.game_version);
+
+    try w.string("run");
+    try w.map(run_keys.len);
+    try w.string("game_mode_id");
+    try w.int(@intFromEnum(run.game_mode));
+    try w.string("seed");
+    try w.int(run.seed);
+    try w.string("quest_level");
+    if (run.quest_level) |level| {
+        try w.map(2);
+        try w.string("major");
+        try w.int(level.major);
+        try w.string("minor");
+        try w.int(level.minor);
+    } else try w.nil();
+    try w.string("player_count");
+    try w.int(run.player_count);
+    try w.string("hardcore");
+    try w.boolean(run.hardcore);
+    try w.string("preserve_bugs");
+    try w.boolean(run.preserve_bugs);
+    try w.string("demo");
+    try w.boolean(run.demo);
+    try w.string("quest_fail_retry_count");
+    try w.int(run.quest_fail_retry_count);
+    try w.string("detail_preset");
+    try w.int(run.detail_preset);
+    try w.string("violence_disabled");
+    try w.int(run.violence_disabled);
+    try w.string("status");
+    try w.map(status_keys.len);
+    try w.string("quest_unlock_index");
+    try w.int(run.status.quest_unlock_index);
+    try w.string("quest_unlock_index_full");
+    try w.int(run.status.quest_unlock_index_full);
+    try w.string("weapon_usage_counts");
+    try w.array(weapon_usage_count);
+    for (run.status.weapon_usage_counts) |count| try w.int(count);
+    try w.string("typo_dictionary_words");
+    try w.strings(run.typo_dictionary_words);
+    try w.string("typo_highscore_names");
+    try w.strings(run.typo_highscore_names);
+
+    try w.string("result");
+    const result = replay.result;
+    try w.map(result_keys.len);
+    try w.string("outcome");
+    try w.string(@tagName(result.outcome));
+    try w.string("elapsed_ms");
+    try w.int(result.elapsed_ms);
+    try w.string("kills");
+    try w.int(result.kills);
+    try w.string("rng_state");
+    try w.int(result.rng_state);
+    try w.string("pending_perks");
+    try w.int(result.pending_perks);
+    try w.string("quest_final_ms");
+    if (result.quest_final_ms) |value| try w.int(value) else try w.nil();
+    try w.string("players");
+    try w.array(result.player_count);
+    for (result.players()) |player| {
+        try w.map(player_result_keys.len);
+        try w.string("experience");
+        try w.int(player.experience);
+        try w.string("health");
+        try w.float(player.health);
+        try w.string("shots_fired");
+        try w.int(player.shots_fired);
+        try w.string("shots_hit");
+        try w.int(player.shots_hit);
+        try w.string("most_used_weapon_id");
+        try w.int(@intFromEnum(player.most_used_weapon_id));
+    }
+
+    try w.string("ticks");
+    try w.array(replay.tickCount());
+    for (0..replay.tickCount()) |tick_index| {
+        try w.array(2);
+        const inputs = replay.tickInputs(tick_index);
+        try w.array(inputs.len);
+        for (inputs) |input| {
+            try w.array(5);
+            for ([_]f32{ input.move_x, input.move_y, input.aim_x, input.aim_y }) |axis| try w.float(axis);
+            try w.int(input.flags);
+        }
+        const commands = replay.tickCommands(tick_index);
+        try w.array(commands.len);
+        for (commands) |command| {
+            switch (command) {
+                .perk_pick => |pick| {
+                    try w.map(3);
+                    try w.string("type");
+                    try w.string("perk_pick");
+                    try w.string("player_index");
+                    try w.int(pick.player_index);
+                    try w.string("choice_index");
+                    try w.int(pick.choice_index);
+                },
+                .typo_char => |typed| {
+                    try w.map(3);
+                    try w.string("type");
+                    try w.string("typo_char");
+                    try w.string("player_index");
+                    try w.int(typed.player_index);
+                    try w.string("ch");
+                    try w.string(typed.ch);
+                },
+                inline .perk_menu_open, .typo_backspace, .typo_submit => |payload, tag| {
+                    try w.map(2);
+                    try w.string("type");
+                    try w.string(@tagName(tag));
+                    try w.string("player_index");
+                    try w.int(payload.player_index);
+                },
+            }
+        }
+    }
+    return buffer.toOwnedSlice();
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+const testing = std.testing;
+
+fn testReplay(game_mode: game_ids.GameModeId, inputs: []const PlayerInput, commands: []const Command, command_ends: []const u32) Replay {
+    var result: RunResult = .{
+        .outcome = .incomplete,
+        .elapsed_ms = 16,
+        .kills = 0,
+        .rng_state = 0x1234,
+        .pending_perks = 0,
+        .quest_final_ms = null,
+        .player_count = 1,
+    };
+    result.players_buffer[0] = .{
+        .experience = 0,
+        .health = 100.0,
+        .shots_fired = 0,
+        .shots_hit = 0,
+        .most_used_weapon_id = .pistol,
+    };
     return .{
-        .header = header,
+        .game_version = "0.10.0",
+        .run = .{
+            .game_mode = game_mode,
+            .seed = 0xBEEF,
+            .quest_level = if (game_mode == .quests) .{ .major = 1, .minor = 1 } else null,
+        },
+        .result = result,
         .inputs = inputs,
-        .dt = dt,
-        .prelude = prelude,
-        .postlude = postlude,
-        .events = events,
+        .commands = commands,
+        .command_ends = command_ends,
     };
 }
 
-fn buildHeaderCurrent(
-    allocator: std.mem.Allocator,
-    wire: ReplayHeaderCurrentWire,
-) ReplayCodecError!ReplayHeader {
-    const game_mode = std.enums.fromInt(game_ids.GameModeId, wire.game_mode_id) orelse return error.UnsupportedGameMode;
-    switch (game_mode) {
-        .quests => {
-            const level = wire.quest_level orelse return error.MissingQuestLevel;
-            if (level.major < 1 or level.major > 5 or level.minor < 1 or level.minor > 10) {
-                return error.InvalidHeaderValue;
-            }
-        },
-        .survival, .rush, .typo, .tutorial => {
-            if (wire.quest_level != null) return error.InvalidHeaderValue;
-        },
-    }
-    var quest_level_buf: [32]u8 = undefined;
-    const quest_level = if (wire.quest_level) |level|
-        std.fmt.bufPrint(quest_level_buf[0..], "{d}.{d}", .{ level.major, level.minor }) catch return error.InvalidHeaderValue
-    else
-        "";
-    return buildHeaderCurrentWithQuestLevelText(allocator, wire, quest_level);
-}
-
-fn buildHeaderCurrentWithQuestLevelText(
-    allocator: std.mem.Allocator,
-    wire: anytype,
-    quest_level: []const u8,
-) ReplayCodecError!ReplayHeader {
-    const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
-    const world_size = canonicalF32(wire.world_size) orelse return error.InvalidHeaderValue;
-    if (world_size <= 0.0 or world_size > max_world_size_i32_f32) {
-        return error.InvalidHeaderValue;
-    }
-    if (!std.mem.eql(u8, wire.input_quantization, "f32")) {
-        return error.UnsupportedInputQuantization;
-    }
-
-    const tick_rate = try parseI32(wire.tick_rate);
-    const player_count = try parseI32(wire.player_count);
-    const quest_fail_retry_count = try parseI32(wire.quest_fail_retry_count);
-    const detail_preset = try parseI32(wire.detail_preset);
-    const violence_disabled = try parseI32(wire.violence_disabled);
-    const quest_unlock_index = try parseI32(wire.status.quest_unlock_index);
-    const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
-
-    if (tick_rate <= 0 or
-        player_count <= 0 or
-        player_count > max_players or
-        quest_fail_retry_count < 0 or
-        detail_preset < 0 or
-        violence_disabled < 0)
-    {
-        return error.InvalidHeaderValue;
-    }
-    try validateModePlayerCount(wire.game_mode_id, player_count);
-    if (wire.game_version.len == 0) return error.MissingHeaderField;
-    if (isMissingQuestLevel(wire.game_mode_id, quest_level)) return error.MissingQuestLevel;
-    if (wire.status.weapon_usage_counts.len != weapon_usage_count or
-        wire.status.quest_play_counts.len != quest_play_count or
-        wire.status.reserved_seed_words.data.len != status_reserved_seed_words_byte_size)
-    {
-        return error.InvalidHeaderValue;
-    }
-
-    var usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count;
-    for (wire.status.weapon_usage_counts, 0..) |value, idx| {
-        usage_counts[idx] = try parseU32(value);
-    }
-    var quest_play_counts: [quest_play_count]u32 = [_]u32{0} ** quest_play_count;
-    for (wire.status.quest_play_counts, 0..) |value, idx| {
-        quest_play_counts[idx] = try parseU32(value);
-    }
-    var reserved_seed_words: [status_reserved_seed_words_byte_size]u8 = undefined;
-    @memcpy(reserved_seed_words[0..], wire.status.reserved_seed_words.data);
-
-    const claimed_stats: ReplayClaimedStats = .{
-        .complete = wire.claimed_stats.complete,
-        .ticks = try parseI32(wire.claimed_stats.ticks),
-        .elapsed_ms = try parseI64(wire.claimed_stats.elapsed_ms),
-        .score_xp = try parseI64(wire.claimed_stats.score_xp),
-        .kills = try parseI32(wire.claimed_stats.kills),
-        .most_used_weapon_id = try parseI32(wire.claimed_stats.most_used_weapon_id),
-        .shots_fired = try parseI32(wire.claimed_stats.shots_fired),
-        .shots_hit = try parseI32(wire.claimed_stats.shots_hit),
+fn expectRoundTrip(replay: Replay) ![]u8 {
+    const payload = try encodePayload(testing.allocator, replay);
+    errdefer testing.allocator.free(payload);
+    var diagnostic: Diagnostic = .{};
+    const decoded = decodePayload(testing.allocator, payload, &diagnostic) catch |err| {
+        std.debug.print("decode failed: {s}\n", .{diagnostic.message()});
+        return err;
     };
-    try validateClaimedStats(claimed_stats);
+    defer decoded.deinit(testing.allocator);
+    const reencoded = try encodePayload(testing.allocator, decoded);
+    defer testing.allocator.free(reencoded);
+    try testing.expectEqualSlices(u8, payload, reencoded);
+    return payload;
+}
 
-    const quest_level_owned = allocator.dupe(u8, quest_level) catch return error.OutOfMemory;
-    errdefer allocator.free(quest_level_owned);
-    const initial_creature_pool: ?[]const ReplayCreatureSlotResidue = if (wire.initial_creature_pool) |pool|
-        try buildCreaturePoolResidue(allocator, pool)
-    else
-        null;
-    errdefer if (initial_creature_pool) |pool| {
-        if (pool.len > 0) allocator.free(pool);
+fn expectRejected(payload: []const u8, expected: []const u8) !void {
+    var diagnostic: Diagnostic = .{};
+    try testing.expectError(error.InvalidReplay, decodePayload(testing.allocator, payload, &diagnostic));
+    try testing.expectEqualStrings(expected, diagnostic.message());
+}
+
+/// Replace the first occurrence of `needle` in `payload`.
+fn patched(payload: []const u8, needle: []const u8, replacement: []const u8) ![]u8 {
+    const index = std.mem.indexOf(u8, payload, needle) orelse return error.TestNeedleMissing;
+    return std.mem.concat(testing.allocator, u8, &.{ payload[0..index], replacement, payload[index + needle.len ..] });
+}
+
+test "canonical payload round-trips byte for byte" {
+    const inputs = [_]PlayerInput{ .{ .aim_x = 512.0, .aim_y = 512.0 }, .{ .move_x = -1.0, .flags = fire_down_flag | fire_pressed_flag } };
+    const commands = [_]Command{
+        .{ .typo_char = .{ .player_index = 0, .ch = "é" } },
+        .{ .typo_submit = .{ .player_index = 0 } },
     };
+    var replay = testReplay(.typo, &inputs, &commands, &.{ 1, 2 });
+    replay.game_version = "0.10.0+g" ++ "a" ** 40;
+    replay.run.typo_dictionary_words = &.{ "amber", "~ x" };
+    replay.run.typo_highscore_names = &.{ "A." ** 15 ++ "B", "zed" };
+    replay.result.elapsed_ms = -(1 << 40);
+    replay.result.kills = std.math.maxInt(u64);
+    const payload = try expectRoundTrip(replay);
+    defer testing.allocator.free(payload);
 
-    return .{
-        .game_mode_id = wire.game_mode_id,
-        .seed = wire.seed,
-        .replay_format_version = wire.replay_format_version,
-        .quest_level = quest_level_owned,
-        .typo_dictionary_words = try dupStringSliceList(allocator, wire.typo_dictionary_words),
-        .typo_highscore_names = try dupStringSliceList(allocator, wire.typo_highscore_names),
-        .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
-        .tick_rate = tick_rate,
-        .quest_fail_retry_count = quest_fail_retry_count,
-        .hardcore = wire.hardcore,
-        .preserve_bugs = wire.preserve_bugs,
-        .detail_preset = detail_preset,
-        .violence_disabled = violence_disabled,
-        .world_size = world_size,
-        .player_count = player_count,
-        .status = .{
-            .quest_unlock_index = quest_unlock_index,
-            .quest_unlock_index_full = quest_unlock_index_full,
-            .weapon_usage_counts = usage_counts,
-            .quest_play_counts = quest_play_counts,
-            .mode_play_survival = wire.status.mode_play_survival,
-            .mode_play_rush = wire.status.mode_play_rush,
-            .mode_play_typo = wire.status.mode_play_typo,
-            .mode_play_other = wire.status.mode_play_other,
-            .play_time_ms = wire.status.play_time_ms,
-            .reserved_seed_words = reserved_seed_words,
-        },
-        .claimed_stats = claimed_stats,
-        .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,
-        .initial_creature_pool = initial_creature_pool,
+    var diagnostic: Diagnostic = .{};
+    const decoded = try decodePayload(testing.allocator, payload, &diagnostic);
+    defer decoded.deinit(testing.allocator);
+    try testing.expectEqual(@as(usize, 2), decoded.tickCount());
+    try testing.expectEqual(@as(f32, -1.0), decoded.tickInputs(1)[0].move_x);
+    try testing.expectEqualStrings("é", decoded.tickCommands(0)[0].typo_char.ch);
+    try testing.expectEqual(@as(usize, 1), decoded.tickCommands(1).len);
+    try testing.expectEqualStrings("amber", decoded.run.typo_dictionary_words[0]);
+    try testing.expectEqual(@as(Int, std.math.maxInt(u64)), decoded.result.kills);
+}
+
+test "reader rejects non-canonical encodings of an otherwise valid replay" {
+    const inputs = [_]PlayerInput{.{ .aim_x = 512.0, .aim_y = 512.0 }};
+    const commands = [_]Command{.{ .perk_menu_open = .{ .player_index = 0 } }};
+    const payload = try expectRoundTrip(testReplay(.survival, &inputs, &commands, &.{1}));
+    defer testing.allocator.free(payload);
+
+    const not_canonical = "replay payload is not canonically encoded";
+    const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
+        // Integer where a float belongs (health 100.0 -> 100).
+        .{ .needle = "\xa6health\xcb\x40\x59\x00\x00\x00\x00\x00\x00", .replacement = "\xa6health\x64", .message = not_canonical },
+        // float32 encoding of an exact f32 value.
+        .{ .needle = "\xa6health\xcb\x40\x59\x00\x00\x00\x00\x00\x00", .replacement = "\xa6health\xca\x42\xc8\x00\x00", .message = not_canonical },
+        // Non-minimal integer (player_count 1 as uint8, then as int8).
+        .{ .needle = "\xacplayer_count\x01", .replacement = "\xacplayer_count\xcc\x01", .message = not_canonical },
+        .{ .needle = "\xacplayer_count\x01", .replacement = "\xacplayer_count\xd0\x01", .message = not_canonical },
+        // Non-minimal string header.
+        .{ .needle = "\xa4seed", .replacement = "\xd9\x04seed", .message = not_canonical },
+        // Reordered keys.
+        .{ .needle = "\xa8hardcore\xc2\xadpreserve_bugs\xc2", .replacement = "\xadpreserve_bugs\xc2\xa8hardcore\xc2", .message = "run has key `preserve_bugs` where `hardcore` belongs" },
+        // Duplicate key in place of another.
+        .{ .needle = "\xa4demo\xc2", .replacement = "\xa8hardcore\xc2", .message = "run has key `hardcore` where `demo` belongs" },
+        // Command map with an extra key.
+        .{ .needle = "\x82\xa4type\xaeperk_menu_open\xacplayer_index\x00", .replacement = "\x83\xa4type\xaeperk_menu_open\xacplayer_index\x00\xa1x\x00", .message = "ticks[0].commands[0] must have exactly the keys type, player_index" },
     };
-}
-
-fn buildCreaturePoolResidue(
-    allocator: std.mem.Allocator,
-    wire_pool: []const ReplayCreatureSlotResidueWire,
-) ReplayCodecError![]ReplayCreatureSlotResidue {
-    if (wire_pool.len == 0) return &.{};
-    const pool = allocator.alloc(ReplayCreatureSlotResidue, wire_pool.len) catch return error.OutOfMemory;
-    errdefer allocator.free(pool);
-
-    for (wire_pool, 0..) |wire, idx| {
-        if (idx > 0 and wire.index <= wire_pool[idx - 1].index) return error.InvalidHeaderValue;
-        pool[idx] = .{
-            .index = wire.index,
-            .phase_seed = wire.phase_seed,
-            .state_flag = wire.state_flag,
-            .collision_flag = wire.collision_flag,
-            .collision_timer = canonicalF32(wire.collision_timer) orelse return error.InvalidHeaderValue,
-            .lifecycle_stage = canonicalF32(wire.lifecycle_stage) orelse return error.InvalidHeaderValue,
-            .pos = .{
-                .x = canonicalF32(wire.pos.x) orelse return error.InvalidHeaderValue,
-                .y = canonicalF32(wire.pos.y) orelse return error.InvalidHeaderValue,
-            },
-            .vel = .{
-                .x = canonicalF32(wire.vel.x) orelse return error.InvalidHeaderValue,
-                .y = canonicalF32(wire.vel.y) orelse return error.InvalidHeaderValue,
-            },
-            .hp = canonicalF32(wire.hp) orelse return error.InvalidHeaderValue,
-            .max_hp = canonicalF32(wire.max_hp) orelse return error.InvalidHeaderValue,
-            .heading = canonicalF32(wire.heading) orelse return error.InvalidHeaderValue,
-            .target_heading = canonicalF32(wire.target_heading) orelse return error.InvalidHeaderValue,
-            .size = canonicalF32(wire.size) orelse return error.InvalidHeaderValue,
-            .hit_flash_timer = canonicalF32(wire.hit_flash_timer) orelse return error.InvalidHeaderValue,
-            .tint_r = canonicalF32(wire.tint_r) orelse return error.InvalidHeaderValue,
-            .tint_g = canonicalF32(wire.tint_g) orelse return error.InvalidHeaderValue,
-            .tint_b = canonicalF32(wire.tint_b) orelse return error.InvalidHeaderValue,
-            .tint_a = canonicalF32(wire.tint_a) orelse return error.InvalidHeaderValue,
-            .force_target = wire.force_target,
-            .target = .{
-                .x = canonicalF32(wire.target.x) orelse return error.InvalidHeaderValue,
-                .y = canonicalF32(wire.target.y) orelse return error.InvalidHeaderValue,
-            },
-            .contact_damage = canonicalF32(wire.contact_damage) orelse return error.InvalidHeaderValue,
-            .move_speed = canonicalF32(wire.move_speed) orelse return error.InvalidHeaderValue,
-            .attack_cooldown = canonicalF32(wire.attack_cooldown) orelse return error.InvalidHeaderValue,
-            .reward_value = canonicalF32(wire.reward_value) orelse return error.InvalidHeaderValue,
-            .type_id = wire.type_id,
-            .target_player = wire.target_player,
-            .link_index = wire.link_index,
-            .target_offset = .{
-                .x = canonicalF32(wire.target_offset.x) orelse return error.InvalidHeaderValue,
-                .y = canonicalF32(wire.target_offset.y) orelse return error.InvalidHeaderValue,
-            },
-            .orbit_angle = canonicalF32(wire.orbit_angle) orelse return error.InvalidHeaderValue,
-            .orbit_radius_u32 = wire.orbit_radius_u32,
-            .flags = wire.flags,
-            .ai_mode = wire.ai_mode,
-            .anim_phase = canonicalF32(wire.anim_phase) orelse return error.InvalidHeaderValue,
-        };
-    }
-    return pool;
-}
-
-fn canonicalF32(value: f64) ?f32 {
-    if (!std.math.isFinite(value)) return null;
-    const max_f32: f64 = std.math.floatMax(f32);
-    if (value < -max_f32 or value > max_f32) return null;
-    const narrowed: f32 = @floatCast(value);
-    if (@as(f64, narrowed) != value) return null;
-    return narrowed;
-}
-
-fn parseInputFlagsValue(value: i32) ReplayCodecError!u32 {
-    if (value < 0) return error.UnsupportedInputShape;
-    return validateInputFlags(@intCast(value));
-}
-
-pub fn validateInputFlags(flags: u32) ReplayCodecError!u32 {
-    if ((flags & ~supported_input_flags_mask) != 0) return error.UnsupportedInputShape;
-
-    const move_key_bits = move_forward_flag | move_backward_flag | turn_left_flag | turn_right_flag;
-    if ((flags & move_keys_present_flag) == 0 and (flags & move_key_bits) != 0) {
-        return error.UnsupportedInputShape;
+    for (cases) |case| {
+        const bad = try patched(payload, case.needle, case.replacement);
+        defer testing.allocator.free(bad);
+        try expectRejected(bad, case.message);
     }
 
-    const move_mode_value = (flags >> move_mode_shift) & move_mode_mask;
-    if ((flags & move_mode_present_flag) == 0 and move_mode_value != 0) {
-        return error.UnsupportedInputShape;
-    }
-    if ((flags & move_mode_present_flag) != 0 and move_mode_value > 5) {
-        return error.UnsupportedInputShape;
-    }
+    // Missing key: drop `demo` from the run map.
+    const without_demo = try patched(payload, "\xa4demo\xc2", "");
+    defer testing.allocator.free(without_demo);
+    without_demo[std.mem.indexOf(u8, without_demo, "\xacgame_mode_id").? - 1] = 0x8c;
+    try expectRejected(without_demo, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, demo, quest_fail_retry_count, detail_preset, violence_disabled, status, typo_dictionary_words, typo_highscore_names");
 
-    const aim_scheme_value = (flags >> aim_scheme_shift) & aim_scheme_mask;
-    if ((flags & aim_scheme_present_flag) == 0 and aim_scheme_value != 0) {
-        return error.UnsupportedInputShape;
-    }
-    if ((flags & aim_scheme_present_flag) != 0 and aim_scheme_value == 6) {
-        return error.UnsupportedInputShape;
-    }
-    return flags;
+    const trailing = try std.mem.concat(testing.allocator, u8, &.{ payload, "\xc0" });
+    defer testing.allocator.free(trailing);
+    try expectRejected(trailing, "invalid replay payload: trailing bytes after the replay");
 }
 
-fn parseI32(value: i32) ReplayCodecError!i32 {
-    return value;
-}
+test "reader applies the replay validation rules" {
+    const inputs = [_]PlayerInput{.{ .aim_x = 512.0, .aim_y = 512.0 }};
+    const commands = [_]Command{.{ .perk_pick = .{ .player_index = 0, .choice_index = 2 } }};
+    const payload = try expectRoundTrip(testReplay(.survival, &inputs, &commands, &.{1}));
+    defer testing.allocator.free(payload);
 
-fn parseU32(value: u32) ReplayCodecError!u32 {
-    return value;
-}
-
-fn parseI64(value: i64) ReplayCodecError!i64 {
-    return value;
-}
-
-test "unpack input flags decodes packed fields" {
-    const packed_flags: u32 = fire_down_flag |
-        reload_pressed_flag |
-        reload_down_flag |
-        fire_bullets_key_down_flag |
-        move_keys_present_flag |
-        move_forward_flag |
-        turn_left_flag |
-        move_mode_present_flag |
-        (@as(u32, 3) << move_mode_shift) |
-        aim_scheme_present_flag |
-        (aim_scheme_mask << aim_scheme_shift);
-
-    const decoded = unpackInputFlags(packed_flags);
-    try std.testing.expect(decoded.fire_down);
-    try std.testing.expect(!decoded.fire_pressed);
-    try std.testing.expect(decoded.reload_pressed);
-    try std.testing.expect(decoded.reload_down);
-    try std.testing.expect(decoded.fire_bullets_key_down);
-    try std.testing.expectEqual(@as(?i32, 3), decoded.move_mode);
-    try std.testing.expectEqual(@as(?i32, -1), decoded.aim_scheme);
-    try std.testing.expect(decoded.move_forward_pressed != null and decoded.move_forward_pressed.?);
-    try std.testing.expect(decoded.move_backward_pressed != null and !decoded.move_backward_pressed.?);
-    try std.testing.expect(decoded.turn_left_pressed != null and decoded.turn_left_pressed.?);
-    try std.testing.expect(decoded.turn_right_pressed != null and !decoded.turn_right_pressed.?);
-}
-
-test "event player index failure detail identifies first invalid command event" {
-    const allocator = std.testing.allocator;
-    const events = [_]ReplayEvent{
-        .{ .perk_menu_open = .{
-            .tick_index = 7,
-            .player_index = 1,
-        } },
-        .{ .typo_submit = .{
-            .tick_index = 8,
-            .player_index = 3,
-        } },
+    const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
+        .{ .needle = "\xaeformat_version\x14", .replacement = "\xaeformat_version\x13", .message = "unsupported replay format version: 19" },
+        .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x00", .message = "run.game_mode_id 0 is not a replayable mode" },
+        .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x03", .message = "run.quest_level must be set for quests and only for quests" },
+        .{ .needle = "\xaddetail_preset\x05", .replacement = "\xaddetail_preset\x00", .message = "run.detail_preset must be in 1..5" },
+        .{ .needle = "\xb1violence_disabled\x00", .replacement = "\xb1violence_disabled\xcd\x01\x00", .message = "run.violence_disabled must be in 0..255" },
+        .{ .needle = "\xa7outcome\xaaincomplete", .replacement = "\xa7outcome\xb2tutorial_completed", .message = "result.outcome 'tutorial_completed' is invalid for survival" },
+        .{ .needle = "\xaequest_final_ms\xc0", .replacement = "\xaequest_final_ms\x05", .message = "result.quest_final_ms must be set only for completed quests" },
+        .{ .needle = "\xa6health\xcb\x40\x59\x00\x00\x00\x00\x00\x00", .replacement = "\xa6health\xcb\x3f\xb9\x99\x99\x99\x99\x99\x9a", .message = "result.players[0].health must be a canonical f32" },
+        .{ .needle = "\xacchoice_index\x02", .replacement = "\xacchoice_index\x07", .message = "ticks[0].commands[0].choice_index must be in 0..6" },
+        .{ .needle = "\xacplayer_index\x00\xac", .replacement = "\xacplayer_index\x01\xac", .message = "ticks[0].commands[0].player_index 1 is outside 0..0" },
+        .{ .needle = "\xa9perk_pick", .replacement = "\xacnetwork_ping", .message = "ticks[0].commands[0] has unknown type 'network_ping'" },
     };
-
-    const detail = (try replayEventPlayerIndexFailureDetail(allocator, 1, events[0..])) orelse return error.TestExpectedDetail;
-    defer allocator.free(detail);
-
-    try std.testing.expectEqualStrings(
-        "replay event player_index out of range: 1 (player_count=1, tick=7, event=perk_menu_open)",
-        detail,
-    );
+    for (cases) |case| {
+        const bad = try patched(payload, case.needle, case.replacement);
+        defer testing.allocator.free(bad);
+        try expectRejected(bad, case.message);
+    }
 }
 
-test "event ordering failure detail identifies first descending tick" {
-    const allocator = std.testing.allocator;
-    const events = [_]ReplayEvent{
-        .{ .perk_menu_open = .{
-            .tick_index = 2,
-            .player_index = 0,
-        } },
-        .{ .perk_pick = .{
-            .tick_index = 1,
-            .player_index = 0,
-            .choice_index = 0,
-        } },
+test "reader rejects Typ-o commands outside Typ-o and bad flags and inputs" {
+    const inputs = [_]PlayerInput{.{ .aim_x = 512.0, .aim_y = 512.0 }};
+    const commands = [_]Command{.{ .typo_backspace = .{ .player_index = 0 } }};
+    const payload = try expectRoundTrip(testReplay(.typo, &inputs, &commands, &.{1}));
+    defer testing.allocator.free(payload);
+
+    const survival = try patched(payload, "\xacgame_mode_id\x04", "\xacgame_mode_id\x01");
+    defer testing.allocator.free(survival);
+    try expectRejected(survival, "ticks[0].commands[0] Typ-o commands require game_mode_id=TYPO");
+
+    // Flags word 0x10 sets a movement key without MOVE_KEYS_PRESENT.
+    const flags = try patched(payload, "\x00\x00\x00\x00\x00\x00\x00\x00\xcb\x40\x80\x00\x00\x00\x00\x00\x00\xcb\x40\x80\x00\x00\x00\x00\x00\x00\x00", "\x00\x00\x00\x00\x00\x00\x00\x00\xcb\x40\x80\x00\x00\x00\x00\x00\x00\xcb\x40\x80\x00\x00\x00\x00\x00\x00\x10");
+    defer testing.allocator.free(flags);
+    try expectRejected(flags, "ticks[0].inputs[0].flags set movement-key values without MOVE_KEYS_PRESENT: 0x10");
+
+    // An empty input list for a one-player run.
+    const start = std.mem.indexOf(u8, payload, "\xa5ticks\x91\x92\x91").? + 8;
+    const no_inputs = try std.mem.concat(testing.allocator, u8, &.{ payload[0..start], "\x90", payload[start + 1 + 1 + 4 * 9 + 1 ..] });
+    defer testing.allocator.free(no_inputs);
+    try expectRejected(no_inputs, "ticks[0] has 0 player inputs, expected 1");
+}
+
+test "Typ-o name sources must be capped plain ASCII" {
+    const inputs = [_]PlayerInput{.{}};
+    const base_replay = testReplay(.typo, &inputs, &.{}, &.{0});
+    var long_list: [max_typo_highscore_names + 1][]const u8 = undefined;
+    @memset(&long_list, "Name");
+    const cases = [_]struct { words: []const []const u8, names: []const []const u8, message: []const u8 }{
+        .{ .words = &.{ "ok", "x" ** 16 }, .names = &.{}, .message = "run.typo_dictionary_words[1] must be 1..15 printable ASCII characters" },
+        .{ .words = &.{""}, .names = &.{}, .message = "run.typo_dictionary_words[0] must be 1..15 printable ASCII characters" },
+        .{ .words = &.{"tab\t"}, .names = &.{}, .message = "run.typo_dictionary_words[0] must be 1..15 printable ASCII characters" },
+        .{ .words = &.{}, .names = &.{"A" ** 32}, .message = "run.typo_highscore_names[0] must be 1..31 ASCII letters or '.'" },
+        .{ .words = &.{}, .names = &.{ "Ok", "no space" }, .message = "run.typo_highscore_names[1] must be 1..31 ASCII letters or '.'" },
+        .{ .words = &.{}, .names = &long_list, .message = "run.typo_highscore_names has 513 entries, expected at most 512" },
     };
-
-    const detail = (try replayEventOrderingFailureDetail(allocator, events[0..])) orelse return error.TestExpectedDetail;
-    defer allocator.free(detail);
-
-    try std.testing.expectEqualStrings(
-        "replay events are not ordered in canonical tick order: tick=1 follows tick=2 (event_index=1, event=perk_pick)",
-        detail,
-    );
+    for (cases) |case| {
+        var replay = base_replay;
+        replay.run.typo_dictionary_words = case.words;
+        replay.run.typo_highscore_names = case.names;
+        const payload = try encodePayload(testing.allocator, replay);
+        defer testing.allocator.free(payload);
+        try expectRejected(payload, case.message);
+    }
 }
 
-test "event kind failure detail identifies first mode-incompatible event" {
-    const allocator = std.testing.allocator;
-    const events = [_]ReplayEvent{
-        .{ .typo_char = .{
-            .tick_index = 0,
-            .player_index = 0,
-            .ch = 'x',
-        } },
-    };
-
-    const detail = (try replayEventKindFailureDetail(allocator, @intFromEnum(game_ids.GameModeId.survival), events[0..])) orelse return error.TestExpectedDetail;
-    defer allocator.free(detail);
-
-    try std.testing.expectEqualStrings(
-        "replay event kind invalid for game mode: event=typo_char tick=0 event_index=0 game_mode=survival",
-        detail,
-    );
-}
-
-test "inflate zstd payload consumes generated replay through eof" {
-    const allocator = std.testing.allocator;
-    const raw = try buildSmokeTestReplayPayload(allocator);
-    defer allocator.free(raw);
-    const compressed = try wrapZstdFilePayload(allocator, raw);
-    defer allocator.free(compressed);
-    const inflated = try inflateZstdPayload(std.testing.allocator, compressed, max_replay_payload_bytes);
-    defer std.testing.allocator.free(inflated);
-
-    try std.testing.expectEqualSlices(u8, raw, inflated);
-}
-
-test "smoke replay retains raw parser API and requires zstd file envelope" {
-    const allocator = std.testing.allocator;
-    const raw = try buildSmokeTestReplayPayload(allocator);
-    defer allocator.free(raw);
-
-    var replay = try parseReplay(allocator, raw);
-    defer replay.deinit(allocator);
-    try std.testing.expectEqual(@as(usize, 2), replay.tickCount());
-    try std.testing.expectError(
-        error.InvalidZstdPayload,
-        inflateZstdFilePayload(allocator, raw, max_replay_payload_bytes),
-    );
-
-    const file_bytes = try wrapZstdFilePayload(allocator, raw);
-    defer allocator.free(file_bytes);
-    const inflated = try inflateZstdFilePayload(allocator, file_bytes, max_replay_payload_bytes);
-    defer allocator.free(inflated);
-    try std.testing.expectEqualSlices(u8, raw, inflated);
+test "declared lengths are bounded by the bytes left before allocating" {
+    const inputs = [_]PlayerInput{.{}};
+    const payload = try expectRoundTrip(testReplay(.survival, &inputs, &.{}, &.{0}));
+    defer testing.allocator.free(payload);
+    const index = std.mem.indexOf(u8, payload, "\xa5ticks\x91").? + 6;
+    const bomb = try std.mem.concat(testing.allocator, u8, &.{ payload[0..index], "\xdd\xff\xff\xff\xff", payload[index + 1 ..] });
+    defer testing.allocator.free(bomb);
+    try expectRejected(bomb, "invalid replay payload: truncated msgpack data");
 }
 
 test "zstd file envelope rejects trailing bytes and concatenated frames" {
-    const allocator = std.testing.allocator;
-    const raw = try buildSmokeTestReplayPayload(allocator);
-    defer allocator.free(raw);
+    const allocator = testing.allocator;
+    const raw = "canonical payload bytes";
     const frame = try wrapZstdFilePayload(allocator, raw);
     defer allocator.free(frame);
+    const inflated = try inflateZstdFilePayload(allocator, frame, max_replay_payload_bytes);
+    defer allocator.free(inflated);
+    try testing.expectEqualSlices(u8, raw, inflated);
+    try testing.expectError(error.InvalidZstdPayload, inflateZstdFilePayload(allocator, raw, max_replay_payload_bytes));
 
     const with_trailing_byte = try std.mem.concat(allocator, u8, &.{ frame, &.{0} });
     defer allocator.free(with_trailing_byte);
-    try std.testing.expectError(
+    try testing.expectError(
         error.InvalidZstdPayload,
         inflateZstdFilePayload(allocator, with_trailing_byte, max_replay_payload_bytes),
     );
 
     const concatenated_frames = try std.mem.concat(allocator, u8, &.{ frame, frame });
     defer allocator.free(concatenated_frames);
-    try std.testing.expectError(
+    try testing.expectError(
         error.InvalidZstdPayload,
         inflateZstdFilePayload(allocator, concatenated_frames, max_replay_payload_bytes),
     );
@@ -2424,29 +1465,34 @@ test "zstd file envelope rejects trailing bytes and concatenated frames" {
     const checksum: u32 = @truncate(std.hash.XxHash64.hash(0, raw));
     std.mem.writeInt(u32, checksum_frame[frame.len..][0..@sizeOf(u32)], checksum, .little);
 
-    const checksum_inflated = try inflateZstdFilePayload(
-        allocator,
-        checksum_frame,
-        max_replay_payload_bytes,
-    );
+    const checksum_inflated = try inflateZstdFilePayload(allocator, checksum_frame, max_replay_payload_bytes);
     defer allocator.free(checksum_inflated);
-    try std.testing.expectEqualSlices(u8, raw, checksum_inflated);
+    try testing.expectEqualSlices(u8, raw, checksum_inflated);
 
     checksum_frame[checksum_frame.len - 1] ^= 0x80;
-    try std.testing.expectError(
+    try testing.expectError(
         error.InvalidZstdPayload,
         inflateZstdFilePayload(allocator, checksum_frame, max_replay_payload_bytes),
     );
+
+    var diagnostic: Diagnostic = .{};
+    try testing.expectError(error.InvalidReplay, inflateReplayFile(allocator, raw, &diagnostic));
+    try testing.expectEqualStrings("replay must use the zstd envelope", diagnostic.message());
+
+    // Window descriptor 0x78: 2^25 bytes (32 MiB).
+    const wide_window = [_]u8{ 0x28, 0xB5, 0x2F, 0xFD, 0x00, 0x78, 0x01, 0x00, 0x00 };
+    try testing.expectError(error.InvalidReplay, inflateReplayFile(allocator, &wide_window, &diagnostic));
+    try testing.expectEqualStrings("replay zstd frame window exceeds 8 MiB", diagnostic.message());
 }
 
 test "single-frame file inflater handles empty and multi-block payloads within the size ceiling" {
-    const allocator = std.testing.allocator;
+    const allocator = testing.allocator;
 
     const empty_frame = try wrapZstdFilePayload(allocator, &.{});
     defer allocator.free(empty_frame);
     const empty = try inflateZstdFilePayload(allocator, empty_frame, 0);
     defer allocator.free(empty);
-    try std.testing.expectEqual(@as(usize, 0), empty.len);
+    try testing.expectEqual(@as(usize, 0), empty.len);
 
     const raw = try allocator.alloc(u8, 128 * 1024 + 17);
     defer allocator.free(raw);
@@ -2455,517 +1501,63 @@ test "single-frame file inflater handles empty and multi-block payloads within t
     defer allocator.free(frame);
     const inflated = try inflateZstdFilePayload(allocator, frame, raw.len);
     defer allocator.free(inflated);
-    try std.testing.expectEqualSlices(u8, raw, inflated);
-    try std.testing.expectError(
-        error.PayloadTooLarge,
-        inflateZstdFilePayload(allocator, frame, raw.len - 1),
-    );
+    try testing.expectEqualSlices(u8, raw, inflated);
+    try testing.expectError(error.PayloadTooLarge, inflateZstdFilePayload(allocator, frame, raw.len - 1));
+    try testing.expectError(error.PayloadTooLarge, inflateZstdPayload(allocator, frame, raw.len - 1));
 }
 
-test "current replay parser rejects non-executable game modes" {
-    const allocator = std.testing.allocator;
-    for ([_]i32{ 0, 5, 999 }) |game_mode_id| {
-        const raw = try buildSmokeTestReplayPayloadForMode(allocator, game_mode_id);
-        defer allocator.free(raw);
-        try std.testing.expectError(error.UnsupportedGameMode, parseReplay(allocator, raw));
-        try std.testing.expectError(error.UnsupportedGameMode, parseReplaySummary(allocator, raw));
-    }
+test "unpack input flags decodes packed fields" {
+    const packed_flags: u32 = fire_down_flag |
+        reload_pressed_flag |
+        reload_down_flag |
+        fire_bullets_key_down_flag |
+        move_keys_present_flag |
+        move_forward_flag |
+        turn_right_flag |
+        move_mode_present_flag |
+        (@as(u32, 2) << move_mode_shift) |
+        aim_scheme_present_flag |
+        (aim_scheme_mask << aim_scheme_shift);
+    const flags = unpackInputFlags(packed_flags);
+    try testing.expect(flags.fire_down);
+    try testing.expect(!flags.fire_pressed);
+    try testing.expect(flags.reload_pressed);
+    try testing.expect(flags.reload_down);
+    try testing.expect(flags.fire_bullets_key_down);
+    try testing.expectEqual(@as(?bool, true), flags.move_forward_pressed);
+    try testing.expectEqual(@as(?bool, false), flags.move_backward_pressed);
+    try testing.expectEqual(@as(?bool, true), flags.turn_right_pressed);
+    try testing.expectEqual(@as(?i32, 2), flags.move_mode);
+    try testing.expectEqual(@as(?i32, -1), flags.aim_scheme);
+    try testing.expect(inputFlagsError(packed_flags) == null);
+    try testing.expectEqualStrings("contain an invalid aim scheme", inputFlagsError(aim_scheme_present_flag | (6 << aim_scheme_shift)).?);
+    try testing.expectEqualStrings("contain unsupported bits", inputFlagsError(-1).?);
 }
 
-test "inflate zstd payload enforces max output size" {
-    const allocator = std.testing.allocator;
-    const raw = try buildSmokeTestReplayPayload(allocator);
-    defer allocator.free(raw);
-    const compressed = try wrapZstdFilePayload(allocator, raw);
-    defer allocator.free(compressed);
-    try std.testing.expectError(
-        error.PayloadTooLarge,
-        inflateZstdPayload(std.testing.allocator, compressed, raw.len - 1),
-    );
-}
+test "result mismatches list differing fields in declared order" {
+    var arena: std.heap.ArenaAllocator = .init(testing.allocator);
+    defer arena.deinit();
+    const inputs = [_]PlayerInput{.{}};
+    const recorded = testReplay(.survival, &inputs, &.{}, &.{0}).result;
+    var simulated = recorded;
+    try testing.expectEqual(@as(usize, 0), (try recorded.mismatches(arena.allocator(), &simulated)).len);
+    simulated.kills = 3;
+    simulated.players_buffer[0].health = 97.5;
+    simulated.players_buffer[0].shots_hit = 1;
+    const paths = try recorded.mismatches(arena.allocator(), &simulated);
+    try testing.expectEqual(@as(usize, 3), paths.len);
+    try testing.expectEqualStrings("kills", paths[0]);
+    try testing.expectEqualStrings("players[0].health", paths[1]);
+    try testing.expectEqualStrings("players[0].shots_hit", paths[2]);
+    simulated.player_count = 2;
+    try testing.expectEqualStrings("players", (try recorded.mismatches(arena.allocator(), &simulated))[1]);
 
-test "parse current replay preserves typo metadata and commands" {
-    const allocator = std.testing.allocator;
-
-    const tick_inputs = [_]ReplayInputWire{
-        .{
-            .move_x = 0.0,
-            .move_y = 0.0,
-            .aim_x = 0.0,
-            .aim_y = 0.0,
-            .flags = 0,
-        },
-    };
-    const ticks = [_]ReplayTickCurrentWire{
-        .{
-            .dt = canonical_tick_dt_f64,
-            .inputs = tick_inputs[0..],
-            .prelude = &.{.{ .game_frame_rng_advance = .{ .frames = 2 } }},
-            .postlude = &.{.{ .perk_menu_open = .{ .player_index = 0 } }},
-            .commands = &.{
-                .{
-                    .type = "typo_char",
-                    .player_index = 0,
-                    .ch = "a",
-                },
-                .{
-                    .type = "typo_backspace",
-                    .player_index = 0,
-                },
-                .{
-                    .type = "typo_submit",
-                    .player_index = 0,
-                },
-            },
-        },
-    };
-
-    const wire: ReplayCurrentWire = .{
-        .header = .{
-            .game_mode_id = @intFromEnum(game_ids.GameModeId.typo),
-            .seed = 7,
-            .replay_format_version = replay_format_version,
-            .typo_dictionary_words = &.{ "amber", "basil" },
-            .typo_highscore_names = &.{"ALPHA"},
-            .game_version = "0.9.0",
-            .tick_rate = 60,
-            .player_count = 1,
-            .status = .{
-                .weapon_usage_counts = &([_]u32{0} ** weapon_usage_count),
-            },
-            .claimed_stats = .{},
-            .input_quantization = "f32",
-        },
-        .ticks = ticks[0..],
-    };
-
-    var writer: std.Io.Writer.Allocating = .init(allocator);
-    defer writer.deinit();
-    try msgpack.encode(wire, &writer.writer);
-
-    const replay = try parseReplay(allocator, writer.written());
-    defer replay.deinit(allocator);
-
-    try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.GameModeId.typo)), replay.header.game_mode_id);
-    try std.testing.expectEqualStrings("amber", replay.header.typo_dictionary_words[0]);
-    try std.testing.expectEqualStrings("ALPHA", replay.header.typo_highscore_names[0]);
-    try std.testing.expectEqual(@as(usize, 1), replay.prelude.len);
-    try std.testing.expect(replay.prelude[0] == .game_frame_rng_advance);
-    try std.testing.expectEqual(@as(u32, 2), replay.prelude[0].game_frame_rng_advance.frames);
-    try std.testing.expectEqual(@as(usize, 1), replay.postlude.len);
-    try std.testing.expectEqual(@as(i32, 0), replay.postlude[0].player_index);
-    try std.testing.expectEqual(@as(usize, 3), replay.events.len);
-    try std.testing.expect(replay.events[0] == .typo_char);
-    try std.testing.expectEqual(@as(u8, 'a'), replay.events[0].typo_char.ch);
-    try std.testing.expect(replay.events[1] == .typo_backspace);
-    try std.testing.expect(replay.events[2] == .typo_submit);
-
-    const replay_summary = replay.summarizeEvents();
-    try std.testing.expectEqual(@as(usize, 5), replay_summary.total_count);
-    try std.testing.expectEqual(@as(usize, 1), replay_summary.game_frame_rng_advance_count);
-    try std.testing.expectEqual(@as(usize, 1), replay_summary.perk_menu_open_count);
-    try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_char_count);
-    try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_backspace_count);
-    try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_submit_count);
-
-    const parsed_summary = try parseReplaySummary(allocator, writer.written());
-    defer parsed_summary.deinit(allocator);
-    try std.testing.expectEqual(@as(usize, 5), parsed_summary.events.total_count);
-    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.game_frame_rng_advance_count);
-    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.perk_menu_open_count);
-    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_char_count);
-    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_backspace_count);
-    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_submit_count);
-}
-
-test "unknown current replay command detail names command type and position" {
-    const allocator = std.testing.allocator;
-
-    const tick_inputs = [_]ReplayInputWire{
-        .{
-            .move_x = 0.0,
-            .move_y = 0.0,
-            .aim_x = 0.0,
-            .aim_y = 0.0,
-            .flags = 0,
-        },
-    };
-    const ticks = [_]ReplayTickCurrentWire{
-        .{
-            .dt = canonical_tick_dt_f64,
-            .inputs = tick_inputs[0..],
-            .prelude = &.{},
-            .postlude = &.{},
-            .commands = &.{
-                .{
-                    .type = "network_ping",
-                    .player_index = 0,
-                },
-            },
-        },
-    };
-
-    const wire: ReplayCurrentWire = .{
-        .header = .{
-            .game_mode_id = @intFromEnum(game_ids.GameModeId.typo),
-            .seed = 7,
-            .replay_format_version = replay_format_version,
-            .game_version = "0.9.0",
-            .tick_rate = 60,
-            .player_count = 1,
-            .status = .{
-                .weapon_usage_counts = &([_]u32{0} ** weapon_usage_count),
-            },
-            .claimed_stats = .{},
-            .input_quantization = "f32",
-        },
-        .ticks = ticks[0..],
-    };
-
-    var writer: std.Io.Writer.Allocating = .init(allocator);
-    defer writer.deinit();
-    try msgpack.encode(wire, &writer.writer);
-
-    try std.testing.expectError(error.UnknownCommandKind, parseReplay(allocator, writer.written()));
-    const detail = (try replayUnknownCommandFailureDetail(allocator, writer.written())) orelse return error.TestExpectedDetail;
-    defer allocator.free(detail);
-    try std.testing.expectEqualStrings(
-        "replay command type is unknown: type=network_ping tick=0 command_index=0",
-        detail,
-    );
-}
-
-test "current replay separates ordered prelude from typo commands" {
-    try std.testing.expectError(
-        error.UnsupportedEventShape,
-        parseCurrentPrelude(.{ .perk_menu_open = .{ .player_index = 1 } }, 0, 1),
-    );
-    try std.testing.expectError(
-        error.UnsupportedEventShape,
-        parseCurrentPrelude(.{ .perk_pick = .{ .player_index = 0, .choice_index = 7 } }, 0, 1),
-    );
-    try std.testing.expectError(
-        error.UnsupportedEventShape,
-        parseCurrentPrelude(.{ .game_frame_rng_advance = .{ .frames = 0 } }, 0, 1),
-    );
-    try std.testing.expectError(
-        error.UnsupportedEventShape,
-        parseCurrentPostlude(.{ .perk_menu_open = .{ .player_index = 1 } }, 0, 1),
-    );
-    try std.testing.expectError(
-        error.UnknownCommandKind,
-        parseCurrentCommand(.{ .type = "perk_menu_open", .player_index = 0 }, 0, 1),
-    );
-}
-
-test "current replay rejects noncanonical f32 wire values" {
-    try std.testing.expect(canonicalF32(@as(f64, @as(f32, 0.1))) != null);
-    try std.testing.expect(canonicalF32(@as(f64, 0.1)) == null);
-
-    const bad_input = [_]ReplayInputWire{.{
-        .move_x = 0.1,
-        .move_y = 0.0,
-        .aim_x = 0.0,
-        .aim_y = 0.0,
-        .flags = 0,
-    }};
-    const bad_input_ticks = [_]ReplayTickCurrentWire{.{
-        .dt = canonical_tick_dt_f64,
-        .inputs = bad_input[0..],
-        .prelude = &.{},
-        .postlude = &.{},
-        .commands = &.{},
-    }};
-    try std.testing.expectError(error.UnsupportedInputShape, validateCurrentTicks(bad_input_ticks[0..], 1, @intFromEnum(game_ids.GameModeId.survival)));
-
-    const good_input = [_]ReplayInputWire{.{
-        .move_x = 0.0,
-        .move_y = 0.0,
-        .aim_x = 0.0,
-        .aim_y = 0.0,
-        .flags = 0,
-    }};
-    const bad_dt_ticks = [_]ReplayTickCurrentWire{.{
-        .dt = 1.0 / 60.0,
-        .inputs = good_input[0..],
-        .prelude = &.{},
-        .postlude = &.{},
-        .commands = &.{},
-    }};
-    try std.testing.expectError(error.UnsupportedInputShape, validateCurrentTicks(bad_dt_ticks[0..], 1, @intFromEnum(game_ids.GameModeId.survival)));
-
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const header: ReplayHeaderCurrentWire = .{
-        .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = null,
-        .game_version = "0.9.0",
-        .world_size = 0.1,
-        .player_count = 1,
-        .status = .{ .weapon_usage_counts = usage_counts[0..] },
-        .claimed_stats = .{},
-    };
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, header));
-
-    const residue: ReplayCreatureSlotResidueWire = .{
-        .index = 0,
-        .phase_seed = 383,
-        .state_flag = 0,
-        .collision_flag = 0,
-        .collision_timer = 0.1,
-        .lifecycle_stage = 0.0,
-        .pos = .{ .x = 0.0, .y = 0.0 },
-        .vel = .{ .x = 0.0, .y = 0.0 },
-        .hp = 0.0,
-        .max_hp = 0.0,
-        .heading = 0.0,
-        .target_heading = 0.0,
-        .size = 0.0,
-        .hit_flash_timer = 0.0,
-        .tint_r = 0.0,
-        .tint_g = 0.0,
-        .tint_b = 0.0,
-        .tint_a = 0.0,
-        .force_target = 0,
-        .target = .{ .x = 0.0, .y = 0.0 },
-        .contact_damage = 0.0,
-        .move_speed = 0.0,
-        .attack_cooldown = 0.0,
-        .reward_value = 0.0,
-        .type_id = 0,
-        .target_player = 0,
-        .link_index = 0,
-        .target_offset = .{ .x = 0.0, .y = 0.0 },
-        .orbit_angle = 0.0,
-        .orbit_radius_u32 = 0,
-        .flags = 0,
-        .ai_mode = 0,
-        .anim_phase = 0.0,
-    };
-    try std.testing.expectError(
-        error.InvalidHeaderValue,
-        buildCreaturePoolResidue(std.testing.allocator, &.{residue}),
-    );
-
-    var first = residue;
-    first.index = 1;
-    first.collision_timer = 0.0;
-    const pool = try buildCreaturePoolResidue(std.testing.allocator, &.{first});
-    defer std.testing.allocator.free(pool);
-    try std.testing.expectEqual(@as(i32, 383), pool[0].phase_seed);
-
-    var duplicate = first;
-    duplicate.index = 1;
-    try std.testing.expectError(
-        error.InvalidHeaderValue,
-        buildCreaturePoolResidue(std.testing.allocator, &.{ first, duplicate }),
-    );
-}
-
-fn testCurrentHeaderWire() ReplayHeaderCurrentWire {
-    return .{
-        .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = null,
-        .game_version = "0.9.0",
-        .tick_rate = 60,
-        .quest_fail_retry_count = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .violence_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .weapon_usage_counts = &([_]u32{0} ** weapon_usage_count),
-        },
-        .claimed_stats = .{},
-        .input_quantization = "f32",
-    };
-}
-
-test "current header enforces latest semantic constraints" {
-    var wire = testCurrentHeaderWire();
-
-    wire.quest_level = .{ .major = 1, .minor = 1 };
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-
-    wire.game_mode_id = @intFromEnum(game_ids.GameModeId.quests);
-    wire.quest_level = .{ .major = 0, .minor = 1 };
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-    wire.quest_level = .{ .major = 1, .minor = 11 };
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-
-    wire = testCurrentHeaderWire();
-    wire.player_count = max_players + 1;
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-    wire = testCurrentHeaderWire();
-    wire.quest_fail_retry_count = -1;
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-    wire = testCurrentHeaderWire();
-    wire.detail_preset = -1;
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-    wire = testCurrentHeaderWire();
-    wire.violence_disabled = -1;
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-    wire = testCurrentHeaderWire();
-    wire.claimed_stats.most_used_weapon_id = -1;
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-    wire = testCurrentHeaderWire();
-    wire.claimed_stats.most_used_weapon_id = 54;
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
-}
-
-test "current input flags enforce the shared packed-bit contract" {
-    const invalid = [_]i32{
-        -1,
-        1 << 18,
-        move_forward_flag,
-        1 << move_mode_shift,
-        move_mode_present_flag | (6 << move_mode_shift),
-        1 << aim_scheme_shift,
-        aim_scheme_present_flag | (6 << aim_scheme_shift),
-    };
-    for (invalid) |flags| {
-        try std.testing.expectError(error.UnsupportedInputShape, parseInputFlagsValue(flags));
-    }
-
-    try std.testing.expectEqual(
-        aim_scheme_present_flag | (7 << aim_scheme_shift),
-        try parseInputFlagsValue(aim_scheme_present_flag | (7 << aim_scheme_shift)),
-    );
-}
-
-test "build current header rejects quest replay without quest level" {
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const wire: ReplayHeaderCurrentWire = .{
-        .game_mode_id = @intFromEnum(game_ids.GameModeId.quests),
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = null,
-        .game_version = "0.9.0",
-        .tick_rate = 60,
-        .quest_fail_retry_count = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .violence_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = usage_counts[0..],
-        },
-        .claimed_stats = .{},
-        .input_quantization = "f32",
-    };
-    try std.testing.expectError(error.MissingQuestLevel, buildHeaderCurrent(std.testing.allocator, wire));
-}
-
-test "current header rejects multiplayer Typ-o and tutorial replays" {
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const cases = [_]struct {
-        game_mode_id: i32,
-        expected_error: ReplayCodecError,
-    }{
-        .{
-            .game_mode_id = @intFromEnum(game_ids.GameModeId.typo),
-            .expected_error = error.TypoMultiplayer,
-        },
-        .{
-            .game_mode_id = @intFromEnum(game_ids.GameModeId.tutorial),
-            .expected_error = error.TutorialMultiplayer,
-        },
-    };
-
-    for (cases) |case| {
-        const current_wire: ReplayHeaderCurrentWire = .{
-            .game_mode_id = case.game_mode_id,
-            .seed = 1,
-            .replay_format_version = replay_format_version,
-            .quest_level = null,
-            .game_version = "0.9.0",
-            .tick_rate = 60,
-            .quest_fail_retry_count = 0,
-            .hardcore = false,
-            .preserve_bugs = false,
-            .detail_preset = 5,
-            .violence_disabled = 0,
-            .world_size = 1024.0,
-            .player_count = 2,
-            .status = .{
-                .quest_unlock_index = 0,
-                .quest_unlock_index_full = 0,
-                .weapon_usage_counts = usage_counts[0..],
-            },
-            .claimed_stats = .{},
-            .input_quantization = "f32",
-        };
-        try std.testing.expectError(case.expected_error, buildHeaderCurrent(std.testing.allocator, current_wire));
-    }
-}
-
-test "unsupported replay header detail reports missing quest level" {
-    const allocator = std.testing.allocator;
-    const header: ReplayHeader = .{
-        .game_mode_id = @intFromEnum(game_ids.GameModeId.quests),
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = try allocator.dupe(u8, ""),
-        .game_version = try allocator.dupe(u8, "0.9.0"),
-        .tick_rate = 60,
-        .quest_fail_retry_count = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .violence_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = [_]u32{0} ** weapon_usage_count,
-        },
-        .input_quantization = try allocator.dupe(u8, "f32"),
-    };
-    defer header.deinit(allocator);
-
-    try std.testing.expectEqualStrings(
-        "quest replays require a valid header.quest_level",
-        unsupportedReplayHeaderDetail(header, 1, .verifier).?,
-    );
-}
-
-test "parse replay decode errors preserve oom and map invalid msgpack" {
-    const empty_payload: [0]u8 = .{};
-
-    var no_mem_summary: [0]u8 = .{};
-    var summary_allocator = std.heap.FixedBufferAllocator.init(no_mem_summary[0..]);
-    try std.testing.expectError(error.OutOfMemory, parseReplaySummary(summary_allocator.allocator(), empty_payload[0..]));
-
-    var no_mem_replay: [0]u8 = .{};
-    var replay_allocator = std.heap.FixedBufferAllocator.init(no_mem_replay[0..]);
-    try std.testing.expectError(error.OutOfMemory, parseReplay(replay_allocator.allocator(), empty_payload[0..]));
-
-    const invalid_payload = [_]u8{0xc1};
-    try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, invalid_payload[0..]));
-    try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, invalid_payload[0..]));
-}
-
-test "parse replay rejects non-msgpack payload generically" {
-    const payload = " \n{\"header\":{\"game_mode_id\":1,\"seed\":1}}";
-
-    try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, payload));
-    try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, payload));
-}
-
-test "binary bytes reader accepts msgpack bin8 payloads" {
-    const payload = [_]u8{ 0xC4, 0x04, 0xDE, 0xAD, 0xBE, 0xEF };
-    var decoded = try msgpack.decodeFromSlice(BinaryBytes, std.testing.allocator, &payload);
-    defer decoded.deinit();
-
-    try std.testing.expectEqualSlices(u8, &.{ 0xDE, 0xAD, 0xBE, 0xEF }, decoded.value.data);
+    const json = try std.json.Stringify.valueAlloc(testing.allocator, simulated, .{});
+    defer testing.allocator.free(json);
+    try testing.expect(std.mem.startsWith(u8, json, "{\"outcome\":\"incomplete\",\"elapsed_ms\":16,\"kills\":3,"));
+    try testing.expect(std.mem.indexOf(u8, json, "\"quest_final_ms\":null,\"players\":[{\"experience\":0,\"health\":97.5,") != null);
+    simulated.players_buffer[0].health = 100.0;
+    const integral = try std.json.Stringify.valueAlloc(testing.allocator, simulated, .{});
+    defer testing.allocator.free(integral);
+    try testing.expect(std.mem.indexOf(u8, integral, "\"health\":100.0,") != null);
 }

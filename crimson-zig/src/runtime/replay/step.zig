@@ -4,10 +4,9 @@ const native_math = @import("../native_math.zig");
 const replay_codec = @import("../../replay_codec.zig");
 
 const runtime_bootstrap = @import("../bootstrap.zig");
-const events = @import("events.zig");
+const commands = @import("commands.zig");
 const movement = @import("../movement.zig");
 const timing = @import("../timing.zig");
-const capture_state = @import("capture_state.zig");
 const session_mod = @import("../session.zig");
 const diagnostic_trace_mod = @import("diagnostic_trace.zig");
 
@@ -29,15 +28,15 @@ const weapons_runtime = @import("../weapons.zig");
 const narrowF32 = native_math.roundF32;
 const SimulationContext = session_mod.DeterministicSession;
 
-pub const StepError = events.EventError ||
+pub const StepError = commands.CommandError ||
     creatures_mod.CreatureRuntimeError ||
     bonus_runtime.BonusRuntimeError ||
     weapons_runtime.WeaponRuntimeError;
 
 pub const TickPhase = enum {
     pre_reset,
-    pre_events,
-    post_pre_events,
+    pre_commands,
+    post_commands,
     pre_effects,
     post_effects,
     pre_core_simulation,
@@ -46,8 +45,6 @@ pub const TickPhase = enum {
     post_player_movement,
     pre_bonus_effects,
     post_bonus_effects,
-    pre_post_events,
-    post_post_events,
     finalize,
 };
 
@@ -58,10 +55,8 @@ pub const StepFrame = struct {
     dt_sim: f32 = 0.0,
     dt_ms_i32: i32 = 0,
     dt_sim_ms_i32: i32 = 0,
-    menu_open_seen_this_tick: bool = false,
     reload_active_any: bool = false,
-    pre_events_applied: usize = 0,
-    post_events_applied: usize = 0,
+    commands_applied: usize = 0,
     rng_after_effects: u32 = 0,
     rng_after_perk_effects: u32 = 0,
     rng_after_creatures: u32 = 0,
@@ -78,8 +73,7 @@ pub const StepFrame = struct {
 
 pub const StepResult = struct {
     tick_index: usize,
-    pre_events_applied: usize,
-    post_events_applied: usize,
+    commands_applied: usize,
     reload_active_any: bool,
     dt_world: f32,
     dt_sim: f32,
@@ -99,7 +93,6 @@ pub const StepResult = struct {
     sfx_events: state_mod.RuntimeSfxBuffer,
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
     rng_end: u32,
-    pending_capture_state_reset: bool,
 };
 
 pub const PhaseHook = *const fn (
@@ -124,6 +117,8 @@ pub const StepOptions = struct {
     diagnostic_trace_sink: ?DiagnosticTraceSink = null,
     timing_trace_ctx: ?*anyopaque = null,
     timing_trace_sink: ?TimingTraceSink = null,
+    /// Receives the index of the command that failed, if one does.
+    failed_command_index: ?*usize = null,
 };
 
 const NativePlayerDamageContext = struct {
@@ -171,12 +166,10 @@ pub const diagnostic_trace = struct {
         dt: f32,
         dt_world: f32,
         dt_sim: f32,
-        pre_events_applied: usize,
-        post_events_applied: usize,
+        commands_applied: usize,
         rng_state: u32,
         rng_after_effects: u32,
         creature_active_count: usize,
-        pending_capture_state_reset: bool,
     };
 
     pub const Sink = *const fn (snapshot: TickSnapshot) void;
@@ -192,13 +185,10 @@ pub fn stepTick(
     context: *SimulationContext,
     tick_index: usize,
     tick_inputs: []const player_runtime.GameInput,
-    tick_events: []const replay_codec.ReplayEvent,
+    tick_commands: []const replay_codec.Command,
     dt: f32,
     options: StepOptions,
-) (events.EventError ||
-    creatures_mod.CreatureRuntimeError ||
-    bonus_runtime.BonusRuntimeError ||
-    weapons_runtime.WeaponRuntimeError)!StepResult {
+) StepError!StepResult {
     var frame: StepFrame = .{
         .tick_index = tick_index,
         .dt = narrowF32(dt),
@@ -206,47 +196,33 @@ pub fn stepTick(
 
     callPhaseHook(options.hooks, context, .pre_reset, &frame);
     context.state.sfx_queue.clear();
-    if (context.pending_capture_state_reset) {
-        capture_state.applyCaptureStateReset(
-            &context.state,
-            context.players(),
-            &context.creatures,
-            &context.effects,
-            &context.sprite_effects,
-            &context.particles,
-            &context.projectiles,
-            &context.secondary_projectiles,
-            &context.bonuses,
-            context.world_size,
-            context.quest_start_weapon_id_for_reset,
-            context.gore_disabled,
-            context.capture_spawn_events_authoritative,
-            &context.quest_spawn_timeline_ms,
-            &context.quest_no_creatures_timer_ms,
-            &context.quest_completion_transition_ms,
-        );
-        context.pending_capture_state_reset = false;
-    }
 
     context.state.game_mode = context.game_mode;
-    callPhaseHook(options.hooks, context, .pre_events, &frame);
-    const perk_event_dt = survival_progression.timeScaleReflexBoostBonus(
-        context.state.bonuses.reflex_boost,
-        context.state.time_scale_active,
-        frame.dt,
-    );
-    frame.pre_events_applied = try applyEventsForPhase(
-        context,
-        tick_events,
-        .pre_step,
-        perk_event_dt,
-        &frame.menu_open_seen_this_tick,
-    );
-    callPhaseHook(options.hooks, context, .post_pre_events, &frame);
+    // Perk commands apply before frame timing is derived. Typ-o commands
+    // belong after the mode's pre-step hook, but that hook neither draws RNG
+    // nor reads the typing state, so applying them here is equivalent.
+    callPhaseHook(options.hooks, context, .pre_commands, &frame);
+    for (tick_commands, 0..) |command, index| {
+        commands.applyCommand(context, command, frame.dt) catch |err| {
+            if (options.failed_command_index) |failed| failed.* = index;
+            return err;
+        };
+    }
+    frame.commands_applied = tick_commands.len;
+    callPhaseHook(options.hooks, context, .post_commands, &frame);
 
     var players = context.players();
-    const players_for_inputs = @min(players.len, tick_inputs.len);
-    for (tick_inputs[0..players_for_inputs]) |input| {
+    // The mode's input transform runs before the world step, so everything
+    // below (including the reload latch) sees the transformed inputs.
+    var inputs_storage: [state_mod.max_players]player_runtime.GameInput = undefined;
+    const inputs = inputs_storage[0..@min(players.len, tick_inputs.len)];
+    @memcpy(inputs, tick_inputs[0..inputs.len]);
+    if (inputs.len > 0) switch (context.game_mode) {
+        .typo => inputs[0] = typo_runtime.transformPrimaryInput(&context.state, inputs[0]),
+        .tutorial => inputs[0] = tutorial_runtime.transformPrimaryInput(&context.state, inputs[0]),
+        .survival, .rush, .quests => {},
+    };
+    for (inputs) |input| {
         const flags = input.flags;
         if (flags.fire_pressed) {
             context.fire_pressed_count += 1;
@@ -259,10 +235,7 @@ pub fn stepTick(
         }
     }
 
-    frame.dt_world = if (context.apply_world_dt_steps)
-        movement.applyPerkWorldDtSteps(players, frame.dt)
-    else
-        frame.dt;
+    frame.dt_world = movement.applyPerkWorldDtSteps(players, frame.dt);
 
     frame.dt_sim = survival_progression.timeScaleReflexBoostBonus(
         context.state.bonuses.reflex_boost,
@@ -401,16 +374,10 @@ pub fn stepTick(
             frame.dt_sim,
         );
     }
-    for (tick_inputs[0..players_for_inputs], players[0..players_for_inputs], 0..) |raw_input, *player, player_idx| {
+    for (inputs, players[0..inputs.len], 0..) |input, *player, player_idx| {
         if (!player_preprocessed_alive[player_idx]) {
             continue;
         }
-        const input = if (context.game_mode == .typo and player_idx == 0)
-            typo_runtime.transformPrimaryInput(&context.state, raw_input)
-        else if (context.game_mode == .tutorial and player_idx == 0)
-            tutorial_runtime.transformPrimaryInput(&context.state, raw_input)
-        else
-            raw_input;
         const flags = input.flags;
         const move_mode_for_tick = movement.resolveMoveModeForUpdate(flags);
 
@@ -548,7 +515,7 @@ pub fn stepTick(
             }
 
             const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(context.questSpawnEntries());
-            if (context.quest_creatures_none_active and spawn_table_empty_now) {
+            if (!context.state.demo_mode_active and context.quest_creatures_none_active and spawn_table_empty_now) {
                 context.state.bonuses.reflex_boost = 0.0;
                 context.state.time_scale_active = false;
             }
@@ -665,30 +632,9 @@ pub fn stepTick(
         context.elapsed_ms_sim = elapsed_after_ms;
     }
 
-    if (context.defer_menu_open_events and tick_events.len > 0) {
-        callPhaseHook(options.hooks, context, .pre_post_events, &frame);
-        for ([_]events.TickEventPhase{
-            .post_state_transition,
-            .post_spawn_hook,
-            .post_menu_open,
-        }) |post_phase| {
-            frame.post_events_applied += try applyEventsForPhase(
-                context,
-                tick_events,
-                post_phase,
-                perk_event_dt,
-                &frame.menu_open_seen_this_tick,
-            );
-        }
-        callPhaseHook(options.hooks, context, .post_post_events, &frame);
-    }
-
-    context.event_index += tick_events.len;
-
     const result: StepResult = .{
         .tick_index = tick_index,
-        .pre_events_applied = frame.pre_events_applied,
-        .post_events_applied = frame.post_events_applied,
+        .commands_applied = frame.commands_applied,
         .reload_active_any = frame.reload_active_any,
         .dt_world = frame.dt_world,
         .dt_sim = frame.dt_sim,
@@ -708,7 +654,6 @@ pub fn stepTick(
         .sfx_events = context.state.sfx_queue.take(),
         .terrain_fx = context.terrain_fx.takeBatch(),
         .rng_end = context.state.rng.state,
-        .pending_capture_state_reset = context.pending_capture_state_reset,
     };
 
     diagnostic_trace.emit(options.trace_sink, .{
@@ -716,12 +661,10 @@ pub fn stepTick(
         .dt = frame.dt,
         .dt_world = frame.dt_world,
         .dt_sim = frame.dt_sim,
-        .pre_events_applied = frame.pre_events_applied,
-        .post_events_applied = frame.post_events_applied,
+        .commands_applied = frame.commands_applied,
         .rng_state = context.state.rng.state,
         .rng_after_effects = frame.rng_after_effects,
         .creature_active_count = context.creatures.activeCount(),
-        .pending_capture_state_reset = context.pending_capture_state_reset,
     });
     if (options.diagnostic_trace_sink) |diagnostic_trace_sink| {
         diagnostic_trace_sink(buildDiagnosticTrace(context, tick_index, &frame));
@@ -810,49 +753,6 @@ fn cameraShakeUpdate(
     };
 }
 
-fn applyEventsForPhase(
-    context: *SimulationContext,
-    tick_events: []const replay_codec.ReplayEvent,
-    phase: events.TickEventPhase,
-    dt: f32,
-    menu_open_seen_this_tick: *bool,
-) StepError!usize {
-    var applied: usize = 0;
-    const players = context.players();
-
-    for (tick_events) |event| {
-        if (events.classifyTickEvent(event, context.defer_menu_open_events) != phase) {
-            continue;
-        }
-        const outcome = try events.applyReplayEvent(
-            event,
-            &context.state,
-            players,
-            &context.creatures,
-            dt,
-            &context.quest_spawn_timeline_ms,
-            &context.quest_no_creatures_timer_ms,
-            &context.quest_completion_transition_ms,
-            .{
-                .game_mode = context.game_mode,
-                .player_count = context.player_count,
-                .quest_unlock_index = context.quest_unlock_index,
-                .strict_events = context.strict_events,
-                .menu_open_seen_this_tick = menu_open_seen_this_tick.*,
-            },
-        );
-        menu_open_seen_this_tick.* = menu_open_seen_this_tick.* or outcome.menu_open_seen_this_tick;
-        context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
-        context.perk_pick_count += outcome.perk_pick_count_delta;
-        if (outcome.signal == .request_capture_state_reset) {
-            context.pending_capture_state_reset = true;
-        }
-        applied += 1;
-    }
-
-    return applied;
-}
-
 fn buildDiagnosticTrace(
     context: *SimulationContext,
     tick_index: usize,
@@ -894,25 +794,8 @@ fn buildDiagnosticTrace(
     );
 }
 
-fn testHeader() replay_codec.ReplayHeader {
-    return .{
-        .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
-        .seed = 0xD00D,
-        .replay_format_version = replay_codec.replay_format_version,
-        .quest_level = @constCast("1.1"),
-        .game_version = @constCast("test"),
-        .tick_rate = 60,
-        .quest_fail_retry_count = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .violence_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{},
-        .claimed_stats = .{},
-        .input_quantization = @constCast("f32"),
-    };
+fn testConfig() session_mod.SessionConfig {
+    return .fromRunSpec(.{ .game_mode = .survival, .seed = 0xD00D });
 }
 
 const test_idle_input: player_runtime.GameInput = .{
@@ -924,7 +807,7 @@ const test_idle_input: player_runtime.GameInput = .{
 };
 
 test "camera shake uses latched scaling across bonus expiry and pickup" {
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(testHeader(), .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
     for ([_]bool{ true, false }) |latched| {
         context.state.time_scale_active = latched;
         context.state.bonuses.reflex_boost = if (latched) -0.01 else 1.0;
@@ -937,8 +820,7 @@ test "camera shake uses latched scaling across bonus expiry and pickup" {
 }
 
 test "step tick applies counters and emits trace snapshot" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const before_speed = context.players()[0].move_speed;
 
@@ -987,10 +869,10 @@ test "step tick applies counters and emits trace snapshot" {
 }
 
 test "step tick treats held replay reload as active without counting a press" {
-    var header = testHeader();
-    header.seed = 1;
-    header.player_count = 1;
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var config = testConfig();
+    config.seed = 1;
+    config.player_count = 1;
+    var context = try session_mod.DeterministicSession.init(config, .{});
 
     const input: player_runtime.GameInput = .{
         .move_x = 0.0,
@@ -1020,12 +902,12 @@ test "step tick treats held replay reload as active without counting a press" {
 }
 
 test "step tick accepts preserve bugs and keeps player zero perk targeting" {
-    var header = testHeader();
-    header.seed = 1;
-    header.player_count = 2;
-    header.preserve_bugs = true;
+    var config = testConfig();
+    config.seed = 1;
+    config.player_count = 2;
+    config.preserve_bugs = true;
 
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(config, .{});
 
     context.state.rng.srand(1);
 
@@ -1060,8 +942,7 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
 }
 
 test "direct death clock drain does not trigger final revenge" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const players = context.players();
     players[0].health = 0.1;
@@ -1085,8 +966,7 @@ test "direct death clock drain does not trigger final revenge" {
 }
 
 test "ammunition within triggers final revenge inline with frame dt" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const players = context.players();
     players[0].health = 0.1;
@@ -1130,8 +1010,7 @@ test "ammunition within triggers final revenge inline with frame dt" {
 }
 
 test "step tick applies freeze corpse effects when freeze is not last pickup" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const player_pos = context.players()[0].pos;
     context.creatures.entries[0] = .{
@@ -1187,8 +1066,7 @@ test "step tick applies freeze corpse effects when freeze is not last pickup" {
 }
 
 test "weapon guard runs before same-frame locked splitter pickup" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const players = context.players();
     player_runtime.weaponAssignPlayer(&players[0], .pistol);
@@ -1227,8 +1105,7 @@ test "weapon guard runs before same-frame locked splitter pickup" {
 }
 
 test "weapon usage time precedes same-frame weapon pickup" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const players = context.players();
     player_runtime.weaponAssignPlayer(&players[0], .pistol);
@@ -1269,8 +1146,7 @@ test "weapon usage time precedes same-frame weapon pickup" {
 }
 
 test "highscore score stages before same-frame points pickup" {
-    const header = testHeader();
-    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    var context = try session_mod.DeterministicSession.init(testConfig(), .{});
 
     const players = context.players();
     players[0].experience = 10;

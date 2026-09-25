@@ -12,7 +12,8 @@ raw capture format 28. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
 - CDT container 2, schema 19
-- CRD replay 19
+- capture replay 1 (`.ccr`), the debug-only container that drives the rewrite
+  through the captured run
 - a sibling `.rng_evidence.json` diagnostic report
 - a typed `.evidence.msgpack.zst` native-evidence sidecar
 
@@ -84,21 +85,21 @@ These are written as `rng_state_before_bootstrap`, `rng_bootstrap_calls`, and
 
 The state-transition frame consumes a discarded shared-CRT draw at `0x0040cac7`
 after that setup window and before the first gameplay update. The agent records it as a
-`game_frame_rng_advance` replay prelude operation. Finalization only validates
+`game_frame_rng_advance` prelude operation. Finalization only validates
 the captured operation against the exhaustive outside-RNG state chain; it never
 invents a missing operation.
 
 Finalization verifies that advancing the before-state by the captured call
-count produces the after-state. It uses the before-state for `ReplayHeader.seed` and records
-`run_start_seed_source = "rng_state_before_bootstrap"` in CDT metadata. It also copies
-captured creature-pool residue to `ReplayHeader.initial_creature_pool`. Together
-these make the generated CRD start from the observed native run boundary rather
-than an inferred clean state.
+count produces the after-state. It uses the before-state as the capture replay's
+run seed and records `run_start_seed_source = "rng_state_before_bootstrap"` in
+CDT metadata. It also copies captured creature-pool residue into the capture
+replay. Together these make the rewrite start from the observed native run
+boundary rather than an inferred clean state.
 
-`run_start.settings` also records the exact replay identity used for the run:
-tick rate, retry count, hardcore flag, detail preset, violence flag, world size,
-and the complete decoded game-status blob. Finalization does not supply fallback
-values. It sets `preserve_bugs=true` because the producer is the original game.
+`run_start.settings` also records the exact run identity: tick rate, retry
+count, hardcore flag, detail preset, violence flag, world size, and the complete
+decoded game-status blob. Finalization does not supply fallback values. It sets
+`preserve_bugs=true` because the producer is the original game.
 
 Only Survival, Rush, and Quest runs are replay-grade. Demo, Typ-o, Tutorial, and
 unknown modes fail explicitly; their exact driving data is not captured by this
@@ -183,7 +184,7 @@ on a software mirror. This exposes draws that bypass the `crt_rand` hook:
 Any invalid transition, missing draw, dropped outside row, or unowned outside
 draw rejects the capture. `run_end.trailing_prelude` retains operations observed
 after the final gameplay update solely so finalization can prove ownership of
-the tail RNG chain; those operations are not added to the replay. Finalization writes
+the tail RNG chain; those operations are not added to the capture replay. Finalization writes
 `gameplay_diff_capture.<mode>.run<k>.rng_evidence.json`. The report summarizes
 the exact bootstrap boundary and outside callers.
 
@@ -196,9 +197,9 @@ declare behavioral divergence.
 
 Each completed run produces a matching artifact set:
 
-- modes: `gameplay_diff_capture.<mode>.run<k>.cdt`, `.crd`,
+- modes: `gameplay_diff_capture.<mode>.run<k>.cdt`, `.ccr`,
   `.rng_evidence.json`, and `.evidence.msgpack.zst`
-- quests: `gameplay_diff_capture.quest_<major>_<minor>.run<k>.cdt`, `.crd`,
+- quests: `gameplay_diff_capture.quest_<major>_<minor>.run<k>.cdt`, `.ccr`,
   `.rng_evidence.json`, and `.evidence.msgpack.zst`
 
 The four files publish as one rollback-safe bundle. If any replacement fails,
@@ -206,8 +207,8 @@ the previous complete bundle is restored and the raw JSONL is retained.
 
 The rich sidecar is evidence format 3: one zstd frame containing little-endian
 u32-length-prefixed MessagePack `header`, `tick`, and `footer` rows. Its header
-binds the bundle to the session/module/pointer hashes and the raw/CDT/CRD
-SHA256 values. Missing or unknown typed fields, trailing bytes, and concatenated
+binds the bundle to the session/module/pointer hashes and the raw/CDT/capture
+replay SHA256 values. Missing or unknown typed fields, trailing bytes, and concatenated
 zstd frames are rejected.
 
 Run these checks before investigating behavior:
@@ -215,7 +216,7 @@ Run these checks before investigating behavior:
 ```text
 uv run crimson dbg verify
 uv run crimson dbg health <native.cdt>
-uv run crimson dbg record <run.crd> --out <rewrite.cdt>
+uv run crimson dbg record <run.ccr> --out <rewrite.cdt>
 uv run crimson dbg health <rewrite.cdt>
 uv run crimson dbg diff <native.cdt> <rewrite.cdt>
 ```
@@ -226,19 +227,19 @@ differences. Use `dbg bisect` and `dbg focus` to narrow the window, then
 `dbg tick`, `dbg entity`, or `dbg query` for local evidence.
 
 `just frida-copy-share` copies the entire share directory. `just
-frida-import-raw` imports the CDT, CRD, RNG report, and typed evidence files
+frida-import-raw` imports the CDT, capture replay, RNG report, and typed evidence files
 together so native diagnostics are not lost.
 
 ## Capture fixtures
 
 `just capture-fixtures-import <captures_dir>` imports current finalized pairs
 into `tests/fixtures/captures/`. It preserves each full contiguous CDT, verifies
-every trace block, the replay hash and tick range against the CRD sidecar, the
+every trace block, the capture replay hash and tick range against the `.ccr` sidecar, the
 current Frida version, and the replay-aligned `rng_state_before_bootstrap` seed source.
 It then writes versioned provenance to `manifest.json`. A stale or inconsistent
 pair aborts the import instead of being skipped.
 
-The importer and fixture tests accept only the current capture/CDT/CRD contract.
+The importer and fixture tests accept only the current capture/CDT/capture replay contract.
 Old checked-in recordings should be deleted and replaced with a fresh format 27
 capture. Fixture parity is a strict diff assertion; known mismatches are not
 hidden behind a blanket `xfail`.

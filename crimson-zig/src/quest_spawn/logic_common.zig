@@ -12,6 +12,8 @@ pub const QuestSpawnBuildError = error{
 pub const QuestSpawnBuildResult = struct {
     entries: []const spawn_runtime.QuestSpawnEntry,
     start_weapon_id: game_ids.WeaponId,
+    /// CRT RNG state after the builder's draws.
+    rng_state: u32,
 };
 
 pub const BuildContext = struct {

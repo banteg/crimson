@@ -7,14 +7,27 @@ import subprocess
 from pathlib import Path
 
 import msgspec
+import pytest
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
-from crimson.replay.checkpoints import ReplayDeathLedgerEntry, dump_checkpoints_file, load_checkpoints_file
+from crimson.quests.level import QuestLevel
+from crimson.replay.checkpoints import (
+    FORMAT_VERSION,
+    ReplayCheckpoint,
+    ReplayCheckpoints,
+    ReplayDeathLedgerEntry,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+    load_checkpoints_file,
+)
+from crimson.sim.run_spec import RunSpec
 
 from ._helpers import (
     build_replay,
     build_typo_submit_replay,
+    record_bot_replay,
+    run_verify_playback,
     write_checkpoint_sidecar,
     write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
@@ -130,97 +143,46 @@ def test_zig_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     assert "score_xp expected=999999 actual=0" in result.stderr
 
 
-def test_zig_replay_verify_checkpoints_reports_tick_player_count_detail(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("writer", "detail"),
+    [
+        (write_current_bad_tick_player_count_replay, "ticks[0] has 0 player inputs, expected 1"),
+        (
+            write_current_missing_perk_choice_replay,
+            "ticks[0].commands[0] must have exactly the keys type, player_index, choice_index",
+        ),
+        (write_current_bad_event_player_index_replay, "ticks[0].commands[0].player_index 1 is outside 0..0"),
+        (write_current_typo_event_replay, "ticks[0].commands[0] Typ-o commands require game_mode_id=TYPO"),
+        (write_current_unknown_command_replay, "ticks[0].commands[0] has unknown type 'network_ping'"),
+    ],
+)
+def test_zig_replay_verify_checkpoints_reports_invalid_replay_detail(tmp_path: Path, writer, detail: str) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    sidecar_source = write_replay(tmp_path, replay=replay, name="sidecar-source.crd")
-    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
-    replay_path = write_current_bad_tick_player_count_replay(
-        tmp_path,
-        replay=replay,
-        name="bad-tick-player-count.crd",
-    )
+    sidecar = write_checkpoint_sidecar(write_replay(tmp_path, replay=replay, name="source.crd"), replay)
+    replay_path = writer(tmp_path, replay=replay, name="invalid.crd")
 
     result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert "replay verification failed: replay tick 0 has 0 players, expected 1" in result.stderr
-    assert "canonical wire shape" not in result.stderr
+    assert result.stderr == f"replay verification failed: {detail}\n"
 
 
-def test_zig_replay_verify_checkpoints_reports_event_shape_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    sidecar_source = write_replay(tmp_path, replay=replay, name="sidecar-source.crd")
-    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
-    replay_path = write_current_missing_perk_choice_replay(
-        tmp_path,
-        replay=replay,
-        name="missing-perk-choice.crd",
-    )
+def test_zig_replay_verify_checkpoints_accepts_played_quest_checkpoints(tmp_path: Path) -> None:
+    replay = record_bot_replay(RunSpec(game_mode_id=GameMode.QUESTS, seed=0xBEEF, quest_level=QuestLevel.parse("1.1")))
+    replay_path = write_replay(tmp_path, replay=replay, name="quest.crd")
+    last_tick = len(replay.ticks) - 1
+    checkpoints: list[ReplayCheckpoint] = []
+    run_verify_playback(replay, checkpoints_out=checkpoints, checkpoint_ticks={0, last_tick // 2, last_tick})
+    sidecar = default_checkpoints_path(replay_path)
+    dump_checkpoints_file(sidecar, ReplayCheckpoints(version=int(FORMAT_VERSION), sample_rate=1, checkpoints=checkpoints))
 
-    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
+    payload = json.loads(_run_zig_replay_verify_checkpoints([str(replay_path), "--format", "json"]).stdout)
 
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay verification failed: replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
-        in result.stderr
-    )
-    assert "canonical wire shape" not in result.stderr
-
-
-def test_zig_replay_verify_checkpoints_reports_event_player_index_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_current_bad_event_player_index_replay(
-        tmp_path,
-        replay=replay,
-        name="event-player-index.crd",
-    )
-    sidecar = write_checkpoint_sidecar(replay_path, replay)
-
-    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay verification failed: replay prelude player_index out of range: 1 "
-        "(player_count=1, tick=0, event=perk_menu_open)"
-    ) in result.stderr
-    assert "replay events include an out-of-range player index" not in result.stderr
-
-
-def test_zig_replay_verify_checkpoints_reports_event_kind_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    sidecar_source = write_replay(tmp_path, replay=replay, name="event-kind-source.crd")
-    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
-    replay_path = write_current_typo_event_replay(tmp_path, replay=replay, name="event-kind.crd")
-
-    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay verification failed: replay command invalid for game mode: "
-        "type=typo_char tick=0 command_index=0 game_mode=survival"
-    ) in result.stderr
-    assert "replay events include kinds or values invalid for this mode" not in result.stderr
-
-
-def test_zig_replay_verify_checkpoints_reports_unknown_command_as_replay_failure(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    sidecar_source = write_replay(tmp_path, replay=replay, name="unknown-command-source.crd")
-    sidecar = write_checkpoint_sidecar(sidecar_source, replay)
-    replay_path = write_current_unknown_command_replay(tmp_path, replay=replay, name="unknown-command.crd")
-
-    result = _run_zig_replay_verify_checkpoints([str(replay_path), "--checkpoints", str(sidecar)])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay verification failed: replay command type is unknown: "
-        "type=network_ping tick=0 command_index=0"
-    ) in result.stderr
-    assert "native replay run" not in result.stderr
+    assert payload["status"] == "ok"
+    assert payload["summary"]["checked_count"] == 3
+    assert payload["summary"]["ticks"] == len(replay.ticks)
+    assert payload["summary"]["kills"] == replay.result.kills
 
 
 def test_zig_replay_verify_checkpoints_rejects_non_crd_replay_extension(tmp_path: Path) -> None:

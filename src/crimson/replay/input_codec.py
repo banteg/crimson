@@ -8,14 +8,12 @@ from ..math_parity import f32
 from ..sim.input import PlayerInput
 from .types import (
     FIRE_BULLETS_KEY_DOWN_FLAG,
-    InputQuantization,
     PackedPlayerInput,
     PackedTickInputs,
     pack_input_flags,
     unpack_input_flags,
     unpack_input_mode_flags,
     unpack_input_move_key_flags,
-    unpack_packed_player_input,
 )
 
 
@@ -23,17 +21,7 @@ def _quantize_f32(value: float) -> float:
     return float(f32(float(value)))
 
 
-def pack_player_input(inp: PlayerInput, *, quant: InputQuantization = "f32") -> PackedPlayerInput:
-    if str(quant) != "f32":
-        raise ValueError(f"unsupported replay input quantization: {quant!r}")
-    mx = float(inp.move.x)
-    my = float(inp.move.y)
-    ax = float(inp.aim.x)
-    ay = float(inp.aim.y)
-    mx = _quantize_f32(mx)
-    my = _quantize_f32(my)
-    ax = _quantize_f32(ax)
-    ay = _quantize_f32(ay)
+def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
     flags = pack_input_flags(
         fire_down=bool(inp.fire_down),
         fire_pressed=bool(inp.fire_pressed),
@@ -47,25 +35,31 @@ def pack_player_input(inp: PlayerInput, *, quant: InputQuantization = "f32") -> 
         turn_left_pressed=inp.turn_left_pressed,
         turn_right_pressed=inp.turn_right_pressed,
     )
-    return [mx, my, ax, ay, int(flags)]
+    return (
+        _quantize_f32(inp.move.x),
+        _quantize_f32(inp.move.y),
+        _quantize_f32(inp.aim.x),
+        _quantize_f32(inp.aim.y),
+        int(flags),
+    )
 
 
 def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
-    mx, my, ax, ay, flags = unpack_packed_player_input(packed)
-    fire_down, fire_pressed, reload_pressed, reload_down = unpack_input_flags(int(flags))
-    move_mode, aim_scheme = unpack_input_mode_flags(int(flags))
+    mx, my, ax, ay, flags = packed
+    fire_down, fire_pressed, reload_pressed, reload_down = unpack_input_flags(flags)
+    move_mode, aim_scheme = unpack_input_mode_flags(flags)
     move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = unpack_input_move_key_flags(
-        int(flags),
+        flags,
     )
     return PlayerInput(
         move=Vec2(float(mx), float(my)),
         aim=Vec2(float(ax), float(ay)),
         move_mode=move_mode,
         aim_scheme=aim_scheme,
-        fire_down=bool(fire_down),
-        fire_pressed=bool(fire_pressed),
-        reload_pressed=bool(reload_pressed),
-        reload_down=bool(reload_down),
+        fire_down=fire_down,
+        fire_pressed=fire_pressed,
+        reload_pressed=reload_pressed,
+        reload_down=reload_down,
         fire_bullets_key_down=bool(flags & FIRE_BULLETS_KEY_DOWN_FLAG),
         move_forward_pressed=move_forward_pressed,
         move_backward_pressed=move_backward_pressed,
@@ -78,9 +72,5 @@ def unpack_tick_inputs(packed_tick: PackedTickInputs) -> list[PlayerInput]:
     return [unpack_player_input(packed) for packed in packed_tick]
 
 
-def pack_tick_inputs(
-    inputs: Sequence[PlayerInput],
-    *,
-    quant: InputQuantization = "f32",
-) -> PackedTickInputs:
-    return [pack_player_input(inp, quant=quant) for inp in inputs]
+def pack_tick_inputs(inputs: Sequence[PlayerInput]) -> PackedTickInputs:
+    return [pack_player_input(inp) for inp in inputs]

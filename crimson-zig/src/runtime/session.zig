@@ -40,55 +40,39 @@ pub const SessionConfig = struct {
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
     demo_mode_active: bool = false,
-    initial_creature_pool: []const replay_codec.ReplayCreatureSlotResidue = &.{},
 
-    pub fn fromReplayHeader(header: replay_codec.ReplayHeader) DeterministicSessionError!SessionConfig {
-        const game_mode = std.enums.fromInt(game_ids.GameModeId, header.game_mode_id) orelse {
-            return error.UnsupportedGameMode;
-        };
-
+    pub fn fromRunSpec(run: replay_codec.RunSpec) SessionConfig {
         var config: SessionConfig = .{
-            .seed = header.seed,
-            .game_mode = game_mode,
-            .player_count = header.player_count,
-            .world_size = header.world_size,
-            .tick_rate = header.tick_rate,
-            .detail_preset = header.detail_preset,
-            .violence_disabled = header.violence_disabled,
-            .hardcore = header.hardcore,
-            .preserve_bugs = header.preserve_bugs,
-            .quest_fail_retry_count = header.quest_fail_retry_count,
-            .status_quest_unlock_index = header.status.quest_unlock_index,
-            .status_quest_unlock_index_full = header.status.quest_unlock_index_full,
-            .initial_creature_pool = header.initial_creature_pool orelse &.{},
+            .seed = run.seed,
+            .game_mode = run.game_mode,
+            .player_count = run.player_count,
+            .world_size = replay_codec.world_size,
+            .tick_rate = replay_codec.tick_rate,
+            .detail_preset = run.detail_preset,
+            .violence_disabled = run.violence_disabled,
+            .hardcore = run.hardcore,
+            .preserve_bugs = run.preserve_bugs,
+            .quest_fail_retry_count = run.quest_fail_retry_count,
+            .status_quest_unlock_index = run.status.quest_unlock_index,
+            .status_quest_unlock_index_full = run.status.quest_unlock_index_full,
+            .demo_mode_active = run.demo,
         };
-
-        for (header.status.weapon_usage_counts, 0..) |count, idx| {
-            if (idx >= config.status_weapon_usage_counts.len) break;
-            config.status_weapon_usage_counts[idx] = count;
+        comptime std.debug.assert(replay_codec.weapon_usage_count <= state_mod.weapon_count_size);
+        @memcpy(config.status_weapon_usage_counts[0..replay_codec.weapon_usage_count], &run.status.weapon_usage_counts);
+        if (run.quest_level) |level| {
+            config.quest_stage_major = level.major;
+            config.quest_stage_minor = level.minor;
         }
-
-        if (runtime_bootstrap.resolveQuestLevelKey(header)) |level_key| {
-            config.quest_stage_major = @divTrunc(level_key, 100);
-            config.quest_stage_minor = @mod(level_key, 100);
-        }
-
         return config;
     }
 };
 
 pub const SessionInitOptions = struct {
-    strict_events: bool = true,
-    defer_menu_open_events: bool = false,
-    apply_world_dt_steps: bool = true,
-    capture_spawn_events_authoritative: bool = false,
-    quest_start_weapon_id_for_reset: i32 = @intFromEnum(game_ids.WeaponId.pistol),
     quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
 };
 
 pub const SessionSummary = struct {
     ticks_processed: usize,
-    event_index: usize,
     elapsed_ms_sim: i64,
     perk_menu_open_count: usize,
     perk_pick_count: usize,
@@ -129,17 +113,10 @@ pub const DeterministicSession = struct {
     terrain_size: i32,
     dt_nominal: f32,
 
-    strict_events: bool,
-    defer_menu_open_events: bool,
-    apply_world_dt_steps: bool,
-    capture_spawn_events_authoritative: bool,
-
-    quest_start_weapon_id_for_reset: i32,
-    reset_quest_spawn_entries_len: usize = 0,
+    quest_spawn_entries_len: usize = 0,
     quest_spawn_entries_storage: [max_sim_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined,
 
     tick_index: usize = 0,
-    event_index: usize = 0,
 
     perk_menu_open_count: usize = 0,
     perk_pick_count: usize = 0,
@@ -161,8 +138,6 @@ pub const DeterministicSession = struct {
     quest_completed: bool = false,
     quest_play_hit_sfx: bool = false,
     quest_play_completion_music: bool = false,
-
-    pending_capture_state_reset: bool = false,
 
     pub fn init(
         config: SessionConfig,
@@ -194,11 +169,6 @@ pub const DeterministicSession = struct {
             .gore_disabled = config.violence_disabled,
             .terrain_size = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor))),
             .dt_nominal = 1.0 / @as(f32, @floatFromInt(config.tick_rate)),
-            .strict_events = options.strict_events,
-            .defer_menu_open_events = options.defer_menu_open_events,
-            .apply_world_dt_steps = options.apply_world_dt_steps,
-            .capture_spawn_events_authoritative = options.capture_spawn_events_authoritative,
-            .quest_start_weapon_id_for_reset = options.quest_start_weapon_id_for_reset,
         };
 
         session.state.gore_disabled = config.violence_disabled;
@@ -223,10 +193,8 @@ pub const DeterministicSession = struct {
         session.creatures.quest_fail_retry_count = config.quest_fail_retry_count;
 
         session.creatures.applyGameplayResetTargetPlayers(config.player_count);
-        creatures_mod.applyPoolResidue(&session.creatures, config.initial_creature_pool);
         player_runtime.initializePlayers(session.players());
         player_runtime.resetPlayers(session.players(), config.world_size, null);
-        session.creatures.capture_spawn_events_authoritative = options.capture_spawn_events_authoritative;
         session.creatures.effects = &session.effects;
 
         if (config.game_mode == .rush) {
@@ -244,22 +212,49 @@ pub const DeterministicSession = struct {
         if (options.quest_spawn_entries) |quest_spawn_entries| {
             try session.setQuestSpawnEntries(quest_spawn_entries);
         }
-        if (options.capture_spawn_events_authoritative) {
-            session.reset_quest_spawn_entries_len = 0;
-        }
 
         return session;
     }
 
-    pub fn initFromReplayHeader(
-        header: replay_codec.ReplayHeader,
-        options: SessionInitOptions,
-    ) DeterministicSessionError!DeterministicSession {
-        return init(try SessionConfig.fromReplayHeader(header), options);
+    pub fn questSpawnEntries(self: *DeterministicSession) []spawn_mod.QuestSpawnEntry {
+        return self.quest_spawn_entries_storage[0..self.quest_spawn_entries_len];
     }
 
-    pub fn questSpawnEntries(self: *DeterministicSession) []spawn_mod.QuestSpawnEntry {
-        return self.quest_spawn_entries_storage[0..self.reset_quest_spawn_entries_len];
+    /// Elapsed run time as scored: the spawn timeline for quests, session time otherwise.
+    pub fn runElapsedMs(self: *const DeterministicSession) f64 {
+        return switch (self.game_mode) {
+            .quests => self.quest_spawn_timeline_ms,
+            .rush => @floatFromInt(self.elapsed_ms_sim_rush),
+            else => self.elapsed_ms_sim,
+        };
+    }
+
+    /// Outcome when the last tick ends the run in live play, else null.
+    pub fn terminalOutcome(self: *const DeterministicSession) ?replay_codec.RunOutcome {
+        const players_list = self.playersConst();
+        return switch (self.game_mode) {
+            .survival => if (deathTransitionReady(players_list)) .death else null,
+            // Rush and Typ-o end as soon as nobody is alive; there is no
+            // death animation hold (Typ-o plays it outside ticks).
+            .rush, .typo => if (allPlayersDead(players_list)) .death else null,
+            .quests => if (self.quest_completed)
+                .quest_completed
+            else if (deathTransitionReady(players_list)) .death else null,
+            .tutorial => null,
+        };
+    }
+
+    /// Outcome of a run whose recording stops after the last simulated tick.
+    pub fn endOutcome(self: *const DeterministicSession) replay_codec.RunOutcome {
+        if (self.terminalOutcome()) |outcome| return outcome;
+        return switch (self.game_mode) {
+            // The failed-quest countdown keeps running while paused, so a
+            // failed run may close between ticks before the death animation ends.
+            .quests => if (allPlayersDead(self.playersConst())) .death else .incomplete,
+            // The tutorial has no terminal tick: players leave it from the UI.
+            .tutorial => if (self.state.tutorial.stage_index >= 8) .tutorial_completed else .incomplete,
+            .survival, .rush, .typo => .incomplete,
+        };
     }
 
     pub fn rebindInternalPointers(self: *DeterministicSession) void {
@@ -292,7 +287,6 @@ pub const DeterministicSession = struct {
 
         return .{
             .ticks_processed = self.tick_index,
-            .event_index = self.event_index,
             .elapsed_ms_sim = elapsed_ms_sim_i64,
             .perk_menu_open_count = self.perk_menu_open_count,
             .perk_pick_count = self.perk_pick_count,
@@ -317,34 +311,38 @@ pub const DeterministicSession = struct {
             return error.InvalidQuestSpawnTable;
         }
         @memcpy(self.quest_spawn_entries_storage[0..entries.len], entries);
-        self.reset_quest_spawn_entries_len = entries.len;
+        self.quest_spawn_entries_len = entries.len;
     }
 };
 
-fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
-    return .{
-        .game_mode_id = @intFromEnum(game_mode),
-        .seed = 0xBEEF,
-        .replay_format_version = replay_codec.replay_format_version,
-        .quest_level = @constCast("2.7"),
-        .game_version = @constCast("test"),
-        .tick_rate = 60,
-        .quest_fail_retry_count = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .violence_disabled = 1,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{},
-        .claimed_stats = .{},
-        .input_quantization = @constCast("f32"),
-    };
+pub fn allPlayersDead(players: []const state_mod.PlayerState) bool {
+    if (players.len == 0) return false;
+    for (players) |player| {
+        if (player.health > 0.0) return false;
+    }
+    return true;
 }
 
-test "deterministic session init from header seeds mutable loop state" {
-    const header = testHeader(.quests);
-    var session = try DeterministicSession.initFromReplayHeader(header, .{});
+/// Every player is dead and their death animation has finished.
+pub fn deathTransitionReady(players: []const state_mod.PlayerState) bool {
+    if (!allPlayersDead(players)) return false;
+    for (players) |player| {
+        if (!(player.death_timer < 0.0)) return false;
+    }
+    return true;
+}
+
+fn testConfig(game_mode: game_ids.GameModeId) SessionConfig {
+    return SessionConfig.fromRunSpec(.{
+        .game_mode = game_mode,
+        .seed = 0xBEEF,
+        .quest_level = if (game_mode == .quests) .{ .major = 2, .minor = 7 } else null,
+        .violence_disabled = 1,
+    });
+}
+
+test "deterministic session init from run spec seeds mutable loop state" {
+    var session = try DeterministicSession.init(testConfig(.quests), .{});
 
     try std.testing.expectEqual(@as(usize, 1), session.players().len);
     try std.testing.expectEqual(@as(i32, 1), session.player_count);
@@ -360,24 +358,47 @@ test "deterministic session init from header seeds mutable loop state" {
 }
 
 test "deterministic session init advances survival terrain bootstrap rng" {
-    var header = testHeader(.survival);
-    header.seed = 0x1234;
-    header.status.quest_unlock_index = 0;
-    header.world_size = 1024.0;
+    var config = testConfig(.survival);
+    config.seed = 0x1234;
 
-    const session = try DeterministicSession.initFromReplayHeader(header, .{});
+    const session = try DeterministicSession.init(config, .{});
 
     try std.testing.expectEqual(@as(u32, 623756981), session.state.rng.state);
 }
 
 test "deterministic session init round robins native creature targets" {
-    var header = testHeader(.survival);
-    header.player_count = 2;
+    var config = testConfig(.survival);
+    config.player_count = 2;
 
-    const session = try DeterministicSession.initFromReplayHeader(header, .{});
+    const session = try DeterministicSession.init(config, .{});
 
     try std.testing.expectEqual(@as(i32, 0), session.creatures.entries[0].target_player);
     try std.testing.expectEqual(@as(i32, 1), session.creatures.entries[1].target_player);
     try std.testing.expectEqual(@as(i32, 0), session.creatures.entries[2].target_player);
     try std.testing.expectEqual(@as(i32, 1), session.creatures.entries[3].target_player);
+}
+
+test "terminal and end outcomes follow each mode's end condition" {
+    var survival = try DeterministicSession.init(testConfig(.survival), .{});
+    survival.players()[0].health = 0.0;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, null), survival.terminalOutcome());
+    survival.players()[0].death_timer = -0.5;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .death), survival.terminalOutcome());
+
+    var rush = try DeterministicSession.init(testConfig(.rush), .{});
+    rush.players()[0].health = -1.0;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .death), rush.terminalOutcome());
+
+    var quest = try DeterministicSession.init(testConfig(.quests), .{});
+    quest.players()[0].health = 0.0;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, null), quest.terminalOutcome());
+    try std.testing.expectEqual(replay_codec.RunOutcome.death, quest.endOutcome());
+    quest.quest_completed = true;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .quest_completed), quest.terminalOutcome());
+
+    var tutorial = try DeterministicSession.init(testConfig(.tutorial), .{});
+    tutorial.players()[0].health = 0.0;
+    try std.testing.expectEqual(replay_codec.RunOutcome.incomplete, tutorial.endOutcome());
+    tutorial.state.tutorial.stage_index = 8;
+    try std.testing.expectEqual(replay_codec.RunOutcome.tutorial_completed, tutorial.endOutcome());
 }

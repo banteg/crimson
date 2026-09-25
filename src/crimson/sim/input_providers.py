@@ -21,17 +21,6 @@ class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True, forbid_unkno
     choice_index: int
 
 
-class GameFrameRngAdvanceOperation(
-    msgspec.Struct,
-    tag="game_frame_rng_advance",
-    frozen=True,
-    forbid_unknown_fields=True,
-):
-    """Advance the native top-level frame RNG side effect for skipped frames."""
-
-    frames: int
-
-
 class TypoCharCommand(msgspec.Struct, tag="typo_char", frozen=True, forbid_unknown_fields=True):
     player_index: int
     ch: TypoChar
@@ -47,9 +36,6 @@ class TypoSubmitCommand(msgspec.Struct, tag="typo_submit", frozen=True, forbid_u
 
 type GameCommand = PerkMenuOpenCommand | PerkPickCommand | TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 
-type ReplayPreludeOperation = GameFrameRngAdvanceOperation | PerkMenuOpenCommand | PerkPickCommand
-type ReplayPostludeOperation = PerkMenuOpenCommand
-type ReplayTickCommand = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 
 
 class FrameContext(msgspec.Struct, frozen=True):
@@ -70,8 +56,6 @@ class ResolvedTick(msgspec.Struct, frozen=True):
     tick_index: int
     dt_seconds: float
     inputs: tuple[PlayerInput, ...] = ()
-    prelude: tuple[ReplayPreludeOperation, ...] = ()
-    postlude: tuple[ReplayPostludeOperation, ...] = ()
     commands: tuple[GameCommand, ...] = ()
 
 
@@ -151,6 +135,12 @@ class LocalInputProvider:
 
     def clear_pending_edges(self) -> None:
         self._frame_inputs = clear_input_edges(self._frame_inputs)
+
+    @property
+    def queued_commands(self) -> tuple[GameCommand, ...]:
+        """Commands submitted since the last pulled tick."""
+
+        return tuple(self._pending_commands)
 
     def supports_command_submission(self) -> bool:
         return True

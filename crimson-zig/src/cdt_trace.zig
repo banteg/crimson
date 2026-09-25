@@ -35,7 +35,6 @@ const TraceDomainError = error{
     EmptyTrace,
     InvalidTickIndex,
     InvalidTickOrder,
-    InvalidReplayDt,
     RngTransitionNotReconstructable,
     TickIndexTooLarge,
     TickValueTooLarge,
@@ -398,6 +397,32 @@ pub const Source = struct {
     }
 };
 
+/// The save-status block of the trace meta. Replays carry only the fields a
+/// run consumes; the rest keep their fresh-save values.
+pub const TraceStatus = struct {
+    run: replay_codec.RunStatus = .{},
+
+    pub fn msgpackWrite(self: TraceStatus, packer: anytype) !void {
+        try packer.writeMapHeader(10);
+        try packer.writeString("quest_unlock_index");
+        try packer.writeInt(self.run.quest_unlock_index);
+        try packer.writeString("quest_unlock_index_full");
+        try packer.writeInt(self.run.quest_unlock_index_full);
+        try packer.writeString("weapon_usage_counts");
+        try packer.writeArray(u32, self.run.weapon_usage_counts[0..]);
+        try packer.writeString("quest_play_counts");
+        try packer.writeArray(u32, &([_]u32{0} ** status_quest_play_count));
+        inline for (.{ "mode_play_survival", "mode_play_rush", "mode_play_typo", "mode_play_other", "play_time_ms" }) |name| {
+            try packer.writeString(name);
+            try packer.writeInt(@as(i32, 0));
+        }
+        try packer.writeString("reserved_seed_words");
+        try packer.writeBinary(&([_]u8{0} ** status_reserved_seed_words_byte_size));
+    }
+};
+const status_quest_play_count: usize = 91;
+const status_reserved_seed_words_byte_size: usize = 16;
+
 const TraceMeta = struct {
     trace_format_version: i32 = @intCast(trace_format_version),
     trace_schema_version: i32 = trace_schema_version,
@@ -405,7 +430,7 @@ const TraceMeta = struct {
     producer: Producer,
     source: Source,
     tick_range: TickRange,
-    status: replay_codec.ReplayStatus = .{},
+    status: TraceStatus = .{},
 };
 
 const TraceStatusRead = struct {
@@ -418,7 +443,7 @@ const TraceStatusRead = struct {
     mode_play_typo: i32 = 0,
     mode_play_other: i32 = 0,
     play_time_ms: i32 = 0,
-    reserved_seed_words: replay_codec.BinaryBytes = .{ .data = "" },
+    reserved_seed_words: wire.BinaryBytes = .{ .data = "" },
 };
 
 const TraceMetaRead = struct {
@@ -628,6 +653,8 @@ const TypoSubmitStepCommand = struct {
 };
 
 const ReplayStepCommand = union(enum) {
+    perk_menu_open: PerkMenuOpenStepCommand,
+    perk_pick: PerkPickStepCommand,
     typo_char: TypoCharStepCommand,
     typo_backspace: TypoBackspaceStepCommand,
     typo_submit: TypoSubmitStepCommand,
@@ -642,7 +669,7 @@ const ReplayStepCommand = union(enum) {
 
 const ReplayStepSnapshot = struct {
     dt: f32,
-    inputs: []const replay_codec.ReplayPlayerInput,
+    inputs: []const replay_codec.PlayerInput,
     prelude: []const ReplayStepPrelude,
     postlude: []const ReplayStepPostlude,
     commands: []const ReplayStepCommand,
@@ -1719,7 +1746,12 @@ pub fn writeReplayTickTraceCdt(
     const tick_start = try castI32(rows[0].tick_index);
     const tick_end = try castI32(rows[rows.len - 1].tick_index);
     const tick_count = try castI32(rows.len);
-    const is_quest = replay.header.game_mode_id == @intFromEnum(game_ids.GameModeId.quests);
+    const run = replay.run;
+    var quest_level_buffer: [8]u8 = undefined;
+    const quest_level: ?[]const u8 = if (run.quest_level) |level|
+        std.fmt.bufPrint(&quest_level_buffer, "{d}.{d}", .{ level.major, level.minor }) catch unreachable
+    else
+        null;
 
     var replay_sha256: [64]u8 = undefined;
     hash.sha256HexLower(replay_bytes, &replay_sha256);
@@ -1730,7 +1762,7 @@ pub fn writeReplayTickTraceCdt(
     const meta: TraceMeta = .{
         .created_utc = "1970-01-01T00:00:00+00:00",
         .producer = .{
-            .impl_version = replay.header.game_version,
+            .impl_version = replay.game_version,
             .platform = @tagName(builtin.target.os.tag),
             .arch = @tagName(builtin.target.cpu.arch),
         },
@@ -1741,20 +1773,20 @@ pub fn writeReplayTickTraceCdt(
             .mtime_ns = mtime_ns,
             .kind = "replay",
             .replay_sha256 = replay_sha256[0..],
-            .tick_rate = replay.header.tick_rate,
-            .seed = replay.header.seed,
-            .mode_id = replay.header.game_mode_id,
-            .player_count = replay.header.player_count,
-            .quest_level = if (is_quest) replay.header.quest_level else null,
-            .quest_stage_major = if (is_quest) rows[0].gameplay_state.quest_stage_major else null,
-            .quest_stage_minor = if (is_quest) rows[0].gameplay_state.quest_stage_minor else null,
+            .tick_rate = replay_codec.tick_rate,
+            .seed = run.seed,
+            .mode_id = @intFromEnum(run.game_mode),
+            .player_count = run.player_count,
+            .quest_level = quest_level,
+            .quest_stage_major = if (quest_level != null) rows[0].gameplay_state.quest_stage_major else null,
+            .quest_stage_minor = if (quest_level != null) rows[0].gameplay_state.quest_stage_minor else null,
         },
         .tick_range = .{
             .start_tick = tick_start,
             .end_tick = tick_end,
             .tick_count = tick_count,
         },
-        .status = replay.header.status,
+        .status = .{ .run = run.status },
     };
 
     try out.writeAll(trace_magic);
@@ -1785,12 +1817,12 @@ pub fn writeReplayTickTraceCdt(
     }
 
     var elapsed_ms_accum: i64 = 0;
-    var tick_rng_start_state: u32 = replay.header.seed;
+    var tick_rng_start_state: u32 = run.seed;
+    const dt_ms_i32: i32 = @intFromFloat(@trunc(replay_codec.tick_dt * 1000.0));
 
     var last_tick_seen: ?i32 = null;
     for (rows) |row| {
-        if (row.tick_index >= replay.dt.len) return error.InvalidTickIndex;
-        const dt_ms_i32 = dtSecondsToMsI32(replay.dt[row.tick_index]) catch return error.InvalidReplayDt;
+        if (row.tick_index >= replay.tickCount()) return error.InvalidTickIndex;
         elapsed_ms_accum += dt_ms_i32;
         const record = try buildTickRecord(
             allocator,
@@ -1918,7 +1950,8 @@ fn buildTickRecord(
     summed_elapsed_ms: i64,
     tick_rng_start_state: u32,
 ) TraceWriteError!TickRecord {
-    const elapsed_ms = if (replay.header.game_mode_id == @intFromEnum(game_ids.GameModeId.quests)) row.timing.elapsed_ms else summed_elapsed_ms;
+    const mode_id = @intFromEnum(replay.run.game_mode);
+    const elapsed_ms = if (replay.run.game_mode == .quests) row.timing.elapsed_ms else summed_elapsed_ms;
     const tick_index_i32 = try castI32(row.tick_index);
     _ = tick_rng_start_state;
     const replay_step = try buildReplayStep(allocator, replay, row.tick_index);
@@ -1932,7 +1965,7 @@ fn buildTickRecord(
     const sim_state = try buildSimState(
         allocator,
         row,
-        replay.header.game_mode_id,
+        mode_id,
     );
     errdefer allocator.free(sim_state.players);
     const entity_samples = try buildEntitySamples(
@@ -1944,7 +1977,7 @@ fn buildTickRecord(
         .tick_index = tick_index_i32,
         .elapsed_ms = elapsed_ms,
         .dt_ms_i32 = dt_ms_i32,
-        .mode_id = replay.header.game_mode_id,
+        .mode_id = mode_id,
         .channels = .{
             .replay_step = replay_step,
             .checkpoint = checkpoint,
@@ -1972,108 +2005,35 @@ fn deinitTickRecord(allocator: std.mem.Allocator, record: *TickRecord) void {
     }
 }
 
+/// Replays step a fixed dt and carry every command in `commands`; the
+/// prelude and postlude lists belong to original captures.
 fn buildReplayStep(
     allocator: std.mem.Allocator,
     replay: replay_codec.Replay,
     tick_index: usize,
 ) TraceWriteError!ReplayStepSnapshot {
-    if (tick_index >= replay.inputs.len or tick_index >= replay.dt.len) return error.InvalidTickIndex;
-
-    var prelude_count: usize = 0;
-    for (replay.prelude) |op| {
-        if (op.tickIndex() == tick_index) prelude_count += 1;
-    }
-    const prelude = try allocator.alloc(ReplayStepPrelude, prelude_count);
-    errdefer allocator.free(prelude);
-    var prelude_built: usize = 0;
-    for (replay.prelude) |op| {
-        if (op.tickIndex() != tick_index) continue;
-        prelude[prelude_built] = switch (op) {
-            .game_frame_rng_advance => |payload| .{ .game_frame_rng_advance = .{ .frames = payload.frames } },
-            .perk_menu_open => |payload| .{ .perk_menu_open = .{
-                .player_index = payload.player_index,
-            } },
-            .perk_pick => |payload| .{ .perk_pick = .{
-                .player_index = payload.player_index,
-                .choice_index = payload.choice_index,
-            } },
+    if (tick_index >= replay.tickCount()) return error.InvalidTickIndex;
+    const tick_commands = replay.tickCommands(tick_index);
+    const commands = try allocator.alloc(ReplayStepCommand, tick_commands.len);
+    for (tick_commands, commands) |command, *step_command| {
+        step_command.* = switch (command) {
+            .perk_menu_open => |open| .{ .perk_menu_open = .{ .player_index = open.player_index } },
+            .perk_pick => |pick| .{ .perk_pick = .{ .player_index = pick.player_index, .choice_index = pick.choice_index } },
+            .typo_char => |typed| .{ .typo_char = .{ .player_index = typed.player_index, .ch = typed.ch } },
+            .typo_backspace => |command_value| .{ .typo_backspace = .{ .player_index = command_value.player_index } },
+            .typo_submit => |command_value| .{ .typo_submit = .{ .player_index = command_value.player_index } },
         };
-        prelude_built += 1;
     }
-
-    var postlude_count: usize = 0;
-    for (replay.postlude) |op| {
-        if (op.tickIndex() == tick_index) postlude_count += 1;
-    }
-    const postlude = try allocator.alloc(ReplayStepPostlude, postlude_count);
-    errdefer allocator.free(postlude);
-    var postlude_built: usize = 0;
-    for (replay.postlude) |op| {
-        if (op.tickIndex() != tick_index) continue;
-        postlude[postlude_built] = .{ .perk_menu_open = .{
-            .player_index = op.player_index,
-        } };
-        postlude_built += 1;
-    }
-
-    var command_count: usize = 0;
-    for (replay.events) |event| {
-        if (event.tickIndex() != tick_index) continue;
-        switch (event) {
-            .typo_char, .typo_backspace, .typo_submit => command_count += 1,
-            else => {},
-        }
-    }
-
-    const commands = try allocator.alloc(ReplayStepCommand, command_count);
-    errdefer allocator.free(commands);
-    var built: usize = 0;
-    errdefer {
-        for (commands[0..built]) |command| {
-            if (command == .typo_char) allocator.free(command.typo_char.ch);
-        }
-    }
-
-    for (replay.events) |event| {
-        if (event.tickIndex() != tick_index) continue;
-        const command: ?ReplayStepCommand = switch (event) {
-            .typo_char => |payload| blk: {
-                const ch = try allocator.alloc(u8, 1);
-                ch[0] = payload.ch;
-                break :blk .{ .typo_char = .{
-                    .player_index = payload.player_index,
-                    .ch = ch,
-                } };
-            },
-            .typo_backspace => |payload| .{ .typo_backspace = .{
-                .player_index = payload.player_index,
-            } },
-            .typo_submit => |payload| .{ .typo_submit = .{
-                .player_index = payload.player_index,
-            } },
-            else => null,
-        };
-        if (command) |value| {
-            commands[built] = value;
-            built += 1;
-        }
-    }
-
     return .{
-        .dt = replay.dt[tick_index],
-        .inputs = replay.inputs[tick_index],
-        .prelude = prelude,
-        .postlude = postlude,
+        .dt = replay_codec.tick_dt,
+        .inputs = replay.tickInputs(tick_index),
+        .prelude = &.{},
+        .postlude = &.{},
         .commands = commands,
     };
 }
 
 fn deinitReplayStep(allocator: std.mem.Allocator, replay_step: ReplayStepSnapshot) void {
-    for (replay_step.commands) |command| {
-        if (command == .typo_char) allocator.free(command.typo_char.ch);
-    }
-    allocator.free(replay_step.prelude);
-    allocator.free(replay_step.postlude);
     allocator.free(replay_step.commands);
 }
 
@@ -2734,7 +2694,9 @@ fn validateTraceTick(tick: TickRecordRead, source: Source) !void {
     if (tick.tick_index < 0 or tick.elapsed_ms < 0 or tick.dt_ms_i32 < 0 or tick.mode_id < 0 or step.dt < 0 or n == 0) return error.InvalidTraceTick;
     if (source.mode_id != tick.mode_id or source.player_count.? != n or checkpoint.tick_index != tick.tick_index or checkpoint.elapsed_ms != tick.elapsed_ms or
         checkpoint.players.len != n or state.players.len != n or state.gameplay.mode_id != tick.mode_id) return error.InvalidTraceTickIdentity;
-    for (step.inputs) |input| _ = try replay_codec.validateInputFlags(input.flags);
+    for (step.inputs) |input| {
+        if (replay_codec.inputFlagsError(input.flags) != null) return error.InvalidTraceTick;
+    }
     for (step.prelude) |op| switch (op) {
         .game_frame_rng_advance => |value| {
             if (value.frames == 0) return error.InvalidTraceOperation;
@@ -2751,10 +2713,15 @@ fn validateTraceTick(tick: TickRecordRead, source: Source) !void {
             if (value.player_index < 0 or value.player_index >= n) return error.InvalidTraceOperation;
         },
     };
-    if (step.commands.len > 0 and tick.mode_id != @intFromEnum(game_ids.GameModeId.typo)) return error.InvalidTraceOperation;
     for (step.commands) |op| switch (op) {
-        inline else => |value| {
+        .perk_pick => |value| {
+            if (value.player_index < 0 or value.player_index >= n or value.choice_index < 0 or value.choice_index >= 7) return error.InvalidTraceOperation;
+        },
+        .perk_menu_open => |value| {
             if (value.player_index < 0 or value.player_index >= n) return error.InvalidTraceOperation;
+        },
+        inline .typo_char, .typo_backspace, .typo_submit => |value| {
+            if (value.player_index < 0 or value.player_index >= n or tick.mode_id != @intFromEnum(game_ids.GameModeId.typo)) return error.InvalidTraceOperation;
         },
     };
     if (checkpoint.perk.choices.len != 7 or checkpoint.perk_pending != checkpoint.perk.pending_count or checkpoint.perk_pending != state.gameplay.perk_pending_count or
@@ -2849,14 +2816,6 @@ fn castI64Clamp(value: i128) i64 {
     if (value > std.math.maxInt(i64)) return std.math.maxInt(i64);
     if (value < std.math.minInt(i64)) return std.math.minInt(i64);
     return @intCast(value);
-}
-
-fn dtSecondsToMsI32(dt_seconds: f32) !i32 {
-    const scaled_ms = @as(f32, dt_seconds * 1000.0);
-    const truncated = @trunc(scaled_ms);
-    const ms = std.math.cast(i32, @as(i64, @intFromFloat(truncated))) orelse return error.InvalidReplayDt;
-    if (ms < 0) return error.InvalidReplayDt;
-    return ms;
 }
 
 fn bonusTimerMs(value: f32) i32 {
@@ -3090,13 +3049,14 @@ test "CDT checkpoint perk choices preserve all seven raw slots" {
 
 test "Quest CDT records the simulation timeline while retaining unscaled dt" {
     const allocator = std.testing.allocator;
-    var header = std.mem.zeroes(replay_codec.ReplayHeader);
-    header.game_mode_id = @intFromEnum(game_ids.GameModeId.quests);
-    header.player_count = 1;
-    var player_inputs = [_]replay_codec.ReplayPlayerInput{.{ .move_x = 0, .move_y = 0, .aim_x = 512, .aim_y = 512, .flags = 0 }};
-    var inputs = [_]replay_codec.ReplayTickInputs{&player_inputs};
-    var dt = [_]f32{0.016};
-    const replay: replay_codec.Replay = .{ .header = header, .inputs = &inputs, .dt = &dt, .events = &.{} };
+    const inputs = [_]replay_codec.PlayerInput{.{ .aim_x = 512, .aim_y = 512 }};
+    const replay: replay_codec.Replay = .{
+        .game_version = "test",
+        .run = .{ .game_mode = .quests, .seed = 0, .quest_level = .{ .major = 1, .minor = 1 } },
+        .result = undefined,
+        .inputs = &inputs,
+        .command_ends = &.{0},
+    };
     const row: replay_trace.ReplayTickTrace = .{
         .tick_index = 0,
         .timing = .{ .elapsed_ms = 5 },

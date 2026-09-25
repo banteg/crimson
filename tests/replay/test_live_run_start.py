@@ -18,6 +18,7 @@ from crimson.sim.input_providers import TypoCharCommand
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.replay_runner_helpers import unverified_replay
 
 
 @pytest.mark.parametrize(("game_mode", "mode_type"), [
@@ -48,10 +49,10 @@ def test_live_start_and_first_ticks_match_complete_replay_state(
     assert session is not None and recorder is not None
     inputs = tuple(PlayerInput(aim=Vec2(600.0, 512.0), fire_down=True, move=Vec2(1.0, 0.0)) for _ in session.world.players)
     commands = (TypoCharCommand(player_index=0, ch="a"),) if game_mode == GameMode.TYPO else ()
-    assert recorder.header.preserve_bugs == preserve_bugs
+    assert recorder.run.preserve_bugs == preserve_bugs
     for _ in range(3):
-        recorder.record_tick(inputs, dt=1 / 60, commands=commands)
-    driver = PlaybackDriver(recorder.finish(), version_mismatch_action=None)
+        recorder.record_tick(inputs, commands=commands)
+    driver = PlaybackDriver(unverified_replay(recorder), version_mismatch_action=None)
     assert session.world.state.status is status
     assert session_state_bytes(session) == session_state_bytes(driver.session)
     for tick in range(3):

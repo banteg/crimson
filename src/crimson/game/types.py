@@ -42,6 +42,7 @@ class GameConfig(msgspec.Struct, frozen=True):
     debug: bool = False
     rtx: bool = False
     preserve_bugs: bool = False
+    replay_checkpoints: bool = False
 
 
 class Screen(Protocol):
@@ -92,6 +93,7 @@ class GameState(msgspec.Struct):
     console: ConsoleState
     demo_enabled: bool
     preserve_bugs: bool
+    replay_checkpoints: bool
     resources: RuntimeResources | None
     audio: AudioState | None
     session_start: float

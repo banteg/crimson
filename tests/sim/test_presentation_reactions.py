@@ -6,6 +6,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.session_builders import build_quest_session
+from crimson.sim.sessions import IllegalCommandError
 from crimson.sim.tick_runner import TickRunner
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
@@ -36,8 +37,20 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
     ]
 
 
-def test_session_step_tick_skips_bonus_post_apply_sfx_for_stale_perk_pick() -> None:
+def test_session_step_tick_rejects_stale_perk_pick() -> None:
     session, _sim_world = make_session()
+
+    with pytest.raises(IllegalCommandError, match="perk_pick without a pending perk"):
+        session.step_tick(
+            dt=1.0 / 60.0,
+            inputs=[PlayerInput()],
+            commands=[PerkPickCommand(player_index=0, choice_index=0)],
+        )
+
+
+def test_session_step_tick_skips_bonus_post_apply_sfx_for_lenient_stale_perk_pick() -> None:
+    session, _sim_world = make_session()
+    session.strict_commands = False
 
     tick = session.step_tick(
         dt=1.0 / 60.0,

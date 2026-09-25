@@ -2,7 +2,7 @@ const std = @import("std");
 
 const cdt_trace = @import("cdt_trace.zig");
 const dbg_record_native = @import("dbg_record_native.zig");
-const replay_codec = @import("replay_codec.zig");
+const replay_runner = @import("runtime/replay_runner.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
@@ -342,7 +342,7 @@ test "dbg diff summarizes matching native CDT traces" {
     const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
     defer allocator.free(base_dir);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
     const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "smoke.crd" });
     defer allocator.free(replay_path);

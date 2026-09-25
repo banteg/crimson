@@ -56,19 +56,6 @@ const ReplayResolution = struct {
     }
 };
 
-const RunResultPayload = struct {
-    game_mode_id: i32,
-    tick_rate: i32,
-    ticks: i32,
-    elapsed_ms: i64,
-    score_xp: i64,
-    creature_kill_count: i32,
-    most_used_weapon_id: i32,
-    shots_fired: i32,
-    shots_hit: i32,
-    rng_state: u64,
-};
-
 const BenchmarkSettingsPayload = struct {
     mode: []const u8,
     runs: usize,
@@ -129,7 +116,8 @@ const BenchmarkPayload = struct {
     status: []const u8,
     replay: []const u8,
     settings: BenchmarkSettingsPayload,
-    run_result: RunResultPayload,
+    ticks: usize,
+    run_result: replay_codec.RunResult,
     benchmark: BenchmarkSummaryPayload,
     profile: ?ProfilePayload,
     render_telemetry: ?struct {},
@@ -158,16 +146,12 @@ pub fn runReplayBenchmarkBytesJson(
         return buildInvalidBenchmarkArgsOutput(allocator, "invalid --runs value");
     }
 
-    var parse_detail: ?[]u8 = null;
-    defer if (parse_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
-        return buildBenchmarkFailedOutput(allocator, parse_detail orelse benchmarkReplayLoadErrorDetail(err));
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = replay_codec.loadReplay(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildBenchmarkFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
     defer replay.deinit(allocator);
-
-    if (replay_codec.unsupportedReplayHeaderDetail(replay.header, replay.tickCount(), .benchmark)) |detail| {
-        return buildBenchmarkFailedOutput(allocator, detail);
-    }
 
     return runBenchmarkWithReplay(allocator, replay_name, .{
         .replay_file = replay_name,
@@ -396,16 +380,22 @@ fn runNativeBenchmark(
         return buildBenchmarkFailedOutput(allocator, "--render-charts-out-dir is supported only with --mode render");
     }
 
-    var parse_detail: ?[]u8 = null;
-    defer if (parse_detail) |detail| allocator.free(detail);
-    var replay = loadReplay(allocator, resolution.resolved_path, &parse_detail) catch |err| {
-        return buildBenchmarkFailedOutput(allocator, parse_detail orelse benchmarkReplayLoadErrorDetail(err));
+    const io = std.Io.Threaded.global_single_threaded.io();
+    const replay_bytes = std.Io.Dir.cwd().readFileAlloc(
+        io,
+        resolution.resolved_path,
+        allocator,
+        .limited(replay_codec.max_replay_file_bytes),
+    ) catch |err| {
+        return buildBenchmarkFailedOutput(allocator, benchmarkReplayReadErrorDetail(err));
+    };
+    defer allocator.free(replay_bytes);
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = replay_codec.loadReplay(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildBenchmarkFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
     defer replay.deinit(allocator);
-
-    if (replay_codec.unsupportedReplayHeaderDetail(replay.header, replay.tickCount(), .benchmark)) |detail| {
-        return buildBenchmarkFailedOutput(allocator, detail);
-    }
 
     return runBenchmarkWithReplay(allocator, resolution.resolved_path, request, replay);
 }
@@ -416,23 +406,11 @@ fn runBenchmarkWithReplay(
     request: BenchmarkRequest,
     replay: replay_codec.Replay,
 ) !CommandOutput {
-    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildBenchmarkFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildBenchmarkFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventKindFailureDetail(allocator, replay.header.game_mode_id, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildBenchmarkFailedOutput(allocator, detail);
-    }
-
+    var failure: replay_runner.RunFailure = .{};
     var last_run: replay_runner.ReplayRunResult = undefined;
     for (0..request.warmup_runs) |_| {
-        last_run = runBenchmarkReplay(allocator, replay, request) catch |err| {
-            return buildBenchmarkFailedOutput(allocator, benchmarkReplayRunnerErrorDetail(err));
+        last_run = runBenchmarkReplay(allocator, replay, request, &failure) catch |err| {
+            return buildRunFailedOutput(allocator, failure, err);
         };
     }
 
@@ -442,15 +420,15 @@ fn runBenchmarkWithReplay(
     defer allocator.free(samples);
     for (samples) |*sample| {
         const start_ns = monotonicNanoseconds();
-        last_run = runBenchmarkReplay(allocator, replay, request) catch |err| {
-            return buildBenchmarkFailedOutput(allocator, benchmarkReplayRunnerErrorDetail(err));
+        last_run = runBenchmarkReplay(allocator, replay, request, &failure) catch |err| {
+            return buildRunFailedOutput(allocator, failure, err);
         };
         const end_ns = monotonicNanoseconds();
         const wall_ms = elapsedMs(start_ns, end_ns);
         sample.* = .{
             .wall_ms = wall_ms,
-            .ticks_per_second = ticksPerSecond(last_run.ticks, wall_ms),
-            .realtime_x = realtimeMultiplier(last_run.elapsed_ms_sim, wall_ms),
+            .ticks_per_second = ticksPerSecond(last_run.ticks_simulated, wall_ms),
+            .realtime_x = realtimeMultiplier(last_run.result.elapsed_ms, wall_ms),
         };
     }
 
@@ -458,11 +436,11 @@ fn runBenchmarkWithReplay(
     var profile_payload: ?ProfilePayload = null;
     if (request.profile) {
         const start_ns = monotonicNanoseconds();
-        const profile_run = runBenchmarkReplay(allocator, replay, request) catch |err| {
-            return buildBenchmarkFailedOutput(allocator, benchmarkReplayRunnerErrorDetail(err));
+        const profile_run = runBenchmarkReplay(allocator, replay, request, &failure) catch |err| {
+            return buildRunFailedOutput(allocator, failure, err);
         };
         const end_ns = monotonicNanoseconds();
-        if (!benchmarkRunResultsMatch(last_run, profile_run)) {
+        if (last_run.ticks_simulated != profile_run.ticks_simulated or !last_run.result.eql(&profile_run.result)) {
             return buildBenchmarkFailedOutput(allocator, "native replay profile run did not match measured benchmark result");
         }
         const profile_wall_s = elapsedMs(start_ns, end_ns) / 1000.0;
@@ -483,8 +461,7 @@ fn runBenchmarkWithReplay(
         };
     }
 
-    const run_result = buildRunResultPayload(replay.header, last_run);
-    const payload = buildBenchmarkPayload(allocator, replay_path, request, samples, run_result, profile_payload) catch |err| {
+    const payload = buildBenchmarkPayload(allocator, replay_path, request, samples, last_run, profile_payload) catch |err| {
         return buildBenchmarkFailedOutput(allocator, benchmarkAllocationErrorDetail(err));
     };
     defer allocator.free(payload);
@@ -534,7 +511,7 @@ fn runBenchmarkWithReplay(
             .{
                 request.runs,
                 request.warmup_runs,
-                run_result.ticks,
+                last_run.ticks_simulated,
                 wall.p50,
                 tps.p50,
                 realtime.p50,
@@ -581,13 +558,8 @@ fn runBenchmarkReplay(
     allocator: std.mem.Allocator,
     replay: replay_codec.Replay,
     request: BenchmarkRequest,
-) !replay_runner.ReplayRunResult {
-    if (!request.trace_rng) {
-        return replay_runner.runReplayWithOptions(replay, .{
-            .max_ticks = request.max_ticks,
-        });
-    }
-
+    failure: *replay_runner.RunFailure,
+) replay_runner.ReplayRunnerError!replay_runner.ReplayRunResult {
     var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {
         replay_runner.deinitReplayTickTraceRows(allocator, tick_trace.items);
@@ -596,67 +568,25 @@ fn runBenchmarkReplay(
     return replay_runner.runReplayWithTrace(
         allocator,
         replay,
-        &tick_trace,
+        if (request.trace_rng) &tick_trace else null,
         .{
             .max_ticks = request.max_ticks,
             .trace_rng = true,
             .trace_timing = false,
+            .failure = failure,
         },
     );
 }
 
-fn loadReplay(
+fn buildRunFailedOutput(
     allocator: std.mem.Allocator,
-    path: []const u8,
-    parse_detail: ?*?[]u8,
-) !replay_codec.Replay {
-    if (builtin.os.tag == .freestanding) return error.UnavailableOnFreestanding;
-
-    const io = std.Io.Threaded.global_single_threaded.io();
-    const replay_bytes = try std.Io.Dir.cwd().readFileAlloc(
-        io,
-        path,
-        allocator,
-        .limited(replay_codec.max_replay_file_bytes),
-    );
-    defer allocator.free(replay_bytes);
-
-    return loadReplayBytes(allocator, replay_bytes, parse_detail);
-}
-
-fn loadReplayBytes(
-    allocator: std.mem.Allocator,
-    replay_bytes: []const u8,
-    parse_detail: ?*?[]u8,
-) !replay_codec.Replay {
-    var replay_payload_alloc: ?[]u8 = null;
-    defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload = try replay_codec.inflateZstdFilePayload(
-        allocator,
-        replay_bytes,
-        replay_codec.max_replay_payload_bytes,
-    );
-    replay_payload_alloc = replay_payload;
-    return replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-        if (err == error.UnsupportedInputShape) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
-            }
-        } else if (err == error.UnsupportedEventShape) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
-            }
-        } else if (err == error.UnknownCommandKind) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
-            }
-        } else if (err == error.UnsupportedEventKind) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
-            }
-        }
-        return err;
-    };
+    failure: replay_runner.RunFailure,
+    err: replay_runner.ReplayRunnerError,
+) !CommandOutput {
+    var detail: std.Io.Writer.Allocating = .init(allocator);
+    defer detail.deinit();
+    try failure.write(&detail.writer, err);
+    return buildBenchmarkFailedOutput(allocator, detail.written());
 }
 
 const Metric = enum {
@@ -724,7 +654,7 @@ fn buildBenchmarkPayload(
     replay_path: []const u8,
     request: BenchmarkRequest,
     samples: []const BenchmarkSamplePayload,
-    run_result: RunResultPayload,
+    run: replay_runner.ReplayRunResult,
     profile: ?ProfilePayload,
 ) ![]u8 {
     const report: BenchmarkPayload = .{
@@ -745,7 +675,8 @@ fn buildBenchmarkPayload(
             .render_telemetry_out = null,
             .render_charts_out_dir = null,
         },
-        .run_result = run_result,
+        .ticks = run.ticks_simulated,
+        .run_result = run.result,
         .benchmark = .{
             .sample_count = samples.len,
             .samples = samples,
@@ -771,21 +702,6 @@ fn buildProfilePayloadJson(
     errdefer payload_writer.deinit();
     try std.json.Stringify.value(profile, .{}, &payload_writer.writer);
     return payload_writer.toOwnedSlice();
-}
-
-fn buildRunResultPayload(header: replay_codec.ReplayHeader, run: replay_runner.ReplayRunResult) RunResultPayload {
-    return .{
-        .game_mode_id = header.game_mode_id,
-        .tick_rate = header.tick_rate,
-        .ticks = @intCast(run.ticks),
-        .elapsed_ms = run.elapsed_ms_sim,
-        .score_xp = run.player_experience,
-        .creature_kill_count = run.creature_kill_count,
-        .most_used_weapon_id = run.most_used_weapon_id,
-        .shots_fired = run.shots_fired,
-        .shots_hit = run.shots_hit,
-        .rng_state = run.wave_spawn_rng_state,
-    };
 }
 
 fn unsupportedRenderBenchmarkOptionDetail(request: BenchmarkRequest) ?[]const u8 {
@@ -876,43 +792,10 @@ fn buildBenchmarkFailedOutput(
     return buildPrefixedErrorOutput(allocator, "replay benchmark failed", detail);
 }
 
-fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
+fn benchmarkReplayReadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
-        error.InvalidMsgpack => "replay payload does not match format 17 msgpack schema",
-        error.InvalidHeaderValue => "replay header contains invalid values",
-        error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
-        error.MissingHeaderField => "replay header missing required fields",
-        error.MissingQuestLevel => "quest replays require a valid header.quest_level",
-        error.TypoMultiplayer => "Typ-o replays require player_count == 1",
-        error.TutorialMultiplayer => "tutorial replays require player_count == 1",
-        error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 17",
-        error.UnsupportedEventShape => "replay tick operations do not match format 17",
-        error.InvalidZstdPayload => "unable to inflate replay zstd payload",
-        error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 17",
-        error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.FileTooBig => "replay zstd envelope exceeds max file size",
-        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay benchmark ran out of memory while loading replay",
-        else => @errorName(err),
-    };
-}
-
-fn benchmarkReplayRunnerErrorDetail(err: anyerror) []const u8 {
-    return switch (err) {
-        error.OutOfMemory => "native replay benchmark ran out of memory while running replay",
-        error.InvalidHeaderValue => "native replay benchmark received invalid header values",
-        error.InvalidCaptureEnumValue => "replay capture includes an invalid enum value",
-        error.UnsupportedGameMode => "native replay benchmark only supports survival/rush/quest/typo/tutorial modes",
-        error.UnsupportedPlayerCount => "native replay benchmark only supports 1-4 player replays",
-        error.UnsupportedInputQuantization => "native replay benchmark only supports f32 quantization",
-        error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
-        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
-        error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
-        error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
-        error.InvalidQuestSpawnTable => "replay capture references an invalid quest spawn table",
         else => @errorName(err),
     };
 }
@@ -1033,7 +916,7 @@ fn ticksPerSecond(ticks: usize, wall_ms: f64) f64 {
     return @as(f64, @floatFromInt(ticks)) / (wall_ms / 1000.0);
 }
 
-fn realtimeMultiplier(elapsed_ms: i64, wall_ms: f64) f64 {
+fn realtimeMultiplier(elapsed_ms: replay_codec.Int, wall_ms: f64) f64 {
     if (wall_ms <= 0.0) return 0.0;
     return @as(f64, @floatFromInt(elapsed_ms)) / wall_ms;
 }
@@ -1076,17 +959,6 @@ fn writeMetricAggregate2(
     );
 }
 
-fn benchmarkRunResultsMatch(left: replay_runner.ReplayRunResult, right: replay_runner.ReplayRunResult) bool {
-    return left.ticks == right.ticks and
-        left.elapsed_ms_sim == right.elapsed_ms_sim and
-        left.player_experience == right.player_experience and
-        left.creature_kill_count == right.creature_kill_count and
-        left.most_used_weapon_id == right.most_used_weapon_id and
-        left.shots_fired == right.shots_fired and
-        left.shots_hit == right.shots_hit and
-        left.wave_spawn_rng_state == right.wave_spawn_rng_state;
-}
-
 fn lessThanF64(_: void, left: f64, right: f64) bool {
     return left < right;
 }
@@ -1108,7 +980,7 @@ test "benchmark aggregate computes min max mean and upper median" {
 }
 
 test "byte replay benchmark emits JSON payload" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const output = try runReplayBenchmarkBytesJson(
@@ -1188,7 +1060,7 @@ test "benchmark writes json and profile artifacts in human mode" {
     const profile_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "profile.json" });
     defer allocator.free(profile_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1231,38 +1103,18 @@ test "benchmark writes json and profile artifacts in human mode" {
     try std.testing.expect(std.mem.indexOf(u8, profile_artifact, "\"hotspots\"") != null);
 }
 
-test "benchmark replay load errors use user-facing details" {
+test "benchmark replay read errors use user-facing details" {
     try std.testing.expectEqualStrings(
-        "replay payload does not match format 17 msgpack schema",
-        benchmarkReplayLoadErrorDetail(error.InvalidMsgpack),
-    );
-    try std.testing.expectEqualStrings(
-        "replay payload exceeds max decompressed size",
-        benchmarkReplayLoadErrorDetail(error.PayloadTooLarge),
+        "replay zstd envelope exceeds max file size",
+        benchmarkReplayReadErrorDetail(error.FileTooBig),
     );
     try std.testing.expectEqualStrings(
         "native replay benchmark ran out of memory while loading replay",
-        benchmarkReplayLoadErrorDetail(error.OutOfMemory),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 17",
-        benchmarkReplayLoadErrorDetail(error.UnknownCommandKind),
+        benchmarkReplayReadErrorDetail(error.OutOfMemory),
     );
 }
 
-test "benchmark runner and output errors use user-facing details" {
-    try std.testing.expectEqualStrings(
-        "native replay benchmark only supports survival/rush/quest/typo/tutorial modes",
-        benchmarkReplayRunnerErrorDetail(error.UnsupportedGameMode),
-    );
-    try std.testing.expectEqualStrings(
-        "replay events include an out-of-range player_index",
-        benchmarkReplayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick commands are invalid for this game mode",
-        benchmarkReplayRunnerErrorDetail(error.UnsupportedEventKind),
-    );
+test "benchmark setup and output errors use user-facing details" {
     try std.testing.expectEqualStrings(
         "native replay benchmark ran out of memory while resolving paths",
         benchmarkSetupErrorDetail(error.OutOfMemory),
@@ -1273,6 +1125,6 @@ test "benchmark runner and output errors use user-facing details" {
     );
     try std.testing.expectEqualStrings(
         "FileBusy",
-        benchmarkReplayRunnerErrorDetail(error.FileBusy),
+        benchmarkSetupErrorDetail(error.FileBusy),
     );
 }

@@ -132,7 +132,11 @@ class ScreenNavigator:
         mode = self._modes.get(mode_id)
         if mode is not None:
             return mode
-        ctx = ViewContext(assets_dir=self.state.assets_dir, preserve_bugs=self.state.preserve_bugs)
+        ctx = ViewContext(
+            assets_dir=self.state.assets_dir,
+            preserve_bugs=self.state.preserve_bugs,
+            replay_checkpoints=self.state.replay_checkpoints,
+        )
         mode_type = {
             GameMode.QUESTS: partial(QuestMode, demo_mode_active=self.state.demo_enabled),
             GameMode.SURVIVAL: SurvivalMode,

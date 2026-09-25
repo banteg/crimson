@@ -3,14 +3,15 @@ from __future__ import annotations
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.replay import ReplayRecorder
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_frame import normalize_input_frame
+from crimson.sim.run_spec import RunSpec
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.support.helpers import assert_float_close
-from tests.support.replay_runner_helpers import _run_verify_playback
+from tests.support.replay_runner_helpers import _run_verify_playback, unverified_replay
 
 
 def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
@@ -68,13 +69,7 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
 
 
 def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
-    header = ReplayHeader(
-        game_mode_id=GameMode.SURVIVAL,
-        seed=0x1234,
-        tick_rate=60,
-        player_count=2,
-    )
-    recorder = ReplayRecorder(header)
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0x1234, player_count=2))
     for tick in range(5):
         recorder.record_tick(
             [
@@ -90,7 +85,7 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
                 ),
             ],
         )
-    replay = recorder.finish()
+    replay = unverified_replay(recorder)
     checkpoints0 = []
     checkpoints1 = []
 

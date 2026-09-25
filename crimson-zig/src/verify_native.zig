@@ -2,11 +2,12 @@ const builtin = @import("builtin");
 const std = @import("std");
 
 const cdt_trace = @import("cdt_trace.zig");
+const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 const runtime_paths = @import("runtime_paths.zig");
 
-const replay_schema_version: i32 = 2;
+const replay_schema_version: i32 = 3;
 
 pub const CommandOutput = struct {
     stdout: []u8,
@@ -34,12 +35,6 @@ const VerifyRequest = struct {
     debug_trace_cdt: ?[]const u8 = null,
 };
 
-const ReplayRunnerProgressHint = struct {
-    processed_ticks: ?usize = null,
-    total_ticks: usize = 0,
-    event_count: usize = 0,
-};
-
 const ParseOutcome = union(enum) {
     ok: VerifyRequest,
     invalid: []const u8,
@@ -58,44 +53,19 @@ const ReplayResolution = struct {
     }
 };
 
-const RunResult = struct {
-    game_mode_id: i32,
-    tick_rate: i32,
-    ticks: i32,
-    elapsed_ms: i64,
-    score_xp: i64,
-    creature_kill_count: i32,
-    most_used_weapon_id: i32,
-    shots_fired: i32,
-    shots_hit: i32,
-    rng_state: u64,
-};
-
-const ClaimedStatsPayload = struct {
-    complete: bool,
-    ticks: i32,
-    elapsed_ms: i64,
-    score_xp: i64,
-    kills: i32,
-    most_used_weapon_id: i32,
-    shots_fired: i32,
-    shots_hit: i32,
-};
-
-const HeaderClaimPayload = struct {
-    expected: ClaimedStatsPayload,
-    simulated: ClaimedStatsPayload,
-    match: bool,
-    mismatched_fields: []const []const u8,
-};
+const VerifyStatus = enum { ok, result_mismatch, partial };
 
 const VerifyPayload = struct {
-    schema_version: i32,
-    status: []const u8,
+    schema_version: i32 = replay_schema_version,
+    status: VerifyStatus,
     replay: []const u8,
-    run_result: RunResult,
-    header_claim: ?HeaderClaimPayload,
-    score_claim: ?struct {},
+    payload_sha256: []const u8,
+    game_version: []const u8,
+    ticks: usize,
+    ticks_simulated: usize,
+    result: replay_codec.RunResult,
+    recorded: replay_codec.RunResult,
+    mismatched_fields: []const []const u8,
 };
 
 pub fn runReplayVerify(
@@ -173,169 +143,80 @@ fn runVerifyWithReplayBytes(
     replay_path: []const u8,
     replay_bytes: []const u8,
 ) !CommandOutput {
-    var replay_payload_alloc: ?[]u8 = null;
-    defer if (replay_payload_alloc) |buf| allocator.free(buf);
-
-    const replay_payload = replay_codec.inflateZstdFilePayload(
-        allocator,
-        replay_bytes,
-        replay_codec.max_replay_payload_bytes,
-    ) catch |err| {
-        return buildOutputForReplayCodecError(allocator, err);
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const payload = replay_codec.inflateReplayFile(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildVerifyFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
-    replay_payload_alloc = replay_payload;
-
-    var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-        if (err == error.UnsupportedInputShape) {
-            if (try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload)) |detail| {
-                defer allocator.free(detail);
-                return buildVerifyFailedOutput(allocator, detail);
-            }
-        } else if (err == error.UnsupportedEventShape) {
-            if (try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload)) |detail| {
-                defer allocator.free(detail);
-                return buildVerifyFailedOutput(allocator, detail);
-            }
-        } else if (err == error.UnknownCommandKind) {
-            if (try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload)) |detail| {
-                defer allocator.free(detail);
-                return buildVerifyFailedOutput(allocator, detail);
-            }
-        } else if (err == error.UnsupportedEventKind) {
-            if (try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload)) |detail| {
-                defer allocator.free(detail);
-                return buildVerifyFailedOutput(allocator, detail);
-            }
-        }
-        return buildOutputForReplayCodecError(allocator, err);
+    defer allocator.free(payload);
+    const replay = replay_codec.decodePayload(allocator, payload, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildVerifyFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
     defer replay.deinit(allocator);
-    const header = replay.header;
 
-    if (replay_codec.unsupportedReplayHeaderDetail(header, replay.tickCount(), .verifier)) |detail| {
-        return buildVerifyFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildVerifyFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, header.player_count, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildVerifyFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventKindFailureDetail(allocator, header.game_mode_id, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildVerifyFailedOutput(allocator, detail);
-    }
     const trace_requested = request.trace_rng or request.debug_trace_cdt != null;
-    const ticks_to_simulate: usize = if (request.max_ticks) |max_ticks|
-        @min(max_ticks, replay.tickCount())
-    else
-        replay.tickCount();
-    const full_replay_simulated = ticks_to_simulate == replay.tickCount();
     var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
-    defer if (trace_requested) {
+    defer {
         replay_runner.deinitReplayTickTraceRows(allocator, tick_trace.items);
         tick_trace.deinit(allocator);
-    };
-
-    const run = blk: {
-        if (trace_requested) {
-            const traced = replay_runner.runReplayWithTrace(
-                allocator,
-                replay,
-                &tick_trace,
-                .{
-                    .max_ticks = request.max_ticks,
-                    .trace_rng = request.trace_rng or request.debug_trace_cdt != null,
-                    .trace_timing = request.debug_trace_cdt != null,
-                },
-            ) catch |err| {
-                writeRequestedDebugTraceOutputs(
-                    allocator,
-                    request,
-                    replay_path,
-                    replay_bytes,
-                    replay,
-                    tick_trace.items,
-                ) catch |trace_err| {
-                    return buildVerifyFailedOutput(allocator, verifyDebugTraceErrorDetail(trace_err));
-                };
-                return buildReplayRunnerFailureOutput(
-                    allocator,
-                    err,
-                    .{
-                        .processed_ticks = tick_trace.items.len,
-                        .total_ticks = ticks_to_simulate,
-                        .event_count = replay.prelude.len + replay.postlude.len + replay.events.len,
-                    },
-                );
-            };
-            break :blk traced;
-        }
-
-        break :blk replay_runner.runReplayWithOptions(replay, .{
-            .max_ticks = request.max_ticks,
-        }) catch |err| {
-            return buildReplayRunnerFailureOutput(
-                allocator,
-                err,
-                .{
-                    .total_ticks = ticks_to_simulate,
-                    .event_count = replay.prelude.len + replay.postlude.len + replay.events.len,
-                },
-            );
-        };
-    };
-
-    const run_result: RunResult = .{
-        .game_mode_id = header.game_mode_id,
-        .tick_rate = header.tick_rate,
-        .ticks = @intCast(run.ticks),
-        .elapsed_ms = run.elapsed_ms_sim,
-        .score_xp = run.player_experience,
-        .creature_kill_count = run.creature_kill_count,
-        .most_used_weapon_id = run.most_used_weapon_id,
-        .shots_fired = run.shots_fired,
-        .shots_hit = run.shots_hit,
-        .rng_state = run.wave_spawn_rng_state,
-    };
-    var header_claim_payload_storage: ?HeaderClaimPayload = null;
-    defer if (header_claim_payload_storage) |payload| allocator.free(payload.mismatched_fields);
-
-    var status: []const u8 = "ok";
-    var exit_code: u8 = 0;
-    if (full_replay_simulated) {
-        const header_claim_payload = try buildHeaderClaimPayload(allocator, header.claimed_stats, run_result);
-        header_claim_payload_storage = header_claim_payload;
-        status = if (header_claim_payload.match) "ok" else "header_stats_mismatch";
-        exit_code = if (std.mem.eql(u8, status, "ok")) 0 else 3;
     }
-
-    if (trace_requested) {
-        writeRequestedDebugTraceOutputs(
-            allocator,
-            request,
-            replay_path,
-            replay_bytes,
-            replay,
-            tick_trace.items,
-        ) catch |trace_err| {
+    var failure: replay_runner.RunFailure = .{};
+    const run_or_err = replay_runner.runReplayWithTrace(
+        allocator,
+        replay,
+        if (trace_requested) &tick_trace else null,
+        .{
+            .max_ticks = request.max_ticks,
+            .trace_rng = trace_requested,
+            .trace_timing = request.debug_trace_cdt != null,
+            .failure = &failure,
+        },
+    );
+    // A failed run still writes the ticks it simulated, for debugging.
+    if (trace_requested and (!std.meta.isError(run_or_err) or tick_trace.items.len > 0)) {
+        writeRequestedDebugTraceOutputs(allocator, request, replay_path, replay_bytes, replay, tick_trace.items) catch |trace_err| {
             return buildVerifyFailedOutput(allocator, verifyDebugTraceErrorDetail(trace_err));
         };
     }
+    const run = run_or_err catch |err| {
+        var detail: std.Io.Writer.Allocating = .init(allocator);
+        defer detail.deinit();
+        try failure.write(&detail.writer, err);
+        return buildVerifyFailedOutput(allocator, detail.written());
+    };
 
-    const payload = try buildVerifyPayload(
-        allocator,
-        replay_path,
-        run_result,
-        status,
-        header_claim_payload_storage,
-    );
-    defer allocator.free(payload);
+    var arena: std.heap.ArenaAllocator = .init(allocator);
+    defer arena.deinit();
+    const mismatched_fields: []const []const u8 = if (run.complete)
+        try replay.result.mismatches(arena.allocator(), &run.result)
+    else
+        &.{};
+    const status: VerifyStatus = if (!run.complete)
+        .partial
+    else if (mismatched_fields.len > 0)
+        .result_mismatch
+    else
+        .ok;
+
+    var payload_sha256: [64]u8 = undefined;
+    hash.sha256HexLower(payload, &payload_sha256);
+    const payload_report: VerifyPayload = .{
+        .status = status,
+        .replay = replay_path,
+        .payload_sha256 = &payload_sha256,
+        .game_version = replay.game_version,
+        .ticks = replay.tickCount(),
+        .ticks_simulated = run.ticks_simulated,
+        .result = run.result,
+        .recorded = replay.result,
+        .mismatched_fields = mismatched_fields,
+    };
+    const report = try std.json.Stringify.valueAlloc(allocator, payload_report, .{});
+    defer allocator.free(report);
 
     if (request.json_out) |json_out_path| {
-        writeFileWithParents(json_out_path, payload) catch |err| {
+        writeFileWithParents(json_out_path, report) catch |err| {
             return buildVerifyFailedOutput(allocator, verifyJsonOutErrorDetail(err));
         };
     }
@@ -343,46 +224,31 @@ fn runVerifyWithReplayBytes(
     var stdout_buf: std.Io.Writer.Allocating = .init(allocator);
     defer stdout_buf.deinit();
     const writer = &stdout_buf.writer;
-
-    if (request.json_out) |json_out_path| {
-        if (request.output_format == .human) {
-            try writer.print("json_report={s}\n", .{json_out_path});
-        }
-    }
-
     if (request.output_format == .json) {
-        try writer.writeAll(payload);
+        try writer.writeAll(report);
         try writer.writeByte('\n');
     } else {
+        if (request.json_out) |json_out_path| try writer.print("json_report={s}\n", .{json_out_path});
+        const result = run.result;
         try writer.print(
-            "{s}: ticks={d} elapsed_ms={d} score_xp={d} kills={d} most_used_weapon_id={d} shots_fired={d} shots_hit={d} rng_state={d}",
+            "{s}: outcome={s} ticks={d}/{d} elapsed_ms={d} score_xp={d} kills={d} rng_state={d}",
             .{
-                status,
-                run_result.ticks,
-                run_result.elapsed_ms,
-                run_result.score_xp,
-                run_result.creature_kill_count,
-                run_result.most_used_weapon_id,
-                run_result.shots_fired,
-                run_result.shots_hit,
-                run_result.rng_state,
+                @tagName(status),
+                @tagName(result.outcome),
+                run.ticks_simulated,
+                replay.tickCount(),
+                result.elapsed_ms,
+                result.players()[0].experience,
+                result.kills,
+                result.rng_state,
             },
         );
-        if (header_claim_payload_storage) |header_claim_payload| {
-            try writer.print(
-                "; header_claim complete={s} match={s} mismatches=",
-                .{
-                    if (header_claim_payload.expected.complete) "True" else "False",
-                    if (header_claim_payload.match) "True" else "False",
-                },
-            );
-            if (header_claim_payload.mismatched_fields.len == 0) {
-                try writer.writeAll("-");
-            } else {
-                for (header_claim_payload.mismatched_fields, 0..) |field, idx| {
-                    if (idx != 0) try writer.writeByte(',');
-                    try writer.writeAll(field);
-                }
+        if (result.quest_final_ms) |quest_final_ms| try writer.print(" quest_final_ms={d}", .{quest_final_ms});
+        if (mismatched_fields.len > 0) {
+            try writer.writeAll("; mismatches=");
+            for (mismatched_fields, 0..) |field, index| {
+                if (index != 0) try writer.writeByte(',');
+                try writer.writeAll(field);
             }
         }
         try writer.writeByte('\n');
@@ -391,7 +257,7 @@ fn runVerifyWithReplayBytes(
     return .{
         .stdout = try stdout_buf.toOwnedSlice(),
         .stderr = try allocator.dupe(u8, ""),
-        .exit_code = exit_code,
+        .exit_code = if (status == .result_mismatch) 3 else 0,
     };
 }
 
@@ -417,98 +283,6 @@ fn writeRequestedDebugTraceOutputs(
             tick_trace,
         );
     }
-}
-
-fn buildHeaderClaimPayload(
-    allocator: std.mem.Allocator,
-    claimed: replay_codec.ReplayClaimedStats,
-    run_result: RunResult,
-) !HeaderClaimPayload {
-    const expected: ClaimedStatsPayload = .{
-        .complete = claimed.complete,
-        .ticks = claimed.ticks,
-        .elapsed_ms = claimed.elapsed_ms,
-        .score_xp = claimed.score_xp,
-        .kills = claimed.kills,
-        .most_used_weapon_id = claimed.most_used_weapon_id,
-        .shots_fired = claimed.shots_fired,
-        .shots_hit = claimed.shots_hit,
-    };
-    const simulated: ClaimedStatsPayload = .{
-        .complete = claimed.complete,
-        .ticks = run_result.ticks,
-        .elapsed_ms = run_result.elapsed_ms,
-        .score_xp = run_result.score_xp,
-        .kills = run_result.creature_kill_count,
-        .most_used_weapon_id = run_result.most_used_weapon_id,
-        .shots_fired = run_result.shots_fired,
-        .shots_hit = run_result.shots_hit,
-    };
-
-    var mismatch_buffer: [7][]const u8 = undefined;
-    var mismatch_count: usize = 0;
-    if (expected.ticks != simulated.ticks) {
-        mismatch_buffer[mismatch_count] = "ticks";
-        mismatch_count += 1;
-    }
-    if (expected.elapsed_ms != simulated.elapsed_ms) {
-        mismatch_buffer[mismatch_count] = "elapsed_ms";
-        mismatch_count += 1;
-    }
-    if (expected.score_xp != simulated.score_xp) {
-        mismatch_buffer[mismatch_count] = "score_xp";
-        mismatch_count += 1;
-    }
-    if (expected.kills != simulated.kills) {
-        mismatch_buffer[mismatch_count] = "kills";
-        mismatch_count += 1;
-    }
-    if (expected.most_used_weapon_id != simulated.most_used_weapon_id) {
-        mismatch_buffer[mismatch_count] = "most_used_weapon_id";
-        mismatch_count += 1;
-    }
-    if (expected.shots_fired != simulated.shots_fired) {
-        mismatch_buffer[mismatch_count] = "shots_fired";
-        mismatch_count += 1;
-    }
-    if (expected.shots_hit != simulated.shots_hit) {
-        mismatch_buffer[mismatch_count] = "shots_hit";
-        mismatch_count += 1;
-    }
-
-    const mismatched_fields = try allocator.alloc([]const u8, mismatch_count);
-    for (mismatch_buffer[0..mismatch_count], 0..) |field, idx| {
-        mismatched_fields[idx] = field;
-    }
-
-    return .{
-        .expected = expected,
-        .simulated = simulated,
-        .match = mismatch_count == 0,
-        .mismatched_fields = mismatched_fields,
-    };
-}
-
-fn buildVerifyPayload(
-    allocator: std.mem.Allocator,
-    replay_path: []const u8,
-    run_result: RunResult,
-    status: []const u8,
-    header_claim: ?HeaderClaimPayload,
-) ![]u8 {
-    const report: VerifyPayload = .{
-        .schema_version = replay_schema_version,
-        .status = status,
-        .replay = replay_path,
-        .run_result = run_result,
-        .header_claim = header_claim,
-        .score_claim = null,
-    };
-
-    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
-    errdefer payload_writer.deinit();
-    try std.json.Stringify.value(report, .{}, &payload_writer.writer);
-    return payload_writer.toOwnedSlice();
 }
 
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
@@ -624,80 +398,6 @@ fn verifyJsonOutErrorDetail(err: anyerror) []const u8 {
         error.AccessDenied => "unable to write replay verify JSON: access denied",
         error.OutOfMemory => "native replay verifier ran out of memory while writing JSON",
         else => @errorName(err),
-    };
-}
-
-fn buildOutputForReplayCodecError(
-    allocator: std.mem.Allocator,
-    err: replay_codec.ReplayCodecError,
-) !CommandOutput {
-    switch (err) {
-        error.InvalidMsgpack => return buildVerifyFailedOutput(allocator, "replay payload does not match format 17 msgpack schema"),
-        error.InvalidHeaderValue => return buildVerifyFailedOutput(allocator, "replay header contains invalid values"),
-        error.InvalidClaimedStats => return buildVerifyFailedOutput(allocator, "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired"),
-        error.MissingHeaderField => return buildVerifyFailedOutput(allocator, "replay header missing required fields"),
-        error.MissingQuestLevel => return buildVerifyFailedOutput(allocator, "quest replays require a valid header.quest_level"),
-        error.TypoMultiplayer => return buildVerifyFailedOutput(allocator, "Typ-o replays require player_count == 1"),
-        error.TutorialMultiplayer => return buildVerifyFailedOutput(allocator, "tutorial replays require player_count == 1"),
-        error.UnsupportedGameMode => return buildVerifyFailedOutput(allocator, "replay game mode is not supported"),
-        error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay tick inputs do not match format 17"),
-        error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay tick operations do not match format 17"),
-        error.UnsupportedEventKind => return buildVerifyFailedOutput(allocator, "replay tick commands are invalid for this game mode"),
-        error.InvalidZstdPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay zstd payload"),
-        error.UnsupportedReplayFormatVersion => return buildVerifyFailedOutput(allocator, "replay format version is not supported"),
-        error.UnknownCommandKind => return buildVerifyFailedOutput(allocator, "replay tick operations do not match format 17"),
-        error.UnsupportedInputQuantization => return buildVerifyFailedOutput(allocator, "replay input quantization is not supported"),
-        error.PayloadTooLarge => return buildVerifyFailedOutput(allocator, "replay payload exceeds max decompressed size"),
-        error.OutOfMemory => return buildVerifyFailedOutput(allocator, "native replay msgpack decode ran out of memory"),
-    }
-}
-
-fn buildReplayRunnerFailureOutput(
-    allocator: std.mem.Allocator,
-    err: replay_runner.ReplayRunnerError,
-    progress: ReplayRunnerProgressHint,
-) !CommandOutput {
-    const detail = switch (err) {
-        error.OutOfMemory => "native replay run ran out of memory",
-        error.InvalidHeaderValue => "native replay run received invalid header values",
-        error.UnsupportedGameMode => "native replay run only supports survival/rush/quest/typo/tutorial modes",
-        error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
-        error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
-        error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
-        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
-        error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
-        error.InvalidSpawnTemplate => "replay capture payload references an invalid creature spawn template",
-        error.InvalidQuestSpawnTable => "quest replay/session payload resolves to an invalid quest spawn table",
-        error.MissingRngCallerTag => "native replay trace hit an untagged gameplay RNG draw",
-    };
-
-    var stderr_buf: std.Io.Writer.Allocating = .init(allocator);
-    defer stderr_buf.deinit();
-    const writer = &stderr_buf.writer;
-    try writer.print("replay verification failed in the native runtime: {s}", .{detail});
-    if (progress.processed_ticks) |processed_ticks| {
-        try writer.print(
-            " (progress: ticks_processed={d}/{d}, event_count={d})\n",
-            .{ processed_ticks, progress.total_ticks, progress.event_count },
-        );
-    } else if (progress.total_ticks > 0 or progress.event_count > 0) {
-        try writer.print(
-            " (progress: ticks_total={d}, event_count={d})\n",
-            .{ progress.total_ticks, progress.event_count },
-        );
-    } else {
-        try writer.writeByte('\n');
-    }
-
-    const stderr = try stderr_buf.toOwnedSlice();
-    errdefer allocator.free(stderr);
-    const stdout = try allocator.dupe(u8, "");
-
-    return .{
-        .stdout = stdout,
-        .stderr = stderr,
-        .exit_code = 1,
     };
 }
 
@@ -1007,84 +707,6 @@ test "parse native subset reports removed submitted score option as invalid" {
     }
 }
 
-test "build verify payload header mismatch" {
-    const allocator = std.testing.allocator;
-    const mismatched = [_][]const u8{"score_xp"};
-    const header_claim: HeaderClaimPayload = .{
-        .expected = .{
-            .complete = true,
-            .ticks = 100,
-            .elapsed_ms = 2000,
-            .score_xp = 1000,
-            .kills = 15,
-            .most_used_weapon_id = 14,
-            .shots_fired = 123,
-            .shots_hit = 45,
-        },
-        .simulated = .{
-            .complete = true,
-            .ticks = 100,
-            .elapsed_ms = 2000,
-            .score_xp = 999,
-            .kills = 15,
-            .most_used_weapon_id = 14,
-            .shots_fired = 123,
-            .shots_hit = 45,
-        },
-        .match = false,
-        .mismatched_fields = mismatched[0..],
-    };
-    const payload = try buildVerifyPayload(
-        allocator,
-        "/tmp/replay.crd",
-        .{
-            .game_mode_id = 1,
-            .tick_rate = 60,
-            .ticks = 100,
-            .elapsed_ms = 2000,
-            .score_xp = 999,
-            .creature_kill_count = 15,
-            .most_used_weapon_id = 14,
-            .shots_fired = 123,
-            .shots_hit = 45,
-            .rng_state = 1234,
-        },
-        "header_stats_mismatch",
-        header_claim,
-    );
-    defer allocator.free(payload);
-
-    try std.testing.expect(std.mem.indexOf(u8, payload, "\"schema_version\":2") != null);
-    try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"header_stats_mismatch\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, payload, "\"mismatched_fields\":[\"score_xp\"]") != null);
-    try std.testing.expect(std.mem.indexOf(u8, payload, "replay_sha256") == null);
-}
-
-test "build verify payload escapes replay path via json stringify" {
-    const allocator = std.testing.allocator;
-    const payload = try buildVerifyPayload(
-        allocator,
-        "test\"\nreplay.crd",
-        .{
-            .game_mode_id = 1,
-            .tick_rate = 60,
-            .ticks = 100,
-            .elapsed_ms = 2000,
-            .score_xp = 999,
-            .creature_kill_count = 15,
-            .most_used_weapon_id = 14,
-            .shots_fired = 123,
-            .shots_hit = 45,
-            .rng_state = 1234,
-        },
-        "ok",
-        null,
-    );
-    defer allocator.free(payload);
-
-    try std.testing.expect(std.mem.indexOf(u8, payload, "\"replay\":\"test\\\"\\nreplay.crd\"") != null);
-}
-
 test "replay verify file and output errors use user-facing details" {
     try std.testing.expectEqualStrings(
         "native replay verifier ran out of memory while resolving paths",
@@ -1108,156 +730,68 @@ test "replay verify file and output errors use user-facing details" {
     );
 }
 
-test "replay codec invalid replay errors map to verify failed output" {
-    const allocator = std.testing.allocator;
-    const cases = [_]struct {
-        err: replay_codec.ReplayCodecError,
-        detail: []const u8,
-    }{
-        .{ .err = error.InvalidMsgpack, .detail = "replay payload does not match format 17 msgpack schema" },
-        .{ .err = error.InvalidHeaderValue, .detail = "replay header contains invalid values" },
-        .{ .err = error.InvalidClaimedStats, .detail = "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired" },
-        .{ .err = error.MissingHeaderField, .detail = "replay header missing required fields" },
-        .{ .err = error.MissingQuestLevel, .detail = "quest replays require a valid header.quest_level" },
-        .{ .err = error.TypoMultiplayer, .detail = "Typ-o replays require player_count == 1" },
-        .{ .err = error.TutorialMultiplayer, .detail = "tutorial replays require player_count == 1" },
-        .{ .err = error.UnsupportedGameMode, .detail = "replay game mode is not supported" },
-        .{ .err = error.UnsupportedInputShape, .detail = "replay tick inputs do not match format 17" },
-        .{ .err = error.UnsupportedEventShape, .detail = "replay tick operations do not match format 17" },
-        .{ .err = error.UnsupportedEventKind, .detail = "replay tick commands are invalid for this game mode" },
-        .{ .err = error.InvalidZstdPayload, .detail = "unable to inflate replay zstd payload" },
-        .{ .err = error.UnsupportedReplayFormatVersion, .detail = "replay format version is not supported" },
-        .{ .err = error.UnknownCommandKind, .detail = "replay tick operations do not match format 17" },
-        .{ .err = error.UnsupportedInputQuantization, .detail = "replay input quantization is not supported" },
-        .{ .err = error.PayloadTooLarge, .detail = "replay payload exceeds max decompressed size" },
-        .{ .err = error.OutOfMemory, .detail = "native replay msgpack decode ran out of memory" },
-    };
-
-    for (cases) |case_item| {
-        const output = try buildOutputForReplayCodecError(allocator, case_item.err);
-        defer output.deinit(allocator);
-
-        try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") != null);
-        try std.testing.expect(std.mem.indexOf(u8, output.stderr, case_item.detail) != null);
-        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "native runtime limitation") == null);
-    }
+fn verifyBytes(replay_bytes: []const u8, max_ticks: ?usize) !CommandOutput {
+    return runReplayVerifyBytesJson(std.testing.allocator, "smoke.crd", replay_bytes, max_ticks);
 }
 
-test "runtime replay failure output includes progress hints" {
+test "verify reports ok, the payload hash and both results for a matching replay" {
     const allocator = std.testing.allocator;
-    const output = try buildReplayRunnerFailureOutput(
-        allocator,
-        error.UnsupportedEventKind,
-        .{
-            .processed_ticks = 2559,
-            .total_ticks = 8807,
-            .event_count = 8,
-        },
-    );
-    defer allocator.free(output.stdout);
-    defer allocator.free(output.stderr);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(allocator);
+    defer allocator.free(replay_bytes);
 
-    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay tick commands are invalid for this game mode") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "ticks_processed=2559/8807") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "event_count=8") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "unsupported") == null);
+    const output = try verifyBytes(replay_bytes, null);
+    defer output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), output.exit_code);
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, output.stdout, .{});
+    defer parsed.deinit();
+    const object = parsed.value.object;
+    try std.testing.expectEqual(@as(i64, 3), object.get("schema_version").?.integer);
+    try std.testing.expectEqualStrings("ok", object.get("status").?.string);
+    try std.testing.expectEqual(@as(usize, 64), object.get("payload_sha256").?.string.len);
+    try std.testing.expectEqual(@as(i64, 2), object.get("ticks").?.integer);
+    try std.testing.expectEqual(@as(i64, 2), object.get("ticks_simulated").?.integer);
+    try std.testing.expectEqualStrings("incomplete", object.get("result").?.object.get("outcome").?.string);
+    try std.testing.expectEqual(@as(usize, 0), object.get("mismatched_fields").?.array.items.len);
 }
 
-fn makeTestReplayHeader(
-    allocator: std.mem.Allocator,
-) !replay_codec.ReplayHeader {
-    return .{
-        .game_mode_id = 1,
-        .seed = 1,
-        .replay_format_version = replay_codec.replay_format_version,
-        .quest_level = try allocator.dupe(u8, ""),
-        .game_version = try allocator.dupe(u8, "0.9.0"),
-        .tick_rate = 60,
-        .quest_fail_retry_count = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .violence_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
-        },
-        .input_quantization = try allocator.dupe(u8, "f32"),
-    };
+test "verify reports a result mismatch with exit code 3 and a partial prefix without comparison" {
+    const allocator = std.testing.allocator;
+    const payload = try replay_runner.buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(payload);
+    var diagnostic: replay_codec.Diagnostic = .{};
+    var replay = try replay_codec.decodePayload(allocator, payload, &diagnostic);
+    defer replay.deinit(allocator);
+    replay.result.kills = 7;
+    const tampered = try replay_codec.encodePayload(allocator, replay);
+    defer allocator.free(tampered);
+    const tampered_file = try replay_codec.wrapZstdFilePayload(allocator, tampered);
+    defer allocator.free(tampered_file);
+
+    const mismatch = try verifyBytes(tampered_file, null);
+    defer mismatch.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 3), mismatch.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, mismatch.stdout, "\"status\":\"result_mismatch\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, mismatch.stdout, "\"mismatched_fields\":[\"kills\"]") != null);
+
+    const partial = try verifyBytes(tampered_file, 1);
+    defer partial.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 0), partial.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, partial.stdout, "\"status\":\"partial\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, partial.stdout, "\"ticks_simulated\":1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, partial.stdout, "\"mismatched_fields\":[]") != null);
 }
 
-test "unsupported replay header detail rejects unsupported game mode" {
+test "verify failures name the invalid field" {
     const allocator = std.testing.allocator;
-    var header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-    header.game_mode_id = 9;
+    const not_msgpack = try replay_codec.wrapZstdFilePayload(allocator, "not msgpack");
+    defer allocator.free(not_msgpack);
+    const output = try verifyBytes(not_msgpack, null);
+    defer output.deinit(allocator);
+    try std.testing.expectEqual(@as(u8, 1), output.exit_code);
+    try std.testing.expectEqualStrings("", output.stdout);
+    try std.testing.expect(std.mem.startsWith(u8, output.stderr, "replay verification failed: "));
 
-    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("native replay tools support only survival/rush/quest/typo/tutorial modes", detail);
-}
-
-test "unsupported replay header detail rejects unsupported player count" {
-    const allocator = std.testing.allocator;
-    var header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-    header.player_count = 5;
-
-    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("native replay tools support only 1-4 player replays", detail);
-}
-
-test "unsupported replay header detail rejects non f32 quantization" {
-    const allocator = std.testing.allocator;
-    var header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-    allocator.free(header.input_quantization);
-    header.input_quantization = try allocator.dupe(u8, "u8");
-
-    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("native replay tools support only f32 input quantization", detail);
-}
-
-test "unsupported replay header detail rejects oversized tick count" {
-    const allocator = std.testing.allocator;
-    const header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-
-    const overflow_ticks = @as(usize, std.math.maxInt(i32)) + 1;
-    const detail = replay_codec.unsupportedReplayHeaderDetail(header, overflow_ticks, .verifier) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("replay has too many ticks for current native verifier", detail);
-}
-
-test "unsupported replay header detail rejects non latest ruleset" {
-    const allocator = std.testing.allocator;
-    var header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-    allocator.free(header.game_version);
-    header.game_version = try allocator.dupe(u8, "0.6.9");
-
-    const detail = replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("native replay tools require latest ruleset replays unless preserve_bugs is set", detail);
-}
-
-test "unsupported replay header detail accepts supported replay envelope" {
-    const allocator = std.testing.allocator;
-    const header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-
-    try std.testing.expect(replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) == null);
-}
-
-test "unsupported replay header detail accepts preserve bugs older ruleset replay envelope" {
-    const allocator = std.testing.allocator;
-    var header = try makeTestReplayHeader(allocator);
-    defer header.deinit(allocator);
-    header.preserve_bugs = true;
-    allocator.free(header.game_version);
-    header.game_version = try allocator.dupe(u8, "0.6.9");
-
-    try std.testing.expect(replay_codec.unsupportedReplayHeaderDetail(header, 1, .verifier) == null);
+    const raw = try verifyBytes("raw bytes", null);
+    defer raw.deinit(allocator);
+    try std.testing.expectEqualStrings("replay verification failed: replay must use the zstd envelope\n", raw.stderr);
 }

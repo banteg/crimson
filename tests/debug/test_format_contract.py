@@ -14,7 +14,7 @@ from crimson.dbg.frida_finalize import (
 )
 from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
-from crimson.replay.types import REPLAY_FORMAT_VERSION, ReplayTick
+from crimson.replay.types import REPLAY_FORMAT_VERSION
 
 
 def _field_names(struct_type: type[msgspec.Struct]) -> tuple[str, ...]:
@@ -29,17 +29,15 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         CHECKPOINT_FORMAT_VERSION,
         FRIDA_CAPTURE_FORMAT_VERSION,
         FRIDA_EVIDENCE_FORMAT_VERSION,
-    ) == (2, 19, 19, 5, 28, 3)
+    ) == (2, 19, 20, 5, 28, 3)
 
 
 def test_cross_language_format_contract_is_wired() -> None:
     assert format_contract_errors() == []
 
 
-def test_replay_and_trace_share_the_same_tick_boundary_order() -> None:
-    expected = ("dt", "inputs", "prelude", "postlude", "commands")
-    assert _field_names(ReplayTick) == expected
-    assert _field_names(ReplayStepSnapshot) == expected
+def test_trace_tick_boundary_order_is_explicit() -> None:
+    assert _field_names(ReplayStepSnapshot) == ("dt", "inputs", "prelude", "postlude", "commands")
 
 
 def test_frida_agent_uses_the_python_capture_format_version() -> None:

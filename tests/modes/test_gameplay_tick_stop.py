@@ -1,8 +1,9 @@
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
-from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.replay import ReplayRecorder
 from crimson.sim.input import PlayerInput
+from crimson.sim.run_spec import RunSpec
 from grim.rand import Crand
 from grim.view import ViewContext
 
@@ -18,7 +19,7 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
     mocker.patch.object(mode, "_sync_audio_and_ground")
     mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput()])
     present = mocker.patch.object(base_gameplay_mode, "apply_presentation_outputs")
-    recorder = ReplayRecorder(ReplayHeader(game_mode_id=GameMode.RUSH, seed=1))
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.RUSH, seed=1))
     def check_finished_recording() -> None:
         assert recorder.tick_index == 1
 

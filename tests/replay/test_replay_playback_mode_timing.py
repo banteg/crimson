@@ -4,14 +4,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 
-from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
 from crimson.render.world.viewport import ViewTransform
-from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.world.render_resources import RenderResources
 from crimson.world.sim_world_state import SimWorldState
 from grim.geom import Vec2
 from tests.support.builders import FakePlaybackDriver
+from tests.support.replay_runner_helpers import idle_replay
 
 
 def _assets_dir() -> Path:
@@ -44,12 +43,6 @@ class _StubReplayRuntime:
         return None
 
 
-def _replay_with_ticks(tick_count: int) -> Replay:
-    return Replay(
-        header=ReplayHeader(game_mode_id=GameMode.DEMO, seed=0),
-        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
-    )
-
 
 def _capture_output_ticks(mocker, captured_ticks: list[int]) -> None:
     def _apply_presentation_outputs(*, outputs, **_kwargs) -> None:
@@ -67,7 +60,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     view, _console = replay_playback_view
 
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
-    view._replay = _replay_with_ticks(16)
+    view._replay = idle_replay(16)
     view._runtime = _StubReplayRuntime()
     view._finished = False
     view._paused = False
@@ -89,7 +82,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
 def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_view) -> None:
     view, _console = replay_playback_view
 
-    view._replay = _replay_with_ticks(2)
+    view._replay = idle_replay(2)
     view._runtime = _StubReplayRuntime()
     view._max_ticks = None
     view._tick_index = 0
@@ -108,7 +101,7 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
 def test_replay_runner_eos_applies_partial_completed_results(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
 
-    view._replay = _replay_with_ticks(2)
+    view._replay = idle_replay(2)
     view._runtime = _StubReplayRuntime()
     view._max_ticks = None
     view._tick_index = 0
@@ -131,7 +124,7 @@ def test_replay_runner_eos_applies_partial_completed_results(mocker, replay_play
 def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
 
-    view._replay = _replay_with_ticks(2)
+    view._replay = idle_replay(2)
     view._runtime = SimpleNamespace(
         sim_world=SimpleNamespace(apply_step_metadata=lambda **_kwargs: None),
         audio_bridge=SimpleNamespace(

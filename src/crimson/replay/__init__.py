@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-from ..sim.input_providers import GameFrameRngAdvanceOperation
-from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
+from .codec import (
+    ReplayCodecError,
+    decode_replay_payload,
+    dump_replay,
+    dump_replay_file,
+    encode_replay_payload,
+    inflate_replay_payload,
+    load_replay,
+    load_replay_file,
+    validate_replay,
+)
 from .input_codec import pack_player_input, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
 from .recorder import ReplayRecorder
 from .types import (
@@ -15,19 +24,19 @@ from .types import (
     MOVE_MODE_PRESENT_FLAG,
     MOVE_MODE_SHIFT,
     RELOAD_PRESSED_FLAG,
+    REPLAY_FORMAT_VERSION,
+    REPLAY_TICK_DT,
+    REPLAY_TICK_RATE,
     TURN_LEFT_FLAG,
     TURN_RIGHT_FLAG,
     PackedPlayerInput,
     PackedTickInputs,
     Replay,
-    ReplayClaimedStatsSnapshot,
-    ReplayHeader,
     ReplayTick,
     pack_input_flags,
     unpack_input_flags,
     unpack_input_mode_flags,
     unpack_input_move_key_flags,
-    unpack_packed_player_input,
 )
 from .versioning import ReplayGameVersionError, ReplayGameVersionWarning, warn_on_game_version_mismatch
 
@@ -42,21 +51,24 @@ __all__ = [
     "MOVE_MODE_PRESENT_FLAG",
     "MOVE_MODE_SHIFT",
     "RELOAD_PRESSED_FLAG",
+    "REPLAY_FORMAT_VERSION",
+    "REPLAY_TICK_DT",
+    "REPLAY_TICK_RATE",
     "TURN_LEFT_FLAG",
     "TURN_RIGHT_FLAG",
-    "GameFrameRngAdvanceOperation",
     "PackedPlayerInput",
     "PackedTickInputs",
     "Replay",
-    "ReplayClaimedStatsSnapshot",
     "ReplayCodecError",
     "ReplayGameVersionError",
     "ReplayGameVersionWarning",
-    "ReplayHeader",
     "ReplayRecorder",
     "ReplayTick",
+    "decode_replay_payload",
     "dump_replay",
     "dump_replay_file",
+    "encode_replay_payload",
+    "inflate_replay_payload",
     "load_replay",
     "load_replay_file",
     "pack_input_flags",
@@ -65,8 +77,8 @@ __all__ = [
     "unpack_input_flags",
     "unpack_input_mode_flags",
     "unpack_input_move_key_flags",
-    "unpack_packed_player_input",
     "unpack_player_input",
     "unpack_tick_inputs",
+    "validate_replay",
     "warn_on_game_version_mismatch",
 ]

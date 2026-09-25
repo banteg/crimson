@@ -253,6 +253,7 @@ def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., GameState
             console=create_console(resolved_base_dir, assets_dir=resolved_assets_dir),
             demo_enabled=bool(demo_enabled),
             preserve_bugs=bool(preserve_bugs),
+            replay_checkpoints=False,
             resources=None,
             audio=audio,
             session_start=time.monotonic() if session_start is None else float(session_start),

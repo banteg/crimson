@@ -12,6 +12,20 @@ from ..persistence.highscores import read_highscore_table
 from ..rng_caller_static import RngCallerStatic
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
+# Score-table names hold up to 31 bytes.
+HIGHSCORE_NAME_MAX_CHARS = 31
+# Replay limits on the Typ-o name sources. Both are plain ASCII so every port
+# agrees on lengths, and both are capped so ports can use fixed storage.
+MAX_TYPO_DICTIONARY_WORDS = 2048
+MAX_TYPO_HIGHSCORE_NAMES = 512
+
+
+def is_typo_dictionary_word(text: str) -> bool:
+    return 0 < len(text) < NAME_MAX_CHARS and all(" " <= ch <= "~" for ch in text)
+
+
+def is_typo_highscore_name(text: str) -> bool:
+    return 0 < len(text) <= HIGHSCORE_NAME_MAX_CHARS and all(ch.isascii() and (ch.isalpha() or ch == ".") for ch in text)
 
 
 _NAME_PARTS: tuple[str, ...] = (
@@ -206,15 +220,11 @@ def load_typo_dictionary(path: Path) -> list[str]:
     seen: set[str] = set()
     for line in raw.splitlines():
         text = line.split("#", 1)[0].strip()
-        if not text:
-            continue
-        if len(text) >= NAME_MAX_CHARS:
-            continue
-        if text in seen:
+        if not is_typo_dictionary_word(text) or text in seen:
             continue
         words.append(text)
         seen.add(text)
-    return words
+    return words[:MAX_TYPO_DICTIONARY_WORDS]
 
 
 def load_typo_highscore_names(path: Path) -> list[str]:
@@ -227,15 +237,11 @@ def load_typo_highscore_names(path: Path) -> list[str]:
     seen: set[str] = set()
     for record in records:
         name = record.name()
-        if not name:
-            continue
-        if name in seen:
-            continue
-        if not all(ch.isalpha() or ch == "." for ch in name):
+        if not is_typo_highscore_name(name) or name in seen:
             continue
         names.append(name)
         seen.add(name)
-    return names
+    return names[:MAX_TYPO_HIGHSCORE_NAMES]
 
 
 class CreatureNameTable(msgspec.Struct):

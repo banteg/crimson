@@ -29,7 +29,7 @@ def warn_on_game_version_mismatch(
     """Require matching game version; warn when only build metadata differs."""
 
     expected = str(current_version).strip() if current_version is not None else str(current_replay_game_version()).strip()
-    got = str(replay.header.game_version).strip()
+    got = str(replay.game_version).strip()
 
     if not got:
         raise ReplayGameVersionError(

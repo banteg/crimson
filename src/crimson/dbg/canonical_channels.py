@@ -2,8 +2,25 @@ from __future__ import annotations
 
 import msgspec
 
-from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
+from ..sim.input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from ..sim.timing import nearest_ms_i32
+
+
+class GameFrameRngAdvanceOperation(
+    msgspec.Struct,
+    tag="game_frame_rng_advance",
+    frozen=True,
+    forbid_unknown_fields=True,
+):
+    """Discarded native top-level frame RNG draws between two gameplay ticks."""
+
+    frames: int
+
+
+# Native activity observed between ticks, applied outside the tick RNG trace.
+type PreludeOperation = GameFrameRngAdvanceOperation | PerkMenuOpenCommand | PerkPickCommand
+# Native perk menu opens observed after simulation, applied inside the tick RNG trace.
+type PostludeOperation = PerkMenuOpenCommand
 
 
 class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -53,9 +70,9 @@ class ReplayInputSample(msgspec.Struct, frozen=True, forbid_unknown_fields=True)
 class ReplayStepSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     dt: float
     inputs: list[ReplayInputSample]
-    prelude: list[ReplayPreludeOperation]
-    postlude: list[ReplayPostludeOperation]
-    commands: list[ReplayTickCommand]
+    prelude: list[PreludeOperation]
+    postlude: list[PostludeOperation]
+    commands: list[GameCommand]
 
 
 class SnapshotBonusTimers(msgspec.Struct, frozen=True, forbid_unknown_fields=True):

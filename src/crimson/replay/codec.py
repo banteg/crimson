@@ -1,702 +1,240 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
 from pathlib import Path
-from typing import cast
 
 import msgspec
 import zstandard as zstd
 
-from crimson.sim.run_spec import CreatureSlotResidue
 from grim.atomic_write import atomic_write_bytes
-from grim.geom import Vec2
 
 from ..game_modes import GameMode
 from ..math_parity import f32
-from ..persistence.save_status import GameStatusData
-from ..quests.level import QuestLevel
-from ..sim.input_providers import (
-    GameFrameRngAdvanceOperation,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-    TypoBackspaceCommand,
-    TypoCharCommand,
-    TypoSubmitCommand,
+from ..sim.input_providers import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
+from ..sim.run_result import RunOutcome, RunResult
+from ..sim.run_spec import RunSpec
+from ..typo.names import (
+    HIGHSCORE_NAME_MAX_CHARS,
+    MAX_TYPO_DICTIONARY_WORDS,
+    MAX_TYPO_HIGHSCORE_NAMES,
+    NAME_MAX_CHARS,
+    is_typo_dictionary_word,
+    is_typo_highscore_name,
 )
-from .types import (
-    REPLAY_FORMAT_VERSION,
-    PackedPlayerInput,
-    PackedTickInputs,
-    Replay,
-    ReplayClaimedStatsSnapshot,
-    ReplayHeader,
-    ReplayTick,
-    input_flags_validation_error,
-)
+from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 MAX_REPLAY_PAYLOAD_BYTES = 64 * 1024 * 1024
 MAX_REPLAY_FILE_BYTES = 65 * 1024 * 1024
 _REPLAY_ZSTD_LEVEL = 19
-_SUPPORTED_REPLAY_MODE_IDS = frozenset(
-    {
-        int(GameMode.SURVIVAL),
-        int(GameMode.RUSH),
-        int(GameMode.QUESTS),
-        int(GameMode.TYPO),
-        int(GameMode.TUTORIAL),
-    },
-)
 
-_REPLAY_DECODER = msgspec.msgpack.Decoder(type=Replay)
-_HEADER_DECODER = msgspec.msgpack.Decoder(type=ReplayHeader)
+_I32_MIN = -(1 << 31)
+_I32_MAX = (1 << 31) - 1
+_U32_MAX = 0xFFFFFFFF
 
-_PRELUDE_TYPES = {
-    "game_frame_rng_advance": GameFrameRngAdvanceOperation,
-    "perk_menu_open": PerkMenuOpenCommand,
-    "perk_pick": PerkPickCommand,
+_REPLAY_MODES = frozenset({GameMode.SURVIVAL, GameMode.RUSH, GameMode.QUESTS, GameMode.TYPO, GameMode.TUTORIAL})
+_SINGLE_PLAYER_MODES = frozenset({GameMode.TYPO, GameMode.TUTORIAL})
+_MODE_OUTCOMES = {
+    GameMode.SURVIVAL: frozenset({RunOutcome.DEATH, RunOutcome.INCOMPLETE}),
+    GameMode.RUSH: frozenset({RunOutcome.DEATH, RunOutcome.INCOMPLETE}),
+    GameMode.QUESTS: frozenset({RunOutcome.DEATH, RunOutcome.QUEST_COMPLETED, RunOutcome.INCOMPLETE}),
+    GameMode.TYPO: frozenset({RunOutcome.DEATH, RunOutcome.INCOMPLETE}),
+    GameMode.TUTORIAL: frozenset({RunOutcome.TUTORIAL_COMPLETED, RunOutcome.INCOMPLETE}),
 }
+_TYPO_COMMANDS = (TypoCharCommand, TypoBackspaceCommand, TypoSubmitCommand)
+# zstd frames may not ask for a larger decompression window than this.
+MAX_ZSTD_WINDOW_BYTES = 8 * 1024 * 1024
 
-_POSTLUDE_TYPES = {
-    "perk_menu_open": PerkMenuOpenCommand,
-}
-
-_COMMAND_TYPES = {
-    "typo_char": TypoCharCommand,
-    "typo_backspace": TypoBackspaceCommand,
-    "typo_submit": TypoSubmitCommand,
-}
-
-_RESIDUE_F32_FIELDS = (
-    "collision_timer",
-    "lifecycle_stage",
-    "hp",
-    "max_hp",
-    "heading",
-    "target_heading",
-    "size",
-    "hit_flash_timer",
-    "tint_r",
-    "tint_g",
-    "tint_b",
-    "tint_a",
-    "contact_damage",
-    "move_speed",
-    "attack_cooldown",
-    "reward_value",
-    "orbit_angle",
-    "anim_phase",
-)
-
-_RESIDUE_I32_FIELDS = (
-    "index",
-    "phase_seed",
-    "type_id",
-    "target_player",
-    "link_index",
-    "flags",
-    "ai_mode",
-)
-
-_RESIDUE_U8_FIELDS = (
-    "state_flag",
-    "collision_flag",
-    "force_target",
-)
+_ENCODER = msgspec.msgpack.Encoder()
+_DECODER = msgspec.msgpack.Decoder(type=Replay)
 
 
 class ReplayCodecError(ValueError):
     pass
 
 
-def _require_exact_keys(value: object, *, expected: tuple[str, ...], field: str) -> dict[str, object]:
-    if not isinstance(value, dict) or not all(isinstance(key, str) for key in value):
-        raise ReplayCodecError(f"{field} must be a msgpack map with string keys")
-    row = dict(value)
-    expected_set = set(expected)
-    actual_set = set(row)
-    missing = sorted(expected_set - actual_set)
-    unknown = sorted(actual_set - expected_set)
-    if missing or unknown:
-        detail: list[str] = []
-        if missing:
-            detail.append(f"missing={missing!r}")
-        if unknown:
-            detail.append(f"unknown={unknown!r}")
-        raise ReplayCodecError(f"{field} fields do not match the current replay schema: " + " ".join(detail))
-    return row
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ReplayCodecError(message)
 
 
-def _require_wire_float(value: object, *, field: str) -> None:
-    if type(value) is not float:
-        raise ReplayCodecError(f"{field} must be encoded as a msgpack float")
+def _require_int(value: int, *, low: int, high: int, field: str) -> None:
+    _require(low <= int(value) <= high, f"{field} must be in {low}..{high}")
 
 
-def _validate_wire_operations(
-    value: object,
-    *,
-    field: str,
-    operation_types: Mapping[str, type[msgspec.Struct]],
-) -> None:
-    if not isinstance(value, list):
-        raise ReplayCodecError(f"{field} must be an array")
-    for operation_index, operation in enumerate(value):
-        operation_field = f"{field}[{operation_index}]"
-        if not isinstance(operation, dict):
-            raise ReplayCodecError(f"{operation_field} must be a msgpack map")
-        operation_row = cast("dict[object, object]", operation)
-        tag = operation_row.get("type")
-        operation_type = operation_types.get(str(tag))
-        if operation_type is None:
-            raise ReplayCodecError(f"{operation_field} has unsupported type {tag!r}")
-        _require_exact_keys(
-            operation_row,
-            expected=("type", *operation_type.__struct_fields__),
-            field=operation_field,
-        )
-
-
-def _validate_replay_wire_shape(data: bytes) -> None:
+def _require_f32(value: float, *, field: str) -> None:
+    _require(math.isfinite(value), f"{field} must be finite")
     try:
-        raw = msgspec.msgpack.decode(data)
-    except msgspec.DecodeError as exc:
-        raise ReplayCodecError("invalid replay msgpack payload") from exc
-    replay = _require_exact_keys(raw, expected=Replay.__struct_fields__, field="replay")
-    header = _require_exact_keys(replay["header"], expected=ReplayHeader.__struct_fields__, field="replay.header")
-    _require_wire_float(header["world_size"], field="replay.header.world_size")
-    _require_exact_keys(
-        header["status"],
-        expected=GameStatusData.__struct_fields__,
-        field="replay.header.status",
-    )
-    _require_exact_keys(
-        header["claimed_stats"],
-        expected=ReplayClaimedStatsSnapshot.__struct_fields__,
-        field="replay.header.claimed_stats",
-    )
-    quest_level = header["quest_level"]
-    if quest_level is not None:
-        _require_exact_keys(
-            quest_level,
-            expected=QuestLevel.__struct_fields__,
-            field="replay.header.quest_level",
-        )
-    initial_pool = header["initial_creature_pool"]
-    if initial_pool is not None:
-        if not isinstance(initial_pool, list):
-            raise ReplayCodecError("replay.header.initial_creature_pool must be an array or null")
-        for index, residue in enumerate(initial_pool):
-            residue_row = _require_exact_keys(
-                residue,
-                expected=CreatureSlotResidue.__struct_fields__,
-                field=f"replay.header.initial_creature_pool[{index}]",
-            )
-            for vec_field in ("pos", "vel", "target", "target_offset"):
-                vec_row = _require_exact_keys(
-                    residue_row[vec_field],
-                    expected=Vec2.__struct_fields__,
-                    field=f"replay.header.initial_creature_pool[{index}].{vec_field}",
-                )
-                _require_wire_float(
-                    vec_row["x"],
-                    field=f"replay.header.initial_creature_pool[{index}].{vec_field}.x",
-                )
-                _require_wire_float(
-                    vec_row["y"],
-                    field=f"replay.header.initial_creature_pool[{index}].{vec_field}.y",
-                )
-            for scalar_field in _RESIDUE_F32_FIELDS:
-                _require_wire_float(
-                    residue_row[scalar_field],
-                    field=f"replay.header.initial_creature_pool[{index}].{scalar_field}",
-                )
-    ticks = replay["ticks"]
-    if not isinstance(ticks, list):
-        raise ReplayCodecError("replay.ticks must be an array")
-    for tick_index, tick in enumerate(ticks):
-        tick_row = _require_exact_keys(tick, expected=ReplayTick.__struct_fields__, field=f"replay.ticks[{tick_index}]")
-        _require_wire_float(tick_row["dt"], field=f"replay.ticks[{tick_index}].dt")
-        inputs = tick_row["inputs"]
-        if not isinstance(inputs, list):
-            raise ReplayCodecError(f"replay.ticks[{tick_index}].inputs must be an array")
-        for player_index, packed in enumerate(inputs):
-            input_field = f"replay.ticks[{tick_index}].inputs[{player_index}]"
-            if not isinstance(packed, list) or len(packed) != 5:
-                raise ReplayCodecError(f"{input_field} must be an array with 5 fields")
-            for axis_index, axis_name in enumerate(("move_x", "move_y", "aim_x", "aim_y")):
-                _require_wire_float(packed[axis_index], field=f"{input_field}.{axis_name}")
-        _validate_wire_operations(
-            tick_row["prelude"],
-            field=f"replay.ticks[{tick_index}].prelude",
-            operation_types=_PRELUDE_TYPES,
-        )
-        _validate_wire_operations(
-            tick_row["postlude"],
-            field=f"replay.ticks[{tick_index}].postlude",
-            operation_types=_POSTLUDE_TYPES,
-        )
-        _validate_wire_operations(
-            tick_row["commands"],
-            field=f"replay.ticks[{tick_index}].commands",
-            operation_types=_COMMAND_TYPES,
-        )
-
-
-def _is_zstd(data: bytes) -> bool:
-    return data.startswith(_ZSTD_MAGIC)
-
-
-def _decompress_zstd_replay(data: bytes, *, max_output_bytes: int) -> bytes:
-    try:
-        content_size = int(zstd.frame_content_size(data))
-        if content_size not in (zstd.CONTENTSIZE_UNKNOWN, zstd.CONTENTSIZE_ERROR) and content_size > int(
-            max_output_bytes,
-        ):
-            raise ReplayCodecError(
-                f"replay payload too large after zstd decompression (> {int(max_output_bytes)} bytes)",
-            )
-        payload = zstd.ZstdDecompressor().decompress(
-            data,
-            max_output_size=int(max_output_bytes),
-            allow_extra_data=False,
-        )
-    except zstd.ZstdError as exc:
-        raise ReplayCodecError("invalid replay zstd payload") from exc
-    if len(payload) > int(max_output_bytes):
-        raise ReplayCodecError(
-            f"replay payload too large after zstd decompression (> {int(max_output_bytes)} bytes)",
-        )
-    return payload
-
-
-def _quantize_f32(value: float) -> float:
-    # Canonicalize via shared math-parity float32 helper.
-    return float(f32(float(value)))
-
-
-def _canonical_f32(value: float, *, field: str, require_canonical: bool = False) -> float:
-    numeric = float(value)
-    if not math.isfinite(numeric):
-        raise ReplayCodecError(f"{field} must be finite")
-    try:
-        canonical = _quantize_f32(numeric)
+        canonical = float(f32(value))
     except OverflowError as exc:
         raise ReplayCodecError(f"{field} is outside the f32 range") from exc
-    if require_canonical and canonical != numeric:
-        raise ReplayCodecError(f"{field} must be canonical f32")
-    return canonical
+    _require(canonical == value, f"{field} must be a canonical f32")
 
 
-def _canonical_vec2(value: Vec2, *, field: str, require_canonical: bool = False) -> Vec2:
-    return Vec2(
-        x=_canonical_f32(value.x, field=f"{field}.x", require_canonical=require_canonical),
-        y=_canonical_f32(value.y, field=f"{field}.y", require_canonical=require_canonical),
+def _validate_run(run: RunSpec) -> None:
+    mode = run.game_mode_id
+    _require(mode in _REPLAY_MODES, f"run.game_mode_id {int(mode)} is not a replayable mode")
+    _require_int(run.seed, low=0, high=_U32_MAX, field="run.seed")
+    _require(
+        (run.quest_level is not None) == (mode == GameMode.QUESTS),
+        "run.quest_level must be set for quests and only for quests",
     )
-
-
-def _require_int_range(value: int, *, low: int, high: int, field: str) -> int:
-    integer = int(value)
-    if not (int(low) <= integer <= int(high)):
-        raise ReplayCodecError(f"{field} must be in {int(low)}..{int(high)}")
-    return integer
-
-
-def _canonical_residue(
-    value: CreatureSlotResidue,
-    *,
-    field: str,
-    require_canonical: bool = False,
-) -> CreatureSlotResidue:
-    replacements: dict[str, object] = {}
-    for name in _RESIDUE_F32_FIELDS:
-        replacements[name] = _canonical_f32(
-            getattr(value, name),
-            field=f"{field}.{name}",
-            require_canonical=require_canonical,
-        )
-    for name in _RESIDUE_I32_FIELDS:
-        replacements[name] = _require_int_range(
-            getattr(value, name),
-            low=-(1 << 31),
-            high=(1 << 31) - 1,
-            field=f"{field}.{name}",
-        )
-    for name in _RESIDUE_U8_FIELDS:
-        replacements[name] = _require_int_range(
-            getattr(value, name),
-            low=0,
-            high=0xFF,
-            field=f"{field}.{name}",
-        )
-    replacements["orbit_radius_u32"] = _require_int_range(
-        value.orbit_radius_u32,
-        low=0,
-        high=0xFFFFFFFF,
-        field=f"{field}.orbit_radius_u32",
+    _require(
+        mode not in _SINGLE_PLAYER_MODES or run.player_count == 1,
+        f"{mode.name.lower()} replays require player_count == 1",
     )
-    for name in ("pos", "vel", "target", "target_offset"):
-        replacements[name] = _canonical_vec2(
-            getattr(value, name),
-            field=f"{field}.{name}",
-            require_canonical=require_canonical,
-        )
-    return msgspec.structs.replace(value, **replacements)
-
-
-def _canonical_header(header: ReplayHeader, *, require_canonical: bool = False) -> ReplayHeader:
-    try:
-        decoded = _HEADER_DECODER.decode(msgspec.msgpack.encode(header))
-    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCodecError("invalid replay header") from exc
-    _validate_header(decoded, from_load=False)
-
-    world_size = _canonical_f32(
-        decoded.world_size,
-        field="replay.header.world_size",
-        require_canonical=require_canonical,
+    _require_int(run.quest_fail_retry_count, low=0, high=_I32_MAX, field="run.quest_fail_retry_count")
+    _require_int(run.detail_preset, low=1, high=5, field="run.detail_preset")
+    _require_int(run.violence_disabled, low=0, high=0xFF, field="run.violence_disabled")
+    for field in ("quest_unlock_index", "quest_unlock_index_full"):
+        _require_int(getattr(run.status, field), low=_I32_MIN, high=_I32_MAX, field=f"run.status.{field}")
+    for index, count in enumerate(run.status.weapon_usage_counts):
+        _require_int(count, low=0, high=_U32_MAX, field=f"run.status.weapon_usage_counts[{index}]")
+    _require(
+        len(run.typo_dictionary_words) <= MAX_TYPO_DICTIONARY_WORDS,
+        f"run.typo_dictionary_words has {len(run.typo_dictionary_words)} entries, "
+        f"expected at most {MAX_TYPO_DICTIONARY_WORDS}",
     )
-    if world_size <= 0.0 or world_size > float(f32((1 << 31) - 1)):
-        raise ReplayCodecError("replay.header.world_size must be in the positive i32 range")
-
-    pool = decoded.initial_creature_pool
-    canonical_pool: tuple[CreatureSlotResidue, ...] | None = None
-    if pool is not None:
-        canonical_pool = tuple(
-            _canonical_residue(
-                row,
-                field=f"replay.header.initial_creature_pool[{index}]",
-                require_canonical=require_canonical,
-            )
-            for index, row in enumerate(pool)
+    for index, word in enumerate(run.typo_dictionary_words):
+        _require(
+            is_typo_dictionary_word(word),
+            f"run.typo_dictionary_words[{index}] must be 1..{NAME_MAX_CHARS - 1} printable ASCII characters",
         )
-        indices = [int(row.index) for row in canonical_pool]
-        if indices != sorted(indices) or len(indices) != len(set(indices)):
-            raise ReplayCodecError("replay.header.initial_creature_pool indices must be unique and sorted")
-    return msgspec.structs.replace(
-        decoded,
-        world_size=world_size,
-        initial_creature_pool=canonical_pool,
+    _require(
+        len(run.typo_highscore_names) <= MAX_TYPO_HIGHSCORE_NAMES,
+        f"run.typo_highscore_names has {len(run.typo_highscore_names)} entries, "
+        f"expected at most {MAX_TYPO_HIGHSCORE_NAMES}",
     )
-
-
-def _validate_claimed_stats(stats: ReplayClaimedStatsSnapshot) -> None:
-    if int(stats.shots_hit) > int(stats.shots_fired):
-        raise ReplayCodecError(
-            "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
-        )
-    for field in ("ticks", "kills", "most_used_weapon_id", "shots_fired", "shots_hit"):
-        _require_int_range(
-            getattr(stats, field),
-            low=0,
-            high=(1 << 31) - 1,
-            field=f"replay.header.claimed_stats.{field}",
-        )
-    for field in ("elapsed_ms", "score_xp"):
-        _require_int_range(
-            getattr(stats, field),
-            low=0,
-            high=(1 << 63) - 1,
-            field=f"replay.header.claimed_stats.{field}",
+    for index, name in enumerate(run.typo_highscore_names):
+        _require(
+            is_typo_highscore_name(name),
+            f"run.typo_highscore_names[{index}] must be 1..{HIGHSCORE_NAME_MAX_CHARS} ASCII letters or '.'",
         )
 
 
-def _validate_status(status: GameStatusData) -> None:
-    for field in (
-        "quest_unlock_index",
-        "quest_unlock_index_full",
-        "mode_play_survival",
-        "mode_play_rush",
-        "mode_play_typo",
-        "mode_play_other",
-        "play_time_ms",
-    ):
-        _require_int_range(
-            getattr(status, field),
-            low=-(1 << 31),
-            high=(1 << 31) - 1,
-            field=f"replay.header.status.{field}",
-        )
-    for field, values in (
-        ("weapon_usage_counts", status.weapon_usage_counts),
-        ("quest_play_counts", status.quest_play_counts),
-    ):
-        for index, value in enumerate(values):
-            _require_int_range(
-                value,
-                low=0,
-                high=0xFFFFFFFF,
-                field=f"replay.header.status.{field}[{index}]",
-            )
-    if len(status.reserved_seed_words) != 0x10:
-        raise ReplayCodecError("replay.header.status.reserved_seed_words must contain exactly 16 bytes")
+def _validate_result(result: RunResult, run: RunSpec) -> None:
+    mode = run.game_mode_id
+    _require(result.outcome in _MODE_OUTCOMES[mode], f"result.outcome {result.outcome.value!r} is invalid for {mode.name.lower()}")
+    _require(
+        (result.quest_final_ms is not None) == (result.outcome == RunOutcome.QUEST_COMPLETED),
+        "result.quest_final_ms must be set only for completed quests",
+    )
+    _require_int(result.rng_state, low=0, high=_U32_MAX, field="result.rng_state")
+    _require(
+        len(result.players) == run.player_count,
+        f"result.players has {len(result.players)} entries, expected {run.player_count}",
+    )
+    for index, player in enumerate(result.players):
+        _require_f32(player.health, field=f"result.players[{index}].health")
 
 
-def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
-    if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
-        if from_load:
-            raise ReplayCodecError(f"unsupported replay format version: {int(header.replay_format_version)}")
-        raise ReplayCodecError(
-            f"unsupported replay format version in header: {int(header.replay_format_version)}",
-        )
-    if not (0 <= int(header.seed) <= 0xFFFFFFFF):
-        raise ReplayCodecError("replay header seed must be a uint32")
-    if int(header.game_mode_id) not in _SUPPORTED_REPLAY_MODE_IDS:
-        raise ReplayCodecError(f"unsupported replay game_mode_id: {int(header.game_mode_id)}")
-    for field in ("tick_rate", "quest_fail_retry_count", "detail_preset", "violence_disabled"):
-        low = 1 if field == "tick_rate" else 0
-        _require_int_range(
-            getattr(header, field),
-            low=low,
-            high=(1 << 31) - 1,
-            field=f"replay.header.{field}",
-        )
-    _validate_claimed_stats(header.claimed_stats)
-    _validate_status(header.status)
-    if not str(header.game_version):
-        raise ReplayCodecError("replay header game_version must be non-empty")
-    if str(header.input_quantization) != "f32":
-        raise ReplayCodecError("replay header input_quantization must be 'f32'")
-    if int(header.game_mode_id) == int(GameMode.QUESTS):
-        if header.quest_level is None:
-            raise ReplayCodecError("quest replays require a valid header.quest_level")
-    elif header.quest_level is not None:
-        raise ReplayCodecError("non-quest replays require header.quest_level to be null")
-    if int(header.game_mode_id) == int(GameMode.TYPO) and int(header.player_count) != 1:
-        raise ReplayCodecError("Typ-o replays require player_count == 1")
-    if int(header.game_mode_id) == int(GameMode.TUTORIAL) and int(header.player_count) != 1:
-        raise ReplayCodecError("tutorial replays require player_count == 1")
-
-
-def _normalize_packed_input(
-    packed: PackedPlayerInput,
-    *,
-    tick_idx: int,
-    player_idx: int,
-    require_canonical: bool = False,
-) -> PackedPlayerInput:
-    if len(packed) != 5:
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must have 5 fields")
-    move_x_raw, move_y_raw, aim_x_raw, aim_y_raw, flags_raw = packed
-    if isinstance(move_x_raw, bool) or not isinstance(move_x_raw, (int, float)):
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} move_x must be numeric")
-    if isinstance(move_y_raw, bool) or not isinstance(move_y_raw, (int, float)):
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} move_y must be numeric")
-    if isinstance(aim_x_raw, bool) or not isinstance(aim_x_raw, (int, float)):
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} aim_x must be numeric")
-    if isinstance(aim_y_raw, bool) or not isinstance(aim_y_raw, (int, float)):
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} aim_y must be numeric")
-    if isinstance(flags_raw, bool) or not isinstance(flags_raw, int):
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} flags must be an integer")
-    flags = int(flags_raw)
-    flags_error = input_flags_validation_error(flags)
-    if flags_error is not None:
-        raise ReplayCodecError(
-            f"replay input tick {tick_idx} player {player_idx} flags {flags_error}: 0x{flags:x}",
-        )
-    values = [float(move_x_raw), float(move_y_raw), float(aim_x_raw), float(aim_y_raw)]
-    names = ("move_x", "move_y", "aim_x", "aim_y")
-    normalized: list[float | int] = []
-    for name, value in zip(names, values, strict=True):
-        if not math.isfinite(value):
-            raise ReplayCodecError(
-                f"replay input tick {tick_idx} player {player_idx} {name} must be finite",
-            )
-        try:
-            canonical = _quantize_f32(value)
-        except OverflowError as exc:
-            raise ReplayCodecError(
-                f"replay input tick {tick_idx} player {player_idx} {name} is outside the f32 range",
-            ) from exc
-        if require_canonical and canonical != value:
-            raise ReplayCodecError(
-                f"replay input tick {tick_idx} player {player_idx} {name} must be canonical f32",
-            )
-        normalized.append(canonical)
-    normalized.append(flags)
-    return normalized
-
-
-def _validate_tick_dt(dt: float, *, tick_idx: int, require_canonical: bool = False) -> float:
-    if isinstance(dt, bool) or not isinstance(dt, (int, float)):
-        raise ReplayCodecError(f"replay tick {tick_idx} dt must be numeric")
-    dt_value = float(dt)
-    if not math.isfinite(dt_value) or dt_value < 0.0:
-        raise ReplayCodecError(f"replay tick {tick_idx} dt must be finite and >= 0, got {dt_value!r}")
-    try:
-        canonical = _quantize_f32(dt_value)
-    except OverflowError as exc:
-        raise ReplayCodecError(f"replay tick {tick_idx} dt is outside the f32 range") from exc
-    if require_canonical and canonical != dt_value:
-        raise ReplayCodecError(f"replay tick {tick_idx} dt must be canonical f32")
-    return canonical
-
-
-def _validate_tick_operations(
-    tick: ReplayTick,
-    *,
-    tick_idx: int,
-    player_count: int,
-    game_mode: GameMode,
-) -> None:
-    for operation_index, operation in enumerate(tick.prelude):
-        if isinstance(operation, GameFrameRngAdvanceOperation):
-            _require_int_range(
-                operation.frames,
-                low=1,
-                high=(1 << 31) - 1,
-                field=f"replay tick {tick_idx} prelude {operation_index} frames",
-            )
-            continue
-        player_index = int(operation.player_index)
-        if not (0 <= player_index < int(player_count)):
-            raise ReplayCodecError(
-                f"replay tick {tick_idx} prelude {operation_index} player_index={player_index} "
-                f"is outside 0..{int(player_count) - 1}",
-            )
-        if isinstance(operation, PerkPickCommand) and not (0 <= int(operation.choice_index) < 7):
-            raise ReplayCodecError(
-                f"replay tick {tick_idx} prelude {operation_index} choice_index must be in 0..6",
-            )
-
-    for operation_index, operation in enumerate(tick.postlude):
-        player_index = int(operation.player_index)
-        if not (0 <= player_index < int(player_count)):
-            raise ReplayCodecError(
-                f"replay tick {tick_idx} postlude {operation_index} player_index={player_index} "
-                f"is outside 0..{int(player_count) - 1}",
-            )
-
-    if tick.commands and game_mode != GameMode.TYPO:
-        raise ReplayCodecError(f"replay tick {tick_idx} Typ-o commands require game_mode_id=TYPO")
+def _validate_tick(tick: ReplayTick, *, tick_index: int, run: RunSpec) -> None:
+    field = f"ticks[{tick_index}]"
+    _require(
+        len(tick.inputs) == run.player_count,
+        f"{field} has {len(tick.inputs)} player inputs, expected {run.player_count}",
+    )
+    for player_index, packed in enumerate(tick.inputs):
+        input_field = f"{field}.inputs[{player_index}]"
+        for axis, name in zip(packed[:4], ("move_x", "move_y", "aim_x", "aim_y"), strict=True):
+            _require_f32(axis, field=f"{input_field}.{name}")
+        flags_error = input_flags_validation_error(packed[4])
+        _require(flags_error is None, f"{input_field}.flags {flags_error}: 0x{packed[4]:x}")
     for command_index, command in enumerate(tick.commands):
-        player_index = int(command.player_index)
-        if not (0 <= player_index < int(player_count)):
-            raise ReplayCodecError(
-                f"replay tick {tick_idx} command {command_index} player_index={player_index} "
-                f"is outside 0..{int(player_count) - 1}",
-            )
+        command_field = f"{field}.commands[{command_index}]"
+        _require(
+            0 <= command.player_index < run.player_count,
+            f"{command_field}.player_index {command.player_index} is outside 0..{run.player_count - 1}",
+        )
+        if isinstance(command, PerkPickCommand):
+            _require(0 <= command.choice_index < 7, f"{command_field}.choice_index must be in 0..6")
+        _require(
+            not isinstance(command, _TYPO_COMMANDS) or run.game_mode_id == GameMode.TYPO,
+            f"{command_field} Typ-o commands require game_mode_id=TYPO",
+        )
+
+
+def validate_replay(replay: Replay) -> None:
+    _require(
+        replay.format_version == REPLAY_FORMAT_VERSION,
+        f"unsupported replay format version: {replay.format_version}",
+    )
+    _require(bool(replay.game_version), "game_version must be non-empty")
+    _validate_run(replay.run)
+    _validate_result(replay.result, replay.run)
+    _require(bool(replay.ticks), "replay must contain at least one tick")
+    for tick_index, tick in enumerate(replay.ticks):
+        _validate_tick(tick, tick_index=tick_index, run=replay.run)
+
+
+def encode_replay_payload(replay: Replay) -> bytes:
+    """Validate and encode the canonical msgpack payload."""
+
+    validate_replay(replay)
+    payload = _ENCODER.encode(replay)
+    _require(len(payload) <= MAX_REPLAY_PAYLOAD_BYTES, f"replay payload too large (> {MAX_REPLAY_PAYLOAD_BYTES} bytes)")
+    return payload
 
 
 def dump_replay(replay: Replay) -> bytes:
     """Serialize a replay as a zstd-compressed msgpack blob."""
 
-    header = _canonical_header(replay.header)
-    if not replay.ticks:
-        raise ReplayCodecError("replay must contain at least one tick")
+    data = zstd.ZstdCompressor(level=_REPLAY_ZSTD_LEVEL).compress(encode_replay_payload(replay))
+    _require(len(data) <= MAX_REPLAY_FILE_BYTES, f"replay file too large (> {MAX_REPLAY_FILE_BYTES} bytes)")
+    return data
 
-    expected_players = int(header.player_count)
-    normalized_ticks: list[ReplayTick] = []
-    for tick_idx, tick in enumerate(replay.ticks):
-        inputs = tick.inputs
-        if len(inputs) != expected_players:
-            raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(inputs)} players, expected {expected_players}",
-            )
-        normalized_inputs = [
-            _normalize_packed_input(packed, tick_idx=int(tick_idx), player_idx=int(player_idx))
-            for player_idx, packed in enumerate(inputs)
-        ]
-        dt = _validate_tick_dt(tick.dt, tick_idx=tick_idx)
-        normalized_ticks.append(
-            ReplayTick(
-                dt=dt,
-                inputs=normalized_inputs,
-                prelude=tick.prelude,
-                postlude=tick.postlude,
-                commands=tick.commands,
-            ),
-        )
 
-    raw = msgspec.msgpack.encode(Replay(header=header, ticks=normalized_ticks))
-    _validate_replay_wire_shape(raw)
+def inflate_replay_payload(data: bytes) -> bytes:
+    """Return the msgpack payload of a replay file, enforcing size ceilings."""
+
+    _require(len(data) <= MAX_REPLAY_FILE_BYTES, f"replay file too large (> {MAX_REPLAY_FILE_BYTES} bytes)")
+    _require(data.startswith(_ZSTD_MAGIC), "replay must use the zstd envelope")
     try:
-        validated = _REPLAY_DECODER.decode(raw)
-    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCodecError("invalid replay payload for the current schema") from exc
-    for tick_idx, tick in enumerate(validated.ticks):
-        _validate_tick_operations(
-            tick,
-            tick_idx=tick_idx,
-            player_count=expected_players,
-            game_mode=header.game_mode_id,
+        _require(
+            zstd.get_frame_parameters(data).window_size <= MAX_ZSTD_WINDOW_BYTES,
+            f"replay zstd frame window exceeds {MAX_ZSTD_WINDOW_BYTES // (1024 * 1024)} MiB",
         )
-    raw = msgspec.msgpack.encode(validated)
-    return zstd.ZstdCompressor(level=_REPLAY_ZSTD_LEVEL).compress(raw)
+        content_size = zstd.frame_content_size(data)
+        _require(
+            content_size in (zstd.CONTENTSIZE_UNKNOWN, zstd.CONTENTSIZE_ERROR) or content_size <= MAX_REPLAY_PAYLOAD_BYTES,
+            f"replay payload too large (> {MAX_REPLAY_PAYLOAD_BYTES} bytes)",
+        )
+        payload = zstd.ZstdDecompressor().decompress(
+            data,
+            max_output_size=MAX_REPLAY_PAYLOAD_BYTES,
+            allow_extra_data=False,
+        )
+    except zstd.ZstdError as exc:
+        raise ReplayCodecError("invalid replay zstd payload") from exc
+    _require(len(payload) <= MAX_REPLAY_PAYLOAD_BYTES, f"replay payload too large (> {MAX_REPLAY_PAYLOAD_BYTES} bytes)")
+    return payload
+
+
+def decode_replay_payload(payload: bytes) -> Replay:
+    """Decode a canonical payload.
+
+    Re-encoding must reproduce the input byte for byte. That single check
+    rejects duplicate or reordered keys, omitted fields, integers standing in
+    for floats and non-minimal encodings, so every accepted replay has exactly
+    one byte representation.
+    """
+
+    try:
+        replay = _DECODER.decode(payload)
+    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+        raise ReplayCodecError(f"invalid replay payload: {exc}") from exc
+    _require(_ENCODER.encode(replay) == payload, "replay payload is not canonically encoded")
+    validate_replay(replay)
+    return replay
 
 
 def load_replay(data: bytes) -> Replay:
-    if len(data) > int(MAX_REPLAY_FILE_BYTES):
-        raise ReplayCodecError(f"replay file too large (> {int(MAX_REPLAY_FILE_BYTES)} bytes)")
-    max_payload_bytes = int(MAX_REPLAY_PAYLOAD_BYTES)
-    if not _is_zstd(data):
-        raise ReplayCodecError("replay must use the canonical zstd envelope")
-    data = _decompress_zstd_replay(data, max_output_bytes=max_payload_bytes)
-    if len(data) > int(max_payload_bytes):
-        raise ReplayCodecError(f"replay payload too large (> {int(max_payload_bytes)} bytes)")
-
-    _validate_replay_wire_shape(data)
-
-    try:
-        replay = _REPLAY_DECODER.decode(data)
-    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCodecError("invalid replay msgpack payload") from exc
-
-    _validate_header(replay.header, from_load=True)
-    header = _canonical_header(replay.header, require_canonical=True)
-    if not replay.ticks:
-        raise ReplayCodecError("replay must contain at least one tick")
-
-    expected_players = int(replay.header.player_count)
-    normalized_ticks: list[ReplayTick] = []
-    for tick_idx, tick in enumerate(replay.ticks):
-        inputs = tick.inputs
-        if len(inputs) != expected_players:
-            raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(inputs)} players, expected {expected_players}",
-            )
-        normalized_inputs: PackedTickInputs = []
-        for player_idx, packed in enumerate(inputs):
-            normalized = _normalize_packed_input(
-                packed,
-                tick_idx=int(tick_idx),
-                player_idx=int(player_idx),
-                require_canonical=True,
-            )
-            normalized_inputs.append(
-                [
-                    _quantize_f32(float(normalized[0])),
-                    _quantize_f32(float(normalized[1])),
-                    _quantize_f32(float(normalized[2])),
-                    _quantize_f32(float(normalized[3])),
-                    int(normalized[4]),
-                ],
-            )
-        dt = _validate_tick_dt(tick.dt, tick_idx=tick_idx, require_canonical=True)
-        _validate_tick_operations(
-            tick,
-            tick_idx=tick_idx,
-            player_count=expected_players,
-            game_mode=header.game_mode_id,
-        )
-        normalized_ticks.append(
-            ReplayTick(
-                dt=dt,
-                inputs=normalized_inputs,
-                prelude=tick.prelude,
-                postlude=tick.postlude,
-                commands=tick.commands,
-            ),
-        )
-
-    return Replay(header=header, ticks=normalized_ticks)
+    return decode_replay_payload(inflate_replay_payload(data))
 
 
 def dump_replay_file(path: Path, replay: Replay) -> None:
-    path = Path(path)
-    atomic_write_bytes(path, dump_replay(replay))
+    atomic_write_bytes(Path(path), dump_replay(replay))
 
 
 def load_replay_file(path: Path) -> Replay:
-    path = Path(path)
-    return load_replay(path.read_bytes())
+    return load_replay(Path(path).read_bytes())

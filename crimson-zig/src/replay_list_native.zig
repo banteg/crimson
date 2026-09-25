@@ -2,6 +2,7 @@ const builtin = @import("builtin");
 const std = @import("std");
 
 const replay_codec = @import("replay_codec.zig");
+const replay_runner = @import("runtime/replay_runner.zig");
 const runtime_paths = @import("runtime_paths.zig");
 
 const replay_list_schema_version: i32 = 1;
@@ -358,86 +359,24 @@ fn buildReplayListRow(
     };
     defer allocator.free(replay_bytes);
 
-    var replay_payload_alloc: ?[]u8 = null;
-    defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload = replay_codec.inflateZstdFilePayload(
-        allocator,
-        replay_bytes,
-        replay_codec.max_replay_payload_bytes,
-    ) catch |err| {
-        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = replay_codec.loadReplay(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildInvalidReplayListRow(allocator, rel_path, modified_ns, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
-    replay_payload_alloc = replay_payload;
+    defer replay.deinit(allocator);
 
-    var parse_detail: ?[]u8 = null;
-    defer if (parse_detail) |detail| allocator.free(detail);
-    var summary = replay_codec.parseReplaySummary(allocator, replay_payload) catch |err| {
-        if (err == error.UnsupportedInputShape) {
-            parse_detail = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
-        } else if (err == error.UnsupportedEventShape) {
-            parse_detail = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
-        } else if (err == error.UnknownCommandKind) {
-            parse_detail = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
-        } else if (err == error.UnsupportedEventKind) {
-            parse_detail = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
-        }
-        return buildInvalidReplayListRow(
-            allocator,
-            rel_path,
-            modified_ns,
-            parse_detail orelse replayListRowErrorDetail(err),
-        );
-    };
-    defer summary.deinit(allocator);
-
-    const header = summary.header;
-    if (replay_codec.unsupportedReplayHeaderDetail(header, summary.tick_count, .replay_list)) |detail| {
-        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
-    }
-    if (summary.events.total_count > 0) {
-        var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-            if (err == error.UnsupportedInputShape) {
-                parse_detail = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
-            } else if (err == error.UnsupportedEventShape) {
-                parse_detail = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
-            } else if (err == error.UnknownCommandKind) {
-                parse_detail = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
-            } else if (err == error.UnsupportedEventKind) {
-                parse_detail = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
-            }
-            return buildInvalidReplayListRow(
-                allocator,
-                rel_path,
-                modified_ns,
-                parse_detail orelse replayListRowErrorDetail(err),
-            );
-        };
-        defer replay.deinit(allocator);
-        if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
-            defer allocator.free(detail);
-            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
-        }
-        if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, header.player_count, replay.events)) |detail| {
-            defer allocator.free(detail);
-            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
-        }
-        if (try replay_codec.replayEventKindFailureDetail(allocator, header.game_mode_id, replay.events)) |detail| {
-            defer allocator.free(detail);
-            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
-        }
-    }
-
-    const mode = try modeLabel(allocator, header);
+    const mode = try modeLabel(allocator, replay.run);
     errdefer allocator.free(mode);
-    const game_version = try nonEmptyVersion(allocator, header.game_version);
+    const game_version = try nonEmptyVersion(allocator, replay.game_version);
     errdefer allocator.free(game_version);
-    const ticks = try std.fmt.allocPrint(allocator, "{d}", .{summary.tick_count});
+    const ticks = try std.fmt.allocPrint(allocator, "{d}", .{replay.tickCount()});
     errdefer allocator.free(ticks);
-    const duration = try formatDuration(allocator, summary.tick_count, header.tick_rate);
+    const duration = try formatDuration(allocator, replay.tickCount(), replay_codec.tick_rate);
     errdefer allocator.free(duration);
-    const score_xp = try std.fmt.allocPrint(allocator, "{d}", .{header.claimed_stats.score_xp});
+    const score_xp = try std.fmt.allocPrint(allocator, "{d}", .{replay.result.players()[0].experience});
     errdefer allocator.free(score_xp);
-    const kills = try std.fmt.allocPrint(allocator, "{d}", .{header.claimed_stats.kills});
+    const kills = try std.fmt.allocPrint(allocator, "{d}", .{replay.result.kills});
     errdefer allocator.free(kills);
     const modified = try formatModified(allocator, modified_ns);
     errdefer allocator.free(modified);
@@ -492,25 +431,19 @@ fn buildInvalidReplayListRow(
     };
 }
 
-fn modeLabel(allocator: std.mem.Allocator, header: replay_codec.ReplayHeader) ![]u8 {
-    const base = switch (header.game_mode_id) {
-        1 => "survival",
-        2 => "rush",
-        3 => "quest",
-        4 => "typo",
-        8 => "tutorial",
-        else => "unknown",
-    };
-    if (header.game_mode_id == 3 and header.quest_level.len > 0) {
-        if (header.player_count > 1) {
-            return std.fmt.allocPrint(allocator, "{s} {s} {d}p", .{ base, header.quest_level, header.player_count });
-        }
-        return std.fmt.allocPrint(allocator, "{s} {s}", .{ base, header.quest_level });
-    }
-    if (header.player_count > 1) {
-        return std.fmt.allocPrint(allocator, "{s} {d}p", .{ base, header.player_count });
-    }
-    return allocator.dupe(u8, base);
+fn modeLabel(allocator: std.mem.Allocator, run: replay_codec.RunSpec) ![]u8 {
+    var label: std.Io.Writer.Allocating = .init(allocator);
+    defer label.deinit();
+    try label.writer.writeAll(switch (run.game_mode) {
+        .survival => "survival",
+        .rush => "rush",
+        .quests => "quest",
+        .typo => "typo",
+        .tutorial => "tutorial",
+    });
+    if (run.quest_level) |level| try label.writer.print(" {d}.{d}", .{ level.major, level.minor });
+    if (run.player_count > 1) try label.writer.print(" {d}p", .{run.player_count});
+    return label.toOwnedSlice();
 }
 
 fn nonEmptyVersion(allocator: std.mem.Allocator, game_version: []const u8) ![]u8 {
@@ -522,14 +455,14 @@ fn formatDuration(allocator: std.mem.Allocator, ticks: usize, tick_rate: i32) ![
     if (tick_rate <= 0) return allocator.dupe(u8, "n/a");
     const total_seconds = @as(f64, @floatFromInt(ticks)) / @as(f64, @floatFromInt(tick_rate));
     if (total_seconds >= 3600.0) {
-        const hours: i64 = @intFromFloat(@floor(total_seconds / 3600.0));
-        const minutes: i64 = @intFromFloat(@floor(@mod(total_seconds, 3600.0) / 60.0));
-        const seconds: i64 = @intFromFloat(@floor(@mod(total_seconds, 60.0)));
+        const hours: u64 = @intFromFloat(@floor(total_seconds / 3600.0));
+        const minutes: u64 = @intFromFloat(@floor(@mod(total_seconds, 3600.0) / 60.0));
+        const seconds: u64 = @intFromFloat(@floor(@mod(total_seconds, 60.0)));
         return std.fmt.allocPrint(allocator, "{d}:{d:0>2}:{d:0>2}", .{ hours, minutes, seconds });
     }
     if (total_seconds >= 60.0) {
-        const minutes: i64 = @intFromFloat(@floor(total_seconds / 60.0));
-        const seconds: i64 = @intFromFloat(@floor(@mod(total_seconds, 60.0)));
+        const minutes: u64 = @intFromFloat(@floor(total_seconds / 60.0));
+        const seconds: u64 = @intFromFloat(@floor(@mod(total_seconds, 60.0)));
         return std.fmt.allocPrint(allocator, "{d}:{d:0>2}", .{ minutes, seconds });
     }
     return std.fmt.allocPrint(allocator, "{d:.1}s", .{total_seconds});
@@ -597,22 +530,6 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
         error.FileNotFound => "replay file not found",
         error.AccessDenied => "unable to read replay file: access denied",
         error.FileTooBig => "replay zstd envelope exceeds max file size",
-        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
-        error.InvalidMsgpack => "replay payload does not match format 17 msgpack schema",
-        error.InvalidHeaderValue => "replay header contains invalid values",
-        error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
-        error.MissingHeaderField => "replay header missing required fields",
-        error.MissingQuestLevel => "quest replays require a valid header.quest_level",
-        error.TypoMultiplayer => "Typ-o replays require player_count == 1",
-        error.TutorialMultiplayer => "tutorial replays require player_count == 1",
-        error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 17",
-        error.UnsupportedEventShape => "replay tick operations do not match format 17",
-        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
-        error.InvalidZstdPayload => "unable to inflate replay zstd payload",
-        error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 17",
-        error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.OutOfMemory => "native replay list ran out of memory while reading replay",
         else => @errorName(err),
     };
@@ -665,7 +582,7 @@ test "replay list writes json artifact while preserving json stdout" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "list.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -693,7 +610,7 @@ test "replay list writes json artifact while preserving json stdout" {
 
     const artifact = try std.Io.Dir.cwd().readFileAlloc(io, json_path, allocator, .limited(64 * 1024));
     defer allocator.free(artifact);
-    const stdout_json = std.mem.trimRight(u8, output.stdout, "\n");
+    const stdout_json = std.mem.trimEnd(u8, output.stdout, "\n");
     try std.testing.expectEqualStrings(stdout_json, artifact);
 }
 
@@ -734,24 +651,8 @@ test "modified formatting mirrors replay list display shape" {
 
 test "replay list maps invalid row errors to user details" {
     try std.testing.expectEqualStrings(
-        "replay payload does not match format 17 msgpack schema",
-        replayListRowErrorDetail(error.InvalidMsgpack),
-    );
-    try std.testing.expectEqualStrings(
-        "replay payload exceeds max decompressed size",
-        replayListRowErrorDetail(error.PayloadTooLarge),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 17",
-        replayListRowErrorDetail(error.UnknownCommandKind),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick inputs do not match format 17",
-        replayListRowErrorDetail(error.UnsupportedInputShape),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 17",
-        replayListRowErrorDetail(error.UnsupportedEventShape),
+        "replay zstd envelope exceeds max file size",
+        replayListRowErrorDetail(error.FileTooBig),
     );
     try std.testing.expectEqualStrings(
         "FileBusy",
@@ -772,4 +673,14 @@ test "replay list maps scan errors to user details" {
         "FileBusy",
         replayListScanErrorDetail(error.FileBusy),
     );
+}
+
+test "mode labels name the quest level and player count" {
+    const allocator = std.testing.allocator;
+    const quest = try modeLabel(allocator, .{ .game_mode = .quests, .seed = 0, .quest_level = .{ .major = 2, .minor = 5 }, .player_count = 3 });
+    defer allocator.free(quest);
+    try std.testing.expectEqualStrings("quest 2.5 3p", quest);
+    const survival = try modeLabel(allocator, .{ .game_mode = .survival, .seed = 0 });
+    defer allocator.free(survival);
+    try std.testing.expectEqualStrings("survival", survival);
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import json
 import shutil
 import subprocess
@@ -12,13 +13,16 @@ import pytest
 
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
-from crimson.replay import Replay
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.replay import Replay, encode_replay_payload
+from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.run_spec import RunSpec
 
 from ._helpers import (
     build_replay,
     build_typo_submit_replay,
-    inject_tick_commands,
+    record_bot_replay,
+    with_idle_ticks,
+    with_tick_commands,
     write_checkpoint_sidecar,
     write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
@@ -26,6 +30,7 @@ from ._helpers import (
     write_current_missing_quest_level_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
+    write_payload_bytes,
     write_replay,
 )
 
@@ -56,7 +61,7 @@ def test_zig_replay_corpus_manifest_names_completion_contract_breadth() -> None:
     coverage = set().union(*(case.coverage for case in _VALID_CORPUS), *(case.coverage for case in _INVALID_CORPUS))
 
     assert valid_modes == {"survival", "rush", "quests", "typo", "tutorial"}
-    assert {"verbose-events", "multi-player", "invalid-input"} <= coverage
+    assert {"verbose-events", "multi-player", "perk-commands", "run-end", "invalid-input"} <= coverage
     assert all(case.case_id for case in (*_VALID_CORPUS, *_INVALID_CORPUS))
 
 
@@ -130,8 +135,12 @@ def test_zig_replay_corpus_runs_checkpoint_commands(tmp_path: Path, zig_bin: Pat
 def test_zig_replay_corpus_list_covers_valid_and_invalid_inputs(tmp_path: Path, zig_bin: Path) -> None:
     del zig_bin
     replays_dir = tmp_path / "replays"
-    valid_samples = _materialize_cases(replays_dir, _VALID_CORPUS)
-    invalid_samples = _materialize_cases(replays_dir, _INVALID_CORPUS)
+    # Listing decodes without simulating, so replays invalid only in simulation list as parsed.
+    valid_samples = _materialize_cases(replays_dir, _VALID_CORPUS + _decodable(_INVALID_CORPUS))
+    invalid_samples = _materialize_cases(
+        replays_dir,
+        tuple(case for case in _INVALID_CORPUS if case not in _decodable(_INVALID_CORPUS)),
+    )
 
     payload = _run_zig_json(["replay", "list", "--base-dir", str(tmp_path), "--format", "json"])
 
@@ -195,6 +204,10 @@ def _materialize_cases(
     return [(case, case.materialize(root)) for case in cases]
 
 
+def _decodable(cases: tuple[ReplayCorpusCase, ...]) -> tuple[ReplayCorpusCase, ...]:
+    return tuple(case for case in cases if "simulation" in case.coverage)
+
+
 def _run_zig(args: list[str]) -> subprocess.CompletedProcess[str]:
     return dbg_record._run_process([str(dbg_record._ZIG_BIN), *args], cwd=dbg_record._REPO_ROOT)
 
@@ -218,9 +231,7 @@ def _survival(root: Path) -> MaterializedReplay:
 
 def _rush(root: Path) -> MaterializedReplay:
     replay = build_replay(mode=GameMode.RUSH, ticks=16)
-    inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
-    inject_tick_commands(replay, 1, [PerkPickCommand(player_index=0, choice_index=0)])
-    return MaterializedReplay(write_replay(root, replay=replay, name="corpus-rush-events.crd"), replay)
+    return MaterializedReplay(write_replay(root, replay=replay, name="corpus-rush.crd"), replay)
 
 
 def _quest(root: Path) -> MaterializedReplay:
@@ -238,17 +249,49 @@ def _tutorial(root: Path) -> MaterializedReplay:
     return MaterializedReplay(write_replay(root, replay=replay, name="corpus-tutorial.crd"), replay)
 
 
-def _multiplayer_verbose(root: Path) -> MaterializedReplay:
+def _multiplayer(root: Path) -> MaterializedReplay:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2, player_count=2)
-    inject_tick_commands(
-        replay,
+    return MaterializedReplay(write_replay(root, replay=replay, name="corpus-survival-2p.crd"), replay)
+
+
+@functools.cache
+def _perk_pick_replay() -> Replay:
+    return record_bot_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF), pick_perk=True)
+
+
+@functools.cache
+def _rush_death_replay() -> Replay:
+    return record_bot_replay(RunSpec(game_mode_id=GameMode.RUSH, seed=0xBEEF), fire=False)
+
+
+def _perk_pick(root: Path) -> MaterializedReplay:
+    replay = _perk_pick_replay()
+    return MaterializedReplay(write_replay(root, replay=replay, name="corpus-survival-perk-pick.crd"), replay)
+
+
+def _rush_death(root: Path) -> MaterializedReplay:
+    replay = _rush_death_replay()
+    return MaterializedReplay(write_replay(root, replay=replay, name="corpus-rush-death.crd"), replay)
+
+
+def _ticks_after_end(root: Path) -> MaterializedReplay:
+    replay = with_idle_ticks(_rush_death_replay(), 1)
+    return MaterializedReplay(write_replay(root, replay=replay, name="invalid-ticks-after-end.crd"), None)
+
+
+def _illegal_perk_pick(root: Path) -> MaterializedReplay:
+    replay = with_tick_commands(
+        build_replay(mode=GameMode.SURVIVAL, ticks=1),
         0,
-        [
-            PerkMenuOpenCommand(player_index=0),
-            PerkMenuOpenCommand(player_index=1),
-        ],
+        [PerkPickCommand(player_index=0, choice_index=0)],
     )
-    return MaterializedReplay(write_replay(root, replay=replay, name="corpus-survival-2p-events.crd"), replay)
+    return MaterializedReplay(write_replay(root, replay=replay, name="invalid-perk-pick.crd"), None)
+
+
+def _non_canonical(root: Path) -> MaterializedReplay:
+    payload = encode_replay_payload(build_replay(mode=GameMode.SURVIVAL, ticks=1))
+    payload = payload.replace(b"\xacplayer_count\x01", b"\xacplayer_count\xcc\x01", 1)
+    return MaterializedReplay(write_payload_bytes(root, payload=payload, name="invalid-non-canonical.crd"), None)
 
 
 def _bad_tick_player_count(root: Path) -> MaterializedReplay:
@@ -301,16 +344,18 @@ def _missing_quest_level(root: Path) -> MaterializedReplay:
 
 _VALID_CORPUS: tuple[ReplayCorpusCase, ...] = (
     ReplayCorpusCase("survival", "survival", "valid", frozenset({"mode"}), _survival),
-    ReplayCorpusCase("rush-with-events", "rush", "valid", frozenset({"mode", "verbose-events"}), _rush),
+    ReplayCorpusCase("rush", "rush", "valid", frozenset({"mode"}), _rush),
+    ReplayCorpusCase("rush-death", "rush", "valid", frozenset({"run-end"}), _rush_death),
     ReplayCorpusCase("quest-1.1", "quests", "valid", frozenset({"mode"}), _quest),
     ReplayCorpusCase("typo-submit", "typo", "valid", frozenset({"mode", "verbose-events"}), _typo),
     ReplayCorpusCase("tutorial", "tutorial", "valid", frozenset({"mode"}), _tutorial),
+    ReplayCorpusCase("survival-2p", "survival", "valid", frozenset({"multi-player"}), _multiplayer),
     ReplayCorpusCase(
-        "survival-2p-verbose-events",
+        "survival-perk-pick",
         "survival",
         "valid",
-        frozenset({"multi-player", "verbose-events"}),
-        _multiplayer_verbose,
+        frozenset({"verbose-events", "perk-commands"}),
+        _perk_pick,
     ),
 )
 
@@ -345,4 +390,19 @@ _INVALID_CORPUS: tuple[ReplayCorpusCase, ...] = (
         frozenset({"invalid-input"}),
         _missing_quest_level,
     ),
+    ReplayCorpusCase(
+        "ticks-after-end",
+        "rush",
+        "invalid",
+        frozenset({"invalid-input", "run-end", "simulation"}),
+        _ticks_after_end,
+    ),
+    ReplayCorpusCase(
+        "illegal-perk-pick",
+        "survival",
+        "invalid",
+        frozenset({"invalid-input", "perk-commands", "simulation"}),
+        _illegal_perk_pick,
+    ),
+    ReplayCorpusCase("non-canonical", "survival", "invalid", frozenset({"invalid-input"}), _non_canonical),
 )

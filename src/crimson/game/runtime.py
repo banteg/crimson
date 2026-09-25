@@ -267,6 +267,7 @@ def run_game(config: GameConfig) -> None:
             console=console,
             demo_enabled=config.demo_enabled,
             preserve_bugs=config.preserve_bugs,
+            replay_checkpoints=config.replay_checkpoints,
             skip_intro=config.no_intro,
             resources=None,
             audio=None,

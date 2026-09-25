@@ -14,7 +14,6 @@ from tqdm import tqdm
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..quests.level import QuestLevel
-from ..weapons import WeaponId
 
 if TYPE_CHECKING:
     from ..dbg.checkpoint_diff import ReplayDiffResult
@@ -29,13 +28,12 @@ if TYPE_CHECKING:
         ReplayRenderTelemetryTopTick,
     )
     from ..replay.driver.replay_info import ReplayInfoResult, ReplayInfoTimelineEvent
-    from ..replay.driver.setup import RunResult
-    from ..replay.types import ReplayClaimedStatsSnapshot
+    from ..sim.run_result import RunResult
 
-_REPLAY_VERIFY_SCHEMA_VERSION = 2
+_REPLAY_VERIFY_SCHEMA_VERSION = 3
 _REPLAY_INFO_SCHEMA_VERSION = 2
 _REPLAY_BENCHMARK_SCHEMA_VERSION = 3
-_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
+_REPLAY_VERIFY_MISMATCH_EXIT_CODE = 3
 
 
 class _ProgressBarLike(Protocol):
@@ -234,51 +232,17 @@ def _replay_mode_label(game_mode_id: GameMode) -> str:
             return "unknown"
 
 
-class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
-    game_mode_id: GameMode
-    tick_rate: int
-    ticks: int
-    elapsed_ms: int
-    score_xp: int
-    creature_kill_count: int
-    most_used_weapon_id: WeaponId
-    shots_fired: int
-    shots_hit: int
-    rng_state: int
-
-
-class _ReplayVerifyScoreClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
-    metric: str
-    submitted_score: int
-    simulated_value: int
-    match: bool
-
-
-class _ReplayVerifyClaimedStatsPayload(msgspec.Struct, forbid_unknown_fields=True):
-    complete: bool
-    ticks: int
-    elapsed_ms: int
-    score_xp: int
-    kills: int
-    most_used_weapon_id: WeaponId
-    shots_fired: int
-    shots_hit: int
-
-
-class _ReplayVerifyHeaderClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
-    expected: _ReplayVerifyClaimedStatsPayload
-    simulated: _ReplayVerifyClaimedStatsPayload
-    match: bool
-    mismatched_fields: list[str]
-
-
 class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
-    status: str
+    status: Literal["ok", "result_mismatch", "partial"]
     replay: str
-    run_result: _RunResultPayload
-    header_claim: _ReplayVerifyHeaderClaimPayload | None
-    score_claim: _ReplayVerifyScoreClaimPayload | None
+    payload_sha256: str
+    game_version: str
+    ticks: int
+    ticks_simulated: int
+    result: RunResult
+    recorded: RunResult
+    mismatched_fields: list[str]
 
 
 class _ReplayInfoSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -414,25 +378,11 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
     status: str
     replay: str
     settings: _ReplayBenchmarkSettingsPayload
-    run_result: _RunResultPayload
+    ticks: int
+    run_result: RunResult
     benchmark: _ReplayBenchmarkSummaryPayload
     profile: _ReplayBenchmarkProfilePayload | None
     render_telemetry: _ReplayRenderTelemetryPayload | None
-
-
-def _run_result_payload(run_result: RunResult) -> _RunResultPayload:
-    return _RunResultPayload(
-        game_mode_id=run_result.game_mode_id,
-        tick_rate=run_result.tick_rate,
-        ticks=run_result.ticks,
-        elapsed_ms=run_result.elapsed_ms,
-        score_xp=run_result.score_xp,
-        creature_kill_count=run_result.creature_kill_count,
-        most_used_weapon_id=run_result.most_used_weapon_id,
-        shots_fired=run_result.shots_fired,
-        shots_hit=run_result.shots_hit,
-        rng_state=run_result.rng_state,
-    )
 
 
 def _replay_info_event_payload(event: ReplayInfoTimelineEvent) -> _ReplayInfoEventPayload:
@@ -445,60 +395,6 @@ def _replay_info_event_payload(event: ReplayInfoTimelineEvent) -> _ReplayInfoEve
         detail=event.detail,
         data=event.data,
     )
-
-
-def _replay_verify_claimed_stats_payload(
-    claimed_stats: ReplayClaimedStatsSnapshot,
-) -> _ReplayVerifyClaimedStatsPayload:
-    return _ReplayVerifyClaimedStatsPayload(
-        complete=claimed_stats.complete,
-        ticks=claimed_stats.ticks,
-        elapsed_ms=claimed_stats.elapsed_ms,
-        score_xp=claimed_stats.score_xp,
-        kills=claimed_stats.kills,
-        most_used_weapon_id=claimed_stats.most_used_weapon_id,
-        shots_fired=claimed_stats.shots_fired,
-        shots_hit=claimed_stats.shots_hit,
-    )
-
-
-def _replay_verify_run_result_claim_payload(
-    run_result: RunResult,
-    *,
-    complete: bool,
-) -> _ReplayVerifyClaimedStatsPayload:
-    return _ReplayVerifyClaimedStatsPayload(
-        complete=complete,
-        ticks=run_result.ticks,
-        elapsed_ms=run_result.elapsed_ms,
-        score_xp=run_result.score_xp,
-        kills=run_result.creature_kill_count,
-        most_used_weapon_id=run_result.most_used_weapon_id,
-        shots_fired=run_result.shots_fired,
-        shots_hit=run_result.shots_hit,
-    )
-
-
-def _replay_verify_mismatched_fields(
-    expected_claim: _ReplayVerifyClaimedStatsPayload,
-    simulated_claim: _ReplayVerifyClaimedStatsPayload,
-) -> list[str]:
-    mismatched_fields: list[str] = []
-    if expected_claim.ticks != simulated_claim.ticks:
-        mismatched_fields.append("ticks")
-    if expected_claim.elapsed_ms != simulated_claim.elapsed_ms:
-        mismatched_fields.append("elapsed_ms")
-    if expected_claim.score_xp != simulated_claim.score_xp:
-        mismatched_fields.append("score_xp")
-    if expected_claim.kills != simulated_claim.kills:
-        mismatched_fields.append("kills")
-    if expected_claim.most_used_weapon_id != simulated_claim.most_used_weapon_id:
-        mismatched_fields.append("most_used_weapon_id")
-    if expected_claim.shots_fired != simulated_claim.shots_fired:
-        mismatched_fields.append("shots_fired")
-    if expected_claim.shots_hit != simulated_claim.shots_hit:
-        mismatched_fields.append("shots_hit")
-    return mismatched_fields
 
 
 def _replay_info_summary_payload(
@@ -662,10 +558,10 @@ class _ReplayListRow:
     old_version: bool
 
 
-def _fmt_replay_list_duration(*, ticks: int, tick_rate: int) -> str:
-    if int(tick_rate) <= 0:
-        return "n/a"
-    total_seconds = float(ticks) / float(tick_rate)
+def _fmt_replay_list_duration(*, ticks: int) -> str:
+    from ..replay import REPLAY_TICK_RATE
+
+    total_seconds = float(ticks) / float(REPLAY_TICK_RATE)
     if total_seconds >= 3600.0:
         hours = int(total_seconds // 3600.0)
         minutes = int((total_seconds % 3600.0) // 60.0)
@@ -735,8 +631,7 @@ def _replay_list_score_kills(
     *,
     replay: Replay,
 ) -> tuple[str, str]:
-    claimed_stats = replay.header.claimed_stats
-    return str(int(claimed_stats.score_xp)), str(int(claimed_stats.kills))
+    return str(int(replay.result.players[0].experience)), str(int(replay.result.kills))
 
 
 def _build_replay_list_row(
@@ -791,16 +686,15 @@ def _build_replay_list_row(
             str(exc).replace("\n", " ").strip(),
         )
 
-    header = replay.header
-    game_mode_id = header.game_mode_id
-    tick_rate = int(header.tick_rate)
+    run = replay.run
+    game_mode_id = run.game_mode_id
     ticks = len(replay.ticks)
-    game_version = str(header.game_version).strip() or "-"
-    player_count = int(header.player_count)
+    game_version = str(replay.game_version).strip() or "-"
+    player_count = int(run.player_count)
     mode_label = _replay_list_mode_label(
         game_mode_id=game_mode_id,
         player_count=player_count,
-        quest_level=header.quest_level,
+        quest_level=run.quest_level,
     )
     score_xp, kills = _replay_list_score_kills(
         replay=replay,
@@ -813,7 +707,7 @@ def _build_replay_list_row(
             game_mode_id=game_mode_id,
             game_version=game_version,
             ticks=str(ticks),
-            duration=_fmt_replay_list_duration(ticks=ticks, tick_rate=tick_rate),
+            duration=_fmt_replay_list_duration(ticks=ticks),
             score_xp=score_xp,
             kills=kills,
             modified=modified_text,
@@ -1005,10 +899,13 @@ def cmd_replay_verify(
         help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
     ),
 ) -> None:
-    """Headlessly simulate a replay and report resulting run stats."""
-    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
+    """Headlessly simulate a replay and check the result it recorded."""
+    import hashlib
+
+    from ..replay import ReplayCodecError, ReplayGameVersionError, decode_replay_payload, inflate_replay_payload
     from ..replay.driver.playback_driver import build_verify_playback_driver
     from ..replay.driver.setup import ReplayRunnerError
+    from ..sim.run_result import run_result_mismatches
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1018,43 +915,34 @@ def cmd_replay_verify(
         typer.echo(message, err=True)
         raise typer.Exit(code=1)
 
-    replay_bytes = Path(replay_path).read_bytes()
     try:
-        replay = load_replay(replay_bytes)
-        result = build_verify_playback_driver(
-            replay,
-            max_ticks=max_ticks,
-            trace_rng=trace_rng,
-        ).run()
+        replay_payload = inflate_replay_payload(Path(replay_path).read_bytes())
+        replay = decode_replay_payload(replay_payload)
+        driver = build_verify_playback_driver(replay, max_ticks=max_ticks, trace_rng=trace_rng)
+        result = driver.run()
     except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    full_replay_simulated = max_ticks is None or max_ticks >= len(replay.ticks)
-    header_claim_payload: _ReplayVerifyHeaderClaimPayload | None = None
-    header_claim_matches = True
-    claimed_stats = replay.header.claimed_stats
-    if full_replay_simulated:
-        expected_claim = _replay_verify_claimed_stats_payload(claimed_stats)
-        simulated_claim = _replay_verify_run_result_claim_payload(result, complete=claimed_stats.complete)
-        mismatched_fields = _replay_verify_mismatched_fields(expected_claim, simulated_claim)
-        header_claim_matches = not mismatched_fields
-        header_claim_payload = _ReplayVerifyHeaderClaimPayload(
-            expected=expected_claim,
-            simulated=simulated_claim,
-            match=header_claim_matches,
-            mismatched_fields=mismatched_fields,
-        )
-
-    status = "ok" if header_claim_matches else "header_stats_mismatch"
-
+    mismatched_fields = run_result_mismatches(replay.result, result) if driver.complete else []
+    status: Literal["ok", "result_mismatch", "partial"]
+    if not driver.complete:
+        status = "partial"
+    elif mismatched_fields:
+        status = "result_mismatch"
+    else:
+        status = "ok"
     payload = _ReplayVerifyPayload(
         schema_version=_REPLAY_VERIFY_SCHEMA_VERSION,
         status=status,
         replay=str(replay_path),
-        run_result=_run_result_payload(result),
-        header_claim=header_claim_payload,
-        score_claim=None,
+        payload_sha256=hashlib.sha256(replay_payload).hexdigest(),
+        game_version=replay.game_version,
+        ticks=len(replay.ticks),
+        ticks_simulated=int(driver.tick_limit),
+        result=result,
+        recorded=replay.result,
+        mismatched_fields=mismatched_fields,
     )
     payload_json = msgspec.json.encode(payload)
 
@@ -1067,25 +955,20 @@ def cmd_replay_verify(
     if output_format == "json":
         typer.echo(payload_json.decode("utf-8"))
     else:
+        player = result.players[0]
         message = (
-            f"{status}: "
-            f"ticks={result.ticks} elapsed_ms={result.elapsed_ms} score_xp={result.score_xp} "
-            f"kills={result.creature_kill_count} most_used_weapon_id={result.most_used_weapon_id} "
-            f"shots_fired={result.shots_fired} shots_hit={result.shots_hit} rng_state={result.rng_state}"
+            f"{status}: outcome={result.outcome} ticks={driver.tick_limit}/{len(replay.ticks)} "
+            f"elapsed_ms={result.elapsed_ms} score_xp={player.experience} kills={result.kills} "
+            f"rng_state={result.rng_state}"
         )
-        if header_claim_payload is not None:
-            mismatch_fields = (
-                ",".join(header_claim_payload.mismatched_fields) if header_claim_payload.mismatched_fields else "-"
-            )
-            message += (
-                f"; header_claim complete={header_claim_payload.expected.complete} "
-                f"match={header_claim_payload.match} "
-                f"mismatches={mismatch_fields}"
-            )
+        if result.quest_final_ms is not None:
+            message += f" quest_final_ms={result.quest_final_ms}"
+        if mismatched_fields:
+            message += f"; mismatches={','.join(mismatched_fields)}"
         typer.echo(message)
 
-    if not header_claim_matches:
-        raise typer.Exit(code=_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE)
+    if status == "result_mismatch":
+        raise typer.Exit(code=_REPLAY_VERIFY_MISMATCH_EXIT_CODE)
 
 
 @replay_app.command("info")
@@ -1393,7 +1276,8 @@ def cmd_replay_benchmark(
             render_telemetry_out=render_telemetry_out,
             render_charts_out_dir=render_charts_out_dir,
         ),
-        run_result=_run_result_payload(benchmark.run_result),
+        ticks=benchmark.ticks,
+        run_result=benchmark.run_result,
         benchmark=_ReplayBenchmarkSummaryPayload(
             sample_count=len(benchmark.samples),
             samples=[_replay_benchmark_sample_payload(sample) for sample in benchmark.samples],
@@ -1420,7 +1304,7 @@ def cmd_replay_benchmark(
         "ok: "
         f"mode={mode} "
         f"runs={len(benchmark.samples)} warmup_runs={resolved_warmup_runs} "
-        f"ticks={benchmark.run_result.ticks} "
+        f"ticks={benchmark.ticks} "
         f"wall_ms_p50={benchmark.wall_ms.p50:.3f} "
         f"tps_p50={benchmark.ticks_per_second.p50:.2f} "
         f"realtime_x_p50={benchmark.realtime_x.p50:.2f}",
@@ -1605,8 +1489,8 @@ def cmd_replay_render(
         f"ok: output={render.output_path} "
         f"frames={render.frame_count} fps={render.fps} "
         f"resolution={render.width}x{render.height} "
-        f"ticks={render.run_result.ticks} elapsed_ms={render.run_result.elapsed_ms} "
-        f"score_xp={render.run_result.score_xp} kills={render.run_result.creature_kill_count}"
+        f"ticks={render.ticks} elapsed_ms={render.run_result.elapsed_ms} "
+        f"score_xp={render.run_result.players[0].experience} kills={render.run_result.kills}"
     )
     typer.echo(message)
 
@@ -1729,8 +1613,8 @@ def cmd_replay_verify_checkpoints(
         _render_checkpoint_diff_failure(diff)
 
     message = (
-        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={result.ticks} "
-        f"score_xp={result.score_xp} kills={result.creature_kill_count}"
+        f"ok: {len(expected.checkpoints)} checkpoints match; ticks={driver.tick_limit} "
+        f"score_xp={result.players[0].experience} kills={result.kills}"
     )
     typer.echo(message)
 

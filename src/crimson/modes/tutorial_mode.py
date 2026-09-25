@@ -91,15 +91,6 @@ class TutorialMode(BaseGameplayMode):
         self._frame_input_state = None
         super().close()
 
-    def _replay_claimed_stats_complete(self) -> bool:
-        return int(self.state.tutorial.stage_index) >= 8
-
-    def _replay_claimed_stats_elapsed_ms(self) -> int:
-        session = self._sim_session
-        if session is None:
-            return 0
-        return int(session.elapsed_ms)
-
     def _replay_output_basename(self, *, stamp: str, replay) -> str:
         _ = replay
         return f"tutorial_{stamp}"
@@ -233,7 +224,7 @@ class TutorialMode(BaseGameplayMode):
         if self.close_requested:
             return
 
-        perk_pending = int(self.state.perk_selection.pending_count) > 0 and self.player.health > 0.0
+        perk_pending = self._ui_pending_perk_count() > 0 and self.player.health > 0.0
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
         if (
             int(self.state.tutorial.stage_index) == 6

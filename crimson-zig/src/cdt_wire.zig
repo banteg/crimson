@@ -1,7 +1,28 @@
 //! Validate the current CDT wire shape before typed decoding can apply defaults
 //! or narrow a noncanonical float64 value to f32.
 const std = @import("std");
-const BinaryBytes = @import("replay_codec.zig").BinaryBytes;
+
+/// A msgpack `bin` value (the trace status `reserved_seed_words`).
+pub const BinaryBytes = struct {
+    data: []const u8,
+
+    pub fn msgpackWrite(self: BinaryBytes, packer: anytype) !void {
+        try packer.writeBinary(self.data);
+    }
+
+    pub fn msgpackRead(unpacker: anytype) !BinaryBytes {
+        const len: usize = switch (try unpacker.reader.takeByte()) {
+            0xc4 => try unpacker.reader.takeInt(u8, .big),
+            0xc5 => try unpacker.reader.takeInt(u16, .big),
+            0xc6 => try unpacker.reader.takeInt(u32, .big),
+            else => return error.InvalidFormat,
+        };
+        const bytes = try unpacker.allocator.alloc(u8, len);
+        errdefer unpacker.allocator.free(bytes);
+        try unpacker.reader.readSliceAll(bytes);
+        return .{ .data = bytes };
+    }
+};
 
 pub const Error = error{InvalidTraceWire};
 

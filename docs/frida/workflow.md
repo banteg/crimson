@@ -63,7 +63,7 @@ frida -n crimsonland.exe -l scripts\frida\gameplay_state_capture.js
 
 Differential gameplay capture (tick-aligned checkpoints + event summaries; writes
 a raw `gameplay_diff_capture.jsonl` that the capture host finalizes into per-run
-`gameplay_diff_capture.<mode>.run<k>.cdt` traces plus matching `.crd` replays):
+`gameplay_diff_capture.<mode>.run<k>.cdt` traces plus matching `.ccr` capture replays):
 
 ```text
 uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py \
@@ -125,7 +125,7 @@ Default logs written by the scripts:
 
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
-- `C:\share\frida\gameplay_diff_capture.<mode>.run<k>.cdt` / `.crd` (finalized diff captures; one pair per run)
+- `C:\share\frida\gameplay_diff_capture.<mode>.run<k>.cdt` / `.ccr` (finalized diff captures; one pair per run)
 - `C:\share\frida\survival_autoplay.jsonl` (if you ran `survival_autoplay.js`)
 - `C:\share\frida\creature_anim_trace.jsonl`
 - `C:\share\frida\ui_render_trace.jsonl`
@@ -155,7 +155,7 @@ cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
 cp /mnt/c/share/frida/gameplay_state_capture.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/gameplay_diff_capture.*.run*.cdt analysis/frida/raw/  # optional
-cp /mnt/c/share/frida/gameplay_diff_capture.*.run*.crd analysis/frida/raw/  # optional
+cp /mnt/c/share/frida/gameplay_diff_capture.*.run*.ccr analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_trial_overlay_trace.jsonl analysis/frida/raw/  # optional
 cp /mnt/c/share/frida/demo_idle_threshold_trace.jsonl analysis/frida/raw/  # optional
 ```

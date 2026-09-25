@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
@@ -11,7 +10,8 @@ from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_ve
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from crimson.sim.hooks import TickResult
-from crimson.sim.input_providers import GameFrameRngAdvanceOperation, PerkPickCommand
+from crimson.sim.run_result import RunOutcome
+from crimson.sim.run_spec import WORLD_SIZE
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
@@ -20,6 +20,7 @@ from tests.support.replay_runner_helpers import (
     _collect_verify_replay_info,
     _quest_spawn_entries,
     _run_verify_playback,
+    finish_replay,
 )
 
 
@@ -37,91 +38,53 @@ class _ExperienceWalkObserver(PlaybackWalkObserver):
 
 
 def test_quest_runner_is_deterministic() -> None:
-    _header, rec = _blank_quest_replay(ticks=10, seed=101)
-    replay = rec.finish()
+    rec = _blank_quest_replay(ticks=10, seed=101)
+    replay = finish_replay(rec)
     spawn_entries = tuple(
-        _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed)),
+        _quest_spawn_entries("1.1", player_count=int(replay.run.player_count), seed=int(replay.run.seed)),
     )
 
     result0 = _run_verify_playback(replay, spawn_entries=spawn_entries)
     result1 = _run_verify_playback(replay, spawn_entries=spawn_entries)
 
     assert result0 == result1
-    assert result0.game_mode_id == int(GameMode.QUESTS)
-    assert result0.ticks == 10
+    assert result0.outcome == RunOutcome.INCOMPLETE
     assert result0.elapsed_ms >= 0
-
-
-def test_quest_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
-    _header, rec = _blank_quest_replay(ticks=1, seed=101)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
-    spawn_entries = tuple(
-        _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed)),
-    )
-
-    result = _run_verify_playback(
-        replay,
-        spawn_entries=spawn_entries,
-    )
-
-    assert result.elapsed_ms == 500
-
-
-def test_quest_runner_game_frame_rng_advance_prelude_shifts_rng_state() -> None:
-    _header, rec = _blank_quest_replay(ticks=3, seed=101)
-    replay = rec.finish()
-
-    baseline = _run_verify_playback(replay, spawn_entries=())
-    shifted_replay = msgspec.structs.replace(
-        replay,
-        ticks=[
-            msgspec.structs.replace(tick, prelude=[GameFrameRngAdvanceOperation(frames=1)]) for tick in replay.ticks
-        ],
-    )
-    shifted = _run_verify_playback(shifted_replay, spawn_entries=())
-    shifted_again = _run_verify_playback(shifted_replay, spawn_entries=())
-
-    assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
-    assert shifted == shifted_again
-    assert shifted.rng_state != baseline.rng_state
+    assert result0.quest_final_ms is None
 
 
 def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries() -> None:
-    _header, rec = _blank_quest_replay(ticks=0, seed=101)
-    replay = msgspec.structs.replace(
-        rec.finish(),
-        header=msgspec.structs.replace(rec.header, quest_level=QuestLevel(1, 3)),
-    )
+    replay = finish_replay(_blank_quest_replay(ticks=0, seed=101))
+    replay = msgspec.structs.replace(replay, run=msgspec.structs.replace(replay.run, quest_level=QuestLevel(1, 3)))
     quest = quest_by_level(QuestLevel(1, 3))
     assert quest is not None
 
     ctx = QuestContext(
-        width=int(replay.header.world_size),
-        height=int(replay.header.world_size),
-        player_count=int(replay.header.player_count),
+        width=int(WORLD_SIZE),
+        height=int(WORLD_SIZE),
+        player_count=int(replay.run.player_count),
     )
-    rng = Crand(int(replay.header.seed))
+    rng = Crand(int(replay.run.seed))
     advance_unlock_terrain(
         rng,
-        unlock_index=int(replay.header.status.quest_unlock_index),
-        width=int(replay.header.world_size),
-        height=int(replay.header.world_size),
+        unlock_index=int(replay.run.status.quest_unlock_index),
+        width=int(WORLD_SIZE),
+        height=int(WORLD_SIZE),
     )
     # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
     rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
     quest_terrain = advance_explicit_terrain(
         rng,
         terrain_slots=quest.terrain_slots,
-        width=int(replay.header.world_size),
-        height=int(replay.header.world_size),
+        width=int(WORLD_SIZE),
+        height=int(WORLD_SIZE),
     )
     spawn_entries = tuple(
         build_quest_spawn_table(
             quest,
             ctx,
             rng=rng,
-            hardcore=bool(replay.header.hardcore),
+            hardcore=bool(replay.run.hardcore),
             full_version=True,
         ),
     )
@@ -139,8 +102,8 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
 
 
 def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
-    _header, rec = _blank_quest_replay(ticks=1, seed=101)
-    replay = rec.finish()
+    rec = _blank_quest_replay(ticks=1, seed=101)
+    replay = finish_replay(rec)
     checkpoints = []
 
     _run_verify_playback(
@@ -160,22 +123,9 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
     assert tick0.events.sfx_head == [expected_reload_sfx.value]
 
 
-def test_quest_runner_ignores_stale_perk_pick_command() -> None:
-    _header, rec = _blank_quest_replay(ticks=1, seed=101)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(
-        replay.ticks[0],
-        prelude=[PerkPickCommand(player_index=0, choice_index=0)],
-    )
-
-    result = _run_verify_playback(replay, spawn_entries=())
-    assert result.ticks == 1
-
-
 def test_quest_replay_info_elapsed_matches_run_replay() -> None:
-    _header, rec = _blank_quest_replay(ticks=1, seed=101)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
+    rec = _blank_quest_replay(ticks=1, seed=101)
+    replay = finish_replay(rec)
 
     run_result = _run_verify_playback(replay)
     info = _collect_verify_replay_info(replay)
@@ -184,8 +134,8 @@ def test_quest_replay_info_elapsed_matches_run_replay() -> None:
 
 
 def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
-    _header, rec = _blank_quest_replay(ticks=1, seed=101)
-    replay = rec.finish()
+    rec = _blank_quest_replay(ticks=1, seed=101)
+    replay = finish_replay(rec)
     driver = build_verify_playback_driver(replay)
     observed_before: list[int] = []
     observed_after: list[int] = []

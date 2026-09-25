@@ -5,54 +5,73 @@ from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.replay import REPLAY_FORMAT_VERSION, Replay, ReplayRecorder, ReplayTick
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.replay.driver.playback_driver import (
     PlaybackDriver,
     PlaybackWalkObserver,
     RngTraceDraw,
     build_verify_playback_driver,
+    finish_with_simulated_result,
 )
 from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
-from crimson.replay.driver.setup import RunResult
 from crimson.replay.types import current_replay_game_version
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
+from crimson.sim.run_result import RunOutcome, RunResult
+from crimson.sim.run_spec import RunSpec
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand
 
+UNVERIFIED_RESULT = RunResult(
+    outcome=RunOutcome.INCOMPLETE,
+    elapsed_ms=0,
+    kills=0,
+    rng_state=0,
+    pending_perks=0,
+    quest_final_ms=None,
+    players=(),
+)
 
-def _blank_survival_replay(
-    *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
-) -> tuple[ReplayHeader, ReplayRecorder]:
-    header = ReplayHeader(
-        game_mode_id=GameMode.SURVIVAL,
-        seed=int(seed),
-        tick_rate=60,
-        player_count=1,
-        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
+
+def unverified_replay(rec: ReplayRecorder) -> Replay:
+    """Finish a recording without simulating it, for tests that step drivers by hand."""
+
+    return rec.finish(UNVERIFIED_RESULT)
+
+
+def idle_replay(tick_count: int, *, run: RunSpec | None = None) -> Replay:
+    """Hand-built single-player replay of idle ticks, for playback-mode tests that never simulate it."""
+
+    return Replay(
+        format_version=REPLAY_FORMAT_VERSION,
+        game_version=current_replay_game_version(),
+        run=RunSpec(game_mode_id=GameMode.DEMO, seed=0) if run is None else run,
+        result=UNVERIFIED_RESULT,
+        ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)]) for _ in range(int(tick_count))],
     )
-    rec = ReplayRecorder(header)
-    for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
-    return header, rec
 
 
-def _blank_rush_replay(
-    *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
-) -> tuple[ReplayHeader, ReplayRecorder]:
-    header = ReplayHeader(
-        game_mode_id=GameMode.RUSH,
-        seed=int(seed),
-        tick_rate=60,
-        player_count=1,
-        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
-    )
-    rec = ReplayRecorder(header)
+def finish_replay(rec: ReplayRecorder) -> Replay:
+    """Finish a synthesized recording, stamping the result its ticks simulate to."""
+
+    return finish_with_simulated_result(rec)
+
+
+def _blank_replay(run: RunSpec, *, ticks: int, game_version: str | None = None) -> ReplayRecorder:
+    rec = ReplayRecorder(run, game_version=game_version)
     for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
-    return header, rec
+        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(run.player_count)])
+    return rec
+
+
+def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str | None = None) -> ReplayRecorder:
+    return _blank_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=seed), ticks=ticks, game_version=game_version)
+
+
+def _blank_rush_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str | None = None) -> ReplayRecorder:
+    return _blank_replay(RunSpec(game_mode_id=GameMode.RUSH, seed=seed), ticks=ticks, game_version=game_version)
 
 
 def _blank_typo_replay(
@@ -62,53 +81,23 @@ def _blank_typo_replay(
     game_version: str | None = None,
     typo_dictionary_words: tuple[str, ...] = (),
     typo_highscore_names: tuple[str, ...] = (),
-) -> tuple[ReplayHeader, ReplayRecorder]:
-    header = ReplayHeader(
+) -> ReplayRecorder:
+    run = RunSpec(
         game_mode_id=GameMode.TYPO,
-        seed=int(seed),
-        tick_rate=60,
-        player_count=1,
-        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
+        seed=seed,
         typo_dictionary_words=tuple(typo_dictionary_words),
         typo_highscore_names=tuple(typo_highscore_names),
     )
-    rec = ReplayRecorder(header)
-    for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
-    return header, rec
+    return _blank_replay(run, ticks=ticks, game_version=game_version)
 
 
-def _blank_quest_replay(
-    *, ticks: int, seed: int = 101, game_version: str | None = None,
-) -> tuple[ReplayHeader, ReplayRecorder]:
-    header = ReplayHeader(
-        game_mode_id=GameMode.QUESTS,
-        seed=int(seed),
-        quest_level=QuestLevel(1, 1),
-        tick_rate=60,
-        player_count=1,
-        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
-    )
-    rec = ReplayRecorder(header)
-    for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
-    return header, rec
+def _blank_quest_replay(*, ticks: int, seed: int = 101, game_version: str | None = None) -> ReplayRecorder:
+    run = RunSpec(game_mode_id=GameMode.QUESTS, seed=seed, quest_level=QuestLevel(1, 1))
+    return _blank_replay(run, ticks=ticks, game_version=game_version)
 
 
-def _blank_tutorial_replay(
-    *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
-) -> tuple[ReplayHeader, ReplayRecorder]:
-    header = ReplayHeader(
-        game_mode_id=GameMode.TUTORIAL,
-        seed=int(seed),
-        tick_rate=60,
-        player_count=1,
-        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
-    )
-    rec = ReplayRecorder(header)
-    for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
-    return header, rec
+def _blank_tutorial_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str | None = None) -> ReplayRecorder:
+    return _blank_replay(RunSpec(game_mode_id=GameMode.TUTORIAL, seed=seed), ticks=ticks, game_version=game_version)
 
 
 def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int = 101):

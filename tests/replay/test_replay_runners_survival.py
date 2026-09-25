@@ -1,165 +1,52 @@
 from __future__ import annotations
 
 import msgspec
+import pytest
 
-from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_unlock_terrain
-from crimson.sim.input_providers import (
-    GameFrameRngAdvanceOperation,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-)
-from grim.rand import CallerStatic, Crand, CrtRand
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.run_result import PlayerRunResult, RunOutcome
+from crimson.sim.run_spec import WORLD_SIZE
+from crimson.weapons import WeaponId
+from grim.rand import CallerStatic, Crand
 from tests.support.replay_runner_helpers import (
     ReplayRngTraceRecorder,
     _blank_survival_replay,
     _run_verify_playback,
+    finish_replay,
 )
 
 
 def test_survival_runner_is_deterministic() -> None:
-    _header, rec = _blank_survival_replay(ticks=10, seed=0x1234)
-    replay = rec.finish()
+    replay = finish_replay(_blank_survival_replay(ticks=10, seed=0x1234))
 
     result0 = _run_verify_playback(replay)
     result1 = _run_verify_playback(replay)
 
-    assert result0 == result1
-    assert result0.game_mode_id == int(GameMode.SURVIVAL)
-    assert result0.ticks == 10
+    assert result0 == result1 == replay.result
+    assert result0.outcome == RunOutcome.INCOMPLETE
     assert result0.elapsed_ms == 10 * int(1000.0 / 60.0)
-    assert result0.score_xp == 0
-    assert result0.creature_kill_count == 0
-    assert result0.most_used_weapon_id == 1
-    assert result0.shots_fired == 0
-    assert result0.shots_hit == 0
-
-
-def test_survival_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
-
-    result = _run_verify_playback(replay)
-
-    assert result.elapsed_ms == 500
-
-
-def test_survival_runner_skips_outer_dt_transform_for_native_capture() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    port_replay = rec.finish()
-    capture_replay = msgspec.structs.replace(
-        port_replay,
-        header=msgspec.structs.replace(port_replay.header, initial_creature_pool=()),
+    assert result0.kills == 0
+    assert result0.quest_final_ms is None
+    assert result0.players == (
+        PlayerRunResult(experience=0, health=100.0, shots_fired=0, shots_hit=0, most_used_weapon_id=WeaponId.PISTOL),
     )
-    port_driver = PlaybackDriver(port_replay)
-    capture_driver = PlaybackDriver(capture_replay)
-    port_driver.world.players[0].perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
-    capture_driver.world.players[0].perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
-
-    port_timing = port_driver.session.timing_for_dt(0.1)
-    capture_timing = capture_driver.session.timing_for_dt(0.1)
-
-    assert port_driver.session.apply_world_dt_steps is True
-    assert capture_driver.session.apply_world_dt_steps is False
-    assert port_timing.dt_sim_ms_i32 == 89
-    assert capture_timing.dt_sim_ms_i32 == 100
-
-
-def test_survival_runner_game_frame_rng_advance_prelude_shifts_rng_state() -> None:
-    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    replay = rec.finish()
-
-    baseline = _run_verify_playback(replay)
-    shifted_replay = msgspec.structs.replace(
-        replay,
-        ticks=[
-            msgspec.structs.replace(tick, prelude=[GameFrameRngAdvanceOperation(frames=1)]) for tick in replay.ticks
-        ],
-    )
-    shifted = _run_verify_playback(shifted_replay)
-    shifted_again = _run_verify_playback(shifted_replay)
-
-    assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
-    assert shifted == shifted_again
-    assert shifted.rng_state != baseline.rng_state
-
-
-def test_survival_replay_prelude_finishes_before_tick_rng_trace() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(
-        replay.ticks[0],
-        prelude=[
-            GameFrameRngAdvanceOperation(frames=1),
-            PerkPickCommand(player_index=0, choice_index=0),
-            GameFrameRngAdvanceOperation(frames=3),
-        ],
-    )
-    driver = PlaybackDriver(replay, trace_rng=True, strict_rng_trace=True)
-    perk = driver.world.state.perk_selection
-    perk.pending_count = 1
-    perk.choices_dirty = False
-    perk.choices = [PerkId.BANDAGE] * 7
-    prelude_draws: list[tuple[int, int, int, CallerStatic | None]] = []
-
-    def _trace(state_before: int, state_after: int, value_15: int, caller: CallerStatic | None) -> None:
-        prelude_draws.append((state_before, state_after, value_15, caller))
-
-    rng = driver.world.state.rng
-    assert isinstance(rng, CrtRand)
-    rng.set_trace_sink(_trace, require_caller=True)
-    driver.step_tick(0)
-
-    callers = [row[3] for row in prelude_draws]
-    assert callers[0] == RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED
-    assert RngCallerStatic.PERK_APPLY_BANDAGE_HEAL in callers
-    assert callers[-3:] == [RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED] * 3
-    assert driver._last_tick_rng_rows
-    assert int(driver._last_tick_rng_rows[0][0]) == int(prelude_draws[-1][1])
-
-
-def test_survival_replay_postlude_appends_menu_rng_after_simulation() -> None:
-    _header, recorder = _blank_survival_replay(ticks=1, seed=0x1234)
-    baseline_replay = recorder.finish()
-    postlude_replay = msgspec.structs.replace(
-        baseline_replay,
-        ticks=[
-            msgspec.structs.replace(
-                baseline_replay.ticks[0],
-                postlude=[PerkMenuOpenCommand(player_index=0)],
-            ),
-        ],
-    )
-    baseline = PlaybackDriver(baseline_replay, trace_rng=True, strict_rng_trace=True)
-    postlude = PlaybackDriver(postlude_replay, trace_rng=True, strict_rng_trace=True)
-
-    baseline.step_tick(0)
-    postlude.step_tick(0)
-
-    baseline_rows = list(baseline._last_tick_rng_rows)
-    postlude_rows = list(postlude._last_tick_rng_rows)
-    assert postlude_rows[: len(baseline_rows)] == baseline_rows
-    assert len(postlude_rows) > len(baseline_rows)
-    assert RngCallerStatic.PERK_SELECT_RANDOM in [row[3] for row in postlude_rows[len(baseline_rows) :]]
-    assert len(postlude.world.state.perk_selection.choices) == 7
-    assert postlude.world.state.perk_selection.choices_dirty is False
 
 
 def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
-    _header, rec = _blank_survival_replay(ticks=0, seed=0x1234)
-    replay = rec.finish()
+    replay = finish_replay(_blank_survival_replay(ticks=0, seed=0x1234))
     driver = build_verify_playback_driver(replay)
 
-    rng = Crand(int(replay.header.seed))
+    rng = Crand(int(replay.run.seed))
     terrain = advance_unlock_terrain(
         rng,
-        unlock_index=int(replay.header.status.quest_unlock_index),
-        width=int(replay.header.world_size),
-        height=int(replay.header.world_size),
+        unlock_index=int(replay.run.status.quest_unlock_index),
+        width=int(WORLD_SIZE),
+        height=int(WORLD_SIZE),
     )
 
     terrain_setup = driver.terrain_setup
@@ -169,35 +56,8 @@ def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     assert int(driver.world.state.rng.state) == int(rng.state)
 
 
-def test_survival_runner_ignores_stale_perk_pick_command() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(
-        replay.ticks[0],
-        prelude=[PerkPickCommand(player_index=0, choice_index=0)],
-    )
-
-    result = _run_verify_playback(replay)
-    assert result.ticks == 1
-
-
-def test_survival_runner_menu_open_allows_same_tick_perk_pick() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
-    replay.ticks[0] = msgspec.structs.replace(
-        replay.ticks[0],
-        prelude=[PerkMenuOpenCommand(player_index=0), PerkPickCommand(player_index=0, choice_index=0)],
-    )
-
-    result = _run_verify_playback(replay)
-
-    assert result.game_mode_id == int(GameMode.SURVIVAL)
-    assert result.ticks == 1
-
-
 def test_survival_runner_checkpoints_capture_debug_fields() -> None:
-    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    replay = rec.finish()
+    replay = finish_replay(_blank_survival_replay(ticks=3, seed=0x1234))
     checkpoints = []
 
     _run_verify_playback(
@@ -215,8 +75,7 @@ def test_survival_runner_checkpoints_capture_debug_fields() -> None:
 
 
 def test_survival_runner_tick_rng_trace_observer_emits_rows_for_first_tick() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
+    replay = finish_replay(_blank_survival_replay(ticks=1, seed=0x1234))
     observer = ReplayRngTraceRecorder(rows_by_tick={})
 
     _run_verify_playback(
@@ -230,8 +89,7 @@ def test_survival_runner_tick_rng_trace_observer_emits_rows_for_first_tick() -> 
 
 
 def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
-    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    replay = rec.finish()
+    replay = finish_replay(_blank_survival_replay(ticks=3, seed=0x1234))
     observer = ReplayRngTraceRecorder(rows_by_tick={})
 
     _run_verify_playback(
@@ -277,11 +135,94 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
 
 
 def test_playback_driver_run_matches_verify_driver_factory() -> None:
-    _header, rec = _blank_survival_replay(ticks=4, seed=0x1234)
-    replay = rec.finish()
+    replay = finish_replay(_blank_survival_replay(ticks=4, seed=0x1234))
     driver = PlaybackDriver(replay)
 
     driver_result = driver.run()
     wrapper_result = build_verify_playback_driver(replay).run()
 
     assert driver_result == wrapper_result
+
+
+def _with_commands(replay, commands):
+    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], commands=list(commands))
+    return replay
+
+
+@pytest.mark.parametrize(
+    "commands",
+    [
+        [PerkPickCommand(player_index=0, choice_index=0)],
+        [PerkMenuOpenCommand(player_index=0)],
+    ],
+)
+def test_survival_runner_rejects_perk_commands_without_pending_perk(commands) -> None:
+    replay = _with_commands(finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)), commands)
+
+    with pytest.raises(ReplayRunnerError, match="without a pending perk"):
+        _run_verify_playback(replay)
+
+
+def test_survival_runner_rejects_unoffered_perk_choice() -> None:
+    replay = _with_commands(
+        finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)),
+        [PerkPickCommand(player_index=0, choice_index=6)],
+    )
+    driver = PlaybackDriver(replay)
+    perk = driver.world.state.perk_selection
+    perk.pending_count = 1
+    perk.choices_dirty = False
+    perk.choices = [PerkId.BANDAGE] * 3
+
+    with pytest.raises(ReplayRunnerError, match="not an offered choice"):
+        driver.step_tick(0)
+
+
+def test_survival_runner_menu_open_allows_same_tick_perk_pick() -> None:
+    replay = _with_commands(
+        finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)),
+        [PerkMenuOpenCommand(player_index=0), PerkPickCommand(player_index=0, choice_index=0)],
+    )
+    driver = PlaybackDriver(replay)
+    driver.world.state.perk_selection.pending_count = 1
+
+    driver.step_tick(0)
+
+    assert driver.world.state.perk_selection.pending_count == 0
+
+
+def test_survival_runner_rejects_ticks_after_run_end() -> None:
+    replay = finish_replay(_blank_survival_replay(ticks=3, seed=0x1234))
+    driver = PlaybackDriver(replay)
+    for player in driver.world.players:
+        player.health = 0.0
+        player.death_timer = 0.0
+
+    with pytest.raises(ReplayRunnerError, match=r"run ended \(death\) at tick 0 but the replay has 3 ticks"):
+        driver.run()
+
+
+def test_survival_runner_reports_death_on_final_tick() -> None:
+    replay = finish_replay(_blank_survival_replay(ticks=1, seed=0x1234))
+    driver = PlaybackDriver(replay)
+    for player in driver.world.players:
+        player.health = 0.0
+        player.death_timer = 0.0
+
+    result = driver.run()
+
+    assert result.outcome == RunOutcome.DEATH
+
+
+def test_survival_runner_rejects_perk_commands_after_every_player_died() -> None:
+    replay = _with_commands(
+        finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)),
+        [PerkMenuOpenCommand(player_index=0)],
+    )
+    driver = PlaybackDriver(replay)
+    driver.world.state.perk_selection.pending_count = 1
+    for player in driver.world.players:
+        player.health = 0.0
+
+    with pytest.raises(ReplayRunnerError, match="every player is dead"):
+        driver.step_tick(0)

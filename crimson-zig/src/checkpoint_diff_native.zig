@@ -37,14 +37,14 @@ const ReplayPlayerCheckpointWire = struct {
     level: i32,
 };
 
-const ReplayDeathLedgerEntryWire = struct {
+pub const ReplayDeathLedgerEntryWire = struct {
     creature_index: i32,
     type_id: i32,
     reward_value: f64,
     xp_awarded: i32,
     owner_id: i32,
 
-    fn msgpackRead(unpacker: anytype) !ReplayDeathLedgerEntryWire {
+    pub fn msgpackRead(unpacker: anytype) !ReplayDeathLedgerEntryWire {
         const field_count = try unpacker.readMapHeader(u32);
         var field_name_buf: [64]u8 = undefined;
         var entry: ReplayDeathLedgerEntryWire = .{
@@ -133,6 +133,14 @@ pub const BonusTimersWire = struct {
         }
 
         return .{ .entries = entries };
+    }
+
+    pub fn msgpackWrite(self: BonusTimersWire, packer: anytype) !void {
+        try packer.writeMapHeader(self.entries.len);
+        for (self.entries) |entry| {
+            try packer.writeString(entry.key);
+            try packer.writeInt(entry.value);
+        }
     }
 };
 
@@ -238,8 +246,8 @@ const VerifyCheckpointsSummaryPayload = struct {
     checkpoint_count: usize,
     checked_count: usize,
     ticks: usize,
-    score_xp: i32,
-    kills: i32,
+    score_xp: replay_codec.Int,
+    kills: replay_codec.Int,
     max_ticks: ?usize,
     trace_rng: bool,
 };
@@ -375,10 +383,10 @@ pub fn runReplayVerifyCheckpointsBytes(
     };
     defer expected.deinit();
 
-    var parse_detail: ?[]u8 = null;
-    defer if (parse_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
-        return buildVerifyFailedOutput(allocator, parse_detail orelse replayLoadErrorDetail(err));
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = replay_codec.loadReplay(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildVerifyFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
     defer replay.deinit(allocator);
 
@@ -406,10 +414,10 @@ pub fn runReplayVerifyCheckpointsBytesJson(
     };
     defer expected.deinit();
 
-    var parse_detail: ?[]u8 = null;
-    defer if (parse_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
-        return buildVerifyFailedOutput(allocator, parse_detail orelse replayLoadErrorDetail(err));
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = replay_codec.loadReplay(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildVerifyFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
     defer replay.deinit(allocator);
 
@@ -682,10 +690,10 @@ fn runNativeVerifyCheckpoints(
     };
     defer allocator.free(replay_bytes);
 
-    var parse_detail: ?[]u8 = null;
-    defer if (parse_detail) |detail| allocator.free(detail);
-    var replay = loadReplayBytes(allocator, replay_bytes, &parse_detail) catch |err| {
-        return buildVerifyFailedOutput(allocator, parse_detail orelse replayLoadErrorDetail(err));
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = replay_codec.loadReplay(allocator, replay_bytes, &diagnostic) catch |err| switch (err) {
+        error.InvalidReplay => return buildVerifyFailedOutput(allocator, diagnostic.message()),
+        error.OutOfMemory => return err,
     };
     defer replay.deinit(allocator);
 
@@ -723,25 +731,13 @@ fn runVerifyCheckpointsWithReplayOutput(
     replay: replay_codec.Replay,
     options: VerifyOutputOptions,
 ) !CommandOutput {
-    if (try replay_codec.replayEventOrderingFailureDetail(allocator, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildVerifyFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventPlayerIndexFailureDetail(allocator, replay.header.player_count, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildVerifyFailedOutput(allocator, detail);
-    }
-    if (try replay_codec.replayEventKindFailureDetail(allocator, replay.header.game_mode_id, replay.events)) |detail| {
-        defer allocator.free(detail);
-        return buildVerifyFailedOutput(allocator, detail);
-    }
-
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer {
         replay_runner.deinitReplayTickTraceRows(allocator, trace.items);
         trace.deinit(allocator);
     }
 
+    var failure: replay_runner.RunFailure = .{};
     const run = replay_runner.runReplayWithTrace(
         allocator,
         replay,
@@ -750,9 +746,13 @@ fn runVerifyCheckpointsWithReplayOutput(
             .max_ticks = options.max_ticks,
             .trace_rng = options.trace_rng,
             .trace_timing = false,
+            .failure = &failure,
         },
     ) catch |err| {
-        return buildVerifyFailedOutput(allocator, replayRunnerErrorDetail(err));
+        var detail: std.Io.Writer.Allocating = .init(allocator);
+        defer detail.deinit();
+        try failure.write(&detail.writer, err);
+        return buildVerifyFailedOutput(allocator, detail.written());
     };
 
     var actual: std.ArrayList(ReplayCheckpointWire) = .empty;
@@ -804,7 +804,7 @@ fn runVerifyCheckpointsWithReplayOutput(
     } else {
         try stdout_buf.writer.print(
             "ok: {d} checkpoints match; ticks={d} score_xp={d} kills={d}",
-            .{ expected_checkpoints.len, run.ticks, run.player_experience, run.creature_kill_count },
+            .{ expected_checkpoints.len, run.ticks_simulated, run.result.players()[0].experience, run.result.kills },
         );
         if (options.json_out) |json_out_path| {
             try stdout_buf.writer.print("; json_report={s}", .{json_out_path});
@@ -863,9 +863,9 @@ fn buildVerifyJsonPayload(
         .summary = .{
             .checkpoint_count = expected_checkpoints.len,
             .checked_count = diff.checked_count,
-            .ticks = run.ticks,
-            .score_xp = run.player_experience,
-            .kills = run.creature_kill_count,
+            .ticks = run.ticks_simulated,
+            .score_xp = run.result.players()[0].experience,
+            .kills = run.result.kills,
             .max_ticks = options.max_ticks,
             .trace_rng = options.trace_rng,
         },
@@ -933,42 +933,6 @@ fn validateCurrentCheckpoints(checkpoints: ReplayCheckpointsWire) !void {
         }
         previous_tick = checkpoint.tick_index;
     }
-}
-
-fn loadReplayBytes(
-    allocator: std.mem.Allocator,
-    replay_bytes: []const u8,
-    parse_detail: ?*?[]u8,
-) !replay_codec.Replay {
-    var replay_payload_alloc: ?[]u8 = null;
-    defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload = try replay_codec.inflateZstdFilePayload(
-        allocator,
-        replay_bytes,
-        replay_codec.max_replay_payload_bytes,
-    );
-    replay_payload_alloc = replay_payload;
-
-    return replay_codec.parseReplay(allocator, replay_payload) catch |err| {
-        if (err == error.UnsupportedInputShape) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayInputShapeFailureDetail(allocator, replay_payload);
-            }
-        } else if (err == error.UnsupportedEventShape) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
-            }
-        } else if (err == error.UnknownCommandKind) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
-            }
-        } else if (err == error.UnsupportedEventKind) {
-            if (parse_detail) |detail| {
-                detail.* = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
-            }
-        }
-        return err;
-    };
 }
 
 fn traceRowForTick(rows: []const replay_runner.ReplayTickTrace, tick_index: i32) ?*const replay_runner.ReplayTickTrace {
@@ -2047,46 +2011,6 @@ fn replayFileLoadErrorDetail(err: anyerror) []const u8 {
     };
 }
 
-fn replayLoadErrorDetail(err: anyerror) []const u8 {
-    return switch (err) {
-        error.InvalidMsgpack => "replay payload does not match format 17 msgpack schema",
-        error.InvalidHeaderValue => "replay header contains invalid values",
-        error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
-        error.MissingHeaderField => "replay header missing required fields",
-        error.MissingQuestLevel => "quest replays require a valid header.quest_level",
-        error.TypoMultiplayer => "Typ-o replays require player_count == 1",
-        error.TutorialMultiplayer => "tutorial replays require player_count == 1",
-        error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 17",
-        error.UnsupportedEventShape => "replay tick operations do not match format 17",
-        error.InvalidZstdPayload => "unable to inflate replay zstd payload",
-        error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 17",
-        error.UnsupportedInputQuantization => "replay input quantization is not supported",
-        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
-        error.OutOfMemory => "native replay load ran out of memory",
-        else => @errorName(err),
-    };
-}
-
-fn replayRunnerErrorDetail(err: anyerror) []const u8 {
-    return switch (err) {
-        error.OutOfMemory => "native replay run ran out of memory",
-        error.InvalidHeaderValue => "native replay run received invalid header values",
-        error.InvalidCaptureEnumValue => "replay capture includes an invalid enum value",
-        error.UnsupportedGameMode => "native replay run only supports survival/rush/quest/typo/tutorial modes",
-        error.UnsupportedPlayerCount => "native replay run only supports 1-4 player replays",
-        error.UnsupportedInputQuantization => "native replay run only supports f32 quantization",
-        error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
-        error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player index",
-        error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
-        error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
-        error.InvalidQuestSpawnTable => "replay capture references an invalid quest spawn table",
-        else => @errorName(err),
-    };
-}
-
 fn checkpointBuildErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.OutOfMemory => "native checkpoint comparison ran out of memory",
@@ -2476,10 +2400,11 @@ test "checkpoint loader enforces current semantic invariants" {
 
 test "byte checkpoint verify accepts replay and checkpoint payloads" {
     const allocator = std.testing.allocator;
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
-    var replay = try loadReplayBytes(allocator, replay_bytes, null);
+    var diagnostic: replay_codec.Diagnostic = .{};
+    const replay = try replay_codec.loadReplay(allocator, replay_bytes, &diagnostic);
     defer replay.deinit(allocator);
 
     var trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
@@ -2635,37 +2560,6 @@ test "checkpoint vec2 requires exactly x and y" {
     try std.testing.expectError(
         error.UnknownStructField,
         msgpack.decodeFromSlice(Vec2Wire, allocator, unknown_writer.written()),
-    );
-}
-
-test "checkpoint verify maps replay load and runner errors to user details" {
-    try std.testing.expectEqualStrings(
-        "replay payload does not match format 17 msgpack schema",
-        replayLoadErrorDetail(error.InvalidMsgpack),
-    );
-    try std.testing.expectEqualStrings(
-        "replay payload exceeds max decompressed size",
-        replayLoadErrorDetail(error.PayloadTooLarge),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 17",
-        replayLoadErrorDetail(error.UnknownCommandKind),
-    );
-    try std.testing.expectEqualStrings(
-        "native replay run only supports survival/rush/quest/typo/tutorial modes",
-        replayRunnerErrorDetail(error.UnsupportedGameMode),
-    );
-    try std.testing.expectEqualStrings(
-        "replay events include an out-of-range player index",
-        replayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
-    );
-    try std.testing.expectEqualStrings(
-        "replay tick commands are invalid for this game mode",
-        replayRunnerErrorDetail(error.UnsupportedEventKind),
-    );
-    try std.testing.expectEqualStrings(
-        "FileBusy",
-        replayLoadErrorDetail(error.FileBusy),
     );
 }
 

@@ -25,6 +25,7 @@ from ..quests import quest_by_level
 from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
+from ..sim.run_result import death_transition_ready
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSessionRuntime, QuestSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -134,11 +135,11 @@ class QuestMode(BaseGameplayMode):
         )
 
     def _perk_menu_closed(self) -> None:
-        self._perk_prompt.reset_if_pending(pending_count=int(self.state.perk_selection.pending_count))
+        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
 
     def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
         perk_ctx = self._perk_menu_ui_context()
-        pending_count = int(self.state.perk_selection.pending_count)
+        pending_count = self._ui_pending_perk_count()
         choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
         self._perk_prompt.begin_frame()
         if self._perk_menu.open:
@@ -174,23 +175,12 @@ class QuestMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._quest_spawn_state.spawn_timeline_ms)
 
-    def _replay_claimed_stats_complete(self) -> bool:
-        return bool(self._outcome is not None)
-
-    def _replay_claimed_stats_elapsed_ms(self) -> int:
-        return int(self._quest_spawn_state.spawn_timeline_ms)
-
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        replay_level = "" if replay.header.quest_level is None else replay.header.quest_level.text
+        replay_level = "" if replay.run.quest_level is None else replay.run.quest_level.text
         level = self._quest_level.text if self._quest_level is not None else (replay_level or "quest")
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
-
-    def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
-        # Avoid emitting empty replays/checkpoint sidecars (usually indicates a
-        # test harness calling failure/complete helpers without ticking).
-        return int(recorder.tick_index) <= 0
 
     def _on_tick_applied(
         self,
@@ -294,15 +284,19 @@ class QuestMode(BaseGameplayMode):
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
+                self._debug_cheat_used()
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
                 self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
+                self._debug_cheat_used()
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
                 self.audio_bridge.play_sfx(SfxId.UI_LEVELUP)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+                self._debug_cheat_used()
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+                self._debug_cheat_used()
                 self._debug_cycle_weapon(1)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -322,14 +316,7 @@ class QuestMode(BaseGameplayMode):
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
-        dead_players = 0
-        for player in self.sim_world.players:
-            if float(player.health) > 0.0:
-                return False
-            dead_players += 1
-            if float(player.death_timer) >= 0.0:
-                return False
-        return dead_players > 0
+        return death_transition_ready(self.sim_world.players)
 
     def _tick_death_timers(self, dt: float, *, rate: float = 20.0) -> None:
         delta = float(dt) * float(rate)
@@ -459,7 +446,7 @@ class QuestMode(BaseGameplayMode):
 
         self._perk_prompt.draw(
             ctx=self._perk_menu_ui_context(),
-            pending_count=int(self.state.perk_selection.pending_count),
+            pending_count=self._ui_pending_perk_count(),
             any_alive=self._any_player_alive(),
             menu_active=self._perk_menu.active,
             config=self.config,

@@ -20,10 +20,10 @@ from grim.view import ViewContext
 
 from ...modes.replay_playback_mode import ReplayPlaybackMode
 from ...replay import Replay
+from ...sim.run_result import RunResult, run_result_mismatches
 from .playback_driver import PlaybackWalkObserver, build_verify_playback_driver
 from .render_telemetry import RenderTelemetryFrameSnapshot, RenderTelemetrySession
 from .render_telemetry_charts import write_render_telemetry_charts
-from .setup import RunResult
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
@@ -213,6 +213,7 @@ class ReplayRenderTelemetryResult(msgspec.Struct, frozen=True):
 
 
 class ReplayBenchmarkResult(msgspec.Struct, frozen=True):
+    ticks: int
     run_result: RunResult
     samples: tuple[BenchmarkSample, ...]
     wall_ms: BenchmarkAggregate
@@ -362,7 +363,7 @@ def run_replay_render_benchmark(
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
             wall_ms = float(elapsed_ns) / 1_000_000.0
             wall_s = float(elapsed_ns) / 1_000_000_000.0
-            ticks_per_second = float(measured.run_result.ticks) / wall_s
+            ticks_per_second = float(tick_total) / wall_s
             realtime_x = float(measured.run_result.elapsed_ms) / wall_ms
             samples.append(
                 BenchmarkSample(
@@ -476,6 +477,7 @@ def run_replay_render_benchmark(
     realtime_values = [sample.realtime_x for sample in samples]
 
     return ReplayBenchmarkResult(
+        ticks=tick_total,
         run_result=baseline_result,
         samples=tuple(samples),
         wall_ms=_aggregate(wall_values),
@@ -552,7 +554,7 @@ def run_replay_benchmark(
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
             wall_ms = float(elapsed_ns) / 1_000_000.0
             wall_s = float(elapsed_ns) / 1_000_000_000.0
-            ticks_per_second = float(result.ticks) / wall_s
+            ticks_per_second = float(tick_total) / wall_s
             realtime_x = float(result.elapsed_ms) / wall_ms
             samples.append(
                 BenchmarkSample(
@@ -601,6 +603,7 @@ def run_replay_benchmark(
     realtime_values = [sample.realtime_x for sample in samples]
 
     return ReplayBenchmarkResult(
+        ticks=tick_total,
         run_result=baseline_result,
         samples=tuple(samples),
         wall_ms=_aggregate(wall_values),
@@ -701,28 +704,15 @@ def _run_result_for_replay_mode(*, mode: ReplayPlaybackMode) -> RunResult:
     driver = mode._driver
     if driver is None:
         raise ReplayBenchmarkError("render benchmark failed: replay driver was not available")
-    return driver.build_run_result(ticks=int(mode.tick_index))
+    return driver.build_result()
 
 
 def _assert_consistent_run_result(expected: RunResult, actual: RunResult, *, where: str) -> None:
-    expected_values = (
-        (expected.game_mode_id, actual.game_mode_id, "game_mode_id"),
-        (expected.tick_rate, actual.tick_rate, "tick_rate"),
-        (expected.ticks, actual.ticks, "ticks"),
-        (expected.elapsed_ms, actual.elapsed_ms, "elapsed_ms"),
-        (expected.score_xp, actual.score_xp, "score_xp"),
-        (expected.creature_kill_count, actual.creature_kill_count, "creature_kill_count"),
-        (expected.most_used_weapon_id, actual.most_used_weapon_id, "most_used_weapon_id"),
-        (expected.shots_fired, actual.shots_fired, "shots_fired"),
-        (expected.shots_hit, actual.shots_hit, "shots_hit"),
-        (expected.rng_state, actual.rng_state, "rng_state"),
-    )
-    for exp, got, field_name in expected_values:
-        if int(exp) != int(got):
-            raise ReplayBenchmarkError(
-                "non-deterministic replay result across runs: "
-                f"{field_name} expected={exp} actual={got} ({where})",
-            )
+    mismatches = run_result_mismatches(expected, actual)
+    if mismatches:
+        raise ReplayBenchmarkError(
+            f"non-deterministic replay result across runs: {', '.join(mismatches)} differ ({where})",
+        )
 
 
 def _aggregate(values: list[float]) -> BenchmarkAggregate:

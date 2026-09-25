@@ -10,9 +10,8 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayClaimedStatsSnapshot
+from crimson.replay import Replay
 from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file
-from crimson.weapons import WeaponId
 
 from ._helpers import build_replay, write_checkpoint_sidecar, write_replay
 
@@ -40,7 +39,7 @@ def test_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     assert "nested/nested.crd" in result.output
     assert "zeta.crd" in result.output
     assert "survival" in result.output
-    assert replay.header.game_version in result.output
+    assert replay.game_version in result.output
     assert "count=3 parsed=3 errors=0" in result.output
     assert f"replays_dir={tmp_path / 'replays'}" in result.output
 
@@ -101,25 +100,36 @@ def test_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) -> N
     assert "quest 3.10 2p" in unstyle(result.output)
 
 
-def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay = msgspec.structs.replace(
+def _with_stored_result(replay: Replay, *, score_xp: int, kills: int) -> Replay:
+    player = msgspec.structs.replace(replay.result.players[0], experience=score_xp)
+    return msgspec.structs.replace(
         replay,
-        header=msgspec.structs.replace(
-            replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
-                complete=True,
-                ticks=2,
-                elapsed_ms=33,
-                score_xp=1234,
-                kills=56,
-                most_used_weapon_id=WeaponId.PISTOL,
-                shots_fired=10,
-                shots_hit=8,
-            ),
-        ),
+        result=msgspec.structs.replace(replay.result, kills=kills, players=(player,)),
     )
-    replay_path = write_replay(tmp_path / "replays", replay=replay, name="stats.crd")
+
+
+def test_replay_list_uses_stored_result_without_sidecar(tmp_path: Path) -> None:
+    replay = _with_stored_result(build_replay(mode=GameMode.SURVIVAL, ticks=2), score_xp=1234, kills=56)
+    write_replay(tmp_path / "replays", replay=replay, name="stored.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["replay", "list", "--base-dir", str(tmp_path), "--no-color"],
+    )
+
+    assert result.exit_code == 0, result.output
+    output = unstyle(result.output)
+    assert re.search(r"stored\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
+
+
+def test_replay_list_uses_stored_result_even_when_sidecar_exists(tmp_path: Path) -> None:
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay_path = write_replay(
+        tmp_path / "replays",
+        replay=_with_stored_result(replay, score_xp=1234, kills=56),
+        name="stats.crd",
+    )
     sidecar_path = write_checkpoint_sidecar(replay_path, replay)
     payload = load_checkpoints_file(sidecar_path)
     assert payload.checkpoints
@@ -138,37 +148,6 @@ def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path
     assert result.exit_code == 0, result.output
     output = unstyle(result.output)
     assert re.search(r"stats\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
-
-
-def test_replay_list_uses_header_claimed_stats_without_sidecar(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay = msgspec.structs.replace(
-        replay,
-        header=msgspec.structs.replace(
-            replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
-                complete=True,
-                ticks=2,
-                elapsed_ms=33,
-                score_xp=1234,
-                kills=56,
-                most_used_weapon_id=WeaponId.PISTOL,
-                shots_fired=10,
-                shots_hit=8,
-            ),
-        ),
-    )
-    write_replay(tmp_path / "replays", replay=replay, name="claimed.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        ["replay", "list", "--base-dir", str(tmp_path), "--no-color"],
-    )
-
-    assert result.exit_code == 0, result.output
-    output = unstyle(result.output)
-    assert re.search(r"claimed\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
 
 
 def test_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:

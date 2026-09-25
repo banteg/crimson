@@ -85,6 +85,7 @@ def _build_state(tmp_path: Path) -> GameState:
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
+        replay_checkpoints=False,
         resources=None,
         audio=None,
         session_start=time.monotonic(),

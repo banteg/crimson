@@ -2,7 +2,7 @@ const std = @import("std");
 
 const cdt_trace = @import("cdt_trace.zig");
 const dbg_record_native = @import("dbg_record_native.zig");
-const replay_codec = @import("replay_codec.zig");
+const replay_runner = @import("runtime/replay_runner.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
@@ -358,7 +358,7 @@ test "dbg entity summarizes native CDT trace" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "entity.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
+    const replay_bytes = try replay_runner.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();

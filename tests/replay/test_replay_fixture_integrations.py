@@ -20,10 +20,9 @@ FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "replays"
 
 pytestmark = [pytest.mark.slow, pytest.mark.replay_fixture]
 
-# Re-record gameplay fixtures with the current replay format v15 and list them
-# here with their run stats:
-# (filename, expected_ticks, expected_score_xp, expected_kills).
-_REPLAY_CASES: tuple[tuple[str, int, int, int], ...] = ()
+# Re-record gameplay fixtures with the current replay format (v20) and list their
+# filenames here; each replay carries the result it must verify to.
+_REPLAY_CASES: tuple[str, ...] = ()
 _PLAYBACK_CHUNK_PATTERN = (1, 7, 31, 256)
 
 
@@ -89,19 +88,11 @@ def _run_walk_playback(
         tick_index = int(walk_result.next_tick_index)
         chunk_index += 1
 
-    return driver.build_run_result(ticks=tick_index), playback_checkpoints
+    return driver.build_result(), playback_checkpoints
 
 
-@pytest.mark.parametrize(
-    ("replay_name", "expected_ticks", "expected_score_xp", "expected_kills"),
-    _REPLAY_CASES,
-)
-def test_replay_fixture_run_stats_and_checkpoint_parity(
-    replay_name: str,
-    expected_ticks: int,
-    expected_score_xp: int,
-    expected_kills: int,
-) -> None:
+@pytest.mark.parametrize("replay_name", _REPLAY_CASES)
+def test_replay_fixture_result_and_checkpoint_parity(replay_name: str) -> None:
     replay_path = FIXTURE_DIR / replay_name
     checkpoints_path = replay_path.with_name(f"{replay_path.name}.chk")
 
@@ -120,22 +111,12 @@ def test_replay_fixture_run_stats_and_checkpoint_parity(
     )
     diff = compare_checkpoints(expected_sidecar.checkpoints, actual_checkpoints)
 
-    assert run_result.ticks == int(expected_ticks)
-    assert run_result.score_xp == int(expected_score_xp)
-    assert run_result.creature_kill_count == int(expected_kills)
+    assert run_result == replay.result
     assert diff.ok
 
 
-@pytest.mark.parametrize(
-    ("replay_name", "expected_ticks", "expected_score_xp", "expected_kills"),
-    _REPLAY_CASES,
-)
-def test_verify_vs_playback_parity(
-    replay_name: str,
-    expected_ticks: int,
-    expected_score_xp: int,
-    expected_kills: int,
-) -> None:
+@pytest.mark.parametrize("replay_name", _REPLAY_CASES)
+def test_verify_vs_playback_parity(replay_name: str) -> None:
     replay_path = FIXTURE_DIR / replay_name
     if not replay_path.is_file():
         pytest.skip(f"missing replay fixture: {replay_name}")
@@ -154,8 +135,6 @@ def test_verify_vs_playback_parity(
     )
     checkpoint_diff = compare_checkpoints(verify_checkpoints, playback_checkpoints)
 
-    assert verify_result.ticks == int(expected_ticks)
-    assert verify_result.score_xp == int(expected_score_xp)
-    assert verify_result.creature_kill_count == int(expected_kills)
+    assert verify_result == replay.result
     assert playback_result == verify_result
     assert checkpoint_diff.ok

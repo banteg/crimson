@@ -2,7 +2,6 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const replay_codec = @import("../replay_codec.zig");
 
-const runtime_bootstrap = @import("bootstrap.zig");
 const player_runtime = @import("player.zig");
 const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const runtime_session = @import("session.zig");
@@ -25,35 +24,9 @@ pub const BuildTypoSessionOptions = struct {
 };
 
 pub const BuildReplaySessionOptions = struct {
-    strict_events: bool = true,
     quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
     quest_start_weapon_id: ?i32 = null,
 };
-
-pub const ReplayExecutionMode = struct {
-    capture_spawn_events_authoritative: bool,
-    apply_world_dt_steps: bool,
-    defer_menu_open_events: bool,
-};
-
-pub fn deriveReplayExecutionMode(events: []const replay_codec.ReplayEvent) ReplayExecutionMode {
-    var original_capture_replay = false;
-    var has_capture_creature_spawn_events = false;
-    for (events) |event| {
-        switch (event) {
-            .capture_bootstrap => original_capture_replay = true,
-            .capture_creature_spawn => has_capture_creature_spawn_events = true,
-            else => {},
-        }
-    }
-
-    const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
-    return .{
-        .capture_spawn_events_authoritative = capture_spawn_events_authoritative,
-        .apply_world_dt_steps = !original_capture_replay,
-        .defer_menu_open_events = original_capture_replay,
-    };
-}
 
 pub fn buildSurvivalSession(
     config: runtime_session.SessionConfig,
@@ -84,17 +57,18 @@ pub fn buildQuestSession(
     }
 
     var session_options = options.session_options;
-    session_options.quest_start_weapon_id_for_reset = options.quest_start_weapon_id;
     session_options.quest_spawn_entries = options.quest_spawn_entries;
 
     var session = try runtime_session.DeterministicSession.init(config, session_options);
-
-    const weapon_id = @max(1, options.quest_start_weapon_id);
-    for (session.players()) |*player| {
-        player_runtime.weaponAssignPlayerWithState(player, weapon_data.weaponIdFromInt(weapon_id), &session.state);
-    }
-
+    assignQuestStartWeapon(&session, options.quest_start_weapon_id);
     return session;
+}
+
+fn assignQuestStartWeapon(session: *runtime_session.DeterministicSession, start_weapon_id: i32) void {
+    const weapon_id = weapon_data.weaponIdFromInt(@max(1, start_weapon_id));
+    for (session.players()) |*player| {
+        player_runtime.weaponAssignPlayerWithState(player, weapon_id, &session.state);
+    }
 }
 
 pub fn buildTypoSession(
@@ -132,89 +106,62 @@ pub fn buildTutorialSession(
     return session;
 }
 
+/// Build the session a replay's run spec starts from.
 pub fn buildReplaySession(
-    game_mode: game_ids.GameModeId,
-    header: replay_codec.ReplayHeader,
-    events: []const replay_codec.ReplayEvent,
+    run: replay_codec.RunSpec,
     options: BuildReplaySessionOptions,
 ) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
-    const mode = deriveReplayExecutionMode(events);
+    const config = runtime_session.SessionConfig.fromRunSpec(run);
+    var session = switch (run.game_mode) {
+        .quests => return buildQuestReplaySession(run, config, options),
+        .tutorial => return buildTutorialSession(config, .{}),
+        .survival => try buildSurvivalSession(config, .{}),
+        .rush => try buildRushSession(config, .{}),
+        .typo => try buildTypoSession(config, .{
+            .dictionary_words = run.typo_dictionary_words,
+            .highscore_names = run.typo_highscore_names,
+        }),
+    };
+    // Only quest and tutorial sessions carry a run's demo flag into gameplay
+    // state; the creature spawn environment keeps it in every mode.
+    session.state.demo_mode_active = false;
+    return session;
+}
 
-    var quest_start_weapon_id_for_reset: i32 = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
-    var quest_spawn_entries_storage: [runtime_session.max_sim_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
-    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = quest_spawn_entries_storage[0..0];
-
-    if (game_mode == .quests) {
-        if (options.quest_spawn_entries) |entries| {
-            if (entries.len > quest_spawn_entries_storage.len) {
-                return error.InvalidQuestSpawnTable;
-            }
-            @memcpy(quest_spawn_entries_storage[0..entries.len], entries);
-            quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
-        } else {
-            const level_key = runtime_bootstrap.resolveQuestLevelKey(header) orelse return error.InvalidQuestSpawnTable;
-            const built = quest_spawn_logic.buildQuestSpawnTableWithHardcore(
-                level_key,
-                header.player_count,
-                header.seed,
-                header.world_size,
-                header.hardcore,
-                quest_spawn_entries_storage[0..],
-            ) catch |build_err| switch (build_err) {
-                error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,
-                error.OutOfSpace => return error.InvalidQuestSpawnTable,
-            };
-            quest_spawn_entries = quest_spawn_entries_storage[0..built.entries.len];
-            if (options.quest_start_weapon_id == null) {
-                quest_start_weapon_id_for_reset = @intFromEnum(built.start_weapon_id);
-            }
-            if (quest_spawn_entries.len == 0) {
-                return error.InvalidQuestSpawnTable;
-            }
-        }
-
-        if (header.hardcore) {
-            spawn_mod.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
-        }
-        if (mode.capture_spawn_events_authoritative) {
-            quest_spawn_entries = quest_spawn_entries_storage[0..0];
-        }
+/// Quest startup builds the spawn table from the world RNG left by terrain
+/// setup, so the builder's draws advance the run's RNG.
+fn buildQuestReplaySession(
+    run: replay_codec.RunSpec,
+    config: runtime_session.SessionConfig,
+    options: BuildReplaySessionOptions,
+) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
+    var session = try runtime_session.DeterministicSession.init(config, .{});
+    var start_weapon_id: i32 = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
+    var entries_storage: [runtime_session.max_sim_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
+    var entries: []spawn_mod.QuestSpawnEntry = undefined;
+    if (options.quest_spawn_entries) |override| {
+        if (override.len > entries_storage.len) return error.InvalidQuestSpawnTable;
+        @memcpy(entries_storage[0..override.len], override);
+        entries = entries_storage[0..override.len];
+    } else {
+        const level = run.quest_level orelse return error.InvalidQuestSpawnTable;
+        const built = quest_spawn_logic.buildQuestSpawnTableWithHardcore(
+            @as(i32, level.major) * 100 + level.minor,
+            run.player_count,
+            session.state.rng.state,
+            replay_codec.world_size,
+            run.hardcore,
+            entries_storage[0..],
+        ) catch return error.InvalidQuestSpawnTable;
+        if (built.entries.len == 0) return error.InvalidQuestSpawnTable;
+        entries = entries_storage[0..built.entries.len];
+        session.state.rng.srand(built.rng_state);
+        if (options.quest_start_weapon_id == null) start_weapon_id = @intFromEnum(built.start_weapon_id);
     }
-
-    const config = try runtime_session.SessionConfig.fromReplayHeader(header);
-    const session_options: BuildSessionOptions = .{
-        .strict_events = options.strict_events,
-        .defer_menu_open_events = mode.defer_menu_open_events,
-        .apply_world_dt_steps = mode.apply_world_dt_steps,
-        .capture_spawn_events_authoritative = mode.capture_spawn_events_authoritative,
-    };
-
-    return switch (game_mode) {
-        .survival => buildSurvivalSession(config, session_options),
-        .rush => buildRushSession(config, session_options),
-        .typo => buildTypoSession(
-            config,
-            .{
-                .session_options = session_options,
-                .dictionary_words = header.typo_dictionary_words,
-                .highscore_names = header.typo_highscore_names,
-            },
-        ),
-        .tutorial => buildTutorialSession(config, session_options),
-        .quests => buildQuestSession(
-            config,
-            .{
-                .session_options = .{
-                    .strict_events = session_options.strict_events,
-                    .defer_menu_open_events = session_options.defer_menu_open_events,
-                    .apply_world_dt_steps = session_options.apply_world_dt_steps,
-                    .capture_spawn_events_authoritative = session_options.capture_spawn_events_authoritative,
-                },
-                .quest_spawn_entries = if (!mode.capture_spawn_events_authoritative) quest_spawn_entries else quest_spawn_entries_storage[0..0],
-                .quest_start_weapon_id = quest_start_weapon_id_for_reset,
-            },
-        ),
-    };
+    if (run.hardcore) spawn_mod.applyHardcoreQuestSpawnTableAdjustment(entries);
+    try session.setQuestSpawnEntries(entries);
+    assignQuestStartWeapon(&session, start_weapon_id);
+    return session;
 }
 
 fn testConfig(game_mode: game_ids.GameModeId) runtime_session.SessionConfig {
@@ -225,6 +172,17 @@ fn testConfig(game_mode: game_ids.GameModeId) runtime_session.SessionConfig {
         .world_size = 1024.0,
         .tick_rate = 60,
     };
+}
+
+test "only quest and tutorial replay sessions keep the demo flag in gameplay state" {
+    const survival = try buildReplaySession(.{ .game_mode = .survival, .seed = 1, .demo = true }, .{});
+    try std.testing.expect(!survival.state.demo_mode_active);
+    try std.testing.expect(survival.creatures.demo_mode_active);
+
+    const tutorial = try buildReplaySession(.{ .game_mode = .tutorial, .seed = 1, .demo = true }, .{});
+    try std.testing.expect(tutorial.state.demo_mode_active);
+    const quest = try buildReplaySession(.{ .game_mode = .quests, .seed = 1, .quest_level = .{ .major = 1, .minor = 1 }, .demo = true }, .{});
+    try std.testing.expect(quest.state.demo_mode_active);
 }
 
 test "build tutorial session primes the same pistol for live play and replay" {

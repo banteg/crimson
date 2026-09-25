@@ -13,9 +13,11 @@ from crimson.cli import app
 from crimson.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
+from crimson.replay import ReplayRecorder, dump_replay
 from crimson.sim.input import PlayerInput
+from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
+from tests.support.replay_runner_helpers import finish_replay
 
 
 def test_dbg_verify_reports_complete_current_format_matrix() -> None:
@@ -24,7 +26,7 @@ def test_dbg_verify_reports_complete_current_format_matrix() -> None:
     assert result.exit_code == 0, result.output
     assert "trace_format_version=2" in result.output
     assert "trace_schema_version=19" in result.output
-    assert "replay_format_version=19" in result.output
+    assert "replay_format_version=20" in result.output
     assert "checkpoint_format_version=5" in result.output
     assert "frida_capture_format_version=28" in result.output
     assert "frida_evidence_format_version=3" in result.output
@@ -207,32 +209,20 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
     assert captured["impl"] == "zig"
 
 
-def _write_replay(path: Path, *, ticks: int = 3) -> Path:
-    header = ReplayHeader(
-        game_mode_id=GameMode.SURVIVAL,
-        seed=0xBEEF,
-        tick_rate=60,
-        player_count=1,
-    )
-    recorder = ReplayRecorder(header)
+def _write_survival_replay(path: Path, player_input: PlayerInput, *, ticks: int) -> Path:
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF))
     for _ in range(int(ticks)):
-        recorder.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
-    path.write_bytes(dump_replay(recorder.finish()))
+        recorder.record_tick([player_input])
+    path.write_bytes(dump_replay(finish_replay(recorder)))
     return path
+
+
+def _write_replay(path: Path, *, ticks: int = 3) -> Path:
+    return _write_survival_replay(path, PlayerInput(aim=Vec2(512.0, 512.0)), ticks=ticks)
 
 
 def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
-    header = ReplayHeader(
-        game_mode_id=GameMode.SURVIVAL,
-        seed=0xBEEF,
-        tick_rate=60,
-        player_count=1,
-    )
-    recorder = ReplayRecorder(header)
-    for _ in range(int(ticks)):
-        recorder.record_tick([PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)])
-    path.write_bytes(dump_replay(recorder.finish()))
-    return path
+    return _write_survival_replay(path, PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True), ticks=ticks)
 
 
 def _with_score_xp_delta(rows: list[TickRecord], *, tick_index: int, delta: int) -> list[TickRecord]:

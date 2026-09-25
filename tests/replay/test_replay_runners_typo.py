@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from crimson.game_modes import GameMode
 from crimson.replay import Replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import TypoCharCommand, TypoSubmitCommand
+from crimson.sim.run_spec import WORLD_SIZE
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.replay_runner_helpers import _blank_typo_replay, _run_verify_playback
+from tests.support.replay_runner_helpers import _blank_typo_replay, _run_verify_playback, finish_replay
 
 
 def _reload_submit_replay(
@@ -17,7 +17,7 @@ def _reload_submit_replay(
     dictionary_words: tuple[str, ...] = (),
     highscore_names: tuple[str, ...] = (),
 ) -> Replay:
-    _header, rec = _blank_typo_replay(
+    rec = _blank_typo_replay(
         ticks=0,
         seed=seed,
         typo_dictionary_words=tuple(dictionary_words),
@@ -27,7 +27,7 @@ def _reload_submit_replay(
     for ch in "reload":
         rec.record_tick([baseline], commands=[TypoCharCommand(player_index=0, ch=ch)])
     rec.record_tick([baseline], commands=[TypoSubmitCommand(player_index=0)])
-    return rec.finish()
+    return finish_replay(rec)
 
 
 def test_typo_runner_is_deterministic_and_uses_submit_counts_for_run_result() -> None:
@@ -36,25 +36,23 @@ def test_typo_runner_is_deterministic_and_uses_submit_counts_for_run_result() ->
     result0 = _run_verify_playback(replay)
     result1 = _run_verify_playback(replay)
 
-    assert result0 == result1
-    assert result0.game_mode_id == int(GameMode.TYPO)
-    assert result0.ticks == 7
+    assert result0 == result1 == replay.result
     assert result0.elapsed_ms == 7 * int(1000.0 / 60.0)
-    assert result0.shots_fired == 1
-    assert result0.shots_hit == 0
+    assert result0.players[0].shots_fired == 1
+    assert result0.players[0].shots_hit == 0
 
 
 def test_typo_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
-    _header, rec = _blank_typo_replay(ticks=0, seed=0x1234)
-    replay = rec.finish()
+    rec = _blank_typo_replay(ticks=0, seed=0x1234)
+    replay = finish_replay(rec)
     driver = build_verify_playback_driver(replay)
 
-    rng = Crand(int(replay.header.seed))
+    rng = Crand(int(replay.run.seed))
     terrain = advance_unlock_terrain(
         rng,
-        unlock_index=int(replay.header.status.quest_unlock_index),
-        width=int(replay.header.world_size),
-        height=int(replay.header.world_size),
+        unlock_index=int(replay.run.status.quest_unlock_index),
+        width=int(WORLD_SIZE),
+        height=int(WORLD_SIZE),
     )
 
     terrain_setup = driver.terrain_setup
@@ -101,3 +99,16 @@ def test_typo_runner_checkpoints_capture_typo_state() -> None:
     assert checkpoints[0].typo.input_text == ""
     assert checkpoints[0].typo.submit_count == 1
     assert checkpoints[0].typo.match_count == 0
+
+
+def test_typo_runner_ignores_input_fire_flags() -> None:
+    baseline = finish_replay(_blank_typo_replay(ticks=120, seed=0x1234))
+    firing = _blank_typo_replay(ticks=0, seed=0x1234)
+    for _ in range(120):
+        firing.record_tick([PlayerInput(aim=Vec2(800.0, 512.0), fire_down=True, fire_pressed=True, reload_pressed=True)])
+
+    result = finish_replay(firing).result
+
+    assert result.players[0].shots_fired == 0
+    assert result.kills == baseline.result.kills
+    assert result.players[0].experience == baseline.result.players[0].experience

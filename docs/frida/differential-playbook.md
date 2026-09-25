@@ -8,17 +8,18 @@ tags:
 # Differential Playbook
 
 Use this when an agent is given a new capture run artifact (typically
-`artifacts/frida/share/gameplay_diff_capture.survival*.cdt` + `.crd`,
-`artifacts/frida/share/gameplay_diff_capture.rush*.cdt` + `.crd`, or
-`artifacts/frida/share/gameplay_diff_capture.quest_*_*.cdt` + `.crd`) and needs to
+`artifacts/frida/share/gameplay_diff_capture.survival*.cdt` + `.ccr`,
+`artifacts/frida/share/gameplay_diff_capture.rush*.cdt` + `.ccr`, or
+`artifacts/frida/share/gameplay_diff_capture.quest_*_*.cdt` + `.ccr`) and needs to
 continue cross-implementation investigation.
 
 This runbook is updated for the decoupled `dbg` trace suite which unifies telemetry
-difﬁng for Original vs Python vs Zig.
+diffing for Original vs Python. Captures replay only through the Python
+recorder; Python vs Zig parity is checked on port replays (`.crd`).
 
 ## 1) Identify the capture artifact
 
-Frida host capture now finalizes directly to `.cdt` traces plus matching `.crd` replay sidecars.
+Frida host capture now finalizes directly to `.cdt` traces plus matching `.ccr` capture replay sidecars.
 If only raw JSONL exists, finalize it offline (no game process needed):
 
 ```bash
@@ -36,20 +37,12 @@ uv run crimson dbg health analysis/frida/traces/gameplay_diff_capture.survival.r
 
 Record the SHA256 of the `.cdt` trace first. Session tracking is by capture SHA family.
 
-## 2) Record rewrite candidate trace from matching `.crd`
+## 2) Record rewrite candidate trace from matching `.ccr`
 
 ```bash
 uv run crimson dbg record \
-  analysis/frida/traces/gameplay_diff_capture.<run>.crd \
-  --impl python \
+  analysis/frida/traces/gameplay_diff_capture.<run>.ccr \
   --out analysis/frida/traces/gameplay_diff_capture.<run>.py.cdt
-```
-
-```bash
-uv run crimson dbg record \
-  analysis/frida/traces/gameplay_diff_capture.<run>.crd \
-  --impl zig \
-  --out analysis/frida/traces/gameplay_diff_capture.<run>.zig.cdt
 ```
 
 `dbg record` always emits full traces; there is no profile mode or tick-cap mode.
@@ -72,7 +65,7 @@ Run the strict trace comparison after recording the candidate:
 ```bash
 uv run crimson dbg diff \
   analysis/frida/traces/capture_<sha8>.cdt \
-  analysis/frida/traces/capture_<sha8>_zig.cdt
+  analysis/frida/traces/capture_<sha8>_py.cdt
 ```
 
 Capture the first divergence plus its surrounding focus window:
@@ -80,7 +73,7 @@ Capture the first divergence plus its surrounding focus window:
 ```bash
 uv run crimson dbg bisect \
   analysis/frida/traces/capture_<sha8>.cdt \
-  analysis/frida/traces/capture_<sha8>_zig.cdt \
+  analysis/frida/traces/capture_<sha8>_py.cdt \
   --window-before 12 \
   --window-after 6 \
   --json-out analysis/frida/reports/capture_<sha8>_bisect.json
@@ -91,7 +84,7 @@ For surgical detail at exactly the focus mismatch tick, inspect the state across
 ```bash
 uv run crimson dbg focus \
   analysis/frida/traces/capture_<sha8>.cdt \
-  analysis/frida/traces/capture_<sha8>_zig.cdt \
+  analysis/frida/traces/capture_<sha8>_py.cdt \
   --tick <focus_tick>
 ```
 

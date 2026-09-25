@@ -12,6 +12,7 @@ import pytest
 import crimson.dbg.trace as dbg_trace
 from crimson.dbg.canonical_channels import (
     EntitySamplesSnapshot,
+    GameFrameRngAdvanceOperation,
     ProjectileEntitySample,
     ReplayInputSample,
     ReplayStepSnapshot,
@@ -55,7 +56,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from crimson.sim.input_providers import GameFrameRngAdvanceOperation
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, TypoSubmitCommand
 from crimson.weapons import WeaponId
 
 
@@ -746,6 +747,23 @@ def test_write_trace_rejects_noncanonical_player_slots(tmp_path: Path) -> None:
             meta=_meta(start_tick=0, end_tick=0, tick_count=1),
             ticks=[row],
         )
+
+
+def test_write_trace_accepts_perk_commands_and_rejects_typo_commands_outside_typo(tmp_path: Path) -> None:
+    row = _row(tick_index=0, elapsed_ms=0, score_xp=0)
+    meta = _meta(start_tick=0, end_tick=0, tick_count=1)
+
+    def with_commands(commands: list) -> TickRecord:
+        step = msgspec.structs.replace(row.channels.replay_step, commands=commands)
+        return msgspec.structs.replace(row, channels=msgspec.structs.replace(row.channels, replay_step=step))
+
+    write_trace(
+        tmp_path / "perk.cdt",
+        meta=meta,
+        ticks=[with_commands([PerkMenuOpenCommand(player_index=0), PerkPickCommand(player_index=0, choice_index=2)])],
+    )
+    with pytest.raises(TraceError, match="Typ-o command requires Typ-o mode"):
+        write_trace(tmp_path / "typo.cdt", meta=meta, ticks=[with_commands([TypoSubmitCommand(player_index=0)])])
 
 
 def test_write_trace_rejects_non_f32_state_values(tmp_path: Path) -> None:
