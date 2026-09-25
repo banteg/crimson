@@ -259,15 +259,17 @@ This covers the pass driver calls `0x1070fc45(ctx,1)` (before globopt) and `0x10
   - An operand that is a substituted temp, or a memory operand whose base or index is substituted, takes the cost of that def tree.
 - **Sort:** only for commutative opcodes {0x16d, 0x16f, 0x172, 0x173, 0x174, 0x17e, 0x17f} (0x107062ef). It is a stable bottom-up merge sort (0x1070f584 / 0x1070f65c) in **unsigned descending** order (0x1070f6ae). The effective keys are need, then size, then hash. **Ties keep flattened source order.** Constants always sort last.
 - **hash16** (0x1070db59, dispatched by operand kind through tables 0x1070e800 / 0x1070e7e0):
-  - User symbol or param (kind 1/2): about `id<<5` for ids below 0x800. **The higher symbol id comes first** among equal-cost leaves.
+  - User symbol or param (kind 1/2): exactly `((v&0x7ff)<<5)^((v<<5)>>16)`. **The higher symbol id comes first** among equal-cost leaves. Symbol ids are per function, assigned at first reference in 32-id blocks per class: locals 1..31, globals from 32.
   - Class-3 compiler temp: `id<<6`.
   - Substituted temp: the hash of its def tree.
   - `&sym` (kind 3): the folded id, unshifted.
   - Memory: `fold(disp) + (addrform-0x145) + hash(base)<<8`.
   - Constant: a fold of its value.
-  - Tuple: `sum(child_hash << (i&7)) + opcode-0x145`.
+  - Tuple: `sum(child_hash << (i&7)) + opcode-0x145`, truncated to 16 bits.
+  - Callee or label operand: the xor-fold of its frontend record id (+0x28), a counter across the whole translation unit. Any tree containing a call therefore depends on the declarations before it ([call-operand-order.md](call-operand-order.md)).
+  - Operand kinds 0xa and 0xb hash to 0.
 - **Emission** (0x1070e114): each n-ary node becomes a **left-deep chain in sorted order**, `((x0 op x1) op x2) op x3`, and each step gets a fresh temp from `0x10702add`.
-  - For "reorderable" binary ops (0x1070e560: 0x16d-0x16f, 0x171-0x178, 0x17d-0x183), when the second operand costs more than the first and the type is **not float**, the second operand's subtree is emitted first; operand order itself is kept (Sethi-Ullman evaluation order).
+  - For "reorderable" binary ops (0x1070e560: 0x16d-0x16f, 0x171-0x178, 0x17d-0x183), when the second operand costs more than the first and the type is **not float**, the second operand's subtree is emitted first; operand order itself is kept (Sethi-Ullman evaluation order). Call results are pulled into their single use like other temps, so this also reorders calls; `==` (0x17d) is reorderable but not commutative. The post-globopt run decides.
   - The operand lists of call-kind tuples 0xe/0x12 are reversed during emission, so argument trees are evaluated right to left.
   - `0x15f` over a temp or memory operand is folded into a narrower load (0x10710180).
 
@@ -415,7 +417,7 @@ Commit step:
   - A memory write or a class-7/8 symbol kills the alias-class sets.
   - **A call kills the temp-sourced expressions (0x10799618) in phase 1, and everything in full mode.**
 - In **phase 1** each tuple gets:
-  - Operand replacement (`cse_replace_operands` 0x107098ea / `find_available_copy_source` 0x10709b5a): a use of x becomes y if `x = y` is available. A constant is not propagated if it is a double (float wider than 4 bytes) or an aggregate. Temp-to-temp copies are gated by 0x1079f118.
+  - Operand replacement (`cse_replace_operands` 0x107098ea / `find_available_copy_source` 0x10709b5a): a use of x becomes y if `x = y` is available. A constant is not propagated if it is a double (float wider than 4 bytes) or an aggregate. Jump threading is separate: `thread_jumps_at_block_end` still decides a compare against a double constant ([value-threading.md](value-threading.md)). Temp-to-temp copies are gated by 0x1079f118.
   - Folding (0x107081d7).
 - In **full mode (phase 3)** it also:
   - deletes an assignment whose expression is already available, unless the tuple is status 3 "materialize";

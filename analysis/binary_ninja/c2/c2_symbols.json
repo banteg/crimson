@@ -92,7 +92,7 @@
   "0x107017eb": {
    "name": "symbol_alloc",
    "prototype": "c2_symbol* __fastcall symbol_alloc(uint8_t cls)",
-   "comment": "Allocate a 0x54-byte storage symbol from the per-class pool (free lists 0x1079bc60/bc84), id preserved."
+   "comment": "Allocate a 0x54-byte storage symbol from the per-class pool (free lists 0x1079bc60/bc84), id preserved. Ids come from 32-entry chunks allocated per class on demand; in every function locals take 1..31 and globals start at 32 (even when a global is referenced first), temps follow, and a 32nd local opens a later chunk (192 in a probe). Ids are per function and assigned at the reader's first reference. Trace-verified with IL dumps."
   },
   "0x10701961": {
    "name": "avail_gen_expression",
@@ -900,6 +900,11 @@
    "name": "link_expression_operands",
    "comment": "adds expression to operand symbols' +0x34 lists and +0x40 sets"
   },
+  "0x10708b46": {
+   "name": "compare_consumer_condition",
+   "prototype": "uint8_t __stdcall compare_consumer_condition(c2_tuple* cmp)",
+   "comment": "Static. find_next_use_of_dst(cmp); returns the consuming branch's condition code: byte +0x20 when that tuple is a machine jcc (kind 0x10), else IL byte +0xa. Used by thread_jumps_at_block_end (0x10790b0e, 0x1070920e) to select the float_const_compare_mask mode / integer compare case. Was sub_10708b46 (unnamed)."
+  },
   "0x10708bc3": {
    "name": "fold_block_tuples",
    "comment": "walks a block, calls simplify_tuple on kind-0xc tuples; next pointer cached in 0x1079f110 so the callee may delete"
@@ -921,7 +926,7 @@
   },
   "0x10708fa7": {
    "name": "thread_jumps_at_block_end",
-   "comment": "Threads successor chains of trivial compare+branch blocks (<=10 hops, follow_trivial_branch_chain) when the compare is known from CSE facts; fall-through successor only with /Ot. A bypassed fall-through edge becomes a new machine jmp (op 0x10, flags 0x01) from tuple_new_jmp_before at 0x10709567, carrying the C2 line of the block it is inserted before. This is the origin of bonus_pick_random_type's block_mover J (trace-verified)."
+   "comment": "Existing name kept. Per successor edge (fall-through only with g_opt_favor_speed): follow_trivial_branch_chain to a compare whose result feeds the next tuple, same loop, not earlier in RPO; clone it (tuple_new_compare), cse_replace_operands from the block's available copies; if both operands become constants (float: float_const_compare_mask; int/addr: switch at 0x10709229) fold_constant_compare picks the edge; retarget the block's branch (tuple_retarget) or add a jmp before a fall-through (tuple_new_jmp_before @0x10709567). Trace-verified on player_update mode-2 heading stores and probes (value-threading.md)."
   },
   "0x10709618": {
    "name": "follow_trivial_branch_chain",
@@ -1073,7 +1078,7 @@
   "0x1070db59": {
    "name": "hash_operand",
    "prototype": "uint16_t __fastcall hash_operand(void* node)",
-   "comment": "16-bit hash. User symbol: id<<5 (folded). Class-3 temp: id<<6. Substituted temp: hash of its def tree. Memory: disp fold + addrform-0x145 + base<<8. Tuple: sum(child hash << i&7) + opcode-0x145."
+   "comment": "16-bit hash by operand kind (byte table 0x1070e800 -> jump table 0x1070e7e0). Symbol kinds 1/2: v=id>>16^id&0xffff, ((v&0x7ff)<<5)^((v<<5)>>16); class-3 temp without def: id<<6; temp with def: def tree hash; kind 3: folded id. Kind 4 code address (callee/label): xor-fold of the frontend record id fe+0x28, a TU-wide declaration counter. Memory: fold(disp)+addrform-0x145+hash(base)<<8. Constants: value fold. Kinds 0xa/0xb: 0. Tuple: (sum(child<<(i&7)) + opcode-0x145) truncated to 16 bits, so a call's hash = (callee + 2*(arg+0x15) + 0x3f) mod 0x10000 and can wrap. Trace-verified on read_repeating_text_input_key_code (snail): keys 0x080501f3/0x080509b3 at fe id 0x10a, 0x0805fbe0/0x080503e0 at 0xfb37."
   },
   "0x1070dce4": {
    "name": "widen_conversion_pushdown",
@@ -1089,11 +1094,11 @@
   },
   "0x1070e114": {
    "name": "emit_tree_as_tuples",
-   "comment": "Re-linearizes an n-ary tree into binary tuples inserted before g_simplify_insert_before, as a left-deep chain over the sorted operands. Evaluates the costlier operand first for reorderable non-float ops, and call args right-to-left."
+   "comment": "Re-linearizes an n-ary tree into binary tuples before g_simplify_insert_before (left-deep chain over sorted operands; call args reversed = right-to-left). Sethi-Ullman: for is_reorderable_binary_opcode nodes whose type class is not 0x4000 (float), if compare_operand_cost_desc(A,B) > 0 (key(B) > key(A), unsigned) B's subtree is emitted first; operand order is kept, so cmp A,B keeps its direction. Call sites 0x1070e320 (substituted node) and 0x10792d4a (materialized root). Calls are tree-substituted, so this orders f(a)==f(b); the post-globopt run (optimize_expression_trees mode 2) is final. Trace-verified (scripts/c2/su_order_trace.py)."
   },
   "0x1070e560": {
    "name": "is_reorderable_binary_opcode",
-   "comment": "True for 0x16d-0x16f, 0x171-0x178, 0x17d-0x183. False for 0x170, 0x179-0x17c."
+   "comment": "Byte table 0x1070e850: true for 0x16d-0x16f, 0x171-0x178 and 0x17d-0x183 (compare 0x17d included); false for 0x170 and 0x179-0x17c. Decides whether emit_tree_as_tuples may evaluate the costlier right operand first."
   },
   "0x1070e586": {
    "name": "emit_operand_subtree",
@@ -1414,7 +1419,7 @@
   },
   "0x10713989": {
    "name": "globopt_canonicalize_tuples",
-   "comment": "splits mem disp into 0x15d address temps, scalarizes 0x16b block copies of size 1/2/4 into 0x15b, gives every computed value a fresh single-def temp (sym+0x14 = def tuple), records temp def/use/copy lists"
+   "comment": "Splits mem disp into 0x15d address temps, scalarizes 0x16b block copies of size 1/2/4 into 0x15b, gives every computed value a fresh single-def temp (sym+0x14 = def tuple), records temp def/use/copy lists. For non-assign tuples, NK_MEM sources and sources with operand flag 0x40 (volatile) are split into separate materialized 0x15d loads; a volatile local's call argument therefore gains a node (size+1) in the post-globopt expression pass. Trace-verified."
   },
   "0x10714229": {
    "name": "build_alias_conflict_lists",
@@ -6508,7 +6513,7 @@
   "0x107072b5": "side-effecting src with dead dst: kind 0xc gets a fresh temp dst instead of deletion",
   "0x10707bdb": "expression hash = (op + type&0xfff) mod 101",
   "0x10707dba": "commutative ops also match swapped operands",
-  "0x10709064": "fall-through successor threaded only with /Ot",
+  "0x10709064": "Fall-through successor is threaded only when g_opt_favor_speed (/Ot) is set.",
   "0x10709567": "new machine jmp for a threaded fall-through edge (bonus_pick_random_type's mover J is created here)",
   "0x1070968c": "jump-threading chain limit: 10 hops",
   "0x1070a3bf": "call kills: temp-sourced expressions (phase 1) or all available expressions (full mode)",
@@ -6534,7 +6539,7 @@
   "0x1070dc71": "class-3 temp hash = id<<6",
   "0x1070e023": "add with negated terms rebuilt as sub",
   "0x1070e280": "call-kind tuples: operand list reversed during emission (args right-to-left)",
-  "0x1070e320": "reorderable non-float binary op: evaluate second operand first if costlier",
+  "0x1070e320": "Sethi-Ullman decision for a substituted node: compare_operand_cost_desc(A=ecx, B=edx) > 0 and non-float type -> emit B first (see su_order_trace.py).",
   "0x1070e3a6": "n-ary node emitted as left-deep binary chain in sorted order",
   "0x1070fc49": "mode stored; only affects C4756 emission in fold_float_constants",
   "0x1070fc7d": "dst temp with def tree: skip, the tree is simplified from its use",
@@ -6802,8 +6807,10 @@
   "0x1078e730": "/Ot: give frame pointer back if double-align score >= 2*loop pressure",
   "0x1078facb": "-Loop# (default 100): loop blocks = latch.num - header.num + 1 <= limit -> exact loop-local availability dataflow (0x1070aad7)",
   "0x1078ff9f": "fwd-prop: float (0x4000) defs not substituted under /Op or -basic",
+  "0x10790aee": "Both scratch-compare operands NK_FCONST: decide via float_const_compare_mask; verified for float and double constant stores (value-threading.md).",
   "0x107911bb": "trip count constant 0 or 1: back edge removed (loop body runs once)",
   "0x10792d0a": "C4756 only when mode==2, once per tuple",
+  "0x10792d4a": "Sethi-Ullman decision for a materialized root: same rule as 0x1070e320.",
   "0x1079366b": "switch /Os: jump table if compare-chain bytes > table bytes",
   "0x10794d5e": "fp_mode-only window end (balanced x87 depth after >= 80 nodes); unreachable because fp_mode is always 0."
  }
