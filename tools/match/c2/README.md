@@ -1,5 +1,10 @@
 # Preserving C2 traces
 
+[compiler/](compiler/README.md) describes how C2 compiles a function. It covers the pass pipeline, the
+IL and data structures, and the rules behind block order, register choice, local offsets and
+scheduling. [analysis/binary_ninja/c2](../../../analysis/binary_ninja/c2) holds the matching Binary Ninja annotations for C2.DLL; apply them with
+`just binja-sync-c2`.
+
 `crimson match c2-trace` runs a scratch through the pinned `msvc6.5` C2 backend
 and records optimizer/allocation events. It accepts C and C++ scratches without
 timeline-specific source hashes or source-line assumptions. The installed

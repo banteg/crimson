@@ -106,6 +106,9 @@ match-worker-check claim *args:
 binja-sync program="crimsonland.exe":
     bn py exec --target "{{program}}.bndb" --script scripts/binja_import_maps.py --format text --no-spill
 
+binja-sync-c2:
+    bn py exec --target C2.DLL.bndb --script scripts/binja_c2_apply.py --format text --no-spill
+
 # IDA (macOS)
 [macos]
 ida-export-exe:
