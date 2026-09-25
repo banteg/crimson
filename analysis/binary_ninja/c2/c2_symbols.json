@@ -2690,6 +2690,19 @@
    "name": "sched_set_edge_latency",
    "comment": "Latency = producer latency (+0x38) + CPU-specific penalties (AGI etc); 0x162 producers -> 0."
   },
+  "0x1073a2de": {
+   "name": "sched_is_esp_push_pop_chain",
+   "comment": "For the esp register (not on G6): returns 1 when producer and consumer are both push (0xd/0xba) or both pop (0xc/0xb9) with no +0x3a flags; sched_set_edge_latency then sets the edge latency to 0 on G5. Verified: push->push esp edges (kind 7) have latency 0 in player_update."
+  },
+  "0x1073a363": {
+   "name": "sched_agi_penalty",
+   "comment": "G5/G4 term of sched_set_edge_latency: returns 1 when the producer's destination register is the base or index of a memory operand of the consumer (address generation interlock); esp with push/pop/call has special cases (can return 2). Verified: shl eax,2 -> mov [eax+disp],ebx edge latency 2 in player_update."
+  },
+  "0x1073a42e": {
+   "name": "sched_fp_store_latency_penalty",
+   "prototype": "int __fastcall sched_fp_store_latency_penalty(void *edge)",
+   "comment": "G5 (cpu index 2) term of sched_set_edge_latency: returns 1 when the consumer is fst/fstp (0x62/0x63, not fxch) and the producer is fadd/fsub/fmul (0x45-0x47) or fld (0x60). So fmul -> fstp edges get latency 3+1 = 4. A FROUND (0x162) between them removes the penalty (FROUND -> fstp latency 0) but the FROUND takes its own cycle. Verified in the player_update sched trace (fmul->fstp s289 latency 4; fmul->FROUND 3; FROUND->fstp 0)."
+  },
   "0x1073a471": {
    "name": "sched_memory_deps_on_stores",
    "comment": "Edges from prior stores that may alias (operands_may_alias / 0x1071d500). Observed edge kinds: 0x20 store->later load, 0x40 load->later store, 0x80 store->later store (kinds OR with register kinds, e.g. 0x41)."
@@ -6580,7 +6593,7 @@
   "0x1071e08a": "cross_jump_pair backward match: tuples_equal(J1-side, J2-side); the first 0 ends the match. Traced with scripts/c2/xjump_trace.py (aim-chain-mover.md).",
   "0x1071e163": "cross_jump_pair: /Os (Ot==0) merges unconditionally",
   "0x1071e19f": "/Ot profitability: tuple_encoded_length over matched tuples starting at the earliest matched one; loop stops once the sum reaches 20, merge needs sum + max(J1.w12, J2.w12) > 20. player_update p1: 3+3+3+3+3+3+2 = 20 -> refused; g6: atan2 3+3+2+3+2+6+6 = 25 -> merged.",
-  "0x1071e1c2": "cross_jump_pair /Ot: sum encoded bytes of matched code (stop at 20)",
+  "0x1071e1c2": "cross_jump_pair size loop: in player_update the pistol/shrinkifier smoke arms match 60 tuples but the running sum from projectile_spawn's push (1+5+3+2+3+6) lands exactly on 20 and the merge is refused; native's shared tail starts at the second sprite's push eax (18 then 24)",
   "0x1071e1ef": "cross_jump_pair /Ot: merge if bytes + max(jmp counters) > 20, else fall back to last jmp/switch boundary",
   "0x1071e25e": "Merge: tuple_range_free(J1-side matched range, J1) after tuple_retarget(J1, label_after_or_create(J2-side stop)); the later reference in L's list (J1) loses its copy unless the roles were swapped (only J2's stop tuple is a jmp/ret).",
   "0x107232b2": "PUSHARG: 1/2-byte symbol argument -> symbol_get_part(sym, dword, 4) = 4-byte container; the local becomes part +0 (why a bool pushed to a bool param is read as a dword)",
@@ -6686,6 +6699,7 @@
   "0x10739630": "constant-only callee-saved register with score<=2 is undone",
   "0x10739652": "/Os: ebp moved to unused ebx/esi/edi",
   "0x1073a1a5": "first pass prefers registers already used in the function",
+  "0x1073a2b6": "producer 0x162 (FROUND): edge latency 0; a FROUND fed by fmul still issues alone in its cycle, which is how native keeps integer stores behind fstp in player_update's smoke arms",
   "0x1073a6e6": "height = max(succ height + edge latency) + 1",
   "0x1073a80c": "priority = sum shift_signed(term, weight) over bit7/height/outdeg/critical/memread (+ float memwrite)",
   "0x1073af86": "shift_signed: negative weight = right shift",

@@ -119,7 +119,17 @@ a double expression, e.g. `(float)(d * 2.0)`. In `micro1` this was the only 0x16
 produces the value and before its consumer. It shifts every later window boundary in the same block
 by one node.
 
+**`(float)` on a float expression.** C1 also emits a FROUND for a `(float)` cast applied to an
+expression that is already float (`(float)(y * 15.0f)`); an implicit double→float assignment emits
+none. That FROUND takes its own issue cycle, which can reorder neighbouring integer stores
+([weapon-arm-schedule.md](weapon-arm-schedule.md)).
+
 ## 4. Priorities and edges as applied to x87 tuples
+
+Edges into `fst`/`fstp` from `fadd`/`fsub`/`fmul`/`fld` get the producer's latency + 1
+(`sched_fp_store_latency_penalty` 0x1073a42e). A FROUND in between removes the +1
+(fmul → FROUND 3, FROUND → fstp 0) but occupies a cycle. Address generation adds 2 cycles to a store
+whose address register was just computed (`sched_agi_penalty` 0x1073a363).
 
 `sched_compute_priorities` 0x1073a684 computes, for /G5 and /GB (weights 0x107a0d98, index 2):
 
