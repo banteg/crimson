@@ -169,11 +169,12 @@ first, but stores AL to its home instead of the `mov dl, al` temp (98.98%).
 ## 6. Open questions
 
 - Which declarations the original RShell translation unit had before `RstrASC`. The window is 1984 fe
-  ids wide in the two-variable scratch and 2048 in the one-variable scratch. It repeats every 0x10000
-  through the xor fold. VC6's own Win32 and DirectX 5 headers reach 0xb60d, so a D3D8/D3DX8 or C++
-  class-heavy prelude is needed. It is not in the compiler's include directory.
-- The exact meaning of fe id numbering (which declarations consume 1 or 2 ids) was only measured for
-  enumerators and plain function declarations.
+  ids wide in the two-variable scratch and 2048 in the one-variable scratch. For ids 0x10000..0x1ffff
+  the fold is `(id & 0xffff) ^ 1`, so the next window is shifted with its edge ids swapped pairwise.
+  VC6's own Win32 and DirectX 5 headers reach 0xb60d; snail-mail matched it with the DirectX 8.1 SDK
+  headers plus a counted stand-in.
+- Resolved: which declarations consume ids is measured in [frontend-ids.md](frontend-ids.md).
+  Parameters are numbered before their function, and a callee's first declaration fixes its id.
 - The same wrap affects every tree that contains a call or label operand. It can reorder mixed
   call/non-call operands only when needs and sizes tie, which is rare. It has not been surveyed in
   Crimson.

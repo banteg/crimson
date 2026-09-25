@@ -3102,6 +3102,10 @@
    "prototype": "int16_t il_read_short(void)",
    "comment": "Read a compressed 16-bit value (0x80 escape)."
   },
+  "0x107416cd": {
+   "name": "il_read_id",
+   "comment": "Reads a frontend record id from g_il_stream: two bytes little-endian; if bit 7 of the second byte is set, two more bytes follow and the value is b0 | (b1&0x7f)<<8 | (b2<<16|b3<<24)>>1. When 0x107ac6d4 is set the PCH-path decoder 0x1079690d is used instead. The ids are assigned by C1XX with one counter per translation unit (see tools/match/c2/compiler/frontend-ids.md). Verified: decoding the captured gl stream gives ?RstrASC@@YADD@Z = 0xfb59, which is the callee id in the traced call hashes 0xfc02/0x0402."
+  },
   "0x107417a8": {
    "name": "il_read_long",
    "prototype": "int32_t il_read_long(void)",
@@ -3112,7 +3116,8 @@
    "comment": "Read the function's 'sym il' records."
   },
   "0x10741b6d": {
-   "name": "p2symtab_10741b6d"
+   "name": "il_read_fe_symbol_record",
+   "comment": "Reads one sym-IL/glo-IL record: class byte, then a class-specific layout, allocates the c2_fe_symbol (fe_symbol_alloc) and stores the il_read_id value at +0x28. Classes 4/0xe/0x10: id, subkind byte, name, ...; classes 1/2: byte, id, byte, name; class 0x12 (source file): id, name into the static record 0x10799928; classes 3/5/7/8/9/0xb carry an id too. Stream layout verified by decoding captured gl streams (scripts/c2/fe_id_probe.py)."
   },
   "0x1074233f": {
    "name": "ioin_1074233f"
@@ -6724,6 +6729,7 @@
   "0x1073f7f9": "/Ot+/Og: pad function code to multiple of 16 bytes with 0x90",
   "0x1073fe7b": "forward target not yet updated this pass: add growth accumulated so far",
   "0x1073fe93": "rel8 range check against end of short branch",
+  "0x10741e85": "fe->id (+0x28) of a class 4/0xe/0x10 record = the C1XX translation-unit id read by il_read_id; hash_operand kind 4 folds it for call operands (frontend-ids.md).",
   "0x10742835": "tail call only if call tuple byte +0x24 == 4 and +0x20 == 0",
   "0x10743c9f": "Non-loop run is re-inserted after the latch before the first later block with a higher index",
   "0x10743df7": "Verified: once the IV pass has appended SR inits to the preheader, the next cfg_reanalyze finds it non-empty and inserts a new empty preheader (flag 0x8000000) after it. An SR init (or a user init inside an explicit if-guard) therefore sits in its own block between the guard and the preheader, which changes P/live-through accounting (guard-placement.md).",

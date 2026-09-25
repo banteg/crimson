@@ -170,7 +170,8 @@ There are two record families.
    (`g_cur_scope` 0x1079a1cc; `fe_symbol_lookup_id` 0x10740f64). External names are hashed separately
    (`fe_symbol_lookup_name` 0x10751056, 128 slots at 0x1079ba18).
    Common fields: +4 class, +8 cached storage symbol, +0xc frame offset, +0x10 size, +0x14 flags, +0x18 name,
-   +0x28 id, +0x30/+0x31 subkind/flags, +0x36 storage-class bits.
+   +0x28 id (the C1XX per-translation-unit counter, read by `il_read_id` 0x107416cd; see
+   [frontend-ids.md](frontend-ids.md)), +0x30/+0x31 subkind/flags, +0x36 storage-class bits.
    Labels add +0x32 (label tuple) and +0x3a (reference count).
    Functions (class 14) add +0x4f exp-IL offset, +0x53 sym-IL offset, +0x57 per-function info,
    +0x6f next function, +0x73 flags. The +0x73 flags are: bit 0 = read from the PCH streams, bit 1 = compiled,
