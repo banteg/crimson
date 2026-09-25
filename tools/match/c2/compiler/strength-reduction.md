@@ -125,10 +125,10 @@ Consequences:
 - **Pure index loop, every field read once.** The anchor is the **second field address in IL order**.
   This is not the most-used field. The first field is the initial champion, and the second one beats
   it on the tie.
-- **Unequal counts.** A field with strictly more reads wins, whatever its position.
+- **Unequal counts.** With two IVs, the field with strictly more reads wins. With more, the champion carries every count it absorbs, so a late challenger with the most reads of its own can still lose ([iv-anchor-examples.md](iv-anchor-examples.md)).
 - **Field-address local** (`const vec2f_t *p = &pool[i].position;`). `p + 4` is a round-2 IV that
   sits last in P. It becomes the champion, and the earliest round-1 field beats it on the tie. The
-  anchor is therefore the **first field accessed**. That is the struct base when the loop starts
+  anchor is therefore the **first field accessed**, as long as the round-2 IV has few uses; with many uses it keeps the anchor at `local + k`. That is the struct base when the loop starts
   with `pool[i].active` at offset 0, which explains the "base-anchored" results in the audit.
 - **User cursor with the same step** (for example `++entry`). The user cursor takes part in the same
   merge. In `quest_spawn_timeline_update` all the field IVs are rebuilt as `entry + k` in the end.

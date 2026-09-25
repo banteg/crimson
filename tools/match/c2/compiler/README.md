@@ -30,6 +30,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [value-threading.md](value-threading.md) | How globopt threads known constants through later compares, and how the block mover then shapes the stores |
 | [x87-memory-values.md](x87-memory-values.md) | Why a float value lands in memory through a stack-nesting failure, and how sibling-field stores keep a def ahead of its use |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
+| [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
 | [strength-reduction.md](strength-reduction.md) | Where strength reduction and exit-test replacement put IV setups, which field a loop pointer anchors to, and how to write plain indexed loops that reproduce native cursors |
 | [branch-variants.md](branch-variants.md) | Which source jumps emit which IL branch ops, what flag 8 marks, and how to predict block-mover moves in flat rule chains |
