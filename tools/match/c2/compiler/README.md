@@ -39,6 +39,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [iv-cursor-merge.md](iv-cursor-merge.md) | Why hand-written loop cursors always challenge last in the IV merge, and the pointer-after-test shape that anchors a loop at the struct base |
 | [tail-merge-rotation.md](tail-merge-rotation.md) | Statements written once after an if/else that the block mover copies back into a jumping arm after allocation, sharing registers without a rotation slot |
 | [slot-sharing-symbols.md](slot-sharing-symbols.md) | Cross-jumping compares stack operands by symbol, why function-scope address-taken vectors block slot sharing, and label-offset scoring effects |
+| [load-recompute.md](load-recompute.md) | Why a repeated load is recomputed or merged between lanes (value-number owners, forward-propagation rounds), and when a held x87 lane spills |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |

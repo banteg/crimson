@@ -946,7 +946,7 @@
   },
   "0x1070a0d8": {
    "name": "avail_transfer_tuple",
-   "comment": "gen/kill of available expressions. A write to a symbol clears its +0x44 kill set and those of overlapping parts of the same parent, so a write to one field of a block-copy destination kills that block copy for all lanes. Memory-resident parts (flags5 & 2) also clear g_alias_class_kill_sets2[class]; memory writes clear alias-class sets; calls clear temp-sourced expressions (phase 1) or everything (full mode). The block-copy kill is trace-verified: `v = a + b; v += c;` rewrites only the x-lane read."
+   "comment": "Append: a direct store to a flags5&2 (address-taken) local clears only the expressions whose memory operands intersect that local's class. A function-scope escaping local (member of player's alias set) kills `[player+off]` CSE; a block-scoped escaping local does not (player_update base vs b4, il_stage_trace cse3; tools/match/c2/compiler/load-recompute.md)."
   },
   "0x1070a45a": {
    "name": "block_first_assignment",
@@ -1351,7 +1351,7 @@
   "0x10711afa": {
    "name": "forward_propagate_definitions",
    "prototype": "void __fastcall forward_propagate_definitions(c2_function* fn)",
-   "comment": "Single-def/single-use candidates: clone the def tree, check range_free_of_conflicts on the use (0x10712713) and on def->next..use (0x107125d8, skipped when def->next == use), then move_expression_tree_before 0x1071d548 and insert 0x15f/0x15b/0x162 (FROUND at 0x10712643 for float class). A refused move leaves the def in place; for x87 values that is the held-lane shape (tools/match/c2/compiler/x87-held-lanes.md)."
+   "comment": "Append: the 0x162 round inserted at 0x10712643 sits between a propagated load and its consumer, so the consumer gets a new value-number owner. An identical inline read elsewhere (`p->f + c`) is then not CSE'd with it and reads memory again (player_update b20: vn owners #4265 vs #4271; load-recompute.md)."
   },
   "0x107129c1": {
    "name": "mark_tree_materialize",
@@ -2317,7 +2317,7 @@
   },
   "0x1072fef2": {
    "name": "fold_x87_copy_sequences",
-   "comment": "x87 peephole before allocation: fld/fstp same-size copy -> integer mov (not /Op), fcom after unary op folding via st(0)."
+   "comment": "Append (read): runs from allocate_x87_live_ranges after allocation. For FSTP m2 whose previous tuple is FLD m (memory source, same operand type, /Ot or type 0x4004, no +0x2c operand flags), the FLD becomes MOV m2,m via emit_float_move_as_integer and the FSTP is freed. Otherwise x87_keep_float_temp_on_stack(t) finds the defining tuple. An 8-byte result goes through lower_int64_tuple. A copy whose value is an x87 candidate (inline float parameter) is not folded, so it stays in the ST0 chain (player_update p3)."
   },
   "0x1073011d": {
    "name": "mdmisc_1073011d"
