@@ -75,6 +75,7 @@ rather than a countdown.
 
   Traced in `typo_plain2`: block 2 holds `accepted_count = 0`, and preheader block 3 receives the IV
   inits.
+- **The preheader becomes an ordinary block.** After SR appends its inits, the next `cfg_reanalyze` finds the preheader non-empty and `loop_ensure_preheader` 0x10743df7 inserts a new empty preheader after it, so an init created by the IV pass always costs one extra basic block after the guard ([guard-placement.md](guard-placement.md)).
 - **Rounds.** 0x1074775c runs at most 32 rounds. Each round starts with `reset_iv_worklists`
   0x10746f93, which empties the derived list. It then collects candidates with mode 1 of
   `collect_iv_candidates` 0x10746fb7: `IV*inv`, `IV±inv`, and 4-byte IV conversions. After all the
