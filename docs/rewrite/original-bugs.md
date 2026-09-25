@@ -585,3 +585,53 @@ Rewrite behavior:
 
 Evidence: `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/README.md`
 and the [Fire Bullets version comparison](../re/static/fire-bullets-1.9.8-vs-1.9.93.md).
+
+## 25) Re-picking a bonus can leave its HUD indicator hidden for seconds
+
+Native behavior:
+
+- `bonus_apply` (`0x00409890`) activates a HUD slot only when the bonus timer is
+  already zero. `bonus_hud_slot_activate` (`0x0041a810`) takes the first free
+  slot, then deactivates every later slot that shares a timer pointer.
+- Active slots always form a prefix of the table, so a re-pickup keeps the old
+  slot and drops the new one. The old panel reverses from its current position.
+- In `bonus_hud_slot_update_and_render` (`0x0041a8b0`), an expired slot is
+  released only after every later slot is inactive. Until then it stays parked
+  off-screen, and its X offset keeps falling by 320 px per second.
+- Re-picking a parked bonus reverses from that position at 350 px per second.
+  After five seconds parked, the indicator stays invisible for about 4.6 seconds.
+  During that time the timer is running.
+
+Why it's likely a bug:
+
+- The slide animation assumes the offset never falls far past -184. There is no
+  clamp for parked slots, so the time before the panel reappears grows with how
+  long the slot was parked.
+
+Rewrite behavior:
+
+- Documented and preserved in both ports; it only affects HUD presentation.
+
+## 26) Bonus HUD dedupe scans one slot past the table (latent)
+
+Native behavior:
+
+- The dedupe loop in `bonus_hud_slot_activate` (`0x0041a810`) starts at
+  `check_index = 16` in a 16-slot table. Slot 16 lies at
+  `bonus_hud_slot_table + 0x200`, which is `quest_stage_label_buffer`
+  (`0x0048f788`, `char[16]`).
+- The loop compares label bytes 12–15 with each active slot's timer pointer.
+  On a match it would write zero to the first label byte.
+
+Why it has no effect:
+
+- The label is a short string with zero padding, and active slots always hold a
+  non-null timer pointer, so the comparison never matches.
+
+Rewrite behavior:
+
+- Documented only. The ports do not model the out-of-bounds slot.
+
+Evidence: the exact `bonus_hud_slot_activate` scratch
+(`tools/match/scratches/bonus_hud_slot_activate/`) and the native `.data` layout
+in `analysis/native/crimsonland.exe/data.json`.

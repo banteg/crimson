@@ -34,17 +34,18 @@ class BonusHudState(msgspec.Struct):
         label: str,
         icon_id: int,
     ) -> None:
-        existing = None
-        free = None
-        for slot in self.slots:
-            if slot.active and slot.bonus_id == bonus_id:
-                existing = slot
-                break
-            if (not slot.active) and free is None:
-                free = slot
-        slot = existing or free
+        """Mirror `bonus_hud_slot_activate`.
+
+        Active slots always form a prefix, so the native timer-pointer dedupe keeps an
+        existing slot and drops the new one. The kept slot reverses from its current
+        `slide_x`, even when it is parked far below -184 (original bug #25). A full
+        table drops the activation.
+        """
+        if any(slot.active and slot.bonus_id == bonus_id for slot in self.slots):
+            return
+        slot = next((slot for slot in self.slots if not slot.active), None)
         if slot is None:
-            slot = self.slots[-1]
+            return
         slot.active = True
         slot.bonus_id = bonus_id
         slot.label = label

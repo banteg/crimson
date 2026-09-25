@@ -2,7 +2,7 @@
 
 ## Plausibility pass (2026-09-25)
 
-Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; the duplicate scan still starts at the out-of-range `check_index = 16`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
+Pointer walks bounded by int-cast address compares were replaced with indexed `for` loops. C2's strength reduction and linear test replacement produce the same signed pointer compare; the duplicate scan still starts at the out-of-range `check_index = 16`. It reads `quest_stage_label_buffer` as slot 16. See [original bug #26](../../../../docs/rewrite/original-bugs.md). The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).
 
 Native target: `crimsonland.exe` at `0x0041a810` (159 bytes).
 
