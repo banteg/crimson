@@ -1335,6 +1335,11 @@
   "0x1071174b": {
    "name": "count_successors"
   },
+  "0x1071175c": {
+   "name": "list_node_release_all",
+   "comment": "Returns every node of a singly linked list to g_list_node_free and clears the head. forward_propagate_definitions calls it on a parent symbol's pending-def (+0x4c) and use (+0x50) lists after a direct store (0x107120d2, 0x107120da).",
+   "prototype": "void __fastcall list_node_release_all(void **list_head)"
+  },
   "0x10711786": {
    "name": "propagation_def_use_eligible",
    "comment": "same block: def precedes use; else def block dominates use block (+0x60 bitset by RPO) AND same innermost loop (+0x68)"
@@ -6549,6 +6554,8 @@
   "0x10711ea2": "fwd-prop: def of aggregate (0x5000) type never substituted",
   "0x10711f0f": "fwd-prop: dominance + same innermost loop required",
   "0x10711f82": "fwd-prop: use wider than def -> reject (only narrowing substitution)",
+  "0x107120a7": "Direct store (operand kind 2) in forward_propagate_definitions: parent = sym->parent. If parent is a fwdprop candidate (+0x32 & 8), every pending def of the same parent whose destination is not operands_same_location (0x1071d500) as this store gets status 0xb (0x10712136), and is never propagated. Then the parent's def and use lists are released. A store to one field of a local aggregate therefore kills the pending propagation of its sibling fields; a scalar is its own parent, so stores to other scalars never kill. Verified: player_update variant with turn.x/turn.y (x87-memory-values.md).",
+  "0x1071213c": "A direct def that is not a 0x15b assign is itself marked 0xb (not a propagation candidate); a 0x15b def is pushed onto the parent's pending-def list (0x107120ec..0x10712111).",
   "0x10712164": "call/0x187: all pending single-use defs are killed",
   "0x107123bb": "defs of variables live-out of the block are not substituted",
   "0x107125d8": "range_free_of_conflicts(def->next, use->prev, tree): any aliasing store between the def and its use blocks forward propagation (held x87 lane)",

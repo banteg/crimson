@@ -114,6 +114,10 @@ Native's order (y computed first, x stored first) therefore means that **x is st
 
 ## 3. Destination and pointer rules
 
+Only a real escape (the local's address reaching a call) makes a local visible to alias analysis.
+Inline pointer or reference parameters, a body `float *p = &x`, or `float &r = x` do not
+([x87-memory-values.md](x87-memory-values.md)).
+
 Every micro below is `player_update` compiled with the scratch flags. `d` is a `vec2f_t` passed to
 `player_apply_move_with_spawn_avoidance`, the lanes are `frame_dt * p->move_dx/dy`, and the builder
 is an inline setter unless stated otherwise.

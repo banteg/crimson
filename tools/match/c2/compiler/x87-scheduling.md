@@ -106,7 +106,7 @@ Which source constructs produce a FROUND:
 | Local assigned once from an expression and read once, e.g. `float c = b*b; g = c + b;` | yes |
 | `double d = int_value;` read once, e.g. highscore's `double center_offset = 128 - half` | yes (double class) |
 | Local read more than once (`float b = x - 3` read three times; highscore `double x_value` read twice) | no |
-| Variable with more than one def (`position.x = ...; position.x -= 32;`) | no |
+| Variable with more than one def (`position.x = ...; position.x -= 32;`) | no (for this case; several defs of a scalar in different arms still propagate, and `position.x` may be the sibling-field kill, see [x87-memory-values.md](x87-memory-values.md)) |
 | Local whose address is taken (`sink(&a)`) | no; it is stored with `fst` |
 | Direct store to a member, global or argument (`s->f = a + b`, `f(a + b)`) | no |
 | `(float)int_value` inside an expression | no |

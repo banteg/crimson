@@ -49,7 +49,7 @@ Other notes:
    - Integer `a-b` is canonicalized as `a+(-b)`, and add/mul/and/or/xor chains are flattened, sorted and re-emitted left-deep. Parenthesization and operand order of these ops are largely irrelevant.
 5. **Temporaries and direct expressions.**
    - A `t = e; v = t` copy is coalesced.
-   - A single-def/single-last-use temp is forward-substituted only within the same innermost loop, when its def dominates the use, and with no call or aliased memory access in between.
+   - A single-def/single-last-use temp is forward-substituted only within the same innermost loop, when its def dominates the use, and with no call or aliased memory access in between. A direct store to a sibling field of the same local aggregate also kills a pending def, because pending defs are tracked per parent symbol; a scalar local is its own parent ([x87-memory-values.md](x87-memory-values.md)).
    - So splitting an expression into a named local usually vanishes, but not across calls, aliasing stores or loop boundaries.
 6. **CSE runs in two sweeps.** The final sweep kills available expressions at a call. Branch-condition facts are different: a dominating `count > 0` still folds a later `0 < count` across a call ([plain-float-sources.md](plain-float-sources.md)); the folding site is not identified.
    - Loops of more than `-Loop#` (default 100) blocks get only conservative availability and **no IV or strength-reduction work**.
@@ -263,7 +263,7 @@ This covers the pass driver calls `0x1070fc45(ctx,1)` (before globopt) and `0x10
   - Class-3 compiler temp: `id<<6`.
   - Substituted temp: the hash of its def tree.
   - `&sym` (kind 3): the folded id, unshifted.
-  - Memory: `fold(disp) + (addrform-0x145) + hash(base)<<8`.
+  - Memory: `fold(disp) + (addrform-0x145) + hash(base)<<8`. The direct symbol (+0x20) and the index (+0x2c) are not hashed, so leaves that differ only there tie and keep their original order.
   - Constant: a fold of its value.
   - Tuple: `sum(child_hash << (i&7)) + opcode-0x145`, truncated to 16 bits.
   - Callee or label operand: the xor-fold of its frontend record id (+0x28), a counter across the whole translation unit. Any tree containing a call therefore depends on the declarations before it ([call-operand-order.md](call-operand-order.md)).
