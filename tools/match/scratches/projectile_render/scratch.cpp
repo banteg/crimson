@@ -101,6 +101,7 @@ static __inline float projectile_render_clamp(float value)
 
 extern "C" void projectile_render(float transition_alpha)
 {
+    float fade;
     int player_index;
     int projectile_index;
     int secondary_index;
@@ -131,6 +132,10 @@ extern "C" void projectile_render(float transition_alpha)
          ++player_index) {
         player_state_t *player = &player_state_table[player_index];
         if (player->health > 0.0f) {
+            projectile_render_vec2_t point0;
+            projectile_render_vec2_t point1;
+            projectile_render_vec2_t point2;
+            projectile_render_vec2_t point3;
             float heading = player->aim_heading - 1.5707964f;
             projectile_render_vec2_t player_pos =
                 *(projectile_render_vec2_t *)&player->position;
@@ -151,15 +156,15 @@ extern "C" void projectile_render(float transition_alpha)
                 (float)sin(player->aim_heading) * 1.1f);
             projectile_render_vec2_t start_screen = start_pos;
             start_screen += camera_offset;
-            projectile_render_vec2_t point0 = start_screen - half_width;
-            projectile_render_vec2_t point1 = start_screen + half_width;
+            point0 = start_screen - half_width;
+            point1 = start_screen + half_width;
             projectile_render_vec2_t end_screen_result =
                 camera_offset + end_pos;
             projectile_render_vec2_t end_screen;
             end_screen.x = end_screen_result.x;
             end_screen.y = end_screen_result.y;
-            projectile_render_vec2_t point2 = end_screen + half_width;
-            projectile_render_vec2_t point3 = end_screen - half_width;
+            point2 = end_screen + half_width;
+            point3 = end_screen - half_width;
 
             if (player_state_table[0].perk_counts[perk_id_sharpshooter] > 0) {
                 grim_interface_ptr->grim_set_config_var(0x14, 2u);
@@ -294,10 +299,9 @@ extern "C" void projectile_render(float transition_alpha)
     effect_select_texture(13);
     grim_interface_ptr->grim_set_rotation(0.0f);
 
-    player_state_t *overlay_player =
-        &player_state_table[render_overlay_player_index];
-    if (overlay_player->muzzle_flash_alpha > 0.0f) {
-        float heading = overlay_player->aim_heading
+    if (player_state_table[render_overlay_player_index].muzzle_flash_alpha > 0.0f) {
+        float heading =
+            player_state_table[render_overlay_player_index].aim_heading
             - 1.5707964f
             - 0.150915f;
         projectile_render_vec2_t flash(
@@ -307,7 +311,8 @@ extern "C" void projectile_render(float transition_alpha)
             1.0f,
             1.0f,
             1.0f,
-            transition_alpha * overlay_player->muzzle_flash_alpha);
+            transition_alpha
+                * player_state_table[render_overlay_player_index].muzzle_flash_alpha);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_draw_quad(
             camera_offset_x
@@ -594,7 +599,7 @@ extern "C" void projectile_render(float transition_alpha)
                 }
             }
         } else {
-            float fade = projectile_render_clamp(
+            fade = projectile_render_clamp(
                 projectile_pool[projectile_index].pos.tail.vy.life_timer * 2.5f);
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, fade * transition_alpha);
@@ -622,10 +627,8 @@ extern "C" void projectile_render(float transition_alpha)
         if (!projectile->active) {
             continue;
         }
-        projectile_type_id_t &type_id = primary->vy.type_id;
-        float life = primary->vy.life_timer;
 
-        if (type_id == PROJECTILE_TYPE_PULSE_GUN) {
+        if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_PULSE_GUN) {
             if (primary->vy.life_timer == 0.4f) {
                 float pulse_scale = projectile_render_vec2_t(
                     projectile->pos.origin_x - projectile->pos_x,
@@ -645,7 +648,7 @@ extern "C" void projectile_render(float transition_alpha)
             } else {
                 grim_interface_ptr->grim_set_rotation(projectile->angle);
                 grim_interface_ptr->grim_set_atlas_frame(2, 0);
-                float fade = projectile_render_clamp(primary->vy.life_timer * 2.5f);
+                fade = projectile_render_clamp(primary->vy.life_timer * 2.5f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, fade * transition_alpha);
                 grim_interface_ptr->grim_draw_quad(
@@ -657,7 +660,7 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
+        if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
             if (primary->vy.life_timer != 0.4f) {
                 continue;
             }
@@ -679,7 +682,7 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (type_id == PROJECTILE_TYPE_BLADE_GUN) {
+        if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_BLADE_GUN) {
             if (primary->vy.life_timer != 0.4f) {
                 continue;
             }
@@ -703,22 +706,22 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (!(type_id == PROJECTILE_TYPE_ION_MINIGUN
-            || type_id == PROJECTILE_TYPE_ION_RIFLE
-            || type_id == PROJECTILE_TYPE_ION_CANNON
-            || type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {
+        if (!(projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN
+            || projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_RIFLE
+            || projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_CANNON
+            || projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {
             continue;
         }
 
         if (primary->vy.life_timer == 0.4f) {
             float effect_scale;
-            if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
+            if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN) {
                 effect_scale = 1.05f;
-            } else if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
+            } else if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_RIFLE) {
                 effect_scale = 2.2f;
             } else {
                 effect_scale = 0.8f;
-                if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
+                if (projectile_pool[projectile_index].pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
                     effect_scale = 3.5f;
                 }
             }
@@ -730,7 +733,7 @@ extern "C" void projectile_render(float transition_alpha)
             vec2f_t direction = *(vec2f_t *)&direction_result;
             float distance = direction_result.length();
             D3DXVec2Normalize(&direction, &direction);
-            if (primary->vy.type_id
+            if (projectile_pool[projectile_index].pos.tail.vy.type_id
                 == PROJECTILE_TYPE_FIRE_BULLETS) {
                 grim_interface_ptr->grim_set_color(
                     1.0f, 0.6f, 0.1f, transition_alpha);
@@ -756,9 +759,8 @@ extern "C" void projectile_render(float transition_alpha)
                 step = 9.0f;
             }
             float first = along;
-            float size = effect_scale * 32.0f;
             while (along < distance) {
-                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
+                if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
                     float alpha = (along - first) / span
                         * transition_alpha;
                     grim_interface_ptr->grim_set_color(
@@ -772,8 +774,8 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_draw_quad(
                     direction.x * along + base_x,
                     direction.y * along + base_y,
-                    size,
-                    size);
+                    effect_scale * 32.0f,
+                    effect_scale * 32.0f);
                 along += step;
             }
 
@@ -783,13 +785,14 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_draw_quad(
                 camera_offset_x + projectile->pos_x - half_size,
                 camera_offset_y + projectile->pos.pos_y - half_size,
-                size,
-                size);
+                effect_scale * 32.0f,
+                effect_scale * 32.0f);
         } else {
             grim_interface_ptr->grim_set_rotation(projectile->angle);
             grim_interface_ptr->grim_set_atlas_frame(4, 2);
-            float fade_input = life * 2.5f;
-            float fade = projectile_render_clamp(fade_input);
+            fade = primary->vy.life_timer * 2.5f;
+            if (fade > 1.0f) fade = 1.0f;
+            if (fade < 0.0f) fade = 0.0f;
 
             projectile_render_vec2_t direction_result(
                 projectile->pos_x - projectile->pos.origin_x,
@@ -799,13 +802,13 @@ extern "C" void projectile_render(float transition_alpha)
             D3DXVec2Normalize(&direction, &direction);
 
             float effect_scale;
-            if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
+            if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN) {
                 effect_scale = 1.05f;
-            } else if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
+            } else if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_RIFLE) {
                 effect_scale = 2.2f;
             } else {
                 effect_scale = 0.8f;
-                if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
+                if (projectile_pool[projectile_index].pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
                     effect_scale = 3.5f;
                 }
             }
@@ -827,12 +830,11 @@ extern "C" void projectile_render(float transition_alpha)
                 step = 9.0f;
             }
             float first = along;
-            float size = effect_scale * 32.0f;
             while (along < distance) {
                 float alpha = (along - first) / span
                     * fade
                     * transition_alpha;
-                if (primary->vy.type_id
+                if (projectile_pool[projectile_index].pos.tail.vy.type_id
                     == PROJECTILE_TYPE_FIRE_BULLETS) {
                     grim_interface_ptr->grim_set_color(
                         1.0f, 0.6f, 0.1f, alpha);
@@ -843,8 +845,8 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_draw_quad(
                     direction.x * along + base_x,
                     direction.y * along + base_y,
-                    size,
-                    size);
+                    effect_scale * 32.0f,
+                    effect_scale * 32.0f);
                 along += step;
             }
 
@@ -860,7 +862,7 @@ extern "C" void projectile_render(float transition_alpha)
                 0.5f, 0.6f, 1.0f, head_alpha);
 
             float radius = effect_scale * ion_scale * 40.0f;
-            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
+            if (projectile_pool[projectile_index].pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
                 int creature_index = creature_find_in_radius(
                     &projectile->pos_x,
                     radius,
@@ -871,11 +873,10 @@ extern "C" void projectile_render(float transition_alpha)
                     grim_interface_ptr->grim_set_uv_point(2, 0.625f, 0.25f);
                     grim_interface_ptr->grim_set_uv_point(3, 0.625f, 0.0f);
 
-                    projectile_render_vec2_t arc_result =
+                    projectile_render_vec2_t arc =
                         *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x
                         - *(projectile_render_vec2_t *)&projectile->position;
-                    projectile_render_vec2_t arc = arc_result;
                     D3DXVec2Normalize(
                         (vec2f_t *)&arc, (const vec2f_t *)&arc);
                     float old_arc_x = arc.x;
@@ -897,9 +898,7 @@ extern "C" void projectile_render(float transition_alpha)
                         + *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x;
                     projectile_render_vec2_t strip2 = end_result;
-                    projectile_render_vec2_t strip3;
-                    strip3.x = end_result.x;
-                    strip3.y = end_result.y;
+                    projectile_render_vec2_t strip3 = end_result;
                     strip2 += arc * effect_scale * 10.0f;
                     strip3 -= arc * effect_scale * 10.0f;
 
@@ -912,13 +911,10 @@ extern "C" void projectile_render(float transition_alpha)
                         strip2.y,
                         strip3.x,
                         strip3.y);
-                    projectile_render_vec2_t widen_result =
-                        arc * effect_scale * 4.0f;
-                    projectile_render_vec2_t widen = widen_result;
-                    strip0 -= widen;
-                    strip1 += widen;
-                    strip2 += widen;
-                    strip3 -= widen;
+                    strip2 += arc * effect_scale * 4.0f;
+                    strip3 -= arc * effect_scale * 4.0f;
+                    strip0 -= arc * effect_scale * 4.0f;
+                    strip1 += arc * effect_scale * 4.0f;
                     grim_interface_ptr->grim_draw_quad_points(
                         strip0.x,
                         strip0.y,
@@ -935,8 +931,8 @@ extern "C" void projectile_render(float transition_alpha)
                             - half_size,
                         camera_offset_y + creature_pool[creature_index].pos_y
                             - half_size,
-                        size,
-                        size);
+                        effect_scale * 32.0f,
+                        effect_scale * 32.0f);
                     creature_index = creature_find_in_radius(
                         &projectile->pos_x,
                         radius,
@@ -1017,7 +1013,7 @@ extern "C" void projectile_render(float transition_alpha)
                 62.0f,
                 62.0f);
         } else {
-            float fade = projectile->pos.tail.vy.life_timer * 2.5f;
+            fade = projectile->pos.tail.vy.life_timer * 2.5f;
             if (fade > 1.0f) fade = 1.0f;
             if (fade < 0.0f) fade = 0.0f;
             grim_interface_ptr->grim_set_color(

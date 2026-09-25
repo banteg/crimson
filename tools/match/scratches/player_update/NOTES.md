@@ -24,14 +24,21 @@ Two aim-screen pairs (`player_aim_screen_x[...] - camera_offset_*`) also take
 the setter shape natively, but converting them raises reference mismatches from
 2 to 6 (the camera loads reorder), so they stay as scalar assignments.
 
-Score: 64.50% to 67.03% normalized, with references unchanged at 2
+The ten movement-arm vectors `v = frame_dt * player->movement` use crimson-88's
+`pu_move_scaled(&v, frame_dt, player->movement)` at six sites and plain scalar
+pairs at four (source order `cpcppccpcc`, c = scaled, p = plain). The scaled
+helper reproduces native's per-arm `fld dt; fld st(0); fmul dy; fxch; fmul dx`
+exactly. Using it everywhere lets C2 cross-jump arms that native keeps
+separate (`tools/match/c2/compiler/x87-held-lanes.md`).
+
+Score: 64.50% to 67.39% normalized, with references unchanged at 2
 mismatches. Stack-masked structural and x87-only similarity also rise.
 
 Open:
-- The movement arms' `frame_dt * move_d{x,y}` vectors. `const float
-  movement_dt = frame_dt;` plus the setter reproduces native's per-arm
-  sequence at two arms and raises the normalized score to 66.82%, but it lowers
-  the structural and x87 scores.
+- The mode-2 heading assignments: C2 threads the `movement_heading =
+  3.1415927f` store past the `== -1.0f` test, where native keeps the test for
+  all three backward-key stores. Asked crimson-88 what blocks the threading
+  natively.
 - Moving the move call into each branch (native tail-merges per-branch calls)
   drops the score, so it is not applied.
 

@@ -3,6 +3,37 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Plain-source pass (2026-09-26)
+
+The Codex pass (`gpt-6-astra`) moved the canonical body from 65.40% to **69.82%**.
+Instructions went from 2,973 to 2,997 of 3,021, and references from `510/0/3`
+to `521/0/3`. Stack-masked structural similarity rose from 0.902 to 0.942, and
+x87-only similarity from 0.948 to 0.971.
+
+The changes remove cached values and copies that native does not have:
+- the muzzle overlay indexes `player_state_table[render_overlay_player_index]`
+  directly;
+- the laser corners are declared before the geometry is built;
+- one function-scope `fade` is shared across the disjoint passes;
+- the fading ion reloads `life_timer` after its callbacks and clamps the local
+  with two `if`s, as native does at 0x4247fb;
+- beam sizes are computed at the draw sites;
+- ion and primary type reads index `projectile_pool` directly;
+- `strip3` is copied as a whole vector;
+- each corner recomputes `arc * effect_scale * 4.0f`;
+- the constructed arc is normalized in place.
+
+12,498 native/candidate replay cases pass: the renderer suites under
+`evidence/renderer-house-style-2026-09-13`, plus ion endpoint and muzzle-overlay
+cases.
+
+Open:
+- the frame is 0x184 against native's 0x19c;
+- the second color branch of the fading beam recomputes alpha;
+- the first laser block's camera-sum ownership;
+- the plasma cursor is anchored at +0x10 instead of native's +0xc. It
+  accounts for two of the three reference mismatches.
+
 The recovered callback owns a sequence of separately batched visual passes:
 Sharpshooter laser sights, conventional bullet trails, the selected player's
 muzzle flash, five plasma-family trail styles, primary projectile sprites and

@@ -97,6 +97,14 @@ static __inline void player_update_vec2_set(
     v->y = y;
 }
 
+static __inline void pu_move_scaled(
+    player_update_vec2_t *v,
+    float scale,
+    const vec2f_t &m)
+{
+    player_update_vec2_set(v, scale * m.x, scale * m.y);
+}
+
 static __inline void player_accelerate_move_speed(player_state_t *player)
 {
     if (player_state_table[0].perk_counts[perk_id_long_distance_runner] > 0) {
@@ -482,9 +490,7 @@ extern "C" void player_update(void)
                             (float)sin(player->heading - 1.5707964f)
                             * player->move_speed * movement_heading
                             * scalar * 7.957747f;
-                        const float movement_dt = frame_dt;
-                        movement_input.x = movement_dt * player->move_dx;
-                        movement_input.y = movement_dt * player->move_dy;
+                        pu_move_scaled(&movement_input, frame_dt, player->movement);
                         moving_to_target = true;
                     }
                 }
@@ -541,8 +547,7 @@ extern "C" void player_update(void)
                         (float)sin(player->heading - 1.5707964f)
                         * player->move_speed * movement_heading * scalar
                         * 7.957747f;
-                    move_delta.x = frame_dt * player->move_dx;
-                    move_delta.y = frame_dt * player->move_dy;
+                    pu_move_scaled(&move_delta, frame_dt, player->movement);
                 } else {
                     player_decelerate_move_speed(player);
                     player->move_dx =
@@ -620,8 +625,7 @@ extern "C" void player_update(void)
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
-                move_delta.x = frame_dt * player->move_dx;
-                move_delta.y = frame_dt * player->move_dy;
+                pu_move_scaled(&move_delta, frame_dt, player->movement);
             } else if (grim_interface_ptr->grim_is_key_active(
                            player->input.move_key_backward)
                 || (config_player_count == 1
@@ -635,8 +639,7 @@ extern "C" void player_update(void)
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * -25.0f;
-                move_delta.x = frame_dt * player->move_dx;
-                move_delta.y = frame_dt * player->move_dy;
+                pu_move_scaled(&move_delta, frame_dt, player->movement);
             } else {
                 if (!turned) {
                     player->turn_speed = 1.0f;
@@ -746,9 +749,7 @@ extern "C" void player_update(void)
                     * player->move_speed * movement_heading * scalar
                     * 7.957747f;
             }
-            const float movement_dt = frame_dt;
-            move_delta.x = movement_dt * player->move_dx;
-            move_delta.y = movement_dt * player->move_dy;
+            pu_move_scaled(&move_delta, frame_dt, player->movement);
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
                 player_position,
@@ -808,8 +809,7 @@ extern "C" void player_update(void)
                 * player->move_speed * movement_heading * scalar
                 * 7.957747f;
         }
-        move_delta.x = frame_dt * player->move_dx;
-        move_delta.y = frame_dt * player->move_dy;
+        pu_move_scaled(&move_delta, frame_dt, player->movement);
         player_apply_move_with_spawn_avoidance(
             render_overlay_player_index,
             player_position,
