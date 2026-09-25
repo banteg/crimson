@@ -2,21 +2,33 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
-## Aim chain as flat rules (2026-09-26)
+## Movement arms (2026-09-26)
 
-The aim-scheme chain is written as flat `if (aim_scheme == N)` rules in native
-order (0, 4, 3, 1, then POV for the rest). Arms 0 and 4 end with their own
-`player->aim = scratch_pos;` struct copy and `aim_heading = atan2(...)`.
+crimson-88's movement pass (`answer_player-update-arms.md`) moved the canonical
+body from 70.51% to **72.09%**. References went from `801/0/2` to `818/0/1`, and
+the frame stays 0x48. All four parts are required:
 
-In native, `cross_jump_pair` merges arm 4's heading tail into arm 0's copy,
-and the shared heading after the chain stays at L207e. crimson-88 traced it (see
-`answer_aim-chain-mover` and `scripts/c2/xjump_trace.py`). The flat rules order
-the exit jumps so that arm 4 loses its copy, as native does. An else-if chain
-would make arm 0 lose it instead.
+1. Mode 3 and the demo arm build per arm: both branches of `movement_heading
+   != -1.0f` end in `pu_move_scaled(&move_delta, ...)` plus the call.
+2. The demo head's inner arms each end in `movement_input = scratch_pos;`. This
+   sets the frame weights and gives the register-rotation picks that stop the
+   demo accel arm from cross-jumping into mode 3's.
+3. The decel arms of modes 4 and 3 use `pu_move_scaled`.
+4. The turn pair (heading - pi/2, pi - angle_step) is stored in `scratch_pos`
+   in all four accel arms.
 
-Score: 70.49% to 70.51%, 2 mismatches, with native's block layout. A variant
-with the extra heading only in arm 0 scores 70.65%, but it keeps the wrong
-layout, so it is not used.
+Still open: the demo accel arm merges into mode-3 decel, and mode-4 decel into
+mode-3 accel, where native keeps them apart.
+
+## Aim chain as flat rules (2026-09-26, reverted)
+
+Flat `if (aim_scheme == N)` rules, with arms 0 and 4 ending in their own
+`player->aim = scratch_pos;` plus `aim_heading = atan2(...)`, reproduce
+native's layout. `cross_jump_pair` merges arm 4's heading into arm 0's copy
+(crimson-88, `aim-chain-mover.md`). This gave 70.51% on the pre-movement
+source, but it costs about 0.8 points on top of the movement pass (71.33%, 2
+mismatches) through a register-rotation interaction. So the canonical source
+keeps the else-if chain for now.
 
 ## Fire-section spellings (2026-09-26)
 
