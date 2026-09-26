@@ -1,6 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
 
+const input_codes = @import("input_codes.zig");
+
 const window_assets = @import("window_assets.zig");
 
 pub const UiButton = struct {
@@ -32,7 +34,8 @@ pub fn updateSelectionFromPointer(selection: *usize, buttons: []const UiButton) 
 }
 
 pub fn confirmPressed() bool {
-    return rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter) or rl.isKeyPressed(.space);
+    return rl.isKeyPressed(.enter) or rl.isKeyPressed(.kp_enter) or rl.isKeyPressed(.space) or
+        input_codes.padNavPressed(.face_down);
 }
 
 pub fn buttonActivated(buttons: []const UiButton, selection: usize) bool {

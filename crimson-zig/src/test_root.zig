@@ -47,6 +47,7 @@ test {
     _ = cz.helpers;
     _ = @import("input_codes.zig");
     _ = cz.local_input;
+    _ = cz.gamepad_profile;
     _ = cz.lifecycle;
     _ = cz.live_runner;
     _ = cz.perks;

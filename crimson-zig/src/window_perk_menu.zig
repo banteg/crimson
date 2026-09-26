@@ -139,7 +139,7 @@ pub fn update(
     state.prompt_hover = false;
 
     if (state.menu_open and choices.len > 0) {
-        if (rl.isKeyPressed(.escape)) {
+        if (rl.isKeyPressed(.escape) or input_codes.padNavPressed(.face_right)) {
             closeMenu(state, pending_count);
         } else {
             result = updateMenuInput(state, runtime_assets, runner, choices, dt_ui_ms);
@@ -269,10 +269,10 @@ fn updateMenuInput(
     const assets = runtime_assets orelse return result;
     if (choices.len == 0) return result;
 
-    if (rl.isKeyPressed(.down)) {
+    if (rl.isKeyPressed(.down) or input_codes.padNavPressed(.dpad_down)) {
         state.selected_index = (state.selected_index + 1) % choices.len;
     }
-    if (rl.isKeyPressed(.up)) {
+    if (rl.isKeyPressed(.up) or input_codes.padNavPressed(.dpad_up)) {
         state.selected_index = if (state.selected_index == 0) choices.len - 1 else state.selected_index - 1;
     }
 
@@ -401,8 +401,10 @@ fn closeMenu(state: *State, pending_count: i32) void {
 
 fn promptLabel(config: *const formats.crimson_cfg.CrimsonCfg, pending_count: i32, buf: []u8) []const u8 {
     if (config.ui_info_texts == 0 or pending_count <= 0) return "";
-    if (pending_count == 1) return "Press Mouse2 to pick a perk";
-    return std.fmt.bufPrint(buf, "Press Mouse2 to pick a perk ({d})", .{pending_count}) catch "Press Mouse2 to pick a perk";
+    // Native `perk_prompt_update_and_render` formats `input_key_name(config_key_pick_perk)`.
+    const key_name = input_codes.inputCodeName(@bitCast(config.keybind_pick_perk));
+    if (pending_count == 1) return std.fmt.bufPrint(buf, "Press {s} to pick a perk", .{key_name}) catch "";
+    return std.fmt.bufPrint(buf, "Press {s} to pick a perk ({d})", .{ key_name, pending_count }) catch "";
 }
 
 fn promptHinge() rl.Vector2 {

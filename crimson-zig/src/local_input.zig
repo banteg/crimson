@@ -11,6 +11,9 @@ pub const aim_joystick_turn_rate: f32 = 4.0;
 pub const aim_radius_keyboard: f32 = 60.0;
 pub const aim_radius_pad_base: f32 = 42.0;
 pub const aim_radius_pad_scale: f32 = 96.0;
+/// Port-only: native aims at the player when the stick centers; a resting stick
+/// instead keeps the last direction, and small drift inside this radius is ignored.
+pub const pad_aim_deadzone: f32 = 0.2;
 pub const point_click_stop_radius: f32 = 20.0;
 pub const computer_target_switch_hysteresis: f32 = 64.0;
 pub const computer_arena_center: state_mod.Vec2 = .{ .x = 512.0, .y = 512.0 };
@@ -145,8 +148,11 @@ pub const LocalInputInterpreter = struct {
                 .y = boolToFloat(moveBackwardPressed(move_backward_pressed)) - boolToFloat(moveForwardPressed(move_forward_pressed)),
             };
         } else if (move_mode_type == movement_control_dual_action_pad) {
-            const axis_y = -sampler.axisValue(move_axis_y, @intCast(idx));
-            const axis_x = -sampler.axisValue(move_axis_x, @intCast(idx));
+            // `move` is the direction to travel. Native builds `movement_input`
+            // from the negated axes and heads away from it (0x00414235); the
+            // runtime applies that negation and the 0.2 stick radius itself.
+            const axis_y = sampler.axisValue(move_axis_y, @intCast(idx));
+            const axis_x = sampler.axisValue(move_axis_x, @intCast(idx));
             move_vec = .{
                 .x = clampUnit(axis_x),
                 .y = clampUnit(axis_y),
@@ -215,12 +221,12 @@ pub const LocalInputInterpreter = struct {
                 const axis_y = sampler.axisValue(aim_axis_y, @intCast(idx));
                 const axis_x = sampler.axisValue(aim_axis_x, @intCast(idx));
                 const axis_vec: state_mod.Vec2 = .{ .x = axis_x, .y = axis_y };
-                const mag_sq = lengthSq(axis_vec);
-                if (mag_sq > 1e-9) {
-                    const mag = length(axis_vec);
-                    const axis_dir = if (mag > 1e-9) axis_vec.mul(1.0 / mag) else state_mod.Vec2{};
+                const mag = length(axis_vec);
+                if (mag > pad_aim_deadzone) {
+                    const axis_dir = axis_vec.mul(1.0 / mag);
                     heading = toHeading(axis_dir);
-                    const radius = aim_radius_pad_base + mag * aim_radius_pad_scale;
+                    // Native clamps the stick length to 1 before scaling the reach.
+                    const radius = aim_radius_pad_base + @min(mag, 1.0) * aim_radius_pad_scale;
                     aim = add(player.pos, axis_dir.mul(radius));
                 } else {
                     aim = aimPointFromHeading(player.pos, heading, aim_radius_keyboard);
@@ -820,6 +826,78 @@ test "dual action pad aim uses native radius scale" {
 
     try expectFloatClose(238.0, out.aim_x);
     try expectFloatClose(100.0, out.aim_y);
+}
+
+test "dual action pad move passes the stick direction" {
+    var interpreter: LocalInputInterpreter = .{};
+    const player = makePlayer(0, .{ .x = 100.0, .y = 100.0 }, .{ .x = 160.0, .y = 100.0 }, 0.0);
+    var cfg = formats.crimson_cfg.defaultConfig();
+    cfg.movement_schemes[0] = @intCast(movement_control_dual_action_pad);
+    const binds = formats.crimson_cfg.playerBindBlock(&cfg, 0);
+
+    // Native negates the axes into `movement_input` and heads away from it, so
+    // the travel direction handed to the runtime is the raw stick direction.
+    const out = interpreter.buildPlayerInput(
+        @as(FakeSampler, .{ .axes = &.{
+            .{ .player_index = 0, .code = binds.axis_move_x, .value = 0.75 },
+            .{ .player_index = 0, .code = binds.axis_move_y, .value = -0.5 },
+        } }),
+        0,
+        1,
+        &player,
+        &cfg,
+        .{},
+        .{},
+        .{},
+        0.1,
+        &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{},
+    );
+
+    try expectFloatClose(0.75, out.move_x);
+    try expectFloatClose(-0.5, out.move_y);
+}
+
+test "dual action pad aim clamps reach and holds direction inside the deadzone" {
+    var interpreter: LocalInputInterpreter = .{};
+    var player = makePlayer(0, .{ .x = 100.0, .y = 100.0 }, .{ .x = 160.0, .y = 100.0 }, 0.0);
+    var cfg = formats.crimson_cfg.defaultConfig();
+    cfg.aim_schemes[0] = @bitCast(@as(i32, aim_scheme_dual_action_pad));
+    const binds = formats.crimson_cfg.playerBindBlock(&cfg, 0);
+    const no_creatures = &[_]struct { active: bool, hp: f32, pos: state_mod.Vec2 }{};
+
+    const pushed = interpreter.buildPlayerInput(
+        @as(FakeSampler, .{ .axes = &.{
+            .{ .player_index = 0, .code = binds.axis_aim_x, .value = -1.0 },
+            .{ .player_index = 0, .code = binds.axis_aim_y, .value = 1.0 },
+        } }),
+        0,
+        1,
+        &player,
+        &cfg,
+        .{},
+        .{},
+        .{},
+        0.1,
+        no_creatures,
+    );
+    const reach = std.math.hypot(pushed.aim_x - 100.0, pushed.aim_y - 100.0);
+    try expectFloatClose(aim_radius_pad_base + aim_radius_pad_scale, reach);
+
+    player.aim = .{ .x = pushed.aim_x, .y = pushed.aim_y };
+    const resting = interpreter.buildPlayerInput(
+        @as(FakeSampler, .{ .axes = &.{.{ .player_index = 0, .code = binds.axis_aim_x, .value = 0.1 }} }),
+        0,
+        1,
+        &player,
+        &cfg,
+        .{},
+        .{},
+        .{},
+        0.1,
+        no_creatures,
+    );
+    try std.testing.expect(resting.aim_x < 100.0);
+    try std.testing.expect(resting.aim_y > 100.0);
 }
 
 test "keyboard aim in static mode reanchors to heading" {

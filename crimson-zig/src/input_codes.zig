@@ -1,9 +1,11 @@
 const std = @import("std");
 const rl = @import("raylib");
+const cz = @import("crimson_zig");
+
+pub const PadCode = cz.gamepad_profile.PadCode;
 
 pub const input_code_unbound: i32 = 0x17E;
 
-const axis_deadzone: f32 = 0.2;
 const axis_down_threshold: f32 = 0.5;
 const primary_edge_sentinel_player: i32 = -1;
 const primary_edge_sentinel_key: i32 = -1;
@@ -187,7 +189,70 @@ pub fn raylibMouseButtonFromInputCode(code: i32) ?rl.MouseButton {
     };
 }
 
+// Stick axes read raw: +X is right and +Y is down, matching screen space.
+fn padAxisFromInputCode(code: i32) ?rl.GamepadAxis {
+    const pad = std.enums.fromInt(PadCode, code) orelse return null;
+    return switch (pad) {
+        .left_stick_x => .left_x,
+        .left_stick_y => .left_y,
+        .right_stick_x => .right_x,
+        .right_stick_y => .right_y,
+        else => null,
+    };
+}
+
+// Triggers are buttons: raylib derives L2/R2 presses from the trigger axes,
+// whose resting value is -1 and would otherwise read as a held axis.
+fn padButtonFromInputCode(code: i32) ?rl.GamepadButton {
+    const pad = std.enums.fromInt(PadCode, code) orelse return null;
+    return switch (pad) {
+        .face_down => .right_face_down,
+        .face_right => .right_face_right,
+        .face_left => .right_face_left,
+        .face_up => .right_face_up,
+        .l1 => .left_trigger_1,
+        .r1 => .right_trigger_1,
+        .l2 => .left_trigger_2,
+        .r2 => .right_trigger_2,
+        .l3 => .left_thumb,
+        .r3 => .right_thumb,
+        .select => .middle_left,
+        .start => .middle_right,
+        .dpad_up => .left_face_up,
+        .dpad_down => .left_face_down,
+        .dpad_left => .left_face_left,
+        .dpad_right => .left_face_right,
+        .left_stick_x, .left_stick_y, .right_stick_x, .right_stick_y => null,
+    };
+}
+
+pub fn padCodeName(pad: PadCode) [:0]const u8 {
+    return switch (pad) {
+        .left_stick_x => "Left Stick X",
+        .left_stick_y => "Left Stick Y",
+        .right_stick_x => "Right Stick X",
+        .right_stick_y => "Right Stick Y",
+        .face_down => "Cross / A",
+        .face_right => "Circle / B",
+        .face_left => "Square / X",
+        .face_up => "Triangle / Y",
+        .l1 => "L1 / LB",
+        .r1 => "R1 / RB",
+        .l2 => "L2 / LT",
+        .r2 => "R2 / RT",
+        .l3 => "L3 / LS",
+        .r3 => "R3 / RS",
+        .select => "Select",
+        .start => "Start",
+        .dpad_up => "D-Pad Up",
+        .dpad_down => "D-Pad Down",
+        .dpad_left => "D-Pad Left",
+        .dpad_right => "D-Pad Right",
+    };
+}
+
 fn gamepadButtonFromInputCode(code: i32) ?rl.GamepadButton {
+    if (padButtonFromInputCode(code)) |button| return button;
     return switch (code) {
         0x11F => .right_face_down,
         0x120 => .right_face_right,
@@ -258,15 +323,15 @@ fn playerGamepadIndex(player_index: i32) i32 {
     return std.math.clamp(player_index, 0, 3);
 }
 
+// Raw like native `lX * 0.001f`: deadzones belong to the consumer, which sees
+// both axes (the runtime's 0.2 pad-move radius, the pad-aim radius).
 fn axisValueForGamepad(gamepad_index: i32, axis: rl.GamepadAxis) f32 {
     if (!rl.isGamepadAvailable(gamepad_index)) return 0.0;
-    const value = rl.getGamepadAxisMovement(gamepad_index, axis);
-    if (@abs(value) < axis_deadzone) return 0.0;
-    return std.math.clamp(value, @as(f32, -1.0), @as(f32, 1.0));
+    return std.math.clamp(rl.getGamepadAxisMovement(gamepad_index, axis), @as(f32, -1.0), @as(f32, 1.0));
 }
 
 fn axisValueFromCode(key_code: i32, player_index: i32) f32 {
-    if (gamepadAxisFromInputCode(key_code)) |axis| {
+    if (padAxisFromInputCode(key_code) orelse gamepadAxisFromInputCode(key_code)) |axis| {
         return axisValueForGamepad(playerGamepadIndex(player_index), axis);
     }
     if (rimAxisFromInputCode(key_code)) |rim_axis| {
@@ -298,7 +363,7 @@ fn digitalDownForPlayer(key_code: i32, player_index: i32) bool {
     if (rimButtonFromInputCode(key_code)) |rim_button| {
         return rl.isGamepadAvailable(rim_button.player_index) and rl.isGamepadButtonDown(rim_button.player_index, rim_button.button);
     }
-    if (gamepadAxisFromInputCode(key_code) != null or rimAxisFromInputCode(key_code) != null) {
+    if (padAxisFromInputCode(key_code) != null or gamepadAxisFromInputCode(key_code) != null or rimAxisFromInputCode(key_code) != null) {
         return @abs(axisValueFromCode(key_code, player_index)) >= axis_down_threshold;
     }
     return false;
@@ -354,16 +419,14 @@ pub fn captureFirstPressedInputCode(
         if (wheel < 0.0) return 0x10A;
     }
 
+    // Captures always produce the standard controller codes; legacy codes stay
+    // readable for bindings loaded from older configs.
     if (include_gamepad) {
         const gamepad = playerGamepadIndex(player_index);
         if (rl.isGamepadAvailable(gamepad)) {
-            inline for ([_]i32{
-                0x11F, 0x120, 0x121, 0x122, 0x123, 0x124, 0x125, 0x126, 0x127, 0x128, 0x129, 0x12A, 0x131, 0x132,
-                0x133, 0x134,
-            }) |code| {
-                if (gamepadButtonFromInputCode(code)) |button| {
-                    if (rl.isGamepadButtonPressed(gamepad, button)) return code;
-                }
+            for (std.enums.values(PadCode)) |pad| {
+                const button = padButtonFromInputCode(pad.code()) orelse continue;
+                if (rl.isGamepadButtonPressed(gamepad, button)) return pad.code();
             }
         }
     }
@@ -371,10 +434,9 @@ pub fn captureFirstPressedInputCode(
     if (include_axes) {
         const gamepad = playerGamepadIndex(player_index);
         if (rl.isGamepadAvailable(gamepad)) {
-            inline for ([_]i32{ 0x13F, 0x140, 0x141, 0x153, 0x154, 0x155 }) |code| {
-                if (gamepadAxisFromInputCode(code)) |axis| {
-                    if (@abs(rl.getGamepadAxisMovement(gamepad, axis)) >= axis_threshold) return code;
-                }
+            for (std.enums.values(PadCode)) |pad| {
+                const axis = padAxisFromInputCode(pad.code()) orelse continue;
+                if (@abs(rl.getGamepadAxisMovement(gamepad, axis)) >= axis_threshold) return pad.code();
             }
         }
     }
@@ -382,6 +444,7 @@ pub fn captureFirstPressedInputCode(
 }
 
 pub fn inputCodeName(key_code: i32) []const u8 {
+    if (std.enums.fromInt(PadCode, key_code)) |pad| return padCodeName(pad);
     return switch (key_code) {
         input_code_unbound => "unbound",
         0x100 => "Mouse1",
@@ -489,6 +552,36 @@ pub fn inputPrimaryJustPressed(fire_codes: []const i32, player_count: i32) bool 
     return pressed_state.isPressed(primary_edge_sentinel_player, primary_edge_sentinel_key, down);
 }
 
+/// True while a standard button is held or a stick is pushed past half travel.
+pub fn gamepadHasActivity(gamepad_index: i32) bool {
+    if (!rl.isGamepadAvailable(gamepad_index)) return false;
+    for (std.enums.values(PadCode)) |pad| {
+        if (padButtonFromInputCode(pad.code())) |button| {
+            if (rl.isGamepadButtonDown(gamepad_index, button)) return true;
+        }
+        if (padAxisFromInputCode(pad.code())) |axis| {
+            if (@abs(rl.getGamepadAxisMovement(gamepad_index, axis)) >= axis_down_threshold) return true;
+        }
+    }
+    return false;
+}
+
+/// Edge-triggered standard button press on any connected pad (menu navigation).
+pub fn padNavPressed(pad: PadCode) bool {
+    const button = padButtonFromInputCode(pad.code()) orelse return false;
+    var gamepad: i32 = 0;
+    while (gamepad < cz.gamepad_profile.gamepad_slot_count) : (gamepad += 1) {
+        if (rl.isGamepadAvailable(gamepad) and rl.isGamepadButtonPressed(gamepad, button)) return true;
+    }
+    return false;
+}
+
+pub const RaylibPadActivity = struct {
+    pub fn isActive(_: RaylibPadActivity, gamepad_index: usize) bool {
+        return gamepadHasActivity(@intCast(gamepad_index));
+    }
+};
+
 pub const RaylibInputSampler = struct {
     pub fn codeIsDown(_: RaylibInputSampler, code: i32, player_index: i32) bool {
         return inputCodeIsDown(code, player_index);
@@ -534,6 +627,22 @@ test "input code name extended rim codes match original labels" {
 test "input code name unbound and rawinput fallback" {
     try std.testing.expectEqualStrings("unbound", inputCodeName(input_code_unbound));
     try std.testing.expectEqualStrings("RawInput ?", inputCodeName(0x17F));
+}
+
+test "standard pad codes map to raylib controls and display names" {
+    try std.testing.expectEqual(@as(?rl.GamepadAxis, .left_x), padAxisFromInputCode(0x200));
+    try std.testing.expectEqual(@as(?rl.GamepadAxis, .right_y), padAxisFromInputCode(0x203));
+    try std.testing.expectEqual(@as(?rl.GamepadButton, .right_trigger_2), gamepadButtonFromInputCode(0x217));
+    try std.testing.expectEqual(@as(?rl.GamepadButton, .right_face_left), gamepadButtonFromInputCode(0x212));
+    try std.testing.expectEqual(@as(?rl.GamepadButton, null), padButtonFromInputCode(0x201));
+    try std.testing.expectEqualStrings("R2 / RT", inputCodeName(0x217));
+    try std.testing.expectEqualStrings("Left Stick Y", inputCodeName(0x201));
+    try std.testing.expectEqualStrings("Triangle / Y", inputCodeName(0x213));
+    try std.testing.expectEqualStrings("JoyAxisX", inputCodeName(0x13F));
+    for (std.enums.values(PadCode)) |pad| {
+        try std.testing.expect(pad.code() > input_code_unbound);
+        try std.testing.expect((padAxisFromInputCode(pad.code()) != null) != (padButtonFromInputCode(pad.code()) != null));
+    }
 }
 
 test "axis z and rot x bindings use distinct raylib axes" {

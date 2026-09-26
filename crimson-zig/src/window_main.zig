@@ -650,6 +650,7 @@ const App = struct {
     }
 
     fn update(self: *App, frame_dt: f32) void {
+        self.applyGamepadProfiles();
         self.tickCursorPulse(frame_dt);
         switch (self.screen) {
             .boot => self.updateBoot(frame_dt),
@@ -696,6 +697,25 @@ const App = struct {
             };
         }
         self.screen = screen;
+    }
+
+    fn applyGamepadProfiles(self: *App) void {
+        const activity: input_codes.RaylibPadActivity = .{};
+        const switched = cz.gamepad_profile.autoApplyPadProfiles(&self.runtime.config, activity);
+        if (switched.count() == 0) return;
+        var iter = switched.iterator(.{});
+        while (iter.next()) |player_index| {
+            const gamepad: i32 = @intCast(cz.gamepad_profile.playerGamepadIndex(player_index));
+            std.log.info("input: player {d} switched to gamepad controls (pad {d}: {s})", .{
+                player_index + 1,
+                gamepad,
+                rl.getGamepadName(gamepad),
+            });
+        }
+        self.runtime.config_dirty = true;
+        self.runtime.saveConfigIfDirty() catch |err| {
+            std.log.err("saveConfigIfDirty failed after gamepad profile switch: {s}", .{@errorName(err)});
+        };
     }
 
     fn tickCursorPulse(self: *App, frame_dt: f32) void {
@@ -948,7 +968,7 @@ const App = struct {
                 self.demo_trial_info = .{};
             }
 
-            if (!gameplay.perk_ui.active() and rl.isKeyPressed(.escape)) {
+            if (!gameplay.perk_ui.active() and (rl.isKeyPressed(.escape) or input_codes.padNavPressed(.start))) {
                 gameplay.pause_menu.reset();
                 self.setScreen(.pause);
                 return;

@@ -1,6 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
 
+const input_codes = @import("input_codes.zig");
+
 const window_assets = @import("window_assets.zig");
 const window_menu = @import("window_menu.zig");
 const window_ui = @import("window_ui.zig");
@@ -87,15 +89,15 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
     }
 
     if (!activateSelection(state)) {
-        if (rl.isKeyPressed(.tab) or rl.isKeyPressed(.up) or rl.isKeyPressed(.w)) {
+        if (rl.isKeyPressed(.tab) or rl.isKeyPressed(.up) or rl.isKeyPressed(.w) or input_codes.padNavPressed(.dpad_up)) {
             state.selection = previousEnabledSelection(state.selection, state.timeline_ms);
             state.focus_timer_ms = 1000;
         }
-        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s)) {
+        if (rl.isKeyPressed(.down) or rl.isKeyPressed(.s) or input_codes.padNavPressed(.dpad_down)) {
             state.selection = nextEnabledSelection(state.selection, state.timeline_ms);
             state.focus_timer_ms = 1000;
         }
-        if (rl.isKeyPressed(.escape)) {
+        if (rl.isKeyPressed(.escape) or input_codes.padNavPressed(.face_right) or input_codes.padNavPressed(.start)) {
             updateHoverAmounts(state, dt_ms);
             beginClose(state, .back_to_previous);
             return .{ .play_button_click = true };

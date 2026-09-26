@@ -291,3 +291,38 @@ def test_zig_controls_rebind_rows_match_python_port() -> None:
                     move_mode=move_mode,
                     player_index=player_index,
                 )
+
+
+def test_zig_standard_pad_codes_match_python() -> None:
+    from crimson.gamepad_profile import (
+        PAD_PROFILE_AIM_AXIS_CODES,
+        PAD_PROFILE_FIRE_CODE,
+        PAD_PROFILE_MOVE_AXIS_CODES,
+        PAD_PROFILE_PICK_PERK_CODE,
+        PAD_PROFILE_RELOAD_CODE,
+    )
+    from crimson.input_codes import PadCode, input_code_name
+
+    profile_source = (REPO_ROOT / "crimson-zig" / "src" / "gamepad_profile.zig").read_text()
+    enum_match = re.search(r"pub const PadCode = enum\(i32\) \{(.*?)\n\n", profile_source, re.DOTALL)
+    assert enum_match is not None
+    zig_codes = {
+        name: int(value, 0) for name, value in re.findall(r"\n\s*([a-z0-9_]+) = (0x[0-9a-fA-F]+),", enum_match.group(1))
+    }
+    assert zig_codes == {code.name.lower(): int(code) for code in PadCode}
+
+    names_source = (REPO_ROOT / "crimson-zig" / "src" / "input_codes.zig").read_text()
+    zig_names = dict(re.findall(r'\n\s*\.([a-z0-9_]+) => "([^"]+)",', names_source))
+    for code in PadCode:
+        assert zig_names[code.name.lower()] == input_code_name(code)
+
+    for field, code in (
+        ("axis_move_y", PAD_PROFILE_MOVE_AXIS_CODES[0]),
+        ("axis_move_x", PAD_PROFILE_MOVE_AXIS_CODES[1]),
+        ("axis_aim_y", PAD_PROFILE_AIM_AXIS_CODES[0]),
+        ("axis_aim_x", PAD_PROFILE_AIM_AXIS_CODES[1]),
+        ("fire", PAD_PROFILE_FIRE_CODE),
+    ):
+        assert f"binds.{field} = PadCode.{PadCode(code).name.lower()}.code();" in profile_source
+    assert f"PadCode.{PadCode(PAD_PROFILE_RELOAD_CODE).name.lower()}.code()" in profile_source
+    assert f"PadCode.{PadCode(PAD_PROFILE_PICK_PERK_CODE).name.lower()}.code()" in profile_source
