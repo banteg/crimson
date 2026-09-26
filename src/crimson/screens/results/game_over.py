@@ -548,7 +548,7 @@ class GameOverUi(msgspec.Struct):
                 )
 
             weapon_id = record.most_used_weapon_id
-            weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
+            weapon_name = weapon_display_name(weapon_id)
             name_w = self._text_width(font, weapon_name, 1.0 * scale)
             name_pos = Vec2(card_origin.x + max(0.0, (32.0 * scale - name_w * 0.5)), row_pos.y + 32.0 * scale)
             self._draw_small(font, weapon_name, name_pos, 1.0 * scale, hint_color)

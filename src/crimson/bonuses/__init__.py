@@ -9,7 +9,6 @@ from .ids import (
     BonusMeta,
     bonus_display_description,
     bonus_display_name,
-    bonus_label,
 )
 
 __all__ = [
@@ -19,5 +18,4 @@ __all__ = [
     "BonusMeta",
     "bonus_display_description",
     "bonus_display_name",
-    "bonus_label",
 ]

@@ -32,7 +32,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._nav_focus_index: int = 0
         self._scroll_drag_active: bool = False
         self._scroll_drag_offset: float = 0.0
-        self._wrapped_desc_cache: dict[tuple[int, int, int], str] = {}
+        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
     def open(self) -> None:
         super().open()
@@ -104,7 +104,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         end = min(len(perk_ids), start + self._VISIBLE_ROWS)
         list_top_left = left + Vec2(self._LIST_TEXT_X * scale, self._LIST_TEXT_Y * scale)
         row_step = self._LIST_ROW_HEIGHT * scale
-        preserve_bugs = self._preserve_bugs()
         for row, perk_id in enumerate(perk_ids[start:end], start=0):
             list_index = start + row
             if list_index == self._hovered_row_index:
@@ -115,7 +114,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 row_alpha = 0.7
             draw_small_text(
                 font,
-                self._perk_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs),
+                self._perk_name(perk_id, violence_disabled=violence_disabled),
                 list_top_left.offset(dy=float(row) * row_step),
                 rl.Color(255, 255, 255, int(255 * row_alpha)),
             )
@@ -154,7 +153,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         if hovered_perk_id is None:
             return
         perk_id = hovered_perk_id
-        perk_name = self._perk_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs)
+        perk_name = self._perk_name(perk_id, violence_disabled=violence_disabled)
         detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
         perk_no_label = "perkno"
         draw_small_text(
@@ -178,7 +177,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
         desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
-        prereq_name = self._perk_prereq_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs)
+        prereq_name = self._perk_prereq_name(perk_id, violence_disabled=violence_disabled)
         if prereq_name:
             draw_small_text(font, f"Requires: {prereq_name}", desc_pos, rl.Color(255, 204, 204, int(255 * 0.8)))
             desc_pos = desc_pos.offset(dy=18.0 * scale)
@@ -329,27 +328,25 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return perk_ids
 
     @staticmethod
-    def _perk_name(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    def _perk_name(perk_id: PerkId, *, violence_disabled: int = 0) -> str:
         from ...perks import perk_display_name
 
         return perk_display_name(
             perk_id,
             violence_disabled=int(violence_disabled),
-            preserve_bugs=bool(preserve_bugs),
         )
 
     @staticmethod
-    def _perk_desc(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    def _perk_desc(perk_id: PerkId, *, violence_disabled: int = 0) -> str:
         from ...perks import perk_display_description
 
         return perk_display_description(
             perk_id,
             violence_disabled=int(violence_disabled),
-            preserve_bugs=bool(preserve_bugs),
         )
 
     @staticmethod
-    def _perk_prereq_name(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str | None:
+    def _perk_prereq_name(perk_id: PerkId, *, violence_disabled: int = 0) -> str | None:
         from ...perks import PERK_BY_ID, perk_display_name
 
         meta = PERK_BY_ID.get(perk_id)
@@ -361,21 +358,17 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return perk_display_name(
             prereq[0],
             violence_disabled=int(violence_disabled),
-            preserve_bugs=bool(preserve_bugs),
         )
-
-    def _preserve_bugs(self) -> bool:
-        return self.state.preserve_bugs
 
     def _violence_disabled(self) -> int:
         return self.state.config.display.violence_disabled
 
     def _prewrapped_perk_desc(self, perk_id: PerkId, font: SmallFontData, *, violence_disabled: int) -> str:
-        key = (int(perk_id), int(violence_disabled), int(bool(self._preserve_bugs())))
+        key = (int(perk_id), int(violence_disabled))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
-        desc = self._perk_desc(perk_id, violence_disabled=violence_disabled, preserve_bugs=self._preserve_bugs())
+        desc = self._perk_desc(perk_id, violence_disabled=violence_disabled)
         wrapped = self._wrap_small_text_native(
             font,
             desc,

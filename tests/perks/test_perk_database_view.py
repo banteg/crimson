@@ -74,8 +74,6 @@ def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
     fake_font = cast(SmallFontData, object())
     first = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, violence_disabled=0)
     count_after_first = measure_mock.call_count
-    cache_key = (int(PerkId.LONG_DISTANCE_RUNNER), 0, 0)
-    assert cache_key in view._wrapped_desc_cache
     second = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, violence_disabled=0)
 
     assert first == second

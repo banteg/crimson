@@ -508,19 +508,16 @@ QUICK_LEARNER_DESCRIPTION = (
 )
 
 
-def perk_display_name(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+def perk_display_name(perk_id: PerkId, *, violence_disabled: int = 0) -> str:
     if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(violence_disabled) != 0:
         return QUICK_LEARNER_NAME
     entry = PERK_BY_ID[perk_id]
     return entry.name
 
 
-def perk_display_description(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
+def perk_display_description(perk_id: PerkId, *, violence_disabled: int = 0) -> str:
     if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(violence_disabled) != 0:
         return QUICK_LEARNER_DESCRIPTION
     entry = PERK_BY_ID[perk_id]
     return entry.description
 
-
-def perk_label(perk_id: PerkId, *, violence_disabled: int = 0, preserve_bugs: bool = False) -> str:
-    return perk_display_name(perk_id, violence_disabled=violence_disabled, preserve_bugs=preserve_bugs)

@@ -499,7 +499,7 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
     return None
 
 
-def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> str:
+def bonus_label_for_entry(entry: BonusEntry) -> str:
     """Return the classic label text for a bonus entry (`bonus_label_for_entry`)."""
 
     bonus_id = entry.bonus_id
@@ -507,12 +507,12 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
         weapon_id = _weapon_id_from_weapon_entry(entry)
         if weapon_id is None:
             return "Weapon"
-        return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
+        return weapon_display_name(weapon_id)
     if bonus_id == BonusId.POINTS:
         points = int(entry.amount)
-        points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))
+        points_label = bonus_display_name(BonusId.POINTS)
         return f"{points_label}: {points}"
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is not None:
-        return bonus_display_name(meta.bonus_id, preserve_bugs=bool(preserve_bugs))
+        return bonus_display_name(meta.bonus_id)
     return "Bonus"

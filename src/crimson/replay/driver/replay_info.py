@@ -186,13 +186,12 @@ def _append_bonus_pickup_events(
     elapsed_ms: int,
     timeline: list[ReplayInfoTimelineEvent],
     pickups: list[BonusPickupEvent],
-    preserve_bugs: bool,
     player_filter: int | None,
     include_extra_events: bool,
 ) -> None:
     for pickup in pickups:
         bonus_id = pickup.bonus_id
-        bonus_name = bonus_display_name(bonus_id, preserve_bugs=preserve_bugs)
+        bonus_name = bonus_display_name(bonus_id)
         detail = f"p{pickup.player_index} picked {bonus_name} ({bonus_id}) amount={pickup.amount}"
         data: dict[str, object] = {
             "bonus_id": bonus_id,
@@ -201,7 +200,7 @@ def _append_bonus_pickup_events(
         }
         if bonus_id == BonusId.WEAPON:
             weapon_id = WeaponId(pickup.amount)
-            weapon_name = weapon_display_name(weapon_id, preserve_bugs=preserve_bugs)
+            weapon_name = weapon_display_name(weapon_id)
             detail += f" -> {weapon_name}"
             data["weapon_id"] = weapon_id
             data["weapon_name"] = weapon_name
@@ -225,7 +224,6 @@ def _append_snapshot_diff_events(
     before: list[_PlayerSnapshot],
     after: list[_PlayerSnapshot],
     timeline: list[ReplayInfoTimelineEvent],
-    preserve_bugs: bool,
     violence_disabled: int,
     player_filter: int | None,
     include_extra_events: bool,
@@ -236,8 +234,8 @@ def _append_snapshot_diff_events(
         post = after[idx]
 
         if pre.weapon_id != post.weapon_id:
-            weapon_before_name = weapon_display_name(pre.weapon_id, preserve_bugs=preserve_bugs)
-            weapon_after_name = weapon_display_name(post.weapon_id, preserve_bugs=preserve_bugs)
+            weapon_before_name = weapon_display_name(pre.weapon_id)
+            weapon_after_name = weapon_display_name(post.weapon_id)
             _append_event(
                 timeline,
                 tick_index=tick_index,
@@ -281,7 +279,6 @@ def _append_snapshot_diff_events(
             perk_name = perk_display_name(
                 PerkId(perk_id),
                 violence_disabled=violence_disabled,
-                preserve_bugs=preserve_bugs,
             )
             _append_event(
                 timeline,
@@ -402,7 +399,6 @@ def collect_replay_info(
             elapsed_ms=elapsed_ms,
             timeline=timeline,
             pickups=tick.events.pickups,
-            preserve_bugs=replay.run.preserve_bugs,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
@@ -426,7 +422,6 @@ def collect_replay_info(
             before=before,
             after=after,
             timeline=timeline,
-            preserve_bugs=replay.run.preserve_bugs,
             violence_disabled=replay.run.violence_disabled,
             player_filter=player_filter,
             include_extra_events=include_extra_events,

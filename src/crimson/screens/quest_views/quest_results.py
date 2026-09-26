@@ -65,7 +65,6 @@ class QuestResultsView:
 
                 self._unlock_weapon_name = weapon_display_name(
                     WeaponId(weapon_id_native),
-                    preserve_bugs=bool(self.state.preserve_bugs),
                 )
 
             from ...perks import PERK_BY_ID, PerkId, perk_display_name
@@ -79,7 +78,6 @@ class QuestResultsView:
                     self._unlock_perk_name = perk_display_name(
                         perk_id,
                         violence_disabled=violence_disabled,
-                        preserve_bugs=bool(self.state.preserve_bugs),
                     )
                 else:
                     self._unlock_perk_name = f"perk_{perk_id_native}"

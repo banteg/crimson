@@ -318,7 +318,7 @@ class QuestResultsUi(msgspec.Struct):
             rl.draw_texture_pro(wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
 
         weapon_id = record.most_used_weapon_id
-        weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
+        weapon_name = weapon_display_name(weapon_id)
         name_w = self._text_width(font, weapon_name, 1.0 * scale)
         name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)
         self._draw_small(font, weapon_name, Vec2(name_x, row_y + 32.0 * scale), 1.0 * scale, col_row)

@@ -791,7 +791,7 @@ WEAPON_TABLE = [
 WEAPON_BY_ID: dict[WeaponId, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
 
 
-def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
+def weapon_display_name(weapon_id: WeaponId) -> str:
     try:
         entry = WEAPON_BY_ID[weapon_id]
     except KeyError:

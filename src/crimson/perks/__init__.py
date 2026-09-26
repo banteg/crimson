@@ -12,7 +12,6 @@ from .ids import (
     PerkMeta,
     perk_display_description,
     perk_display_name,
-    perk_label,
 )
 
 __all__ = [
@@ -25,5 +24,4 @@ __all__ = [
     "PerkMeta",
     "perk_display_description",
     "perk_display_name",
-    "perk_label",
 ]

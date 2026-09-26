@@ -347,7 +347,6 @@ class BaseGameplayMode:
         return PerkMenuUiContext(
             player=self.player,
             violence_disabled=self.config.display.violence_disabled,
-            preserve_bugs=bool(self.state.preserve_bugs),
             shadows_enabled=self.config.display.shadows_enabled,
             resources=self.render_resources.resources,
             mouse=self._ui_mouse_pos(),

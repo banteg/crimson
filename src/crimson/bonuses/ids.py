@@ -166,22 +166,16 @@ BONUS_TABLE = [
 BONUS_BY_ID = {entry.bonus_id: entry for entry in BONUS_TABLE}
 
 
-def bonus_display_name(bonus_id: BonusId, *, preserve_bugs: bool = False) -> str:
+def bonus_display_name(bonus_id: BonusId) -> str:
     entry = BONUS_BY_ID.get(bonus_id)
     if entry is None:
         return "unknown"
     return entry.name
 
 
-def bonus_display_description(bonus_id: BonusId, *, preserve_bugs: bool = False) -> str | None:
+def bonus_display_description(bonus_id: BonusId) -> str | None:
     entry = BONUS_BY_ID.get(bonus_id)
     if entry is None:
         return None
     return entry.description
 
-
-def bonus_label(bonus_id: BonusId, *, preserve_bugs: bool = False) -> str:
-    entry = BONUS_BY_ID.get(bonus_id)
-    if entry is None:
-        return "unknown"
-    return bonus_display_name(entry.bonus_id, preserve_bugs=preserve_bugs)

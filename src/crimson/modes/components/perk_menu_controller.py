@@ -44,7 +44,6 @@ class PerkMenuRuntime(msgspec.Struct):
 class PerkMenuUiContext(msgspec.Struct, frozen=True):
     player: PlayerState
     violence_disabled: int
-    preserve_bugs: bool
     resources: RuntimeResources
     mouse: rl.Vector2
     shadows_enabled: bool = False
@@ -100,7 +99,7 @@ class PerkMenuController:
         self._open = False
         self._selected_index = 0
         self._timeline_ms = 0.0
-        self._wrapped_desc_cache: dict[tuple[int, int, int], str] = {}
+        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
     def _prewrapped_perk_desc(
         self,
@@ -108,16 +107,14 @@ class PerkMenuController:
         font: SmallFontData,
         *,
         violence_disabled: int,
-        preserve_bugs: bool,
     ) -> str:
-        key = (int(perk_id), int(violence_disabled), int(bool(preserve_bugs)))
+        key = (int(perk_id), int(violence_disabled))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
         desc = perk_display_description(
             perk_id,
             violence_disabled=int(violence_disabled),
-            preserve_bugs=bool(preserve_bugs),
         )
         wrapped = self._wrap_small_text_native(
             font,
@@ -219,12 +216,10 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
-        preserve_bugs = bool(ctx.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
                 violence_disabled=int(ctx.violence_disabled),
-                preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
@@ -315,12 +310,10 @@ class PerkMenuController:
         if sponsor:
             draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
 
-        preserve_bugs = bool(ctx.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 perk_id,
                 violence_disabled=int(ctx.violence_disabled),
-                preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
@@ -328,16 +321,10 @@ class PerkMenuController:
             draw_menu_item(ctx.resources, label, pos=item_pos, scale=scale, hovered=hovered)
 
         selected = choices[self._selected_index]
-        desc = perk_display_description(
-            selected,
-            violence_disabled=int(ctx.violence_disabled),
-            preserve_bugs=preserve_bugs,
-        )
         desc = self._prewrapped_perk_desc(
             selected,
             ctx.resources.small_font,
             violence_disabled=int(ctx.violence_disabled),
-            preserve_bugs=preserve_bugs,
         )
         draw_ui_text(
             ctx.resources,

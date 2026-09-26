@@ -220,5 +220,5 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
         weapon = WEAPON_BY_ID[WeaponId(weapon_id)]
-        name = weapon_display_name(weapon.weapon_id, preserve_bugs=self.state.preserve_bugs)
+        name = weapon_display_name(weapon.weapon_id)
         return name, weapon.icon_index

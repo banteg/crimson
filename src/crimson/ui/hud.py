@@ -839,7 +839,6 @@ def draw_hud_overlay(
 
         weapon_name = weapon_display_name(
             hud_player.weapon.weapon_id,
-            preserve_bugs=bool(state.preserve_bugs),
         )
         weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
         text_pos = aux_text_base_pos + aux_step * float(aux_row)

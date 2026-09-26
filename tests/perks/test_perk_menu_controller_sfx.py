@@ -82,7 +82,6 @@ def _ctx() -> PerkMenuUiContext:
     return PerkMenuUiContext(
         player=_dummy_player(),
         violence_disabled=0,
-        preserve_bugs=False,
         resources=_dummy_resources(),
         mouse=rl.Vector2(0.0, 0.0),
     )

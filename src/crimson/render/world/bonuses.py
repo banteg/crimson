@@ -180,7 +180,7 @@ def draw_bonus_hover_labels(
         if hovered is None:
             continue
         _idx, entry = hovered
-        label = bonus_label_for_entry(entry, preserve_bugs=bool(frame.state.preserve_bugs))
+        label = bonus_label_for_entry(entry)
         if not label:
             continue
 
