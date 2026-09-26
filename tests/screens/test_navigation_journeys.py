@@ -23,6 +23,7 @@ from crimson.screens.high_scores_view import view as scores_module
 from crimson.screens.panels import alien_zookeeper, credits, stats
 from crimson.screens.panels.controls import ControlsMenuView
 from crimson.screens.panels.options import OptionsMenuView
+from crimson.screens.panels.play_game import PlayGameMenuView
 from crimson.screens.pause_menu import PauseMenuView
 from crimson.screens.quest_views.quest_results import QuestResultsView
 from crimson.screens.stack import ScreenEntry, ScreenStack
@@ -262,3 +263,49 @@ def test_failed_screen_entry_is_disposed_at_shutdown(mocker) -> None:
         stack.push(ScreenEntry(view))
     stack.close()
     assert view.close_calls == 1
+
+
+def _press_pad_buttons(mocker, *buttons: int) -> None:
+    pressed = {int(button) for button in buttons}
+    mocker.patch.object(rl, "is_gamepad_available", side_effect=lambda pad: int(pad) == 0)
+    mocker.patch.object(
+        rl,
+        "is_gamepad_button_pressed",
+        side_effect=lambda pad, button: int(pad) == 0 and int(button) in pressed,
+    )
+
+
+def test_play_game_panel_navigates_with_a_pad(loop, mocker) -> None:
+    state = loop.state
+    state.config.gameplay.player_count = 1
+    loop.navigation.navigate(Route.PLAY_GAME)
+    finish_transition(loop)
+    panel = state.screens.active
+    assert isinstance(panel, PlayGameMenuView)
+    mocker.patch.object(rl, "get_mouse_delta", return_value=rl.Vector2(0.0, 0.0))
+
+    _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)
+    loop.update(0.016)
+    assert state.config.gameplay.player_count == 2
+
+    for _ in range(2):
+        _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN)
+        loop.update(0.016)
+    entries, *_ = panel._mode_entries()
+    assert panel._focus_index == 1
+    assert panel._mode_buttons[entries[1].key].hovered
+
+    _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
+    loop.update(0.016)
+    assert panel._transition.closing
+    assert state.config.gameplay.mode == GameMode(int(entries[1].game_mode))
+
+
+def test_panel_back_accepts_the_pad_back_button(loop, mocker) -> None:
+    loop.navigation.navigate(Route.PLAY_GAME)
+    finish_transition(loop)
+    _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)
+    loop.update(0.016)
+    _press_pad_buttons(mocker)
+    finish_transition(loop)
+    assert isinstance(loop.state.screens.active, menu.MenuView)

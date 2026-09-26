@@ -295,11 +295,12 @@ def button_update(
     dt_ms: float,
     mouse: rl.Vector2,
     click: bool,
+    focused: bool = False,
 ) -> bool:
     if not state.enabled:
         state.hovered = False
     else:
-        state.hovered = button_hit_rect(pos=pos, width=width).contains(mouse)
+        state.hovered = focused or button_hit_rect(pos=pos, width=width).contains(mouse)
 
     delta = 6 if (state.enabled and state.hovered) else -4
     state.hover_t = int(clamp(state.hover_t + int(dt_ms) * delta, 0.0, 1000.0))

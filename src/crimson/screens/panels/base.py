@@ -31,6 +31,7 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
+from ...input_codes import PadCode, pad_nav_pressed
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -131,7 +132,7 @@ class PanelMenuView:
         hovered = enabled and self._hovered_entry(entry)
         self._hovered = hovered
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if (rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)) and enabled:
             self._begin_close_transition(self._back_action)
         if enter and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
             self._begin_close_transition(self._back_action)
