@@ -24,10 +24,14 @@ Cumulative steps:
   step variables flip it to native's order.
 - **C** puts the shared splitter/blade tail in native's arm.
 
-Not landed: three no-op parentheses in the Sharpshooter geometry and
-`scale = (vec(...).length());` reach 94.23%, 544/0/0. They only move the
-81-node scheduling window through FROUND and are not evidence of the original
-spelling.
+Landed afterwards: three no-op parentheses in the Sharpshooter geometry and
+`scale = (vec(...).length());` in the splitter and blade arms. They take the
+function to **94.23%**, with references at **544/0/0**. Each parenthesis level
+makes C1 emit a FROUND, which moves the 81-node scheduling window cut. I first
+left them out as scheduler-only. The sibling snail project then matched a
+function byte-exact only with the same kind of no-op parentheses and an
+overwritten store. So the original source is not minimal, and native evidence
+outranks a minimal-source prior.
 
 Remaining regions:
 

@@ -141,18 +141,18 @@ extern "C" void projectile_render(float transition_alpha)
         player_state_t *player = &player_state_table[player_index];
         const float *aim_heading = &player->aim_heading;
         if (player->health > 0.0f) {
-            float heading = *aim_heading - 1.5707964f;
+            float heading = (*aim_heading - 1.5707964f);
             projectile_render_vec2_t direction(
                 (float)cos(heading), (float)sin(heading));
             projectile_render_vec2_t end_pos =
                 *(projectile_render_vec2_t *)&player->position
                 + direction * 512.0f;
-            float start_heading = heading - 0.150915f;
+            float start_heading = (heading - 0.150915f);
             // Scale before vector construction: native keeps these trig
             // results wide through FMUL, unlike the end-position sine above.
             projectile_render_vec2_t start_pos = *(projectile_render_vec2_t *)&player->position;
             start_pos += projectile_render_vec2_t(
-                (float)cos(start_heading) * 15.0f,
+                ((float)cos(start_heading) * 15.0f),
                 (float)sin(start_heading) * 15.0f);
             projectile_render_vec2_t half_width(
                 (float)cos(*aim_heading) * 1.1f,
@@ -658,9 +658,9 @@ extern "C" void projectile_render(float transition_alpha)
             }
         } else if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
             if (primary->vy.life_timer == 0.4f) {
-            scale = projectile_render_vec2_t(
+            scale = (projectile_render_vec2_t(
                 projectile->pos.origin_x - projectile->pos_x,
-                primary->origin_y - projectile->pos.pos_y).length();
+                primary->origin_y - projectile->pos.pos_y).length());
             if (scale > 20.0f) {
                 scale = 20.0f;
             }
@@ -676,9 +676,9 @@ extern "C" void projectile_render(float transition_alpha)
             }
         } else if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_BLADE_GUN) {
             if (primary->vy.life_timer == 0.4f) {
-            scale = projectile_render_vec2_t(
+            scale = (projectile_render_vec2_t(
                 projectile->pos.origin_x - projectile->pos_x,
-                primary->origin_y - projectile->pos.pos_y).length();
+                primary->origin_y - projectile->pos.pos_y).length());
             if (scale > 20.0f) {
                 scale = 20.0f;
             }
