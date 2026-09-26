@@ -29,6 +29,7 @@ from ..demo_trial import (
     format_demo_trial_time,
 )
 from ..game_modes import GameMode
+from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from .loop_view import GameLoopView
@@ -216,6 +217,28 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         state.rtx_mode = cycle_rtx_render_mode(state.rtx_mode)
         console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
+    def cmd_gamepads(args: list[str]) -> None:
+        if args:
+            console.log.log("gamepads")
+            console.log.log("Lists connected gamepads with live stick/button state and player bindings")
+            return
+        snapshots = [snapshot for pad in range(GAMEPAD_SLOT_COUNT) if (snapshot := gamepad_snapshot(pad)) is not None]
+        if not snapshots:
+            console.log.log("gamepads: none connected")
+        for snapshot in snapshots:
+            console.log.log(snapshot.summary())
+        controls = state.config.controls
+        for player_index in range(int(state.config.gameplay.player_count)):
+            player = controls.player(player_index)
+            console.log.log(
+                f"player {player_index + 1} (pad {player_gamepad_index(player_index)}): "
+                f"move={player.movement.name} "
+                f"x={input_code_name(player.move_axis_codes[1])} y={input_code_name(player.move_axis_codes[0])} "
+                f"aim={player.aim_scheme.name} "
+                f"x={input_code_name(player.aim_axis_codes[1])} y={input_code_name(player.aim_axis_codes[0])} "
+                f"fire={input_code_name(player.fire_code)}",
+            )
+
     return {
         "setGammaRamp": cmd_set_gamma_ramp,
         "snd_addGameTune": cmd_snd_add_game_tune,
@@ -231,6 +254,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "demoTrialInfo": cmd_demo_trial_info,
         "rendermode": cmd_render_mode,
         "togglertx": cmd_toggle_rtx,
+        "gamepads": cmd_gamepads,
     }
 
 

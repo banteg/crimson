@@ -8,7 +8,8 @@ from grim.raylib_api import rl
 from ..debug import debug_enabled
 from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
 from ..game_modes import GameMode
-from ..input_codes import input_begin_frame
+from ..gamepad_profile import auto_apply_pad_profiles
+from ..input_codes import input_begin_frame, player_gamepad_index
 from ..modes.quest_mode import QuestMode
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome
@@ -144,6 +145,7 @@ class GameLoopView:
                 console.quit_requested = False
             return
 
+        self._apply_gamepad_profiles()
         self._demo_trial_info = None
         self._tick_statistics_playtime(dt)
         if gameplay is not None and self._update_demo_trial_overlay(dt):
@@ -160,6 +162,23 @@ class GameLoopView:
         if console.quit_requested:
             self.state.quit_requested = True
             console.quit_requested = False
+
+    def _apply_gamepad_profiles(self) -> None:
+        config = self.state.config
+        switched = auto_apply_pad_profiles(config.controls, player_count=config.gameplay.player_count)
+        if not switched:
+            return
+        log = self.state.console.log
+        for player_index in switched:
+            gamepad = player_gamepad_index(player_index)
+            log.log(
+                f"input: player {player_index + 1} switched to gamepad controls "
+                f"(pad {gamepad}: {rl.get_gamepad_name(gamepad)})",
+            )
+        try:
+            config.save()
+        except (OSError, ValueError) as exc:
+            log.log(f"config: save failed: {exc}")
 
     def _tick_statistics_playtime(self, dt: float) -> None:
         # Native `_play_time_ms` advances on gameplay frames only (state 9)

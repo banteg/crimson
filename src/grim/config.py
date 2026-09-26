@@ -27,6 +27,8 @@ PLAYER_BIND_BLOCK_SIZE = PLAYER_BIND_BLOCK_DWORDS * 4
 CONFIG_PLAYER_SLOT_COUNT = 10
 PORT_PLAYER_SLOT_COUNT = 4
 KEYBIND_UNBOUND_CODE = 0x17E
+DEFAULT_PICK_PERK_CODE = 0x101
+DEFAULT_RELOAD_CODE = 0x102
 RESERVED_KEYBIND_SLOT_COUNT = 2
 PADDING_KEYBIND_SLOT_COUNT = 3
 _DEFAULT_WIRE_RESERVED_KEYS = (KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE)
@@ -313,7 +315,7 @@ def _player_controls_from_parsed_bind_block(
     show_direction_arrow: bool,
 ) -> CrimsonPlayerControls:
     if _parsed_player_bind_block_is_uninitialized(raw_block):
-        defaults = _default_player_controls(player_index)
+        defaults = default_player_controls(player_index)
         return CrimsonPlayerControls(
             movement=movement,
             aim_scheme=aim_scheme,
@@ -427,7 +429,7 @@ def _saved_name_order_values() -> tuple[int, ...]:
     return tuple(range(SAVED_NAME_SLOT_COUNT))
 
 
-def _default_player_controls(player_index: int) -> CrimsonPlayerControls:
+def default_player_controls(player_index: int) -> CrimsonPlayerControls:
     defaults = _DEFAULT_PLAYER_CONTROL_TEMPLATES[_player_index(player_index)]
     return CrimsonPlayerControls(
         movement=defaults.movement,
@@ -484,13 +486,13 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
         profile=profile,
         controls=CrimsonControlsConfig(
             players=(
-                _default_player_controls(0),
-                _default_player_controls(1),
-                _default_player_controls(2),
-                _default_player_controls(3),
+                default_player_controls(0),
+                default_player_controls(1),
+                default_player_controls(2),
+                default_player_controls(3),
             ),
-            pick_perk_code=0x101,
-            reload_code=0x102,
+            pick_perk_code=DEFAULT_PICK_PERK_CODE,
+            reload_code=DEFAULT_RELOAD_CODE,
         ),
     )
 

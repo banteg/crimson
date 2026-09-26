@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, draw_screen_cursor
 from crimson.screens.transitions import ScreenTransition
@@ -28,6 +29,7 @@ from crimson.ui.menu_layout import (
     menu_slot_pos_x,
     menu_slot_start_ms,
 )
+from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
@@ -113,17 +115,20 @@ class PauseMenuView:
 
         self._hovered_index = self._hovered_entry_index()
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
-            delta = -1 if reverse else 1
+        delta = menu_focus_step()
+        if delta:
             self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
             self._focus_timer_ms = 1000
 
         activated_index: int | None = None
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE)
+            or pad_nav_pressed(PadCode.FACE_RIGHT)
+            or pad_nav_pressed(PadCode.START)
+        ):
             # ESC behaves like selecting Back.
             activated_index = self._entry_index_for_row(MENU_LABEL_ROW_BACK)
-        elif rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and 0 <= self._selected_index < len(self._menu_entries):
+        elif menu_confirm_pressed() and 0 <= self._selected_index < len(self._menu_entries):
             entry = self._menu_entries[self._selected_index]
             if self._menu_entry_enabled(entry):
                 activated_index = self._selected_index

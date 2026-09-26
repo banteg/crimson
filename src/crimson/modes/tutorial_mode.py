@@ -12,7 +12,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..input_codes import input_code_is_down, input_code_is_pressed
+from ..input_codes import PadCode, input_code_is_down, input_code_is_pressed, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
@@ -104,14 +104,16 @@ class TutorialMode(BaseGameplayMode):
         )
 
     def _handle_input(self) -> None:
-        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self._perk_menu.open and (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
+        ):
             self._perk_menu.close()
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._action = Route.PAUSE
             return
 

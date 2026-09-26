@@ -39,6 +39,24 @@ export CRIMSON_RUNTIME_DIR="$PWD/artifacts/runtime"
 uv run crimson
 ```
 
+### Controllers
+
+Plug in a PlayStation, Switch Pro or Xbox controller and press any button on it. If that player's controls are still the defaults, they switch to twin-stick controls and the change is saved:
+
+| Control | Action |
+| --- | --- |
+| Left stick | move |
+| Right stick | aim |
+| R2 / RT | fire |
+| Square / X | reload |
+| Triangle / Y | pick a perk |
+| Start | pause |
+| D-pad, Cross / A, Circle / B | menus and the perk list |
+
+Buttons are named by position, so on a Switch Pro controller "Cross / A" is the bottom face button. In local co-op, player 2 uses the second controller, and so on. Everything stays editable in Options → Controls. To go back to mouse and keyboard, choose Mouse aim and Static movement there and rebind Fire. Players who already changed their controls are left alone.
+
+`crimson view gamepad` shows what the game reads from each connected controller, and the in-game console command `gamepads` prints the same.
+
 ## Assets
 
 The original Crimsonland Classic assets are distributed for this project with permission from the original developer. Missing PAQ archives (`crimson.paq`, `music.paq`, `sfx.paq`) are downloaded into the runtime directory on first launch, so `uvx crimsonland@latest` works out of the box.

@@ -33,6 +33,9 @@ _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
 # Native uses `cv_padAimDistMul` (default 96).
 _AIM_RADIUS_PAD_SCALE = 96.0
+# Port-only: native aims at the player when the stick centers; a resting stick
+# instead keeps the last direction, and small drift inside this radius is ignored.
+_PAD_AIM_DEADZONE = 0.2
 _POINT_CLICK_STOP_RADIUS = 20.0
 _COMPUTER_TARGET_SWITCH_HYSTERESIS = 64.0
 _COMPUTER_ARENA_CENTER = Vec2(512.0, 512.0)
@@ -341,8 +344,11 @@ class LocalInputInterpreter:
                 float(move_backward_pressed) - float(move_forward_pressed),
             )
         elif move_mode_type is MovementControlType.DUAL_ACTION_PAD:
-            axis_y = -input_axis_value(move_axis_y, player_index=idx)
-            axis_x = -input_axis_value(move_axis_x, player_index=idx)
+            # `move` is the direction to travel.  Native builds `movement_input`
+            # from the negated axes and heads away from it (0x00414235); the sim
+            # applies that negation and the 0.2 stick radius itself.
+            axis_y = input_axis_value(move_axis_y, player_index=idx)
+            axis_x = input_axis_value(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
             move_to_cursor_pressed = input_code_is_down(reload_key, player_index=idx)
@@ -421,12 +427,11 @@ class LocalInputInterpreter:
         elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
             axis_y = input_axis_value(aim_axis_y, player_index=idx)
             axis_x = input_axis_value(aim_axis_x, player_index=idx)
-            axis_vec = Vec2(axis_x, axis_y)
-            mag_sq = axis_vec.length_sq()
-            if mag_sq > 1e-9:
-                axis_dir, mag = axis_vec.normalized_with_length()
+            axis_dir, mag = Vec2(axis_x, axis_y).normalized_with_length()
+            if mag > _PAD_AIM_DEADZONE:
                 heading = axis_dir.to_heading()
-                radius = _AIM_RADIUS_PAD_BASE + mag * _AIM_RADIUS_PAD_SCALE
+                # Native clamps the stick length to 1 before scaling the reach.
+                radius = _AIM_RADIUS_PAD_BASE + min(mag, 1.0) * _AIM_RADIUS_PAD_SCALE
                 aim = player.pos + axis_dir * radius
             else:
                 aim = _aim_point_from_heading(player.pos, heading)

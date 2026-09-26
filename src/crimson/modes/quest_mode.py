@@ -18,6 +18,7 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
+from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import UNI_NUM_MASK
 from ..persistence.save_status import GameStatus
@@ -274,7 +275,9 @@ class QuestMode(BaseGameplayMode):
         self._reset_gameplay_frame_clock()
 
     def _handle_input(self) -> None:
-        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self._perk_menu.open and (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
+        ):
             self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
             return
@@ -299,7 +302,7 @@ class QuestMode(BaseGameplayMode):
                 self._debug_cheat_used()
                 self._debug_cycle_weapon(1)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._action = Route.PAUSE
             return
 

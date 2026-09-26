@@ -1,14 +1,102 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from enum import IntEnum
 
 import msgspec
 
 from grim.raylib_api import rl
 
 INPUT_CODE_UNBOUND = 0x17E
-_AXIS_DEADZONE = 0.2
 _AXIS_DOWN_THRESHOLD = 0.5
+GAMEPAD_SLOT_COUNT = 4
+
+
+class PadCode(IntEnum):
+    """Port-only codes for the standard controller layout.
+
+    raylib (GLFW/SDL gamecontrollerdb mappings) normalizes DualSense, Switch Pro
+    and Xbox pads into one layout with positional face buttons.  The legacy
+    `Joys*`/`JoyAxis*` codes name DirectInput device fields whose physical
+    meaning varies per pad; these name what the player actually holds.  Native
+    Grim ignores ids it does not know (`grim_is_key_active` and
+    `grim_get_config_float` return zero), so a `crimson.cfg` carrying them stays
+    loadable by the original game.
+    """
+
+    LEFT_STICK_X = 0x200
+    LEFT_STICK_Y = 0x201
+    RIGHT_STICK_X = 0x202
+    RIGHT_STICK_Y = 0x203
+    FACE_DOWN = 0x210
+    FACE_RIGHT = 0x211
+    FACE_LEFT = 0x212
+    FACE_UP = 0x213
+    L1 = 0x214
+    R1 = 0x215
+    L2 = 0x216
+    R2 = 0x217
+    L3 = 0x218
+    R3 = 0x219
+    SELECT = 0x21A
+    START = 0x21B
+    DPAD_UP = 0x21C
+    DPAD_DOWN = 0x21D
+    DPAD_LEFT = 0x21E
+    DPAD_RIGHT = 0x21F
+
+
+# Stick axes read raw: +X is right and +Y is down, matching screen space.
+_PAD_AXIS_CODES: dict[int, int] = {
+    PadCode.LEFT_STICK_X: int(rl.GamepadAxis.GAMEPAD_AXIS_LEFT_X),
+    PadCode.LEFT_STICK_Y: int(rl.GamepadAxis.GAMEPAD_AXIS_LEFT_Y),
+    PadCode.RIGHT_STICK_X: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_X),
+    PadCode.RIGHT_STICK_Y: int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_Y),
+}
+
+# Triggers are buttons: raylib derives L2/R2 presses from the trigger axes,
+# whose resting value is -1 and would otherwise read as a held axis.
+_PAD_BUTTON_CODES: dict[int, int] = {
+    PadCode.FACE_DOWN: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN),
+    PadCode.FACE_RIGHT: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT),
+    PadCode.FACE_LEFT: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_LEFT),
+    PadCode.FACE_UP: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_UP),
+    PadCode.L1: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_TRIGGER_1),
+    PadCode.R1: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_TRIGGER_1),
+    PadCode.L2: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_TRIGGER_2),
+    PadCode.R2: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_TRIGGER_2),
+    PadCode.L3: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_THUMB),
+    PadCode.R3: int(rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_THUMB),
+    PadCode.SELECT: int(rl.GamepadButton.GAMEPAD_BUTTON_MIDDLE_LEFT),
+    PadCode.START: int(rl.GamepadButton.GAMEPAD_BUTTON_MIDDLE_RIGHT),
+    PadCode.DPAD_UP: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP),
+    PadCode.DPAD_DOWN: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN),
+    PadCode.DPAD_LEFT: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT),
+    PadCode.DPAD_RIGHT: int(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT),
+}
+
+_PAD_CODE_NAMES: dict[int, str] = {
+    PadCode.LEFT_STICK_X: "Left Stick X",
+    PadCode.LEFT_STICK_Y: "Left Stick Y",
+    PadCode.RIGHT_STICK_X: "Right Stick X",
+    PadCode.RIGHT_STICK_Y: "Right Stick Y",
+    PadCode.FACE_DOWN: "Cross / A",
+    PadCode.FACE_RIGHT: "Circle / B",
+    PadCode.FACE_LEFT: "Square / X",
+    PadCode.FACE_UP: "Triangle / Y",
+    PadCode.L1: "L1 / LB",
+    PadCode.R1: "R1 / RB",
+    PadCode.L2: "L2 / LT",
+    PadCode.R2: "R2 / RT",
+    PadCode.L3: "L3 / LS",
+    PadCode.R3: "R3 / RS",
+    PadCode.SELECT: "Select",
+    PadCode.START: "Start",
+    PadCode.DPAD_UP: "D-Pad Up",
+    PadCode.DPAD_DOWN: "D-Pad Down",
+    PadCode.DPAD_LEFT: "D-Pad Left",
+    PadCode.DPAD_RIGHT: "D-Pad Right",
+}
 
 _DIK_TO_RL_KEY: dict[int, int] = {
     0x01: int(rl.KeyboardKey.KEY_ESCAPE),
@@ -208,24 +296,26 @@ def _mouse_button_for_code(key_code: int) -> int | None:
     return _MOUSE_CODE_TO_BUTTON.get(int(key_code))
 
 
-def _player_gamepad_index(player_index: int) -> int:
-    return max(0, min(3, int(player_index)))
+def player_gamepad_index(player_index: int) -> int:
+    return max(0, min(GAMEPAD_SLOT_COUNT - 1, int(player_index)))
 
 
 def _axis_value_for_gamepad(gamepad_index: int, axis: int) -> float:
+    # Raw like native `lX * 0.001f`: deadzones belong to the consumer, which
+    # sees both axes (the sim's 0.2 pad-move radius, the pad-aim radius).
     if not rl.is_gamepad_available(int(gamepad_index)):
         return 0.0
     value = float(rl.get_gamepad_axis_movement(int(gamepad_index), int(axis)))
-    if abs(value) < _AXIS_DEADZONE:
-        return 0.0
     return float(max(-1.0, min(1.0, value)))
 
 
 def _axis_value_from_code(key_code: int, *, player_index: int) -> float:
     code = int(key_code)
-    axis = _AXIS_CODE_TO_AXIS.get(code)
+    axis = _PAD_AXIS_CODES.get(code)
+    if axis is None:
+        axis = _AXIS_CODE_TO_AXIS.get(code)
     if axis is not None:
-        return _axis_value_for_gamepad(_player_gamepad_index(player_index), axis)
+        return _axis_value_for_gamepad(player_gamepad_index(player_index), axis)
     rim_axis = _RIM_AXIS_CODES.get(code)
     if rim_axis is not None:
         rim_player, rim_axis_id = rim_axis
@@ -250,15 +340,17 @@ def _digital_down_for_player(key_code: int, *, player_index: int) -> bool:
         if rl_key is None:
             return False
         return bool(rl.is_key_down(rl_key))
-    joy_button = _JOYS_BUTTON_CODES.get(code)
+    joy_button = _PAD_BUTTON_CODES.get(code)
+    if joy_button is None:
+        joy_button = _JOYS_BUTTON_CODES.get(code)
     if joy_button is not None:
-        gamepad = _player_gamepad_index(player_index)
+        gamepad = player_gamepad_index(player_index)
         return bool(rl.is_gamepad_available(gamepad) and rl.is_gamepad_button_down(gamepad, joy_button))
     rim_button = _RIM_BUTTON_CODES.get(code)
     if rim_button is not None:
         gamepad, button = rim_button
         return bool(rl.is_gamepad_available(gamepad) and rl.is_gamepad_button_down(gamepad, button))
-    if code in _AXIS_CODE_TO_AXIS or code in _RIM_AXIS_CODES:
+    if code in _PAD_AXIS_CODES or code in _AXIS_CODE_TO_AXIS or code in _RIM_AXIS_CODES:
         return abs(_axis_value_from_code(code, player_index=player_index)) >= _AXIS_DOWN_THRESHOLD
     return False
 
@@ -271,6 +363,9 @@ def input_begin_frame() -> None:
 
 def input_code_name(key_code: int) -> str:
     key_code = int(key_code)
+    pad_name = _PAD_CODE_NAMES.get(key_code)
+    if pad_name is not None:
+        return pad_name
     if key_code == INPUT_CODE_UNBOUND:
         return "unbound"
     if key_code == 0x100:
@@ -387,6 +482,66 @@ def input_code_is_pressed(key_code: int, *, player_index: int = 0) -> bool:
     return _PRESSED_STATE.is_pressed(player_index=player_idx, key_code=code, is_down=down)
 
 
+def gamepad_has_activity(gamepad_index: int) -> bool:
+    """True while a standard button is held or a stick is pushed past half travel."""
+
+    gamepad = int(gamepad_index)
+    if not rl.is_gamepad_available(gamepad):
+        return False
+    if any(rl.is_gamepad_button_down(gamepad, button) for button in _PAD_BUTTON_CODES.values()):
+        return True
+    return any(
+        abs(float(rl.get_gamepad_axis_movement(gamepad, axis))) >= _AXIS_DOWN_THRESHOLD
+        for axis in _PAD_AXIS_CODES.values()
+    )
+
+
+def pad_nav_pressed(code: PadCode) -> bool:
+    """Edge-triggered standard button press on any connected pad (menu navigation)."""
+
+    button = _PAD_BUTTON_CODES[int(code)]
+    return any(
+        rl.is_gamepad_available(gamepad) and rl.is_gamepad_button_pressed(gamepad, button)
+        for gamepad in range(GAMEPAD_SLOT_COUNT)
+    )
+
+
+class GamepadSnapshot(msgspec.Struct, frozen=True):
+    """Live pad readout in standard-code terms, for checking bindings on real hardware."""
+
+    index: int
+    name: str
+    axes: tuple[tuple[str, float], ...]
+    held: tuple[str, ...]
+
+    def summary(self) -> str:
+        axes = " ".join(f"{label}={value:+.2f}" for label, value in self.axes)
+        return f"pad {self.index}: {self.name!r} {axes} held=[{', '.join(self.held)}]"
+
+
+_SNAPSHOT_AXES: tuple[tuple[str, int], ...] = (
+    *((_PAD_CODE_NAMES[code], axis) for code, axis in _PAD_AXIS_CODES.items()),
+    ("L2 Axis", int(rl.GamepadAxis.GAMEPAD_AXIS_LEFT_TRIGGER)),
+    ("R2 Axis", int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER)),
+)
+
+
+def gamepad_snapshot(gamepad_index: int) -> GamepadSnapshot | None:
+    gamepad = int(gamepad_index)
+    if not rl.is_gamepad_available(gamepad):
+        return None
+    return GamepadSnapshot(
+        index=gamepad,
+        name=str(rl.get_gamepad_name(gamepad)),
+        axes=tuple((label, float(rl.get_gamepad_axis_movement(gamepad, axis))) for label, axis in _SNAPSHOT_AXES),
+        held=tuple(
+            _PAD_CODE_NAMES[code]
+            for code, button in _PAD_BUTTON_CODES.items()
+            if rl.is_gamepad_button_down(gamepad, button)
+        ),
+    )
+
+
 def capture_first_pressed_input_code(
     *,
     player_index: int,
@@ -417,17 +572,19 @@ def capture_first_pressed_input_code(
         if wheel < 0.0:
             return 0x10A
 
+    # Captures always produce the standard controller codes; legacy codes stay
+    # readable for bindings loaded from older configs.
     if include_gamepad:
-        gamepad = _player_gamepad_index(player_idx)
+        gamepad = player_gamepad_index(player_idx)
         if rl.is_gamepad_available(gamepad):
-            for code, button in _JOYS_BUTTON_CODES.items():
+            for code, button in _PAD_BUTTON_CODES.items():
                 if rl.is_gamepad_button_pressed(gamepad, button):
                     return int(code)
 
     if include_axes:
-        gamepad = _player_gamepad_index(player_idx)
+        gamepad = player_gamepad_index(player_idx)
         if rl.is_gamepad_available(gamepad):
-            for code, axis in _AXIS_CODE_TO_AXIS.items():
+            for code, axis in _PAD_AXIS_CODES.items():
                 value = float(rl.get_gamepad_axis_movement(gamepad, axis))
                 if abs(value) >= float(axis_threshold):
                     return int(code)

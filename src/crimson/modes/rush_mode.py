@@ -12,6 +12,7 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
+from ..input_codes import PadCode, pad_nav_pressed
 from ..replay import Replay, ReplayRecorder
 from ..sim.sessions import (
     DeterministicSession,
@@ -83,7 +84,7 @@ class RushMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._paused = not self._paused
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._action = Route.PAUSE
             return
 

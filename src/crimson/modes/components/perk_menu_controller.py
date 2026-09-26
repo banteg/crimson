@@ -10,6 +10,7 @@ from grim.math import clamp
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
+from ...input_codes import PadCode, pad_nav_pressed
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...sim.state_types import PlayerState
 from ...ui.layout import ui_origin, ui_scale
@@ -192,9 +193,9 @@ class PerkMenuController:
         if self._selected_index >= len(choices):
             self._selected_index = 0
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN) or pad_nav_pressed(PadCode.DPAD_DOWN):
             self._selected_index = (self._selected_index + 1) % len(choices)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP) or pad_nav_pressed(PadCode.DPAD_UP):
             self._selected_index = (self._selected_index - 1) % len(choices)
 
         screen_w = float(rl.get_screen_width())
@@ -253,7 +254,11 @@ class PerkMenuController:
             self.close()
             return None
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+        if (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE)
+            or pad_nav_pressed(PadCode.FACE_DOWN)
+        ):
             self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return int(self._selected_index)

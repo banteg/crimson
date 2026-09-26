@@ -7,6 +7,7 @@ from grim.config import CrimsonConfig
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
+from ...input_codes import input_code_name
 from ...ui.perk_menu import draw_ui_text
 
 PERK_PROMPT_MAX_TIMER_MS = 200.0
@@ -42,7 +43,8 @@ class PerkPromptUi:
         if pending <= 0:
             return ""
         suffix = f" ({pending})" if pending > 1 else ""
-        return f"Press Mouse2 to pick a perk{suffix}"
+        # Native `perk_prompt_update_and_render` formats `input_key_name(config_key_pick_perk)`.
+        return f"Press {input_code_name(config.controls.pick_perk_code)} to pick a perk{suffix}"
 
     @staticmethod
     def hinge(*, screen_w: float | None = None) -> Vec2:

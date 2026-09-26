@@ -17,6 +17,7 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
+from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
 from ..sim.run_result import death_transition_ready
@@ -179,7 +180,9 @@ class SurvivalMode(BaseGameplayMode):
                 self._action = Route.MENU
                 self.close_requested = True
             return
-        if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self._perk_menu.open and (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
+        ):
             self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
             return
@@ -208,7 +211,7 @@ class SurvivalMode(BaseGameplayMode):
                 self.player.experience += 5000
                 survival_check_level_up(self.player, self.state.perk_selection)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._action = Route.PAUSE
             return
 

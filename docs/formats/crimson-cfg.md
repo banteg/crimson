@@ -255,6 +255,32 @@ is structured slot storage, not an unexplained gap. See `src/grim/config.py`
 for the wire layout and [local controls](../crimsonland-exe/local-multiplayer-controls.md)
 for native consumers.
 
+## Port-only controller codes
+
+The rewrite adds codes for the standard controller layout that raylib
+exposes (SDL/GLFW controller mappings with buttons named by position). They
+are ordinary int32 binding values above the native code space. Native
+`grim_is_key_active` and `grim_get_config_float` return zero for unknown IDs,
+so the original game treats them as unbound.
+
+| Code | Input | Code | Input |
+| --- | --- | --- | --- |
+| `0x200` | Left Stick X | `0x214` | L1 / LB |
+| `0x201` | Left Stick Y | `0x215` | R1 / RB |
+| `0x202` | Right Stick X | `0x216` | L2 / LT |
+| `0x203` | Right Stick Y | `0x217` | R2 / RT |
+| `0x210` | Cross / A (bottom) | `0x218` | L3 / LS |
+| `0x211` | Circle / B (right) | `0x219` | R3 / RS |
+| `0x212` | Square / X (left) | `0x21a` | Select |
+| `0x213` | Triangle / Y (top) | `0x21b` | Start |
+| `0x21c`–`0x21f` | D-pad up, down, left, right | | |
+
+Stick axes use +X right and +Y down. The port writes these codes when a player
+on the stock bindings first uses a controller. The player's aim and movement
+switch to Dual Action Pad, with move axes `(0x201, 0x200)`, aim axes
+`(0x203, 0x202)` and Fire `0x217`. For player 1, still-stock Reload and Level Up
+also move to `0x212` and `0x213`. Legacy `Joys*`/`JoyAxis*` codes keep working.
+
 ## Notes
 
 - Native writes use the full blob. A forensic byte-preserving editor should

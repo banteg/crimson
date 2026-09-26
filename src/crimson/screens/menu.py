@@ -31,6 +31,7 @@ from crimson.ui.menu_layout import (
     menu_slot_pos_x,
     menu_slot_start_ms,
 )
+from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
@@ -157,14 +158,13 @@ class MenuView:
         resources = require_runtime_resources(self.state)
         self._hovered_index = self._hovered_entry_index(resources)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
-            delta = -1 if reverse else 1
+        delta = menu_focus_step()
+        if delta:
             self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
             self._focus_timer_ms = 1000
 
         activated_index: int | None = None
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and 0 <= self._selected_index < len(self._menu_entries):
+        if menu_confirm_pressed() and 0 <= self._selected_index < len(self._menu_entries):
             entry = self._menu_entries[self._selected_index]
             if self._menu_entry_enabled(entry):
                 activated_index = self._selected_index
