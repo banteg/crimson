@@ -756,9 +756,11 @@ pub fn applyJinxedEffects(
         creatures.entries[idx].lifecycle_stage,
         native_math.pc24Mul(dt, @as(f32, 20.0)),
     );
-    // Native awards the reward exactly once: the Jinxed kill branch has no
+    // Native awards the reward exactly once (0x004070a6: exact `fild`, one
+    // PC24 `fadd`, `__ftol`, no reward guard): the Jinxed kill branch has no
     // Double Experience handling, unlike creature_handle_death.
-    _ = awardExperienceOnceFromReward(&players[0], creatures.entries[idx].reward_value);
+    const experience: f64 = @floatFromInt(players[0].experience);
+    players[0].experience = @intFromFloat(native_math.pc24Add(experience, creatures.entries[idx].reward_value));
     state.sfx_queue.append(.trooper_inpain_01);
 }
 

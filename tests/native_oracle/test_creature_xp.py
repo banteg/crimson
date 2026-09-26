@@ -5,6 +5,8 @@
   `experience = __ftol((float)experience + reward)`.
 - `creature_update_all` 0x0042704b..0x00427062: the Radioactive kill's
   `experience = __ftol((float)experience + reward)`.
+- `perks_update_effects` 0x004070a6..0x004070cf: the Jinxed kill's
+  `experience = __ftol((float)experience + reward)`.
 
 `fild` loads the experience exactly, so the cases include totals past 2^24.
 """
@@ -12,6 +14,8 @@
 from __future__ import annotations
 
 import random
+
+import pytest
 
 from crimson.creatures.runtime import experience_plus_reward, quick_learner_kill_xp
 from crimson.math_parity import f32
@@ -22,6 +26,8 @@ _HANDLE_DEATH_XP_START = 0x0041EB34
 _HANDLE_DEATH_XP_END = 0x0041EB6E
 _RADIOACTIVE_XP_START = 0x0042704B
 _RADIOACTIVE_XP_END = 0x00427062
+_JINXED_XP_START = 0x004070A6
+_JINXED_XP_END = 0x004070CF
 _PERK_SLOT = 7
 
 
@@ -58,7 +64,12 @@ def test_handle_death_xp_matches_native(oracle) -> None:
     assert not mismatches, mismatch_report(mismatches, total_cases=2 * len(cases))
 
 
-def test_radioactive_kill_xp_matches_native(oracle) -> None:
+@pytest.mark.parametrize(
+    ("start", "end"),
+    [(_RADIOACTIVE_XP_START, _RADIOACTIVE_XP_END), (_JINXED_XP_START, _JINXED_XP_END)],
+    ids=["radioactive", "jinxed"],
+)
+def test_kill_xp_blocks_match_native(oracle, start: int, end: int) -> None:
     pool = oracle.resolve("creature_pool")
     reward_offset = CREATURE_LAYOUT["reward_value"][0]
     mismatches: list[Mismatch] = []
@@ -66,8 +77,8 @@ def test_radioactive_kill_xp_matches_native(oracle) -> None:
     for experience, reward in cases:
         oracle.write_f32(pool + reward_offset, reward)
         oracle.write_u32("player_experience", experience)
-        # esi indexes the pool in 8-byte units (creature stride 0x98 = 0x13 * 8).
-        oracle.run(_RADIOACTIVE_XP_START, _RADIOACTIVE_XP_END, regs={"esi": 0})
+        # esi indexes creature slot 0 (radioactive scales it by 8, Jinxed by 1).
+        oracle.run(start, end, regs={"esi": 0})
         native = oracle.read_i32("player_experience")
         python = experience_plus_reward(experience, reward)
         if native != python:

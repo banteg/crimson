@@ -11,18 +11,6 @@ from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 
 
-def _award_experience_once_from_reward(*, player: PlayerState, reward_value: float) -> int:
-    reward_f32 = f32(float(reward_value))
-    if float(reward_f32) <= 0.0:
-        return 0
-
-    before = int(player.experience)
-    total_f32 = x87_pc24_add(f32(float(before)), reward_f32)
-    after = int(float(total_f32))
-    player.experience = int(after)
-    return int(after - before)
-
-
 def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
     player0 = ctx.players[0]
     if ctx.state.preserve_bugs:
@@ -95,10 +83,11 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
             f32(float(creature.lifecycle_stage)),
             x87_pc24_mul(f32(float(ctx.dt)), f32(20.0)),
         )
-        # Native awards the reward exactly once: the Jinxed kill branch has no
+        # Native awards the reward exactly once (0x004070a6: exact `fild`, one
+        # PC24 `fadd`, `__ftol`, no reward guard): the Jinxed kill branch has no
         # Double Experience handling, unlike creature_handle_death.
-        _award_experience_once_from_reward(
-            player=ctx.players[0],
-            reward_value=float(creature.reward_value),
-        )
+        from ...creatures.runtime import experience_plus_reward
+
+        player = ctx.players[0]
+        player.experience = experience_plus_reward(player.experience, creature.reward_value)
         ctx.state.sfx_queue.append(SfxRequest(SfxId.TROOPER_INPAIN_01, creature.pos))

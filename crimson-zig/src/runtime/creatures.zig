@@ -2826,7 +2826,6 @@ pub const CreaturePool = struct {
         var creature = &self.entries[creature_index];
         if (!creature.active) return 0;
         creature.last_hit_owner = owner;
-        const death_start_needed = creature_lifecycle.isAlive(creature.lifecycle_stage);
 
         // Native nuke path applies damage to active corpse entries as well.
         if (!(creature.hp > 0.0)) {
@@ -2851,7 +2850,9 @@ pub const CreaturePool = struct {
         } else {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - 0.001);
         }
-        if (!death_start_needed) return 0;
+        // Native creature_apply_damage gates the lethal branch on entry health
+        // alone: a creature whose death started with hp still positive
+        // (Shrinkifier shrink-death, Energizer eat) dies again here.
         emitDeathPrelude(
             state,
             bonus_pool,
@@ -3378,7 +3379,6 @@ pub const CreaturePool = struct {
             }
             return 0;
         }
-        const death_start_needed = creature_lifecycle.isAlive(creature.lifecycle_stage);
 
         creature.hp -= damage;
         creature.vel = .{
@@ -3392,7 +3392,9 @@ pub const CreaturePool = struct {
         } else {
             creature.lifecycle_stage -= 0.001;
         }
-        if (!death_start_needed) return 0;
+        // Native creature_apply_damage gates the lethal branch on entry health
+        // alone: a creature whose death started with hp still positive
+        // (Shrinkifier shrink-death, Energizer eat) dies again here.
         emitDeathPrelude(
             state,
             bonus_pool,
@@ -5030,7 +5032,10 @@ test "explosion xp uses pre-split reward when a full pool declines children" {
     try std.testing.expectEqualDeep(sibling_before, pool.entries[sibling_idx]);
 }
 
-test "applyDamage skips death side effects when lifecycle is already below alive sentinel" {
+test "applyDamage runs death side effects for a hit on a positive-hp non-alive creature" {
+    // Native creature_apply_damage gates the lethal branch on entry hp only, so
+    // a creature whose death started with hp still positive (lifecycle below
+    // the alive sentinel, e.g. a Shrinkifier corpse) runs the death again.
     var pool: CreaturePool = .{};
     pool.entries[0] = .{
         .active = true,
@@ -5043,6 +5048,8 @@ test "applyDamage skips death side effects when lifecycle is already below alive
     };
 
     var state = state_mod.GameplayState.init(1234);
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
     var bonuses: bonus_runtime.BonusPool = .{};
     var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
@@ -5066,15 +5073,15 @@ test "applyDamage skips death side effects when lifecycle is already below alive
         1024.0,
     );
 
-    try std.testing.expectEqual(@as(i32, 0), gained);
-    try std.testing.expectEqual(@as(i32, 100), players[0].experience);
-    try expectFloatClose(40.0, pool.entries[0].size);
-    try expectFloatClose(131.687241, pool.entries[0].reward_value);
-    try std.testing.expect(pool.entries[0].active);
-    try std.testing.expect(!pool.entries[1].active);
+    try std.testing.expectEqual(@as(i32, 131), gained);
+    try std.testing.expectEqual(@as(i32, 231), players[0].experience);
+    try std.testing.expect(pool.entries[1].active);
 }
 
-test "applyExplosionDamage skips first death side effects when lifecycle is below alive sentinel" {
+test "applyExplosionDamage runs death side effects for a hit on a positive-hp non-alive creature" {
+    // Native creature_apply_damage gates the lethal branch on entry hp only, so
+    // a creature whose death started with hp still positive (lifecycle below
+    // the alive sentinel, e.g. a Shrinkifier corpse) runs the death again.
     var pool: CreaturePool = .{};
     pool.entries[0] = .{
         .active = true,
@@ -5087,6 +5094,8 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
     };
 
     var state = state_mod.GameplayState.init(1234);
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
     var bonuses: bonus_runtime.BonusPool = .{};
     var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
@@ -5113,12 +5122,9 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
     );
 
     try std.testing.expect(killed_now);
-    try std.testing.expectEqual(@as(i32, 0), gained);
-    try std.testing.expectEqual(@as(i32, 100), players[0].experience);
-    try expectFloatClose(40.0, pool.entries[0].size);
-    try expectFloatClose(131.687241, pool.entries[0].reward_value);
-    try std.testing.expect(pool.entries[0].active);
-    try std.testing.expect(!pool.entries[1].active);
+    try std.testing.expectEqual(@as(i32, 131), gained);
+    try std.testing.expectEqual(@as(i32, 231), players[0].experience);
+    try std.testing.expect(pool.entries[1].active);
 }
 
 test "template spawn supports survival early-stage templates" {

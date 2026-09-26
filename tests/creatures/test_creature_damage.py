@@ -427,3 +427,28 @@ def test_resolve_native_death_sfx_preserve_bugs_keeps_trooper_pain_grunt_slot() 
     assert [record.caller for record in rng.records] == [
         RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX,
     ]
+
+
+def test_lethal_followup_gates_on_entry_health_not_lifecycle() -> None:
+    # Native creature_apply_damage runs the lethal branch whenever entry hp > 0,
+    # even for a creature whose death already started (Shrinkifier corpse with
+    # hp still positive); the Zig port mirrors this in applyDamage and
+    # applyExplosionDamage.
+    creature = CreatureState(active=True, hp=5.0, max_hp=400.0, lifecycle_stage=15.0, size=40.0)
+    lethal: list[int] = []
+
+    killed = creature_apply_damage_with_lethal_followup(
+        creature,
+        creature_index=3,
+        damage_amount=10.0,
+        damage_type=int(CreatureDamageType.EXPLOSION),
+        impulse=Vec2(),
+        owner=OwnerRef.from_local_player(0),
+        dt=0.016,
+        players=[PlayerState(index=0, pos=Vec2())],
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        on_lethal=lambda index, _followup: lethal.append(index),
+    )
+
+    assert killed is True
+    assert lethal == [3]
