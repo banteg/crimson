@@ -6,6 +6,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.bonuses.update import bonus_telekinetic_update
 from crimson.creatures.runtime import CreaturePool
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
@@ -42,6 +43,25 @@ def test_telekinetic_picks_up_bonus_after_hover_time() -> None:
     assert len(pickups) == 1
     assert entry.picked is True
     assert perk_player.experience == 500
+
+
+def test_telekinetic_hover_timer_accumulates_whole_frame_milliseconds() -> None:
+    state = GameplayState()
+    state.bonus_pool = BonusPool()
+    entry = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.POINTS, state=state)
+    assert entry is not None
+    player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
+    player.perk_counts[int(PerkId.TELEKINETIC)] = 1
+    runtime = RecordingCreatureDamageRuntime(creatures=[])
+
+    # bonus_render adds the int frame_dt_ms: 60 Hz frames add __ftol(16.67) = 16,
+    # so the > 650 ms gate passes on frame 41 (656 ms), not on frame 39.
+    for _ in range(40):
+        bonus_telekinetic_update(state, [player], dt=f32(1.0 / 60.0), creature_damage_runtime=runtime, creatures=[])
+    assert entry.picked is False
+    assert player.bonus_aim_hover_timer_ms == 640
+    bonus_telekinetic_update(state, [player], dt=f32(1.0 / 60.0), creature_damage_runtime=runtime, creatures=[])
+    assert entry.picked is True
 
 
 @pytest.mark.parametrize(

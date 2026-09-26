@@ -1230,7 +1230,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         move_speed = f32(f32(move_speed) * f32(1.3))
 
     r_health = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH)
-    health_scaled = f32(f32(float(xp)) * f32(0.00125))
+    health_scaled = x87_pc24_mul(float(xp), f32(0.00125))
     health_rand = f32(float(r_health & 0xF))
     health = f32(f32(health_scaled + health_rand) + f32(52.0))
 
@@ -1420,7 +1420,7 @@ def tick_survival_wave_spawns(
 
     spawns: list[CreatureInit] = []
     while cooldown < 0.0:
-        interval_ms = 500 - int(f32(survival_elapsed_ms)) // 1800
+        interval_ms = 500 - int(survival_elapsed_ms) // 1800
         if interval_ms < 0:
             extra = (1 - interval_ms) >> 1
             interval_ms += int(extra) * 2
@@ -1649,10 +1649,11 @@ def build_rush_mode_spawn_creature(
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
-    elapsed_f32 = f32(float(elapsed_ms))
-    c.health = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
+    # `fild survival_elapsed_ms` loads the int exactly; only the multiply rounds.
+    elapsed = float(elapsed_ms)
+    c.health = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
     c.heading = float(f32(f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314)) * f32(0.01)))
-    c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
+    c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
     c.reward_value = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)
 
     c.tint = tint_rgba
@@ -1660,7 +1661,7 @@ def build_rush_mode_spawn_creature(
 
     if c.health is not None:
         c.max_health = c.health
-    c.size = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 47.0)
+    c.size = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 47.0)
 
     return c
 
@@ -1682,7 +1683,8 @@ def tick_rush_mode_spawns(
     while cooldown < 0.0:
         cooldown = f32(cooldown + 250.0)
 
-        t = f32(float(int(float(survival_elapsed_ms) + 1.0)))
+        # 0x00407328: `fild (elapsed + 1)` stays exact on the x87 stack.
+        t = float(int(survival_elapsed_ms) + 1)
         # 0x407336..0x407366: separate x87 PC=24 multiplies/adds,
         # with the f32 0.3 constant at 0x46f258 (0x3e99999a).
         tint_r = clamp01(x87_pc24_add(x87_pc24_mul(t, f32(1.0 / 120000.0)), f32(0.3)))
@@ -1692,7 +1694,7 @@ def tick_rush_mode_spawns(
         tint = (tint_r, tint_g, tint_b, tint_a)
 
         elapsed_ms = int(survival_elapsed_ms)
-        theta = f32(f32(float(elapsed_ms)) * f32(0.001))
+        theta = x87_pc24_mul(float(elapsed_ms), f32(0.001))
         terrain_width_f = f32(terrain_width)
         terrain_height_f = f32(terrain_height)
         # 0x00407422..0x00407490: fcos/fsin stay wide into the PC24 `* 256.0f`,
@@ -2417,6 +2419,9 @@ def template_37_spider_sp2_ranged_variant(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
     c.flags = CreatureFlags.RANGED_ATTACK_VARIANT
+    # Native zeroes link_index here but leaves the orbit_radius union (the
+    # projectile type) stale from the recycled slot.
+    c.ai_timer = 0
     c.health = 50.0
     c.move_speed = 3.2
     c.reward_value = 433.0

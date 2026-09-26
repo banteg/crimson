@@ -7,6 +7,7 @@ from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..math_parity import f32, x87_pc24_sub
 from ..perks.helpers import perk_active
 from ..sim.state_types import BonusPickupEvent, PlayerState
+from ..sim.timing import ftol_ms_i32
 from .apply import bonus_apply
 from .hud import bonus_hud_update
 from .ids import BonusId
@@ -34,7 +35,8 @@ def bonus_telekinetic_update(
         return []
 
     pickups: list[BonusPickupEvent] = []
-    dt_ms = float(dt) * 1000.0
+    # bonus_render (0x004295f0) accumulates the int `frame_dt_ms`.
+    dt_ms = ftol_ms_i32(dt)
 
     for player in players:
         if player.health <= 0.0:

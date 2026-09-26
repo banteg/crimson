@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 
+from ..math_parity import x87_pc24_div, x87_pc24_mul_chain
 from .spawn import CreatureAiMode, CreatureFlags
 
 _F32_STRUCT = struct.Struct("<f")
@@ -74,18 +75,22 @@ def creature_anim_phase_step(
         size = _f32(size)
         local_scale = _f32(local_scale)
 
-    speed_scale = (_f32(30.0) if quantize_f32 else 30.0) / size
     flags_bits = int(flags)
     is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
-    strip_mul = _f32(25.0) if quantize_f32 else 25.0
+    strip_mul = 25.0
     if not is_long_strip:
-        strip_mul = _f32(22.0) if quantize_f32 else 22.0
+        strip_mul = 22.0
     elif ai_mode == CreatureAiMode.HOLD_TIMER:
         # Long-strip creatures stop advancing animation phase in ai_mode == 7.
         return 0.0
 
-    step = anim_rate * move_speed * dt * speed_scale * local_scale * strip_mul
-    return _f32(step) if quantize_f32 else step
+    if quantize_f32:
+        # creature_update_all 0x00426e57/0x00426ed5: `30.0f / size` stays on the
+        # x87 stack, then rate * speed * dt * scale * move_scale * strip, each
+        # multiply rounding at PC24.
+        speed_scale = x87_pc24_div(30.0, size)
+        return x87_pc24_mul_chain(anim_rate, move_speed, dt, speed_scale, local_scale, strip_mul)
+    return anim_rate * move_speed * dt * (30.0 / size) * local_scale * strip_mul
 
 
 def creature_anim_advance_phase(

@@ -12,6 +12,7 @@ const projectiles_mod = @import("projectiles.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const state_mod = @import("state.zig");
 const terrain_fx_mod = @import("terrain_fx.zig");
+const timing = @import("timing.zig");
 const weapon_data = @import("weapon_data.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -500,7 +501,8 @@ fn bonusTelekineticUpdate(
     pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
     if (!(dt > 0.0)) return;
-    const dt_ms = dt * 1000.0;
+    // bonus_render (0x004295f0) accumulates the int `frame_dt_ms`.
+    const dt_ms: f32 = @floatFromInt(timing.ftolMsI32(dt));
     for (players) |*player| {
         if (!(player.health > 0.0)) continue;
 
@@ -1967,6 +1969,30 @@ test "telekinetic picks up bonus after hover timer threshold" {
 
     try std.testing.expect(pool.entries[0].picked);
     try std.testing.expectEqual(@as(i32, 500), perk_players[0].experience);
+}
+
+test "telekinetic hover timer accumulates whole frame milliseconds" {
+    var state = state_mod.GameplayState.init(1);
+    var pool: BonusPool = .{};
+    setTestBonusEntry(&pool, 0, .points, .{ .x = 100.0, .y = 100.0 }, 0);
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .aim = .{ .x = 100.0, .y = 100.0 },
+    };
+    player.perk_counts.set(PerkId.telekinetic, 1);
+    var players = [_]state_mod.PlayerState{player};
+
+    // 60 Hz frames add __ftol(16.67) = 16 ms, so the > 650 ms gate passes on
+    // frame 41 (656 ms), not frame 39 as with fractional milliseconds.
+    for (0..40) |_| {
+        try runTelekineticUpdate(&pool, &state, players[0..], 1.0 / 60.0);
+    }
+    try std.testing.expect(!pool.entries[0].picked);
+    try std.testing.expectEqual(@as(f32, 640.0), players[0].bonus_aim_hover_timer_ms);
+    try runTelekineticUpdate(&pool, &state, players[0..], 1.0 / 60.0);
+    try std.testing.expect(pool.entries[0].picked);
 }
 
 test "telekinetic keeps native player zero ownership in bug mode" {

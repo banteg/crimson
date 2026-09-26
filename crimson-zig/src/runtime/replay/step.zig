@@ -483,7 +483,7 @@ pub fn stepTick(
                 @floatFromInt(frame.dt_ms_i32),
                 &context.state.rng,
                 context.player_count,
-                elapsed_before_ms,
+                @intCast(context.elapsed_ms_sim_rush),
                 context.terrain_size,
                 context.terrain_size,
             );

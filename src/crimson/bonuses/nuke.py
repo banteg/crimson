@@ -11,13 +11,14 @@ from ..rng_caller_static import RngCallerStatic
 from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
 
+# `bonus_apply` (crimsonland.exe @ 0x00409890) starts the Nuke screen shake.
+NUKE_CAMERA_SHAKE_PULSES = 0x14
+NUKE_CAMERA_SHAKE_TIMER = f32(0.2)
+
 
 def apply_nuke(ctx: BonusApplyCtx) -> None:
-    # `bonus_apply` (crimsonland.exe @ 0x00409890) starts screen shake via:
-    #   camera_shake_pulses = 0x14;
-    #   camera_shake_timer = 0.2f;
-    ctx.state.camera_shake_pulses = 0x14
-    ctx.state.camera_shake_timer = 0.2
+    ctx.state.camera_shake_pulses = NUKE_CAMERA_SHAKE_PULSES
+    ctx.state.camera_shake_timer = NUKE_CAMERA_SHAKE_TIMER
 
     origin = ctx.origin_pos
     rng = ctx.state.rng

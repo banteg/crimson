@@ -37,8 +37,11 @@ from ..math_parity import (
     NATIVE_TAU,
     NATIVE_TURN_RATE_SCALE,
     f32,
+    f32_bits_i32,
+    f32_from_bits,
     f32_vec2,
     heading_add_pi_f32,
+    x87_d3dx_vec2_normalize,
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_hypot,
@@ -232,6 +235,32 @@ def pack_bonus_on_death_args(bonus_id: BonusId, amount_override: int) -> int:
     return packed - 0x1_0000_0000 if packed >= 0x8000_0000 else packed
 
 
+_QUICK_LEARNER_REWARD_SCALE = f32(1.3)
+
+
+def quick_learner_kill_xp(reward_value: float) -> int:
+    """`__ftol(reward * 1.3f)` at PC24 (creature_handle_death 0x0041eb45)."""
+
+    return int(x87_pc24_mul(float(reward_value), _QUICK_LEARNER_REWARD_SCALE))
+
+
+def experience_plus_reward(experience: int, reward_value: float) -> int:
+    """`__ftol((float)experience + reward)`: exact `fild`, one PC24 `fadd` (0x0042704b)."""
+
+    return int(x87_pc24_add(float(experience), float(reward_value)))
+
+
+def _clamp_to_size_bounds(value: float, size: float, world_extent: float) -> float:
+    """Native spawner clamp: `< size` first, then `> extent - size` (PC24 subtract)."""
+
+    if value < size:
+        value = size
+    max_value = x87_pc24_sub(world_extent, size)
+    if value > max_value:
+        value = max_value
+    return value
+
+
 def _travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
     return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
@@ -259,7 +288,8 @@ class CreatureState(msgspec.Struct):
     link_index: int = -1
     target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
-    # Semantic view of native's orbit-radius/projectile-type union.
+    # Native `orbit_radius` union: the float radius arm; `ranged_projectile_type`
+    # reads and writes the int32 arm through the same bits.
     orbit_radius: float = 0.0
     # Native stores this as int32 and uses `fild` when forming orbit phase.
     phase_seed: int = 0
@@ -289,6 +319,16 @@ class CreatureState(msgspec.Struct):
     spawn_slot_index: int | None = None
     bonus_id: BonusId | None = None
     bonus_duration_override: int | None = None
+
+    @property
+    def ranged_projectile_type(self) -> int:
+        """The int32 arm of the native `orbit_radius` union (RANGED_ATTACK_VARIANT fire)."""
+
+        return f32_bits_i32(self.orbit_radius)
+
+    @ranged_projectile_type.setter
+    def ranged_projectile_type(self, projectile_type: int) -> None:
+        self.orbit_radius = f32_from_bits(projectile_type)
 
 
 class CreatureDeath(msgspec.Struct, frozen=True):
@@ -555,9 +595,17 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     )
 
     if ctx.fx_queue is not None:
-        push_dir = (ctx.player.pos - creature.pos).normalized()
+        push_dir = x87_d3dx_vec2_normalize(
+            Vec2(
+                x87_pc24_sub(ctx.player.pos.x, creature.pos.x),
+                x87_pc24_sub(ctx.player.pos.y, creature.pos.y),
+            ),
+        )
         ctx.fx_queue.add_random(
-            pos=ctx.player.pos + push_dir * 3.0,
+            pos=Vec2(
+                x87_pc24_add(ctx.player.pos.x, x87_pc24_mul(push_dir.x, f32(3.0))),
+                x87_pc24_add(ctx.player.pos.y, x87_pc24_mul(push_dir.y, f32(3.0))),
+            ),
             rng=ctx.rng,
         )
 
@@ -1338,12 +1386,14 @@ class CreaturePool:
                     # remain offscreen until their own velocity moves them in.
                     creature.pos = _advance_pos_by_delta_f32(creature.pos, move_delta)
             else:
-                # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
-                # unless ANIM_LONG_STRIP is set (see creature_update_all).
-                radius = max(0.0, float(creature.size))
-                max_x = max(radius, float(world_width) - radius)
-                max_y = max(radius, float(world_height) - radius)
-                creature.pos = f32_vec2(creature.pos.clamp_rect(radius, radius, max_x, max_y))
+                # Spawner/short-strip creatures clamp to bounds using `size` as a radius, once and
+                # before moving (creature_update_all 0x00426220); most are stationary unless
+                # ANIM_LONG_STRIP is set, and a long-strip mover may step past the bound this frame.
+                size = float(creature.size)
+                creature.pos = Vec2(
+                    _clamp_to_size_bounds(float(creature.pos.x), size, float(world_width)),
+                    _clamp_to_size_bounds(float(creature.pos.y), size, float(world_height)),
+                )
                 if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
                     creature.vel = Vec2()
                 else:
@@ -1355,9 +1405,7 @@ class CreaturePool:
                         move_speed=creature.move_speed,
                     )
                     creature.vel = move_delta
-                    creature.pos = f32_vec2(
-                        _advance_pos_by_delta_f32(creature.pos, move_delta).clamp_rect(radius, radius, max_x, max_y),
-                    )
+                    creature.pos = _advance_pos_by_delta_f32(creature.pos, move_delta)
 
                 # Native ticks owner-bound spawn slots inside the spawner movement
                 # branch, before this creature's plaguebearer/anim/ranged/contact
@@ -1435,8 +1483,9 @@ class CreaturePool:
                         if creature.type_id == CreatureTypeId.LIZARD:
                             creature.hp = 1.0
                         else:
-                            players[0].experience = int(
-                                float(players[0].experience) + float(creature.reward_value),
+                            players[0].experience = experience_plus_reward(
+                                players[0].experience,
+                                creature.reward_value,
                             )
                             creature.lifecycle_stage = x87_pc24_sub(
                                 float(creature.lifecycle_stage),
@@ -1463,7 +1512,7 @@ class CreaturePool:
                         creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
-                        projectile_type = ProjectileTemplateId(creature.orbit_radius)
+                        projectile_type = ProjectileTemplateId(creature.ranged_projectile_type)
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),
@@ -1584,8 +1633,9 @@ class CreaturePool:
         if float(state.bonuses.freeze) > 0.0:
             creature_pos = creature.pos
             for _ in range(8):
-                angle = (
-                    float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE)) % 612) * 0.01
+                angle = x87_pc24_mul(
+                    float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE)) % 612),
+                    f32(0.01),
                 )
                 state.effects.spawn_freeze_shard(
                     pos=creature_pos,
@@ -1593,7 +1643,10 @@ class CreaturePool:
                     rng=rng,
                     detail_preset=int(detail_preset),
                 )
-            angle = float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612) * 0.01
+            angle = x87_pc24_mul(
+                float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612),
+                f32(0.01),
+            )
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
                 angle=angle,
@@ -1652,7 +1705,7 @@ class CreaturePool:
         if init.orbit_radius is not None:
             entry.orbit_radius = f32(float(init.orbit_radius))
         elif init.ranged_projectile_type is not None:
-            entry.orbit_radius = f32(float(init.ranged_projectile_type))
+            entry.ranged_projectile_type = int(init.ranged_projectile_type)
 
         entry.spawn_slot_index = None
         entry.attack_cooldown = 0.0
@@ -1782,7 +1835,7 @@ class CreaturePool:
                 creature_type_id=corpse_type_id,
             )
             if not ok:
-                creature.lifecycle_stage = 0.001
+                creature.lifecycle_stage = f32(0.001)
                 return
 
         self.kill_count += 1
@@ -1801,7 +1854,7 @@ class CreaturePool:
                 (5, -0.12, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE),
             ):
                 for _ in range(int(count)):
-                    angle = float(int(rng.rand_tagged(angle_caller)) % 612) * 0.01
+                    angle = x87_pc24_mul(float(int(rng.rand_tagged(angle_caller)) % 612), f32(0.01))
                     self.effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),
@@ -1895,7 +1948,7 @@ class CreaturePool:
         xp_awarded = 0
         if killer is not None:
             if perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
-                xp_awarded = award_experience(state, killer, int(float(creature.reward_value) * 1.3))
+                xp_awarded = award_experience(state, killer, quick_learner_kill_xp(creature.reward_value))
             else:
                 xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 

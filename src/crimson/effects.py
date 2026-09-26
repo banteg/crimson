@@ -455,7 +455,7 @@ class SpriteEffectPool:
 
         entry = self._entries[idx]
         entry.active = True
-        entry.color = RGBA() if color is None else color
+        entry.color = RGBA() if color is None else RGBA(f32(color.r), f32(color.g), f32(color.b), f32(color.a))
         entry.rotation = x87_pc24_mul(
             float(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628),
             _NATIVE_SPRITE_ROTATION_SCALE,
@@ -472,14 +472,22 @@ class SpriteEffectPool:
         if dt <= 0.0:
             return []
 
+        # Sprite loop of projectile_update (0x0042246a): every field is f32 and
+        # each op rounds at PC24, so alpha 0.25f lives 16 ticks at 60 Hz.
+        dt = f32(dt)
+        rotation_step = x87_pc24_mul(dt, f32(3.0))
+        scale_step = x87_pc24_mul(dt, f32(60.0))
         expired: list[int] = []
         for idx, entry in enumerate(self._entries):
             if not entry.active:
                 continue
-            entry.pos = entry.pos + entry.vel * dt
-            entry.rotation += dt * 3.0
-            entry.color = entry.color.with_alpha(entry.color.a - dt)
-            entry.scale += dt * 60.0
+            entry.pos = Vec2(
+                x87_pc24_add(entry.pos.x, x87_pc24_mul(dt, entry.vel.x)),
+                x87_pc24_add(entry.pos.y, x87_pc24_mul(dt, entry.vel.y)),
+            )
+            entry.rotation = x87_pc24_add(entry.rotation, rotation_step)
+            entry.color = entry.color.with_alpha(x87_pc24_sub(entry.color.a, dt))
+            entry.scale = x87_pc24_add(entry.scale, scale_step)
             if entry.color.a <= 0.0:
                 entry.active = False
                 expired.append(idx)

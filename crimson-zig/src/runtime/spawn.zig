@@ -596,8 +596,8 @@ pub fn buildSurvivalSpawnCreature(
     }
 
     const r_health = rng.randTagged(rng_callers.survival_spawn_creature_health);
-    const health_xp: f32 = @floatFromInt(xp);
-    const health_scaled = @as(f32, health_xp * @as(f32, 0.00125));
+    const health_xp: f64 = @floatFromInt(xp);
+    const health_scaled = native_math.pc24Mul(health_xp, @as(f32, 0.00125));
     const health_rand = @as(f32, @floatFromInt(r_health & 0xF));
     var health = narrowF32(health_scaled + health_rand + 52.0);
 
@@ -753,14 +753,15 @@ pub fn buildRushModeSpawnCreature(
     creature.type_id = type_id;
     creature.ai_mode = CreatureAiMode.orbit_player;
 
-    const elapsed_f32: f32 = @floatFromInt(elapsed_ms);
-    creature.health = native_math.pc24Add(native_math.pc24Mul(elapsed_f32, native_math.native_creature_spawn_health_scale), 10.0);
+    // `fild survival_elapsed_ms` loads the int exactly; only the multiply rounds.
+    const elapsed: f64 = @floatFromInt(elapsed_ms);
+    creature.health = native_math.pc24Add(native_math.pc24Mul(elapsed, native_math.native_creature_spawn_health_scale), 10.0);
     {
         const heading_base: f32 = @floatFromInt(rng.randTagged(rng_callers.creature_spawn_heading) % 314);
         const heading_scaled: f32 = heading_base * 0.01;
         creature.heading = heading_scaled;
     }
-    creature.move_speed = narrowF32(elapsed_f32 * native_math.native_creature_spawn_elapsed_scale + 2.5);
+    creature.move_speed = native_math.pc24Add(native_math.pc24Mul(elapsed, native_math.native_creature_spawn_elapsed_scale), 2.5);
     creature.reward_value = @floatFromInt(rng.randTagged(rng_callers.creature_spawn_reward) % 30 + 140);
 
     creature.tint = .{
@@ -771,7 +772,7 @@ pub fn buildRushModeSpawnCreature(
     };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
-    creature.size = narrowF32(elapsed_f32 * native_math.native_creature_spawn_elapsed_scale + 47.0);
+    creature.size = native_math.pc24Add(native_math.pc24Mul(elapsed, native_math.native_creature_spawn_elapsed_scale), 47.0);
 
     return creature;
 }
@@ -782,7 +783,7 @@ pub fn tickRushModeSpawns(
     frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f32,
+    survival_elapsed_ms: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) !WaveSpawnResult {
@@ -809,7 +810,7 @@ pub fn tickRushModeSpawnsBatch(
     frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f32,
+    survival_elapsed_ms: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
@@ -821,8 +822,8 @@ pub fn tickRushModeSpawnsBatch(
     while (result.cooldown < 0.0) {
         result.cooldown += 250.0;
 
-        const t_i32: i32 = @intFromFloat(survival_elapsed_ms + 1.0);
-        const t: f32 = @floatFromInt(t_i32);
+        // Native 0x00407328: `fild (elapsed + 1)` stays exact on the x87 stack.
+        const t: f64 = @floatFromInt(survival_elapsed_ms + 1);
         const tint = [4]f32{
             // Native 0x407336..0x407366: separate PC=24 arithmetic and f32 constants.
             clamp01(native_math.pc24Add(native_math.pc24Mul(t, @as(f32, 1.0 / 120000.0)), @as(f32, 0.3))),
@@ -831,8 +832,8 @@ pub fn tickRushModeSpawnsBatch(
             1.0,
         };
 
-        const elapsed_ms: i32 = @intFromFloat(survival_elapsed_ms);
-        const theta = @as(f32, @floatFromInt(elapsed_ms)) * 0.001;
+        const elapsed_ms = survival_elapsed_ms;
+        const theta = native_math.pc24Mul(@as(f64, @floatFromInt(elapsed_ms)), @as(f32, 0.001));
         const terrain_width_f: f32 = @floatFromInt(terrain_width);
         const terrain_height_f: f32 = @floatFromInt(terrain_height);
         // Native 0x407422..0x407490: fcos/fsin stay wide into the PC=24
@@ -1706,7 +1707,7 @@ test "rush wave no trigger" {
         16.0,
         &rng,
         1,
-        0.0,
+        0,
         1024,
         1024,
     );
@@ -1741,7 +1742,7 @@ test "rush wave triggers two creatures" {
         0.0,
         &rng,
         1,
-        0.0,
+        0,
         1024,
         1024,
     );
@@ -1798,7 +1799,7 @@ test "rush tint uses native upward-rounded sine scale" {
         0.0,
         &rng,
         1,
-        63.0,
+        63,
         1024,
         1024,
     );
@@ -1816,7 +1817,7 @@ test "rush wave loops when cooldown is very negative" {
         0.0,
         &rng,
         1,
-        0.0,
+        0,
         1024,
         1024,
     );

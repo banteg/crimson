@@ -341,7 +341,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert particle.render_flag is False
     assert fx_queue.count == 1
     assert sprite_effects.entries[0].active
-    assert_float_close(sprite_effects.entries[0].color.a, 0.7)
+    assert_float_close(sprite_effects.entries[0].color.a, f32(0.7))
 
     deflect_step = f32(math.tau * 0.2)
     assert_float_close(float(particle.angle), deflect_step)

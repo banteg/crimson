@@ -6,18 +6,14 @@ from crimson.creatures.anim import (
     creature_corpse_frame_for_type,
 )
 from crimson.creatures.spawn import CreatureFlags
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_div, x87_pc24_mul_chain
 from tests.support.helpers import assert_float_close
 
 
 def _expected_f32_step(*, strip_mul: float) -> float:
-    anim_rate = f32(1.2)
-    move_speed = f32(2.0)
-    dt = f32(1.0 / 60.0)
-    size = f32(50.0)
-    speed_scale = f32(float(f32(30.0)) / float(size))
-    local_scale = f32(1.0)
-    return f32(float(anim_rate) * float(move_speed) * float(dt) * float(speed_scale) * float(local_scale) * f32(strip_mul))
+    # creature_update_all 0x00426e57: each x87 multiply rounds at PC24.
+    speed_scale = x87_pc24_div(30.0, f32(50.0))
+    return x87_pc24_mul_chain(f32(1.2), f32(2.0), f32(1.0 / 60.0), speed_scale, 1.0, strip_mul)
 
 
 def test_creature_anim_advance_phase_long_strip_matches_formula() -> None:

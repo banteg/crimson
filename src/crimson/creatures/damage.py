@@ -173,15 +173,20 @@ def _damage_lethal_ranged_shock_burst(
     if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
         return
     for _ in range(5):
-        rotation = (
-            float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F) * 0.049087387
+        rotation = x87_pc24_mul(
+            float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F),
+            f32(0.049087387),
         )
         vel = Vec2(
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_X) & 0x7F) - 0x40),
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y) & 0x7F) - 0x40),
         )
-        scale_step = (
-            float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP) % 140) * 0.01 + 0.3
+        scale_step = x87_pc24_add(
+            x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP) % 140),
+                f32(0.01),
+            ),
+            f32(0.3),
         )
         if effects is None:
             continue

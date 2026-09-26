@@ -81,7 +81,9 @@ pub fn creatureAnimPhaseStep(
     if (is_long_strip and ai_mode == .hold_timer) return 0.0;
 
     const strip_mul: f32 = if (is_long_strip) narrowF32(25.0) else narrowF32(22.0);
-    return narrowF32(anim_rate_f32 * move_speed_f32 * dt_f32 * speed_scale * strip_mul * local_scale_f32);
+    // creature_update_all 0x00426e57/0x00426ed5: rate * speed * dt * scale *
+    // move_scale * strip, each f32 multiply rounding like PC24.
+    return anim_rate_f32 * move_speed_f32 * dt_f32 * speed_scale * local_scale_f32 * strip_mul;
 }
 
 pub fn creatureAnimAdvancePhase(

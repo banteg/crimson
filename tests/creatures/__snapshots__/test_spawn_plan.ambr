@@ -9343,7 +9343,7 @@
       dict({
         'ai_link_parent': None,
         'ai_mode': 0,
-        'ai_timer': None,
+        'ai_timer': 0,
         'bonus_duration_override': None,
         'bonus_id': None,
         'contact_damage': 10.0,

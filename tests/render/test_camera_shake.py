@@ -6,8 +6,10 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
+from crimson.bonuses.nuke import NUKE_CAMERA_SHAKE_TIMER
 from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
+from crimson.math_parity import f32
 from crimson.replay.driver.setup import reset_players
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
@@ -46,7 +48,7 @@ def test_camera_shake_update_decays_timer_without_pulse() -> None:
 
     camera_shake_update(state, 0.1)
 
-    assert_float_close(state.camera_shake_timer, 0.7)
+    assert_float_close(state.camera_shake_timer, f32(0.7))
     assert state.camera_shake_pulses == 10
     assert state.camera_shake_offset == Vec2(7.0, -9.0)
 
@@ -60,7 +62,7 @@ def test_camera_shake_update_matches_decompile_first_pulse() -> None:
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 0x13
-    assert_float_close(state.camera_shake_timer, 0.1)
+    assert_float_close(state.camera_shake_timer, f32(0.1))
     assert state.camera_shake_offset == Vec2(28.0, -32.0)
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE,
@@ -83,7 +85,7 @@ def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
     camera_shake_update(state, 0.1)
 
     assert state.camera_shake_pulses == 4
-    assert_float_close(state.camera_shake_timer, 0.06)
+    assert_float_close(state.camera_shake_timer, f32(0.06))
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE,
         RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD,
@@ -104,7 +106,7 @@ def test_camera_shake_interval_uses_latched_scaling(latched: bool, bonus_timer: 
 
     camera_shake_update(state, 0.01)
 
-    assert_float_close(state.camera_shake_timer, interval)
+    assert_float_close(state.camera_shake_timer, f32(interval))
     assert state.camera_shake_pulses == 4
 
 
@@ -141,7 +143,7 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     )
 
     assert state.camera_shake_pulses == 0x14
-    assert_float_close(state.camera_shake_timer, 0.2)
+    assert_float_close(state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
     assert creatures[0].hp <= 0.0
     assert creatures[1].hp == 100.0
 
@@ -162,7 +164,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
 
     assert entry.picked
     assert world.sim_world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.sim_world.state.camera_shake_timer, 0.2)
+    assert_float_close(world.sim_world.state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
 
 
 def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
@@ -209,7 +211,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
 
     assert bool(getattr(entry, "picked", False))
     assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2)
+    assert_float_close(world.state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
 
 
 def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
@@ -234,4 +236,4 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
 
     assert bool(getattr(entry, "picked", False))
     assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2)
+    assert_float_close(world.state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)

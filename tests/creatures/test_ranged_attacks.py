@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
-from crimson.math_parity import f32
+from crimson.math_parity import f32, f32_from_bits
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
@@ -89,7 +89,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.heading = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_VARIANT
     creature.ai_mode = CreatureAiMode.CHASE_PLAYER
-    creature.orbit_radius = 26.0
+    creature.ranged_projectile_type = 26
     creature.orbit_angle = 0.4
     creature.contact_damage = 0.0
 
@@ -127,7 +127,9 @@ def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
     )
     idx = pool.spawn_init(init)
     assert idx is not None
-    assert pool.entries[idx].orbit_radius == 26.0
+    # Native writes the int arm of the orbit_radius union: the radius reads as 26's bits.
+    assert pool.entries[idx].ranged_projectile_type == 26
+    assert pool.entries[idx].orbit_radius == f32_from_bits(26)
 
 
 def test_ranged_projectile_can_damage_player() -> None:

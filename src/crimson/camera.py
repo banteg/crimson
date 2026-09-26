@@ -12,6 +12,7 @@ global state in the original game.
 
 from grim.geom import Vec2
 
+from .math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
@@ -50,7 +51,7 @@ def camera_shake_start(state: GameplayState, *, pulses: int, timer: float) -> No
     """
 
     state.camera_shake_pulses = int(pulses)
-    state.camera_shake_timer = float(timer)
+    state.camera_shake_timer = f32(timer)
 
 
 def camera_shake_update(state: GameplayState, dt: float) -> None:
@@ -68,7 +69,8 @@ def camera_shake_update(state: GameplayState, dt: float) -> None:
         state.camera_shake_offset = Vec2()
         return
 
-    state.camera_shake_timer -= float(dt) * 3.0
+    # camera_shake_timer is an f32 global; PC24 rounds the product and the difference.
+    state.camera_shake_timer = x87_pc24_sub(state.camera_shake_timer, x87_pc24_mul(dt, f32(3.0)))
     if state.camera_shake_timer >= 0.0:
         return
 
@@ -79,7 +81,7 @@ def camera_shake_update(state: GameplayState, dt: float) -> None:
 
     # The bonus timer may have expired after the previous frame latched this
     # flag. Native camera_update uses the latch until its next late refresh.
-    state.camera_shake_timer = 0.06 if state.time_scale_active else 0.1
+    state.camera_shake_timer = f32(0.06) if state.time_scale_active else f32(0.1)
 
     # Decompiled logic:
     #   iVar4 = camera_shake_pulses * 0x3c;

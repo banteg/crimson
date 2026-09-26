@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import cast
 
@@ -2639,3 +2640,26 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
         RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y,
         RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP,
     ]
+
+
+def test_long_strip_spawner_clamps_only_before_moving() -> None:
+    # creature_update_all clamps PING_PONG movers to [size, 1024 - size] before
+    # the move; the step itself may carry a long-strip mover past the bound.
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(1500.0, 500.0))
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 100.0
+    creature.max_hp = 100.0
+    creature.size = 64.0
+    creature.move_speed = 2.0
+    creature.pos = Vec2(975.0, 500.0)
+    creature.heading = f32(math.pi / 2.0)
+    creature.target_heading = creature.heading
+    creature.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
+
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rng=Crand(0)))
+
+    assert creature.vel.x > 0.0
+    assert creature.pos.x == x87_pc24_add(960.0, creature.vel.x)

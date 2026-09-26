@@ -1579,7 +1579,7 @@ pub const CreaturePool = struct {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
                 const size = @as(f32, @floatFromInt((rng.randTagged(rng_callers.creature_spawn_template_spider_sp2_ranged_variant_37_size) & 3) + 41));
 
-                _ = self.spawnInit(.{
+                const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     .heading = narrowF32(call.heading),
@@ -1595,7 +1595,10 @@ pub const CreaturePool = struct {
                     .reward_value = 433.0,
                     .contact_damage = 10.0,
                     .tint = .{ 1.0, 0.75, 0.1, 1.0 },
-                });
+                }) orelse return;
+                // Native zeroes link_index but leaves the orbit_radius union
+                // (the projectile type) stale from the recycled slot.
+                self.entries[idx].link_index = 0;
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38) => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
@@ -2311,16 +2314,18 @@ pub const CreaturePool = struct {
                     creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
                 }
             } else {
-                const radius = @max(@as(f32, 0.0), creature.size);
-                const max_bound_raw = narrowF32(world_size - radius);
-                const max_bound = if (max_bound_raw > radius) max_bound_raw else radius;
+                // Native clamps once, before moving: `< size` first, then
+                // `> extent - size`, so a long-strip mover may step past the
+                // bound this frame (creature_update_all 0x00426220).
+                const size = creature.size;
+                const max_bound = native_math.pc24Sub(world_size, size);
 
                 var clamped_x = creature.pos.x;
                 var clamped_y = creature.pos.y;
-                if (clamped_x < radius) clamped_x = radius;
-                if (clamped_y < radius) clamped_y = radius;
-                if (max_bound < clamped_x) clamped_x = max_bound;
-                if (max_bound < clamped_y) clamped_y = max_bound;
+                if (clamped_x < size) clamped_x = size;
+                if (clamped_y < size) clamped_y = size;
+                if (clamped_x > max_bound) clamped_x = max_bound;
+                if (clamped_y > max_bound) clamped_y = max_bound;
                 creature.pos = .{
                     .x = clamped_x,
                     .y = clamped_y,
@@ -2342,18 +2347,7 @@ pub const CreaturePool = struct {
                         creature.move_speed,
                     );
                     creature.vel = move_delta;
-
-                    const moved_pos = advancePosByDeltaF32(creature.pos, move_delta);
-                    var moved_x = moved_pos.x;
-                    var moved_y = moved_pos.y;
-                    if (moved_x < radius) moved_x = radius;
-                    if (moved_y < radius) moved_y = radius;
-                    if (max_bound < moved_x) moved_x = max_bound;
-                    if (max_bound < moved_y) moved_y = max_bound;
-                    creature.pos = .{
-                        .x = moved_x,
-                        .y = moved_y,
-                    };
+                    creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
                 }
 
                 // Native ticks an owner-bound spawn slot here, after the
@@ -2580,14 +2574,15 @@ pub const CreaturePool = struct {
                         detail_preset,
                     );
                 }
-                const push_delta = state_mod.Vec2.sub(contact_player.pos, creature.pos);
-                const push_len = push_delta.length();
-                if (push_len > 1e-6) {
-                    const push_dir = push_delta.mul(1.0 / push_len);
-                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(contact_player.pos, push_dir.mul(3.0)));
-                } else {
-                    _ = terrain_fx.decals.addRandom(state, contact_player.pos);
-                }
+                // Native D3DXVec2Normalize(player - creature), then player + dir * 3.0f.
+                const push_dir = native_math.normalizeVec2Safe(
+                    native_math.pc24Sub(contact_player.pos.x, creature.pos.x),
+                    native_math.pc24Sub(contact_player.pos.y, creature.pos.y),
+                );
+                _ = terrain_fx.decals.addRandom(state, .{
+                    .x = native_math.pc24Add(contact_player.pos.x, native_math.pc24Mul(push_dir[0], @as(f32, 3.0))),
+                    .y = native_math.pc24Add(contact_player.pos.y, native_math.pc24Mul(push_dir[1], @as(f32, 3.0))),
+                });
                 creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, contact_damage_cooldown);
             }
 
@@ -4439,15 +4434,13 @@ fn awardExperienceOnceFromReward(
     return after - before;
 }
 
+/// `__ftol((float)experience + reward)`: exact `fild`, one PC24 `fadd` (0x0042704b).
 fn awardBaseExperienceFromReward(
     player: *state_mod.PlayerState,
     reward_value: f32,
 ) void {
-    const reward_f32 = reward_value;
-    if (!(reward_f32 > 0.0)) return;
-    const before_f32: f32 = @floatFromInt(player.experience);
-    const total_f32 = before_f32 + reward_f32;
-    player.experience = @intFromFloat(total_f32);
+    const experience: f64 = @floatFromInt(player.experience);
+    player.experience = @intFromFloat(native_math.pc24Add(experience, reward_value));
 }
 
 fn dot(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
@@ -8997,4 +8990,41 @@ test "single-player dormant target receives creature contact" {
     try std.testing.expectEqual(@as(f32, 1.0), pool.entries[0].attack_cooldown);
     try std.testing.expect(pool.single_player_dormant_target.health < 100.0);
     try std.testing.expectEqual(@as(f32, 0.0), players[0].health);
+}
+
+test "long strip spawner clamps only before moving" {
+    // creature_update_all clamps PING_PONG movers to [size, 1024 - size] before
+    // the move; the step itself may carry a long-strip mover past the bound.
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 1500.0, .y = 500.0 },
+            .health = 100.0,
+        },
+    };
+    const heading: f32 = std.math.pi / 2.0;
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 975.0, .y = 500.0 },
+        .heading = heading,
+        .set_heading = true,
+        .phase_seed = 0,
+        .type_id = .zombie,
+        .flags = spawn_mod.CreatureFlags.anim_ping_pong | spawn_mod.CreatureFlags.anim_long_strip,
+        .size = 64.0,
+        .move_speed = 2.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 0.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].target_heading = heading;
+
+    try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
+
+    try std.testing.expect(pool.entries[0].vel.x > 0.0);
+    try std.testing.expectEqual(native_math.pc24Add(@as(f32, 960.0), pool.entries[0].vel.x), pool.entries[0].pos.x);
 }

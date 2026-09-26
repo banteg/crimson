@@ -15,6 +15,7 @@ __all__ = [
     "NATIVE_TURN_RATE_SCALE",
     "atan2_f32",
     "f32",
+    "f32_bits_i32",
     "f32_from_bits",
     "f32_vec2",
     "heading_add_pi_f32",
@@ -23,6 +24,7 @@ __all__ = [
     "native_aim_point_from_heading",
     "native_fire_muzzle_pos",
     "native_shot_angle_from_jitter_draws",
+    "x87_d3dx_vec2_normalize",
     "x87_fpatan",
     "x87_pc24_add",
     "x87_pc24_cos_mul",
@@ -38,6 +40,12 @@ __all__ = [
 
 def f32_from_bits(bits: int) -> float:
     return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
+
+
+def f32_bits_i32(value: float) -> int:
+    """Reinterpret a float32 as its signed int32 bit pattern (a float/int union read)."""
+
+    return struct.unpack("<i", struct.pack("<f", float(value)))[0]
 
 
 # Reuse bound struct methods in the float32 hot path.
@@ -103,6 +111,28 @@ def x87_pc24_hypot(x: float, y: float) -> float:
             x87_pc24_mul(y, y),
         ),
     )
+
+
+_FLT_EPSILON = f32_from_bits(0x34000000)
+_FLT_MIN = f32_from_bits(0x00800000)
+
+
+def x87_d3dx_vec2_normalize(value: Vec2) -> Vec2:
+    """`D3DXVec2Normalize` x87 path (0x00455587) at PC24.
+
+    A squared length within FLT_EPSILON of 1 (`float_near_equal`) returns the
+    input; one at or below FLT_MIN returns zero.
+    """
+
+    x = float(value.x)
+    y = float(value.y)
+    length_sq = x87_pc24_add(x87_pc24_mul(x, x), x87_pc24_mul(y, y))
+    if -_FLT_EPSILON <= x87_pc24_sub(length_sq, 1.0) <= _FLT_EPSILON:
+        return Vec2(x, y)
+    if not length_sq > _FLT_MIN:
+        return Vec2()
+    inv_length = x87_pc24_div(1.0, x87_pc24_sqrt(length_sq))
+    return Vec2(x87_pc24_mul(inv_length, x), x87_pc24_mul(inv_length, y))
 
 
 def x87_pc24_mul_chain(first: float, *factors: float) -> float:
