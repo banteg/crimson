@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable, MutableSequence, Sequence
 from typing import TYPE_CHECKING
 
@@ -15,7 +14,15 @@ from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import EffectPool
-from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
+from ...math_parity import (
+    f32,
+    native_chain_angle_from_delta,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ...owner_ref import OwnerRef
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
@@ -151,9 +158,10 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
     # Native player-hit checks key off non-player ownership; creature-owned splitters
     # always satisfy this, so they can hit players even when the parent was local-owned.
     split_hits_players = True
+    split_angle = f32(1.0471976)  # 0x0046f4e4
     ctx.pool.spawn(
         pos=proj.pos,
-        angle=proj.angle - 1.0471976,
+        angle=x87_pc24_sub(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(int(hit_idx)),
         travel_budget=proj.travel_budget,
@@ -161,7 +169,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
     )
     ctx.pool.spawn(
         pos=proj.pos,
-        angle=proj.angle + 1.0471976,
+        angle=x87_pc24_add(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(int(hit_idx)),
         travel_budget=proj.travel_budget,
@@ -208,10 +216,10 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 
             origin = creatures[hit_creature]
             target = creatures[best_idx]
-            # Native stores `(float)(atan2(dy, dx) - 1.5707964 - 3.1415927)`
-            # with a single f32 spill (differs from to_heading() by 2*pi).
-            delta = target.pos - origin.pos
-            angle = float(f32(math.atan2(float(delta.y), float(delta.x)) - NATIVE_HALF_PI - NATIVE_PI))
+            angle = native_chain_angle_from_delta(
+                dx=x87_pc24_sub(target.pos.x, origin.pos.x),
+                dy=x87_pc24_sub(target.pos.y, origin.pos.y),
+            )
 
             runtime_state.bonus_spawn_guard = True
             try:
@@ -230,8 +238,9 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 
 def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
-    size = float(creature.size)
-    ring_radius = size * 0.5 + 1.0
+    # Native 0x00421370: each PC=24 op rounds; the ring angle is a float32 local.
+    ring_radius = x87_pc24_add(x87_pc24_mul(creature.size, 0.5), 1.0)
+    ring_step = f32(0.5235988)  # 0x0046f4ec
 
     plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTemplateId.PLASMA_RIFLE)
     plasma_meta = float(plasma_entry.travel_budget)
@@ -241,10 +250,13 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
         runtime_state.bonus_spawn_guard = True
     try:
         for ring_idx in range(12):
-            ring_angle = float(ring_idx) * (math.pi / 6.0)
-            ring_offset = Vec2.from_angle(ring_angle) * ring_radius
+            ring_angle = x87_pc24_mul(float(ring_idx), ring_step)
+            ring_pos = Vec2(
+                x87_pc24_add(x87_pc24_cos_mul(ring_angle, ring_radius), hit.proj.pos.x),
+                x87_pc24_add(x87_pc24_sin_mul(ring_angle, ring_radius), hit.proj.pos.y),
+            )
             ctx.pool.spawn(
-                pos=hit.proj.pos + ring_offset,
+                pos=ring_pos,
                 angle=ring_angle,
                 type_id=ProjectileTemplateId.PLASMA_RIFLE,
                 owner=OwnerRef.from_local_player(0),
@@ -275,7 +287,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
     )
 
     creature = ctx.creatures[int(hit.hit_idx)]
-    new_size = float(creature.size) * 0.65
+    new_size = x87_pc24_mul(creature.size, f32(0.65))
     creature.size = new_size
     if new_size < 16.0:
         # Native calls creature_handle_death directly: no damage pipeline, so no

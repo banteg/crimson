@@ -195,51 +195,22 @@ pub const SecondaryProjectilePool = struct {
                     entry.active = false;
                 }
 
-                // The blast radius test runs in double precision.
-                const radius = @as(f64, scale) * t * 80.0;
-                const radius_sq = radius * radius;
+                const radius = native_math.pc24Mul(native_math.pc24Mul(scale, t), @as(f32, 80.0));
                 const damage = narrowF32(dt_f32 * scale * 700.0);
-                var collidable_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
-                var candidate_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
-                var max_find_margin: f32 = 0.0;
-                for (creatures.entries, 0..) |creature, idx| {
-                    collidable_snapshot[idx] = creature.active and
-                        creature_lifecycle.isCollidable(creature.lifecycle_stage);
-                    if (!collidable_snapshot[idx]) continue;
-                    const find_margin = narrowF32(creature.size * 0.14285715 + 3.0);
-                    if (find_margin > max_find_margin) {
-                        max_find_margin = find_margin;
-                    }
-                }
-                const bucket_size: f32 = 64.0;
-                const proj_cell_x: i32 = @intFromFloat(@floor(entry.pos.x / bucket_size));
-                const proj_cell_y: i32 = @intFromFloat(@floor(entry.pos.y / bucket_size));
-                const max_axis_delta = narrowF32(radius + max_find_margin + 0.001);
-                const cell_span: i32 = @intFromFloat(@ceil(max_axis_delta / bucket_size));
-                for (creatures.entries, 0..) |creature, idx| {
-                    if (!collidable_snapshot[idx]) continue;
-                    const cell_x: i32 = @intFromFloat(@floor(creature.pos.x / bucket_size));
-                    const cell_y: i32 = @intFromFloat(@floor(creature.pos.y / bucket_size));
-                    candidate_snapshot[idx] =
-                        @abs(cell_x - proj_cell_x) <= cell_span and
-                        @abs(cell_y - proj_cell_y) <= cell_span;
-                }
-
-                for (creatures.entries, 0..) |_, idx| {
-                    if (!candidate_snapshot[idx]) continue;
+                // Native scans every slot and gates only on `active && health > 0`:
+                // shrunk-to-death corpses keep positive health and are still
+                // damaged at any lifecycle stage. Slots filled by deaths during
+                // the scan are seen too.
+                for (0..creatures.entries.len) |idx| {
                     const target = creatures.entries[idx];
                     if (!target.active) continue;
-                    if (!creature_lifecycle.isCollidable(target.lifecycle_stage)) continue;
                     if (!(target.hp > 0.0)) continue;
-                    const dx = @as(f64, target.pos.x) - entry.pos.x;
-                    const dy = @as(f64, target.pos.y) - entry.pos.y;
-                    if (!(dx * dx + dy * dy < radius_sq)) continue;
+                    // projectile_vec2_distance: PC=24 `sqrt(dx*dx + dy*dy)` vs the f32 radius.
+                    const distance = native_math.pc24Hypot(target.pos.x - entry.pos.x, target.pos.y - entry.pos.y);
+                    if (!(distance < radius)) continue;
                     const hp_before = target.hp;
                     const direction = directionTo(entry.pos, target.pos);
-                    const impulse: state_mod.Vec2 = .{
-                        .x = narrowF32(@as(f64, direction.x) * 0.1),
-                        .y = narrowF32(@as(f64, direction.y) * 0.1),
-                    };
+                    const impulse = direction.mul(detonation_impulse_scale);
                     var killed_now = false;
                     _ = creatures.applyExplosionDamage(
                         state,
@@ -285,7 +256,8 @@ pub const SecondaryProjectilePool = struct {
                 .y = narrowF32(entry.pos.y + narrowF32(dt_f32 * entry.vel.y)),
             };
 
-            const speed_mag = entry.vel.length();
+            // `projectile_vec2_length` rounds per PC=24 op.
+            const speed_mag = native_math.pc24Hypot(entry.vel.x, entry.vel.y);
             if (entry.type_id == SecondaryProjectileTypeId.rocket) {
                 if (speed_mag < 500.0) {
                     const factor = narrowF32(dt_f32 * 3.0 + 1.0);
@@ -329,7 +301,7 @@ pub const SecondaryProjectilePool = struct {
                         .x = narrowF32(entry.vel.x + accel_x),
                         .y = narrowF32(entry.vel.y + accel_y),
                     };
-                    const speed_after = @sqrt(@as(f64, entry.vel.x) * @as(f64, entry.vel.x) + @as(f64, entry.vel.y) * @as(f64, entry.vel.y));
+                    const speed_after = native_math.pc24Hypot(entry.vel.x, entry.vel.y);
                     if (speed_after > 350.0) {
                         entry.vel = .{
                             .x = narrowF32(entry.vel.x - accel_x),
@@ -341,7 +313,7 @@ pub const SecondaryProjectilePool = struct {
             }
 
             const trail_speed = native_math.pc24Add(@abs(entry.vel.x), @abs(entry.vel.y));
-            const trail_decay = native_math.pc24Mul(native_math.pc24Mul(trail_speed, dt_f32), @as(f64, 0.01));
+            const trail_decay = native_math.pc24Mul(native_math.pc24Mul(trail_speed, dt_f32), @as(f32, 0.01));
             entry.trail_timer = native_math.pc24Sub(entry.trail_timer, trail_decay);
             if (entry.trail_timer < 0.0) {
                 const direction = runtime_helpers.directionFromHeading(entry.angle);
@@ -546,6 +518,8 @@ pub const SecondaryProjectilePool = struct {
     }
 };
 
+const detonation_impulse_scale: f32 = 0.1;
+
 fn directionTo(origin: state_mod.Vec2, target: state_mod.Vec2) state_mod.Vec2 {
     const delta = state_mod.Vec2.sub(target, origin);
     const normalized = native_math.normalizeVec2Safe(delta.x, delta.y);
@@ -693,6 +667,54 @@ test "secondary rocket hit consumes tune draw before lethal damage rng" {
     try std.testing.expect(tune_index.? < death_index.?);
     try std.testing.expect(state.game_tune_started);
     try std.testing.expect(!state.rng.consumeMissingTraceCaller());
+}
+
+test "secondary detonation damages positive-health corpses at any lifecycle" {
+    var state = state_mod.GameplayState.init(1);
+    var effects: effects_mod.EffectPool = .{};
+    var sprite_effects: effects_mod.SpriteEffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.effects = &effects;
+    // A Shrinkifier kill keeps positive health while the corpse fades.
+    creatures.entries[0] = .{
+        .active = true,
+        .hp = 100.0,
+        .max_hp = 100.0,
+        .size = 16.0,
+        .lifecycle_stage = 3.0,
+        .pos = .{ .x = 110.0, .y = 100.0 },
+    };
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var pool: SecondaryProjectilePool = .{};
+    pool.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .detonation_scale = 1.0,
+        .type_id = .detonation,
+        .owner = owner_ref.OwnerRef.fromLocalPlayer(0),
+    };
+
+    _ = pool.updatePulseGunWithEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &effects,
+        &sprite_effects,
+        &terrain_fx,
+        0.1,
+        1024.0,
+        5,
+    );
+
+    // Radius r(r(1.0 * 0.3) * 80) covers the corpse 10 units away.
+    const damage = native_math.pc24Mul(native_math.pc24Mul(@as(f32, 0.1), @as(f32, 1.0)), @as(f32, 700.0));
+    try std.testing.expectEqual(native_math.pc24Sub(@as(f32, 100.0), damage), creatures.entries[0].hp);
+    try std.testing.expectEqual(-detonation_impulse_scale, creatures.entries[0].vel.x);
 }
 
 test "secondary detonation death keeps native decals during freeze" {

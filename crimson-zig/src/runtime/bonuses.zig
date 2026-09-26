@@ -581,12 +581,7 @@ fn applyShockChainBonus(
     const target_idx = best_idx orelse return;
 
     const target = creatures.entries[target_idx];
-    // Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927) with a
-    // single f32 spill (differs from toHeading() by 2*pi).
-    const delta = state_mod.Vec2.sub(target.pos, origin);
-    const angle: f32 = @floatCast(std.math.atan2(@as(f64, delta.y), @as(f64, delta.x)) -
-        @as(f64, native_math.roundF32(native_math.native_half_pi)) -
-        @as(f64, native_math.roundF32(native_math.native_pi)));
+    const angle = projectiles_mod.chainAngleFromDelta(state_mod.Vec2.sub(target.pos, origin));
     const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
     const meta = projectileTravelBudgetFromRawId(type_id);

@@ -1,8 +1,11 @@
-"""`projectile_spawn` (0x00420440) and the shotgun pellet path vs the Python port."""
+"""`projectile_spawn` (0x00420440) and the player fire paths (shotgun pellets, particle weapons) vs the Python port."""
 
 from __future__ import annotations
 
 import random
+import struct
+
+import pytest
 
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
@@ -17,12 +20,15 @@ from grim.geom import Vec2
 from grim.rand import CRT_RAND_INC, CRT_RAND_MULT, CrtRand
 
 from ._support import (
+    PARTICLE_LAYOUT,
+    PARTICLE_STRIDE,
     PLAYER_OFFSETS,
     PROJECTILE_LAYOUT,
     PROJECTILE_STRIDE,
     Mismatch,
     compare_fields,
     mismatch_report,
+    prepare_gameplay,
 )
 
 _LOCAL_PLAYER_OWNER_ID = -100
@@ -181,4 +187,119 @@ def test_typo_shotgun_pellets_match_native(oracle) -> None:
             address = pool_base + index * PROJECTILE_STRIDE
             native = oracle.read_fields(address, PROJECTILE_LAYOUT)
             mismatches += compare_fields(f"{case} pellet[{index}]", native, _python_projectile(projectile), address=address)
+    assert not mismatches, mismatch_report(mismatches, total_cases=cases)
+
+
+# `player_update` fire block from the muzzle math (0x00415a1f) to just past the
+# ammo subtraction (0x004174c4). Its stack frame holds the aim heading at +0x1c
+# and a pointer to the player's spread heat at +0x24.
+_PLAYER_FIRE_BLOCK_START = 0x00415A1F
+_PLAYER_FIRE_BLOCK_STOP = 0x004174C4
+
+
+def _fake_grim_interface(oracle) -> int:
+    """A `grim_interface_ptr` whose every vtable slot is a `thiscall` key query returning 0."""
+
+    key_inactive = oracle.load_code(b"\x31\xc0\xc2\x04\x00")  # xor eax, eax; ret 4
+    vtable = oracle.alloc(0x400, data=struct.pack("<256I", *([key_inactive] * 256)))
+    return oracle.alloc(0x10, data=struct.pack("<I", vtable))
+
+
+@pytest.mark.parametrize(
+    "weapon_id",
+    [WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER, WeaponId.BUBBLEGUN],
+    ids=lambda weapon_id: weapon_id.name.lower(),
+)
+def test_particle_weapons_match_native(oracle, weapon_id: WeaponId) -> None:
+    """Flamer and Bubblegun shots: unwrapped `heading - 1.5707964f` particle angles and float32 ammo costs.
+
+    Fires a full clip through the native `player_update` fire block and the port's
+    `fire_weapon`, comparing ammo after every shot and the first shot's particle.
+    """
+
+    prepare_gameplay(oracle)
+    oracle.write_u32("grim_interface_ptr", _fake_grim_interface(oracle))
+    pristine = oracle.snapshot()
+    player = oracle.resolve("player_state_table")
+    particle_pool = oracle.resolve("particle_pool")
+    ammo_address = player + PLAYER_OFFSETS["ammo"]
+
+    rng = random.Random(0x415A1F + int(weapon_id))
+    mismatches: list[Mismatch] = []
+    cases = 0
+    for _ in range(20):
+        cases += 1
+        seed = rng.getrandbits(32)
+        pos = Vec2(f32(rng.uniform(100.0, 900.0)), f32(rng.uniform(100.0, 900.0)))
+        aim = Vec2(f32(pos.x + rng.uniform(-300.0, 300.0)), f32(pos.y + rng.uniform(-300.0, 300.0)))
+        # Headings outside (-pi/2, 3pi/2] expose angle wrapping.
+        aim_heading = f32(rng.uniform(-1.0, 7.3))
+
+        state = GameplayState()
+        state.rng.srand(seed)
+        python_player = PlayerState(index=0, pos=pos)
+        weapon_assign_player(python_player, weapon_id, state=state)
+        python_player.aim_heading = aim_heading
+
+        oracle.restore(pristine)
+        oracle.rand_state = seed
+        for field, value in (("pos_x", pos.x), ("pos_y", pos.y), ("aim_x", aim.x), ("aim_y", aim.y)):
+            oracle.write_f32(player + PLAYER_OFFSETS[field], value)
+        oracle.write_f32(player + PLAYER_OFFSETS["health"], 100.0)
+        oracle.write_f32(player + PLAYER_OFFSETS["size"], 48.0)
+        oracle.write_u32(player + PLAYER_OFFSETS["weapon_id"], int(weapon_id))
+        oracle.write_f32(player + PLAYER_OFFSETS["clip_size"], python_player.weapon.clip_size)
+        oracle.write_f32(ammo_address, python_player.weapon.ammo)
+
+        case = f"{weapon_id.name} seed=0x{seed:08x} heading={aim_heading!r}"
+        shot = 0
+        while python_player.weapon.ammo > 0.0:
+            shot += 1
+            frame = bytearray(0x400)
+            struct.pack_into("<f", frame, 0x1C, aim_heading)
+            struct.pack_into("<I", frame, 0x24, player + PLAYER_OFFSETS["spread_heat"])
+            oracle.write_f32(player + PLAYER_OFFSETS["spread_heat"], 0.0)
+            oracle.run(
+                _PLAYER_FIRE_BLOCK_START,
+                _PLAYER_FIRE_BLOCK_STOP,
+                regs={"edi": player, "esi": player + PLAYER_OFFSETS["pos_x"]},
+                frame=bytes(frame),
+            )
+            # Keep the port's cooldown and spread gates in step with the fragment.
+            python_player.weapon.shot_cooldown = 0.0
+            python_player.spread_heat = 0.0
+            fire_weapon(
+                WeaponFireCtx(
+                    player=python_player, input_state=PlayerInput(fire_down=True, aim=aim), dt=0.016, state=state,
+                ),
+            )
+            if shot == 1:
+                particle = next(entry for entry in reversed(state.particles.entries) if entry.active)
+                slot = state.particles.entries.index(particle)
+                address = particle_pool + slot * PARTICLE_STRIDE
+                python_particle = {
+                    "active": int(particle.active),
+                    "pos_x": particle.pos.x,
+                    "pos_y": particle.pos.y,
+                    "vel_x": particle.vel.x,
+                    "vel_y": particle.vel.y,
+                    "intensity": particle.intensity,
+                    "angle": particle.angle,
+                    "style_id": int(particle.style_id),
+                }
+                native_particle = oracle.read_fields(address, PARTICLE_LAYOUT)
+                mismatches += compare_fields(
+                    f"{case} particle[{slot}]", native_particle, python_particle, address=address,
+                )
+            native_ammo = oracle.read_f32(ammo_address)
+            ammo = compare_fields(
+                f"{case} shot {shot}", {"ammo": native_ammo}, {"ammo": python_player.weapon.ammo}, address=ammo_address,
+            )
+            if ammo:
+                mismatches += ammo
+                break
+        if not mismatches and oracle.read_f32(ammo_address) > 0.0:
+            mismatches.append(Mismatch(case, "clip shots", shot + 1, shot, ammo_address))
+        if oracle.rand_state != state.rng.state:
+            mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, state.rng.state, 0))
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)

@@ -22,6 +22,7 @@ __all__ = [
     "heading_from_delta_f32",
     "heading_to_direction_f32",
     "native_aim_point_from_heading",
+    "native_chain_angle_from_delta",
     "native_fire_muzzle_pos",
     "native_shot_angle_from_jitter_draws",
     "x87_d3dx_vec2_normalize",
@@ -181,6 +182,16 @@ def heading_from_delta_f32(*, dx: float, dy: float) -> float:
 
 def heading_add_pi_f32(heading: float) -> float:
     return f32(float(heading) + NATIVE_PI)
+
+
+def native_chain_angle_from_delta(*, dx: float, dy: float) -> float:
+    """Ion Rifle / Shock Chain link angle: `fpatan(dy, dx) - 1.5707964f - 3.1415927f`.
+
+    `fpatan` stays wide and each PC=24 `fsub` rounds (projectile_update
+    0x004212e5, bonus_apply 0x00409e0b); the result is heading - 2*pi.
+    """
+
+    return x87_pc24_sub(x87_pc24_sub(x87_fpatan(dy, dx), NATIVE_HALF_PI), NATIVE_PI)
 
 
 def heading_to_direction_f32(heading: float) -> Vec2:

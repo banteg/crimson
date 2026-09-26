@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..math_parity import (
+    NATIVE_HALF_PI,
     NATIVE_PI,
     f32,
     native_fire_muzzle_pos,
@@ -327,9 +328,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         spread_heat=float(player.spread_heat),
         rng=state.rng,
     )
-    particle_angle = Vec2.from_heading(shot_angle).to_angle()
-    if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
-        particle_angle = Vec2.from_heading(aim_heading).to_angle()
 
     # Native gameplay fire consumes one exact `player_update` RNG draw for shot
     # SFX variant selection on every non-Fire-Bullets shot.
@@ -430,16 +428,19 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             )
         case ParticleStreamMode(style=style, slow=slow):
             counts_accuracy_shots = False
+            # Native passes the unwrapped `heading - 1.5707964f`: the shot angle
+            # for Bubblegun (0x0041744a), the aim heading for the flamers
+            # (stored at 0x00415a29).
             if slow:
                 state.particles.spawn_particle_slow(
                     pos=muzzle,
-                    angle=Vec2.from_heading(shot_angle).to_angle(),
+                    angle=x87_pc24_sub(shot_angle, NATIVE_HALF_PI),
                     owner=owner,
                 )
             else:
                 particle_id = state.particles.spawn_particle(
                     pos=muzzle,
-                    angle=particle_angle,
+                    angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
                     owner=owner,
                 )
@@ -533,7 +534,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     if state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
         # Native allows ammo to cross below zero for reload-time firing paths
         # (for example Regression Bullets), and replay checkpoints rely on that.
-        player.weapon.ammo = float(player.weapon.ammo) - float(ammo_cost)
+        player.weapon.ammo = x87_pc24_sub(player.weapon.ammo, ammo_cost)
     reload_start_gate_open = bool(player.weapon.reload_timer <= 0.0)
     if fire_gate.normal_ready:
         # Alt-weapon same-tick fire uses the pre-swap gate (reload_timer==0) for

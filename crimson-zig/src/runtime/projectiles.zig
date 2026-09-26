@@ -1135,10 +1135,7 @@ fn postHitIonRifleShockChain(
 
     const origin_creature = creatures.entries[hit_idx];
     const target = creatures.entries[best_idx];
-    // Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927) with a
-    // single f32 spill (differs from toHeading() by 2*pi).
-    const delta = state_mod.Vec2.sub(target.pos, origin_creature.pos);
-    const angle: f32 = @floatCast(std.math.atan2(@as(f64, delta.y), @as(f64, delta.x)) - @as(f64, native_half_pi) - @as(f64, native_math.roundF32(native_math.native_pi)));
+    const angle = chainAngleFromDelta(state_mod.Vec2.sub(target.pos, origin_creature.pos));
 
     state.bonus_spawn_guard = true;
     defer state.bonus_spawn_guard = false;
@@ -1152,6 +1149,16 @@ fn postHitIonRifleShockChain(
         false,
     );
     state.shock_chain_projectile_id = @intCast(spawned_idx);
+}
+
+/// Ion Rifle / Shock Chain link angle: `fpatan(dy, dx) - 1.5707964f - 3.1415927f`.
+/// `fpatan` stays wide and each PC=24 `fsub` rounds (projectile_update 0x004212e5,
+/// bonus_apply 0x00409e0b); the result is heading - 2*pi.
+pub fn chainAngleFromDelta(delta: state_mod.Vec2) f32 {
+    return native_math.pc24Sub(
+        native_math.pc24Sub(native_math.fpatan(delta.y, delta.x), native_half_pi),
+        native_math.native_pi,
+    );
 }
 
 pub fn creatureFindNearestActive(

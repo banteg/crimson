@@ -14,6 +14,7 @@ CREATURE_POOL_SLOTS = 0x180
 CREATURE_LAYOUT: dict[str, tuple[int, str]] = {
     "active": (0x00, "B"),
     "phase_seed": (0x04, "i"),
+    "lifecycle_stage": (0x10, "f"),
     "pos_x": (0x14, "f"),
     "pos_y": (0x18, "f"),
     "vel_x": (0x1C, "f"),
@@ -71,6 +72,34 @@ PROJECTILE_LAYOUT: dict[str, tuple[int, str]] = {
     "owner_id": (0x3C, "i"),
 }
 
+# `secondary_projectile_t` (0x2c bytes). Detonations keep their timer and scale in `vel_x`/`vel_y`.
+SECONDARY_PROJECTILE_STRIDE = 0x2C
+SECONDARY_PROJECTILE_LAYOUT: dict[str, tuple[int, str]] = {
+    "active": (0x00, "B"),
+    "angle": (0x04, "f"),
+    "life_timer": (0x08, "f"),
+    "pos_x": (0x0C, "f"),
+    "pos_y": (0x10, "f"),
+    "vel_x": (0x14, "f"),
+    "vel_y": (0x18, "f"),
+    "type_id": (0x1C, "i"),
+    "trail_timer": (0x20, "f"),
+    "target_id": (0x24, "i"),
+}
+
+# `particle_t` (0x38 bytes).
+PARTICLE_STRIDE = 0x38
+PARTICLE_LAYOUT: dict[str, tuple[int, str]] = {
+    "active": (0x00, "B"),
+    "pos_x": (0x04, "f"),
+    "pos_y": (0x08, "f"),
+    "vel_x": (0x0C, "f"),
+    "vel_y": (0x10, "f"),
+    "intensity": (0x24, "f"),
+    "angle": (0x28, "f"),
+    "style_id": (0x30, "B"),
+}
+
 # `player_state_t` field offsets (stride 0x360), from analysis/ghidra/maps/data_map.json.
 PLAYER_STRIDE = 0x360
 PLAYER_OFFSETS = {
@@ -78,11 +107,36 @@ PLAYER_OFFSETS = {
     "pos_y": 0x18,
     "health": 0x24,
     "size": 0x34,
+    "aim_x": 0x50,
+    "aim_y": 0x54,
+    "spread_heat": 0x2B8,
     "weapon_id": 0x2C0,
     "clip_size": 0x2C4,
     "ammo": 0x2CC,
     "aim_heading": 0x300,
 }
+
+
+def prepare_gameplay(oracle, *, world_size: int = 1024) -> None:
+    """Seed the startup state that `projectile_update` and the fire paths need.
+
+    The D3DX normalize dispatcher probes the CPU and registry on first use; bind it
+    to the x87 implementation that native captures resolve to. Demo mode keeps
+    kills from rolling bonus drops, matching the port's demo world.
+    """
+
+    oracle.call("weapon_table_init")
+    oracle.call("effect_defaults_reset")
+    oracle.stub("sfx_play_panned", 0)
+    oracle.write_u32("vec2_normalize_impl", oracle.resolve("d3dx_c_vec2_normalize"))
+    oracle.write_u8("demo_mode_active", 1)
+    oracle.write_u32("terrain_texture_width", world_size)
+    oracle.write_u32("terrain_texture_height", world_size)
+    oracle.write_u32("config_player_count", 1)
+    oracle.write_u32("shock_chain_projectile_id", 0xFFFF_FFFF)
+    # A zeroed cvar: friendly fire off.
+    oracle.write_u32("cv_friendlyFire", oracle.alloc(0x40))
+
 
 def f32_bits(value: float) -> int:
     return struct.unpack("<I", struct.pack("<f", value))[0]

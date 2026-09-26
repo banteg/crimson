@@ -669,6 +669,29 @@ def test_secondary_detonation_impulse_uses_native_safe_normalization() -> None:
     assert damage_runtime.calls[0][3] == Vec2(0.10000000149011612, 9.999999747378752e-06)
 
 
+def test_secondary_detonation_damages_positive_health_corpses() -> None:
+    # Native gates the blast on `active && health > 0` only: a Shrinkifier kill
+    # keeps positive health, so its fading corpse still takes blast damage.
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.DETONATION,
+            time_to_live=1.0,
+        ),
+    )
+    creatures = [
+        _creature(pos=Vec2(10.0, 0.0), hp=100.0, lifecycle_stage=3.0),
+        _creature(pos=Vec2(0.0, 10.0), hp=0.0, lifecycle_stage=3.0),
+    ]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
+
+    assert [call[0] for call in damage_runtime.calls] == [0]
+
+
 def _secondary_callers(rng: ScriptedCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
     return [RngCallerStatic(record.caller) for record in rng.records_since() if record.caller in allowed]
 

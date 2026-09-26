@@ -6,7 +6,7 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
+from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, x87_pc24_sub
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
     ProjectilePool,
@@ -83,7 +83,8 @@ def test_shock_chain_uses_native_f32_nearest_ordering() -> None:
     )
 
     projectile = pool.entries[state.shock_chain_projectile_id]
-    expected_angle = f32(math.atan2(first_pos.y, first_pos.x) - NATIVE_HALF_PI - NATIVE_PI)
+    # fpatan stays wide; each PC=24 fsub rounds (bonus_apply 0x00409e0b).
+    expected_angle = x87_pc24_sub(x87_pc24_sub(math.atan2(first_pos.y, first_pos.x), NATIVE_HALF_PI), NATIVE_PI)
     assert projectile.angle == expected_angle
 
 

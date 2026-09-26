@@ -16,7 +16,6 @@ const state_mod = @import("state.zig");
 const survival_progression = @import("survival_progression.zig");
 const spawn_mod = @import("spawn.zig");
 const weapon_data = @import("weapon_data.zig");
-const math = @import("math.zig");
 const timing = @import("timing.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -725,11 +724,6 @@ fn tryFireWeaponWithGate(
         dir_roll,
         mag_roll,
     );
-    var particle_angle = directionFromHeading(shot_angle).toAngle();
-    if (player.weapon.weapon_id == .flamethrower or player.weapon.weapon_id == .blow_torch or player.weapon.weapon_id == .hr_flamer) {
-        particle_angle = directionFromHeading(aim_heading).toAngle();
-    }
-
     if (!is_fire_bullets) {
         // fire SFX variant selection.
         _ = state.rng.randTagged(rng_callers.player_update_shot_sfx);
@@ -786,18 +780,21 @@ fn tryFireWeaponWithGate(
         },
         .particle_stream => |mode| {
             counts_accuracy_shots = false;
+            // Native passes the unwrapped `heading - 1.5707964f`: the shot angle
+            // for Bubblegun (0x0041744a), the aim heading for the flamers
+            // (stored at 0x00415a29).
             if (mode.slow) {
                 _ = particles.spawnParticleSlow(
                     state,
                     muzzle,
-                    directionFromHeading(shot_angle).toAngle(),
+                    native_math.pc24Sub(shot_angle, native_math.native_half_pi),
                     owner_ref.OwnerRef.fromLocalPlayer(0),
                 );
             } else {
                 const particle_id = particles.spawnParticle(
                     state,
                     muzzle,
-                    particle_angle,
+                    native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
                     owner_ref.OwnerRef.fromLocalPlayer(0),
                 );
@@ -1310,14 +1307,6 @@ fn computeShotCount(weapon_id: WeaponId) i32 {
 fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
     // Mirrors `weapon.ammo_class == 1` in the Python weapon table.
     return weapon_id == .flamethrower or weapon_id == .blow_torch or weapon_id == .hr_flamer;
-}
-
-fn directionFromHeading(heading: f32) state_mod.Vec2 {
-    const radians = narrowF32(heading - native_pi / 2.0);
-    return .{
-        .x = narrowF32(math.cos(radians)),
-        .y = narrowF32(math.sin(radians)),
-    };
 }
 
 fn expectFloatClose(expected: f32, actual: f32) !void {

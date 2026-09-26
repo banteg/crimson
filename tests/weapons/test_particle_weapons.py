@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.runtime import CreatureState
-from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos
+from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
@@ -22,10 +22,10 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     cases = (
-        (WeaponId.FLAMETHROWER, 0, 0.1),
-        (WeaponId.BLOW_TORCH, 1, 0.05),
-        (WeaponId.HR_FLAMER, 2, 0.1),
-        (WeaponId.BUBBLEGUN, 8, 0.15),
+        (WeaponId.FLAMETHROWER, 0, f32(0.1)),
+        (WeaponId.BLOW_TORCH, 1, f32(0.05)),
+        (WeaponId.HR_FLAMER, 2, f32(0.1)),
+        (WeaponId.BUBBLEGUN, 8, f32(0.15)),
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
@@ -58,13 +58,14 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         else:
             # Flamethrower-family particles use the raw aim heading.
             expected_shot_angle = float(player.aim_heading)
-        expected_angle = Vec2.from_heading(expected_shot_angle).to_angle()
+        # Native passes the unwrapped `heading - 1.5707964f`.
+        expected_angle = x87_pc24_sub(expected_shot_angle, NATIVE_HALF_PI)
         assert_float_close(float(particles[0].angle), expected_angle)
 
         assert state.projectiles.iter_active() == []
         assert state.secondary_projectiles.iter_active() == []
 
-        assert_float_close(float(player.weapon.ammo), start_ammo - ammo_cost)
+        assert_float_close(float(player.weapon.ammo), x87_pc24_sub(start_ammo, ammo_cost))
         assert state.weapon_shots_fired[0][weapon_id] == 1
 
 
@@ -135,7 +136,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     jittered_angle = math.atan2(aim_jitter_y - float(player.pos.y), aim_jitter_x - float(player.pos.x))
 
     assert jittered_angle > 0.1
-    expected_angle = Vec2.from_heading(float(player.aim_heading)).to_angle()
+    expected_angle = x87_pc24_sub(player.aim_heading, NATIVE_HALF_PI)
     assert_float_close(float(particle.angle), expected_angle)
     assert abs(float(particle.angle) - jittered_angle) > 0.1
 
@@ -165,7 +166,9 @@ def test_particle_hits_damage_creatures() -> None:
     creature.lifecycle_stage = 16.0
 
     state.particles.update(
-        0.016, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[creature]), creatures=[creature],
+        0.016,
+        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[creature]),
+        creatures=[creature],
     )
     assert creature.hp < 100.0
 

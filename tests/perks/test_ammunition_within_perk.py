@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -123,4 +123,5 @@ def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_amm
 
     assert_float_close(player.health, f32(9.85))
     assert any(entry.active for entry in state.particles.entries)
-    assert_float_close(player.weapon.ammo, 4.9)
+    # Native subtracts the float32 `0.1f` flamethrower cost at PC=24.
+    assert_float_close(player.weapon.ammo, x87_pc24_sub(5.0, f32(0.1)))

@@ -74,7 +74,8 @@ stores a wider double where native stores a float32.
 | --- | --- | --- |
 | `test_float_helpers` | `angle_approach` `0x0041f430`, `__ftol` `0x00461054`, PC24 `fadd`/`fsub`/`fmul`/`fdiv`/`fsqrt`, `fcos`/`fsin` + `fmul` | `_angle_approach`, `ftol_ms_i32`, `math_parity.x87_pc24_*` |
 | `test_spawn_template` | `creature_spawn_template` `0x00430af0`, every template × hardcore × retry count | `CreaturePool.spawn_template` |
-| `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `player_fire_weapon` `0x00444980` | `ProjectilePool.spawn`, `fire_weapon` |
+| `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `player_fire_weapon` `0x00444980`; flamer and Bubblegun fire block of `player_update` `0x00415a1f..0x004174c4` | `ProjectilePool.spawn`, `fire_weapon` |
+| `test_projectile_update` | `projectile_update` `0x00420b90`: rocket flight, detonation blast, Shrinkifier/Splitter/Plasma Cannon/Ion Rifle hits; Shock Chain in `bonus_apply` `0x00409890` | `SecondaryProjectilePool.step`, `ProjectilePool.step`, `bonus_apply` |
 | `test_typo_spawn` | Typ-o spawn block `0x00445a62..0x00445c85` with `creature_spawn_tinted` | `typo_mid_step` |
 | `test_quest_builders` | All 50 `quest_build_*` functions (`0x00434480..0x004390d0`) across seeds, terrain sizes, player counts and hardcore | `QuestDefinition.builder` spawn tables |
 | `test_mode_spawns` | `rush_mode_update` `0x004072b0` with `creature_spawn`; `survival_spawn_creature` `0x00407510`, including elapsed times and experience past 2^24 | `tick_rush_mode_spawns`, `build_survival_spawn_creature` |
@@ -94,4 +95,8 @@ stores a wider double where native stores a float32.
   `console_printf`.
 - Globals start from the executable's file image plus static initializers.
   Runtime tables that game startup fills, such as perk ids, must be seeded or
-  built by calling their init functions (`weapon_table_init`).
+  built by calling their init functions (`weapon_table_init`,
+  `effect_defaults_reset`). `prepare_gameplay` in `tests/native_oracle/_support.py`
+  seeds what `projectile_update` and the fire paths need, including binding
+  `vec2_normalize_impl` to the x87 `d3dx_c_vec2_normalize`: the lazy D3DX
+  dispatcher would otherwise probe the registry and CPU features.

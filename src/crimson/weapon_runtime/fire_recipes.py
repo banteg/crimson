@@ -3,6 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from ..effects import ParticleStyleId
+from ..math_parity import f32
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..weapons import WeaponId, projectile_type_id_for_weapon_id
 
@@ -80,6 +81,7 @@ type FireMode = PrimaryPelletsMode | SecondaryShotMode | ParticleStreamMode | Mu
 
 class FireRecipe(msgspec.Struct, frozen=True):
     mode: FireMode
+    # `player_update` subtracts a float32 local (`0.1f`/`0.05f`/`0.15f`).
     ammo_cost: float = 1.0
 
 
@@ -119,19 +121,19 @@ FIRE_RECIPE_BY_WEAPON: dict[WeaponId, FireRecipe] = {
     WeaponId.ROCKET_MINIGUN: FireRecipe(mode=SecondaryShotMode(type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN)),
     WeaponId.FLAMETHROWER: FireRecipe(
         mode=ParticleStreamMode(style=None, slow=False),
-        ammo_cost=0.1,
+        ammo_cost=f32(0.1),
     ),
     WeaponId.BLOW_TORCH: FireRecipe(
         mode=ParticleStreamMode(style=ParticleStyleId.BLOW_TORCH, slow=False),
-        ammo_cost=0.05,
+        ammo_cost=f32(0.05),
     ),
     WeaponId.HR_FLAMER: FireRecipe(
         mode=ParticleStreamMode(style=ParticleStyleId.HR_FLAMER, slow=False),
-        ammo_cost=0.1,
+        ammo_cost=f32(0.1),
     ),
     WeaponId.BUBBLEGUN: FireRecipe(
         mode=ParticleStreamMode(style=None, slow=True),
-        ammo_cost=0.15,
+        ammo_cost=f32(0.15),
     ),
     WeaponId.MULTI_PLASMA: FireRecipe(mode=MultiPlasmaFanMode()),
     WeaponId.MINI_ROCKET_SWARMERS: FireRecipe(mode=SwarmerDumpMode()),
