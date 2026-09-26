@@ -111,6 +111,8 @@ extern "C" void projectile_render(float transition_alpha)
     projectile_render_vec2_t point2;
     projectile_render_vec2_t point3;
     int segment_index;
+    float step_x;
+    float step_y;
 
     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_set_color(
@@ -350,10 +352,10 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 float heading = projectile_pool[projectile_index].angle + 1.5707964f;
-                float step_x = (float)cos(heading)
+                step_x = (float)cos(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.5f;
-                float step_y = (float)sin(heading)
+                step_y = (float)sin(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.5f;
                 grim_interface_ptr->grim_set_color(
@@ -401,10 +403,10 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 float heading = projectile_pool[projectile_index].angle + 1.5707964f;
-                float step_x = (float)cos(heading)
+                step_x = (float)cos(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
-                float step_y = (float)sin(heading)
+                step_y = (float)sin(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
@@ -451,10 +453,10 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 float heading = projectile_pool[projectile_index].angle + 1.5707964f;
-                float step_x = (float)cos(heading)
+                step_x = (float)cos(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.6f;
-                float step_y = (float)sin(heading)
+                step_y = (float)sin(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.6f;
                 grim_interface_ptr->grim_set_color(
@@ -501,10 +503,10 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 float heading = projectile_pool[projectile_index].angle + 1.5707964f;
-                float step_x = (float)cos(heading)
+                step_x = (float)cos(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
-                float step_y = (float)sin(heading)
+                step_y = (float)sin(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
@@ -551,10 +553,10 @@ extern "C" void projectile_render(float transition_alpha)
                 }
 
                 float heading = projectile_pool[projectile_index].angle + 1.5707964f;
-                float step_x = (float)cos(heading)
+                step_x = (float)cos(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
-                float step_y = (float)sin(heading)
+                step_y = (float)sin(heading)
                     * projectile_pool[projectile_index].pos.tail.vy.speed_scale
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
@@ -634,13 +636,14 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_atlas_frame(2, 0);
                 grim_interface_ptr->grim_set_color(
                     0.1f, 0.6f, 0.2f, transition_alpha * 0.7f);
+                half_size = scale * 16.0f;
                 grim_interface_ptr->grim_draw_quad(
                     camera_offset_x + projectile->pos_x
                         - scale * 8.0f,
                     camera_offset_y + projectile->pos.pos_y
                         - scale * 8.0f,
-                    scale * 16.0f,
-                    scale * 16.0f);
+                    half_size,
+                    half_size);
             } else {
                 grim_interface_ptr->grim_set_rotation(projectile->angle);
                 grim_interface_ptr->grim_set_atlas_frame(2, 0);
@@ -653,13 +656,8 @@ extern "C" void projectile_render(float transition_alpha)
                     56.0f,
                     56.0f);
             }
-            continue;
-        }
-
-        if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
-            if (primary->vy.life_timer != 0.4f) {
-                continue;
-            }
+        } else if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
+            if (primary->vy.life_timer == 0.4f) {
             scale = projectile_render_vec2_t(
                 projectile->pos.origin_x - projectile->pos_x,
                 primary->origin_y - projectile->pos.pos_y).length();
@@ -675,13 +673,9 @@ extern "C" void projectile_render(float transition_alpha)
                 camera_offset_y + projectile->pos.pos_y - scale * 0.5f,
                 scale,
                 scale);
-            continue;
-        }
-
-        if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_BLADE_GUN) {
-            if (primary->vy.life_timer != 0.4f) {
-                continue;
             }
+        } else if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_BLADE_GUN) {
+            if (primary->vy.life_timer == 0.4f) {
             scale = projectile_render_vec2_t(
                 projectile->pos.origin_x - projectile->pos_x,
                 primary->origin_y - projectile->pos.pos_y).length();
@@ -699,16 +693,11 @@ extern "C" void projectile_render(float transition_alpha)
                 camera_offset_y + projectile->pos.pos_y - scale * 0.5f,
                 scale,
                 scale);
-            continue;
-        }
-
-        if (!(projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN
+            }
+        } else if ((projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN
             || projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_RIFLE
             || projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_CANNON
             || projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {
-            continue;
-        }
-
         if (primary->vy.life_timer == 0.4f) {
             if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN) {
                 scale = 1.05f;
@@ -888,10 +877,8 @@ extern "C" void projectile_render(float transition_alpha)
                     projectile_render_vec2_t start_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)&projectile->position;
-                    point0.x = start_result.x;
-                    point1.x = start_result.x;
-                    point0.y = start_result.y;
-                    point1.y = start_result.y;
+                    point0 = start_result;
+                    point1 = start_result;
                     point0 -= direction * scale * 10.0f;
                     point1 += direction * scale * 10.0f;
                     projectile_render_vec2_t end_result =
@@ -939,6 +926,7 @@ extern "C" void projectile_render(float transition_alpha)
                         creature_index + 1);
                 }
             }
+        }
         }
     }
     grim_interface_ptr->grim_end_batch();

@@ -3,6 +3,41 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Residual map: shared plasma steps and the else-if arm chain (2026-09-26)
+
+crimson-88's residual map (`answer_pr-residual-map.md`, `pr-residual-map.md`,
+`scripts/c2/residual_map.py`) takes the function from 81.79% to **94.03%**, with
+references 541/0/0 to **542/0/0**. Labels masked: 86.86 to 99.01%. Stack-masked
+structural: 98.87 to 99.37%. All mapped frame objects sit at native offsets.
+Cumulative steps:
+
+| Step | Raw | Labels masked | Refs |
+|---|---|---|---|
+| **P**: the pulse arm stores `scale * 16.0f` into `half_size` and draws with it (native's 0x94 slot) | 81.95% | | 537/0/2 |
+| **X**: one function-scope `step_x`/`step_y` shared by the five plasma loops | 86.93% | | 541/0/0 |
+| **A**: the ion arc copies the start point whole, `point0 = start_result; point1 = start_result;` | 93.83% | 98.81% | |
+| **C**: pulse, splitter, blade and ion as one else-if chain with no `continue` | 94.03% | | 542/0/0 |
+
+- **X** is the real native difference behind P's slot tie. The frame packer's
+  density sort is an unstable quicksort with no tie-break (0x10761bf0). So the
+  order of equal-weight `half_size`/`base` depends on the whole array, and the
+  step variables flip it to native's order.
+- **C** puts the shared splitter/blade tail in native's arm.
+
+Not landed: three no-op parentheses in the Sharpshooter geometry and
+`scale = (vec(...).length());` reach 94.23%, 544/0/0. They only move the
+81-node scheduling window through FROUND and are not evidence of the original
+spelling.
+
+Remaining regions:
+
+| Region | Address | Difference | Verdict |
+|---|---|---|---|
+| K2 | 0x422f9b | Native pushes a 0.0 alpha through a stack temp | Unknown |
+| K6 | 0x424c5e | direction * scale y lane | Compiler state: field ids |
+| K7 | | Arc `+=` lanes | Compiler state: temp ids |
+| K8/K9 | | vtable and plague push order | Window cap |
+
 ## Stale ion pointer and native frame size (2026-09-26)
 
 crimson-88's spill and slot-order pass (`answer_pr-spill-order.md`,
