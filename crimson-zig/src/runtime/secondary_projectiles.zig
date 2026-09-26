@@ -91,6 +91,7 @@ pub const SecondaryProjectilePool = struct {
         if (type_id == SecondaryProjectileTypeId.detonation) {
             entry.detonation_t = 0.0;
             entry.detonation_scale = time_to_live;
+            entry.vel = .{ .x = 0.0, .y = time_to_live };
             entry.speed = time_to_live;
             return index;
         }
@@ -140,7 +141,7 @@ pub const SecondaryProjectilePool = struct {
         var effects: effects_mod.EffectPool = .{};
         var sprite_effects: effects_mod.SpriteEffectPool = .{};
         var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
-        self.updatePulseGunWithEffects(
+        _ = self.updatePulseGunWithEffects(
             state,
             players,
             creatures,
@@ -166,8 +167,9 @@ pub const SecondaryProjectilePool = struct {
         dt: f32,
         world_size: f32,
         detail_preset: i32,
-    ) void {
-        if (!(dt > 0.0)) return;
+    ) i32 {
+        if (!(dt > 0.0)) return 0;
+        var hit_count: i32 = 0;
         const dt_f32 = dt;
         const freeze_active = state.bonuses.freeze > 0.0;
 
@@ -177,6 +179,8 @@ pub const SecondaryProjectilePool = struct {
             if (entry.type_id == SecondaryProjectileTypeId.detonation) {
                 state.camera_shake_pulses = 4;
                 entry.detonation_t = narrowF32(entry.detonation_t + dt_f32 * 3.0);
+                // Native keeps the detonation timer and scale in the velocity slots.
+                entry.vel = .{ .x = entry.detonation_t, .y = entry.detonation_scale };
                 const t = entry.detonation_t;
                 const scale = entry.detonation_scale;
                 if (t > 1.0) {
@@ -191,8 +195,9 @@ pub const SecondaryProjectilePool = struct {
                     entry.active = false;
                 }
 
-                const radius = narrowF32(scale * t * 80.0);
-                const radius_sq = narrowF32(radius * radius);
+                // The blast radius test runs in double precision.
+                const radius = @as(f64, scale) * t * 80.0;
+                const radius_sq = radius * radius;
                 const damage = narrowF32(dt_f32 * scale * 700.0);
                 var collidable_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
                 var candidate_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
@@ -226,10 +231,15 @@ pub const SecondaryProjectilePool = struct {
                     if (!target.active) continue;
                     if (!creature_lifecycle.isCollidable(target.lifecycle_stage)) continue;
                     if (!(target.hp > 0.0)) continue;
-                    const d_sq = runtime_helpers.distanceSqRoundedF32(entry.pos, target.pos);
-                    if (!(d_sq < radius_sq)) continue;
+                    const dx = @as(f64, target.pos.x) - entry.pos.x;
+                    const dy = @as(f64, target.pos.y) - entry.pos.y;
+                    if (!(dx * dx + dy * dy < radius_sq)) continue;
                     const hp_before = target.hp;
-                    const impulse = directionTo(entry.pos, target.pos).mul(0.1);
+                    const direction = directionTo(entry.pos, target.pos);
+                    const impulse: state_mod.Vec2 = .{
+                        .x = narrowF32(@as(f64, direction.x) * 0.1),
+                        .y = narrowF32(@as(f64, direction.y) * 0.1),
+                    };
                     var killed_now = false;
                     _ = creatures.applyExplosionDamage(
                         state,
@@ -330,14 +340,15 @@ pub const SecondaryProjectilePool = struct {
                 entry.speed = narrowF32(entry.speed - dt_f32 * 0.5);
             }
 
-            const trail_decay = narrowF32((@abs(entry.vel.x) + @abs(entry.vel.y)) * dt_f32 * 0.01);
-            entry.trail_timer = narrowF32(entry.trail_timer - trail_decay);
+            const trail_speed = native_math.pc24Add(@abs(entry.vel.x), @abs(entry.vel.y));
+            const trail_decay = native_math.pc24Mul(native_math.pc24Mul(trail_speed, dt_f32), @as(f64, 0.01));
+            entry.trail_timer = native_math.pc24Sub(entry.trail_timer, trail_decay);
             if (entry.trail_timer < 0.0) {
                 const direction = runtime_helpers.directionFromHeading(entry.angle);
                 const spawn_pos = state_mod.Vec2.sub(entry.pos, direction.mul(9.0));
                 // Native bug: both trail velocity components come from cosine
                 // (fcos with no fsin), so the smoke drifts diagonally.
-                const trail_cos = @cos(entry.angle + narrowF32(native_math.native_half_pi));
+                const trail_cos = @cos(@as(f64, entry.angle) + native_math.native_half_pi);
                 const trail_velocity: state_mod.Vec2 = .{
                     .x = narrowF32(trail_cos) * 90.0,
                     .y = narrowF32(trail_cos * 90.0),
@@ -362,10 +373,21 @@ pub const SecondaryProjectilePool = struct {
                 }
             }
             if (hit_idx) |idx| {
+                hit_count += 1;
                 if (creature_lifecycle.isAlive(creatures.entries[idx].lifecycle_stage)) {
                     if (entry.owner.playerIndexInBounds(state.shots_hit.len)) |player_idx| {
                         state.shots_hit[player_idx] += 1;
                     }
+                }
+
+                // Native plays the hit audio first: the first hit outside demo
+                // and rush picks the game tune (one playlist draw) before the
+                // hit decals and lethal damage consume the RNG.
+                if (!state.demo_mode_active and state.game_mode != .rush and !state.game_tune_started) {
+                    state.game_tune_started = true;
+                    _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
+                } else {
+                    state.sfx_queue.append(.explosion_medium);
                 }
 
                 // Native preserves the incoming type in a local before the
@@ -403,7 +425,7 @@ pub const SecondaryProjectilePool = struct {
                 }
 
                 if (impact_type == SecondaryProjectileTypeId.rocket and detail_preset > 2) {
-                    effects.spawnExplosionBurst(state, entry.pos, 1.0, detail_preset);
+                    effects.spawnExplosionBurst(state, entry.pos, 0.4, detail_preset);
                 }
 
                 const damage: f32 = switch (impact_type) {
@@ -412,14 +434,7 @@ pub const SecondaryProjectilePool = struct {
                     SecondaryProjectileTypeId.rocket_minigun => narrowF32(entry.speed * 20.0 + 40.0),
                     else => 150.0,
                 };
-                // Native chooses the first-hit tune (and consumes its playlist
-                // draw) before lethal damage can enter the death RNG stream.
-                if (!state.demo_mode_active and state.game_mode != .rush and !state.game_tune_started) {
-                    state.game_tune_started = true;
-                    _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
-                } else {
-                    state.sfx_queue.append(.explosion_medium);
-                }
+                const inv_dt = narrowF32(1.0 / @as(f64, dt_f32));
                 _ = creatures.applyExplosionDamage(
                     state,
                     players,
@@ -428,8 +443,8 @@ pub const SecondaryProjectilePool = struct {
                     idx,
                     damage,
                     .{
-                        .x = narrowF32(entry.vel.x / dt_f32),
-                        .y = narrowF32(entry.vel.y / dt_f32),
+                        .x = native_math.pc24Mul(inv_dt, entry.vel.x),
+                        .y = native_math.pc24Mul(inv_dt, entry.vel.y),
                     },
                     entry.owner,
                     dt_f32,
@@ -438,10 +453,9 @@ pub const SecondaryProjectilePool = struct {
                 );
 
                 entry.type_id = SecondaryProjectileTypeId.detonation;
-                entry.vel = .{};
+                entry.vel = .{ .x = 0.0, .y = narrowF32(det_scale) };
                 entry.detonation_t = 0.0;
                 entry.detonation_scale = narrowF32(det_scale);
-                entry.trail_timer = 0.0;
 
                 if (freeze_active) {
                     const freeze_angle_caller: rng_callers.Caller = switch (impact_type) {
@@ -522,13 +536,13 @@ pub const SecondaryProjectilePool = struct {
             // detonates this tick (<=, not <).
             if (entry.speed <= 0.0) {
                 entry.type_id = SecondaryProjectileTypeId.detonation;
-                entry.vel = .{};
+                entry.vel = .{ .x = 0.0, .y = 0.5 };
                 entry.detonation_t = 0.0;
                 entry.detonation_scale = 0.5;
-                entry.trail_timer = 0.0;
                 state.sfx_queue.append(.explosion_medium);
             }
         }
+        return hit_count;
     }
 };
 
@@ -649,7 +663,7 @@ test "secondary rocket hit consumes tune draw before lethal damage rng" {
         .owner = owner_ref.OwnerRef.fromLocalPlayer(0),
     };
 
-    pool.updatePulseGunWithEffects(
+    _ = pool.updatePulseGunWithEffects(
         &state,
         players[0..],
         &creatures,
@@ -710,7 +724,7 @@ test "secondary detonation death keeps native decals during freeze" {
         .owner = owner_ref.OwnerRef.fromLocalPlayer(0),
     };
 
-    pool.updatePulseGunWithEffects(
+    _ = pool.updatePulseGunWithEffects(
         &state,
         players[0..],
         &creatures,
@@ -775,7 +789,7 @@ test "rocket minigun freeze hit preserves subtype callers and target position" {
         .owner = owner_ref.OwnerRef.fromLocalPlayer(0),
     };
 
-    pool.updatePulseGunWithEffects(
+    _ = pool.updatePulseGunWithEffects(
         &state,
         players[0..],
         &creatures,

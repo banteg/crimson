@@ -168,21 +168,20 @@ fn build302LizardKings(
     );
 
     var trigger: i32 = 1500;
-    var angle: f32 = 0.0;
     var idx: i32 = 0;
     while (idx < 28) : (idx += 1) {
+        const angle = @as(f64, @floatFromInt(idx)) * 0.34906587;
         const point = common.ringPoint(center, 256.0, angle);
         try common.appendSpawn(
             out_entries,
             len,
             point,
-            -angle,
+            @floatCast(-angle),
             common.SpawnId.lizard_random_31,
             trigger,
             1,
         );
         trigger += 900;
-        angle += 0.34906587;
     }
 }
 

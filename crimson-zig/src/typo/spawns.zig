@@ -20,8 +20,8 @@ pub const TypoSpawnBatch = struct {
     }
 };
 
-fn clamp01(value: f32) f32 {
-    return std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0));
+fn clamp01(value: f64) f32 {
+    return @floatCast(std.math.clamp(value, 0.0, 1.0));
 }
 
 pub fn tickTypoSpawns(
@@ -42,10 +42,11 @@ pub fn tickTypoSpawns(
         batch.cooldown_ms += 3500 - @divTrunc(elapsed_ms, 800);
         batch.cooldown_ms = @max(100, batch.cooldown_ms);
 
-        const t = @as(f32, @floatFromInt(elapsed_ms)) * 0.001;
-        const y = @cos(t) * 256.0 + world_height * 0.5;
+        // Positions and tints are computed in double precision and stored as f32.
+        const t = @as(f64, @floatFromInt(elapsed_ms)) * 0.001;
+        const y: f32 = @floatCast(@cos(t) * 256.0 + @as(f64, world_height) * 0.5);
 
-        const tint_t = @as(f32, @floatFromInt(elapsed_ms + 1));
+        const tint_t = @as(f64, @floatFromInt(elapsed_ms + 1));
         const tint_r = clamp01(tint_t * 0.0000083333334 + 0.3);
         const tint_g = clamp01(tint_t * 10000.0 + 0.3);
         const tint_b = clamp01(@sin(tint_t * 0.0001) + 0.3);

@@ -338,7 +338,7 @@ fn appendTickTrace(
         timing_samples,
     );
     if (step_result) |r| {
-        row.event_hit_count = r.projectile_tick_stats.hit_count;
+        row.event_hit_count = r.projectile_tick_stats.hit_count + r.secondary_hit_count;
         row.event_pickup_count = @intCast(r.bonus_pickups.len);
         row.sfx_events = r.sfx_events;
     }
@@ -822,4 +822,3 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
     try std.testing.expectApproxEqAbs(expected_pos.x, proj.pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(expected_pos.y, proj.pos.y, 1e-6);
 }
-

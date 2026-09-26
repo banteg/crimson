@@ -164,17 +164,14 @@ fn build502TheSpankingOfTheDead(
     var trigger: i32 = 5000;
     var step_index: i32 = 0;
     while (trigger < 0xA988) {
-        const angle = @as(f32, @floatFromInt(step_index)) * 0.33333334;
-        const radius = 512.0 - (@as(f32, @floatFromInt(step_index)) * 3.8);
-        const pos = common.addVec(
-            .{ .x = 512.0, .y = 512.0 },
-            common.mulVec(common.vecFromAngle(angle), radius),
-        );
+        const angle = @as(f64, @floatFromInt(step_index)) * 0.33333334;
+        const radius = 512.0 - @as(f64, @floatFromInt(step_index)) * 3.8;
+        const pos = common.ringPoint(.{ .x = 512.0, .y = 512.0 }, radius, angle);
         try common.appendSpawn(
             out_entries,
             len,
             pos,
-            angle,
+            @floatCast(angle),
             common.SpawnId.zombie_random_41,
             trigger,
             1,

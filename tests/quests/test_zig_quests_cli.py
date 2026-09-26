@@ -8,6 +8,7 @@ import pytest
 
 import crimson.dbg.record as dbg_record
 from crimson.creatures.spawn import SpawnEnv, build_spawn_plan
+from crimson.math_parity import f32
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
@@ -66,6 +67,44 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
     for actual, expected in zip(_payload_entries(payload_entries), _expected_entries(expected_entries), strict=True):
         assert actual[0:3] == pytest.approx(expected[0:3], abs=1e-4)
         assert actual[3:] == expected[3:]
+
+
+@pytest.mark.parametrize("level", [QuestLevel(major, minor) for major in range(1, 6) for minor in range(1, 11)], ids=str)
+def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None:
+    # Ring and radial placements must truncate the same double-precision
+    # coordinates as Python (e.g. 3.2 lands on 639, not 640).
+    quest = quest_by_level(level)
+    assert quest is not None
+    build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
+    assert build_run.returncode == 0, dbg_record._command_detail(build_run)
+
+    for seed, player_count in ((0, 1), (3, 4), (0xBEEF, 1)):
+        expected_entries = build_quest_spawn_table(
+            quest,
+            QuestContext(width=1024, height=1024, player_count=player_count),
+            rng=Crand(seed),
+            hardcore=False,
+            full_version=True,
+        )
+        result = dbg_record._run_process(
+            [
+                str(dbg_record._ZIG_BIN),
+                "quests",
+                level.text,
+                "--format",
+                "json",
+                "--player-count",
+                str(player_count),
+                "--seed",
+                str(seed),
+            ],
+            cwd=dbg_record._REPO_ROOT,
+        )
+
+        assert result.returncode == 0, dbg_record._command_detail(result)
+        payload_entries = cast("list[dict[str, Any]]", json.loads(result.stdout)["entries"])
+        expected = [(*map(f32, row[:3]), *row[3:]) for row in _expected_entries(expected_entries)]
+        assert _payload_entries(payload_entries) == expected, (seed, player_count)
 
 
 def test_zig_quests_human_output_reports_unknown_level() -> None:

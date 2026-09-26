@@ -5,9 +5,9 @@ const msgpack = @import("msgpack");
 const game_ids = @import("game_ids.zig");
 const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
+const replay_trace = @import("runtime/replay/diagnostic_trace.zig");
 const runtime_paths = @import("runtime_paths.zig");
 const state_mod = @import("runtime/state.zig");
-const tutorial_runtime = @import("tutorial/runtime.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const checkpoints_format_version: i32 = 5;
@@ -991,7 +991,7 @@ fn buildCheckpointFromTrace(
 
     const events = try buildEventSummary(allocator, row);
     errdefer deinitOwnedEventSummary(allocator, events);
-    const typo = try buildTypoSnapshot(allocator, row);
+    const typo = try replay_trace.typoSnapshot(ReplayTypoSnapshotWire, allocator, row);
     errdefer if (typo) |snapshot| deinitOwnedTypoSnapshot(allocator, snapshot);
 
     return .{
@@ -1012,7 +1012,7 @@ fn buildCheckpointFromTrace(
             .player_nonzero_counts = all_player_nonzero_counts,
         },
         .events = events,
-        .tutorial = buildTutorialSnapshot(row),
+        .tutorial = replay_trace.tutorialSnapshot(ReplayTutorialSnapshotWire, row),
         .typo = typo,
     };
 }
@@ -1122,50 +1122,6 @@ fn initialReloadSfxKey(row: *const replay_runner.ReplayTickTrace) ?[]const u8 {
         .rush => "sfx_autorifle_reload",
         .typo => "sfx_shotgun_reload",
         else => null,
-    };
-}
-
-fn buildTutorialSnapshot(row: *const replay_runner.ReplayTickTrace) ?ReplayTutorialSnapshotWire {
-    if (row.gameplay_state.game_mode != .tutorial) return null;
-    const tutorial = row.gameplay_state.tutorial;
-    const overlay = row.gameplay_state.tutorial_overlay;
-    return .{
-        .stage_index = tutorial.stage_index,
-        .stage_timer_ms = tutorial.stage_timer_ms,
-        .stage_transition_timer_ms = tutorial.stage_transition_timer_ms,
-        .hint_index = tutorial.hint_index,
-        .hint_alpha = tutorial.hint_alpha,
-        .hint_fade_in = tutorial.hint_fade_in,
-        .repeat_spawn_count = tutorial.repeat_spawn_count,
-        .hint_bonus_creature_ref = if (tutorial.hint_bonus_creature_ref) |idx| @intCast(idx) else null,
-        .prompt_text = tutorial_runtime.promptText(overlay.prompt_stage_index),
-        .prompt_alpha = overlay.prompt_alpha,
-        .hint_text = tutorial_runtime.hintText(overlay.hint_index, tutorial.preserve_bugs),
-        .hint_alpha_overlay = overlay.hint_alpha,
-    };
-}
-
-fn buildTypoSnapshot(
-    allocator: std.mem.Allocator,
-    row: *const replay_runner.ReplayTickTrace,
-) !?ReplayTypoSnapshotWire {
-    if (row.gameplay_state.game_mode != .typo) return null;
-    var active_names: std.ArrayList(ReplayTypoNameEntryWire) = .empty;
-    errdefer active_names.deinit(allocator);
-    for (row.entities.creatures) |creature| {
-        const name = row.gameplay_state.typo.names.nameSlice(creature.index);
-        if (name.len == 0) continue;
-        try active_names.append(allocator, .{
-            .creature_index = @intCast(creature.index),
-            .name = name,
-        });
-    }
-    return .{
-        .input_text = row.gameplay_state.typo.typing.slice(),
-        .submit_count = row.gameplay_state.typo.typing.submit_count,
-        .match_count = row.gameplay_state.typo.typing.match_count,
-        .spawn_cooldown_ms = row.gameplay_state.typo.spawn_cooldown_ms,
-        .active_names = try active_names.toOwnedSlice(allocator),
     };
 }
 

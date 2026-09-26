@@ -226,12 +226,14 @@ pub const CreatureInit = struct {
     type_id: CreatureTypeId = .alien,
     ai_mode: CreatureAiMode = .orbit_player,
     flags: u32 = 0,
-    size: f32 = 0.0,
-    move_speed: f32 = 0.0,
-    health: f32 = 0.0,
-    max_health: f32 = 0.0,
-    reward_value: f32 = 0.0,
-    contact_damage: f32 = 0.0,
+    // Spawn plans compute stats in double precision; the pool rounds them to
+    // f32 when it stores the creature.
+    size: f64 = 0.0,
+    move_speed: f64 = 0.0,
+    health: f64 = 0.0,
+    max_health: f64 = 0.0,
+    reward_value: f64 = 0.0,
+    contact_damage: f64 = 0.0,
     tint: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
 };
 
@@ -836,11 +838,11 @@ pub fn tickRushModeSpawnsBatch(
         const terrain_height_f: f32 = @floatFromInt(terrain_height);
         const spawn_right: Vec2 = .{
             .x = narrowF32(terrain_width_f + 64.0),
-            .y = narrowF32(terrain_height_f * 0.5 + std.math.cos(theta) * 256.0),
+            .y = narrowF32(@as(f64, terrain_height_f * 0.5) + std.math.cos(@as(f64, theta)) * 256.0),
         };
         const spawn_left: Vec2 = .{
             .x = -64.0,
-            .y = narrowF32(terrain_height_f * 0.5 + std.math.sin(theta) * 256.0),
+            .y = narrowF32(@as(f64, terrain_height_f * 0.5) + std.math.sin(@as(f64, theta)) * 256.0),
         };
 
         var alien = buildRushModeSpawnCreature(
@@ -1721,11 +1723,11 @@ test "rush spawn uses exact native elapsed scale" {
 
     var speed_rng = Crand.init(1);
     const speed = buildRushModeSpawnCreature(.{ .x = 0.0, .y = 0.0 }, .{ 1.0, 1.0, 1.0, 1.0 }, &speed_rng, .alien, 237);
-    try std.testing.expectEqual(@as(u32, 0x402026D5), @as(u32, @bitCast(speed.move_speed)));
+    try std.testing.expectEqual(@as(u32, 0x402026D5), @as(u32, @bitCast(@as(f32, @floatCast(speed.move_speed)))));
 
     var size_rng = Crand.init(1);
     const size = buildRushModeSpawnCreature(.{ .x = 0.0, .y = 0.0 }, .{ 1.0, 1.0, 1.0, 1.0 }, &size_rng, .alien, 2458);
-    try std.testing.expectEqual(@as(u32, 0x423C192C), @as(u32, @bitCast(size.size)));
+    try std.testing.expectEqual(@as(u32, 0x423C192C), @as(u32, @bitCast(@as(f32, @floatCast(size.size)))));
 }
 
 test "rush wave triggers two creatures" {
@@ -1846,8 +1848,8 @@ test "survival spawn baseline seed1 xp0" {
     try expectFloatClose(@floatCast(@as(f32, 0.9)), creature.move_speed);
     try expectFloatClose(64.0, creature.health);
     try expectFloatClose(64.0, creature.max_health);
-    try std.testing.expectEqual(@as(u32, 0x40861862), @as(u32, @bitCast(creature.contact_damage)));
-    try std.testing.expectEqual(@as(u32, 0x42117297), @as(u32, @bitCast(creature.reward_value)));
+    try std.testing.expectEqual(@as(u32, 0x40861862), @as(u32, @bitCast(@as(f32, @floatCast(creature.contact_damage)))));
+    try std.testing.expectEqual(@as(u32, 0x42117297), @as(u32, @bitCast(@as(f32, @floatCast(creature.reward_value)))));
     try std.testing.expectEqual(@as(u32, 0x3F666666), @as(u32, @bitCast(creature.tint[0])));
     try std.testing.expectEqual(@as(u32, 0x3F6147AD), @as(u32, @bitCast(creature.tint[1])));
     try std.testing.expectEqual(@as(u32, 0x3F47AE14), @as(u32, @bitCast(creature.tint[2])));
@@ -1859,8 +1861,8 @@ test "survival spawn reward follows native x87 association" {
     var rng = Crand.init(10);
     const creature = buildSurvivalSpawnCreature(.{ .x = 1.0, .y = 2.0 }, &rng, 0);
 
-    try std.testing.expectEqual(@as(u32, 0x40B0C30C), @as(u32, @bitCast(creature.contact_damage)));
-    try std.testing.expectEqual(@as(u32, 0x4220DC68), @as(u32, @bitCast(creature.reward_value)));
+    try std.testing.expectEqual(@as(u32, 0x40B0C30C), @as(u32, @bitCast(@as(f32, @floatCast(creature.contact_damage)))));
+    try std.testing.expectEqual(@as(u32, 0x4220DC68), @as(u32, @bitCast(@as(f32, @floatCast(creature.reward_value)))));
 }
 
 test "survival spawn xp threshold 25000 consumes extra rand" {

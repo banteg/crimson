@@ -110,8 +110,8 @@ fn build_1_3_target_practice(
 
     while (true) {
         const angle = common.randomAngle(rng);
-        const radius = @as(f32, @floatFromInt(rng.randBelow(8) + 2)) * 32.0;
-        const point = common.addVec(center, common.mulVec(common.vecFromAngle(angle), radius));
+        const radius = @as(f64, @floatFromInt(rng.randBelow(8) + 2)) * 32.0;
+        const point = common.ringPoint(center, radius, angle);
         const heading = common.headingFromCenter(point, center);
 
         try common.appendSpawn(

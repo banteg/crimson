@@ -167,10 +167,10 @@ pub inline fn cornerPointBottomRight(width: f32, height: f32, offset: f32) spawn
     return .{ .x = width + offset, .y = height + offset };
 }
 
-pub inline fn randomAngle(rng: *QuestRng) f32 {
+pub inline fn randomAngle(rng: *QuestRng) f64 {
     // Quest scripts draw a 15-bit CRT random value, modulo 612, then scale by
     // 0.01 radians.
-    return @as(f32, @floatFromInt(rng.randBelow(0x264))) * 0.01;
+    return @as(f64, @floatFromInt(rng.randBelow(0x264))) * 0.01;
 }
 
 pub inline fn nativeEntryCoord(value: f32) f32 {
@@ -184,13 +184,6 @@ pub inline fn headingFromCenter(point: spawn_runtime.Vec2, center: spawn_runtime
     const ty = nativeEntryCoord(point.y);
     const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
     return @floatCast(math_runtime.atan2(@as(f64, ty - center.y), @as(f64, tx - center.x)) - @as(f64, native_half_pi));
-}
-
-pub inline fn vecFromAngle(angle: f32) spawn_runtime.Vec2 {
-    return .{
-        .x = math_runtime.cos(angle),
-        .y = math_runtime.sin(angle),
-    };
 }
 
 pub inline fn addVec(a: spawn_runtime.Vec2, b: spawn_runtime.Vec2) spawn_runtime.Vec2 {
@@ -222,8 +215,14 @@ pub inline fn linePointAt(start: spawn_runtime.Vec2, step: spawn_runtime.Vec2, i
     return addVec(start, mulVec(step, @as(f32, @floatFromInt(idx))));
 }
 
-pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f32, angle: f32) spawn_runtime.Vec2 {
-    return addVec(center, mulVec(vecFromAngle(angle), radius));
+/// The spawn-entry point `radius` away from `center` at `angle`. Quest
+/// scripts place these in double precision and store the truncated integer
+/// coordinates.
+pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f64, angle: f64) spawn_runtime.Vec2 {
+    return .{
+        .x = @floatCast(@trunc(@as(f64, center.x) + std.math.cos(angle) * radius)),
+        .y = @floatCast(@trunc(@as(f64, center.y) + std.math.sin(angle) * radius)),
+    };
 }
 
 pub inline fn appendSpawnAtAllEdges(
@@ -245,10 +244,10 @@ pub fn appendRingSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     center: spawn_runtime.Vec2,
-    radius: f32,
+    radius: f64,
     count: i32,
-    step: f32,
-    start_angle: f32,
+    step: f64,
+    start_angle: f64,
     heading_mode: RingHeadingMode,
     spawn_id: SpawnId,
     trigger_start: i32,
@@ -259,10 +258,10 @@ pub fn appendRingSpawns(
     var trigger = trigger_start;
     var idx: i32 = 0;
     while (idx < count) : (idx += 1) {
-        const angle = start_angle + @as(f32, @floatFromInt(idx)) * step;
-        const heading = switch (heading_mode) {
+        const angle = start_angle + @as(f64, @floatFromInt(idx)) * step;
+        const heading: f32 = switch (heading_mode) {
             .zero => 0.0,
-            .angle => angle,
+            .angle => @floatCast(angle),
         };
         try appendSpawn(
             out_entries,
@@ -281,20 +280,19 @@ pub fn appendRadialSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     center: spawn_runtime.Vec2,
-    angle: f32,
-    radius_start: f32,
-    radius_end: f32,
-    radius_step: f32,
+    angle: f64,
+    radius_start: f64,
+    radius_end: f64,
+    radius_step: f64,
     heading_mode: RadialHeadingMode,
     spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
     if (radius_step <= 0.0 or radius_end < radius_start) return error.InvalidQuestSpawnTable;
-    const direction = vecFromAngle(angle);
     var radius = radius_start;
     while (radius < radius_end) : (radius += radius_step) {
-        const pos = addVec(center, mulVec(direction, radius));
+        const pos = ringPoint(center, radius, angle);
         const heading = switch (heading_mode) {
             .zero => 0.0,
             .from_center => headingFromCenter(pos, center),

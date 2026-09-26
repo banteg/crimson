@@ -1821,7 +1821,7 @@ pub fn writeReplayTickTraceCdt(
     const dt_ms_i32: i32 = @intFromFloat(@trunc(replay_codec.tick_dt * 1000.0));
 
     var last_tick_seen: ?i32 = null;
-    for (rows) |row| {
+    for (rows) |*row| {
         if (row.tick_index >= replay.tickCount()) return error.InvalidTickIndex;
         elapsed_ms_accum += dt_ms_i32;
         const record = try buildTickRecord(
@@ -1945,11 +1945,12 @@ fn writeChunk(
 fn buildTickRecord(
     allocator: std.mem.Allocator,
     replay: replay_codec.Replay,
-    row: replay_trace.ReplayTickTrace,
+    row_ptr: *const replay_trace.ReplayTickTrace,
     dt_ms_i32: i32,
     summed_elapsed_ms: i64,
     tick_rng_start_state: u32,
 ) TraceWriteError!TickRecord {
+    const row = row_ptr.*;
     const mode_id = @intFromEnum(replay.run.game_mode);
     const elapsed_ms = if (replay.run.game_mode == .quests) row.timing.elapsed_ms else summed_elapsed_ms;
     const tick_index_i32 = try castI32(row.tick_index);
@@ -1960,7 +1961,7 @@ fn buildTickRecord(
     errdefer if (rng_stream.len > 0) allocator.free(rng_stream);
     const timing_samples = try buildTimingSamples(allocator, row);
     errdefer if (timing_samples.len > 0) allocator.free(timing_samples);
-    const checkpoint = try buildCheckpoint(allocator, row, elapsed_ms);
+    const checkpoint = try buildCheckpoint(allocator, row_ptr, elapsed_ms);
     errdefer deinitCheckpoint(allocator, &checkpoint);
     const sim_state = try buildSimState(
         allocator,
@@ -2096,7 +2097,7 @@ fn buildEntitySamples(
             .pos = .{ .x = projectile.pos.x, .y = projectile.pos.y },
             .vel = .{ .x = projectile.vel.x, .y = projectile.vel.y },
             .life_timer = projectile.life_timer,
-            .speed_scale = projectile.speed_scale,
+            .speed_scale = @floatCast(projectile.speed_scale),
             .damage_pool = projectile.damage_pool,
             .hit_radius = projectile.hit_radius,
             .travel_budget = projectile.travel_budget,
@@ -2204,9 +2205,10 @@ fn buildSimState(
     };
 }
 
+/// Typ-o snapshot strings borrow from `row`, which must outlive the checkpoint.
 fn buildCheckpoint(
     allocator: std.mem.Allocator,
-    row: replay_trace.ReplayTickTrace,
+    row: *const replay_trace.ReplayTickTrace,
     elapsed_ms: i64,
 ) TraceWriteError!CheckpointChannel {
     const fallback_players = [_]state_mod.PlayerState{row.player_state};
@@ -2271,10 +2273,13 @@ fn buildCheckpoint(
             .hit_count = row.event_hit_count,
             .pickup_count = row.event_pickup_count,
         },
+        .tutorial = replay_trace.tutorialSnapshot(ReplayTutorialSnapshot, row),
+        .typo = try replay_trace.typoSnapshot(ReplayTypoSnapshot, allocator, row),
     };
 }
 
 fn deinitCheckpoint(allocator: std.mem.Allocator, checkpoint: *const CheckpointChannel) void {
+    if (checkpoint.typo) |typo| allocator.free(typo.active_names);
     if (checkpoint.players.len > 0) {
         allocator.free(checkpoint.players);
     }
@@ -3020,7 +3025,7 @@ test "CDT checkpoint keeps replay event counts" {
         .event_hit_count = 2,
         .event_pickup_count = 3,
     };
-    const checkpoint = try buildCheckpoint(allocator, row, 0);
+    const checkpoint = try buildCheckpoint(allocator, &row, 0);
     defer deinitCheckpoint(allocator, &checkpoint);
 
     try std.testing.expectEqual(@as(i32, 2), checkpoint.events.hit_count);
@@ -3065,7 +3070,7 @@ test "Quest CDT records the simulation timeline while retaining unscaled dt" {
         .gameplay_state = .{ .rng = .{ .state = 0 } },
         .player_state = .{ .index = 0, .pos = .{} },
     };
-    var tick = try buildTickRecord(allocator, replay, row, 16, 16, 0);
+    var tick = try buildTickRecord(allocator, replay, &row, 16, 16, 0);
     defer deinitTickRecord(allocator, &tick);
     try std.testing.expectEqual(@as(i64, 5), tick.elapsed_ms);
     try std.testing.expectEqual(@as(i64, 5), tick.channels.checkpoint.elapsed_ms);

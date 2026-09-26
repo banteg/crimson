@@ -69,6 +69,7 @@ pub const StepFrame = struct {
     rng_after_spawns: u32 = 0,
     rng_after_bonus_update: u32 = 0,
     projectile_tick_stats: projectiles_mod.ProjectileTickStats = .{},
+    secondary_hit_count: i32 = 0,
 };
 
 pub const StepResult = struct {
@@ -89,6 +90,7 @@ pub const StepResult = struct {
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
     projectile_tick_stats: projectiles_mod.ProjectileTickStats,
+    secondary_hit_count: i32,
     bonus_pickups: bonus_runtime.BonusPickupBuffer,
     sfx_events: state_mod.RuntimeSfxBuffer,
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
@@ -316,7 +318,7 @@ pub fn stepTick(
     );
     frame.rng_after_projectiles = context.state.rng.state;
 
-    context.secondary_projectiles.updatePulseGunWithEffects(
+    frame.secondary_hit_count = context.secondary_projectiles.updatePulseGunWithEffects(
         &context.state,
         players,
         &context.creatures,
@@ -575,12 +577,7 @@ pub fn stepTick(
         dt_after_player,
         &context.tick_bonus_pickups,
     );
-    bonus_runtime.emitBonusPickupEffects(
-        &context.state,
-        context.tick_bonus_pickups.constSlice(),
-        &context.effects,
-        context.detail_preset,
-    );
+    // Bonus effects apply during the pickup update; the pickup FX follow.
     var freeze_pickup_seen = false;
     for (context.tick_bonus_pickups.constSlice()) |pickup| {
         if (pickup.bonus_id == .freeze) {
@@ -606,6 +603,12 @@ pub fn stepTick(
         &context.terrain_fx,
         dt_after_player,
         context.world_size,
+    );
+    bonus_runtime.emitBonusPickupEffects(
+        &context.state,
+        context.tick_bonus_pickups.constSlice(),
+        &context.effects,
+        context.detail_preset,
     );
     frame.rng_after_bonus_update = context.state.rng.state;
     if (context.game_mode == .typo) {
@@ -650,6 +653,7 @@ pub fn stepTick(
         .rng_after_spawns = frame.rng_after_spawns,
         .rng_after_bonus_update = frame.rng_after_bonus_update,
         .projectile_tick_stats = frame.projectile_tick_stats,
+        .secondary_hit_count = frame.secondary_hit_count,
         .bonus_pickups = context.tick_bonus_pickups,
         .sfx_events = context.state.sfx_queue.take(),
         .terrain_fx = context.terrain_fx.takeBatch(),

@@ -71,6 +71,33 @@ def survival_death_replay() -> Replay:
     return record_bot_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF), fire=False)
 
 
+@pytest.fixture(scope="module")
+def quest_death_replay() -> Replay:
+    # Quest 1.5 dens spawn ping-pong aliens, whose projectile hits skip the heading-jitter draw.
+    return record_bot_replay(
+        RunSpec(game_mode_id=GameMode.QUESTS, seed=3, quest_level=QuestLevel.parse("1.5")),
+        max_ticks=216000,
+    )
+
+
+@pytest.fixture(scope="module")
+def quest_link_death_replay() -> Replay:
+    # Quest 2.9 ring children die with their leader through the bullet damage path.
+    return record_bot_replay(
+        RunSpec(game_mode_id=GameMode.QUESTS, seed=1, quest_level=QuestLevel.parse("2.9")),
+        max_ticks=216000,
+    )
+
+
+@pytest.fixture(scope="module")
+def quest_spawn_slot_replay() -> Replay:
+    # Quest 3.9 den corpses release spawn slots that newer dens have claimed.
+    return record_bot_replay(
+        RunSpec(game_mode_id=GameMode.QUESTS, seed=1, quest_level=QuestLevel.parse("3.9")),
+        max_ticks=216000,
+    )
+
+
 _SHORT_REPLAYS = {
     "survival": lambda: build_replay(mode=GameMode.SURVIVAL, ticks=3),
     "rush": lambda: build_replay(mode=GameMode.RUSH, ticks=16),
@@ -100,6 +127,9 @@ def test_zig_replay_verify_matches_python_for_every_mode(tmp_path: Path, zig_bin
         ("perk_replay", RunOutcome.INCOMPLETE),
         ("quest_completed_replay", RunOutcome.QUEST_COMPLETED),
         ("survival_death_replay", RunOutcome.DEATH),
+        ("quest_death_replay", RunOutcome.DEATH),
+        ("quest_link_death_replay", RunOutcome.DEATH),
+        ("quest_spawn_slot_replay", RunOutcome.QUEST_COMPLETED),
     ],
 )
 def test_zig_replay_verify_derives_python_results_for_played_runs(

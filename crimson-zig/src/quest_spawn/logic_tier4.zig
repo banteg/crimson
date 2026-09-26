@@ -316,7 +316,7 @@ fn build_407_gauntlet(
 
     const ring_count = player_count + 9;
     if (ring_count > 0) {
-        const step = std.math.tau / @as(f32, @floatFromInt(ring_count));
+        const step = std.math.tau / @as(f64, @floatFromInt(ring_count));
         try common.appendRingSpawns(
             out_entries,
             len,
@@ -352,7 +352,7 @@ fn build_407_gauntlet(
 
     const outer_count = player_count + 0x11;
     if (outer_count > 0) {
-        const step = std.math.tau / @as(f32, @floatFromInt(outer_count));
+        const step = std.math.tau / @as(f64, @floatFromInt(outer_count));
         try common.appendRingSpawns(
             out_entries,
             len,
@@ -592,7 +592,7 @@ fn build_410_the_end_of_all(
         var trigger: i32 = 62_800;
         var ring_index: i32 = 0;
         while (ring_index < 12) : (ring_index += 1) {
-            const angle = (@as(f32, @floatFromInt(ring_index)) + 1.0) * 0.5235988;
+            const angle = @as(f64, @floatFromInt(ring_index + 1)) * 0.5235988;
             try common.appendSpawn(
                 out_entries,
                 len,

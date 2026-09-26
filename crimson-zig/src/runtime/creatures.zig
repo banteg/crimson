@@ -183,6 +183,8 @@ pub const CreaturePool = struct {
     single_player_dormant_target: state_mod.PlayerState = .{ .index = 1, .pos = .{} },
     spawn_slots: [max_spawn_slots]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{empty_spawn_slot} ** max_spawn_slots,
     spawn_slot_count: usize = 0,
+    /// Scratch: plan stats of the creatures spawned by the current template call.
+    spawn_plan_stats: [max_creatures]SpawnPlanStats = [_]SpawnPlanStats{.{}} ** max_creatures,
 
     pub fn reset(self: *CreaturePool) void {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
@@ -251,6 +253,12 @@ pub const CreaturePool = struct {
         const stale_ranged_projectile_type = self.entries[slot].ranged_projectile_type;
         const stale_max_hp = self.entries[slot].max_hp;
 
+        self.spawn_plan_stats[slot] = .{
+            .health = init.health,
+            .move_speed = init.move_speed,
+            .reward_value = init.reward_value,
+            .contact_damage = init.contact_damage,
+        };
         self.entries[slot] = .{
             .generation = self.entries[slot].generation + 1,
             .active = true,
@@ -340,6 +348,7 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 55.0,
                         .contact_damage = 14.0,
+                        .tint = .{ 0.65, 0.85, 0.97, 1.0 },
                     },
                 ) orelse return;
                 // Native template planning consumes a transient base-heading draw
@@ -365,6 +374,7 @@ pub const CreaturePool = struct {
                             .reward_value = 60.0,
                             .size = 50.0,
                             .contact_damage = 4.0,
+                            .tint = .{ 0.32, 0.588, 0.426, 1.0 },
                         },
                         0,
                         false,
@@ -379,7 +389,7 @@ pub const CreaturePool = struct {
                     primary_child_idx = child_idx;
                 }
                 self.entries[primary_child_idx].heading = narrowF32(call.heading);
-                applyUnhandledCreatureTypeFallback(&self.entries[primary_child_idx]);
+                self.applyUnhandledCreatureTypeFallback(primary_child_idx);
             },
             0x03 => {
                 self.spawnBasicRandomTemplate(
@@ -424,6 +434,7 @@ pub const CreaturePool = struct {
                         .reward_value = 6600.0,
                         .size = 64.0,
                         .contact_damage = 50.0,
+                        .tint = .{ 0.6, 0.6, 1.0, 0.8 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong | spawn_mod.CreatureFlags.anim_long_strip,
                     1.0,
@@ -443,6 +454,7 @@ pub const CreaturePool = struct {
                         .reward_value = 3000.0,
                         .size = 50.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     1.0,
@@ -462,6 +474,7 @@ pub const CreaturePool = struct {
                         .reward_value = 3000.0,
                         .size = 50.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     1.0,
@@ -481,6 +494,7 @@ pub const CreaturePool = struct {
                         .reward_value = 1000.0,
                         .size = 40.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     1.0,
@@ -500,6 +514,7 @@ pub const CreaturePool = struct {
                         .reward_value = 3000.0,
                         .size = 55.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 0.8, 0.7, 0.4, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     2.0,
@@ -519,6 +534,7 @@ pub const CreaturePool = struct {
                         .reward_value = 5000.0,
                         .size = 65.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 0.9, 0.1, 0.1, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     2.0,
@@ -538,6 +554,7 @@ pub const CreaturePool = struct {
                         .reward_value = 1000.0,
                         .size = 32.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 0.9, 0.8, 0.4, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     1.5,
@@ -557,6 +574,7 @@ pub const CreaturePool = struct {
                         .reward_value = 1000.0,
                         .size = 32.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 0.9, 0.8, 0.4, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     2.0,
@@ -576,6 +594,7 @@ pub const CreaturePool = struct {
                         .reward_value = 5000.0,
                         .size = 32.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 0.9, 0.8, 0.4, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     1.5,
@@ -602,6 +621,7 @@ pub const CreaturePool = struct {
                             .reward_value = 350.0,
                             .size = 35.0,
                             .contact_damage = 30.0,
+                            .tint = .{ 1.0, 0.3, 0.3, 1.0 },
                         },
                         0,
                         true,
@@ -628,6 +648,7 @@ pub const CreaturePool = struct {
                         .reward_value = 800.0,
                         .size = 32.0,
                         .contact_damage = 0.0,
+                        .tint = .{ 0.9, 0.8, 0.4, 1.0 },
                     },
                     spawn_mod.CreatureFlags.anim_ping_pong,
                     1.5,
@@ -648,6 +669,7 @@ pub const CreaturePool = struct {
                         .reward_value = 60.0,
                         .size = 50.0,
                         .contact_damage = 35.0,
+                        .tint = .{ 0.665, 0.385, 0.259, 0.56 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -664,6 +686,7 @@ pub const CreaturePool = struct {
                         .reward_value = 1000.0,
                         .size = 69.0,
                         .contact_damage = 150.0,
+                        .tint = .{ 0.99, 0.99, 0.21, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -683,6 +706,7 @@ pub const CreaturePool = struct {
                             .reward_value = 60.0,
                             .size = 50.0,
                             .contact_damage = 14.0,
+                            .tint = .{ 0.6, 0.6, 0.31, 1.0 },
                         },
                         0,
                         false,
@@ -698,15 +722,14 @@ pub const CreaturePool = struct {
                         .x = narrowF32(call.pos.x + offset.x),
                         .y = narrowF32(call.pos.y + offset.y),
                     };
-                    self.entries[child_idx].target = self.entries[child_idx].pos;
                     chain_prev = child_idx;
                 }
                 self.entries[parent_idx].link_index = @intCast(chain_prev);
-                applyUnhandledCreatureTypeFallback(&self.entries[chain_prev]);
+                self.applyUnhandledCreatureTypeFallback(chain_prev);
             },
             0x1A => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
-                _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1a) % 40;
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_ai1_blue_tint_1a, 40, 0.01, 0.5);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -723,11 +746,12 @@ pub const CreaturePool = struct {
                     .max_health = 50.0,
                     .reward_value = 125.0,
                     .contact_damage = 5.0,
+                    .tint = narrowTint(.{ tint, tint, 1.0, 1.0 }),
                 });
             },
             0x1B => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
-                _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1b) % 40;
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_ai1_blue_tint_1b, 40, 0.01, 0.5);
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -744,12 +768,13 @@ pub const CreaturePool = struct {
                     .max_health = 40.0,
                     .reward_value = 125.0,
                     .contact_damage = 5.0,
+                    .tint = narrowTint(.{ tint, tint, 1.0, 1.0 }),
                 }) orelse return;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x1C => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
-                _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1c) % 40;
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_ai1_blue_tint_1c, 40, 0.01, 0.5);
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -766,6 +791,7 @@ pub const CreaturePool = struct {
                     .max_health = 50.0,
                     .reward_value = 125.0,
                     .contact_damage = 5.0,
+                    .tint = narrowTint(.{ tint, tint, 1.0, 1.0 }),
                 });
             },
             0x13 => {
@@ -780,6 +806,7 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 40.0,
                         .contact_damage = 20.0,
+                        .tint = .{ 0.6, 0.8, 0.91, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -805,6 +832,7 @@ pub const CreaturePool = struct {
                             .reward_value = 60.0,
                             .size = 50.0,
                             .contact_damage = 4.0,
+                            .tint = .{ 0.4, 0.7, 0.11, 1.0 },
                         },
                         0,
                         false,
@@ -818,21 +846,20 @@ pub const CreaturePool = struct {
                         .x = narrowF32(call.pos.x + offset.x),
                         .y = narrowF32(call.pos.y + offset.y),
                     };
-                    self.entries[child_idx].target = self.entries[child_idx].pos;
                     chain_prev = child_idx;
                 }
                 self.entries[parent_idx].link_index = @intCast(chain_prev);
-                applyUnhandledCreatureTypeFallback(&self.entries[chain_prev]);
+                self.applyUnhandledCreatureTypeFallback(chain_prev);
             },
             0x1D => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_size, 20, 1.0, 35.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 10.0);
+                const health = size * (8.0 / 7.0) + 10.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_move_speed, 15, 0.1, 1.1);
                 const reward_value = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_reward, 100, 1.0, 50.0);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_r, 50, 0.001, 0.6);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_g, 50, 0.01, 0.5);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_b, 50, 0.001, 0.6);
+                const tint_r = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_r, 50, 0.001, 0.6);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_g, 50, 0.01, 0.5);
+                const tint_b = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_tint_b, 50, 0.001, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
@@ -850,17 +877,18 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint_r, tint_g, tint_b, 1.0 }),
                 });
             },
             0x1E => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_size, 30, 1.0, 35.0);
-                const health = narrowF32(size * (16.0 / 7.0) + 10.0);
+                const health = size * (16.0 / 7.0) + 10.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_move_speed, 17, 0.1, 1.5);
                 const reward_value = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_reward, 200, 1.0, 50.0);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_r, 50, 0.001, 0.6);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_g, 50, 0.001, 0.6);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_b, 50, 0.01, 0.5);
+                const tint_r = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_r, 50, 0.001, 0.6);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_g, 50, 0.001, 0.6);
+                const tint_b = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_tint_b, 50, 0.01, 0.5);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1e_contact_damage, 30, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
@@ -878,17 +906,18 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint_r, tint_g, tint_b, 1.0 }),
                 });
             },
             0x1F => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_size, 30, 1.0, 45.0);
-                const health = narrowF32(size * (26.0 / 7.0) + 30.0);
+                const health = size * (26.0 / 7.0) + 30.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_move_speed, 21, 0.1, 1.6);
                 const reward_value = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_reward, 200, 1.0, 80.0);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_r, 50, 0.01, 0.5);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_g, 50, 0.001, 0.6);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_b, 50, 0.001, 0.6);
+                const tint_r = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_r, 50, 0.01, 0.5);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_g, 50, 0.001, 0.6);
+                const tint_b = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_tint_b, 50, 0.001, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1f_contact_damage, 35, 1.0, 8.0);
 
                 _ = self.spawnInit(.{
@@ -906,15 +935,16 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint_r, tint_g, tint_b, 1.0 }),
                 });
             },
             0x20 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_size, 30, 1.0, 40.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 20.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size * (8.0 / 7.0) + 20.0;
+                const reward_value = size + size + 50.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_move_speed, 18, 0.1, 1.1);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_tint_g, 40, 0.01, 0.6);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_tint_g, 40, 0.01, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_green_20_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
@@ -932,6 +962,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ 0.3, tint_g, 0.3, 1.0 }),
                 });
             },
             0x21 => {
@@ -946,6 +977,7 @@ pub const CreaturePool = struct {
                         .reward_value = 120.0,
                         .size = 55.0,
                         .contact_damage = 8.0,
+                        .tint = .{ 0.7, 0.1, 0.51, 0.5 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -962,6 +994,7 @@ pub const CreaturePool = struct {
                         .reward_value = 150.0,
                         .size = 50.0,
                         .contact_damage = 8.0,
+                        .tint = .{ 0.1, 0.7, 0.51, 0.05 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -978,6 +1011,7 @@ pub const CreaturePool = struct {
                         .reward_value = 180.0,
                         .size = 45.0,
                         .contact_damage = 8.0,
+                        .tint = .{ 0.1, 0.7, 0.51, 0.04 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -994,6 +1028,7 @@ pub const CreaturePool = struct {
                         .reward_value = 110.0,
                         .size = 50.0,
                         .contact_damage = 4.0,
+                        .tint = .{ 0.1, 0.7, 0.11, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1010,6 +1045,7 @@ pub const CreaturePool = struct {
                         .reward_value = 125.0,
                         .size = 30.0,
                         .contact_damage = 3.0,
+                        .tint = .{ 0.1, 0.8, 0.11, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1026,6 +1062,7 @@ pub const CreaturePool = struct {
                         .reward_value = 125.0,
                         .size = 45.0,
                         .contact_damage = 10.0,
+                        .tint = .{ 0.6, 0.8, 0.6, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1042,6 +1079,7 @@ pub const CreaturePool = struct {
                         .reward_value = 125.0,
                         .size = 45.0,
                         .contact_damage = 10.0,
+                        .tint = .{ 1.0, 0.8, 0.1, 1.0 },
                     },
                     spawn_mod.CreatureFlags.bonus_on_death,
                     true,
@@ -1062,6 +1100,7 @@ pub const CreaturePool = struct {
                         .reward_value = 150.0,
                         .size = 55.0,
                         .contact_damage = 8.0,
+                        .tint = .{ 0.7, 0.1, 0.51, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1078,6 +1117,7 @@ pub const CreaturePool = struct {
                         .reward_value = 450.0,
                         .size = 70.0,
                         .contact_damage = 20.0,
+                        .tint = .{ 0.8, 0.8, 0.8, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1094,6 +1134,7 @@ pub const CreaturePool = struct {
                         .reward_value = 300.0,
                         .size = 60.0,
                         .contact_damage = 8.0,
+                        .tint = .{ 0.3, 0.3, 0.3, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1110,6 +1151,7 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 50.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 0.7, 0.8, 0.31, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -1117,7 +1159,7 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
+                    const x_offset: f32 = @floatFromInt(-64 * @as(i32, @intCast(x_idx)));
                     for (0..3) |y_idx| {
                         const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
@@ -1131,6 +1173,7 @@ pub const CreaturePool = struct {
                                 .reward_value = 60.0,
                                 .size = 50.0,
                                 .contact_damage = 4.0,
+                                .tint = .{ 0.4, 0.7, 0.11, 1.0 },
                             },
                             0,
                             true,
@@ -1146,11 +1189,10 @@ pub const CreaturePool = struct {
                             .x = narrowF32(call.pos.x) + x_offset,
                             .y = narrowF32(call.pos.y) + y_offset,
                         };
-                        self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
                     }
                 }
-                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
+                self.applyUnhandledCreatureTypeFallback(last_idx);
             },
             0x15 => {
                 const parent_idx = self.spawnFromStats(
@@ -1164,6 +1206,7 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 60.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -1171,7 +1214,7 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
+                    const x_offset: f32 = @floatFromInt(-64 * @as(i32, @intCast(x_idx)));
                     for (0..3) |y_idx| {
                         const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
@@ -1185,6 +1228,7 @@ pub const CreaturePool = struct {
                                 .reward_value = 60.0,
                                 .size = 50.0,
                                 .contact_damage = 4.0,
+                                .tint = .{ 0.4, 0.7, 0.11, 1.0 },
                             },
                             0,
                             true,
@@ -1200,11 +1244,10 @@ pub const CreaturePool = struct {
                             .x = narrowF32(call.pos.x) + x_offset,
                             .y = narrowF32(call.pos.y) + y_offset,
                         };
-                        self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
                     }
                 }
-                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
+                self.applyUnhandledCreatureTypeFallback(last_idx);
             },
             0x16 => {
                 const parent_idx = self.spawnFromStats(
@@ -1218,6 +1261,7 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 64.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -1225,7 +1269,7 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
+                    const x_offset: f32 = @floatFromInt(-64 * @as(i32, @intCast(x_idx)));
                     for (0..3) |y_idx| {
                         const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
@@ -1239,6 +1283,7 @@ pub const CreaturePool = struct {
                                 .reward_value = 60.0,
                                 .size = 60.0,
                                 .contact_damage = 4.0,
+                                .tint = .{ 0.4, 0.7, 0.11, 1.0 },
                             },
                             0,
                             true,
@@ -1254,11 +1299,10 @@ pub const CreaturePool = struct {
                             .x = narrowF32(call.pos.x) + x_offset,
                             .y = narrowF32(call.pos.y) + y_offset,
                         };
-                        self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
                     }
                 }
-                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
+                self.applyUnhandledCreatureTypeFallback(last_idx);
             },
             0x17 => {
                 const parent_idx = self.spawnFromStats(
@@ -1272,6 +1316,7 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 60.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -1279,7 +1324,7 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
+                    const x_offset: f32 = @floatFromInt(-64 * @as(i32, @intCast(x_idx)));
                     for (0..3) |y_idx| {
                         const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
@@ -1293,6 +1338,7 @@ pub const CreaturePool = struct {
                                 .reward_value = 60.0,
                                 .size = 50.0,
                                 .contact_damage = 4.0,
+                                .tint = .{ 0.4, 0.7, 0.11, 1.0 },
                             },
                             0,
                             true,
@@ -1308,11 +1354,10 @@ pub const CreaturePool = struct {
                             .x = narrowF32(call.pos.x) + x_offset,
                             .y = narrowF32(call.pos.y) + y_offset,
                         };
-                        self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
                     }
                 }
-                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
+                self.applyUnhandledCreatureTypeFallback(last_idx);
             },
             0x18 => {
                 const parent_idx = self.spawnFromStats(
@@ -1326,13 +1371,14 @@ pub const CreaturePool = struct {
                         .reward_value = 600.0,
                         .size = 40.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 0.7, 0.8, 0.31, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
+                    const x_offset: f32 = @floatFromInt(-64 * @as(i32, @intCast(x_idx)));
                     for (0..3) |y_idx| {
                         const y_offset = 128.0 + 64.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStatsWithFlags(
@@ -1346,6 +1392,7 @@ pub const CreaturePool = struct {
                                 .reward_value = 60.0,
                                 .size = 50.0,
                                 .contact_damage = 35.0,
+                                .tint = .{ 0.7125, 0.4125, 0.2775, 0.6 },
                             },
                             0,
                             true,
@@ -1361,7 +1408,6 @@ pub const CreaturePool = struct {
                             .x = narrowF32(call.pos.x) + x_offset,
                             .y = narrowF32(call.pos.y) + y_offset,
                         };
-                        self.entries[child_idx].target = self.entries[child_idx].pos;
                     }
                 }
             },
@@ -1377,6 +1423,7 @@ pub const CreaturePool = struct {
                         .reward_value = 300.0,
                         .size = 55.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 0.95, 0.55, 0.37, 1.0 },
                     },
                 ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
@@ -1396,6 +1443,7 @@ pub const CreaturePool = struct {
                             .reward_value = 60.0,
                             .size = 50.0,
                             .contact_damage = 35.0,
+                            .tint = .{ 0.7125, 0.4125, 0.2775, 0.6 },
                         },
                         0,
                         false,
@@ -1411,10 +1459,9 @@ pub const CreaturePool = struct {
                         .x = narrowF32(call.pos.x + offset.x),
                         .y = narrowF32(call.pos.y + offset.y),
                     };
-                    self.entries[child_idx].target = self.entries[child_idx].pos;
                     last_idx = child_idx;
                 }
-                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
+                self.applyUnhandledCreatureTypeFallback(last_idx);
             },
             @intFromEnum(spawn_mod.SpawnId.alien_deadly_fast_2b) => {
                 _ = self.spawnFromStats(
@@ -1428,6 +1475,7 @@ pub const CreaturePool = struct {
                         .reward_value = 450.0,
                         .size = 35.0,
                         .contact_damage = 20.0,
+                        .tint = .{ 1.0, 0.3, 0.3, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1444,6 +1492,7 @@ pub const CreaturePool = struct {
                         .reward_value = 1500.0,
                         .size = 80.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 0.85, 0.2, 0.2, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1460,6 +1509,7 @@ pub const CreaturePool = struct {
                         .reward_value = 200.0,
                         .size = 38.0,
                         .contact_damage = 3.0,
+                        .tint = .{ 0.0, 0.9, 0.8, 1.0 },
                     },
                 ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1472,10 +1522,9 @@ pub const CreaturePool = struct {
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_move_speed, 18, 0.1, 1.1);
                 const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_tint_g, 20, 0.01, 0.8);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_contact_damage, 10, 1.0, 4.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 20.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size * (8.0 / 7.0) + 20.0;
+                const reward_value = size + size + 50.0;
 
-                _ = tint_g;
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1491,6 +1540,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ 0.8, tint_g, 0.8, 1.0 }),
                 });
             },
             0x36 => {
@@ -1508,7 +1558,9 @@ pub const CreaturePool = struct {
                     },
                 ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
-                _ = rng.randTagged(rng_callers.creature_spawn_template_ai7_orbiter_tint_g) % 5;
+                // The tint roll follows the slot allocation, so it lands on the spawned entry.
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_ai7_orbiter_tint_g, 5, 0.01, 0.65);
+                self.entries[idx].tint = narrowTint(.{ 0.65, tint_g, 0.95, 1.0 });
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.hold_timer;
                 setOrbitRadius(&self.entries[idx], 1.5);
             },
@@ -1531,6 +1583,7 @@ pub const CreaturePool = struct {
                     .max_health = 50.0,
                     .reward_value = 433.0,
                     .contact_damage = 10.0,
+                    .tint = narrowTint(.{ 1.0, 0.75, 0.1, 1.0 }),
                 });
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38) => {
@@ -1552,6 +1605,7 @@ pub const CreaturePool = struct {
                     .max_health = 50.0,
                     .reward_value = 433.0,
                     .contact_damage = 10.0,
+                    .tint = narrowTint(.{ 1.0, 0.75, 0.1, 1.0 }),
                 }) orelse return;
                 self.entries[idx].link_index = 0;
             },
@@ -1574,6 +1628,7 @@ pub const CreaturePool = struct {
                     .max_health = 4.0,
                     .reward_value = 50.0,
                     .contact_damage = 10.0,
+                    .tint = narrowTint(.{ 0.8, 0.65, 0.1, 1.0 }),
                 }) orelse return;
                 self.entries[idx].link_index = 0;
             },
@@ -1589,6 +1644,7 @@ pub const CreaturePool = struct {
                         .reward_value = 1000.0,
                         .size = 80.0,
                         .contact_damage = 17.0,
+                        .tint = .{ 0.8, 0.7, 0.4, 1.0 },
                     },
                     spawn_mod.CreatureFlags.split_on_death,
                     true,
@@ -1608,6 +1664,7 @@ pub const CreaturePool = struct {
                         .reward_value = 4500.0,
                         .size = 64.0,
                         .contact_damage = 50.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                     spawn_mod.CreatureFlags.ranged_attack_shock,
                     true,
@@ -1632,10 +1689,11 @@ pub const CreaturePool = struct {
                         .reward_value = 4000.0,
                         .size = 70.0,
                         .contact_damage = 20.0,
+                        .tint = .{ 0.9, 0.0, 0.0, 1.0 },
                     },
                 ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             @intFromEnum(spawn_mod.SpawnId.spider_plasma_shooter_3c) => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
@@ -1655,6 +1713,7 @@ pub const CreaturePool = struct {
                     .max_health = 200.0,
                     .reward_value = 200.0,
                     .contact_damage = 20.0,
+                    .tint = narrowTint(.{ 0.9, 0.1, 0.1, 1.0 }),
                 }) orelse return;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
                 self.entries[idx].link_index = 0;
@@ -1667,12 +1726,12 @@ pub const CreaturePool = struct {
             0x2E => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_size, 30, 1.0, 40.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 20.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size * (8.0 / 7.0) + 20.0;
+                const reward_value = size + size + 50.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_move_speed, 18, 0.1, 1.1);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_r, 40, 0.01, 0.6);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_g, 40, 0.01, 0.6);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_b, 40, 0.01, 0.6);
+                const tint_r = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_r, 40, 0.01, 0.6);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_g, 40, 0.01, 0.6);
+                const tint_b = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_tint_b, 40, 0.01, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_2e_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
@@ -1690,6 +1749,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint_r, tint_g, tint_b, 1.0 }),
                 });
             },
             0x2F => {
@@ -1704,6 +1764,7 @@ pub const CreaturePool = struct {
                         .reward_value = 150.0,
                         .size = 45.0,
                         .contact_damage = 4.0,
+                        .tint = .{ 0.8, 0.8, 0.8, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1720,6 +1781,7 @@ pub const CreaturePool = struct {
                         .reward_value = 400.0,
                         .size = 65.0,
                         .contact_damage = 10.0,
+                        .tint = .{ 0.9, 0.8, 0.1, 1.0 },
                     },
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
@@ -1727,11 +1789,11 @@ pub const CreaturePool = struct {
             0x31 => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_size, 30, 1.0, 40.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 10.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size * (8.0 / 7.0) + 10.0;
+                const reward_value = size + size + 50.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_move_speed, 18, 0.1, 1.1);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_tint, 30, 0.01, 0.6);
-                const contact_damage = narrowF32(size * 0.14 + 4.0);
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_tint, 30, 0.01, 0.6);
+                const contact_damage = size * 0.14 + 4.0;
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1748,16 +1810,17 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint, tint, 0.38, 1.0 }),
                 });
             },
             0x32 => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_size, 25, 1.0, 40.0);
-                const health = narrowF32(size + 10.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size + 10.0;
+                const reward_value = size + size + 50.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_move_speed, 17, 0.1, 1.1);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_tint, 40, 0.01, 0.6);
-                const contact_damage = narrowF32(size * 0.14 + 4.0);
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_tint, 40, 0.01, 0.6);
+                const contact_damage = size * 0.14 + 4.0;
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1774,16 +1837,17 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint, tint, tint, 1.0 }),
                 }) orelse return;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x33 => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_size, 15, 1.0, 45.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 20.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size * (8.0 / 7.0) + 20.0;
+                const reward_value = size + size + 50.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_move_speed, 18, 0.1, 1.1);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_tint_r, 40, 0.01, 0.6);
+                const tint_r = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_tint_r, 40, 0.01, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_red_33_contact_damage, 10, 1.0, 4.0);
 
                 const idx = self.spawnInit(.{
@@ -1801,16 +1865,17 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint_r, 0.5, 0.5, 1.0 }),
                 }) orelse return;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x34 => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_size, 20, 1.0, 40.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 20.0);
-                const reward_value = narrowF32(size + size + 50.0);
+                const health = size * (8.0 / 7.0) + 20.0;
+                const reward_value = size + size + 50.0;
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_move_speed, 18, 0.1, 1.1);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_tint_g, 40, 0.01, 0.6);
+                const tint_g = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_tint_g, 40, 0.01, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_green_34_contact_damage, 10, 1.0, 4.0);
 
                 const idx = self.spawnInit(.{
@@ -1828,14 +1893,15 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ 0.5, tint_g, 0.5, 1.0 }),
                 }) orelse return;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x3D => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng, call.heading);
-                _ = rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_tint) % 20;
-                const size = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_size) % 7 + 45));
-                const contact_damage = narrowF32(size * 0.22);
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_3d_tint, 20, 0.01, 0.8);
+                const size = @as(f64, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_size) % 7 + 45));
+                const contact_damage = size * 0.22;
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -1852,8 +1918,9 @@ pub const CreaturePool = struct {
                     .max_health = 70.0,
                     .reward_value = 120.0,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint, tint, tint, 1.0 }),
                 }) orelse return;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x3E => {
                 const idx = self.spawnFromStats(
@@ -1867,10 +1934,11 @@ pub const CreaturePool = struct {
                         .reward_value = 500.0,
                         .size = 64.0,
                         .contact_damage = 40.0,
+                        .tint = .{ 1.0, 1.0, 1.0, 1.0 },
                     },
                 ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x3F => {
                 const idx = self.spawnFromStats(
@@ -1884,10 +1952,11 @@ pub const CreaturePool = struct {
                         .reward_value = 210.0,
                         .size = 35.0,
                         .contact_damage = 20.0,
+                        .tint = .{ 0.7, 0.4, 0.1, 1.0 },
                     },
                 ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x40 => {
                 const idx = self.spawnFromStats(
@@ -1901,18 +1970,19 @@ pub const CreaturePool = struct {
                         .reward_value = 160.0,
                         .size = 45.0,
                         .contact_damage = 5.0,
+                        .tint = .{ 0.5, 0.6, 0.9, 1.0 },
                     },
                 ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
-                applySpiderSp1Ai7Tail(&self.entries[idx]);
+                self.applySpiderSp1Ai7Tail(idx);
             },
             0x41 => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_size, 30, 1.0, 40.0);
-                const health = narrowF32(size * (8.0 / 7.0) + 10.0);
-                const reward_value = narrowF32(size + size + 50.0);
-                const move_speed = narrowF32(size * 0.0025 + 0.9);
-                _ = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_tint, 40, 0.01, 0.6);
+                const health = size * (8.0 / 7.0) + 10.0;
+                const reward_value = size + size + 50.0;
+                const move_speed = size * 0.0025 + 0.9;
+                const tint = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_tint, 40, 0.01, 0.6);
                 const contact_damage = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_contact_damage, 10, 1.0, 4.0);
 
                 _ = self.spawnInit(.{
@@ -1930,6 +2000,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
+                    .tint = narrowTint(.{ tint, tint, tint, 1.0 }),
                 });
             },
             0x42 => {
@@ -1944,6 +2015,7 @@ pub const CreaturePool = struct {
                         .reward_value = 160.0,
                         .size = 45.0,
                         .contact_damage = 15.0,
+                        .tint = .{ 0.9, 0.9, 0.9, 1.0 },
                     },
                 );
                 _ = idx;
@@ -1961,6 +2033,7 @@ pub const CreaturePool = struct {
                         .reward_value = 460.0,
                         .size = 70.0,
                         .contact_damage = 15.0,
+                        .tint = .{ 0.2, 0.6, 0.1, 1.0 },
                     },
                 );
                 _ = idx;
@@ -1997,7 +2070,7 @@ pub const CreaturePool = struct {
             }
 
             self.entries[tail_idx].max_hp = self.entries[tail_idx].hp;
-            applySpiderSp1Ai7Tail(&self.entries[tail_idx]);
+            self.applySpiderSp1Ai7Tail(tail_idx);
             self.entries[tail_idx].heading = narrowF32(resolved_heading);
             const maybe_slot_idx = blk: {
                 const link_index = self.entries[tail_idx].link_index;
@@ -2007,9 +2080,8 @@ pub const CreaturePool = struct {
                 if (self.spawn_slots[slot_idx].owner_creature != @as(i32, @intCast(tail_idx))) break :blk null;
                 break :blk slot_idx;
             };
-            applySpawnDifficultyAdjustments(
-                self,
-                &self.entries[tail_idx],
+            self.applySpawnDifficultyAdjustments(
+                tail_idx,
                 if (maybe_slot_idx) |slot_idx| &self.spawn_slots[slot_idx] else null,
                 call.template_id,
                 state,
@@ -2190,7 +2262,9 @@ pub const CreaturePool = struct {
             );
             creature.move_scale = ai_update.move_scale;
             if (ai_update.self_damage) |self_damage| {
-                _ = self.applyDamage(
+                // Link-death cleanup is creature_apply_damage(idx, 1000.0, 1,
+                // zero): the full bullet path, heading-jitter draw included.
+                _ = self.applyProjectileDamage(
                     state,
                     players,
                     bonus_pool,
@@ -2527,6 +2601,9 @@ pub const CreaturePool = struct {
         for (&self.entries) |*creature| {
             if (!creature.active) continue;
             if (creature_lifecycle.isDespawned(creature.lifecycle_stage)) {
+                // The render-time cull also releases the corpse's spawn slot,
+                // even when a newer spawner has since claimed it.
+                self.disableSpawnSlotForCreature(creature);
                 creature.active = false;
             }
         }
@@ -2545,10 +2622,11 @@ pub const CreaturePool = struct {
         dt: f32,
         world_size: f32,
     ) i32 {
-        const jitter_rand = state.rng.randTagged(rng_callers.creature_apply_damage_heading_jitter);
         if (creature_index < self.entries.len) {
             var creature = &self.entries[creature_index];
+            // Ping-pong animated creatures skip the heading jitter and its draw.
             if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
+                const jitter_rand = state.rng.randTagged(rng_callers.creature_apply_damage_heading_jitter);
                 const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
                 const jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.002));
                 const size = @max(@as(f32, 1e-6), creature.size);
@@ -3061,6 +3139,7 @@ pub const CreaturePool = struct {
             .max_health = stats.health,
             .reward_value = stats.reward_value,
             .contact_damage = stats.contact_damage,
+            .tint = narrowTint(stats.tint),
         });
     }
 
@@ -3095,13 +3174,49 @@ pub const CreaturePool = struct {
         self.spawn_slots[@intCast(creature.link_index)].owner_creature = -1;
     }
 
+    fn applyUnhandledCreatureTypeFallback(self: *CreaturePool, idx: usize) void {
+        const creature = &self.entries[idx];
+        creature.type_id = @intFromEnum(spawn_mod.CreatureTypeId.alien);
+        creature.hp = 20.0;
+        creature.max_hp = 20.0;
+        self.spawn_plan_stats[idx].health = 20.0;
+    }
+
+    fn applySpiderSp1Ai7Tail(self: *CreaturePool, idx: usize) void {
+        const creature = &self.entries[idx];
+        if (creature.type_id != @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)) return;
+        if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_shock) != 0) return;
+        if ((creature.flags & spawn_mod.CreatureFlags.ai7_link_timer) != 0) return;
+
+        creature.flags |= spawn_mod.CreatureFlags.ai7_link_timer;
+        creature.link_index = 0;
+        const plan = &self.spawn_plan_stats[idx];
+        plan.move_speed *= 1.2;
+        creature.move_speed = narrowF32(plan.move_speed);
+    }
+
+    /// Scales the spawn-plan stats of `idx` and stores them rounded to f32.
+    fn scaleSpawnPlanStats(self: *CreaturePool, idx: usize, reward_value: f64, move_speed: f64, contact_damage: f64, health: f64) void {
+        const plan = &self.spawn_plan_stats[idx];
+        plan.reward_value *= reward_value;
+        plan.move_speed *= move_speed;
+        plan.contact_damage *= contact_damage;
+        plan.health *= health;
+        const creature = &self.entries[idx];
+        creature.reward_value = narrowF32(plan.reward_value);
+        creature.move_speed = narrowF32(plan.move_speed);
+        creature.contact_damage = narrowF32(plan.contact_damage);
+        creature.hp = narrowF32(plan.health);
+    }
+
     fn applySpawnDifficultyAdjustments(
         self: *CreaturePool,
-        creature: *CreatureState,
+        idx: usize,
         spawn_slot: ?*spawn_mod.SpawnSlotInit,
         template_id: i32,
         state: ?*state_mod.GameplayState,
     ) void {
+        const creature = &self.entries[idx];
         if (!self.hardcore) {
             if (spawn_slot) |slot| {
                 if ((creature.flags & 0x04) != 0) {
@@ -3113,34 +3228,19 @@ pub const CreaturePool = struct {
                 const d = self.quest_fail_retry_count;
                 switch (d) {
                     1 => {
-                        creature.reward_value = narrowF32(creature.reward_value * 0.9);
-                        creature.move_speed = narrowF32(creature.move_speed * 0.95);
-                        creature.contact_damage = narrowF32(creature.contact_damage * 0.95);
-                        creature.hp = narrowF32(creature.hp * 0.95);
+                        self.scaleSpawnPlanStats(idx, 0.9, 0.95, 0.95, 0.95);
                     },
                     2 => {
-                        creature.reward_value = narrowF32(creature.reward_value * 0.85);
-                        creature.move_speed = narrowF32(creature.move_speed * 0.9);
-                        creature.contact_damage = narrowF32(creature.contact_damage * 0.9);
-                        creature.hp = narrowF32(creature.hp * 0.9);
+                        self.scaleSpawnPlanStats(idx, 0.85, 0.9, 0.9, 0.9);
                     },
                     3 => {
-                        creature.reward_value = narrowF32(creature.reward_value * 0.85);
-                        creature.move_speed = narrowF32(creature.move_speed * 0.8);
-                        creature.contact_damage = narrowF32(creature.contact_damage * 0.8);
-                        creature.hp = narrowF32(creature.hp * 0.8);
+                        self.scaleSpawnPlanStats(idx, 0.85, 0.8, 0.8, 0.8);
                     },
                     4 => {
-                        creature.reward_value = narrowF32(creature.reward_value * 0.8);
-                        creature.move_speed = narrowF32(creature.move_speed * 0.7);
-                        creature.contact_damage = narrowF32(creature.contact_damage * 0.7);
-                        creature.hp = narrowF32(creature.hp * 0.7);
+                        self.scaleSpawnPlanStats(idx, 0.8, 0.7, 0.7, 0.7);
                     },
                     else => {
-                        creature.reward_value = narrowF32(creature.reward_value * 0.8);
-                        creature.move_speed = narrowF32(creature.move_speed * 0.6);
-                        creature.contact_damage = narrowF32(creature.contact_damage * 0.5);
-                        creature.hp = narrowF32(creature.hp * 0.5);
+                        self.scaleSpawnPlanStats(idx, 0.8, 0.6, 0.5, 0.5);
                     },
                 }
                 if (spawn_slot) |slot| {
@@ -3159,11 +3259,9 @@ pub const CreaturePool = struct {
             runtime_state.quest_fail_retry_count = 0;
         }
         if (template_id == @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38)) {
-            creature.move_speed = narrowF32(creature.move_speed * 0.7);
+            self.scaleSpawnPlanStats(idx, 1.0, 0.7, 1.0, 1.0);
         }
-        creature.move_speed = narrowF32(creature.move_speed * 1.05);
-        creature.contact_damage = narrowF32(creature.contact_damage * 1.4);
-        creature.hp = narrowF32(creature.hp * 1.2);
+        self.scaleSpawnPlanStats(idx, 1.0, 1.05, 1.4, 1.2);
 
         if (spawn_slot) |slot| {
             if ((creature.flags & 0x04) != 0) {
@@ -3213,18 +3311,19 @@ pub const CreaturePool = struct {
 
         const size = randfTagged(rng, callers.size, 15, 1.0, 38.0);
         const base_move_speed = randfTagged(rng, callers.move_speed, 18, 0.1, 1.1);
-        if (callers.tint) |caller| {
-            _ = randfTagged(rng, caller, 25, 0.01, 0.8);
-        }
+        const tint: [4]f64 = if (callers.tint) |caller|
+            .{ 0.6, 0.6, std.math.clamp(randfTagged(rng, caller, 25, 0.01, 0.8), 0.0, 1.0), 1.0 }
+        else
+            .{ 0.67, 0.67, 1.0, 1.0 };
         const contact_damage = randfTagged(rng, callers.contact_damage, 10, 1.0, 4.0);
-        const health = narrowF32(size * (8.0 / 7.0) + 20.0);
-        const reward_value = narrowF32(size + size + 50.0);
+        const health = size * (8.0 / 7.0) + 20.0;
+        const reward_value = size + size + 50.0;
 
         var flags: u32 = 0;
         var move_speed = base_move_speed;
         if (creature_type == .spider_sp1) {
             flags |= spawn_mod.CreatureFlags.ai7_link_timer;
-            move_speed = narrowF32(move_speed * 1.2);
+            move_speed = move_speed * 1.2;
         }
 
         const idx = self.spawnInit(.{
@@ -3242,6 +3341,7 @@ pub const CreaturePool = struct {
             .max_health = health,
             .reward_value = reward_value,
             .contact_damage = contact_damage,
+            .tint = narrowTint(tint),
         }) orelse return;
         if (creature_type == .spider_sp1) {
             self.entries[idx].link_index = 0;
@@ -3678,11 +3778,26 @@ fn advancePosByDeltaF32(
 
 const SpawnStats = struct {
     type_id: spawn_mod.CreatureTypeId,
-    health: f32,
-    move_speed: f32,
-    reward_value: f32,
-    size: f32,
-    contact_damage: f32,
+    health: f64,
+    move_speed: f64,
+    reward_value: f64,
+    size: f64,
+    contact_damage: f64,
+    // Python spawn plans hold tints in double precision.
+    tint: [4]f64 = .{ 1.0, 1.0, 1.0, 1.0 },
+};
+
+fn narrowTint(tint: [4]f64) [4]f32 {
+    return .{ narrowF32(tint[0]), narrowF32(tint[1]), narrowF32(tint[2]), narrowF32(tint[3]) };
+}
+
+/// Double-precision spawn-plan stats of a freshly spawned creature. Template
+/// tail adjustments scale these before the final f32 store.
+const SpawnPlanStats = struct {
+    health: f64 = 0.0,
+    move_speed: f64 = 0.0,
+    reward_value: f64 = 0.0,
+    contact_damage: f64 = 0.0,
 };
 
 const BasicRandomCallers = struct {
@@ -3696,10 +3811,10 @@ fn randfTagged(
     rng: *spawn_mod.Crand,
     caller: rng_callers.Caller,
     mod: u32,
-    scale: f32,
-    base: f32,
-) f32 {
-    return @as(f32, @floatFromInt(rng.randTagged(caller) % mod)) * scale + base;
+    scale: f64,
+    base: f64,
+) f64 {
+    return @as(f64, @floatFromInt(rng.randTagged(caller) % mod)) * scale + base;
 }
 
 fn drawAllocPhaseSeed(rng: *spawn_mod.Crand) i32 {
@@ -3756,22 +3871,6 @@ fn setOrbitRadius(creature: *CreatureState, radius: f32) void {
 fn setRangedProjectileType(creature: *CreatureState, projectile_type: i32) void {
     creature.ranged_projectile_type = projectile_type;
     creature.orbit_radius = @bitCast(projectile_type);
-}
-
-fn applyUnhandledCreatureTypeFallback(creature: *CreatureState) void {
-    creature.type_id = @intFromEnum(spawn_mod.CreatureTypeId.alien);
-    creature.hp = 20.0;
-    creature.max_hp = 20.0;
-}
-
-fn applySpiderSp1Ai7Tail(creature: *CreatureState) void {
-    if (creature.type_id != @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1)) return;
-    if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_shock) != 0) return;
-    if ((creature.flags & spawn_mod.CreatureFlags.ai7_link_timer) != 0) return;
-
-    creature.flags |= spawn_mod.CreatureFlags.ai7_link_timer;
-    creature.link_index = 0;
-    creature.move_speed = narrowF32(creature.move_speed * 1.2);
 }
 
 fn hitRadiusFor(creature: CreatureState) f32 {
@@ -4434,14 +4533,17 @@ fn applyPlayerContactDamageWithSource(
         }
     }
 
-    if (player.health < 0.0 and dt > 0.0) {
+    // Native routes exact-zero Highlander kills through the pain branch; the
+    // default rules treat `health == 0` as lethal.
+    const lethal_hit = player.health < 0.0 or (!state.preserve_bugs and player.health == 0.0);
+    if (lethal_hit and dt > 0.0) {
         player.death_timer = native_math.pc24Sub(
             player.death_timer,
             native_math.pc24Mul(dt, @as(f32, 28.0)),
         );
     }
 
-    if (player.health >= 0.0) {
+    if (!lethal_hit) {
         const pain_roll = state.rng.randTagged(rng_callers.player_take_damage_pain_sfx) % 3;
         state.sfx_queue.append(switch (pain_roll) {
             0 => .trooper_inpain_01,
@@ -5749,7 +5851,7 @@ test "template spawn supports quest spider and zombie late templates" {
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.zombie)), entry.type_id);
         try std.testing.expectEqual(@as(u32, 0), entry.flags);
-        try expectFloatClose(60.28571701049805, entry.hp);
+        try expectFloatClose(60.28571319580078, entry.hp);
         try expectFloatClose(1.01, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -5796,6 +5898,111 @@ test "template spawn supports quest spider and zombie late templates" {
         try expectFloatClose(460.0, entry.reward_value);
         try expectFloatClose(70.0, entry.size);
         try expectFloatClose(15.0, entry.contact_damage);
+    }
+}
+
+test "template spawn tints match python spawn plans" {
+    // Generated from `build_spawn_plan(sid, Vec2(512, 512), 0.0, Crand(0xBEEF), ...)`:
+    // run-length f32 tint bit patterns in plan creature order.
+    const TintRun = struct { tint: [4]u32, count: usize };
+    const TemplateTints = struct { template_id: i32, runs: []const TintRun };
+    const cases = [_]TemplateTints{
+        .{ .template_id = 0x00, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F19999A, 0x3F800000, 0x3F4CCCCD }, .count = 1 }} },
+        .{ .template_id = 0x01, .runs = &.{.{ .tint = .{ 0x3F4CCCCD, 0x3F333333, 0x3ECCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x03, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F19999A, 0x3F733333, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x04, .runs = &.{.{ .tint = .{ 0x3F2B851F, 0x3F2B851F, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x05, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F19999A, 0x3F733333, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x06, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F19999A, 0x3F733333, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x07, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x08, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x09, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x0A, .runs = &.{.{ .tint = .{ 0x3F4CCCCD, 0x3F333333, 0x3ECCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x0B, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3DCCCCCD, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x0C, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3F4CCCCD, 0x3ECCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x0D, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3F4CCCCD, 0x3ECCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x0E, .runs = &.{ .{ .tint = .{ 0x3F666666, 0x3F4CCCCD, 0x3ECCCCCD, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3F800000, 0x3E99999A, 0x3E99999A, 0x3F800000 }, .count = 24 } } },
+        .{ .template_id = 0x0F, .runs = &.{.{ .tint = .{ 0x3F2A3D71, 0x3EC51EB8, 0x3E849BA6, 0x3F0F5C29 }, .count = 1 }} },
+        .{ .template_id = 0x10, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3F4CCCCD, 0x3ECCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x11, .runs = &.{ .{ .tint = .{ 0x3F7D70A4, 0x3F7D70A4, 0x3E570A3D, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3F19999A, 0x3F19999A, 0x3E9EB852, 0x3F800000 }, .count = 4 } } },
+        .{ .template_id = 0x12, .runs = &.{ .{ .tint = .{ 0x3F266666, 0x3F59999A, 0x3F7851EC, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3EA3D70A, 0x3F16872B, 0x3EDA1CAC, 0x3F800000 }, .count = 8 } } },
+        .{ .template_id = 0x13, .runs = &.{ .{ .tint = .{ 0x3F19999A, 0x3F4CCCCD, 0x3F68F5C3, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3ECCCCCD, 0x3F333333, 0x3DE147AE, 0x3F800000 }, .count = 10 } } },
+        .{ .template_id = 0x14, .runs = &.{ .{ .tint = .{ 0x3F333333, 0x3F4CCCCD, 0x3E9EB852, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3ECCCCCD, 0x3F333333, 0x3DE147AE, 0x3F800000 }, .count = 27 } } },
+        .{ .template_id = 0x15, .runs = &.{ .{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3ECCCCCD, 0x3F333333, 0x3DE147AE, 0x3F800000 }, .count = 27 } } },
+        .{ .template_id = 0x16, .runs = &.{ .{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3ECCCCCD, 0x3F333333, 0x3DE147AE, 0x3F800000 }, .count = 27 } } },
+        .{ .template_id = 0x17, .runs = &.{ .{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3ECCCCCD, 0x3F333333, 0x3DE147AE, 0x3F800000 }, .count = 27 } } },
+        .{ .template_id = 0x18, .runs = &.{ .{ .tint = .{ 0x3F333333, 0x3F4CCCCD, 0x3E9EB852, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3F366666, 0x3ED33333, 0x3E8E147B, 0x3F19999A }, .count = 27 } } },
+        .{ .template_id = 0x19, .runs = &.{ .{ .tint = .{ 0x3F733333, 0x3F0CCCCD, 0x3EBD70A4, 0x3F800000 }, .count = 1 }, .{ .tint = .{ 0x3F366666, 0x3ED33333, 0x3E8E147B, 0x3F19999A }, .count = 5 } } },
+        .{ .template_id = 0x1A, .runs = &.{.{ .tint = .{ 0x3F1C28F6, 0x3F1C28F6, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x1B, .runs = &.{.{ .tint = .{ 0x3F1C28F6, 0x3F1C28F6, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x1C, .runs = &.{.{ .tint = .{ 0x3F1C28F6, 0x3F1C28F6, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x1D, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F570A3D, 0x3F1A9FBE, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x1E, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F224DD3, 0x3F0A3D71, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x1F, .runs = &.{.{ .tint = .{ 0x3F000000, 0x3F224DD3, 0x3F1A9FBE, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x20, .runs = &.{.{ .tint = .{ 0x3E99999A, 0x3F333333, 0x3E99999A, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x21, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3DCCCCCD, 0x3F028F5C, 0x3F000000 }, .count = 1 }} },
+        .{ .template_id = 0x22, .runs = &.{.{ .tint = .{ 0x3DCCCCCD, 0x3F333333, 0x3F028F5C, 0x3D4CCCCD }, .count = 1 }} },
+        .{ .template_id = 0x23, .runs = &.{.{ .tint = .{ 0x3DCCCCCD, 0x3F333333, 0x3F028F5C, 0x3D23D70A }, .count = 1 }} },
+        .{ .template_id = 0x24, .runs = &.{.{ .tint = .{ 0x3DCCCCCD, 0x3F333333, 0x3DE147AE, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x25, .runs = &.{.{ .tint = .{ 0x3DCCCCCD, 0x3F4CCCCD, 0x3DE147AE, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x26, .runs = &.{.{ .tint = .{ 0x3F19999A, 0x3F4CCCCD, 0x3F19999A, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x27, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F4CCCCD, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x28, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3DCCCCCD, 0x3F028F5C, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x29, .runs = &.{.{ .tint = .{ 0x3F4CCCCD, 0x3F4CCCCD, 0x3F4CCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x2A, .runs = &.{.{ .tint = .{ 0x3E99999A, 0x3E99999A, 0x3E99999A, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x2B, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3E99999A, 0x3E99999A, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x2C, .runs = &.{.{ .tint = .{ 0x3F59999A, 0x3E4CCCCD, 0x3E4CCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x2D, .runs = &.{.{ .tint = .{ 0x00000000, 0x3F666666, 0x3F4CCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x2E, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3F333333, 0x3F70A3D7, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x2F, .runs = &.{.{ .tint = .{ 0x3F4CCCCD, 0x3F4CCCCD, 0x3F4CCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x30, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3F4CCCCD, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x31, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3F333333, 0x3EC28F5C, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x32, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3F333333, 0x3F333333, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x33, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3F000000, 0x3F000000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x34, .runs = &.{.{ .tint = .{ 0x3F000000, 0x3F333333, 0x3F000000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x35, .runs = &.{.{ .tint = .{ 0x3F4CCCCD, 0x3F666666, 0x3F4CCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x36, .runs = &.{.{ .tint = .{ 0x3F266666, 0x3F28F5C3, 0x3F733333, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x37, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F400000, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x38, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F400000, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x39, .runs = &.{.{ .tint = .{ 0x3F4CCCCD, 0x3F266666, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x3A, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x3B, .runs = &.{.{ .tint = .{ 0x3F666666, 0x00000000, 0x00000000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x3C, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3DCCCCCD, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x3D, .runs = &.{.{ .tint = .{ 0x3F68F5C3, 0x3F68F5C3, 0x3F68F5C3, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x3E, .runs = &.{.{ .tint = .{ 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x3F, .runs = &.{.{ .tint = .{ 0x3F333333, 0x3ECCCCCD, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x40, .runs = &.{.{ .tint = .{ 0x3F000000, 0x3F19999A, 0x3F666666, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x41, .runs = &.{.{ .tint = .{ 0x3F7851EC, 0x3F7851EC, 0x3F7851EC, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x42, .runs = &.{.{ .tint = .{ 0x3F666666, 0x3F666666, 0x3F666666, 0x3F800000 }, .count = 1 }} },
+        .{ .template_id = 0x43, .runs = &.{.{ .tint = .{ 0x3E4CCCCD, 0x3F19999A, 0x3DCCCCCD, 0x3F800000 }, .count = 1 }} },
+    };
+
+    for (cases) |case| {
+        var pool: CreaturePool = .{};
+        var rng = spawn_mod.Crand.init(0xBEEF);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = case.template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.0,
+            },
+            &rng,
+        );
+        var slot: usize = 0;
+        for (case.runs) |run| {
+            const expected: [4]f32 = .{
+                @bitCast(run.tint[0]),
+                @bitCast(run.tint[1]),
+                @bitCast(run.tint[2]),
+                @bitCast(run.tint[3]),
+            };
+            for (0..run.count) |_| {
+                errdefer std.debug.print("template 0x{X:0>2} slot {d}\n", .{ case.template_id, slot });
+                try std.testing.expect(pool.entries[slot].active);
+                try std.testing.expectEqual(expected, pool.entries[slot].tint);
+                slot += 1;
+            }
+        }
+        try std.testing.expect(!pool.entries[slot].active);
     }
 }
 
@@ -5938,7 +6145,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), entry.type_id);
-        try expectFloatClose(70.28572082519531, entry.hp);
+        try expectFloatClose(70.28571319580078, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -5958,7 +6165,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), entry.type_id);
-        try expectFloatClose(70.28572082519531, entry.hp);
+        try expectFloatClose(70.28571319580078, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -5978,7 +6185,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), entry.type_id);
-        try expectFloatClose(60.28571701049805, entry.hp);
+        try expectFloatClose(60.28571319580078, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);

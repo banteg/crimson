@@ -6,6 +6,7 @@ const owner_ref = @import("../owner_ref.zig");
 const projectiles_mod = @import("../projectiles.zig");
 const secondary_projectiles_mod = @import("../secondary_projectiles.zig");
 const state_mod = @import("../state.zig");
+const tutorial_runtime = @import("../../tutorial/runtime.zig");
 
 pub const ReplayTickTiming = struct {
     elapsed_ms: i64,
@@ -288,6 +289,52 @@ pub fn deinitReplayTickTraceSlice(allocator: std.mem.Allocator, trace: []ReplayT
     }
 }
 
+/// The checkpoint tutorial snapshot for `trace`, or null outside the tutorial.
+pub fn tutorialSnapshot(comptime Snapshot: type, trace: *const ReplayTickTrace) ?Snapshot {
+    if (trace.gameplay_state.game_mode != .tutorial) return null;
+    const tutorial = trace.gameplay_state.tutorial;
+    const overlay = trace.gameplay_state.tutorial_overlay;
+    return .{
+        .stage_index = tutorial.stage_index,
+        .stage_timer_ms = tutorial.stage_timer_ms,
+        .stage_transition_timer_ms = tutorial.stage_transition_timer_ms,
+        .hint_index = tutorial.hint_index,
+        .hint_alpha = tutorial.hint_alpha,
+        .hint_fade_in = tutorial.hint_fade_in,
+        .repeat_spawn_count = tutorial.repeat_spawn_count,
+        .hint_bonus_creature_ref = if (tutorial.hint_bonus_creature_ref) |idx| @intCast(idx) else null,
+        .prompt_text = tutorial_runtime.promptText(overlay.prompt_stage_index),
+        .prompt_alpha = overlay.prompt_alpha,
+        .hint_text = tutorial_runtime.hintText(overlay.hint_index, tutorial.preserve_bugs),
+        .hint_alpha_overlay = overlay.hint_alpha,
+    };
+}
+
+/// The checkpoint Typ-o snapshot for `trace`, or null outside Typ-o. The
+/// caller owns `active_names`.
+pub fn typoSnapshot(comptime Snapshot: type, allocator: std.mem.Allocator, trace: *const ReplayTickTrace) !?Snapshot {
+    if (trace.gameplay_state.game_mode != .typo) return null;
+    const NameEntry = @typeInfo(@FieldType(Snapshot, "active_names")).pointer.child;
+    const typo = &trace.gameplay_state.typo;
+    var active_names: std.ArrayList(NameEntry) = .empty;
+    errdefer active_names.deinit(allocator);
+    for (trace.entities.creatures) |creature| {
+        const name = typo.names.nameSlice(creature.index);
+        if (name.len == 0) continue;
+        try active_names.append(allocator, .{
+            .creature_index = @intCast(creature.index),
+            .name = name,
+        });
+    }
+    return .{
+        .input_text = typo.typing.slice(),
+        .submit_count = typo.typing.submit_count,
+        .match_count = typo.typing.match_count,
+        .spawn_cooldown_ms = typo.spawn_cooldown_ms,
+        .active_names = try active_names.toOwnedSlice(allocator),
+    };
+}
+
 fn collectCreatureSamples(
     allocator: std.mem.Allocator,
     creatures: *const creatures_mod.CreaturePool,
@@ -340,8 +387,8 @@ fn collectProjectileSamples(
             .pos = projectile.pos,
             .vel = projectile.vel,
             .life_timer = projectile.life_timer,
-            .speed_scale = projectile.speed_scale,
-            .damage_pool = projectile.damage_pool,
+            .speed_scale = @floatCast(projectile.speed_scale),
+            .damage_pool = @floatCast(projectile.damage_pool),
             .hit_radius = projectile.hit_radius,
             .travel_budget = projectile.travel_budget,
             .owner_id = owner_ref.OwnerRef.toLegacy(projectile.owner),

@@ -125,14 +125,15 @@ pub fn midStep(
     }
 
     for (batch.slice()) |call| {
-        if (creatures.activeCount() == creatures_mod.max_creatures) break;
         // creature_spawn_tinted allocates via creature_alloc_slot, which seeds
-        // phase_seed = crt_rand() & 0x17f before the heading/size draws.
+        // phase_seed = crt_rand() & 0x17f before the heading/size draws; the
+        // draws happen even when the pool is full. The spawn fields are computed
+        // in double precision and stored as f32.
         const phase_seed: i32 = @intCast(state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f);
-        const heading = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_spawn_tinted_heading) % 314)) * 0.01;
-        var size = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_spawn_tinted_size) % 20 + 47));
+        const heading = @as(f64, @floatFromInt(state.rng.randTagged(rng_callers.creature_spawn_tinted_heading) % 314)) * 0.01;
+        var size = @as(f64, @floatFromInt(state.rng.randTagged(rng_callers.creature_spawn_tinted_size) % 20 + 47));
         var flags: i32 = 0;
-        var move_speed: f32 = 1.7;
+        var move_speed: f64 = 1.7;
         if (call.type_id == .spider_sp1 or call.type_id == .spider_sp2) {
             flags |= spawn_mod.CreatureFlags.ai7_link_timer;
             move_speed *= 1.2;
@@ -142,16 +143,16 @@ pub fn midStep(
         const creature_idx = creatures.spawnInit(.{
             .origin_template_id = 0,
             .pos = .{ .x = call.pos_x, .y = call.pos_y },
-            .heading = heading,
+            .heading = @floatCast(heading),
             .phase_seed = phase_seed,
             .type_id = call.type_id,
             .flags = @bitCast(flags),
             .ai_mode = .chase_player,
             .health = 1.0,
             .max_health = 1.0,
-            .move_speed = move_speed,
+            .move_speed = @floatCast(move_speed),
             .reward_value = 1.0,
-            .size = size,
+            .size = @floatCast(size),
             .contact_damage = 100.0,
             .tint = .{ call.tint_r, call.tint_g, call.tint_b, 1.0 },
         }) orelse continue;

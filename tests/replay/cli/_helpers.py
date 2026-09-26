@@ -178,12 +178,14 @@ def record_bot_replay(
     fire: bool = True,
     pick_perk: bool = False,
     tail_ticks: int = 30,
+    type_every: int = 0,
 ) -> Replay:
     """Record a run whose players aim at the nearest creature (and fire, if `fire`).
 
     Recording stops on the tick that ends the run, or after `max_ticks`. With
     `pick_perk`, the first pending perk is opened and picked, and recording
-    stops `tail_ticks` ticks later.
+    stops `tail_ticks` ticks later. With `type_every`, every that many ticks the
+    Typ-o player types and submits the name of the nearest creature.
     """
 
     session = initialize_run(run).session
@@ -203,11 +205,27 @@ def record_bot_replay(
         if pick_perk and picked_at is None and world.state.perk_selection.pending_count > 0:
             commands = [PerkMenuOpenCommand(player_index=0), PerkPickCommand(player_index=0, choice_index=0)]
             picked_at = tick_index
+        if type_every and tick_index % int(type_every) == 0:
+            word = _typo_bot_word(world)
+            if word:
+                commands = [*(TypoCharCommand(player_index=0, ch=ch) for ch in word), TypoSubmitCommand(player_index=0)]
         recorder.record_tick(inputs, commands=commands)
         step = session.step_tick(dt=REPLAY_TICK_DT, inputs=inputs, commands=commands)
         if step.outcome is not None or (picked_at is not None and tick_index - picked_at >= int(tail_ticks)):
             break
     return finish_replay(recorder)
+
+
+def _typo_bot_word(world) -> str:
+    player = world.players[0]
+    names = world.state.typo.names.names
+    named = [
+        (creature, names[index])
+        for index, creature in enumerate(world.creatures.entries)
+        if creature.active and creature.hp > 0.0 and names[index]
+    ]
+    nearest = min(named, key=lambda entry: (entry[0].pos - player.pos).length_sq(), default=None)
+    return "" if nearest is None else nearest[1]
 
 
 def with_idle_ticks(replay: Replay, count: int) -> Replay:

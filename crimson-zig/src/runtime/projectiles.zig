@@ -33,8 +33,10 @@ pub const Projectile = struct {
     type_id: i32 = 0,
     life_timer: f32 = 0.0,
     reserved: f32 = 0.0,
-    speed_scale: f32 = 1.0,
-    damage_pool: f32 = 1.0,
+    /// Pellet speed rolls keep their double-precision value (see fire_recipes).
+    speed_scale: f64 = 1.0,
+    /// Piercing budget; like `speed_scale`, it keeps double precision.
+    damage_pool: f64 = 1.0,
     hit_radius: f32 = 1.0,
     travel_budget: f32 = 0.0,
     owner: owner_ref.OwnerRef = .{ .none = {} },
@@ -548,13 +550,13 @@ pub const ProjectilePool = struct {
                             bonuses,
                             terrain_fx,
                             hit_idx.?,
-                            remaining,
+                            narrowF32(remaining),
                             impulse,
                             proj.owner,
                             narrowF32(dt),
                             narrowF32(world_size),
                         );
-                        proj.damage_pool -= narrowF32(creatures.entries[hit_idx.?].hp);
+                        proj.damage_pool -= creatures.entries[hit_idx.?].hp;
                     }
                     const idx = hit_idx.?;
                     collidable_snapshot[idx] = creatures.entries[idx].active and
@@ -1211,7 +1213,7 @@ fn damageScaleFromRawId(raw_id: i32) f32 {
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
 }
 
-fn projectileImpulseAxisF32(angle: f32, speed_scale: f32) f32 {
+fn projectileImpulseAxisF32(angle: f32, speed_scale: f64) f32 {
     const impulse_angle = native_math.pc24Sub(angle, native_half_pi);
     return native_math.pc24Mul(
         std.math.cos(@as(f64, @floatCast(impulse_angle))),
@@ -2217,8 +2219,8 @@ test "primary movement threshold preserves native position and player damage" {
             .vy = projectile.vel.y,
             .type = projectile.type_id,
             .life = projectile.life_timer,
-            .speed = projectile.speed_scale,
-            .damage = projectile.damage_pool,
+            .speed = @floatCast(projectile.speed_scale),
+            .damage = @floatCast(projectile.damage_pool),
             .radius = projectile.hit_radius,
             .travel = projectile.travel_budget,
             .owner = projectile.owner.toLegacy(),
@@ -2404,8 +2406,8 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
             .vy = projectile.vel.y,
             .type = projectile.type_id,
             .life = projectile.life_timer,
-            .speed = projectile.speed_scale,
-            .damage = projectile.damage_pool,
+            .speed = @floatCast(projectile.speed_scale),
+            .damage = @floatCast(projectile.damage_pool),
             .radius = projectile.hit_radius,
             .travel = projectile.travel_budget,
             .owner = projectile.owner.toLegacy(),
