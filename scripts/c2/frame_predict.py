@@ -698,7 +698,11 @@ def binary_frames(config, object_path: Path) -> dict:
             return 0
         clean = name.lstrip("_").split("@")[0].lstrip("?")
         sym = by_name.get(clean)
-        return _callee_pop(image, sym.address) if sym is not None else None
+        if sym is not None:
+            return _callee_pop(image, sym.address)
+        # Unknown direct callees (CRT helpers such as _crt_rand) are cdecl: C2 defers their
+        # argument cleanup to a later `add esp`. Only thiscall members pop their own arguments.
+        return None if "@@QAE" in name else 0
 
     candidate = stack_refs(cand.data, 0, candidate_pop)
     return {"target": target, "candidate": candidate}

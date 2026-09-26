@@ -43,7 +43,10 @@ See also [aim-chain-mover.md](aim-chain-mover.md) §3 (the cross-jump pair loop 
    the projectile and sprite spawn positions. Our single function-scope `move_delta` stands for all of
    them. To reproduce native's non-merges, `move_delta` has to be split into block-scoped vectors
    everywhere it is used, so that nothing function-scope is left in that slot. That is a whole-function
-   frame change and was not attempted here. [inferred]
+   frame change and was not attempted here. [inferred] **Refuted** in
+   [pu-move-delta-split.md](pu-move-delta-split.md): block-scoped vectors fall outside the alias
+   class that keeps the movement lanes y-first, and the aim arms lose their memory stores, so the
+   split scores lower. Native's b0x38 is one 16-byte object shared with `smoke_color`.
 
 ## 2. The two pairs in our scratch
 
