@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_sub
+from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -85,8 +85,9 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     # Native heading: f32(atan2(pos - aim) - half_pi); one ulp below f32 pi/2
     # for a horizontal shot.
     shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
-    expected_angle = float(f32(float(shot_angle) + (127.0 * 0.002)))
-    expected_speed_scale = 1.0 + 55.0 * 0.01
+    # Native rounds the float-literal multiply and add at PC24.
+    expected_angle = x87_pc24_add(x87_pc24_mul(127.0, f32(0.002)), shot_angle)
+    expected_speed_scale = x87_pc24_add(x87_pc24_mul(55.0, f32(0.01)), 1.0)
     for proj in spawned:
         assert int(getattr(proj, "type_id", -1)) == int(ProjectileTemplateId.PLASMA_MINIGUN)
         assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
@@ -148,8 +149,10 @@ def test_shotgun_family_fires_expected_pellets(
     assert len(spawned) == expected_count
     assert state.weapon_shots_fired[0][int(weapon_id)] == expected_count
 
-    expected_angle = float(f32(float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI))) + (-100.0 * jitter_scale)))
+    shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
+    expected_angle = x87_pc24_add(x87_pc24_mul(-100.0, f32(jitter_scale)), shot_angle)
+    expected_speed = f32(expected_speed_scale)
     for proj in spawned:
         assert int(getattr(proj, "type_id", -1)) == int(projectile_type_id)
         assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed_scale)
+        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed)

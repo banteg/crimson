@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 
 from crimson.creatures.spawn import BurstEffect, SpawnEnv, SpawnId, build_spawn_plan
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.helpers import assert_float_close
 
 
 def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
@@ -62,11 +62,12 @@ def test_spawn_plan_tail_applies_retry_count_scaling(
     )
     plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
+    # Native multiplies each float field by a float literal at PC24.
     c = plan.creatures[0]
-    assert_float_close(c.reward_value, 1000.0 * reward_scale)
-    assert_float_close(c.move_speed or 0.0, 2.0 * speed_scale)
-    assert_float_close(c.contact_damage or 0.0, 17.0 * contact_scale)
-    assert_float_close(c.health or 0.0, 400.0 * health_scale)
+    assert c.reward_value == x87_pc24_mul(1000.0, f32(reward_scale))
+    assert c.move_speed == x87_pc24_mul(2.0, f32(speed_scale))
+    assert c.contact_damage == x87_pc24_mul(17.0, f32(contact_scale))
+    assert c.health == x87_pc24_mul(400.0, f32(health_scale))
     assert c.max_health == 400.0
 
 
@@ -82,16 +83,16 @@ def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_retry_count() -> N
 
     c = plan.creatures[0]
     assert c.reward_value == 1000.0
-    assert_float_close(c.move_speed or 0.0, 2.0 * 1.05)
-    assert_float_close(c.contact_damage or 0.0, 17.0 * 1.4)
-    assert_float_close(c.health or 0.0, 400.0 * 1.2)
+    assert c.move_speed == x87_pc24_mul(2.0, f32(1.05))
+    assert c.contact_damage == x87_pc24_mul(17.0, f32(1.4))
+    assert c.health == x87_pc24_mul(400.0, f32(1.2))
     assert c.max_health == 400.0
 
 
 @pytest.mark.parametrize(
     ("retry_count", "expected_extra"),
     [
-        (1, 0.35),
+        (1, x87_pc24_mul(1.0, f32(0.35))),
         (9, 3.0),
     ],
 )
@@ -106,7 +107,8 @@ def test_spawn_plan_tail_spawn_slot_interval_scales_with_retry_count(retry_count
     plan = build_spawn_plan(SpawnId.DEN_ALIEN_BASIC_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
-    assert_float_close(plan.spawn_slots[0].interval, 2.2 + 0.2 + expected_extra)
+    interval = x87_pc24_add(f32(2.2), f32(0.2))
+    assert plan.spawn_slots[0].interval == x87_pc24_add(interval, f32(expected_extra))
 
 
 def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
@@ -120,4 +122,4 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
     plan = build_spawn_plan(SpawnId.DEN_ALIEN_BASIC_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
-    assert_float_close(plan.spawn_slots[0].interval, 2.2 - 0.2)
+    assert plan.spawn_slots[0].interval == x87_pc24_sub(f32(2.2), f32(0.2))

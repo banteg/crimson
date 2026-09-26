@@ -73,7 +73,7 @@ def test_zig_spawn_plan_rejects_unsupported_template() -> None:
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
 
     result = dbg_record._run_process(
-        [str(dbg_record._ZIG_BIN), "spawn-plan", "0x02", "--json"],
+        [str(dbg_record._ZIG_BIN), "spawn-plan", "0x44", "--json"],
         cwd=dbg_record._REPO_ROOT,
     )
 

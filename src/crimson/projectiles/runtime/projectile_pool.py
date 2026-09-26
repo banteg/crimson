@@ -472,7 +472,10 @@ class ProjectilePool:
                     damage_amount = _projectile_damage_amount_f32(dist, damage_scale)
 
                     if damage_amount > 0.0 and creature.hp > 0.0:
-                        remaining = proj.damage_pool - 1.0
+                        # `damage_pool` is a float field: native `projectile_update`
+                        # (0x00420b90) subtracts 1.0f and then the target's health
+                        # at PC24, storing each result.
+                        remaining = x87_pc24_sub(proj.damage_pool, 1.0)
                         proj.damage_pool = remaining
                         # Native `projectile_update` writes both impulse components from the
                         # same cosine term (`cos(angle - pi/2) * speed_scale`).
@@ -504,7 +507,7 @@ class ProjectilePool:
                                 creature_damage_runtime=creature_damage_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))
-                            proj.damage_pool -= float(creature.hp)
+                            proj.damage_pool = x87_pc24_sub(proj.damage_pool, creature.hp)
 
                     # The default single freeze shard (`crt_rand` @ 0x4215fa ->
                     # caller_static 0x4215ff) is presentation: it spawns inside the

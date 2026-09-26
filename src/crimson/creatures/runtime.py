@@ -892,10 +892,11 @@ class CreaturePool:
             owner_pool = mapping[owner_plan] if 0 <= owner_plan < len(mapping) else -1
             runtime_slot = SpawnSlotInit(
                 owner_creature=int(owner_pool),
-                timer=float(slot.timer),
+                # `creature_spawn_slot_table` timer/interval are float fields.
+                timer=f32(slot.timer),
                 count=int(slot.count),
                 limit=int(slot.limit),
-                interval=float(slot.interval),
+                interval=f32(slot.interval),
                 child_template_id=slot.child_template_id,
             )
             slot_index = self._alloc_spawn_slot()
@@ -1629,12 +1630,18 @@ class CreaturePool:
         if hp <= 0.0:
             hp = 1.0
         entry.hp = f32(hp)
-        entry.max_hp = f32(float(init.max_health or hp))
+        if not init.preserve_max_health:
+            entry.max_hp = f32(float(init.max_health or hp))
 
-        entry.move_speed = f32(float(init.move_speed or 1.0))
-        entry.reward_value = f32(float(init.reward_value or 0.0))
-        entry.size = f32(float(init.size or 50.0))
-        entry.contact_damage = f32(float(init.contact_damage or 0.0))
+        # Stat fields a spawn path never writes keep the recycled slot's values.
+        if init.move_speed is not None:
+            entry.move_speed = f32(init.move_speed)
+        if init.reward_value is not None:
+            entry.reward_value = f32(init.reward_value)
+        if init.size is not None:
+            entry.size = f32(init.size)
+        if init.contact_damage is not None:
+            entry.contact_damage = f32(init.contact_damage)
 
         if init.target_offset is not None:
             entry.target_offset = f32_vec2(init.target_offset)
@@ -1663,7 +1670,10 @@ class CreaturePool:
                 -1 if init.bonus_duration_override is None else int(init.bonus_duration_override),
             )
 
-        entry.tint = RGBA.from_rgba(resolve_tint(init.tint))
+        if init.tint is not None:
+            # Creature color channels are float fields.
+            tint_r, tint_g, tint_b, tint_a = resolve_tint(init.tint)
+            entry.tint = RGBA(f32(tint_r), f32(tint_g), f32(tint_b), f32(tint_a))
 
         entry.plague_infected = False
         entry.collision_timer = 0.0

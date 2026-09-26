@@ -2310,7 +2310,7 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
         } else if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun)) {
             gauss_count += 1;
             try std.testing.expectApproxEqAbs(@as(f32, 215.0), entry.travel_budget, 1e-6);
-            try std.testing.expectEqual(@as(f64, 1.0), entry.speed_scale);
+            try std.testing.expectApproxEqAbs(@as(f32, 1.0), entry.speed_scale, 1e-6);
         }
     }
 

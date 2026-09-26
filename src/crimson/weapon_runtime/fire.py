@@ -182,15 +182,14 @@ def _apply_pellet_jitter(
     jitter_rule: ModuloCenteredJitter | MaskCenteredJitter,
     caller: int,
 ) -> float:
+    # Native pellet loops in `player_update` (e.g. shotgun @ 0x00416378):
+    # `fild roll; fmul float step; fadd shot_angle`, each rounded at PC24.
     match jitter_rule:
         case ModuloCenteredJitter(modulo=modulo, center=center, step=step):
-            return float(shot_angle) + float(
-                rng.rand_tagged(caller) % int(modulo) - int(center),
-            ) * float(step)
+            roll = rng.rand_tagged(caller) % int(modulo) - int(center)
         case MaskCenteredJitter(mask=mask, center=center, step=step):
-            return float(shot_angle) + float(
-                (rng.rand_tagged(caller) & int(mask)) - int(center),
-            ) * float(step)
+            roll = (rng.rand_tagged(caller) & int(mask)) - int(center)
+    return x87_pc24_add(x87_pc24_mul(float(roll), f32(step)), shot_angle)
 
 
 def _apply_speed_scale_rule(
@@ -204,9 +203,13 @@ def _apply_speed_scale_rule(
         case NoSpeedScale():
             return
         case ModuloSpeedScale(base=base, modulo=modulo, step=step):
-            state.projectiles.entries[int(proj_id)].speed_scale = float(base) + float(
-                state.rng.rand_tagged(caller) % int(modulo),
-            ) * float(step)
+            # Native (e.g. shotgun @ 0x004163b1): `fild roll; fmul 0.01f; fadd base`
+            # at PC24, then a float store into the projectile.
+            roll = state.rng.rand_tagged(caller) % int(modulo)
+            state.projectiles.entries[int(proj_id)].speed_scale = x87_pc24_add(
+                x87_pc24_mul(float(roll), f32(step)),
+                f32(base),
+            )
 
 
 def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:

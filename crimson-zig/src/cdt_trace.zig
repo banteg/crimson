@@ -2097,7 +2097,7 @@ fn buildEntitySamples(
             .pos = .{ .x = projectile.pos.x, .y = projectile.pos.y },
             .vel = .{ .x = projectile.vel.x, .y = projectile.vel.y },
             .life_timer = projectile.life_timer,
-            .speed_scale = @floatCast(projectile.speed_scale),
+            .speed_scale = projectile.speed_scale,
             .damage_pool = projectile.damage_pool,
             .hit_radius = projectile.hit_radius,
             .travel_budget = projectile.travel_budget,

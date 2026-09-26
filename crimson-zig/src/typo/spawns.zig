@@ -1,4 +1,5 @@
 const std = @import("std");
+const native_math = @import("../runtime/native_math.zig");
 const spawn_mod = @import("../runtime/spawn.zig");
 
 pub const TypoSpawnCall = struct {
@@ -20,8 +21,8 @@ pub const TypoSpawnBatch = struct {
     }
 };
 
-fn clamp01(value: f64) f32 {
-    return @floatCast(std.math.clamp(value, 0.0, 1.0));
+fn clamp01(value: f32) f32 {
+    return std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0));
 }
 
 pub fn tickTypoSpawns(
@@ -42,17 +43,24 @@ pub fn tickTypoSpawns(
         batch.cooldown_ms += 3500 - @divTrunc(elapsed_ms, 800);
         batch.cooldown_ms = @max(100, batch.cooldown_ms);
 
-        // Positions and tints are computed in double precision and stored as f32.
-        const t = @as(f64, @floatFromInt(elapsed_ms)) * 0.001;
-        const y: f32 = @floatCast(@cos(t) * 256.0 + @as(f64, world_height) * 0.5);
+        // typo_gameplay_update_and_render (0x00445af4..0x00445c15): float
+        // literals at PC24; fsin/fcos stay wide until the next op rounds.
+        const tint_t = @as(f32, @floatFromInt(elapsed_ms + 1));
+        const tint_r = clamp01(native_math.pc24Add(native_math.pc24Mul(tint_t, @as(f32, 0.00000833333343)), @as(f32, 0.3)));
+        const tint_g = clamp01(native_math.pc24Add(native_math.pc24Mul(tint_t, @as(f32, 10000.0)), @as(f32, 0.3)));
+        const tint_b = clamp01(native_math.pc24Add(
+            @sin(@as(f64, native_math.pc24Mul(tint_t, @as(f32, 0.000100000005)))),
+            @as(f32, 0.3),
+        ));
 
-        const tint_t = @as(f64, @floatFromInt(elapsed_ms + 1));
-        const tint_r = clamp01(tint_t * 0.0000083333334 + 0.3);
-        const tint_g = clamp01(tint_t * 10000.0 + 0.3);
-        const tint_b = clamp01(@sin(tint_t * 0.0001) + 0.3);
+        const t = native_math.pc24Mul(@as(f32, @floatFromInt(elapsed_ms)), @as(f32, 0.001));
+        const y = native_math.pc24Add(
+            native_math.pc24Mul(@cos(@as(f64, t)), @as(f32, 256.0)),
+            native_math.pc24Mul(world_height, @as(f32, 0.5)),
+        );
 
         batch.calls[batch.count] = .{
-            .pos_x = world_width + 64.0,
+            .pos_x = native_math.pc24Add(world_width, @as(f32, 64.0)),
             .pos_y = y,
             .type_id = .spider_sp2,
             .tint_r = tint_r,

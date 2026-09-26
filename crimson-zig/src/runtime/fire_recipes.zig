@@ -7,28 +7,26 @@ const weapon_data = @import("weapon_data.zig");
 pub const WeaponId = game_ids.WeaponId;
 pub const ProjectileTypeId = game_ids.ProjectileTypeId;
 
-/// Pellet jitter and speed-scale rules are evaluated in double precision and
-/// rounded once when stored in the f32 projectile fields.
 pub const PelletJitterRule = union(enum) {
     none,
     modulo_centered: struct {
         modulo: u32,
         center: i32,
-        step: f64,
+        step: f32,
     },
     mask_centered: struct {
         mask: u32,
         center: i32,
-        step: f64,
+        step: f32,
     },
 };
 
 pub const SpeedScaleRule = union(enum) {
     none,
     modulo: struct {
-        base: f64,
+        base: f32,
         modulo: u32,
-        step: f64,
+        step: f32,
     },
 };
 
@@ -91,7 +89,7 @@ const gauss_ion_speed_scale: SpeedScaleRule = .{
     },
 };
 
-pub fn pelletJitterStepForWeapon(weapon_id: WeaponId) f64 {
+pub fn pelletJitterStepForWeapon(weapon_id: WeaponId) f32 {
     return switch (weapon_id) {
         .shotgun, .jackhammer => 0.0013,
         .sawed_off_shotgun => 0.004,

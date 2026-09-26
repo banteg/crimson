@@ -1327,7 +1327,7 @@ test "spawn templates preserve recycled ranged orbit fields" {
 
 test "spawn difficulty scales current health but preserves base max health" {
     const retry_counts = [_]i32{ 1, 2, 3, 4, 5 };
-    const health_scales = [_]f64{ 0.95, 0.9, 0.8, 0.7, 0.5 };
+    const health_scales = [_]f32{ 0.95, 0.9, 0.8, 0.7, 0.5 };
 
     for (retry_counts, health_scales) |retry_count, health_scale| {
         var pool: cz.creatures.CreaturePool = .{};
@@ -1343,8 +1343,7 @@ test "spawn difficulty scales current health but preserves base max health" {
             &rng,
         );
 
-        // Spawn plans scale in double precision and store the f32 result.
-        try std.testing.expectEqual(@as(f32, @floatCast(53.0 * health_scale)), pool.entries[0].hp);
+        try std.testing.expectApproxEqAbs(@as(f32, 53.0) * health_scale, pool.entries[0].hp, 0.000001);
         try std.testing.expectEqual(@as(f32, 53.0), pool.entries[0].max_hp);
     }
 
@@ -1361,7 +1360,7 @@ test "spawn difficulty scales current health but preserves base max health" {
         &hardcore_rng,
     );
 
-    try std.testing.expectEqual(@as(f32, @floatCast(@as(f64, 53.0) * 1.2)), hardcore_pool.entries[0].hp);
+    try std.testing.expectApproxEqAbs(@as(f32, 53.0) * 1.2, hardcore_pool.entries[0].hp, 0.000001);
     try std.testing.expectEqual(@as(f32, 53.0), hardcore_pool.entries[0].max_hp);
 }
 
@@ -1403,7 +1402,10 @@ test "hardcore applies the template 0x38 speed penalty before its global buff" {
         &penalized_rng,
     );
 
-    const penalized_speed: f32 = @floatCast(@as(f64, 4.8) * 0.7 * 1.05);
+    const penalized_speed = cz.native_math.pc24Mul(
+        cz.native_math.pc24Mul(@as(f32, 4.8), @as(f32, 0.7)),
+        @as(f32, 1.05),
+    );
     try std.testing.expectEqual(penalized_speed, penalized_pool.entries[0].move_speed);
 
     var ordinary_pool: cz.creatures.CreaturePool = .{};
@@ -1419,7 +1421,7 @@ test "hardcore applies the template 0x38 speed penalty before its global buff" {
         &ordinary_rng,
     );
 
-    const ordinary_speed: f32 = @floatCast(@as(f64, 4.8) * 1.05);
+    const ordinary_speed = cz.native_math.pc24Mul(@as(f32, 4.8), @as(f32, 1.05));
     try std.testing.expectEqual(ordinary_speed, ordinary_pool.entries[0].move_speed);
 }
 

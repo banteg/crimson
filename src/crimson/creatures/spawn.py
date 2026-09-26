@@ -264,7 +264,8 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         health=20.0,
         move_speed=2.9,
         reward_value=60.0,
-        tint=(0.665, 0.385, 0.259, 0.56),
+        # Native float literal 0.66499996f (0x3f2a3d70), one ulp below f32(0.665).
+        tint=(0.66499996, 0.385, 0.259, 0.56),
         size=50.0,
         contact_damage=35.0,
     ),
@@ -608,7 +609,8 @@ GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
             reward_value=60.0,
             size=50.0,
             contact_damage=35.0,
-            tint=(0.7125, 0.4125, 0.2775, 0.6),
+            # Native float literal 0.41250002f (0x3ed33334), one ulp above f32(0.4125).
+            tint=(0.7125, 0.41250002, 0.2775, 0.6),
         ),
         x_range=range(0, -576, -64),
         y_range=range(128, 257, 64),
@@ -634,7 +636,8 @@ RING_FORMATIONS: dict[SpawnId, RingFormationSpec] = {
             reward_value=60.0,
             size=50.0,
             contact_damage=4.0,
-            tint=(0.32, 0.588, 0.426, 1.0),
+            # Native float literals 0x3ea3d70b / 0x3f16872c, one ulp above f32(0.32) / f32(0.588).
+            tint=(0.32000002, 0.58800006, 0.426, 1.0),
         ),
         count=8,
         angle_step=math.pi / 4.0,
@@ -659,7 +662,7 @@ RING_FORMATIONS: dict[SpawnId, RingFormationSpec] = {
             reward_value=60.0,
             size=50.0,
             contact_damage=35.0,
-            tint=(0.7125, 0.4125, 0.2775, 0.6),
+            tint=(0.7125, 0.41250002, 0.2775, 0.6),
         ),
         count=5,
         angle_step=math.tau / 5.0,
@@ -705,6 +708,8 @@ class CreatureInit(msgspec.Struct):
     phase_seed: int
 
     preserve_force_target: bool = False
+    # Keep the recycled slot's `max_health` (native writes none for this creature).
+    preserve_max_health: bool = False
 
     type_id: CreatureTypeId | None = None
     flags: CreatureFlags = CreatureFlags(0)
@@ -833,6 +838,11 @@ def apply_child_spec(child: CreatureInit, spec: FormationChildSpec) -> None:
         child.orbit_radius = spec.orbit_radius
 
 
+# `creature_spawn_template` (0x00430af0) writes its random stats straight into
+# float creature fields using float literals (`size * 1.1428572f + 20.0f`,
+# `size + size + 50.0f`, ...), so every x87 op rounds to f32 at PC24.
+
+
 def apply_size_health_reward(
     c: CreatureInit,
     size: float,
@@ -841,18 +851,22 @@ def apply_size_health_reward(
     health_add: float,
     reward_add: float = 50.0,
 ) -> None:
-    c.size = size
-    c.health = size * health_scale + health_add
-    c.reward_value = size + size + reward_add
+    apply_size_health(c, size, health_scale=health_scale, health_add=health_add)
+    c.reward_value = x87_pc24_add(x87_pc24_add(size, size), f32(reward_add))
 
 
 def apply_size_health(c: CreatureInit, size: float, *, health_scale: float, health_add: float) -> None:
     c.size = size
-    c.health = size * health_scale + health_add
+    c.health = x87_pc24_add(x87_pc24_mul(size, f32(health_scale)), f32(health_add))
 
 
 def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: float) -> None:
-    c.move_speed = size * scale + base
+    c.move_speed = x87_pc24_add(x87_pc24_mul(size, f32(scale)), f32(base))
+
+
+def rand_field_f32(rng: CrandLike, caller: RngCallerStatic, modulo: int, scale: float, base: float) -> float:
+    """Template `RAND_FIELD`: `(float)(crt_rand() % modulo) * scale + base` at PC24."""
+    return x87_pc24_add(x87_pc24_mul(float(rng.rand_tagged(caller) % modulo), f32(scale)), f32(base))
 
 
 def spawn_ring_children(
@@ -1681,13 +1695,16 @@ def tick_rush_mode_spawns(
         theta = f32(f32(float(elapsed_ms)) * f32(0.001))
         terrain_width_f = f32(terrain_width)
         terrain_height_f = f32(terrain_height)
+        # 0x00407422..0x00407490: fcos/fsin stay wide into the PC24 `* 256.0f`,
+        # then add the PC24 `height * 0.5f`.
+        half_height = x87_pc24_mul(terrain_height_f, 0.5)
         spawn_right = Vec2(
-            float(f32(terrain_width_f + 64.0)),
-            float(f32(terrain_height_f * 0.5 + math.cos(float(theta)) * 256.0)),
+            x87_pc24_add(terrain_width_f, 64.0),
+            x87_pc24_add(x87_pc24_cos_mul(theta, 256.0), half_height),
         )
         spawn_left = Vec2(
             -64.0,
-            float(f32(terrain_height_f * 0.5 + math.sin(float(theta)) * 256.0)),
+            x87_pc24_add(x87_pc24_sin_mul(theta, 256.0), half_height),
         )
 
         c = build_rush_mode_spawn_creature(spawn_right, tint, rng, type_id=2, survival_elapsed_ms=elapsed_ms)
@@ -1698,7 +1715,8 @@ def tick_rush_mode_spawns(
         c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         if c.move_speed is not None:
-            c.move_speed = float(f32(c.move_speed * 1.4))
+            # 0x004074ba: `move_speed *= 1.4f` at PC24.
+            c.move_speed = x87_pc24_mul(c.move_speed, f32(1.4))
         spawns.append(c)
 
     return float(cooldown), tuple(spawns)
@@ -1785,6 +1803,23 @@ def build_tutorial_stage6_perks_done_spawns() -> tuple[SpawnTemplateCall, ...]:
     )
 
 
+# Quest-retry stat scales (reward, move speed, contact damage, health) keyed by
+# `quest_fail_retry_count`; 5 stands for every count past 4.
+_RETRY_STAT_SCALES: dict[int, tuple[float, float, float, float]] = {
+    1: (0.9, 0.95, 0.95, 0.95),
+    2: (0.85, 0.9, 0.9, 0.9),
+    3: (0.85, 0.8, 0.8, 0.8),
+    4: (0.8, 0.7, 0.7, 0.7),
+    5: (0.8, 0.6, 0.5, 0.5),
+}
+
+
+def _scale_template_field(value: float, factor: float) -> float:
+    # The `creature_spawn_template` tail (0x00430af0) reads the float field back
+    # and multiplies it by a float literal at PC24.
+    return x87_pc24_mul(f32(value), f32(factor))
+
+
 def apply_tail(
     template_id: SpawnId,
     plan_creatures: list[CreatureInit],
@@ -1812,11 +1847,11 @@ def apply_tail(
         c.spawn_slot = None
         c.ai_timer = 0
         if c.move_speed is not None:
-            c.move_speed *= 1.2
+            c.move_speed = _scale_template_field(c.move_speed, 1.2)
 
     # Hardcore tweak for template 0x38 only.
     if template_id == SpawnId.SPIDER_SP1_AI7_TIMER_38 and env.hardcore and c.move_speed is not None:
-        c.move_speed *= 0.7
+        c.move_speed = _scale_template_field(c.move_speed, 0.7)
 
     c.heading = final_heading
 
@@ -1828,58 +1863,38 @@ def apply_tail(
         # This is written as a short-circuit expression in the original:
         # for flag 0x4 creatures, always bump their spawn-slot interval by +0.2 in non-hardcore.
         if (c.flags & HAS_SPAWN_SLOT_FLAG) and has_spawn_slot and slot_idx is not None:
-            plan_spawn_slots[slot_idx].interval += 0.2
+            slot = plan_spawn_slots[slot_idx]
+            slot.interval = x87_pc24_add(f32(slot.interval), f32(0.2))
 
         if env.quest_fail_retry_count > 0:
             d = env.quest_fail_retry_count
-            if (
-                c.reward_value is not None
-                and c.move_speed is not None
-                and c.contact_damage is not None
-                and c.health is not None
-            ):
-                if d == 1:
-                    c.reward_value *= 0.9
-                    c.move_speed *= 0.95
-                    c.contact_damage *= 0.95
-                    c.health *= 0.95
-                elif d == 2:
-                    c.reward_value *= 0.85
-                    c.move_speed *= 0.9
-                    c.contact_damage *= 0.9
-                    c.health *= 0.9
-                elif d == 3:
-                    c.reward_value *= 0.85
-                    c.move_speed *= 0.8
-                    c.contact_damage *= 0.8
-                    c.health *= 0.8
-                elif d == 4:
-                    c.reward_value *= 0.8
-                    c.move_speed *= 0.7
-                    c.contact_damage *= 0.7
-                    c.health *= 0.7
-                else:
-                    c.reward_value *= 0.8
-                    c.move_speed *= 0.6
-                    c.contact_damage *= 0.5
-                    c.health *= 0.5
+            # Unwritten (stale) fields stay unscaled; only template 0x02 has any.
+            reward_scale, move_speed_scale, contact_damage_scale, health_scale = _RETRY_STAT_SCALES[min(d, 5)]
+            if c.reward_value is not None:
+                c.reward_value = _scale_template_field(c.reward_value, reward_scale)
+            if c.move_speed is not None:
+                c.move_speed = _scale_template_field(c.move_speed, move_speed_scale)
+            if c.contact_damage is not None:
+                c.contact_damage = _scale_template_field(c.contact_damage, contact_damage_scale)
+            if c.health is not None:
+                c.health = _scale_template_field(c.health, health_scale)
 
             if has_spawn_slot and (c.flags & HAS_SPAWN_SLOT_FLAG) and slot_idx is not None:
-                plan_spawn_slots[slot_idx].interval += min(3.0, float(d) * 0.35)
+                slot = plan_spawn_slots[slot_idx]
+                retry_interval = min(f32(3.0), x87_pc24_mul(float(d), f32(0.35)))
+                slot.interval = x87_pc24_add(f32(slot.interval), retry_interval)
     else:
         # In hardcore: quest fail retry count is forcibly cleared (global), and creature stats are buffed.
         if c.move_speed is not None:
-            c.move_speed *= 1.05
+            c.move_speed = _scale_template_field(c.move_speed, 1.05)
         if c.contact_damage is not None:
-            c.contact_damage *= 1.4
+            c.contact_damage = _scale_template_field(c.contact_damage, 1.4)
         if c.health is not None:
-            c.health *= 1.2
+            c.health = _scale_template_field(c.health, 1.2)
 
         if has_spawn_slot and (c.flags & HAS_SPAWN_SLOT_FLAG) and slot_idx is not None:
-            plan_spawn_slots[slot_idx].interval = max(
-                0.1,
-                plan_spawn_slots[slot_idx].interval - 0.2,
-            )
+            slot = plan_spawn_slots[slot_idx]
+            slot.interval = max(f32(0.1), x87_pc24_sub(f32(slot.interval), f32(0.2)))
 
 
 def apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
@@ -1949,6 +1964,13 @@ def apply_ring_formation(ctx: PlanBuilder, spec: RingFormationSpec) -> None:
         apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
+@register_template(SpawnId.UNUSED_02)
+def template_02_unhandled(ctx: PlanBuilder) -> None:
+    # No template body: `creature_spawn_template` falls through to its
+    # "Unhandled creatureType" block on the freshly allocated root.
+    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
 @register_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00)
 def template_00_zombie_boss_spawner(ctx: PlanBuilder) -> None:
     c = ctx.base
@@ -2005,9 +2027,9 @@ def template_03_05_06_basic_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = BASIC_RANDOM_TYPE_IDS[ctx.template_id]
     size = float(ctx.rng.rand_tagged(BASIC_RANDOM_SIZE_CALLERS[ctx.template_id]) % 15) + 38.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    c.move_speed = float(ctx.rng.rand_tagged(BASIC_RANDOM_MOVE_SPEED_CALLERS[ctx.template_id]) % 18) * 0.1 + 1.1
-    tint_b = float(ctx.rng.rand_tagged(BASIC_RANDOM_TINT_B_CALLERS[ctx.template_id]) % 25) * 0.01 + 0.8
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
+    c.move_speed = rand_field_f32(ctx.rng, BASIC_RANDOM_MOVE_SPEED_CALLERS[ctx.template_id], 18, 0.1, 1.1)
+    tint_b = rand_field_f32(ctx.rng, BASIC_RANDOM_TINT_B_CALLERS[ctx.template_id], 25, 0.01, 0.8)
     apply_tint(c, (0.6, 0.6, clamp01(tint_b), 1.0))
     c.contact_damage = float(ctx.rng.rand_tagged(BASIC_RANDOM_CONTACT_DAMAGE_CALLERS[ctx.template_id]) % 10) + 4.0
 
@@ -2017,13 +2039,9 @@ def template_04_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_SIZE) % 15) + 38.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
     apply_tint(c, (0.67, 0.67, 1.0, 1.0))
-    c.move_speed = (
-        float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_MOVE_SPEED) % 18)
-        * 0.1
-        + 1.1
-    )
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_MOVE_SPEED, 18, 0.1, 1.1)
     c.contact_damage = (
         float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_04_CONTACT_DAMAGE) % 10)
         + 4.0
@@ -2048,6 +2066,9 @@ def template_0e_alien_spawner_ring_24(ctx: PlanBuilder) -> None:
     parent.reward_value = 5000.0
     apply_tint(parent, (0.9, 0.8, 0.4, 1.0))
     parent.contact_damage = 0.0
+    # Native writes `max_health` only in the tail, on the last ring child, so the
+    # spawner keeps its recycled slot's value.
+    parent.preserve_max_health = True
 
     child_spec = FormationChildSpec(
         type_id=CreatureTypeId.ALIEN,
@@ -2182,7 +2203,7 @@ def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
 
     c.type_id, c.health = AI1_BLUE_TINT_TEMPLATES[ctx.template_id]
 
-    tint = float(ctx.rng.rand_tagged(AI1_BLUE_TINT_CALLERS[ctx.template_id]) % 40) * 0.01 + 0.5
+    tint = rand_field_f32(ctx.rng, AI1_BLUE_TINT_CALLERS[ctx.template_id], 40, 0.01, 0.5)
     apply_tint(c, (tint, tint, 1.0, 1.0))
     c.contact_damage = 5.0
 
@@ -2192,18 +2213,15 @@ def template_1d_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_SIZE) % 20) + 35.0
-    apply_size_health(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-    c.move_speed = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_MOVE_SPEED) % 15) * 0.1 + 1.1
+    apply_size_health(c, size, health_scale=1.1428572, health_add=10.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_MOVE_SPEED, 15, 0.1, 1.1)
     c.reward_value = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_REWARD) % 100) + 50.0
     apply_tint(
         c,
         (
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_R) % 50) * 0.001
-            + 0.6,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_G) % 50) * 0.01
-            + 0.5,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_B) % 50) * 0.001
-            + 0.6,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_R, 50, 0.001, 0.6),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_G, 50, 0.01, 0.5),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1D_TINT_B, 50, 0.001, 0.6),
             1.0,
         ),
     )
@@ -2217,18 +2235,15 @@ def template_1e_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_SIZE) % 30) + 35.0
-    apply_size_health(c, size, health_scale=16.0 / 7.0, health_add=10.0)
-    c.move_speed = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_MOVE_SPEED) % 17) * 0.1 + 1.5
+    apply_size_health(c, size, health_scale=2.2857144, health_add=10.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_MOVE_SPEED, 17, 0.1, 1.5)
     c.reward_value = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_REWARD) % 200) + 50.0
     apply_tint(
         c,
         (
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_R) % 50) * 0.001
-            + 0.6,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_G) % 50) * 0.001
-            + 0.6,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_B) % 50) * 0.01
-            + 0.5,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_R, 50, 0.001, 0.6),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_G, 50, 0.001, 0.6),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1E_TINT_B, 50, 0.01, 0.5),
             1.0,
         ),
     )
@@ -2242,18 +2257,15 @@ def template_1f_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_SIZE) % 30) + 45.0
-    apply_size_health(c, size, health_scale=26.0 / 7.0, health_add=30.0)
-    c.move_speed = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_MOVE_SPEED) % 21) * 0.1 + 1.6
+    apply_size_health(c, size, health_scale=3.7142856, health_add=30.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_MOVE_SPEED, 21, 0.1, 1.6)
     c.reward_value = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_REWARD) % 200) + 80.0
     apply_tint(
         c,
         (
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_R) % 50) * 0.01
-            + 0.5,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_G) % 50) * 0.001
-            + 0.6,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_B) % 50) * 0.001
-            + 0.6,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_R, 50, 0.01, 0.5),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_G, 50, 0.001, 0.6),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_1F_TINT_B, 50, 0.001, 0.6),
             1.0,
         ),
     )
@@ -2267,14 +2279,9 @@ def template_20_alien_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_SIZE) % 30) + 40.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    c.move_speed = float(
-        ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_MOVE_SPEED) % 18,
-    ) * 0.1 + 1.1
-    tint_g = (
-        float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_TINT_G) % 40) * 0.01
-        + 0.6
-    )
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_MOVE_SPEED, 18, 0.1, 1.1)
+    tint_g = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_TINT_G, 40, 0.01, 0.6)
     apply_tint(c, (0.3, tint_g, 0.3, 1.0))
     c.contact_damage = float(
         ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ALIEN_RANDOM_GREEN_20_CONTACT_DAMAGE) % 10,
@@ -2286,24 +2293,14 @@ def template_2e_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_SIZE) % 30) + 40.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    c.move_speed = (
-        float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_MOVE_SPEED) % 18)
-        * 0.1
-        + 1.1
-    )
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_MOVE_SPEED, 18, 0.1, 1.1)
     apply_tint(
         c,
         (
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_R) % 40)
-            * 0.01
-            + 0.6,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_G) % 40)
-            * 0.01
-            + 0.6,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_B) % 40)
-            * 0.01
-            + 0.6,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_R, 40, 0.01, 0.6),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_G, 40, 0.01, 0.6),
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_TINT_B, 40, 0.01, 0.6),
             1.0,
         ),
     )
@@ -2318,11 +2315,11 @@ def template_31_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_SIZE) % 30) + 40.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-    c.move_speed = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_MOVE_SPEED) % 18) * 0.1 + 1.1
-    tint = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_TINT) % 30) * 0.01 + 0.6
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=10.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_MOVE_SPEED, 18, 0.1, 1.1)
+    tint = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_31_TINT, 30, 0.01, 0.6)
     apply_tint(c, (tint, tint, 0.38, 1.0))
-    c.contact_damage = size * 0.14 + 4.0
+    c.contact_damage = x87_pc24_add(x87_pc24_mul(size, f32(0.14)), f32(4.0))
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_32)
@@ -2331,12 +2328,10 @@ def template_32_spider_sp1_random(ctx: PlanBuilder) -> None:
     c.type_id = CreatureTypeId.SPIDER_SP1
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_SIZE) % 25) + 40.0
     apply_size_health_reward(c, size, health_scale=1.0, health_add=10.0)
-    c.move_speed = float(
-        ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_MOVE_SPEED) % 17,
-    ) * 0.1 + 1.1
-    tint = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_TINT) % 40) * 0.01 + 0.6
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_MOVE_SPEED, 17, 0.1, 1.1)
+    tint = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_32_TINT, 40, 0.01, 0.6)
     apply_tint(c, (tint, tint, tint, 1.0))
-    c.contact_damage = size * 0.14 + 4.0
+    c.contact_damage = x87_pc24_add(x87_pc24_mul(size, f32(0.14)), f32(4.0))
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_RED_33)
@@ -2344,16 +2339,12 @@ def template_33_spider_sp1_random_red(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_SIZE) % 15) + 45.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    c.move_speed = float(
-        ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_MOVE_SPEED) % 18,
-    ) * 0.1 + 1.1
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_MOVE_SPEED, 18, 0.1, 1.1)
     apply_tint(
         c,
         (
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_TINT_R) % 40)
-            * 0.01
-            + 0.6,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_RED_33_TINT_R, 40, 0.01, 0.6),
             0.5,
             0.5,
             1.0,
@@ -2369,17 +2360,13 @@ def template_34_spider_sp1_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_SIZE) % 20) + 40.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    c.move_speed = float(
-        ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_MOVE_SPEED) % 18,
-    ) * 0.1 + 1.1
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_MOVE_SPEED, 18, 0.1, 1.1)
     apply_tint(
         c,
         (
             0.5,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_TINT_G) % 40)
-            * 0.01
-            + 0.6,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_GREEN_34_TINT_G, 40, 0.01, 0.6),
             0.5,
             1.0,
         ),
@@ -2394,16 +2381,13 @@ def template_35_spider_sp2_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_SIZE) % 10) + 30.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-    c.move_speed = float(
-        ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_MOVE_SPEED) % 18,
-    ) * 0.1 + 1.1
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=20.0)
+    c.move_speed = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_MOVE_SPEED, 18, 0.1, 1.1)
     apply_tint(
         c,
         (
             0.8,
-            float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_TINT_G) % 20) * 0.01
-            + 0.8,
+            rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANDOM_35_TINT_G, 20, 0.01, 0.8),
             0.8,
             1.0,
         ),
@@ -2423,7 +2407,7 @@ def template_36_alien_ai7_orbiter(ctx: PlanBuilder) -> None:
     c.health = 10.0
     c.move_speed = 1.8
     c.reward_value = 150.0
-    tint_g = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI7_ORBITER_TINT_G) % 5) * 0.01 + 0.65
+    tint_g = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI7_ORBITER_TINT_G, 5, 0.01, 0.65)
     apply_tint(c, (0.65, tint_g, 0.95, 1.0))
     c.contact_damage = 40.0
 
@@ -2476,11 +2460,11 @@ def template_3d_spider_sp1_random(ctx: PlanBuilder) -> None:
     c.health = 70.0
     c.move_speed = 2.6
     c.reward_value = 120.0
-    tint = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_3D_TINT) % 20) * 0.01 + 0.8
+    tint = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_3D_TINT, 20, 0.01, 0.8)
     apply_tint(c, (tint, tint, tint, 1.0))
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_RANDOM_3D_SIZE) % 7 + 45)
     c.size = size
-    c.contact_damage = size * 0.22
+    c.contact_damage = x87_pc24_mul(size, f32(0.22))
 
 
 @register_template(SpawnId.ZOMBIE_RANDOM_41)
@@ -2488,9 +2472,9 @@ def template_41_zombie_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ZOMBIE
     size = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_SIZE) % 30) + 40.0
-    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
+    apply_size_health_reward(c, size, health_scale=1.1428572, health_add=10.0)
     apply_size_move_speed(c, size, 0.0025, 0.9)
-    tint = float(ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_TINT) % 40) * 0.01 + 0.6
+    tint = rand_field_f32(ctx.rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_TINT, 40, 0.01, 0.6)
     apply_tint(c, (tint, tint, tint, 1.0))
     c.contact_damage = float(
         ctx.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_ZOMBIE_RANDOM_41_CONTACT_DAMAGE) % 10,

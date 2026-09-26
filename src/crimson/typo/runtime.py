@@ -10,6 +10,7 @@ from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
+from ..math_parity import f32, x87_pc24_mul
 from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
@@ -91,14 +92,19 @@ def typo_mid_step(ctx: MidStepContext) -> None:
         # creature_spawn_tinted allocates via creature_alloc_slot, which seeds
         # phase_seed = crt_rand() & 0x17f before the heading/size draws.
         phase_seed = int(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
-        heading = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314) * 0.01
+        # `creature_spawn_tinted` (0x00444810) stores through float fields with
+        # float literals, rounding each x87 op at PC24.
+        heading = x87_pc24_mul(
+            float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314),
+            f32(0.01),
+        )
         size = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
         flags = CreatureFlags(0)
-        move_speed = 1.7
+        move_speed = f32(1.7)
         if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
             flags |= CreatureFlags.AI7_LINK_TIMER
-            move_speed *= 1.2
-            size *= 0.8
+            move_speed = x87_pc24_mul(move_speed, f32(1.2))
+            size = x87_pc24_mul(size, f32(0.8))
 
         creature_idx = ctx.world.creatures.spawn_init(
             CreatureInit(

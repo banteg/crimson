@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.spawn import CreatureTypeId
+from crimson.math_parity import f32
 from crimson.typo.spawns import tick_typo_spawns
 
 
@@ -40,6 +41,7 @@ def test_tick_typo_spawns_multiple_steps() -> None:
     assert len(spawns) >= 2
     assert {s.type_id for s in spawns} == {CreatureTypeId.SPIDER_SP2, CreatureTypeId.ALIEN}
 
-    y_expected = math.cos(8000 * 0.001) * 256.0 + 1000.0 * 0.5
+    # Native: fcos(8000 * 0.001f) stays wide into the PC24 `* 256.0f`, then `+ h * 0.5f`.
+    y_expected = f32(f32(math.cos(f32(8000.0 * f32(0.001))) * 256.0) + 1000.0 * 0.5)
     assert spawns[0].pos.y == y_expected
 

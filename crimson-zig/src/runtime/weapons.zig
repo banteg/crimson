@@ -1178,9 +1178,8 @@ fn applyPelletJitter(
                 else => unreachable,
             };
             const jitter_roll = state.rng.randTagged(caller);
-            return narrowF32(
-                @as(f64, shot_angle) +
-                    @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
+            return shot_angle + narrowF32(
+                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
             );
         },
         .mask_centered => |jitter| {
@@ -1191,9 +1190,8 @@ fn applyPelletJitter(
                 else => unreachable,
             };
             const jitter_roll = state.rng.randTagged(caller);
-            return narrowF32(
-                @as(f64, shot_angle) +
-                    @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
+            return shot_angle + narrowF32(
+                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
             );
         },
     };
@@ -1224,8 +1222,9 @@ fn applySpeedScaleRule(
                 };
                 break :blk state.rng.randTagged(caller);
             };
-            projectiles.entries[projectile_idx].speed_scale =
-                speed.base + @as(f64, @floatFromInt(speed_roll % speed.modulo)) * speed.step;
+            projectiles.entries[projectile_idx].speed_scale = narrowF32(
+                speed.base + @as(f32, @floatFromInt(speed_roll % speed.modulo)) * speed.step,
+            );
         },
     }
 }
@@ -2461,8 +2460,8 @@ test "plasma shotgun uses masked jitter and random speed scale" {
     _ = rng.rand();
     _ = rng.rand();
     const speed_draw = rng.rand();
-    const expected_speed = 1.0 + @as(f64, @floatFromInt(speed_draw % 100)) * 0.01;
-    try std.testing.expectEqual(expected_speed, projectiles.entries[0].speed_scale);
+    const expected_speed = 1.0 + @as(f32, @floatFromInt(speed_draw % 100)) * 0.01;
+    try expectFloatClose(expected_speed, projectiles.entries[0].speed_scale);
 
     for (projectiles.entries[0..14]) |proj| {
         try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), proj.type_id);
@@ -2518,7 +2517,7 @@ test "shotgun family fires expected pellet counts and formulas" {
         projectile_type_id: i32,
         expected_count: usize,
         jitter_scale: f32,
-        speed_base: f64,
+        speed_base: f32,
         speed_mod: u32,
     }{
         .{
@@ -2591,13 +2590,13 @@ test "shotgun family fires expected pellet counts and formulas" {
             const expected_angle = shot_angle +
                 @as(f32, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
             const speed_draw = rng.rand();
-            const expected_speed = case.speed_base + @as(f64, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
+            const expected_speed = case.speed_base + @as(f32, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
 
             const proj = projectiles.entries[idx];
             try std.testing.expect(proj.active);
             try std.testing.expectEqual(case.projectile_type_id, proj.type_id);
             try expectFloatClose(expected_angle, proj.angle);
-            try std.testing.expectEqual(expected_speed, proj.speed_scale);
+            try expectFloatClose(expected_speed, proj.speed_scale);
         }
     }
 }

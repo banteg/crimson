@@ -9,7 +9,6 @@ from crimson.creatures.spawn import (
     CreatureTypeId,
     SpawnEnv,
     SpawnId,
-    UnsupportedSpawnTemplateError,
     build_spawn_plan,
 )
 from crimson.rng_caller_static import RngCallerStatic
@@ -272,9 +271,17 @@ def test_formation_child_heading_writes_follow_native_template_paths(default_spa
     assert spawner_ring.creatures[-1].heading == 0.75
 
 
-def test_build_spawn_plan_rejects_unsupported_template_id(default_spawn_env: SpawnEnv) -> None:
-    with pytest.raises(UnsupportedSpawnTemplateError, match=r"unsupported spawn template id: 0x2"):
-        build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)
+def test_unused_template_02_takes_the_unhandled_type_fallback(default_spawn_env: SpawnEnv) -> None:
+    plan = build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)
+
+    (creature,) = plan.creatures
+    assert creature.type_id == CreatureTypeId.ALIEN
+    assert creature.health == 20.0
+    assert creature.max_health == 20.0
+    # Every other stat keeps the recycled slot's value.
+    assert creature.move_speed is None
+    assert creature.size is None
+    assert creature.tint is None
 
 
 def test_random_spawn_heading_uses_native_float_literal(default_spawn_env: SpawnEnv) -> None:
