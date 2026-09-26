@@ -144,7 +144,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     creature.pos = Vec2(100.0, 200.0)
     creature.move_speed = 1.0
     creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
-    creature.move_scale = 1.0
     creature.anim_phase = 3.0
 
     events = world.step(

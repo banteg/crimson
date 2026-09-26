@@ -5,10 +5,14 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from ...creatures.anim import creature_anim_is_long_strip, creature_anim_select_flash_frame, creature_anim_select_frame
+from ...creatures.anim import (
+    CREATURE_ANIM,
+    creature_anim_is_long_strip,
+    creature_anim_select_flash_frame,
+    creature_anim_select_frame,
+)
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
-from ...sim.world_defs import CREATURE_ANIM
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 

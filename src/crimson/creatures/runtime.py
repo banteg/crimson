@@ -60,6 +60,7 @@ from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
+from .anim import CREATURE_ANIM, creature_anim_advance_phase
 from .damage_runtime import CreatureLethalHandler
 from .damage_types import CreatureDamageType
 from .lifecycle import (
@@ -288,7 +289,6 @@ class CreatureState(msgspec.Struct):
     orbit_radius: float = 0.0
     # Native stores this as int32 and uses `fild` when forming orbit phase.
     phase_seed: int = 0
-    move_scale: float = 1.0
 
     # Combat / timers.
     hp: float = 0.0
@@ -1340,7 +1340,7 @@ class CreaturePool:
                 creatures=self._entries,
                 dt=dt,
             )
-            creature.move_scale = float(ai.move_scale)
+            move_scale = float(ai.move_scale)
             if ai.self_damage is not None and ai.self_damage > 0.0:
                 # Native link-death cleanup calls creature_apply_damage(idx,
                 # 1000.0, 1, zero): the full bullet path with heading-jitter
@@ -1373,7 +1373,7 @@ class CreaturePool:
                     move_delta = _movement_delta_from_heading_f32(
                         creature.heading,
                         dt=dt,
-                        move_scale=creature.move_scale,
+                        move_scale=move_scale,
                         move_speed=creature.move_speed,
                     )
                     creature.vel = move_delta
@@ -1396,7 +1396,7 @@ class CreaturePool:
                     move_delta = _movement_delta_from_heading_f32(
                         creature.heading,
                         dt=dt,
-                        move_scale=creature.move_scale,
+                        move_scale=move_scale,
                         move_speed=creature.move_speed,
                     )
                     creature.vel = move_delta
@@ -1433,6 +1433,17 @@ class CreaturePool:
                 and int(state.plaguebearer_infection_count) < 0x3C
             ):
                 self._plaguebearer_spread_infection(int(idx))
+
+            creature.anim_phase, _ = creature_anim_advance_phase(
+                creature.anim_phase,
+                anim_rate=CREATURE_ANIM[creature.type_id].anim_rate,
+                move_speed=float(creature.move_speed),
+                dt=dt,
+                size=float(creature.size),
+                local_scale=move_scale,
+                flags=creature.flags,
+                ai_mode=int(creature.ai_mode),
+            )
 
             # Native decrements contact/ranged cooldown before interaction checks,
             # then lets contact hits raise it back by +1.0 in the same frame.

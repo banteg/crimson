@@ -12,7 +12,6 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
-from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
 from ..creatures.spawn import SpawnEnv
@@ -25,8 +24,6 @@ from ..gameplay import (
     survival_progression_update,
 )
 from ..owner_ref import OwnerRef
-from ..perks import PerkId
-from ..perks.helpers import perk_active
 from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
 from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from ..perks.runtime.effects import perks_update_effects
@@ -44,7 +41,6 @@ from .presentation_step import (
 )
 from .state_types import BonusPickupEvent, PlayerState
 from .timing import ftol_ms_i32
-from .world_defs import CREATURE_ANIM
 
 
 class WorldEvents(msgspec.Struct):
@@ -403,8 +399,6 @@ class WorldState(msgspec.Struct):
                 reload_active_any=bool(reload_active_any),
             )
         dt = float(player_dt)
-        if dt > 0.0:
-            self._advance_creature_anim(dt)
         if mid_step_runtime is not None:
             mid_step_runtime.run_mid_step()
         self.state.highscore_score_xp = int(self.players[0].experience) if self.players else 0
@@ -501,40 +495,3 @@ class WorldState(msgspec.Struct):
             post_ctx=post_ctx,
             rng=self.state.rng,
         )
-
-    def _advance_creature_anim(self, dt: float) -> None:
-        if float(self.state.bonuses.freeze) > 0.0:
-            return
-        # Native advances anim phase inside `if (idx != evil_eyes_target)`:
-        # the frozen creature's walk cycle halts along with its movement.
-        evil_targets: set[int] = set()
-        if self.players:
-            if bool(self.state.preserve_bugs):
-                if perk_active(self.players[0], PerkId.EVIL_EYES):
-                    evil_target = int(self.players[0].evil_eyes_target_creature)
-                    if evil_target >= 0:
-                        evil_targets.add(evil_target)
-            else:
-                for player in self.players:
-                    if float(player.health) <= 0.0 or not perk_active(player, PerkId.EVIL_EYES):
-                        continue
-                    evil_target = int(player.evil_eyes_target_creature)
-                    if evil_target >= 0:
-                        evil_targets.add(evil_target)
-        for idx, creature in enumerate(self.creatures.entries):
-            if idx in evil_targets:
-                continue
-            if not (creature.active and creature.hp > 0.0):
-                continue
-            type_id = creature.type_id
-            info = CREATURE_ANIM[type_id]
-            creature.anim_phase, _ = creature_anim_advance_phase(
-                creature.anim_phase,
-                anim_rate=info.anim_rate,
-                move_speed=float(creature.move_speed),
-                dt=dt,
-                size=float(creature.size),
-                local_scale=float(creature.move_scale),
-                flags=creature.flags,
-                ai_mode=int(creature.ai_mode),
-            )

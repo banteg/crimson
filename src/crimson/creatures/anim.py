@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import struct
 
+import msgspec
+
 from ..math_parity import x87_pc24_div, x87_pc24_mul_chain
-from .spawn import CreatureAiMode, CreatureFlags
+from .spawn import CreatureAiMode, CreatureFlags, CreatureTypeId
 
 _F32_STRUCT = struct.Struct("<f")
 _F32_PACK = _F32_STRUCT.pack
@@ -11,6 +13,22 @@ _F32_UNPACK = _F32_STRUCT.unpack
 _FLAG_ANIM_PING_PONG = int(CreatureFlags.ANIM_PING_PONG)
 _FLAG_ANIM_LONG_STRIP = int(CreatureFlags.ANIM_LONG_STRIP)
 _FLAG_RANGED_ATTACK_SHOCK = int(CreatureFlags.RANGED_ATTACK_SHOCK)
+
+
+class CreatureAnimInfo(msgspec.Struct, frozen=True):
+    base: int
+    anim_rate: float
+    mirror: bool
+
+
+CREATURE_ANIM: dict[CreatureTypeId, CreatureAnimInfo] = {
+    CreatureTypeId.ZOMBIE: CreatureAnimInfo(base=0x20, anim_rate=1.2, mirror=False),
+    CreatureTypeId.LIZARD: CreatureAnimInfo(base=0x10, anim_rate=1.6, mirror=True),
+    CreatureTypeId.ALIEN: CreatureAnimInfo(base=0x20, anim_rate=1.35, mirror=False),
+    CreatureTypeId.SPIDER_SP1: CreatureAnimInfo(base=0x10, anim_rate=1.5, mirror=True),
+    CreatureTypeId.SPIDER_SP2: CreatureAnimInfo(base=0x10, anim_rate=1.5, mirror=True),
+    CreatureTypeId.TROOPER: CreatureAnimInfo(base=0x00, anim_rate=1.0, mirror=False),
+}
 
 
 def _f32(value: float) -> float:
