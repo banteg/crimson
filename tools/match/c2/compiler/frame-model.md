@@ -391,7 +391,9 @@ the variants.
 
 - Why the value-numbered address temporary of a field pointer is not forward-substituted. It is
   not a named range at 0x306c1. Extending the operand dump to unnamed ranges would show which
-  phase-1 rule excludes it.
+  phase-1 rule excludes it. `creature_update_all` is not over the 0x400 alias-class budget (0x196
+  classes, [unfolded-field-pointers.md](unfolded-field-pointers.md)), so the next candidate is the
+  stores-through-pointers branch of `has_intervening_base_definition`.
 - Which source form keeps `&target_player` in EBX, native's choice, without the retarget-block spill.
 - The `flags5` 0x08 writer, `flags6` 0x02, `c2_symbol` +0x18 and +0x3c..+0x4c, and
   `c2_fe_symbol` +0x30/+0x31 beyond the 0x26 temporary marker.

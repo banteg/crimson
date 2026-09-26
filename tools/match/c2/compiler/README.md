@@ -48,6 +48,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [pu-firecough-heading.md](pu-firecough-heading.md) | What the single-use propagation pass really refuses (registration, kills, range checks), and how storing a value into a call's output vector keeps it computed early |
 | [sib-operand-order.md](sib-operand-order.md) | Which address-sum operand becomes the SIB base, how loads through CSE'd vs fresh addresses rank, and what source kills the address CSE |
 | [pr-spill-order.md](pr-spill-order.md) | Why a loop pointer used after its loop survives forward substitution and gets a stack home, how reference weights decide 4-byte slot grouping, and a packer what-if tool |
+| [unfolded-field-pointers.md](unfolded-field-pointers.md) | Where `&p->field` pointers fold into [base+disp], why a function over the 0x400 alias-class budget keeps them in registers, and a struct-copy spelling that keeps an index CSE across two stores |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |

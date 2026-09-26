@@ -313,7 +313,7 @@
   },
   "0x10702e19": {
    "name": "symbol_in_alias_class",
-   "comment": "Is symbol a member of alias class id (handles group class 12 and escape classes)."
+   "comment": "Is symbol a member of alias class id (handles group class 12 and escape classes). Class 1 returns 1 for any symbol (cmp edx,1; je 0x10704042 -> mov eax,1). Otherwise a local/parameter (kind 4/5) is a member only with flags5 & 2 (memory resident). Verified effect: once late pointer roots collapse to class 1 (alias budget), stores through them make has_intervening_base_definition return 1 and forward substitution keeps lea pointers (player_update)."
   },
   "0x10702edf": {
    "name": "operand_make_sym",
@@ -1527,7 +1527,8 @@
    "comment": "Counts real tuples; > 0x2710 turns /Oa off and forces the coarse alias fallback."
   },
   "0x1071921c": {
-   "name": "assign_symbol_alias_classes"
+   "name": "assign_symbol_alias_classes",
+   "comment": "Numbers the symbol alias classes before any pointer class: one per root local/parameter (including every inline expansion's parameters and locals), referenced global, and some compiler temporaries, walking g_symbol_chunks (0x54-byte symbols from chunk+0xc). Verified counts: a code-free inline helper call with one parameter and one local adds exactly 2 classes; each newly referenced global adds 1; unused extern declarations and new float constants add none. player_update (b7033a699) gets 513 symbol classes."
   },
   "0x107194f1": {
    "name": "number_exposed_symbol_refs"
@@ -2336,11 +2337,11 @@
   },
   "0x107306c1": {
    "name": "forward_substitute_single_def_ranges",
-   "comment": "Ranges with one simple def (mov from memory / lea of ranges) whose inputs are unchanged at uses are substituted into the uses and freed; lr+5 bit 4 = not substitutable."
+   "comment": "Ranges with one simple def (mov from memory / lea of ranges) whose inputs are unchanged at uses are substituted into the uses and freed; lr+5 bit 4 = not substitutable. Phase 1 excludes value uses (except a /Ot register copy back into the lea's own source), uses before the definition, a second definition with another tree, and unfoldable definitions (is_foldable_address_definition / is_substitutable_address_use). Phase 2 calls has_intervening_base_definition for the base (and index); any store or call of alias class 1 in the live stretch blocks substitution. This, not globopt or pass_select_address_modes, is where a named field pointer is folded into [base+disp]. Verified (fsub_trace.py)."
   },
   "0x107309bb": {
    "name": "is_foldable_address_definition",
-   "comment": "Eligibility predicate called from rebase_derived_address_uses (sites 0x107307cd, 0x1073086f); ECX = pointer definition node. Checks for opcode 0x12 (LEA) at 0x107309c3 and returns 0 otherwise; for a L"
+   "comment": "Forward-substitution eligibility of a range definition (ECX = tuple): LEA (opcode 0x12) with one destination and a kind-5 source. 0x14c base+disp: foldable when the base live range has kind 2. 0x14f index*s+disp: with /Ot, when the index range has kind 2. 0x14d base+index*s+disp: with /Ot, when both have kind 2. 0x14e sym+index and 0x14a &sym+disp: never (a named pointer to global[i].field survives phase 1). Read; the 0x14e case verified (player_update target_position)."
   },
   "0x10730a40": {
    "name": "init_block_register_sets",

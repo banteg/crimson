@@ -112,7 +112,9 @@ overlap. A bare class conflicts with every record and bare access of its object.
 with everything. So once `_this` reaches 96 records, every later new member range acts as "may alias
 anything in `this`": a load stays below every earlier `this` store in its window. The same classes
 drive the global optimizer's kill sets, so a class-1 collapse also changes CSE and register
-allocation well away from the collapsed accesses.
+allocation well away from the collapsed accesses. Class 1 also blocks forward substitution of `lea`
+pointers: a store through a class-1 root makes `has_intervening_base_definition` return 1 for any
+base, so the pointer stays in a register ([unfolded-field-pointers.md](unfolded-field-pointers.md)).
 
 ## 5. Walkthrough: initialize_game_assets_and_world (Snail 0x40acf0)
 
