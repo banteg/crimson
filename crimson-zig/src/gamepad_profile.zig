@@ -150,7 +150,7 @@ pub fn applyPadUpgrades(cfg: *crimson_cfg.CrimsonCfg, player_index: usize, upgra
     }
     if (upgrades.fire) binds.fire = PadCode.r2.code();
     crimson_cfg.setPlayerBindBlock(cfg, player_index, binds);
-    if (upgrades.reload) cfg.keybind_reload = @bitCast(PadCode.face_left.code());
+    if (upgrades.reload) cfg.keybind_reload = @bitCast(PadCode.l1.code());
     if (upgrades.level_up) cfg.keybind_pick_perk = @bitCast(PadCode.face_up.code());
 }
 
@@ -244,7 +244,7 @@ test "stock player switches to the pad profile once their pad is used" {
     try std.testing.expectEqual(PadCode.right_stick_x.code(), binds.axis_aim_x);
     try std.testing.expectEqual(PadCode.r2.code(), binds.fire);
     try std.testing.expectEqual(@as(i32, 0x11), binds.move_forward);
-    try std.testing.expectEqual(@as(u32, 0x212), cfg.keybind_reload);
+    try std.testing.expectEqual(@as(u32, 0x214), cfg.keybind_reload);
     try std.testing.expectEqual(@as(u32, 0x213), cfg.keybind_pick_perk);
 
     try std.testing.expect(!playerBindingsAreStock(&cfg, 0));
@@ -379,7 +379,7 @@ test "reset with a pad applies the full pad profile" {
     const binds = crimson_cfg.playerBindBlock(&cfg, 0);
     try std.testing.expectEqual(PadCode.r2.code(), binds.fire);
     try std.testing.expectEqual(PadCode.left_stick_y.code(), binds.axis_move_y);
-    try std.testing.expectEqual(@as(u32, 0x212), cfg.keybind_reload);
+    try std.testing.expectEqual(@as(u32, 0x214), cfg.keybind_reload);
     try std.testing.expectEqual(@as(u32, 0x213), cfg.keybind_pick_perk);
 }
 

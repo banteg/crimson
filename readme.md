@@ -48,7 +48,7 @@ Connect a PlayStation, Switch Pro or Xbox controller. Controller bindings still 
 | Left stick | move |
 | Right stick | aim |
 | R2 / RT | fire |
-| Square / X | reload |
+| L1 / LB | reload |
 | Triangle / Y | pick a perk |
 | Start | pause |
 | D-pad, Cross / A, Circle / B | menus and the perk list |

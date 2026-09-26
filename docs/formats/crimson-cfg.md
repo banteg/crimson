@@ -283,7 +283,7 @@ controller is connected, replacing only values that are still stock:
 - Stock axis pairs become move axes `(0x201, 0x200)` and aim axes `(0x203, 0x202)`.
 - With Dual Action Pad aim, a stock Fire becomes `0x217`.
 - For player 1 on any Dual Action Pad method, stock Reload and Level Up become
-  `0x212` and `0x213`.
+  `0x214` (L1 / LB, as in the 2014 remake) and `0x213`.
 
 Methods and changed bindings are left alone. Legacy `Joys*`/`JoyAxis*` codes keep
 working. The Controls screen's Reset button restores the selected player's stock

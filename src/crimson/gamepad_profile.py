@@ -37,7 +37,8 @@ from .movement_controls import MovementControlType
 PAD_PROFILE_MOVE_AXIS_CODES = (int(PadCode.LEFT_STICK_Y), int(PadCode.LEFT_STICK_X))
 PAD_PROFILE_AIM_AXIS_CODES = (int(PadCode.RIGHT_STICK_Y), int(PadCode.RIGHT_STICK_X))
 PAD_PROFILE_FIRE_CODE = int(PadCode.R2)
-PAD_PROFILE_RELOAD_CODE = int(PadCode.FACE_LEFT)
+# Shoulder reload next to trigger fire, as in 10tons' 2014 remake (L1 on PS4, L on Switch).
+PAD_PROFILE_RELOAD_CODE = int(PadCode.L1)
 PAD_PROFILE_PICK_PERK_CODE = int(PadCode.FACE_UP)
 
 
