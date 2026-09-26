@@ -22,7 +22,7 @@ from crimson.replay.driver.replay_benchmark import (
     ReplayRenderTelemetryTopTick,
 )
 from crimson.replay.driver.replay_render import ReplayRenderResult
-from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.commands import PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
 from crimson.weapons import WeaponId
 from tests.replay.cli._helpers import (

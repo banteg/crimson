@@ -115,12 +115,8 @@ class RushMode(BaseGameplayMode):
         kills = int(self.creatures.kill_count)
         return f"rush_{stamp}_kills{kills}"
 
-    def _on_tick_applied(
-        self,
-        tick: DeterministicSessionTick,
-        dt_tick: float,
-    ) -> bool:
-        _ = tick, dt_tick
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
+        _ = tick
         if not self._any_player_alive():
             self._enter_game_over()
             return False

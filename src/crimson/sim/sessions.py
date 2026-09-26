@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from collections.abc import Sequence
 
 import msgspec
@@ -26,8 +25,7 @@ from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_tran
 from ..weapon_runtime import weapon_assign_player
 from ..weapon_runtime.availability import prepare_weapon_availability
 from ..weapons import WeaponId
-from .input import PlayerInput
-from .input_providers import (
+from .commands import (
     GameCommand,
     PerkMenuOpenCommand,
     PerkPickCommand,
@@ -35,6 +33,7 @@ from .input_providers import (
     TypoCharCommand,
     TypoSubmitCommand,
 )
+from .input import PlayerInput
 from .presentation_step import plan_world_presentation_step
 from .run_result import RunOutcome, all_players_dead, death_transition_ready
 from .step_pipeline import (
@@ -404,7 +403,6 @@ class DeterministicSession(msgspec.Struct):
 
     # Mutable timing
     elapsed_ms: float = 0.0
-    last_presentation_plan_ms: float = 0.0
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
     mode_runtime: SessionModeRuntime = msgspec.field(default_factory=SessionModeRuntime)
@@ -576,7 +574,6 @@ class DeterministicSession(msgspec.Struct):
         )
 
         presentation_trace = PresentationRngTrace()
-        plan_ns_start = time.perf_counter_ns()
         presentation = plan_world_presentation_step(
             state=state,
             players=self.world.players,
@@ -596,7 +593,6 @@ class DeterministicSession(msgspec.Struct):
             trigger_game_tune=events.trigger_game_tune,
             hit_sfx=events.hit_sfx,
         )
-        self.last_presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
         if recording_rng is not None:
             presentation_trace.draws_total = int(recording_rng.calls)
 

@@ -17,7 +17,7 @@ import msgspec
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..replay.types import input_flags_validation_error
-from ..sim.input_providers import (
+from ..sim.commands import (
     PerkMenuOpenCommand,
     PerkPickCommand,
     TypoBackspaceCommand,

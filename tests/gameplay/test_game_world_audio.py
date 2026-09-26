@@ -4,16 +4,12 @@ from pathlib import Path
 
 import crimson.world.audio_bridge as audio_bridge_module
 from crimson.bonuses import BonusId
-from crimson.game_modes import GameMode
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
-from crimson.sim.hooks import TickResult
+from crimson.sim.batch_apply import apply_presentation_plans, apply_tick_to_sim
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import InputStatus, ResolvedTick
 from crimson.sim.presentation_step import DeterministicPresentationPlan, plan_player_audio_sfx
-from crimson.sim.tick_runner import TickBatchResult
 from crimson.weapons import WeaponId
-from crimson.world.standalone_tick_harness import StandaloneTickHarness
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -21,8 +17,6 @@ from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
-from tests.support.builders.input_providers import StaticLocalInputRuntime
-from tests.support.builders.session import make_session
 from tests.support.builders.tick_payload import make_tick_payload
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
@@ -182,38 +176,16 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     assert {call.args[1] for call in play_sfx.call_args_list} == {SfxId.UI_BONUS, SfxId.EXPLOSION_MEDIUM}
 
 
-def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> None:
+def test_presentation_apply_plays_post_apply_bonus_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
+    step = make_tick_payload(post_apply_sfx=(SfxRequest(SfxId.UI_BONUS),))
 
-    batch = TickBatchResult(
-        ticks_completed=1,
-        batch_status=InputStatus.READY,
-        next_tick_index=1,
-        completed_results=[
-            TickResult(
-                source_tick=ResolvedTick(
-                    tick_index=0,
-                    dt_seconds=1.0 / 60.0,
-                    inputs=(),
-                    commands=(),
-                ),
-                payload=make_tick_payload(post_apply_sfx=(SfxRequest(SfxId.UI_BONUS),)),
-            ),
-        ],
-    )
-
-    StandaloneTickHarness(
-        game_mode=GameMode.SURVIVAL,
-        input_runtime=StaticLocalInputRuntime(),
-    )._apply_tick_batch(
-        world,
-        batch=batch,
-        session=make_session()[0],
-    )
+    apply_tick_to_sim(sim_world=world.sim_world, step=step, game_tune_started=False)
+    apply_presentation_plans(plans=[step.presentation], runtime=world, apply_audio=True)
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.UI_BONUS

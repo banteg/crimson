@@ -14,6 +14,7 @@ from crimson.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayRecorder, dump_replay
+from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
@@ -212,7 +213,7 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
 def _write_survival_replay(path: Path, player_input: PlayerInput, *, ticks: int) -> Path:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF))
     for _ in range(int(ticks)):
-        recorder.record_tick([player_input])
+        recorder.record(pack_tick([player_input]))
     path.write_bytes(dump_replay(finish_replay(recorder)))
     return path
 

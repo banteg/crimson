@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from ..sim.input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
+from ..sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from ..sim.timing import nearest_ms_i32
 
 

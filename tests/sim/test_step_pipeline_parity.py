@@ -12,6 +12,7 @@ from crimson.quests.types import QuestContext
 from crimson.replay import Replay, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.replay.driver.playback_driver import build_runtime_playback_driver, build_verify_playback_driver
+from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
@@ -37,16 +38,14 @@ def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
         ),
     )
     for idx in range(int(ticks)):
-        rec.record_tick(
-            [
+        rec.record(pack_tick([
                 PlayerInput(
                     aim=Vec2(512.0 + float(idx), 512.0),
                     fire_down=bool(idx % 2 == 0),
                     fire_pressed=bool(idx % 3 == 0),
                     reload_pressed=bool(idx == int(ticks) - 1),
                 ),
-            ],
-        )
+            ]))
     return unverified_replay(rec)
 
 

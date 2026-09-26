@@ -131,7 +131,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
     class _FakeDriver:
         def build_checkpoint(self, *, tick_result) -> ReplayCheckpoint:
             return ReplayCheckpoint(
-                tick_index=int(tick_result.source_tick.tick_index),
+                tick_index=int(tick_result.tick_index),
                 rng_state=0,
                 elapsed_ms=0,
                 score_xp=0,
@@ -168,7 +168,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
             )
 
         def run(self, *, observer):
-            tick_result = SimpleNamespace(source_tick=SimpleNamespace(tick_index=0))
+            tick_result = SimpleNamespace(tick_index=0)
             world = SimpleNamespace(
                 state=SimpleNamespace(
                     time_scale_active=False,
@@ -394,7 +394,7 @@ def test_port_replay_trace_reports_the_fixed_step_boundary(tmp_path: Path) -> No
 def test_capture_replay_trace_reports_the_captured_boundary(tmp_path: Path) -> None:
     from crimson.dbg.canonical_channels import GameFrameRngAdvanceOperation
     from crimson.dbg.capture_replay import dump_capture_replay_file
-    from crimson.sim.input_providers import PerkMenuOpenCommand
+    from crimson.sim.commands import PerkMenuOpenCommand
     from tests.debug.test_capture_replay import build_capture
 
     capture = build_capture(

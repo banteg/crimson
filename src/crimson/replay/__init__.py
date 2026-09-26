@@ -11,7 +11,7 @@ from .codec import (
     load_replay_file,
     validate_replay,
 )
-from .input_codec import pack_player_input, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
+from .input_codec import pack_player_input, pack_tick, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
 from .recorder import ReplayRecorder
 from .types import (
     AIM_SCHEME_PRESENT_FLAG,
@@ -73,6 +73,7 @@ __all__ = [
     "load_replay_file",
     "pack_input_flags",
     "pack_player_input",
+    "pack_tick",
     "pack_tick_inputs",
     "unpack_input_flags",
     "unpack_input_mode_flags",

@@ -35,7 +35,7 @@ from ..replay.driver.playback_driver import (
 from ..replay.driver.playback_pump import advance_playback_frame
 from ..replay.driver.setup import ReplayRunnerError
 from ..sim.batch_apply import (
-    apply_presentation_outputs,
+    apply_presentation_plans,
 )
 from ..sim.clock import FixedStepClock
 from ..sim.run_spec import WORLD_SIZE
@@ -112,7 +112,6 @@ class ReplayPlaybackMode:
         self._dt = 1.0 / 60.0
         self._dt_accum = 0.0
         self._clock = FixedStepClock(tick_rate=60)
-        self._frame_index = 0
         self._tick_index = 0
         self._finished = False
         self._paused = False
@@ -301,7 +300,6 @@ class ReplayPlaybackMode:
         self._dt = REPLAY_TICK_DT
         self._dt_accum = 0.0
         self._clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
-        self._frame_index = 0
         self._tick_index = 0
         self._finished = False
         self._paused = False
@@ -448,16 +446,14 @@ class ReplayPlaybackMode:
             sim_world=runtime.sim_world,
             clock=self._clock,
             start_tick=int(self._tick_index),
-            frame_index=int(self._frame_index),
             dt_seconds=float(frame_dt),
             max_ticks=max_ticks,
             tick_limit=int(tick_limit),
             game_tune_started=bool(driver.session.game_tune_started),
         )
-        self._frame_index = int(advance.frame_index)
         self._tick_index = int(advance.next_tick_index)
 
-        apply_presentation_outputs(outputs=advance.outputs, runtime=runtime, apply_audio=True)
+        apply_presentation_plans(plans=advance.plans, runtime=runtime, apply_audio=True)
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)

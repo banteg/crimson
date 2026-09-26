@@ -11,7 +11,7 @@ from typer.testing import CliRunner
 import crimson.dbg.record as dbg_record
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.commands import PerkPickCommand
 
 from ._helpers import (
     build_replay,

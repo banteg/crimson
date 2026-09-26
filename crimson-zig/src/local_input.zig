@@ -109,7 +109,6 @@ pub const LocalInputInterpreter = struct {
         var move_backward_pressed: ?bool = null;
         var turn_left_pressed: ?bool = null;
         var turn_right_pressed: ?bool = null;
-        var move_to_cursor_pressed = false;
         var computer_target_index: ?i32 = null;
 
         const computer_move_active = move_mode_type == movement_control_computer;
@@ -158,8 +157,7 @@ pub const LocalInputInterpreter = struct {
                 .y = clampUnit(axis_y),
             };
         } else if (move_mode_type == movement_control_mouse_point_click) {
-            move_to_cursor_pressed = sampler.codeIsDown(reload_key, @intCast(idx));
-            if (move_to_cursor_pressed) {
+            if (sampler.codeIsDown(reload_key, @intCast(idx))) {
                 state.move_target = mouse_world;
             }
             if (state.move_target.x >= 0.0 and state.move_target.y >= 0.0) {
@@ -303,7 +301,6 @@ pub const LocalInputInterpreter = struct {
                 .reload_pressed = reload_pressed,
                 .reload_down = reload_down,
                 .fire_bullets_key_down = sampler.codeIsDown(0x22, @intCast(idx)),
-                .move_to_cursor_pressed = move_to_cursor_pressed,
                 .move_mode = move_mode_type,
                 .aim_scheme = aim_scheme,
                 .move_forward_pressed = move_forward_pressed,
@@ -698,7 +695,7 @@ test "relative mode multiplayer does not use alt arrow fallback" {
     try expectFloatClose(0.0, out.move_y);
 }
 
-test "mouse point click marks move to cursor press" {
+test "mouse point click moves toward the clicked point" {
     var interpreter: LocalInputInterpreter = .{};
     const player = makePlayer(0, .{ .x = 100.0, .y = 100.0 }, .{ .x = 160.0, .y = 100.0 }, 0.0);
     var cfg = formats.crimson_cfg.defaultConfig();
@@ -722,7 +719,6 @@ test "mouse point click marks move to cursor press" {
     );
 
     try std.testing.expect(out.flags.reload_pressed);
-    try std.testing.expect(out.flags.move_to_cursor_pressed);
     const expected = normalized(sub(mouse_world, player.pos));
     try expectFloatClose(expected.x, out.move_x);
     try expectFloatClose(expected.y, out.move_y);

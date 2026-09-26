@@ -76,7 +76,6 @@ class GameLoopView:
         self._demo_trial_overlay: DemoTrialOverlayUi | None = None
         self._demo_trial_info: DemoTrialOverlayInfo | None = None
         self._screenshot_requested = False
-        self._runtime_updates_per_frame = 0
         self._gamma_shader: rl.Shader | None = None
         self._gamma_gain_loc = -1
         self._gamma_target: rl.RenderTexture | None = None
@@ -96,32 +95,6 @@ class GameLoopView:
     def should_close(self) -> bool:
         return self.state.quit_requested
 
-    def _clear_state_frame_telemetry(self) -> None:
-        self.state.input_stall_count = 0
-        self.state.ticks_advanced_per_frame = 0
-        self.state.sim_ms = 0.0
-        self.state.presentation_plan_ms = 0.0
-        self.state.presentation_apply_ms = 0.0
-
-    def _sync_gameplay_frame_telemetry_to_state(self) -> None:
-        gameplay = self.state.screens.active_gameplay
-        if gameplay is None:
-            return
-        (
-            runtime_updates_per_frame,
-            input_stall_count,
-            ticks_advanced_per_frame,
-            sim_ms,
-            presentation_plan_ms,
-            presentation_apply_ms,
-        ) = gameplay.frame_telemetry()
-        self.state.runtime_updates_per_frame = int(runtime_updates_per_frame)
-        self.state.input_stall_count = int(input_stall_count)
-        self.state.ticks_advanced_per_frame = int(ticks_advanced_per_frame)
-        self.state.sim_ms = float(sim_ms)
-        self.state.presentation_plan_ms = float(presentation_plan_ms)
-        self.state.presentation_apply_ms = float(presentation_apply_ms)
-
     def update(self, dt: float) -> None:
         input_begin_frame()
         console = self.state.console
@@ -131,10 +104,7 @@ class GameLoopView:
         self._handle_console_requests()
         self._sync_rtx_mode()
         _update_screen_fade(self.state, dt)
-        self._clear_state_frame_telemetry()
         gameplay = self.state.screens.active_gameplay
-        if gameplay is not None:
-            gameplay.set_runtime_updates_per_frame(int(self._runtime_updates_per_frame))
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
@@ -153,7 +123,6 @@ class GameLoopView:
 
         active = self.state.screens.active
         active.update(dt)
-        self._sync_gameplay_frame_telemetry_to_state()
         action = active.take_action()
         if gameplay is not None:
             action = self._resolve_gameplay_action(gameplay, action)

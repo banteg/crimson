@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import msgspec
 
-from .input_providers import ResolvedTick
 from .sessions import DeterministicSessionTick
 
 
-class TickResult(msgspec.Struct):
-    source_tick: ResolvedTick
+class TickResult(msgspec.Struct, frozen=True):
+    tick_index: int
     payload: DeterministicSessionTick
-    replay_tick_index: int | None = None

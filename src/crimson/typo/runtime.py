@@ -12,8 +12,8 @@ from grim.sfx_types import SfxRequest
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..math_parity import f32, x87_pc24_mul
 from ..rng_caller_static import RngCallerStatic
+from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
-from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.world_state import WorldState
 from .player import enforce_typo_player_frame
 from .spawns import tick_typo_spawns

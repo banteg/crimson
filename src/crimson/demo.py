@@ -22,7 +22,6 @@ from .screens.actions import Route
 from .screens.assets import require_runtime_resources
 from .sim.bootstrap import advance_explicit_terrain
 from .sim.input import PlayerInput
-from .sim.input_providers import FrameContext, LocalInputRuntime
 from .sim.state_types import PlayerState
 from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
 from .ui.cursor import draw_menu_cursor
@@ -60,13 +59,6 @@ _DEMO_PURCHASE_FEATURE_LINES: tuple[tuple[str, float], ...] = (
     ("-The ability to post your high scores online!", 44.0),
 )
 _DEMO_PURCHASE_FOOTER = "Purchasing the game is very easy and secure."
-
-
-class _DemoLocalInputRuntime(LocalInputRuntime):
-    view: DemoView
-
-    def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        return self.view._build_runner_inputs(frame_ctx)
 
 
 def _weapon_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
@@ -113,7 +105,7 @@ class DemoView:
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.DEMO,
-            input_runtime=_DemoLocalInputRuntime(view=self),
+            frame_inputs=self._build_demo_inputs,
         )
         self._seed_from_app_state = True
 
@@ -685,9 +677,6 @@ class DemoView:
         )
 
         draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
-
-    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        return self._build_demo_inputs(float(frame_ctx.dt_seconds))
 
     def _update_world(self, dt: float) -> None:
         if not self._runtime.sim_world.players:

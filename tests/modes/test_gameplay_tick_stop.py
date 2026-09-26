@@ -18,7 +18,7 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
     mode.open()
     mocker.patch.object(mode, "_sync_audio_and_ground")
     mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput()])
-    present = mocker.patch.object(base_gameplay_mode, "apply_presentation_outputs")
+    present = mocker.patch.object(base_gameplay_mode, "apply_presentation_plans")
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.RUSH, seed=1))
     def check_finished_recording() -> None:
         assert recorder.tick_index == 1
@@ -38,9 +38,9 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
 
     game_over.assert_called_once_with()
     assert mode.player.health <= 0.0
-    assert recorder.tick_index == mode._tick_runner_next_tick_index == 1
+    assert recorder.tick_index == 1
     assert session.elapsed_ms == 16.0
-    assert len(present.call_args.kwargs["outputs"]) == 1
+    assert len(present.call_args.kwargs["plans"]) == 1
 
 
 def test_live_settings_change_does_not_change_recorded_session_settings(mocker, make_mode_config, assets_dir) -> None:
@@ -53,7 +53,7 @@ def test_live_settings_change_does_not_change_recorded_session_settings(mocker, 
     mode.open()
     mocker.patch.object(mode, "_sync_audio_and_ground")
     mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput()])
-    mocker.patch.object(base_gameplay_mode, "apply_presentation_outputs")
+    mocker.patch.object(base_gameplay_mode, "apply_presentation_plans")
     session = mode._sim_session
     assert session is not None
     mode.config.display.detail_preset = 1

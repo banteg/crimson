@@ -56,7 +56,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, TypoSubmitCommand
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand, TypoSubmitCommand
 from crimson.weapons import WeaponId
 
 

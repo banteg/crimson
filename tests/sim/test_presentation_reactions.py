@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.sim.commands import PerkPickCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.session_builders import build_quest_session
 from crimson.sim.sessions import IllegalCommandError
-from crimson.sim.tick_runner import TickRunner
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
 from crimson.world.sim_world_state import SimWorldState
@@ -18,7 +17,6 @@ from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
-from tests.support.builders.input_providers import ReadyTickInputProvider
 from tests.support.builders.session import make_session
 
 
@@ -92,13 +90,11 @@ def test_quest_audio_requests_survive_render_partitions(
         start_weapon_id=None,
     )
     spawn.completion_transition_ms = start_ms
-    runner = TickRunner(session=session, input_provider=ReadyTickInputProvider(inputs=(PlayerInput(),)))
-    outputs = []
-    tick_index = 0
-    for tick_count in ticks_per_frame:
-        batch = runner.advance_ticks(start_tick=tick_index, ticks_requested=tick_count, tick_dt=1 / 60)
-        outputs.extend(row.payload.presentation for row in batch.completed_results)
-        tick_index = batch.next_tick_index
+    outputs = [
+        session.step_tick(dt=1 / 60, inputs=(PlayerInput(),)).presentation
+        for tick_count in ticks_per_frame
+        for _ in range(tick_count)
+    ]
     # Read after all frames: these outputs must not consult the mutated quest state.
     assert [SfxId.QUESTHIT in sfx_ids(output.post_apply_sfx) for output in outputs] == expected_hit
     assert [output.play_quest_completion_music for output in outputs] == expected_music
@@ -159,7 +155,7 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
     from crimson.dbg.state_digest import session_digest
     from crimson.game_modes import GameMode
     from crimson.math_parity import f32
-    from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
+    from crimson.sim.batch_apply import apply_presentation_plans
     from crimson.sim.sessions import DeterministicSession
     from crimson.world.runtime import WorldRuntime
     from grim.geom import Vec2
@@ -191,7 +187,7 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
         )
         tick = 0
         for count in counts:
-            outputs = []
+            plans = []
             for _ in range(count):
                 # The second tick must retain the camera established by the first,
                 # then add its own shake even though no player is alive anymore.
@@ -200,11 +196,9 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
                 world.state.camera_shake_offset = Vec2(3, 4) if tick == 0 else Vec2(-5, 2)
                 world.state.sfx_queue.append(SfxRequest(SfxId.UI_BONUS, Vec2(128, 512)))
                 step = session.step_tick(dt=1 / 60, inputs=(PlayerInput(aim=Vec2(600, 512), fire_down=tick == 0),))
-                outputs.append(
-                    PresentationTickOutput(tick_index=tick, dt_sim=step.dt_sim, presentation=step.presentation),
-                )
+                plans.append(step.presentation)
                 tick += 1
-            apply_presentation_outputs(outputs=outputs, runtime=runtime, apply_audio=True)
+            apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
         voice_names = {id(sample.source.sound): sample.entry_name for sample in audio.sfx.owned_samples}
         sounds = [(name, voice_names[id(args[0])], args[1:]) for name, args, _ in backend.mock_calls]
         return runtime.camera, sounds, audio.sfx.cooldowns, session_digest(session)

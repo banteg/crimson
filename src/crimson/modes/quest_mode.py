@@ -183,14 +183,8 @@ class QuestMode(BaseGameplayMode):
         base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
 
-    def _on_tick_applied(
-        self,
-        tick: DeterministicSessionTick,
-        dt_tick: float,
-    ) -> bool:
-        _ = tick
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
         spawn_state = self._quest_spawn_state
-        _ = dt_tick
 
         if tick.quest_completed:
             if self._outcome is None:

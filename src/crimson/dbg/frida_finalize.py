@@ -25,7 +25,7 @@ from ..quests.level import QuestLevel
 from ..replay import PackedTickInputs
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.types import quantize_f32
-from ..sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from ..sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from ..sim.run_spec import WORLD_SIZE, RunSpec, RunStatus
 from ..sim.world_reset import CreatureSlotResidue
 from .canonical_channels import (

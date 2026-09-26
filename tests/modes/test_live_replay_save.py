@@ -15,8 +15,8 @@ from crimson.replay import load_replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import unpack_player_input
 from crimson.screens.results.game_over import GameOverUi
+from crimson.sim.commands import PerkPickCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.run_result import RunOutcome
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -45,7 +45,7 @@ def _open_mode[ModeT: BaseGameplayMode](
     mode.open()
     mocker.patch.object(mode, "_sync_audio_and_ground")
     mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput(aim=Vec2(600.0, 512.0))])
-    mocker.patch.object(base_gameplay_mode, "apply_presentation_outputs")
+    mocker.patch.object(base_gameplay_mode, "apply_presentation_plans")
     return mode
 
 
@@ -87,7 +87,6 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
     _run_ticks(mode, ticks=3)
 
     assert mode._game_over_active
-    assert mode._tick_runner_next_tick_index == 1
     [replay_path] = _saved_files(tmp_path)
     replay = load_replay(replay_path.read_bytes())
     assert len(replay.ticks) == 1

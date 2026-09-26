@@ -7,8 +7,9 @@ from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.replay import ReplayRecorder
 from crimson.replay.driver.playback_driver import PlaybackDriver
+from crimson.replay.input_codec import pack_tick
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
 from tests.support.replay_runner_helpers import unverified_replay
@@ -22,7 +23,7 @@ def test_live_perk_commands_match_recorded_prelude(perk: PerkId, pick_count: int
         PerkPickCommand(player_index=0, choice_index=0),
     ) * pick_count
     inputs = (PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0)),)
-    recorder.record_tick(inputs, commands=commands)
+    recorder.record(pack_tick(inputs, commands))
     replay = unverified_replay(recorder)
     live = PlaybackDriver(replay)
     playback = PlaybackDriver(replay)

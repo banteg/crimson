@@ -14,15 +14,14 @@ from ...quests.types import QuestDefinition, SpawnEntry
 from ...replay import REPLAY_TICK_DT, Replay, ReplayRecorder, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
-from ...replay.input_codec import unpack_tick_inputs
+from ...replay.ticks import step_replay_tick
 from ...sim.bootstrap import TerrainSetup
 from ...sim.hooks import TickResult
-from ...sim.input import PlayerInput
-from ...sim.input_providers import GameCommand, ResolvedTick
 from ...sim.run_init import initialize_run
 from ...sim.run_result import RunOutcome, RunResult, build_run_result
 from ...sim.run_spec import WORLD_SIZE, RunSpec
 from ...sim.sessions import (
+    DeterministicSessionTick,
     IllegalCommandError,
     QuestSessionRuntime,
     QuestSpawnState,
@@ -100,9 +99,9 @@ class PlaybackWalkResult(msgspec.Struct, frozen=True):
 class SessionPlaybackDriver:
     """Step a deterministic session through an indexed tick source.
 
-    Subclasses supply each tick's delta, inputs and commands. The replay
-    driver below is the canonical source; debug tooling layers original-capture
-    playback on the `before_tick`/`after_step` hooks.
+    Subclasses step the session for each source tick. The replay driver below
+    steps recorded ticks exactly as live play does; debug tooling layers
+    original-capture playback on the `before_tick`/`after_step` hooks.
     """
 
     def __init__(
@@ -156,10 +155,9 @@ class SessionPlaybackDriver:
     def tick_dt(self, tick_index: int) -> float:
         raise NotImplementedError
 
-    def tick_inputs(self, tick_index: int) -> list[PlayerInput]:
-        raise NotImplementedError
+    def step_session(self, tick_index: int, *, prelude_post_apply_sfx: list[SfxId]) -> DeterministicSessionTick:
+        """Advance the session by the source's tick `tick_index`."""
 
-    def tick_commands(self, tick_index: int) -> list[GameCommand]:
         raise NotImplementedError
 
     def before_tick(self, tick_index: int) -> list[SfxId]:
@@ -180,7 +178,7 @@ class SessionPlaybackDriver:
         use_world_step_creature_count: bool = False,
     ) -> ReplayCheckpoint:
         return build_replay_checkpoint(
-            tick_index=int(tick_result.source_tick.tick_index),
+            tick_index=int(tick_result.tick_index),
             world=self.world,
             elapsed_ms=float(self.elapsed_ms),
             creature_count_override=(
@@ -196,9 +194,6 @@ class SessionPlaybackDriver:
             raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
         self.world.state.game_mode = self.mode_id
         self._last_tick_rng_rows = ()
-        dt_tick = float(self.tick_dt(tick_index))
-        inputs = self.tick_inputs(tick_index)
-        commands = self.tick_commands(tick_index)
         try:
             pending_sfx = self.before_tick(tick_index)
             with _tick_rng_trace(
@@ -206,13 +201,7 @@ class SessionPlaybackDriver:
                 enabled=bool(self.trace_rng),
                 strict=bool(self.strict_rng_trace),
             ) as tick_rng_rows:
-                session_tick = self.session.step_tick(
-                    dt=dt_tick,
-                    inputs=inputs,
-                    trace_rng=self.trace_rng,
-                    commands=commands,
-                    prelude_post_apply_sfx=pending_sfx,
-                )
+                session_tick = self.step_session(tick_index, prelude_post_apply_sfx=pending_sfx)
                 self.after_step(tick_index)
         except IllegalCommandError as exc:
             raise ReplayRunnerError(f"tick {tick_index}: {exc}") from exc
@@ -222,16 +211,7 @@ class SessionPlaybackDriver:
                 f"run ended ({outcome}) at tick {tick_index} but the replay has {self.tick_count} ticks",
             )
         self._last_tick_rng_rows = tuple(tick_rng_rows)
-        return TickResult(
-            source_tick=ResolvedTick(
-                tick_index=tick_index,
-                dt_seconds=dt_tick,
-                inputs=tuple(inputs),
-                commands=tuple(commands),
-            ),
-            payload=session_tick,
-            replay_tick_index=tick_index,
-        )
+        return TickResult(tick_index=tick_index, payload=session_tick)
 
     def walk_ticks(
         self,
@@ -257,7 +237,7 @@ class SessionPlaybackDriver:
         while next_tick_index < stop_tick_index:
             active_observer.before_tick(int(next_tick_index), self.world, float(self.tick_dt(next_tick_index)))
             tick_result = self.step_tick(next_tick_index)
-            next_tick_index = int(tick_result.source_tick.tick_index) + 1
+            next_tick_index = int(tick_result.tick_index) + 1
 
             active_observer.after_tick(tick_result, self.world)
             active_observer.rng_trace(tick_result, self._last_tick_rng_rows)
@@ -340,11 +320,13 @@ class PlaybackDriver(SessionPlaybackDriver):
         _ = tick_index
         return REPLAY_TICK_DT
 
-    def tick_inputs(self, tick_index: int) -> list[PlayerInput]:
-        return unpack_tick_inputs(self.replay.ticks[tick_index].inputs)
-
-    def tick_commands(self, tick_index: int) -> list[GameCommand]:
-        return list(self.replay.ticks[tick_index].commands)
+    def step_session(self, tick_index: int, *, prelude_post_apply_sfx: list[SfxId]) -> DeterministicSessionTick:
+        return step_replay_tick(
+            self.session,
+            self.replay.ticks[tick_index],
+            trace_rng=self.trace_rng,
+            prelude_post_apply_sfx=prelude_post_apply_sfx,
+        )
 
 
 def build_verify_playback_driver(

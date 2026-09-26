@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from crimson.replay import Replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.input_codec import pack_tick
 from crimson.sim.bootstrap import advance_unlock_terrain
+from crimson.sim.commands import TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import TypoCharCommand, TypoSubmitCommand
 from crimson.sim.run_spec import WORLD_SIZE
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -25,8 +26,8 @@ def _reload_submit_replay(
     )
     baseline = PlayerInput(aim=Vec2(512.0, 512.0))
     for ch in "reload":
-        rec.record_tick([baseline], commands=[TypoCharCommand(player_index=0, ch=ch)])
-    rec.record_tick([baseline], commands=[TypoSubmitCommand(player_index=0)])
+        rec.record(pack_tick([baseline], [TypoCharCommand(player_index=0, ch=ch)]))
+    rec.record(pack_tick([baseline], [TypoSubmitCommand(player_index=0)]))
     return finish_replay(rec)
 
 
@@ -105,7 +106,7 @@ def test_typo_runner_ignores_input_fire_flags() -> None:
     baseline = finish_replay(_blank_typo_replay(ticks=120, seed=0x1234))
     firing = _blank_typo_replay(ticks=0, seed=0x1234)
     for _ in range(120):
-        firing.record_tick([PlayerInput(aim=Vec2(800.0, 512.0), fire_down=True, fire_pressed=True, reload_pressed=True)])
+        firing.record(pack_tick([PlayerInput(aim=Vec2(800.0, 512.0), fire_down=True, fire_pressed=True, reload_pressed=True)]))
 
     result = finish_replay(firing).result
 

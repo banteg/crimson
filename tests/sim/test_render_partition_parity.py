@@ -7,15 +7,12 @@ from crimson.aim_schemes import AimScheme
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from crimson.replay.input_codec import unpack_player_input
+from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.frame_pump import advance_tick_runner_frame
-from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import LocalInputProvider
 from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.tick_runner import TickRunner
 from grim.geom import Vec2
-from tests.support.builders.input_providers import StaticLocalInputRuntime
 from tests.support.builders.session import make_session
 
 
@@ -32,34 +29,26 @@ def _run_render_partition(render_hz: int) -> list[tuple[ReplayCheckpoint, Determ
         move_forward_pressed=True, turn_left_pressed=True,
         reload_down=True, fire_down=True, fire_pressed=True,
     )
-    input_runtime = StaticLocalInputRuntime(inputs=(controls,))
-    provider = LocalInputProvider(player_count=1, runtime=input_runtime)
-    runner = TickRunner(session=session, input_provider=provider)
+    ticks = LiveTickSource()
     clock = FixedStepClock(tick_rate=60)
     rows = []
 
-    def capture_current_tick(tick: TickResult) -> None:
-        rows.append((
-            build_checkpoint(
-                tick_index=tick.source_tick.tick_index, world=session.world,
-                elapsed_ms=session.elapsed_ms, events=tick.payload.events, deaths=tick.payload.events.deaths,
-            ),
-            tick.payload.presentation,
-            tick.source_tick.inputs[0],
-        ))
-
-    tick_index = 0
-    for frame in range(render_hz // 15):
-        candidate_ticks = clock.advance(1 / render_hz)
-        advance = advance_tick_runner_frame(
-            runner=runner, start_tick=tick_index, frame_index=frame,
-            ticks_requested=candidate_ticks, dt_seconds=1 / render_hz,
-            tick_dt_seconds=clock.dt_tick, is_replay=False, refund_clock=clock,
-            after_tick=capture_current_tick,
-        )
-        tick_index = advance.next_tick_index
-        input_runtime.inputs = (msgspec.structs.replace(controls, fire_pressed=False),)
-    assert tick_index == 4
+    frame_input = controls
+    for _ in range(render_hz // 15):
+        ticks.poll([frame_input])
+        for _ in range(clock.advance(1 / render_hz)):
+            tick = ticks.next_tick()
+            step = step_replay_tick(session, tick)
+            rows.append((
+                build_checkpoint(
+                    tick_index=len(rows), world=session.world,
+                    elapsed_ms=session.elapsed_ms, events=step.events, deaths=step.events.deaths,
+                ),
+                step.presentation,
+                unpack_player_input(tick.inputs[0]),
+            ))
+        frame_input = msgspec.structs.replace(controls, fire_pressed=False)
+    assert len(rows) == 4
     assert [row[2].fire_pressed for row in rows] == [True, False, False, False]
     return rows
 

@@ -502,7 +502,7 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
     assert player.weapon.reload_active is True
 
 
-def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None:
+def test_player_update_point_click_reload_key_does_not_start_reload() -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
@@ -515,7 +515,7 @@ def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None
         PlayerInput(
             aim=Vec2(51.0, 50.0),
             reload_pressed=True,
-            move_to_cursor_pressed=True,
+            move_mode=MovementControlType.MOUSE_POINT_CLICK,
         ),
         0.1,
         state,
@@ -525,7 +525,7 @@ def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None
     assert player.weapon.reload_timer == 0.0
 
 
-def test_player_update_mode4_reload_gate_blocks_manual_reload_without_cursor_key_state() -> None:
+def test_player_update_point_click_reload_gate_blocks_manual_reload_on_empty_clip() -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
@@ -539,7 +539,6 @@ def test_player_update_mode4_reload_gate_blocks_manual_reload_without_cursor_key
             aim=Vec2(51.0, 50.0),
             reload_pressed=True,
             move_mode=MovementControlType.MOUSE_POINT_CLICK,
-            move_to_cursor_pressed=False,
         ),
         0.1,
         state,

@@ -15,6 +15,7 @@ from crimson.replay.driver.playback_driver import (
     finish_with_simulated_result,
 )
 from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
+from crimson.replay.input_codec import pack_tick
 from crimson.replay.types import current_replay_game_version
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
@@ -62,7 +63,7 @@ def finish_replay(rec: ReplayRecorder) -> Replay:
 def _blank_replay(run: RunSpec, *, ticks: int, game_version: str | None = None) -> ReplayRecorder:
     rec = ReplayRecorder(run, game_version=game_version)
     for _ in range(int(ticks)):
-        rec.record_tick([PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(run.player_count)])
+        rec.record(pack_tick([PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(run.player_count)]))
     return rec
 
 
@@ -117,7 +118,7 @@ class ReplayRngTraceRecorder(PlaybackWalkObserver):
     rows_by_tick: dict[int, list[RngTraceDraw]]
 
     def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
-        self.rows_by_tick[int(tick_result.source_tick.tick_index)] = list(draws)
+        self.rows_by_tick[int(tick_result.tick_index)] = list(draws)
 
 
 class _VerifyPlaybackObserver(PlaybackWalkObserver):
@@ -134,7 +135,7 @@ class _VerifyPlaybackObserver(PlaybackWalkObserver):
     def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
         checkpoints_out = self.checkpoints_out
         checkpoint_ticks = self.checkpoint_ticks
-        tick_index = int(tick_result.source_tick.tick_index)
+        tick_index = int(tick_result.tick_index)
         if checkpoints_out is not None and checkpoint_ticks is not None and tick_index in checkpoint_ticks:
             checkpoints_out.append(
                 self.driver.build_checkpoint(

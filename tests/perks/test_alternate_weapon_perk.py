@@ -6,6 +6,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import player_update
 from crimson.math_parity import f32, x87_pc24_mul
+from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.replay.driver.setup import reset_players
 from crimson.sim.gameplay_state import GameplayState
@@ -148,7 +149,7 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     assert player.weapon.shot_cooldown == f32(0.1)
 
 
-def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() -> None:
+def test_alternate_weapon_reload_pressed_still_swaps_in_point_click_mode() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
@@ -169,7 +170,7 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
     state.sfx_queue.clear()
     player_update(
         player,
-        PlayerInput(reload_pressed=True, move_to_cursor_pressed=True),
+        PlayerInput(reload_pressed=True, move_mode=MovementControlType.MOUSE_POINT_CLICK),
         dt=0.1,
         state=state,
     )

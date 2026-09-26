@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.camera import CameraUpdate
 from crimson.math_parity import f32
-from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
+from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.terrain_fx import TerrainCorpseFx, TerrainDecalFx, TerrainFxBatch, TerrainFxScratch
 from crimson.world.runtime import WorldRuntime
@@ -59,20 +59,12 @@ def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> Non
     assert scratch.corpses.count == 0
 
 
-def test_apply_presentation_outputs_applies_terrain_fx_in_output_order(mocker) -> None:
+def test_apply_presentation_plans_applies_terrain_fx_in_tick_order(mocker) -> None:
     calls: list[tuple[str, int | None]] = []
-    outputs = (
-        PresentationTickOutput(
-            tick_index=1,
-            dt_sim=1.0 / 60.0,
-            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch(), camera=CameraUpdate(focus=Vec2(), shake=Vec2())),
-        ),
-        PresentationTickOutput(
-            tick_index=2,
-            dt_sim=1.0 / 60.0,
-            presentation=DeterministicPresentationPlan(terrain_fx=_terrain_batch(), camera=CameraUpdate(focus=Vec2(), shake=Vec2())),
-        ),
-    )
+    plans = [
+        DeterministicPresentationPlan(terrain_fx=_terrain_batch(), camera=CameraUpdate(focus=Vec2(), shake=Vec2()))
+        for _ in range(2)
+    ]
 
     runtime = mocker.Mock(spec=WorldRuntime)
     runtime.sync_audio_bridge_state.side_effect = lambda: calls.append(("sync", None))
@@ -82,11 +74,7 @@ def test_apply_presentation_outputs_applies_terrain_fx_in_output_order(mocker) -
     runtime.audio_bridge.apply_post_plan.side_effect = lambda **kw: calls.append(("done", 1))
     runtime.update_camera.side_effect = lambda update: calls.append(("camera", 1))
     runtime.render_resources.consume_terrain_fx_batch.side_effect = lambda batch: calls.append(("terrain", 1))
-    apply_presentation_outputs(
-        outputs=outputs,
-        runtime=runtime,
-        apply_audio=True,
-    )
+    apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
 
     assert calls == [
         ("sync", None),

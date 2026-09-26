@@ -511,7 +511,7 @@ def _record_replay_to_trace_python(
             )
 
         def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
-            tick_index = int(tick_result.source_tick.tick_index)
+            tick_index = int(tick_result.tick_index)
             if tick_index in checkpoint_ticks:
                 checkpoint = driver.build_checkpoint(tick_result=tick_result)
                 checkpoints.append(
@@ -530,7 +530,7 @@ def _record_replay_to_trace_python(
             sim_state_by_tick[tick_index] = _sim_state_from_world(world, mode_id=mode_id)
 
         def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
-            rng_stream_by_tick[int(tick_result.source_tick.tick_index)] = _rng_stream_from_draws(list(draws))
+            rng_stream_by_tick[int(tick_result.tick_index)] = _rng_stream_from_draws(list(draws))
 
     driver.run(
         observer=_ReplayRecordObserver(),

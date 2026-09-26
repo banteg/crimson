@@ -13,8 +13,9 @@ from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence.save_status import GameStatus, GameStatusData
 from crimson.quests.level import QuestLevel
 from crimson.replay.driver.playback_driver import PlaybackDriver
+from crimson.replay.input_codec import pack_tick
+from crimson.sim.commands import TypoCharCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import TypoCharCommand
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -51,7 +52,7 @@ def test_live_start_and_first_ticks_match_complete_replay_state(
     commands = (TypoCharCommand(player_index=0, ch="a"),) if game_mode == GameMode.TYPO else ()
     assert recorder.run.preserve_bugs == preserve_bugs
     for _ in range(3):
-        recorder.record_tick(inputs, commands=commands)
+        recorder.record(pack_tick(inputs, commands))
     driver = PlaybackDriver(unverified_replay(recorder), version_mismatch_action=None)
     assert session.world.state.status is status
     assert session_state_bytes(session) == session_state_bytes(driver.session)

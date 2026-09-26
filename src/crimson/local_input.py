@@ -154,18 +154,6 @@ def _aim_pov_right_active(*, player_index: int, preserve_bugs: bool) -> bool:
     return input_code_is_down(_AIM_POV_RIGHT_CODE, player_index=pov_index)
 
 
-def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
-    return [
-        msgspec.structs.replace(
-            inp,
-            fire_pressed=False,
-            reload_pressed=False,
-            move_to_cursor_pressed=False,
-        )
-        for inp in inputs
-    ]
-
-
 class LocalInputInterpreter:
     def __init__(self, *, preserve_bugs: bool = False) -> None:
         self._states: list[_PerPlayerInputState] = [_PerPlayerInputState() for _ in range(4)]
@@ -284,7 +272,6 @@ class LocalInputInterpreter:
         move_backward_pressed: bool | None = None
         turn_left_pressed: bool | None = None
         turn_right_pressed: bool | None = None
-        move_to_cursor_pressed = False
         computer_target_index: int | None = None
         computer_move_active = move_mode_type is MovementControlType.COMPUTER
 
@@ -351,8 +338,7 @@ class LocalInputInterpreter:
             axis_x = input_axis_value(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
-            move_to_cursor_pressed = input_code_is_down(reload_key, player_index=idx)
-            if move_to_cursor_pressed:
+            if input_code_is_down(reload_key, player_index=idx):
                 state.move_target = mouse_world
             if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
                 # Raw f32 delta: the sim's heading then sees native `pos - move_target`.
@@ -491,7 +477,6 @@ class LocalInputInterpreter:
             reload_pressed=reload_pressed,
             reload_down=reload_down,
             fire_bullets_key_down=input_code_is_down(0x22, player_index=idx),
-            move_to_cursor_pressed=move_to_cursor_pressed,
             move_forward_pressed=move_forward_pressed,
             move_backward_pressed=move_backward_pressed,
             turn_left_pressed=turn_left_pressed,

@@ -342,7 +342,7 @@ def test_local_input_reload_pressed_reads_per_player_input_slot(
     assert out.reload_pressed is True
 
 
-def test_local_input_mouse_point_click_marks_move_to_cursor_press(
+def test_local_input_mouse_point_click_moves_toward_the_clicked_point(
     mocker: MockerFixture,
 ) -> None:
     mouse_world = Vec2(160.0, 140.0)
@@ -374,7 +374,6 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     )
 
     assert out.reload_pressed is True
-    assert out.move_to_cursor_pressed is True
     assert interpreter._states[0].move_target == mouse_world
     # The raw delta lets player_update see native `pos - move_target` exactly.
     assert out.move == Vec2(60.0, 40.0)

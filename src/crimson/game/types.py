@@ -79,9 +79,6 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None: ...
 
-    def set_runtime_updates_per_frame(self, value: int) -> None: ...
-
-    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]: ...
 
 
 class GameState(msgspec.Struct):
@@ -113,12 +110,6 @@ class GameState(msgspec.Struct):
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
-    runtime_updates_per_frame: int = 0
-    input_stall_count: int = 0
-    ticks_advanced_per_frame: int = 0
-    sim_ms: float = 0.0
-    presentation_plan_ms: float = 0.0
-    presentation_apply_ms: float = 0.0
 
     @property
     def pause_background(self) -> PauseBackground | None:

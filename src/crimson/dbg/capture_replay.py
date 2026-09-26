@@ -17,9 +17,9 @@ from ..replay.driver.playback_driver import SessionPlaybackDriver
 from ..replay.input_codec import unpack_tick_inputs
 from ..replay.types import input_flags_validation_error
 from ..rng_caller_static import RngCallerStatic
-from ..sim.input import PlayerInput
-from ..sim.input_providers import GameCommand, PerkPickCommand
+from ..sim.commands import PerkPickCommand
 from ..sim.run_spec import RunSpec, RunStatus
+from ..sim.sessions import DeterministicSessionTick
 from ..sim.world_reset import CreatureSlotResidue
 from .canonical_channels import GameFrameRngAdvanceOperation, PostludeOperation, PreludeOperation
 
@@ -172,12 +172,15 @@ class CapturePlaybackDriver(SessionPlaybackDriver):
     def tick_dt(self, tick_index: int) -> float:
         return self.capture.ticks[tick_index].dt
 
-    def tick_inputs(self, tick_index: int) -> list[PlayerInput]:
-        return unpack_tick_inputs(self.capture.ticks[tick_index].inputs)
-
-    def tick_commands(self, tick_index: int) -> list[GameCommand]:
-        _ = tick_index
-        return []
+    def step_session(self, tick_index: int, *, prelude_post_apply_sfx: list[SfxId]) -> DeterministicSessionTick:
+        # Native menu activity replays as prelude/postlude operations, not commands.
+        tick = self.capture.ticks[tick_index]
+        return self.session.step_tick(
+            dt=tick.dt,
+            inputs=unpack_tick_inputs(tick.inputs),
+            trace_rng=self.trace_rng,
+            prelude_post_apply_sfx=prelude_post_apply_sfx,
+        )
 
     def before_tick(self, tick_index: int) -> list[SfxId]:
         tick = self.capture.ticks[tick_index]

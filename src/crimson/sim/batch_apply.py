@@ -3,9 +3,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol
 
-import msgspec
-
-from .hooks import TickResult
 from .presentation_step import DeterministicPresentationPlan
 from .step_pipeline import DeterministicStepResult
 from .world_state import WorldEvents
@@ -25,32 +22,6 @@ class SimMetadataSink(Protocol):
     ) -> None: ...
 
 
-class PresentationTickOutput(msgspec.Struct, frozen=True):
-    tick_index: int
-    dt_sim: float
-    presentation: DeterministicPresentationPlan | None
-
-
-def apply_sim_metadata_tick_result(
-    *,
-    sim_world: SimMetadataSink,
-    tick_result: TickResult,
-    game_tune_started: bool,
-) -> PresentationTickOutput:
-    step = tick_result.payload
-
-    apply_tick_to_sim(
-        sim_world=sim_world,
-        step=step,
-        game_tune_started=bool(game_tune_started),
-    )
-    return PresentationTickOutput(
-        tick_index=int(tick_result.source_tick.tick_index),
-        dt_sim=float(step.dt_sim),
-        presentation=step.presentation,
-    )
-
-
 def apply_tick_to_sim(
     *,
     sim_world: SimMetadataSink,
@@ -65,53 +36,35 @@ def apply_tick_to_sim(
     )
 
 
-def apply_sim_metadata_batch(
+def apply_presentation_plans(
     *,
-    sim_world: SimMetadataSink,
-    completed_results: Sequence[TickResult],
-    game_tune_started: bool,
-) -> list[PresentationTickOutput]:
-    return [
-        apply_sim_metadata_tick_result(
-            sim_world=sim_world,
-            tick_result=tick_result,
-            game_tune_started=bool(game_tune_started),
-        )
-        for tick_result in completed_results
-    ]
-
-
-def apply_presentation_outputs(
-    *,
-    outputs: Sequence[PresentationTickOutput],
+    plans: Sequence[DeterministicPresentationPlan],
     runtime: WorldRuntime,
     apply_audio: bool,
     update_camera: bool = True,
 ) -> None:
-    if not outputs:
+    if not plans:
         return
 
     runtime.sync_audio_bridge_state()
-    for output in outputs:
-        if output.presentation is not None:
-            # Capture the viewport before this tick's post-step camera update.
-            # Camera updates carry tick-local focus/shake, so batched application
-            # never reads positions from a later simulation world.
-            view = runtime.view_transform()
-            runtime.audio_bridge.apply_plan(
-                plan=output.presentation,
-                apply_audio=bool(apply_audio),
-                camera=view.camera,
-                screen_width=view.screen_size.x,
-            )
-            if update_camera and output.presentation.camera is not None:
-                runtime.update_camera(output.presentation.camera)
-            terrain_fx = output.presentation.terrain_fx
-            if not terrain_fx.is_empty():
-                runtime.render_resources.consume_terrain_fx_batch(terrain_fx)
-            runtime.audio_bridge.apply_post_plan(
-                plan=output.presentation,
-                apply_audio=apply_audio,
-                camera=view.camera,
-                screen_width=view.screen_size.x,
-            )
+    for plan in plans:
+        # Capture the viewport before this tick's post-step camera update.
+        # Camera updates carry tick-local focus/shake, so batched application
+        # never reads positions from a later simulation world.
+        view = runtime.view_transform()
+        runtime.audio_bridge.apply_plan(
+            plan=plan,
+            apply_audio=bool(apply_audio),
+            camera=view.camera,
+            screen_width=view.screen_size.x,
+        )
+        if update_camera and plan.camera is not None:
+            runtime.update_camera(plan.camera)
+        if not plan.terrain_fx.is_empty():
+            runtime.render_resources.consume_terrain_fx_batch(plan.terrain_fx)
+        runtime.audio_bridge.apply_post_plan(
+            plan=plan,
+            apply_audio=apply_audio,
+            camera=view.camera,
+            screen_width=view.screen_size.x,
+        )

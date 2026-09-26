@@ -1,18 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
-from ..sim.batch_apply import (
-    apply_presentation_outputs,
-    apply_sim_metadata_batch,
-)
+from ..replay.ticks import LiveTickSource, step_replay_tick
+from ..sim.batch_apply import apply_presentation_plans, apply_tick_to_sim
 from ..sim.clock import FixedStepClock
-from ..sim.frame_pump import advance_tick_runner_frame
-from ..sim.input_providers import LocalInputProvider, LocalInputRuntime
+from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
-from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 
 if TYPE_CHECKING:
     from .runtime import WorldRuntime
@@ -20,44 +17,30 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True)
 class StandaloneTickHarness:
-    """Standalone local runner for demo/debug screens outside BaseGameplayMode."""
+    """Runs a world outside BaseGameplayMode (attract demo, debug views) on the live tick path."""
 
     game_mode: GameMode
-    input_runtime: LocalInputRuntime
-    tick_rate: int = 60
+    # Called once per rendered frame with its delta.
+    frame_inputs: Callable[[float], Sequence[PlayerInput]]
     session: DeterministicSession | None = None
-    runner: TickRunner | None = None
     world_state: object | None = None
     player_count: int = 0
-    clock: FixedStepClock = field(init=False)
-    frame_index: int = 0
-    next_tick_index: int = 0
-
-    def __post_init__(self) -> None:
-        self.tick_rate = max(1, int(self.tick_rate))
-        self.clock = FixedStepClock(tick_rate=int(self.tick_rate))
+    ticks: LiveTickSource = field(default_factory=LiveTickSource)
+    clock: FixedStepClock = field(default_factory=FixedStepClock)
 
     def reset(self) -> None:
         self.session = None
-        self.runner = None
         self.world_state = None
         self.player_count = 0
-        self.clock = FixedStepClock(tick_rate=int(self.tick_rate))
-        self.frame_index = 0
-        self.next_tick_index = 0
+        self.ticks = LiveTickSource()
+        self.clock = FixedStepClock()
 
-    def _ensure_runner(self, runtime: WorldRuntime) -> tuple[TickRunner, DeterministicSession]:
+    def _ensure_session(self, runtime: WorldRuntime) -> DeterministicSession:
         world_state = runtime.sim_world.world_state
         player_count = len(runtime.sim_world.players)
         session = self.session
-        runner = self.runner
-        if (
-            session is not None
-            and runner is not None
-            and self.world_state is world_state
-            and int(self.player_count) == int(player_count)
-        ):
-            return runner, session
+        if session is not None and self.world_state is world_state and int(self.player_count) == int(player_count):
+            return session
 
         detail_preset = 5
         violence_disabled = 0
@@ -66,6 +49,7 @@ class StandaloneTickHarness:
             detail_preset = config.display.detail_preset
             violence_disabled = config.display.violence_disabled
 
+        self.reset()
         session = DeterministicSession(
             world=world_state,
             world_size=float(runtime.world_size),
@@ -78,61 +62,24 @@ class StandaloneTickHarness:
             perk_progression_enabled=False,
             apply_world_dt_steps=True,
         )
-        provider = LocalInputProvider(
-            player_count=int(player_count),
-            runtime=self.input_runtime,
-        )
-        runner = TickRunner(
-            session=session,
-            input_provider=provider,
-            config=TickRunnerConfig(),
-        )
         self.session = session
-        self.runner = runner
         self.world_state = world_state
         self.player_count = int(player_count)
-        self.clock = FixedStepClock(tick_rate=int(self.tick_rate))
-        self.frame_index = 0
-        self.next_tick_index = 0
-        return runner, session
-
-    def _apply_tick_batch(
-        self,
-        runtime: WorldRuntime,
-        *,
-        batch: TickBatchResult,
-        session: DeterministicSession,
-    ) -> int:
-        outputs = apply_sim_metadata_batch(
-            sim_world=runtime.sim_world,
-            completed_results=batch.completed_results,
-            game_tune_started=bool(session.game_tune_started),
-        )
-        apply_presentation_outputs(outputs=outputs, runtime=runtime, apply_audio=True)
-        return len(outputs)
+        return session
 
     def advance_frame(self, runtime: WorldRuntime, dt: float) -> int:
+        """Run the ticks this frame's time covers; returns how many ran."""
+
         if not runtime.sim_world.players:
             return 0
         runtime.terrain_runtime.process_pending()
-        runner, session = self._ensure_runner(runtime)
+        session = self._ensure_session(runtime)
         session.demo_mode_active = bool(runtime.demo_mode_active)
-        dt = float(dt)
-        ticks_requested = int(self.clock.advance(dt))
-        advance = advance_tick_runner_frame(
-            runner=runner,
-            start_tick=int(self.next_tick_index),
-            frame_index=int(self.frame_index),
-            ticks_requested=int(ticks_requested),
-            dt_seconds=float(dt),
-            tick_dt_seconds=float(self.clock.dt_tick),
-            is_replay=False,
-            refund_clock=self.clock,
-        )
-        self.frame_index = int(advance.frame_index)
-        self.next_tick_index = int(advance.next_tick_index)
-        return self._apply_tick_batch(
-            runtime,
-            batch=advance.batch,
-            session=session,
-        )
+        self.ticks.poll(self.frame_inputs(float(dt)))
+        plans = []
+        for _ in range(self.clock.advance(float(dt))):
+            step = step_replay_tick(session, self.ticks.next_tick())
+            apply_tick_to_sim(sim_world=runtime.sim_world, step=step, game_tune_started=session.game_tune_started)
+            plans.append(step.presentation)
+        apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
+        return len(plans)

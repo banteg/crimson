@@ -18,7 +18,6 @@ class PlayerInput(msgspec.Struct, frozen=True):
     reload_pressed: bool = False
     reload_down: bool = False
     fire_bullets_key_down: bool = False
-    move_to_cursor_pressed: bool = False
     # Legacy names: these four fields carry held controls, not press edges.
     move_forward_pressed: bool | None = None
     move_backward_pressed: bool | None = None

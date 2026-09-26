@@ -23,8 +23,8 @@ from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.persistence.save_status import GameStatusData
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, RngTraceDraw
+from crimson.sim.commands import PerkMenuOpenCommand
 from crimson.sim.hooks import TickResult
-from crimson.sim.input_providers import PerkMenuOpenCommand
 from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.sim.world_reset import CreatureSlotResidue
 
@@ -66,7 +66,7 @@ class _RngRows(PlaybackWalkObserver):
     rows: dict[int, list[RngTraceDraw]]
 
     def rng_trace(self, tick_result: TickResult, draws: tuple[RngTraceDraw, ...]) -> None:
-        self.rows[int(tick_result.source_tick.tick_index)] = list(draws)
+        self.rows[int(tick_result.tick_index)] = list(draws)
 
 
 def _tick_rng_rows(capture: CaptureReplay) -> dict[int, list[RngTraceDraw]]:

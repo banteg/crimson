@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 
 from ._helpers import build_replay, inject_tick_commands, write_replay

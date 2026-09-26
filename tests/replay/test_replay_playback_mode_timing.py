@@ -44,16 +44,24 @@ class _StubReplayRuntime:
 
 
 
-def _capture_output_ticks(mocker, captured_ticks: list[int]) -> None:
-    def _apply_presentation_outputs(*, outputs, **_kwargs) -> None:
-        for output in outputs:
-            captured_ticks.append(int(output.tick_index))
+def _capture_applied_plans(mocker, driver: FakePlaybackDriver, captured_ticks: list[int]) -> None:
+    """Record which stepped tick produced each applied presentation plan."""
 
-    mocker.patch.object(
-        replay_playback_mode,
-        "apply_presentation_outputs",
-        side_effect=_apply_presentation_outputs,
-    )
+    stepped: list[tuple[int, object]] = []
+    step_tick = driver.step_tick
+
+    def _step(tick_index: int):
+        result = step_tick(tick_index)
+        stepped.append((tick_index, result.payload.presentation))
+        return result
+
+    mocker.patch.object(driver, "step_tick", side_effect=_step)
+
+    def _apply_presentation_plans(*, plans, **_kwargs) -> None:
+        for plan in plans:
+            captured_ticks.append(next(index for index, stepped_plan in stepped if stepped_plan is plan))
+
+    mocker.patch.object(replay_playback_mode, "apply_presentation_plans", side_effect=_apply_presentation_plans)
 
 
 def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback_view) -> None:
@@ -107,9 +115,8 @@ def test_replay_runner_eos_applies_partial_completed_results(mocker, replay_play
     view._tick_index = 0
     view._finished = False
     applied_ticks: list[int] = []
-    _capture_output_ticks(mocker, applied_ticks)
-
     view._driver = FakePlaybackDriver(tick_limit=2)
+    _capture_applied_plans(mocker, view._driver, applied_ticks)
 
     view._advance_runner(
         dt_seconds=2.0 * float(view._dt),
@@ -146,9 +153,8 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(m
     view._tick_index = 0
     view._finished = False
     callback_order: list[int] = []
-    _capture_output_ticks(mocker, callback_order)
-
     view._driver = FakePlaybackDriver(tick_limit=2)
+    _capture_applied_plans(mocker, view._driver, callback_order)
 
     view._advance_runner(
         dt_seconds=2.0 * float(view._dt),

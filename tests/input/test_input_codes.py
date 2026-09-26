@@ -6,13 +6,13 @@ from crimson import input_codes
 from crimson.game_modes import GameMode
 from crimson.input_codes import INPUT_CODE_UNBOUND, input_code_name
 from crimson.local_input import LocalInputInterpreter
+from crimson.replay.input_codec import unpack_player_input
+from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, LocalInputProvider
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
-from tests.support.builders.input_providers import StaticLocalInputRuntime
 
 
 def test_input_code_name_extended_axes_match_original_labels() -> None:
@@ -131,18 +131,14 @@ def test_wheel_fire_binding_reaches_exactly_one_simulation_tick(mocker, wheel: f
             mouse_screen=Vec2(600, 512), mouse_world=Vec2(600, 512), screen_center=Vec2(512, 512), dt=1 / 60,
         )
 
-    runtime = StaticLocalInputRuntime(inputs=(sample(),))
-    provider = LocalInputProvider(player_count=1, runtime=runtime)
-    frame = FrameContext(dt_seconds=1 / 60, tick_dt_seconds=1 / 60, frame_index=0, candidate_ticks=0)
-    provider.begin_frame(frame)
+    ticks = LiveTickSource()
+    ticks.poll([sample()])
     wheel_move.return_value = 0.0
     for _ in range(zero_tick_frames):
         input_codes.input_begin_frame()
-        runtime.inputs = (sample(),)
-        provider.begin_frame(frame)
+        ticks.poll([sample()])
     for index in range(30):
-        tick = provider.pull_tick(index, 1 / 60).tick
-        assert tick is not None
-        assert tick.inputs[0].fire_down is (index == 0)
-        session.step_tick(dt=1 / 60, inputs=tick.inputs)
+        tick = ticks.next_tick()
+        assert unpack_player_input(tick.inputs[0]).fire_down is (index == 0)
+        step_replay_tick(session, tick)
     assert session.world.state.shots_fired[0] == 1

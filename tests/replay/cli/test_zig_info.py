@@ -13,7 +13,7 @@ import crimson.dbg.record as dbg_record
 from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_spec import RunSpec
 
 from ._helpers import (

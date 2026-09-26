@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
-from ..sim.input import PlayerInput
-from ..sim.input_providers import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
-from .input_codec import pack_tick_inputs
 from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_replay_game_version
 
 
@@ -24,17 +19,13 @@ class ReplayRecorder:
     def tick_index(self) -> int:
         return len(self._ticks)
 
-    def record_tick(self, inputs: Sequence[PlayerInput], *, commands: Sequence[GameCommand] = ()) -> int:
-        """Record a single simulation tick worth of inputs.
+    def record(self, tick: ReplayTick) -> int:
+        """Append one tick; returns its index."""
 
-        Returns the tick index that was recorded.
-        """
-
-        if len(inputs) != self._run.player_count:
-            raise ValueError(f"expected {self._run.player_count} player inputs, got {len(inputs)}")
-        tick_index = len(self._ticks)
-        self._ticks.append(ReplayTick(inputs=pack_tick_inputs(inputs), commands=list(commands)))
-        return tick_index
+        if len(tick.inputs) != self._run.player_count:
+            raise ValueError(f"expected {self._run.player_count} player inputs, got {len(tick.inputs)}")
+        self._ticks.append(tick)
+        return len(self._ticks) - 1
 
     def finish(self, result: RunResult) -> Replay:
         return Replay(

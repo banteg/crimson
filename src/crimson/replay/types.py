@@ -11,7 +11,7 @@ import msgspec
 from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
-from ..sim.input_providers import GameCommand
+from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 

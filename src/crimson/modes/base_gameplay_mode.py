@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import time
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
@@ -20,7 +19,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..local_input import LocalInputInterpreter, clear_input_edges
+from ..local_input import LocalInputInterpreter
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
@@ -28,7 +27,7 @@ from ..perks.selection import perk_selection_open_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
-from ..replay import Replay, ReplayCodecError, ReplayRecorder, dump_replay_file
+from ..replay import REPLAY_TICK_RATE, Replay, ReplayCodecError, ReplayRecorder, dump_replay_file
 from ..replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
     ReplayCheckpoint,
@@ -40,33 +39,17 @@ from ..replay.checkpoints import (
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
-from ..replay.input_codec import canonical_player_input
+from ..replay.ticks import LiveTickSource, step_replay_tick
 from ..screens.results.game_over import GameOverUi
-from ..sim.batch_apply import (
-    PresentationTickOutput,
-    apply_presentation_outputs,
-    apply_sim_metadata_tick_result,
-)
+from ..sim.batch_apply import apply_presentation_plans, apply_tick_to_sim
 from ..sim.clock import FixedStepClock
-from ..sim.frame_pump import advance_tick_runner_frame
-from ..sim.hooks import (
-    TickResult,
-)
+from ..sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from ..sim.input import PlayerInput
-from ..sim.input_providers import (
-    FrameContext,
-    GameCommand,
-    InputStatus,
-    LocalInputProvider,
-    LocalInputRuntime,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-)
+from ..sim.presentation_step import DeterministicPresentationPlan
 from ..sim.run_init import PreparedRun, initialize_run
 from ..sim.run_result import RunResult, build_run_result
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
-from ..sim.tick_runner import TickRunner
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.hud import HudState, draw_target_health_bar
 from ..world.runtime import WorldRuntime
@@ -80,16 +63,6 @@ if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents
-
-
-class _ModeLocalInputRuntime(LocalInputRuntime):
-    mode: BaseGameplayMode
-
-    def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        # The live sim must consume exactly what the replay records. Stick and
-        # mouse aim arrive as f64; one sub-f32 bit in aim moves the muzzle and
-        # splits live play from verification.
-        return [canonical_player_input(inp) for inp in self.mode._build_local_inputs(dt=float(frame_ctx.dt_seconds))]
 
 
 class _ModePerkMenuRuntime(PerkMenuRuntime):
@@ -192,20 +165,9 @@ class BaseGameplayMode:
         self._replay_checkpoints_enabled = bool(ctx.replay_checkpoints)
         self._replay_checkpoints_last_tick: int | None = None
         self._replay_result: RunResult | None = None
-        self._runtime_updates_per_frame = 0
-        self._input_stall_count = 0
-        self._ticks_advanced_per_frame = 0
-        self._sim_ms = 0.0
-        self._presentation_plan_ms = 0.0
-        self._presentation_apply_ms = 0.0
-        self._queued_input_commands: list[GameCommand] = []
         self._sim_session: DeterministicSession | None = None
-        self._tick_input_provider: LocalInputProvider | None = None
-        self._tick_runner: TickRunner | None = None
-        self._tick_runner_session: DeterministicSession | None = None
-        self._tick_runner_frame_index = 0
-        self._tick_runner_next_tick_index = 0
-        self._tick_runner_local_clock: FixedStepClock | None = None
+        self._live_ticks = LiveTickSource()
+        self._tick_clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
 
     @property
     def world_runtime(self) -> WorldRuntime:
@@ -445,7 +407,6 @@ class BaseGameplayMode:
         self._update_audio(dt)
 
         frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
-        self._reset_frame_telemetry()
         self._handle_input()
         if self._action == Route.PAUSE:
             return None
@@ -457,31 +418,8 @@ class BaseGameplayMode:
     def _handle_input(self) -> None:
         raise NotImplementedError
 
-    def set_runtime_updates_per_frame(self, value: int) -> None:
-        self._runtime_updates_per_frame = max(0, int(value))
-
     def enqueue_input_command(self, command: GameCommand) -> None:
-        provider = self._tick_input_provider
-        if provider is None:
-            self._queued_input_commands.append(command)
-            return
-        if not provider.supports_command_submission():
-            self._queued_input_commands.append(command)
-            return
-        provider.submit_command(command)
-
-    def _flush_queued_input_commands(
-        self,
-        *,
-        provider: LocalInputProvider,
-    ) -> None:
-        if not self._queued_input_commands:
-            return
-        if not provider.supports_command_submission():
-            return
-        for command in self._queued_input_commands:
-            provider.submit_command(command)
-        self._queued_input_commands.clear()
+        self._live_ticks.submit(command)
 
     def _debug_cheat_used(self) -> None:
         """Stop recording: cheats change the run outside recorded ticks, so the replay could not verify."""
@@ -504,9 +442,7 @@ class BaseGameplayMode:
         and the recorded commands must stay legal against the state they meet.
         """
 
-        provider = self._tick_input_provider
-        queued = [*self._queued_input_commands, *(provider.queued_commands if provider is not None else ())]
-        if any(isinstance(command, PerkPickCommand) for command in queued):
+        if any(isinstance(command, PerkPickCommand) for command in self._live_ticks.queued_commands):
             return 0
         return int(self.state.perk_selection.pending_count)
 
@@ -610,24 +546,6 @@ class BaseGameplayMode:
                 self._console.log.log(f"replay: saved {saved_path}")
             self._console.log.flush()
 
-    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
-        return (
-            int(self._runtime_updates_per_frame),
-            int(self._input_stall_count),
-            int(self._ticks_advanced_per_frame),
-            float(self._sim_ms),
-            float(self._presentation_plan_ms),
-            float(self._presentation_apply_ms),
-        )
-
-    def _reset_frame_telemetry(self) -> None:
-        self._input_stall_count = 0
-        self._ticks_advanced_per_frame = 0
-        # Placeholder stage timers before profiler hooks land in later slices.
-        self._sim_ms = 0.0
-        self._presentation_plan_ms = 0.0
-        self._presentation_apply_ms = 0.0
-
     def _player_name_default(self) -> str:
         return str(self.config.profile.player_name or "")
 
@@ -665,7 +583,7 @@ class BaseGameplayMode:
         self._world_runtime.open_runtime()
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
-        self._reset_tick_runner_state()
+        self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=False)
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
@@ -701,6 +619,7 @@ class BaseGameplayMode:
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
+        self._reset_live_ticks()
         self._replay_recorder = ReplayRecorder(spec)
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
@@ -715,7 +634,7 @@ class BaseGameplayMode:
         self._game_over_ui.close()
         if self._small is not None:
             self._small = None
-        self._reset_tick_runner_state()
+        self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()
 
@@ -818,87 +737,25 @@ class BaseGameplayMode:
             creatures=self.creatures.entries,
         )
 
-    @staticmethod
-    def _clear_local_input_edges(inputs: list[PlayerInput]) -> list[PlayerInput]:
-        return clear_input_edges(inputs)
-
-    @staticmethod
-    def _deterministic_tick_rate() -> int:
-        return 60
-
-    def _gameplay_tick_rate(self) -> int:
-        return int(self._deterministic_tick_rate())
-
-    def _gameplay_tick_dt(
-        self,
-        *,
-        session: DeterministicSession | None = None,
-    ) -> float:
-        _ = session
-        return 1.0 / float(self._gameplay_tick_rate())
-
     def _reset_gameplay_frame_clock(self) -> None:
-        if self._tick_input_provider is not None:
-            self._tick_input_provider.clear_pending_edges()
-        clock = self._tick_runner_local_clock
-        if clock is not None:
-            clock.reset()
+        """Paused or menu frames run no ticks: drop undelivered presses and banked time."""
 
-    def _reset_tick_runner_state(self) -> None:
-        self._tick_input_provider = None
-        self._tick_runner = None
-        self._tick_runner_session = None
-        self._tick_runner_frame_index = 0
-        self._tick_runner_next_tick_index = 0
-        self._tick_runner_local_clock = None
+        self._live_ticks.clear_edges()
+        self._tick_clock.reset()
+
+    def _reset_live_ticks(self) -> None:
+        self._live_ticks = LiveTickSource()
+        self._tick_clock.reset()
 
     def _reset_replay_capture_state(self, *, clear_recorder: bool) -> None:
-        self._queued_input_commands.clear()
         if clear_recorder:
             self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
         self._replay_result = None
 
-    def _ensure_tick_runner(self, *, session: DeterministicSession) -> tuple[TickRunner, LocalInputProvider]:
-        if self._tick_runner is not None and self._tick_runner_session is session:
-            assert self._tick_input_provider is not None
-            return self._tick_runner, self._tick_input_provider
-        provider = LocalInputProvider(
-            player_count=len(self.sim_world.players),
-            runtime=_ModeLocalInputRuntime(mode=self),
-        )
-        self._flush_queued_input_commands(provider=provider)
-        runner = TickRunner(session=session, input_provider=provider)
-        self._tick_runner = runner
-        self._tick_input_provider = provider
-        self._tick_runner_session = session
-        self._tick_runner_frame_index = 0
-        self._tick_runner_next_tick_index = 0
-        self._tick_runner_local_clock = FixedStepClock(tick_rate=self._gameplay_tick_rate())
-        return runner, provider
-
-    def _record_replay_checkpoint_from_tick(
-        self,
-        *,
-        tick_index: int | None,
-        tick: DeterministicSessionTick,
-    ) -> None:
-        if tick_index is None:
-            return
-        world_events = tick.events
-        self._record_replay_checkpoint(
-            int(tick_index),
-            deaths=world_events.deaths,
-            events=world_events,
-        )
-
-    def _on_tick_applied(
-        self,
-        tick: DeterministicSessionTick,
-        dt_tick: float,
-    ) -> bool:
-        _ = tick, dt_tick
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
+        _ = tick
         return True
 
     def _sync_audio_and_ground(self) -> None:
@@ -913,68 +770,32 @@ class BaseGameplayMode:
         session: DeterministicSession,
         recorder: ReplayRecorder | None,
     ) -> None:
+        """Poll input once for the frame, then run the ticks its time covers.
+
+        Each tick is recorded before it is simulated, and the simulation steps
+        that recorded tick: live play and verification cannot disagree about input.
+        """
+
         if float(dt_frame) <= 0.0:
             return
         self._sync_audio_and_ground()
-        # RNG-affecting settings stay with the RunSpec recorded at startup.
-        runner, _provider = self._ensure_tick_runner(
-            session=session,
-        )
-        local_clock = self._tick_runner_local_clock
-        if local_clock is None:
-            local_clock = FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
-            self._tick_runner_local_clock = local_clock
-
-        candidate_ticks = int(local_clock.advance(float(dt_frame)))
-        tick_dt = float(local_clock.dt_tick)
-        outputs: list[PresentationTickOutput] = []
-        self._presentation_plan_ms = 0.0
-
-        def after_tick(result: TickResult) -> bool:
-            self._presentation_plan_ms += session.last_presentation_plan_ms
-            if recorder is not None:
-                result.replay_tick_index = recorder.record_tick(
-                    result.source_tick.inputs,
-                    commands=result.source_tick.commands,
-                )
-            outputs.append(
-                apply_sim_metadata_tick_result(
-                    sim_world=self.sim_world,
-                    tick_result=result,
-                    game_tune_started=session.game_tune_started,
-                ),
-            )
-            self._ticks_advanced_per_frame += 1
-            self._record_replay_checkpoint_from_tick(tick_index=result.replay_tick_index, tick=result.payload)
-            outcome = result.payload.outcome
+        self._live_ticks.poll(self._build_local_inputs(dt=float(dt_frame)))
+        plans: list[DeterministicPresentationPlan] = []
+        for _ in range(self._tick_clock.advance(float(dt_frame))):
+            tick = self._live_ticks.next_tick()
+            tick_index = recorder.record(tick) if recorder is not None else None
+            step = step_replay_tick(session, tick)
+            apply_tick_to_sim(sim_world=self.sim_world, step=step, game_tune_started=session.game_tune_started)
+            plans.append(step.presentation)
+            if tick_index is not None:
+                self._record_replay_checkpoint(tick_index, deaths=step.events.deaths, events=step.events)
             if recorder is not None:
                 # The replay result is the state after the last recorded tick:
                 # UI work between ticks (perk menu previews, the high-score tag
                 # draw at game over) must not leak into it.
-                self._replay_result = build_run_result(session, outcome=outcome or session.end_outcome())
-            # Mode callbacks can save the finished replay; record this tick first.
-            # The run's final tick also ends the batch.
-            return self._on_tick_applied(result.payload, tick_dt) and outcome is None
-
-        sim_ns_start = time.perf_counter_ns()
-        advance = advance_tick_runner_frame(
-            runner=runner,
-            start_tick=int(self._tick_runner_next_tick_index),
-            frame_index=int(self._tick_runner_frame_index),
-            ticks_requested=int(candidate_ticks),
-            dt_seconds=float(dt_frame),
-            tick_dt_seconds=float(tick_dt),
-            is_replay=False,
-            refund_clock=local_clock,
-            after_tick=after_tick,
-        )
-        self._tick_runner_frame_index = int(advance.frame_index)
-        self._tick_runner_next_tick_index = int(advance.next_tick_index)
-        batch = advance.batch
-        self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
-
-        apply_ns_start = time.perf_counter_ns()
-        apply_presentation_outputs(outputs=outputs, runtime=self._world_runtime, apply_audio=True)
-        self._presentation_apply_ms = float((time.perf_counter_ns() - apply_ns_start) / 1_000_000.0)
-        if batch.batch_status is InputStatus.STALLED and int(batch.ticks_completed) <= 0:
-            self._input_stall_count += 1
+                self._replay_result = build_run_result(session, outcome=step.outcome or session.end_outcome())
+            # Mode callbacks can save the finished replay, so record the tick
+            # first. The run's final tick ends the frame.
+            if not self._on_tick_applied(step) or step.outcome is not None:
+                break
+        apply_presentation_plans(plans=plans, runtime=self._world_runtime, apply_audio=True)

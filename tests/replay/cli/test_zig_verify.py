@@ -18,14 +18,9 @@ from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
 from crimson.replay import Replay, ReplayRecorder, encode_replay_payload
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.input_codec import pack_tick
+from crimson.sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import (
-    GameCommand,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-    TypoCharCommand,
-    TypoSubmitCommand,
-)
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus
 from grim.geom import Vec2
@@ -247,8 +242,8 @@ def _typo_replay(
     recorder = ReplayRecorder(run)
     idle = [PlayerInput(aim=Vec2(512.0, 512.0))]
     for _ in range(ticks - 1):
-        recorder.record_tick(idle)
-    recorder.record_tick(idle, commands=tick_commands)
+        recorder.record(pack_tick(idle))
+    recorder.record(pack_tick(idle, tick_commands))
     return finish_replay(recorder)
 
 

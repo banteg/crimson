@@ -6,8 +6,8 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.sessions import DeterministicSession, MidStepContext, SessionModeRuntime
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState

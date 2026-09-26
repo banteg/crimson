@@ -404,8 +404,6 @@ def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState
         and input_state.turn_right_pressed is not None
     ):
         return MovementControlType.STATIC
-    if input_state.move_to_cursor_pressed:
-        return MovementControlType.MOUSE_POINT_CLICK
     return MovementControlType.DUAL_ACTION_PAD
 
 

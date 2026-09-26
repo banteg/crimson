@@ -70,12 +70,6 @@ class _DummyGameplay:
     def set_rtx_mode(self, mode) -> None:
         _ = mode
 
-    def set_runtime_updates_per_frame(self, value: int) -> None:
-        _ = value
-
-    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
-        return 0, 0, 0, 0.0, 0.0, 0.0
-
 
 def test_format_demo_trial_time() -> None:
     assert format_demo_trial_time(0) == "0:00.00"

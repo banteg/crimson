@@ -52,11 +52,7 @@ def _state_value(value: object) -> object:
         items = [(_state_value(key), _state_value(item)) for key, item in value.items()]
         return ("map", sorted(items, key=lambda row: msgspec.msgpack.encode(row[0])))
     if isinstance(value, msgspec.Struct):
-        fields = {
-            name: _state_value(getattr(value, name))
-            for name in value.__struct_fields__
-            if not (isinstance(value, DeterministicSession) and name == "last_presentation_plan_ms")
-        }
+        fields = {name: _state_value(getattr(value, name)) for name in value.__struct_fields__}
     elif dataclasses.is_dataclass(value) and not isinstance(value, type):
         fields = {field.name: _state_value(getattr(value, field.name)) for field in dataclasses.fields(value)}
     elif isinstance(value, _POOL_TYPES):

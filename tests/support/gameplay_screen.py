@@ -13,7 +13,6 @@ class GameplayScreenStub:
         game_mode_id: GameMode = GameMode.SURVIVAL,
         ground: GroundRenderer | None = None,
         camera: Vec2 | None = None,
-        telemetry: tuple[int, int, int, float, float, float] = (0, 0, 0, 0.0, 0.0, 0.0),
         console_elapsed_ms: float = 0.0,
         action: ScreenAction | None = None,
     ) -> None:
@@ -21,7 +20,6 @@ class GameplayScreenStub:
         self.default_game_mode_id = game_mode_id
         self._ground = ground
         self._camera = camera if camera is not None else Vec2(-1.0, -1.0)
-        self._telemetry = telemetry
         self._console_elapsed_ms = float(console_elapsed_ms)
         self._action = action
         self.regenerate_calls = 0
@@ -31,7 +29,6 @@ class GameplayScreenStub:
         self.last_audio = None
         self.last_audio_rng = None
         self.last_rtx_mode = None
-        self.last_runtime_updates_per_frame = 0
         self.open_calls = 0
         self.close_calls = 0
         self.resume_calls = 0
@@ -88,9 +85,3 @@ class GameplayScreenStub:
 
     def set_rtx_mode(self, mode) -> None:
         self.last_rtx_mode = mode
-
-    def set_runtime_updates_per_frame(self, value: int) -> None:
-        self.last_runtime_updates_per_frame = int(value)
-
-    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
-        return self._telemetry

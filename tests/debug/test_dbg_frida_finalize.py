@@ -20,7 +20,7 @@ from crimson.dbg.frida_finalize import (
 from crimson.dbg.trace import load_trace
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
 from crimson.replay.types import quantize_f32
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 

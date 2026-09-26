@@ -57,7 +57,7 @@ class _CheckpointObserver(PlaybackWalkObserver):
 
     def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
         _ = world
-        if int(tick_result.source_tick.tick_index) in self.checkpoint_ticks:
+        if int(tick_result.tick_index) in self.checkpoint_ticks:
             self.checkpoints.append(self.driver.build_checkpoint(tick_result=tick_result))
 
 

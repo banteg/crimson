@@ -38,7 +38,7 @@ class _WalkedTickObserver(PlaybackWalkObserver):
 
     def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
         _ = world
-        self.walked_ticks.append(int(tick_result.source_tick.tick_index))
+        self.walked_ticks.append(int(tick_result.tick_index))
 
 
 def test_playback_driver_walk_observer_sees_pre_and_post_step_world(mocker) -> None:

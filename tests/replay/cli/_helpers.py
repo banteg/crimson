@@ -23,14 +23,9 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
 )
 from crimson.replay.driver.playback_driver import replay_with_simulated_result
+from crimson.replay.input_codec import pack_tick
+from crimson.sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import (
-    GameCommand,
-    PerkMenuOpenCommand,
-    PerkPickCommand,
-    TypoCharCommand,
-    TypoSubmitCommand,
-)
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
@@ -50,9 +45,7 @@ def build_replay(
         RunSpec(game_mode_id=mode, seed=int(seed), player_count=int(player_count), quest_level=parsed_level),
     )
     for _ in range(int(ticks)):
-        recorder.record_tick(
-            [PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))],
-        )
+        recorder.record(pack_tick([PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))]))
     return finish_replay(recorder)
 
 
@@ -60,8 +53,8 @@ def build_typo_submit_replay(*, word: str = "reload", seed: int = 0xBEEF) -> Rep
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.TYPO, seed=int(seed)))
     baseline = PlayerInput(aim=Vec2(512.0, 512.0))
     for ch in str(word):
-        recorder.record_tick([baseline], commands=[TypoCharCommand(player_index=0, ch=ch)])
-    recorder.record_tick([baseline], commands=[TypoSubmitCommand(player_index=0)])
+        recorder.record(pack_tick([baseline], [TypoCharCommand(player_index=0, ch=ch)]))
+    recorder.record(pack_tick([baseline], [TypoSubmitCommand(player_index=0)]))
     return finish_replay(recorder)
 
 
@@ -209,7 +202,7 @@ def record_bot_replay(
             word = _typo_bot_word(world)
             if word:
                 commands = [*(TypoCharCommand(player_index=0, ch=ch) for ch in word), TypoSubmitCommand(player_index=0)]
-        recorder.record_tick(inputs, commands=commands)
+        recorder.record(pack_tick(inputs, commands))
         step = session.step_tick(dt=REPLAY_TICK_DT, inputs=inputs, commands=commands)
         if step.outcome is not None or (picked_at is not None and tick_index - picked_at >= int(tail_ticks)):
             break

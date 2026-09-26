@@ -17,7 +17,6 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, LocalInputRuntime
 from ..tooling.audio_bootstrap import init_view_audio
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
@@ -93,13 +92,6 @@ def _projectile_type_label(type_id: int) -> str:
     return f"{name} (id {type_id})"
 
 
-class _ArsenalLocalInputRuntime(LocalInputRuntime):
-    view: ArsenalDebugView
-
-    def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        return self.view._build_runner_inputs(frame_ctx)
-
-
 class ArsenalDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -130,7 +122,7 @@ class ArsenalDebugView:
         self._screenshot_requested = False
         self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.SURVIVAL,
-            input_runtime=_ArsenalLocalInputRuntime(view=self),
+            frame_inputs=self._build_runner_inputs,
         )
 
     def _load_texture(self, texture_id: TextureId) -> rl.Texture:
@@ -164,7 +156,7 @@ class ArsenalDebugView:
 
     def _reset_scene(self) -> None:
         self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
-        self._reset_tick_runner()
+        self._tick_harness.reset()
         self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._apply_weapon()
         self._reset_creatures()
@@ -287,12 +279,9 @@ class ArsenalDebugView:
             reload_pressed=reload_pressed,
         )
 
-    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        _ = frame_ctx
+    def _build_runner_inputs(self, dt: float) -> list[PlayerInput]:
+        _ = dt
         return [self._build_input()]
-
-    def _reset_tick_runner(self) -> None:
-        self._tick_harness.reset()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
         weapon = WEAPON_BY_ID[weapon_id]
@@ -372,7 +361,7 @@ class ArsenalDebugView:
 
     def close(self) -> None:
         rl.show_cursor()
-        self._reset_tick_runner()
+        self._tick_harness.reset()
         if self._small is not None:
             self._small = None
         if self._audio is not None:

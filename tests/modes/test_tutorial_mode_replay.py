@@ -10,6 +10,7 @@ from crimson.modes import base_gameplay_mode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
 from crimson.replay.driver.playback_driver import PlaybackDriver
+from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from grim.geom import Vec2
@@ -62,7 +63,7 @@ def test_tutorial_recorded_first_shot_replays_the_live_startup(mocker, make_mode
     recorder = mode._replay_recorder
     assert session is not None and recorder is not None
     inputs = (PlayerInput(aim=Vec2(600.0, 512.0), fire_down=True, fire_pressed=True),)
-    recorder.record_tick(inputs)
+    recorder.record(pack_tick(inputs))
     driver = PlaybackDriver(unverified_replay(recorder))
     assert session.world.players == driver.world.players
 
@@ -126,7 +127,7 @@ def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_
         tick_calls += 1
         if tick_calls >= 2:
             # The queued pick applies on the first simulated tick.
-            mode._queued_input_commands.clear()
+            mode._live_ticks.next_tick()
             session.elapsed_ms += 1000.0 / 60.0
 
     mocker.patch.object(mode, "_open_perk_menu", side_effect=_counted_open)

@@ -5,11 +5,13 @@ from collections.abc import Sequence
 from grim.geom import Vec2
 
 from ..math_parity import f32
+from ..sim.commands import GameCommand
 from ..sim.input import PlayerInput
 from .types import (
     FIRE_BULLETS_KEY_DOWN_FLAG,
     PackedPlayerInput,
     PackedTickInputs,
+    ReplayTick,
     pack_input_flags,
     unpack_input_flags,
     unpack_input_mode_flags,
@@ -68,15 +70,15 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
     )
 
 
-def canonical_player_input(inp: PlayerInput) -> PlayerInput:
-    """The input exactly as a replay stores it: f32 axes and only the recorded flags."""
-
-    return unpack_player_input(pack_player_input(inp))
-
-
 def unpack_tick_inputs(packed_tick: PackedTickInputs) -> list[PlayerInput]:
     return [unpack_player_input(packed) for packed in packed_tick]
 
 
 def pack_tick_inputs(inputs: Sequence[PlayerInput]) -> PackedTickInputs:
     return [pack_player_input(inp) for inp in inputs]
+
+
+def pack_tick(inputs: Sequence[PlayerInput], commands: Sequence[GameCommand] = ()) -> ReplayTick:
+    """The tick exactly as a replay stores it: f32 axes and only the recorded flags."""
+
+    return ReplayTick(inputs=pack_tick_inputs(inputs), commands=list(commands))

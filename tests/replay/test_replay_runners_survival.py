@@ -8,7 +8,7 @@ from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_p
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_unlock_terrain
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome
 from crimson.sim.run_spec import WORLD_SIZE
 from crimson.weapons import WeaponId

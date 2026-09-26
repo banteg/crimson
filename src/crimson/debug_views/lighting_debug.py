@@ -23,7 +23,6 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, LocalInputRuntime
 from ..tooling.audio_bootstrap import init_view_audio
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -1192,13 +1191,6 @@ def _shadow_debug_mode_name(mode: int) -> str:
     return f"mode{index}"
 
 
-class _LightingLocalInputRuntime(LocalInputRuntime):
-    view: LightingDebugView
-
-    def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        return self.view._build_runner_inputs(frame_ctx)
-
-
 class LightingDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
@@ -1297,7 +1289,7 @@ class LightingDebugView:
         self._screenshot_requested = False
         self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.SURVIVAL,
-            input_runtime=_LightingLocalInputRuntime(view=self),
+            frame_inputs=self._build_runner_inputs,
         )
 
     def _load_texture(self, texture_id: TextureId) -> rl.Texture:
@@ -2079,7 +2071,7 @@ class LightingDebugView:
 
     def _reset_scene(self) -> None:
         self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=WORLD_CENTER)
-        self._reset_tick_runner()
+        self._tick_harness.reset()
         self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._apply_debug_player_cheats()
         self._clear_scene_contents()
@@ -2107,12 +2099,9 @@ class LightingDebugView:
             reload_pressed=False,
         )
 
-    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        _ = frame_ctx
+    def _build_runner_inputs(self, dt: float) -> list[PlayerInput]:
+        _ = dt
         return [self._build_input()]
-
-    def _reset_tick_runner(self) -> None:
-        self._tick_harness.reset()
 
     @staticmethod
     def _burst_angle(profile: EmissiveProfile, index: int) -> float:
@@ -2409,7 +2398,7 @@ class LightingDebugView:
 
     def close(self) -> None:
         rl.show_cursor()
-        self._reset_tick_runner()
+        self._tick_harness.reset()
         self._release_shadow_resources()
 
         if self._small is not None:

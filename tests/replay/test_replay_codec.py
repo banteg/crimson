@@ -25,15 +25,16 @@ from crimson.replay import (
     warn_on_game_version_mismatch,
 )
 from crimson.replay import types as replay_types
+from crimson.replay.input_codec import pack_tick
 from crimson.replay.types import REPLAY_FORMAT_VERSION, current_replay_game_version
-from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import (
+from crimson.sim.commands import (
     PerkMenuOpenCommand,
     PerkPickCommand,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
 )
+from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.weapons import WeaponId
@@ -149,7 +150,7 @@ def test_replay_dump_is_deterministic() -> None:
 def test_recorder_builds_replay() -> None:
     run = RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1)
     recorder = ReplayRecorder(run, game_version="1.2.3")
-    recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(0.1, 456.0))])
+    recorder.record(pack_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(0.1, 456.0))]))
 
     replay = recorder.finish(_result())
 
@@ -161,7 +162,7 @@ def test_recorder_builds_replay() -> None:
 def test_recorder_validates_player_count() -> None:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=2))
     with pytest.raises(ValueError, match="expected 2 player inputs"):
-        recorder.record_tick([PlayerInput()])
+        recorder.record(pack_tick([PlayerInput()]))
 
 
 # Envelope ------------------------------------------------------------------

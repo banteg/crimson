@@ -12,8 +12,8 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..persistence.highscores import scores_path_for_mode
 from ..replay import Replay
+from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
-from ..sim.input_providers import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input

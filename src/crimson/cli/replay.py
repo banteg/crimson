@@ -1577,7 +1577,7 @@ def cmd_replay_verify_checkpoints(
 
         def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
             _ = world
-            tick_index = int(tick_result.source_tick.tick_index)
+            tick_index = int(tick_result.tick_index)
             if tick_index in self.checkpoint_ticks:
                 checkpoint = self.driver.build_checkpoint(tick_result=tick_result)
                 self.actual.append(checkpoint)

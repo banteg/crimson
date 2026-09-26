@@ -248,12 +248,8 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu.close()
         self._save_replay()
 
-    def _on_tick_applied(
-        self,
-        tick: DeterministicSessionTick,
-        dt_tick: float,
-    ) -> bool:
-        _ = tick, dt_tick
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
+        _ = tick
 
         if self._perk_menu.active:
             return False

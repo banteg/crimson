@@ -14,7 +14,7 @@ import pytest
 import crimson.dbg.record as dbg_record
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, encode_replay_payload
-from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.commands import PerkPickCommand
 from crimson.sim.run_spec import RunSpec
 
 from ._helpers import (

@@ -30,13 +30,12 @@ def test_session_digest_detects_state_omitted_from_compact_checkpoints(component
     assert session_digest(session) != before
 
 
-def test_session_digest_ignores_paths_dirty_flags_profiling_and_rng_tracing() -> None:
+def test_session_digest_ignores_paths_dirty_flags_and_rng_tracing() -> None:
     a, sim_a = make_session()
     b, sim_b = make_session()
     sim_a.state.status = GameStatus.from_data(path=Path("a/game.cfg"), data=GameStatusData(), dirty=True)
     sim_b.state.status = GameStatus.from_data(path=Path("b/game.cfg"), data=GameStatusData(), dirty=False)
     sim_b.state.rng = RecordingCrand(sim_b.state.rng)
-    b.last_presentation_plan_ms = 99.0
     assert session_digest(a) == session_digest(b)
 
 

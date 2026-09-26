@@ -10,13 +10,8 @@ from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
 from ...replay import REPLAY_TICK_RATE, Replay
+from ...sim.commands import PerkMenuOpenCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ...sim.hooks import TickResult
-from ...sim.input_providers import (
-    PerkMenuOpenCommand,
-    TypoBackspaceCommand,
-    TypoCharCommand,
-    TypoSubmitCommand,
-)
 from ...sim.state_types import BonusPickupEvent, PlayerState
 from ...weapons import WeaponId, weapon_display_name
 from .playback_driver import PlaybackDriver, PlaybackWalkObserver
@@ -388,14 +383,14 @@ def collect_replay_info(
         after_players: list[PlayerState],
         before: list[_PlayerSnapshot],
     ) -> None:
-        source_tick = tick_result.source_tick
+        tick_index = int(tick_result.tick_index)
         tick = tick_result.payload
         after = _capture_snapshots(after_players)
 
         elapsed_ms = int(tick.elapsed_ms)
         _append_extra_replay_commands(
-            commands=source_tick.commands,
-            tick_index=int(source_tick.tick_index),
+            commands=replay.ticks[tick_index].commands,
+            tick_index=tick_index,
             elapsed_ms=elapsed_ms,
             timeline=timeline,
             player_filter=player_filter,
@@ -403,7 +398,7 @@ def collect_replay_info(
         )
 
         _append_bonus_pickup_events(
-            tick_index=int(source_tick.tick_index),
+            tick_index=tick_index,
             elapsed_ms=elapsed_ms,
             timeline=timeline,
             pickups=tick.events.pickups,
@@ -415,7 +410,7 @@ def collect_replay_info(
         if tick.events.deaths:
             _append_event(
                 timeline,
-                tick_index=int(source_tick.tick_index),
+                tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="creature_deaths",
                 player_index=None,
@@ -426,7 +421,7 @@ def collect_replay_info(
             )
 
         _append_snapshot_diff_events(
-            tick_index=int(source_tick.tick_index),
+            tick_index=tick_index,
             elapsed_ms=elapsed_ms,
             before=before,
             after=after,

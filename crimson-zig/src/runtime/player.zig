@@ -20,7 +20,6 @@ pub const GameInputFlags = struct {
     reload_pressed: bool,
     reload_down: bool = false,
     fire_bullets_key_down: bool = false,
-    move_to_cursor_pressed: bool = false,
     move_mode: ?i32 = null,
     aim_scheme: ?i32 = null,
     move_forward_pressed: ?bool = null,

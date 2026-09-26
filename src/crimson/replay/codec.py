@@ -10,7 +10,7 @@ from grim.atomic_write import atomic_write_bytes
 
 from ..game_modes import GameMode
 from ..math_parity import f32
-from ..sim.input_providers import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
+from ..sim.commands import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.run_result import RunOutcome, RunResult
 from ..sim.run_spec import RunSpec
 from ..typo.names import (

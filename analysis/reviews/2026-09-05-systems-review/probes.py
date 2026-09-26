@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+from crimson.sim.input_providers import PerkPickCommand
+
 from crimson.camera import camera_shake_update
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.dbg.state_digest import session_digest
@@ -21,7 +23,6 @@ from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import PerkPickCommand
 from crimson.sim.sessions import DeterministicSession
 from crimson.world import audio_bridge
 from crimson.world.runtime import WorldRuntime
