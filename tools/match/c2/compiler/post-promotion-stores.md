@@ -91,6 +91,7 @@ later re-examines symbols (§3.3).
 | M | Local allocator spill | 0x1076860c, 0x1076925b, 0x1078ba26 | too many local temporaries in one block | a class-3 spill temporary | read |
 | N | x87 depth spill | `x87_spill_stack_entries` 0x1076ea17 | more than 8 live x87 values | a class-3 temporary | read; a 10-level nested control did not reach depth 8 |
 | O | EH state | `cxx_eh_lower_state_transitions` 0x10760276 | objects with destructors under `/GX` | the state variable | read |
+| P | Block-end demotion of a dead definition | `demote_unused_candidate_def` 0x107318e5, from `insert_upward_exposed_reloads` at 0x1072eb81 | a local definition that survives the final dead-code pass but is dead at `build_live_ranges` (in practice only behind a lowered copy intrinsic or `volatile`) | the local | traced: `DEMOTE #13c4z4'_copied` in the timeline witness ([qst-dead-store.md](qst-dead-store.md)) |
 
 ### 3.1 Why the store survives
 
@@ -218,6 +219,10 @@ Acceptance tests. Each prediction was written before the compile.
 8 of 9 predictions held. The miss refined the rule to "any implicit copy of the wrapper object".
 
 ## 6. `quest_spawn_timeline_update`: what the store needs
+
+Follow-up ([qst-dead-store.md](qst-dead-store.md)): the lowered copy is promoted first and then
+demoted by path P, not left in memory. What the triplet needs is a local definition that is dead at
+`build_live_ranges`; the intrinsic is only the known way to survive the final dead-code pass.
 
 Native: `lea edi, [esi+0xc]; mov [esp+0x10], edi; mov [esp+0x10], ebx`, heading via `[edi-4]`,
 template via `[edi]`.

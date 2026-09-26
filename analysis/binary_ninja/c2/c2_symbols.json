@@ -997,6 +997,10 @@
    "name": "lower_copy_intrinsics",
    "comment": "turns 0x1ab/0x1ac marker tuples into plain 0x15b assigns (or deletes paired 0x19e) and sets g_need_extra_dce"
   },
+  "0x1070b474": {
+   "name": "lower_copy_intrinsics",
+   "comment": "Read: despite the name, it walks the tuples in globopt phase 3 (after optimize_loop_nest) and handles only IL ops 0x1ab/0x1ac (IL_EH_1AB/IL_EH_1AC). If the destination has a def and its next use is not a 0x19e marker, it inserts a 0x15b assign dst = src before the tuple. It then unlinks the tuple and sets g_need_extra_dce = 1, so globopt_run runs one more dead-code pass (0x1071370d) after the final flow-graph rebuild. The name was kept because the source construct behind 0x1ab/0x1ac was not tested."
+  },
   "0x1070b4f8": {
    "name": "globopt_loop_phase_free"
   },
@@ -1420,7 +1424,7 @@
   "0x107130cb": {
    "name": "globopt_run",
    "prototype": "int32_t __fastcall globopt_run(c2_function* fn)",
-   "comment": "globopt.c driver; phases 0..3 in g_globopt_phase: normalize/propagate/DCE, CSE sweep 1, loop opts, CSE sweep 2 (full redundancy elim), cleanup"
+   "comment": "globopt.c driver; phases 0..3 in g_globopt_phase: normalize/propagate/DCE, CSE sweep 1, loop opts, CSE sweep 2 (full redundancy elim), cleanup Read, tail order: phase-3 cse_block; rebuild_flow_graph if dirty (0x107136e4); final globopt_dead_code_elim (0x10713683); rebuild_flow_graph if dirty (0x107136f2); another dead-code pass only if g_need_extra_dce (0x1071370d); then globopt_restore_temp_destinations, globopt_fold_adjacent_copies, globopt_finalize_tuples. A local whose last read is removed by the rebuild at 0x107136f2 keeps a dead def into build_live_ranges, where demote_unused_candidate_def makes it a memory store (quest_spawn_timeline_update witness; qst-dead-store.md)."
   },
   "0x10713735": {
    "name": "globopt_init_expr_tables",
@@ -2376,7 +2380,7 @@
   "0x107318e5": {
    "name": "demote_unused_candidate_def",
    "prototype": "void __fastcall demote_unused_candidate_def(c2_function* fn, c2_symbol* sym, c2_tuple* where)",
-   "comment": "Undoes the pending def/reload recorded at candidate info+0x10 when it was never used as a register: a 0x163 reload is freed (uses read memory), a constant load is reverted to immediates, a dead single-def temp is deleted, a local's def gets operand_make_sym (becomes a memory store). Called from insert_upward_exposed_reloads on a second def/reload while pending (0x1072e8ef, 0x1072ea89) and at block end for every candidate still pending and not live-out (0x1072eb81, where=0). Trace-verified: all byte stores of a bool passed to a bool param are demoted here (constant-candidates.md)."
+   "comment": "Undoes the pending def/reload recorded at candidate info+0x10 when it was never used as a register: a 0x163 reload is freed (uses read memory), a constant load is reverted to immediates, a dead single-def temp is deleted, a local's def gets operand_make_sym (becomes a memory store). Called from insert_upward_exposed_reloads on a second def/reload while pending (0x1072e8ef, 0x1072ea89) and at block end for every candidate still pending and not live-out (0x1072eb81, where=0). Trace-verified: all byte stores of a bool passed to a bool param are demoted here (constant-candidates.md). Addition, trace-verified: the quest_spawn_timeline_update dead pointer store (lea edi,[esi+0xc]; mov [esp+0x10],edi; mov [esp+0x10],ebx) is this demotion of the dead def `copied = p` (called at 0x1072eb81). The lowered 0x190 copy had been promoted (kind-1 placeholder) before being demoted. The store is also a value use of p, so forward_substitute_single_def_ranges keeps p in a register."
   },
   "0x10731a50": {
    "name": "has_intervening_base_definition",
@@ -5420,7 +5424,8 @@
    "name": "g_tuple_visit_count"
   },
   "0x1079f10c": {
-   "name": "g_need_extra_dce"
+   "name": "g_need_extra_dce",
+   "comment": "Read: set by lower_copy_intrinsics 0x1070b474 (0x1070b4d7) and bracketed around the phase-1 globopt_restore_temp_destinations in globopt_run (0x107134ac/0x107134b9). When set after the final rebuild, globopt_run runs one more dead-code pass (0x1071370d). Also read by the liveness transfer sub_107065be (0x107066de)."
   },
   "0x1079f110": {
    "name": "g_next_tuple_cursor"
@@ -6620,6 +6625,7 @@
   "0x10713311": "operand kind table 0x10714208: kinds 1/2 check symbol, 3-5 and 7-9 ok, kind 6 (indirect memory) blocks the candidate",
   "0x1071334c": "invariant exprs available at preheader exit are ORed into every header-pred OUT (back edge), so in-loop recomputations are CSE'd",
   "0x10713537": "loop header: iterative avail dataflow (0x1070aad7) only if g_cse_full_mode and loop blocks (tail RPO - head RPO + 1) <= -Loop# (default 100); else conservative entry set",
+  "0x107136f2": "Final rebuild_flow_graph of globopt_run, run after the last dead-code pass. A compare whose branch target emptied in that pass is removed here, and nothing deletes the definitions it read (unless g_need_extra_dce). This is how the timeline witness's copy loses its last read (qst-dead-store.md \u00a73).",
   "0x10713a3b": "0x16b block copy of size 1, 2 or 4 becomes a scalar 0x15b assign",
   "0x107153ce": "IL record 0x2b switch: selector copied to a fresh temp, body read, then switch lowered",
   "0x107163b1": "il_read_tree case 0x4c (__assume): pseudo 0x1ac/0x1ab, and 0x18c NORETURN_EXIT when the operand is constant 0 (trace-verified with __assume(0))",
@@ -6685,7 +6691,7 @@
   "0x1072e0f7": "0x15a argument copy becomes push (opcode 0xd)",
   "0x1072e22b": "short args promoted to dword push",
   "0x1072e7cb": "Traced (boundary): after this call a promoted uint view is back in memory form when an overlapping float view of the same object is stored in memory (4-byte aggregate copy of a float member; player_render_overlays alpha).",
-  "0x1072eb81": "block end: each candidate still pending (def/reload never used) and not live-out -> demote_unused_candidate_def(fn, sym, 0)",
+  "0x1072eb81": "block end: each candidate still pending (def/reload never used) and not live-out -> demote_unused_candidate_def(fn, sym, 0) Block-end demotion call: candidates still pending and not live-out go to demote_unused_candidate_def. For a local this turns a dead def into a memory store that no later pass deletes (the quest_spawn_timeline_update pointer store; qst-dead-store.md).",
   "0x1072f667": "tie key = ordinal of defining tuple (blocks forward, tuples backward within block; last write wins)",
   "0x1072f6cc": "Store-back: a promoted definition gets a 0x164 'home <- lr' after it when its storage is read later as memory (a kind-2 read of an overlapping part, or the alias class of an indirect read or call), when the operand is volatile (+0x11 & 8), or when the parent has flags6 & 1. Traced: (float)s on a promoted int inserts one after each definition; global colouring then demotes s.",
   "0x1072f957": "/Oy and no EH/naked flags: frame pointer omitted -> ebp allocatable (fn+0x34 |= 0x10)",
