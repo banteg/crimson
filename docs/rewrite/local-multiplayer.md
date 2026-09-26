@@ -25,7 +25,7 @@ tags:
   - Code: `src/crimson/input_codes.py`
 - Gamepads:
   - player N reads controller N; standard controller codes (`0x200+`) name sticks, triggers and face buttons by position.
-  - a player still on stock bindings switches to twin-stick controls (Dual Action Pad aim and move) when their controller is first used, and the config is saved.
+  - when a player's controller is first used, bindings still at their stock values move to the standard codes (a fully stock player also switches to Dual Action Pad aim and move), and the config is saved.
   - Code: `src/crimson/gamepad_profile.py`, `src/crimson/input_codes.py`
 - Control-scheme interpretation:
   - per-player conversion from controls profile + bind block to `PlayerInput`.

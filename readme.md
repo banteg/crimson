@@ -53,7 +53,7 @@ Plug in a PlayStation, Switch Pro or Xbox controller and press any button on it.
 | Start | pause |
 | D-pad, Cross / A, Circle / B | menus and the perk list |
 
-Buttons are named by position, so on a Switch Pro controller "Cross / A" is the bottom face button. In local co-op, player 2 uses the second controller, and so on. Everything stays editable in Options → Controls. To go back to mouse and keyboard, choose Mouse aim and Static movement there and rebind Fire. Players who already changed their controls are left alone.
+Buttons are named by position, so on a Switch Pro controller "Cross / A" is the bottom face button. In local co-op, player 2 uses the second controller, and so on. Everything stays editable in Options → Controls. To go back to mouse and keyboard, choose Mouse aim and Static movement there and rebind Fire. If you already changed some controls, those stay as you set them; only controls still at their original defaults are moved to the controller.
 
 `crimson view gamepad` shows what the game reads from each connected controller, and the in-game console command `gamepads` prints the same.
 

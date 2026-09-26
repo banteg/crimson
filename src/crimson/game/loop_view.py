@@ -8,7 +8,7 @@ from grim.raylib_api import rl
 from ..debug import debug_enabled
 from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
 from ..game_modes import GameMode
-from ..gamepad_profile import auto_apply_pad_profiles
+from ..gamepad_profile import PadUpgrade, auto_apply_pad_profiles
 from ..input_codes import input_begin_frame, player_gamepad_index
 from ..modes.quest_mode import QuestMode
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
@@ -165,15 +165,16 @@ class GameLoopView:
 
     def _apply_gamepad_profiles(self) -> None:
         config = self.state.config
-        switched = auto_apply_pad_profiles(config.controls, player_count=config.gameplay.player_count)
-        if not switched:
+        applied = auto_apply_pad_profiles(config.controls, player_count=config.gameplay.player_count)
+        if not applied:
             return
         log = self.state.console.log
-        for player_index in switched:
-            gamepad = player_gamepad_index(player_index)
+        for entry in applied:
+            gamepad = player_gamepad_index(entry.player_index)
+            action = "switched to" if PadUpgrade.METHODS in entry.upgrades else "updated"
             log.log(
-                f"input: player {player_index + 1} switched to gamepad controls "
-                f"(pad {gamepad}: {rl.get_gamepad_name(gamepad)})",
+                f"input: player {entry.player_index + 1} {action} gamepad controls "
+                f"(pad {gamepad}: {rl.get_gamepad_name(gamepad)}): {', '.join(entry.upgrades.labels)}",
             )
         try:
             config.save()

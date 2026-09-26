@@ -28,7 +28,8 @@ def test_game_loop_switches_and_saves_when_the_pad_is_used(make_game_state, mock
 
     assert state.config.controls.player(0).aim_scheme is AimScheme.DUAL_ACTION_PAD
     assert state.console.log.lines[-1] == (
-        "input: player 1 switched to gamepad controls (pad 0: DualSense Wireless Controller)"
+        "input: player 1 switched to gamepad controls (pad 0: DualSense Wireless Controller): "
+        "aim/move methods, move axes, aim axes, fire, reload, level up"
     )
     saved = load_crimson_cfg(state.config.path)
     assert saved.controls == state.config.controls

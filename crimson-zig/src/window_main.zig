@@ -701,15 +701,18 @@ const App = struct {
 
     fn applyGamepadProfiles(self: *App) void {
         const activity: input_codes.RaylibPadActivity = .{};
-        const switched = cz.gamepad_profile.autoApplyPadProfiles(&self.runtime.config, activity);
-        if (switched.count() == 0) return;
-        var iter = switched.iterator(.{});
-        while (iter.next()) |player_index| {
+        const applied = cz.gamepad_profile.autoApplyPadProfiles(&self.runtime.config, activity);
+        if (!cz.gamepad_profile.anyApplied(applied)) return;
+        for (applied, 0..) |upgrades, player_index| {
+            if (!upgrades.any()) continue;
             const gamepad: i32 = @intCast(cz.gamepad_profile.playerGamepadIndex(player_index));
-            std.log.info("input: player {d} switched to gamepad controls (pad {d}: {s})", .{
+            var buf: [96]u8 = undefined;
+            std.log.info("input: player {d} {s} gamepad controls (pad {d}: {s}): {s}", .{
                 player_index + 1,
+                if (upgrades.methods) "switched to" else "updated",
                 gamepad,
                 rl.getGamepadName(gamepad),
+                upgrades.describe(&buf),
             });
         }
         self.runtime.config_dirty = true;

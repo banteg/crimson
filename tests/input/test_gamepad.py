@@ -10,11 +10,15 @@ from pytest_mock import MockerFixture
 from crimson import input_codes
 from crimson.aim_schemes import AimScheme
 from crimson.gamepad_profile import (
+    PAD_PROFILE_AIM_AXIS_CODES,
     PAD_PROFILE_FIRE_CODE,
+    PAD_PROFILE_MOVE_AXIS_CODES,
     PAD_PROFILE_PICK_PERK_CODE,
     PAD_PROFILE_RELOAD_CODE,
+    PadUpgrade,
     apply_pad_profile,
     auto_apply_pad_profiles,
+    pending_pad_upgrades,
     player_bindings_are_stock,
 )
 from crimson.gameplay import _direction_from_heading_native, _native_move_target_heading
@@ -295,12 +299,28 @@ def test_pad_profile_fire_and_reload_read_the_pad(pads: FakePads) -> None:
 # --- auto profile ---------------------------------------------------------------------
 
 
+def _auto(config: CrimsonConfig, *, player_count: int = 1, pads: set[int] | None = None) -> dict[int, PadUpgrade]:
+    active = {0} if pads is None else pads
+    applied = auto_apply_pad_profiles(config.controls, player_count=player_count, pad_active=lambda pad: pad in active)
+    return {entry.player_index: entry.upgrades for entry in applied}
+
+
+ALL_UPGRADES = (
+    PadUpgrade.METHODS
+    | PadUpgrade.MOVE_AXES
+    | PadUpgrade.AIM_AXES
+    | PadUpgrade.FIRE
+    | PadUpgrade.RELOAD
+    | PadUpgrade.LEVEL_UP
+)
+
+
 def test_auto_profile_switches_a_stock_player_once_their_pad_is_used() -> None:
     config = default_crimson_cfg(Path("<memory>"))
-    assert auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: False) == ()
+    assert _auto(config, pads=set()) == {}
     assert config.controls == default_crimson_cfg(Path("<memory>")).controls
 
-    assert auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: True) == (0,)
+    assert _auto(config) == {0: ALL_UPGRADES}
     player = config.controls.player(0)
     assert player.movement is MovementControlType.DUAL_ACTION_PAD
     assert player.aim_scheme is AimScheme.DUAL_ACTION_PAD
@@ -312,25 +332,77 @@ def test_auto_profile_switches_a_stock_player_once_their_pad_is_used() -> None:
     # Keyboard keys survive so a keyboard movement method brings WASD back.
     assert player.move_codes == (0x11, 0x1F, 0x1E, 0x20)
 
-    # Applied players are no longer stock: the switch never repeats.
+    # Every upgrade replaced a stock value: nothing is pending any more.
     assert not player_bindings_are_stock(config.controls, 0)
-    assert auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: True) == ()
+    assert pending_pad_upgrades(config.controls, 0) == PadUpgrade(0)
+    assert _auto(config) == {}
 
 
-def test_auto_profile_leaves_customized_players_alone() -> None:
+def test_hand_picked_pad_methods_with_stock_legacy_bindings_upgrade() -> None:
+    # The DualSense report: methods set to Dual Action Pad by hand, axes still the
+    # stock JoyAxisX/JoyAxisY + JoyAxisZ/JoyRotX, Fire Mouse1, Level Up Mouse2, Reload R.
     config = default_crimson_cfg(Path("<memory>"))
-    config.controls.player(0).fire_code = 0x39
-    assert auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: True) == ()
-    assert config.controls.player(0).aim_scheme is AimScheme.MOUSE
+    player = config.controls.player(0)
+    player.aim_scheme = AimScheme.DUAL_ACTION_PAD
+    player.movement = MovementControlType.DUAL_ACTION_PAD
+    config.controls.reload_code = 0x13
+
+    upgrades = _auto(config)
+    assert upgrades == {
+        0: PadUpgrade.MOVE_AXES | PadUpgrade.AIM_AXES | PadUpgrade.FIRE | PadUpgrade.LEVEL_UP,
+    }
+    assert upgrades[0].labels == ("move axes", "aim axes", "fire", "level up")
+    assert player.aim_scheme is AimScheme.DUAL_ACTION_PAD
+    assert player.movement is MovementControlType.DUAL_ACTION_PAD
+    assert player.move_axis_codes == PAD_PROFILE_MOVE_AXIS_CODES
+    assert player.aim_axis_codes == PAD_PROFILE_AIM_AXIS_CODES
+    assert player.fire_code == PAD_PROFILE_FIRE_CODE
+    assert config.controls.pick_perk_code == PAD_PROFILE_PICK_PERK_CODE
+    assert config.controls.reload_code == 0x13
+    assert _auto(config) == {}
+
+
+def test_mouse_keyboard_player_only_gets_the_axis_upgrade() -> None:
+    config = default_crimson_cfg(Path("<memory>"))
+    player = config.controls.player(0)
+    player.move_codes = (0xC8, 0xD0, 0xCB, 0xCD)  # customized, so not a stock player
+
+    assert _auto(config) == {0: PadUpgrade.MOVE_AXES | PadUpgrade.AIM_AXES}
+    assert player.aim_scheme is AimScheme.MOUSE
+    assert player.movement is MovementControlType.STATIC
+    assert player.fire_code == 0x100
+    assert config.controls.reload_code == DEFAULT_RELOAD_CODE
+    assert config.controls.pick_perk_code == DEFAULT_PICK_PERK_CODE
+    assert player.move_axis_codes == PAD_PROFILE_MOVE_AXIS_CODES
+    assert _auto(config) == {}
+
+
+def test_customized_axes_and_fire_are_left_alone() -> None:
+    config = default_crimson_cfg(Path("<memory>"))
+    player = config.controls.player(0)
+    player.aim_scheme = AimScheme.DUAL_ACTION_PAD
+    player.movement = MovementControlType.DUAL_ACTION_PAD
+    player.move_axis_codes = (0x140, 0x13F)
+    player.aim_axis_codes = (int(PadCode.RIGHT_STICK_X), int(PadCode.RIGHT_STICK_Y))
+    player.fire_code = 0x39
+    config.controls.reload_code = 0x13
+    config.controls.pick_perk_code = 0x39
+
+    assert pending_pad_upgrades(config.controls, 0) == PadUpgrade(0)
+    assert _auto(config) == {}
+    assert player.move_axis_codes == (0x140, 0x13F)
+    assert player.aim_axis_codes == (PadCode.RIGHT_STICK_X, PadCode.RIGHT_STICK_Y)
+    assert player.fire_code == 0x39
 
 
 def test_auto_profile_reverted_methods_do_not_retrigger() -> None:
     config = default_crimson_cfg(Path("<memory>"))
-    auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: True)
+    _auto(config)
     player = config.controls.player(0)
     player.aim_scheme = AimScheme.MOUSE
     player.movement = MovementControlType.STATIC
-    assert auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: True) == ()
+    player.fire_code = 0x100
+    assert _auto(config) == {}
     assert player.aim_scheme is AimScheme.MOUSE
 
 
@@ -343,16 +415,14 @@ def test_auto_profile_ignores_the_direction_arrow_toggle() -> None:
 def test_auto_profile_keeps_customized_global_codes() -> None:
     config = default_crimson_cfg(Path("<memory>"))
     config.controls.reload_code = 0x13
-    auto_apply_pad_profiles(config.controls, player_count=1, pad_active=lambda _pad: True)
+    assert PadUpgrade.RELOAD not in _auto(config)[0]
     assert config.controls.reload_code == 0x13
     assert config.controls.pick_perk_code == PAD_PROFILE_PICK_PERK_CODE
 
 
 def test_auto_profile_uses_each_players_pad_and_only_active_players() -> None:
     config = default_crimson_cfg(Path("<memory>"))
-    active_pads = {1, 2}
-    switched = auto_apply_pad_profiles(config.controls, player_count=2, pad_active=lambda pad: pad in active_pads)
-    assert switched == (1,)
+    assert _auto(config, player_count=2, pads={1, 2}) == {1: ALL_UPGRADES & ~(PadUpgrade.RELOAD | PadUpgrade.LEVEL_UP)}
     assert config.controls.player(0).aim_scheme is AimScheme.MOUSE
     assert config.controls.player(2).aim_scheme is AimScheme.MOUSE
     # Reload/Level Up belong to player 1; another player's pad does not take them.
