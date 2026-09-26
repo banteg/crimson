@@ -3,6 +3,36 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## Stale ion pointer and native frame size (2026-09-26)
+
+crimson-88's spill and slot-order pass (`answer_pr-spill-order.md`,
+`pr-spill-order.md`, `scripts/c2/frame_whatif.py`) brings the frame to
+native's **0x19c**. 74.17% to **81.79%**; references 537/0/0 to **541/0/0**;
+stack-masked structural 97.56% to 98.87%.
+
+Leave-one-out, each change is needed:
+
+- **Stale projectile pointer.** `projectile` is declared before the ion loop,
+  and the later fire-overlay loop reads `projectile->pos.tail.vy.type_id`.
+  After the ion loop that pointer is `&projectile_pool[0x5f]`, so native tests
+  the last slot's type for every projectile, at `cmp [edi+0x20],ebp`,
+  0x4253cf. The earlier `fire_type_owner = &projectile_pool[0x5f]` spelled the
+  same behaviour explicitly. With a use after the loop, the pointer survives
+  and gets native's weight-4 home at 0x28. The fading-tail type test also
+  reads through `projectile`. Without these: 75.71%.
+- **`direction` at function scope** opens the missing 8-byte slot. Without it:
+  75.71%.
+- **One function-scope `segment_index`** is shared by the five plasma loops.
+  Without it: 76.94%.
+- **`point0..point3` at function scope**, reused as the ion arc strips.
+  Without them: 80.14%.
+- **`span`/`along` as an if/else**, matching native's branch at 0x42461e.
+  Without it: 81.75%.
+
+Open: native's 0x94 slot also holds the pulse arm's `scale * 16` store into
+`half_size`. That variant scores 81.95%, but references go to 537/0/2: `half_size`
+and `base` both weigh 16 and sort opposite to native.
+
 ## Native frame layout (2026-09-26)
 
 crimson-88 mapped every native stack slot (`answer_pr-native-frame.md`,

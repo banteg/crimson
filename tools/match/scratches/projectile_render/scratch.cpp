@@ -105,6 +105,12 @@ extern "C" void projectile_render(float transition_alpha)
     int player_index;
     int projectile_index;
     int secondary_index;
+    projectile_render_vec2_t direction;
+    projectile_render_vec2_t point0;
+    projectile_render_vec2_t point1;
+    projectile_render_vec2_t point2;
+    projectile_render_vec2_t point3;
+    int segment_index;
 
     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_set_color(
@@ -133,10 +139,6 @@ extern "C" void projectile_render(float transition_alpha)
         player_state_t *player = &player_state_table[player_index];
         const float *aim_heading = &player->aim_heading;
         if (player->health > 0.0f) {
-            projectile_render_vec2_t point0;
-            projectile_render_vec2_t point1;
-            projectile_render_vec2_t point2;
-            projectile_render_vec2_t point3;
             float heading = *aim_heading - 1.5707964f;
             projectile_render_vec2_t direction(
                 (float)cos(heading), (float)sin(heading));
@@ -210,10 +212,6 @@ extern "C" void projectile_render(float transition_alpha)
             3, 0.5f, 0.5f, 0.5f, trail_color.a * transition_alpha);
 
         type_id = tail->type_id;
-        projectile_render_vec2_t point0;
-        projectile_render_vec2_t point1;
-        projectile_render_vec2_t point2;
-        projectile_render_vec2_t point3;
         // Separate corner expressions retain the native width and head-X stores
         // when VC6 inlines the scaled vector operations.
         if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {
@@ -360,7 +358,7 @@ extern "C" void projectile_render(float transition_alpha)
                     * 2.5f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-                for (int segment_index = 0;
+                for (segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
                     float segment = (float)segment_index;
@@ -411,7 +409,7 @@ extern "C" void projectile_render(float transition_alpha)
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-                for (int segment_index = 0;
+                for (segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
                     float segment = (float)segment_index;
@@ -461,7 +459,7 @@ extern "C" void projectile_render(float transition_alpha)
                     * 2.6f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-                for (int segment_index = 0;
+                for (segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
                     float segment = (float)segment_index;
@@ -511,7 +509,7 @@ extern "C" void projectile_render(float transition_alpha)
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
                     0.3f, 1.0f, 0.3f, transition_alpha * 0.4f);
-                for (int segment_index = 0;
+                for (segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
                     float segment = (float)segment_index;
@@ -561,7 +559,7 @@ extern "C" void projectile_render(float transition_alpha)
                     * 2.1f;
                 grim_interface_ptr->grim_set_color(
                     0.3f, 0.3f, 1.0f, transition_alpha * 0.4f);
-                for (int segment_index = 0;
+                for (segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
                     float segment = (float)segment_index;
@@ -612,13 +610,13 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_bind_texture(projectile_texture, 0);
     grim_interface_ptr->grim_begin_batch();
 
+    projectile_t *projectile;
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {
-        projectile_t *projectile = &projectile_pool[projectile_index];
+        projectile = &projectile_pool[projectile_index];
         projectile_tail_t *primary = &projectile->pos.tail;
         float scale;
-        projectile_render_vec2_t direction;
         projectile_render_vec2_t base;
         float distance;
         float half_size;
@@ -745,11 +743,14 @@ extern "C" void projectile_render(float transition_alpha)
                 - half_size;
             base.y = camera_offset_y + primary->origin_y
                 - half_size;
-            float span = distance;
-            float along = 0.0f;
+            float span;
+            float along;
             if (distance > 256.0f) {
                 span = 256.0f;
                 along = distance - 256.0f;
+            } else {
+                span = distance;
+                along = 0.0f;
             }
             float step = scale * 3.1f;
             if (step > 9.0f) {
@@ -815,11 +816,14 @@ extern "C" void projectile_render(float transition_alpha)
                 - half_size;
             base.y = camera_offset_y + primary->origin_y
                 - half_size;
-            float span = distance;
-            float along = 0.0f;
+            float span;
+            float along;
             if (distance > 256.0f) {
                 span = 256.0f;
                 along = distance - 256.0f;
+            } else {
+                span = distance;
+                along = 0.0f;
             }
             float step = scale * 3.1f;
             if (step > 9.0f) {
@@ -861,7 +865,7 @@ extern "C" void projectile_render(float transition_alpha)
                 0.5f, 0.6f, 1.0f, head_alpha);
 
             float radius = scale * ion_scale * 40.0f;
-            if (projectile_pool[projectile_index].pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
+            if (projectile->pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
                 int creature_index = creature_find_in_radius(
                     &projectile->pos_x,
                     radius,
@@ -884,45 +888,43 @@ extern "C" void projectile_render(float transition_alpha)
                     projectile_render_vec2_t start_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)&projectile->position;
-                    projectile_render_vec2_t strip0;
-                    projectile_render_vec2_t strip1;
-                    strip0.x = start_result.x;
-                    strip1.x = start_result.x;
-                    strip0.y = start_result.y;
-                    strip1.y = start_result.y;
-                    strip0 -= direction * scale * 10.0f;
-                    strip1 += direction * scale * 10.0f;
+                    point0.x = start_result.x;
+                    point1.x = start_result.x;
+                    point0.y = start_result.y;
+                    point1.y = start_result.y;
+                    point0 -= direction * scale * 10.0f;
+                    point1 += direction * scale * 10.0f;
                     projectile_render_vec2_t end_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x;
-                    projectile_render_vec2_t strip2 = end_result;
-                    projectile_render_vec2_t strip3 = end_result;
-                    strip2 += direction * scale * 10.0f;
-                    strip3 -= direction * scale * 10.0f;
+                    point2 = end_result;
+                    point3 = end_result;
+                    point2 += direction * scale * 10.0f;
+                    point3 -= direction * scale * 10.0f;
 
                     grim_interface_ptr->grim_draw_quad_points(
-                        strip0.x,
-                        strip0.y,
-                        strip1.x,
-                        strip1.y,
-                        strip2.x,
-                        strip2.y,
-                        strip3.x,
-                        strip3.y);
-                    strip2 += direction * scale * 4.0f;
-                    strip3 -= direction * scale * 4.0f;
-                    strip0 -= direction * scale * 4.0f;
-                    strip1 += direction * scale * 4.0f;
+                        point0.x,
+                        point0.y,
+                        point1.x,
+                        point1.y,
+                        point2.x,
+                        point2.y,
+                        point3.x,
+                        point3.y);
+                    point2 += direction * scale * 4.0f;
+                    point3 -= direction * scale * 4.0f;
+                    point0 -= direction * scale * 4.0f;
+                    point1 += direction * scale * 4.0f;
                     grim_interface_ptr->grim_draw_quad_points(
-                        strip0.x,
-                        strip0.y,
-                        strip1.x,
-                        strip1.y,
-                        strip2.x,
-                        strip2.y,
-                        strip3.x,
-                        strip3.y);
+                        point0.x,
+                        point0.y,
+                        point1.x,
+                        point1.y,
+                        point2.x,
+                        point2.y,
+                        point3.x,
+                        point3.y);
                     grim_interface_ptr->grim_set_atlas_frame(4, 2);
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + creature_pool[creature_index].pos_x
@@ -1035,12 +1037,11 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_set_color(
         1.0f, 1.0f, 1.0f, transition_alpha);
     grim_interface_ptr->grim_begin_batch();
-    projectile_t *fire_type_owner = &projectile_pool[0x5f];
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {
         if (projectile_pool[projectile_index].active
-            && fire_type_owner->pos.tail.vy.type_id
+            && projectile->pos.tail.vy.type_id
                 == PROJECTILE_TYPE_FIRE_BULLETS
             && projectile_pool[projectile_index].pos.tail.vy.life_timer == 0.4f) {
             grim_interface_ptr->grim_set_rotation(projectile_pool[projectile_index].angle);
