@@ -45,6 +45,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [pu-move-delta-split.md](pu-move-delta-split.md) | Negative result: why splitting a shared address-taken vector into block-scoped ones loses (alias classes, register-kept vectors, frame order) |
 | [pu-factor-order.md](pu-factor-order.md) | Why a field factor's position in a float product depends on its value-number owner id mod 4, and paren/setter spellings that pin it |
 | [scale-operand-rank.md](scale-operand-rank.md) | Why a lane of an inlined vector scale loads the field or the scale first: symbol part-record creation order, and the lockstep address records a field read creates |
+| [pu-firecough-heading.md](pu-firecough-heading.md) | What the single-use propagation pass really refuses (registration, kills, range checks), and how storing a value into a call's output vector keeps it computed early |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
