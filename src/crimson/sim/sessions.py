@@ -368,7 +368,6 @@ def _session_timing(world: WorldState, dt: float, *, apply_world_dt_steps: bool)
             reflex_boost_timer=float(state.bonuses.reflex_boost),
             time_scale_active=bool(state.time_scale_active),
         ),
-        zero_gate_active=False,
     )
 
 
@@ -393,7 +392,6 @@ class DeterministicSession(msgspec.Struct):
     game_tune_started: bool = False
     demo_mode_active: bool = False
     apply_world_dt_steps: bool = True
-    defer_camera_shake_update: bool = False
     finalize_post_render_lifecycle: bool = False
     elapsed_uses_raw_dt: bool = False
     # Reject perk commands the live UI cannot issue (they would otherwise no-op
@@ -559,7 +557,6 @@ class DeterministicSession(msgspec.Struct):
             # Session timing already applied the outer-loop perk transforms so
             # mode hooks and the world share the same native frame delta.
             apply_world_dt_steps=False,
-            defer_camera_shake_update=self.defer_camera_shake_update,
             mid_step_runtime=mid_step_runtime,
             inputs=tick_inputs,
             world_size=self.world_size,

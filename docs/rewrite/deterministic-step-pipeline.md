@@ -97,8 +97,8 @@ Perk timing and death effects are direct calls in `WorldState`; per-player and
 global perk effects have explicit ordered calls in `perks/runtime/player_ticks.py`
 and `perks/runtime/effects.py`. See [Perks architecture](perks-architecture.md).
 Bonus pickup effects are drawn inside `bonus_apply`, as in native, so each pickup's RNG draws
-precede the next pickup applied in the same tick. Projectile decals live in
-`features/presentation/projectile_decals.py`.
+precede the next pickup applied in the same tick. Projectile decals are queued in
+`sim/presentation_step.py`.
 
 ## RNG Policy
 

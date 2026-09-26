@@ -121,5 +121,4 @@ def test_quest_timing_does_not_zero_dt_for_pending_perk_prompt() -> None:
 
     timing = session.timing_for_dt(1.0 / 60.0)
 
-    assert timing.zero_gate_active is False
     assert timing.dt_sim > 0.0

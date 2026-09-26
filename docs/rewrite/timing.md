@@ -165,8 +165,9 @@ counterpart `src/crimson/quests/results.py` (`compute_quest_final_time`).
 the clock caps an incoming render-frame duration at 100 ms, accumulates the
 remainder, and can request multiple simulation ticks per render frame. This
 differs from native's single variable-delta callback and capped game-facing
-delta. `src/crimson/sim/frame_pump.py` owns tick batching and refunds unconsumed
-ticks when input stalls or ends.
+delta. Each granted tick is built by `LiveTickSource` in
+`src/crimson/replay/ticks.py`, recorded, then stepped; the frame stops early at
+the run's final tick or when a mode callback ends the batch.
 
 Replay execution reaches the same session through
 `src/crimson/replay/driver/playback_driver.py`; playback pacing is separate from
@@ -212,9 +213,8 @@ Python's `build_typo_session` sets `perk_progression_enabled=False`, and
 reproduced literally for artificially introduced slow-motion state. This is
 not a normal-play slowdown difference.
 
-The session currently calls `FrameTiming.compute` with `zero_gate_active=False`;
-the helper's support for zero gates alone does not demonstrate reproduction of
-all native pause/console gates. Those also depend on the outer mode/UI pump.
+`FrameTiming.compute` never zeroes `dt_sim`: native pause and console gates
+belong to the outer mode/UI pump, not to session timing.
 
 ## Other engine timing
 

@@ -29,7 +29,6 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.PLASMA_CANNON,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=10.0,
     )
 
     pool.step(
@@ -69,7 +68,6 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=30.0,
     )
 
     pool.step(
@@ -122,7 +120,6 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=30.0,
     )
 
     pool.step(
@@ -153,7 +150,6 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.SHRINKIFIER,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=10.0,
     )
 
     pool.step(
@@ -252,7 +248,6 @@ def test_non_gauss_freeze_hit_pool_step_leaves_shard_to_presentation(mocker) -> 
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=10.0,
     )
 
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -359,7 +354,6 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.SHRINKIFIER,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=10.0,
     )
 
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)

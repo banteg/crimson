@@ -15,7 +15,6 @@ from .spawn import (
     owner_ref_for_player_projectiles,
     projectile_spawn,
     spawn_projectile_ring,
-    travel_budget_for_type_id,
 )
 
 __all__ = [
@@ -32,7 +31,6 @@ __all__ = [
     "prepare_weapon_availability",
     "projectile_spawn",
     "spawn_projectile_ring",
-    "travel_budget_for_type_id",
     "weapon_assign_player",
     "weapon_entry",
     "weapon_pick_random_available",

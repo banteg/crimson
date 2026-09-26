@@ -58,7 +58,6 @@ from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
-from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .anim import CREATURE_ANIM, creature_anim_advance_phase
 from .damage_runtime import CreatureLethalHandler
@@ -255,10 +254,6 @@ def _clamp_to_size_bounds(value: float, size: float, world_extent: float) -> flo
     if value > max_value:
         value = max_value
     return value
-
-
-def _travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
-    return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
 class CreatureState(msgspec.Struct):
@@ -460,15 +455,6 @@ class _CreaturePoolCreatureDamageRuntime(msgspec.Struct):
             ),
         )
         self.sfx.extend(SfxRequest(sound, self.pool.entries[creature_index].pos) for sound in resolve_damage_followup())
-
-
-def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> None:
-    if (
-        ctx.players
-        and perk_active(ctx.players[0], PerkId.PLAGUEBEARER)
-        and int(ctx.state.plaguebearer_infection_count) < 0x3C
-    ):
-        ctx.pool._plaguebearer_spread_infection(ctx.creature_index)
 
 
 def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
@@ -1511,7 +1497,6 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=type_id,
                             owner=OwnerRef.from_creature(int(idx)),
-                            travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
                         sfx.append(SfxRequest(SfxId.SHOCK_FIRE, creature.pos))
@@ -1524,7 +1509,6 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner=OwnerRef.from_creature(int(idx)),
-                            travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
                         sfx.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8))

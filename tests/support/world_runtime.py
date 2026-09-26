@@ -100,7 +100,6 @@ class WorldRuntimeHost(WorldRuntime):
         *,
         inputs: list[PlayerInput] | None = None,
         perk_progression_enabled: bool = False,
-        defer_camera_shake_update: bool = False,
         apply_audio: bool = True,
     ) -> DeterministicSessionTick:
         self.sync_audio_bridge_state()
@@ -122,7 +121,6 @@ class WorldRuntimeHost(WorldRuntime):
             violence_disabled=violence_disabled,
             game_tune_started=self.sim_world.game_tune_started,
             demo_mode_active=self.demo_mode_active,
-            defer_camera_shake_update=defer_camera_shake_update,
             mode_runtime=SurvivalSessionRuntime(spawn=self._survival_test_spawn_state),
         )
         session.elapsed_ms = float(self._survival_test_elapsed_ms)

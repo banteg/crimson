@@ -43,7 +43,6 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=45.0,
     )
 
     events = world.step(
@@ -104,7 +103,6 @@ def test_poison_bullets_selects_native_player_zero_or_corrected_any_player(
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(1),
-        travel_budget=45.0,
     )
 
     events = world.step(
@@ -155,7 +153,6 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=45.0,
     )
 
     events = world.step(
@@ -242,7 +239,6 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=45.0,
     )
 
     world.step(
@@ -289,7 +285,6 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
         angle=0.0,
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(7),
-        travel_budget=45.0,
     )
 
     events = world.step(

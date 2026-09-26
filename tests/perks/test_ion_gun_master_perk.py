@@ -43,7 +43,6 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
             angle=0.0,
             type_id=ProjectileTemplateId.ION_RIFLE,
             owner=OwnerRef.from_local_player(0),
-            travel_budget=45.0,
         )
         pool.entries[proj_idx].life_timer = 0.39
 
@@ -90,7 +89,6 @@ def test_ion_gun_master_selects_native_player_zero_or_corrected_any_player(
         angle=0.0,
         type_id=ProjectileTemplateId.ION_RIFLE,
         owner=OwnerRef.from_local_player(1),
-        travel_budget=45.0,
     )
     pool.entries[proj_idx].life_timer = 0.39
 

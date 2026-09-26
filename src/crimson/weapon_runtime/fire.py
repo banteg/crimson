@@ -44,7 +44,7 @@ from .fire_recipes import (
     UseAimTargetHint,
     resolve_fire_recipe,
 )
-from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
+from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -368,7 +368,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 raise ValueError(f"missing projectile type in recipe for weapon {int(weapon_id)}")
             pellets = max(0, int(count if count is not None else 0))
             shot_count = pellets
-            meta = travel_budget_for_type_id(type_id)
             pellet_jitter_caller = (
                 RngCallerStatic.PLAYER_UPDATE_FIRE_BULLETS_PELLET_JITTER
                 if is_fire_bullets
@@ -395,7 +394,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     angle=angle,
                     type_id=type_id,
                     owner=projectile_owner,
-                    travel_budget=meta,
                     hits_players=projectile_hits_players,
                 )
                 if isinstance(speed_rule, ModuloSpeedScale):
@@ -464,7 +462,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     angle=angle,
                     type_id=type_id,
                     owner=projectile_owner,
-                    travel_budget=travel_budget_for_type_id(type_id),
                     hits_players=projectile_hits_players,
                 )
         case SwarmerDumpMode():

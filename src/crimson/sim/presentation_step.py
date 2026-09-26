@@ -10,11 +10,10 @@ from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..bonuses.fire_bullets import LargeHitDecalRuntime
+from ..bonuses.fire_bullets import LargeHitDecalRuntime, queue_large_hit_decal_streak
 from ..bonuses.freeze import freeze_bonus_active
 from ..camera import CameraUpdate
 from ..effects import FxQueue
-from ..features.presentation import queue_projectile_large_streak_decal
 from ..game_modes import GameMode
 from ..math_parity import (
     NATIVE_HALF_PI,
@@ -318,16 +317,15 @@ def queue_projectile_decals_post_hit(
     # post-hit terrain decal burst branch.
     rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN)
 
-    hook_handled = queue_projectile_large_streak_decal(
-        hit=hit,
-        base_angle=float(base_angle),
-        fx_queue=fx_queue,
-        rng=rng,
-        freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
-        runtime=post_ctx.large_hit_decal_runtime,
-    )
-
-    if bool(hook_handled):
+    if hit.type_id in (ProjectileTemplateId.GAUSS_GUN, ProjectileTemplateId.FIRE_BULLETS):
+        queue_large_hit_decal_streak(
+            hit=hit,
+            base_angle=float(base_angle),
+            fx_queue=fx_queue,
+            rng=rng,
+            freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
+            runtime=post_ctx.large_hit_decal_runtime,
+        )
         return
 
     if bool(post_ctx.freeze_active):

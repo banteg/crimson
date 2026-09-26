@@ -40,7 +40,7 @@ from .behaviors import (
     _ProjectileHitInfo,
     _ProjectileUpdateCtx,
 )
-from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
+from .collision import _apply_damage_to_creature, _within_native_find_radius
 from .primary_rules import primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
@@ -144,7 +144,6 @@ class ProjectilePool:
         angle: float,
         type_id: ProjectileTemplateId,
         owner: OwnerRef,
-        travel_budget: float = 0.0,
         hits_players: bool = False,
     ) -> int:
         index = None
@@ -174,7 +173,6 @@ class ProjectilePool:
         entry.life_timer = float(f32(0.4))
         entry.reserved = 0.0
         entry.speed_scale = 1.0
-        entry.travel_budget = float(travel_budget)
         weapon_entry = weapon_entry_for_projectile_type_id(type_id)
         entry.travel_budget = float(weapon_entry.travel_budget)
         entry.owner = owner
@@ -539,97 +537,5 @@ class ProjectilePool:
                         hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
 
                 step += 3
-
-        return hits
-
-    def update_demo(
-        self,
-        dt: float,
-        creatures: Sequence[CreatureState],
-        *,
-        world_size: float,
-        speed_by_type: dict[int, float],
-        damage_by_type: dict[int, float],
-    ) -> list[ProjectileHit]:
-        """Update a small projectile subset for the demo view."""
-
-        if dt <= 0.0:
-            return []
-
-        hits: list[ProjectileHit] = []
-        margin = 64.0
-
-        for proj in self._entries:
-            if not proj.active:
-                continue
-
-            if proj.life_timer <= 0.0:
-                proj.active = False
-                continue
-
-            if proj.life_timer < 0.4:
-                if proj.type_id == ProjectileTemplateId.ION_RIFLE:
-                    damage = x87_pc24_mul(dt, f32(100.0))
-                    radius = 88.0
-                    for creature in creatures:
-                        if creature.hp <= 0.0:
-                            continue
-                        creature_radius = _hit_radius_for(creature)
-                        hit_r = radius + creature_radius
-                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                            creature.hp = x87_pc24_sub(creature.hp, damage)
-                elif proj.type_id == ProjectileTemplateId.ION_MINIGUN:
-                    damage = x87_pc24_mul(dt, f32(40.0))
-                    radius = 60.0
-                    for creature in creatures:
-                        if creature.hp <= 0.0:
-                            continue
-                        creature_radius = _hit_radius_for(creature)
-                        hit_r = radius + creature_radius
-                        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                            creature.hp = x87_pc24_sub(creature.hp, damage)
-                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
-                continue
-
-            if (
-                proj.pos.x < -margin
-                or proj.pos.y < -margin
-                or proj.pos.x > world_size + margin
-                or proj.pos.y > world_size + margin
-            ):
-                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
-                continue
-
-            speed = speed_by_type.get(proj.type_id, 650.0) * proj.speed_scale
-            direction = Vec2.from_heading(float(proj.angle))
-            proj.pos = proj.pos + direction * (speed * dt)
-
-            hit_idx = None
-            for idx, creature in enumerate(creatures):
-                if creature.hp <= 0.0:
-                    continue
-                creature_radius = _hit_radius_for(creature)
-                hit_r = proj.hit_radius + creature_radius
-                if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                    hit_idx = idx
-                    break
-            if hit_idx is None:
-                continue
-
-            creature = creatures[hit_idx]
-            hits.append(
-                ProjectileHit(
-                    type_id=proj.type_id,
-                    origin=proj.origin,
-                    hit=proj.pos,
-                    target=creature.pos,
-                    angle=proj.angle,
-                ),
-            )
-
-            creature = creatures[hit_idx]
-            creature.hp -= damage_by_type.get(proj.type_id, 10.0)
-
-            proj.life_timer = 0.25
 
         return hits

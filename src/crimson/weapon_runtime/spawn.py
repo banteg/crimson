@@ -8,7 +8,6 @@ from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import PlayerState
-from ..weapons import weapon_entry_for_projectile_type_id
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -23,10 +22,6 @@ def owner_ref_for_player_projectiles(state: GameplayState, player_index: int) ->
     if not state.friendly_fire_enabled:
         return OwnerRef.from_local_player(0)
     return owner_ref_for_player(player_index)
-
-
-def travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
-    return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
 def _uses_native_player_projectile_path(owner: OwnerRef) -> bool:
@@ -140,13 +135,11 @@ def projectile_spawn(
                 break
             type_id = ProjectileTemplateId.FIRE_BULLETS
 
-    meta = travel_budget_for_type_id(type_id)
     return state.projectiles.spawn(
         pos=pos,
         angle=float(angle),
         type_id=type_id,
         owner=owner,
-        travel_budget=float(meta),
         hits_players=bool(hits_players),
     )
 

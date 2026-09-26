@@ -76,7 +76,6 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
         angle=-0.8641037344932556,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=55.0,
     )
 
     pool.step(
@@ -305,7 +304,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "pistol_near_hit",
             "type_id": ProjectileTemplateId.PISTOL,
-            "travel_budget": 15.0,
             "creatures": [
                 _creature(pos=Vec2(41.1428575, 0.0), hp=100.0),
             ],
@@ -314,7 +312,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "pistol_rng_jitter",
             "type_id": ProjectileTemplateId.PISTOL,
-            "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
             ],
@@ -323,7 +320,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "rocket_no_splash_type_0x0b",
             "type_id": ProjectileTemplateId.PLASMA_MINIGUN,
-            "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
                 _creature(pos=Vec2(100.0, 0.0), hp=100.0),
@@ -334,7 +330,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "ion_minigun_linger",
             "type_id": ProjectileTemplateId.ION_MINIGUN,
-            "travel_budget": 20.0,
             "creatures": [
                 _creature(pos=Vec2(40.0, 0.0), hp=200.0),
             ],
@@ -351,7 +346,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             angle=math.pi / 2.0,
             type_id=ProjectileTemplateId(int(case["type_id"])),
             owner=OwnerRef.from_local_player(0),
-            travel_budget=float(case["travel_budget"]),
         )
         creatures = case["creatures"]
         damage_scale_by_type = case.get("damage_scale_by_type") or {int(case["type_id"]): 1.0}
@@ -383,32 +377,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             hits = [*hits, *more_hits]
 
         snapshot(name=str(case["name"])).assert_match(_normalize_primary_pool(pool, idx, creatures, hits))
-
-
-def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> None:
-    pool = ProjectilePool(size=1)
-    idx = pool.spawn(
-        pos=Vec2(),
-        angle=math.pi / 2.0,
-        type_id=ProjectileTemplateId.ASSAULT_RIFLE,
-        owner=OwnerRef.from_local_player(0),
-    )
-    pool.update_demo(
-        0.1,
-        [],
-        world_size=1024.0,
-        speed_by_type={int(ProjectileTemplateId.ASSAULT_RIFLE): 100.0},
-        damage_by_type={},
-    )
-
-    entry = pool.entries[idx]
-    snapshot.assert_match(
-        {
-            "active": bool(entry.active),
-            "life_timer": round(float(entry.life_timer), 6),
-            "pos": _normalize_vec2(entry.pos),
-        },
-    )
 
 
 def test_primary_spawn_persists_velocity_vector() -> None:

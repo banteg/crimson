@@ -17,7 +17,6 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
-from ..tooling.audio_bootstrap import init_view_audio
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapon_runtime.fire_recipes import (
@@ -37,6 +36,7 @@ from ..weapons import (
 from ..world import WorldRuntime
 from ..world.standalone_tick_harness import StandaloneTickHarness
 from ._ui_helpers import draw_ui_text, ui_line_height
+from .audio_bootstrap import init_view_audio
 from .registry import ViewInstance, register_view
 
 WORLD_SIZE = 1024.0

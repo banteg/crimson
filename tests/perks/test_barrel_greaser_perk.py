@@ -12,7 +12,6 @@ from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
-from crimson.weapons import weapon_entry_for_projectile_type_id
 from grim.geom import Vec2
 from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -44,13 +43,11 @@ def _step_pistol_projectile(
     preserve_bugs: bool = False,
 ) -> float:
     pool = ProjectilePool(size=1)
-    travel_budget = float(weapon_entry_for_projectile_type_id(ProjectileTemplateId.PISTOL).travel_budget)
     pool.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
-        travel_budget=travel_budget,
     )
 
     state = GameplayState(preserve_bugs=preserve_bugs)

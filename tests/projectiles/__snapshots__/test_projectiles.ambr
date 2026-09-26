@@ -157,16 +157,6 @@
     }),
   })
 # ---
-# name: test_projectile_pool_demo_update_snapshot
-  dict({
-    'active': True,
-    'life_timer': 0.4,
-    'pos': list([
-      10.0,
-      0.0,
-    ]),
-  })
-# ---
 # name: test_secondary_projectile_impulse_callbacks_snapshot
   list([
     dict({

@@ -141,7 +141,6 @@ def test_ranged_projectile_can_damage_player() -> None:
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
         owner=OwnerRef.from_creature(0),
-        travel_budget=45.0,
         hits_players=True,
     )
 
@@ -186,7 +185,6 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
         owner=OwnerRef.from_creature(0),
-        travel_budget=45.0,
         hits_players=True,
     )
 

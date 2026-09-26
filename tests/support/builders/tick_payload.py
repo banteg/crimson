@@ -21,7 +21,6 @@ def make_tick_payload(
         dt=dt_sim,
         time_scale_active_entry=False,
         time_scale_factor=1.0,
-        zero_gate_active=False,
         dt_sim=dt_sim,
         dt_audio=dt_sim,
     )

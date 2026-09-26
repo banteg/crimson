@@ -20,14 +20,12 @@ def test_nearest_ms_i32_matches_frida_number_rounding() -> None:
     assert nearest_ms_i32(0.0005) == 1
 
 
-def test_frame_timing_defaults_to_live_dt_when_zero_gate_disabled() -> None:
+def test_frame_timing_uses_live_dt() -> None:
     timing = FrameTiming.compute(
         1.0 / 60.0,
         time_scale_active_entry=False,
         time_scale_factor=1.0,
-        zero_gate_active=False,
     )
-    assert timing.zero_gate_active is False
     assert timing.dt_sim > 0.0
 
 
@@ -37,7 +35,6 @@ def test_frame_timing_applies_world_dt_before_reflex_bonus_scale() -> None:
         world_dt=0.09,
         time_scale_active_entry=True,
         time_scale_factor=0.3,
-        zero_gate_active=False,
     )
 
     assert timing.dt_ms_i32 == 100

@@ -293,7 +293,6 @@ class WorldState(msgspec.Struct):
         dt: float,
         *,
         apply_world_dt_steps: bool = True,
-        defer_camera_shake_update: bool = False,
         mid_step_runtime: WorldMidStepRuntime | None = None,
         inputs: Sequence[PlayerInput] | None,
         world_size: float,
@@ -402,8 +401,7 @@ class WorldState(msgspec.Struct):
         if mid_step_runtime is not None:
             mid_step_runtime.run_mid_step()
         self.state.highscore_score_xp = int(self.players[0].experience) if self.players else 0
-        if not bool(defer_camera_shake_update):
-            camera_shake_update(self.state, dt)
+        camera_shake_update(self.state, dt)
         # Native level-up/perk-pending check runs before `bonus_update` in
         # gameplay_update_and_render. Keep the same ordering so XP awarded from
         # bonus-side kill paths (e.g. freeze cleanup) levels on the next tick.

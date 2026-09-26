@@ -24,7 +24,6 @@ from ...math_parity import (
     x87_pc24_sub,
 )
 from ...owner_ref import OwnerRef
-from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
     _spawn_plasma_cannon_hit_effects,
@@ -164,7 +163,6 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         angle=x87_pc24_sub(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(int(hit_idx)),
-        travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
     )
     ctx.pool.spawn(
@@ -172,7 +170,6 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         angle=x87_pc24_add(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(int(hit_idx)),
-        travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
     )
 
@@ -228,7 +225,6 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     angle=angle,
                     type_id=ProjectileTemplateId(hit.proj.type_id),
                     owner=OwnerRef.from_creature(hit_creature),
-                    travel_budget=hit.proj.travel_budget,
                 )
             finally:
                 runtime_state.bonus_spawn_guard = False
@@ -241,9 +237,6 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     # Native 0x00421370: each PC=24 op rounds; the ring angle is a float32 local.
     ring_radius = x87_pc24_add(x87_pc24_mul(creature.size, 0.5), 1.0)
     ring_step = f32(0.5235988)  # 0x0046f4ec
-
-    plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTemplateId.PLASMA_RIFLE)
-    plasma_meta = float(plasma_entry.travel_budget)
 
     runtime_state = ctx.runtime_state
     if runtime_state is not None:
@@ -260,7 +253,6 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 angle=ring_angle,
                 type_id=ProjectileTemplateId.PLASMA_RIFLE,
                 owner=OwnerRef.from_local_player(0),
-                travel_budget=plasma_meta,
             )
     finally:
         if runtime_state is not None:
