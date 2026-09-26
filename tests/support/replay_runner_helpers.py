@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
@@ -24,6 +26,9 @@ from crimson.sim.run_spec import RunSpec
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand
+
+# Replays recorded in live play, each with its `.chk` checkpoint sidecar.
+RECORDED_REPLAYS = tuple(sorted((Path(__file__).resolve().parents[1] / "fixtures" / "replays").glob("*.crd")))
 
 UNVERIFIED_RESULT = RunResult(
     outcome=RunOutcome.INCOMPLETE,

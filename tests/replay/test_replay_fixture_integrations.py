@@ -14,15 +14,10 @@ from crimson.replay.driver.playback_driver import (
 )
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
-from tests.support.replay_runner_helpers import _run_verify_playback
-
-FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "replays"
+from tests.support.replay_runner_helpers import RECORDED_REPLAYS, _run_verify_playback
 
 pytestmark = [pytest.mark.slow, pytest.mark.replay_fixture]
 
-# Re-record gameplay fixtures with the current replay format (v20) and list their
-# filenames here; each replay carries the result it must verify to.
-_REPLAY_CASES: tuple[str, ...] = ()
 _PLAYBACK_CHUNK_PATTERN = (1, 7, 31, 256)
 
 
@@ -91,14 +86,9 @@ def _run_walk_playback(
     return driver.build_result(), playback_checkpoints
 
 
-@pytest.mark.parametrize("replay_name", _REPLAY_CASES)
-def test_replay_fixture_result_and_checkpoint_parity(replay_name: str) -> None:
-    replay_path = FIXTURE_DIR / replay_name
+@pytest.mark.parametrize("replay_path", RECORDED_REPLAYS, ids=lambda path: path.name)
+def test_replay_fixture_result_and_checkpoint_parity(replay_path: Path) -> None:
     checkpoints_path = replay_path.with_name(f"{replay_path.name}.chk")
-
-    if not replay_path.is_file() or not checkpoints_path.is_file():
-        pytest.skip(f"missing replay fixture: {replay_name}")
-
     replay = _load_replay_fixture(replay_path)
     expected_sidecar = load_checkpoints_file(checkpoints_path)
 
@@ -115,12 +105,8 @@ def test_replay_fixture_result_and_checkpoint_parity(replay_name: str) -> None:
     assert diff.ok
 
 
-@pytest.mark.parametrize("replay_name", _REPLAY_CASES)
-def test_verify_vs_playback_parity(replay_name: str) -> None:
-    replay_path = FIXTURE_DIR / replay_name
-    if not replay_path.is_file():
-        pytest.skip(f"missing replay fixture: {replay_name}")
-
+@pytest.mark.parametrize("replay_path", RECORDED_REPLAYS, ids=lambda path: path.name)
+def test_verify_vs_playback_parity(replay_path: Path) -> None:
     replay = _load_replay_fixture(replay_path)
     checkpoint_ticks = _sample_tick_indexes(len(replay.ticks))
     verify_checkpoints = []

@@ -24,7 +24,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus
 from grim.geom import Vec2
-from tests.support.replay_runner_helpers import finish_replay
+from tests.support.replay_runner_helpers import RECORDED_REPLAYS, finish_replay
 
 from ._helpers import (
     build_replay,
@@ -143,6 +143,14 @@ def test_zig_replay_verify_derives_python_results_for_played_runs(
     assert payload["result"] == _json_result(replay.result)
     assert payload["result"]["outcome"] == outcome
     assert payload["ticks"] == payload["ticks_simulated"] == len(replay.ticks)
+
+
+@pytest.mark.parametrize("replay_path", RECORDED_REPLAYS, ids=lambda path: path.name)
+def test_zig_replay_verify_accepts_recorded_fixtures(zig_bin: Path, replay_path: Path) -> None:
+    payload = _run_zig_json(zig_bin, [str(replay_path), "--format", "json"])
+
+    assert payload["status"] == "ok"
+    assert payload["mismatched_fields"] == []
 
 
 def test_zig_replay_verify_result_equals_python_simulation(tmp_path: Path, zig_bin: Path, perk_replay: Replay) -> None:
