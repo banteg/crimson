@@ -47,6 +47,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [scale-operand-rank.md](scale-operand-rank.md) | Why a lane of an inlined vector scale loads the field or the scale first: symbol part-record creation order, and the lockstep address records a field read creates |
 | [pu-firecough-heading.md](pu-firecough-heading.md) | What the single-use propagation pass really refuses (registration, kills, range checks), and how storing a value into a call's output vector keeps it computed early |
 | [sib-operand-order.md](sib-operand-order.md) | Which address-sum operand becomes the SIB base, how loads through CSE'd vs fresh addresses rank, and what source kills the address CSE |
+| [cse-slot-count.md](cse-slot-count.md) | Where CSE temp ids come from, why a first `this->f = v` takes two slots, and a phantom-slot tool that tests which id shift a SIB order needs |
 | [pr-spill-order.md](pr-spill-order.md) | Why a loop pointer used after its loop survives forward substitution and gets a stack home, how reference weights decide 4-byte slot grouping, and a packer what-if tool |
 | [unfolded-field-pointers.md](unfolded-field-pointers.md) | Where `&p->field` pointers fold into [base+disp], why a function over the 0x400 alias-class budget keeps them in registers, and a struct-copy spelling that keeps an index CSE across two stores |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |

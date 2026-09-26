@@ -123,7 +123,7 @@ ln89  store+0x8c  base [temp 0x4f5] 0x14007   index local 0x1c9 0x13920   (+0x4c
 Swap offsets are matched to sums by access and displacement [inferred]. The other swaps (+0x313/+0x317/+0x31b/+0x358/+0x4b3) look like `lea`s and accesses of the same sums, including sums whose result is passed to an inline member rather than dereferenced, which the tool does not list [inferred].
 
 - **Native order.** The offset comes first, which needs the load leaf's hash below 0x1e0. That means
-  T & 3 = 0 for both temporaries: n ≡ 0 (mod 4) at C0 ≡ 0 (mod 32), for example n = 20/44 or 24/48.
+  T & 3 = 0 for the primary temporary (see the correction below).
   Alternatively, the offset local needs id ≥ 0x201.
 - **Consistent sites.** The same function has sites where native agrees with the rule and ours matches:
   - `local 0xf` (0x1e0) before `[local 0x10]` (hash 7, because 0x10 & 7 = 0), at labels 69–81;
@@ -131,6 +131,10 @@ Swap offsets are matched to sums by access and displacement [inferred]. The othe
   - temp 0x516 (0x4580) before `[temp 0x4f5]`.
 - **Authoring.** The parenthesized-expression shifts measured move n by +1 but change the listing: a FROUND
   at line 285 gives 95.58%, one at line 293 gives 99.70%. So Hill/Valley is characterized, but not fixed.
+- **Correction** ([cse-slot-count.md](cse-slot-count.md)). All 9 swaps are primary (`this+0x58`) sites.
+  Native needs the primary n ≡ 0 (mod 4) and the secondary n ≢ 0: shifting both temporaries adds 8 new
+  swaps at the secondary sites. The line-293 FROUND leaves the code unchanged; its 99.70% is the id shift
+  alone. Only the line-285 FROUND changes code.
 
 ## 5. Rule for addrorder.py
 

@@ -276,7 +276,7 @@ This covers the pass driver calls `0x1070fc45(ctx,1)` (before globopt) and `0x10
 ### 0x1070fcda purge_unreferenced_temps (high confidence)
 - `0x1070fd5a` sets `symbol+6 |= 2` for every referenced symbol, memory base/index and sublist.
 - Every class-3 temp chain (entry with `head==self`) where no piece is marked is released through `0x10706247`. That function pushes it onto `g_temp_symbol_free` (0x1079bc60); the flags are cleared again for the next run.
-- `0x107017eb symbol_alloc(3)` pops from that list first and keeps the old id. **Temp ids are therefore recycled LIFO.** Because temp hashes are `id<<6`, which temps are freed, and in what order, can change the sort order of equal-cost temp operands later on.
+- `0x107017eb symbol_alloc(3)` pops from that list first and keeps the old id. **Temp ids are therefore recycled LIFO.** CSE expression symbols (pool E) are never recycled into pool E, but freed CSE records join the same class-3 list, so later class-3 temps can carry ids in the CSE range ([cse-slot-count.md](cse-slot-count.md)). Because temp hashes are `id<<6`, which temps are freed, and in what order, can change the sort order of equal-cost temp operands later on.
 
 ### Matching implications (source rewrites that do or do not change output)
 - **No effect** on integer expressions:

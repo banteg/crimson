@@ -856,7 +856,15 @@
   },
   "0x10707e22": {
    "name": "cse_insert",
-   "comment": "Insert expression entry into CSE hash; creates its temp."
+   "comment": "Insert expression entry into CSE hash; creates its temp. ecx = hash bucket, edx = opcode, [esp+4] = type (0x17d compare uses type 0x8000). Allocates the expression symbol through 0x10707ebc (call at 0x10707e51); 0x14c entries are also linked on g_address_expr_list. The only source of CSE slot ids (cse-slot-count.md)."
+  },
+  "0x10707ebc": {
+   "name": "cse_new_expression_symbol",
+   "comment": "symbol_alloc(0xf) at 0x10707ec1 (pool E: chunk 0x1079bc74, no free list), then type/size from the type word, cls = 3, parent = self. Every CSE slot id comes from here, consecutive from C0 in creation order; pool E never reuses an id (Hill/Valley: 723 slots 0x4e0..0x7b2, no gaps). cse-slot-count.md."
+  },
+  "0x10707edc": {
+   "name": "cse_claim_key_operands",
+   "comment": "Called by cse_insert after the symbol is allocated."
   },
   "0x10707f1b": {
    "name": "cse_find_or_make",
@@ -870,6 +878,10 @@
   "0x10707f7d": {
    "name": "get_expression_symbol_n",
    "comment": "varargs form (<10 operands) of get_expression_symbol"
+  },
+  "0x10707fc4": {
+   "name": "cse_find_or_insert",
+   "comment": "Keyed by opcode, type and the operands already placed in g_expr_operand_scratch by cse_set_key_operands. A hit creates no slot; a miss creates one (cse-slot-count.md)."
   },
   "0x10707ff3": {
    "name": "get_compare_expression_symbol",
@@ -1330,7 +1342,7 @@
   "0x10711209": {
    "name": "assign_expression_owners",
    "prototype": "void __fastcall assign_expression_owners(c2_function* fn)",
-   "comment": "value numbering: replaces memory addresses by 0x14c address expressions and pure computations by hashed expression symbols (0x1070817c); x-c -> x+(-c) for signed int"
+   "comment": "value numbering: replaces memory addresses by 0x14c address expressions and pure computations by hashed expression symbols (0x1070817c); x-c -> x+(-c) for signed int. Slot order (cse-slot-count.md, trace-verified): per tuple in IL order, source memory operands (0x1071124b) then destination memory operands (0x1071128c) as 0x14c(base operand +0x28, alias class +0x1c) stored in the operand's storage field, then the tuple itself (pure expr 0x107115d7, compare 0x10711555, intrinsic 0x10711328, 0x18f 0x10711431, copy 0x165 0x10711516). Assignments (0x15b) are numbered only in a second sweep after all tuples (0x10711671). A first member store this->f = v costs 2 slots (add(this,off) + 0x14c); a first load through a member pointer costs 5."
   },
   "0x1071174b": {
    "name": "count_successors"
@@ -5180,6 +5192,10 @@
    "name": "g_temp_symbol_free",
    "type": "c2_symbol*"
   },
+  "0x1079bc74": {
+   "name": "g_pool_e_symbol_chunk",
+   "type": "void*"
+  },
   "0x1079bc80": {
    "name": "g_local_symbol_ids",
    "type": "c2_bitset*"
@@ -6545,10 +6561,12 @@
   "0x10704f90": "EH nesting: 0x192/0x1a4 ++, 0x194/0x196 --, 0x1a5 conditional --",
   "0x10705772": "Branch to the physical next block is deleted",
   "0x10705827": "jcc over a lone jmp is inverted unless the jmp block is a loop latch",
+  "0x10706252": "Class-3 records, including CSE expression symbols after 0x10707ebc marks them cls 3, go to g_temp_symbol_free; pool A pops them LIFO (Hill/Valley: 900 of 3003 post-entry class-3 allocations reuse pool-E ids).",
   "0x10707165": "dead assignment deletion: status bytes 1/2 (fact tuples) are skipped",
   "0x107072b5": "side-effecting src with dead dst: kind 0xc gets a fresh temp dst instead of deletion",
   "0x10707bdb": "expression hash = (op + type&0xfff) mod 101",
   "0x10707dba": "commutative ops also match swapped operands",
+  "0x10707ec1": "Pool E allocation: every CSE expression symbol id. Ids C0+n, consecutive, never recycled into pool E (cse-slot-count.md).",
   "0x10709064": "Fall-through successor is threaded only when g_opt_favor_speed (/Ot) is set.",
   "0x10709567": "new machine jmp for a threaded fall-through edge (bonus_pick_random_type's mover J is created here)",
   "0x1070968c": "jump-threading chain limit: 10 hops",
@@ -6585,6 +6603,7 @@
   "0x1070fd52": "free unreferenced temp chain (ids go LIFO to free list)",
   "0x10711209": "assign_expression_owners: pure address expressions such as `p + field_offset` get consecutive class-3 owner ids in IL order; a field leaf then becomes [owner+0] and its sort hash keeps only owner mod 4 (0x10007 | (owner&3)<<14). Verified in player_update (owner #4552 vs #4554).",
   "0x1071158f": "signed int x - const canonicalized to x + (-const)",
+  "0x10711671": "Second sweep: 0x15b assignments get expression numbers only after every tuple's expressions are numbered, so copies never move pass-1 CSE ids (Hill/Valley: first assignment number n=415).",
   "0x10711afa": "forward_propagate_definitions: a single-use float local that copies a loaded float (float t = mem; dst = t;) is moved to its use with a 0x162 FROUND; the FROUND keeps the copy on the x87 stack (fld; FROUND; fst; fstp) instead of the float-copy-to-integer-MOV lowering. Verified by sched_trace on highscore_screen_update window 142 (plain-float-sources.md section 1).",
   "0x10711ea2": "fwd-prop: def of aggregate (0x5000) type never substituted",
   "0x10711f0f": "fwd-prop: dominance + same innermost loop required",
