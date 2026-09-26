@@ -2,6 +2,7 @@ const std = @import("std");
 
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("../runtime/native_math.zig");
 const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const tier5_builders = [_]common.LevelBuilder{
@@ -164,14 +165,14 @@ fn build502TheSpankingOfTheDead(
     var trigger: i32 = 5000;
     var step_index: i32 = 0;
     while (trigger < 0xA988) {
-        const angle = @as(f64, @floatFromInt(step_index)) * 0.33333334;
-        const radius = 512.0 - @as(f64, @floatFromInt(step_index)) * 3.8;
-        const pos = common.ringPoint(.{ .x = 512.0, .y = 512.0 }, radius, angle);
+        const angle = common.angleStep(step_index, 0.33333334, 0.0);
+        const radius = native_math.pc24Sub(512.0, native_math.pc24Mul(@as(f32, @floatFromInt(step_index)), @as(f32, 3.8)));
+        const pos = common.ringPoint(common.native_center, radius, angle);
         try common.appendSpawn(
             out_entries,
             len,
             pos,
-            @floatCast(angle),
+            angle,
             common.SpawnId.zombie_random_41,
             trigger,
             1,
@@ -211,7 +212,7 @@ fn build503TheFortress(
 
     const half_height = ctx.height * 0.5;
 
-    try common.appendSpawnExact(
+    try common.appendSpawn(
         out_entries,
         len,
         .{ .x = -50.0, .y = half_height },
@@ -224,8 +225,8 @@ fn build503TheFortress(
     var trigger: i32 = 1100;
     var y_seed: i32 = 0x200;
     while (trigger < 0x14B4) {
-        const y: f32 = @floatCast((@as(f64, @floatFromInt(y_seed)) * 0.125) + 256.0);
-        try common.appendSpawnExact(
+        const y = native_math.pc24Add(native_math.pc24Mul(@as(f32, @floatFromInt(y_seed)), @as(f32, 0.125)), 256.0);
+        try common.appendSpawn(
             out_entries,
             len,
             .{ .x = 768.0, .y = y },
@@ -240,16 +241,16 @@ fn build503TheFortress(
 
     var entry_count: i32 = 8;
     var x_seed: i32 = 0x180;
-    const one_sixth: f64 = @floatCast(@as(f32, 0.16666667));
+    const one_sixth: f32 = 0.16666667;
     while (x_seed < 0x901) {
         trigger = entry_count * 600 + 0x157C;
 
         var row: i32 = 1;
         while (row < 7) : (row += 1) {
             if (row != 1 or (x_seed != 0x480 and x_seed != 0x600)) {
-                const x: f32 = @floatCast((@as(f64, @floatFromInt(x_seed)) * one_sixth) + 256.0);
-                const y: f32 = @floatCast(512.0 - (@as(f64, @floatFromInt(row * 0x180)) * one_sixth));
-                try common.appendSpawnExact(
+                const x = native_math.pc24Add(native_math.pc24Mul(@as(f32, @floatFromInt(x_seed)), one_sixth), 256.0);
+                const y = native_math.pc24Sub(512.0, native_math.pc24Mul(@as(f32, @floatFromInt(row * 0x180)), one_sixth));
+                try common.appendSpawn(
                     out_entries,
                     len,
                     .{ .x = x, .y = y },
@@ -277,7 +278,7 @@ fn build504TheGangWars(
 
     const half_height = ctx.height * 0.5;
 
-    try common.appendSpawnExact(
+    try common.appendSpawn(
         out_entries,
         len,
         .{ .x = -150.0, .y = half_height },
@@ -286,7 +287,7 @@ fn build504TheGangWars(
         100,
         1,
     );
-    try common.appendSpawnExact(
+    try common.appendSpawn(
         out_entries,
         len,
         .{ .x = 1174.0, .y = half_height },
@@ -299,7 +300,7 @@ fn build504TheGangWars(
     var trigger: i32 = 5500;
     var wave: usize = 0;
     while (wave < 10) : (wave += 1) {
-        try common.appendSpawnExact(
+        try common.appendSpawn(
             out_entries,
             len,
             .{ .x = 1174.0, .y = half_height },
@@ -311,7 +312,7 @@ fn build504TheGangWars(
         trigger += 4000;
     }
 
-    try common.appendSpawnExact(
+    try common.appendSpawn(
         out_entries,
         len,
         .{ .x = 512.0, .y = 1152.0 },
@@ -323,7 +324,7 @@ fn build504TheGangWars(
 
     trigger = 59_500;
     while (trigger < 0x184AC) {
-        try common.appendSpawnExact(
+        try common.appendSpawn(
             out_entries,
             len,
             .{ .x = -150.0, .y = half_height },
@@ -335,7 +336,7 @@ fn build504TheGangWars(
         trigger += 4000;
     }
 
-    try common.appendSpawnExact(
+    try common.appendSpawn(
         out_entries,
         len,
         .{ .x = 512.0, .y = 1152.0 },
@@ -523,9 +524,10 @@ fn build507ArmyOfThree(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
+    _ = ctx;
     _ = rng;
-    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
-    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
+    const edges = common.squareEdgeMidpoints(common.native_terrain_size, 64.0);
+    const edges_wide = common.squareEdgeMidpoints(common.native_terrain_size, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -637,7 +639,7 @@ fn build508MonsterBlues(
     _ = rng;
 
     const mid_y = ctx.height * 0.5;
-    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(common.native_terrain_size, 64.0);
 
     try common.appendSpawn(
         out_entries,

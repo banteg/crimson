@@ -149,11 +149,13 @@ test "the end of all stays in native fixed coordinate space" {
     try std.testing.expectApproxEqAbs(@as(f32, -128.0), built.entries[11].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 1152.0), built.entries[12].pos.x, 1e-6);
 
+    // Native float32 ring positions (checked against `quest_build_the_end_of_all`
+    // by tests/native_oracle/test_quest_builders.py).
     const hardcore = try buildQuestSpawnTableWithHardcore(410, 1, 0, 2048.0, true, out_entries[0..]);
-    try std.testing.expectApproxEqAbs(@as(f32, 332.0), hardcore.entries[26].pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 511.0), hardcore.entries[26].pos.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 667.0), hardcore.entries[31].pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 422.0), hardcore.entries[31].pos.y, 1e-6);
+    try std.testing.expectEqual(@as(u32, 0x43A60000), @as(u32, @bitCast(hardcore.entries[26].pos.x)));
+    try std.testing.expectEqual(@as(u32, 0x43FFFFFF), @as(u32, @bitCast(hardcore.entries[26].pos.y)));
+    try std.testing.expectEqual(@as(u32, 0x4426F89D), @as(u32, @bitCast(hardcore.entries[31].pos.x)));
+    try std.testing.expectEqual(@as(u32, 0x43D30002), @as(u32, @bitCast(hardcore.entries[31].pos.y)));
 }
 
 test "the gathering edges stay at native fixed coordinates" {
@@ -250,7 +252,8 @@ test "fortress uses native half height" {
     try std.testing.expectApproxEqAbs(@as(f32, 1024.5), entries[0].pos.y, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 320.0), entries[8].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 448.0), entries[8].pos.y, 1e-6);
-    try std.testing.expectEqual(@as(u32, 0x42FFFFFE), @as(u32, @bitCast(entries[13].pos.y)));
+    // `512.0f - (float)(row * 0x180) * 0.16666667f` rounds the product first.
+    try std.testing.expectEqual(@as(u32, 0x43000000), @as(u32, @bitCast(entries[13].pos.y)));
 }
 
 test "alien squads far corner stays at native fixed coordinate" {
@@ -332,8 +335,10 @@ test "level 1-10 rectangular spawn summary stays stable" {
     const entries = out_entries[0..len];
     var expected: [57]spawn_runtime.QuestSpawnEntry = undefined;
     var expected_len: usize = 0;
+    // The boss reads `terrain_texture_width` for both axes; the corner lanes
+    // are fixed 1024-terrain literals.
     expected[expected_len] = .{
-        .pos = .{ .x = 1344.0, .y = 450.0 },
+        .pos = .{ .x = 1344.0, .y = 800.0 },
         .heading = 0.0,
         .spawn_id = @enumFromInt(58),
         .trigger_ms = 1000,
@@ -352,21 +357,21 @@ test "level 1-10 rectangular spawn summary stays stable" {
                 .count = 3,
             },
             .{
-                .pos = .{ .x = 1625.0, .y = -25.0 },
+                .pos = .{ .x = 1049.0, .y = -25.0 },
                 .heading = 0.0,
                 .spawn_id = @enumFromInt(61),
                 .trigger_ms = trigger,
                 .count = 1,
             },
             .{
-                .pos = .{ .x = -25.0, .y = 925.0 },
+                .pos = .{ .x = -25.0, .y = 1049.0 },
                 .heading = 0.0,
                 .spawn_id = @enumFromInt(61),
                 .trigger_ms = trigger,
                 .count = 3,
             },
             .{
-                .pos = .{ .x = 1625.0, .y = 925.0 },
+                .pos = .{ .x = 1049.0, .y = 1049.0 },
                 .heading = 0.0,
                 .spawn_id = @enumFromInt(61),
                 .trigger_ms = trigger,
@@ -489,9 +494,9 @@ test "append radial spawns rejects non-positive radius step" {
             &len,
             .{ .x = 512.0, .y = 384.0 },
             1.0,
-            84.0,
-            252.0,
-            0.0,
+            84,
+            252,
+            0,
             .zero,
             common.SpawnId.alien_small_gray_26,
             2000,
@@ -512,9 +517,9 @@ test "append radial spawns rejects inverted radius range" {
             &len,
             .{ .x = 512.0, .y = 384.0 },
             1.0,
-            252.0,
-            84.0,
-            42.0,
+            252,
+            84,
+            42,
             .from_center,
             common.SpawnId.alien_small_gray_26,
             2000,

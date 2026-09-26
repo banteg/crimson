@@ -8,12 +8,15 @@ from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
+    NATIVE_CENTER,
+    NATIVE_TERRAIN_SIZE,
     center_point,
     corner_points,
     edge_midpoints,
     heading_from_center,
+    random_angle,
+    ring_point,
     spawn,
-    spawn_at,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -28,12 +31,12 @@ from .types import QuestContext, SpawnEntry
 )
 def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
-    top_left, top_right, bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
+    top_left, top_right, bottom_left, _bottom_right = corner_points(NATIVE_TERRAIN_SIZE)
     return [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=500, count=1),
-        spawn_at(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=2500, count=2),
-        spawn_at(top_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=6500, count=3),
-        spawn_at(top_right, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=11500, count=4),
+        spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=500, count=1),
+        spawn(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=2500, count=2),
+        spawn(top_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=6500, count=3),
+        spawn(top_right, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=11500, count=4),
     ]
 
 
@@ -66,7 +69,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
     for i in range(2, 18):
         trigger = (i * 5 - 10) * 720
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
@@ -86,7 +89,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
             )
         if i == 13:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.bottom,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
@@ -120,18 +123,11 @@ def build_1_3_target_practice(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
-        angle = (
-            float(
-                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE)
-                % 612,
-            )
-            * 0.01
-        )
+        angle = random_angle(rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE))
         radius = (
             int(
                 rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS)
@@ -139,8 +135,8 @@ def build_1_3_target_practice(
             )
             + 2
         ) * 32
-        point = center + Vec2.from_angle(angle) * radius
-        heading = heading_from_center(point, center)
+        point = ring_point(NATIVE_CENTER, float(radius), angle)
+        heading = heading_from_center(point, NATIVE_CENTER)
         entries.append(
             spawn(
                 point,
@@ -166,8 +162,10 @@ def build_1_3_target_practice(
 )
 def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width, ctx.height)
-    top_left, top_right, _bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
+    edges = edge_midpoints(NATIVE_TERRAIN_SIZE)
+    # Only the bottom lane's x reads `terrain_texture_width`.
+    bottom = Vec2(float(ctx.width // 2), edges.bottom.y)
+    top_left, top_right, _bottom_left, _bottom_right = corner_points(NATIVE_TERRAIN_SIZE)
     step = 2500
     for i in range(2, 22):
         if i < 5:
@@ -178,8 +176,8 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
             spawn_id = SpawnId.ALIEN_SMALL_GRAY_26
         trigger = i * step - 5000
         entries.append(
-            spawn_at(
-                edges.bottom,
+            spawn(
+                bottom,
                 heading=0.0,
                 spawn_id=spawn_id,
                 trigger_ms=trigger,
@@ -188,7 +186,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
         )
         if i > 4:
             entries.append(
-                spawn_at(
+                spawn(
                     top_left,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
@@ -198,7 +196,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
             )
         if i > 10:
             entries.append(
-                spawn_at(
+                spawn(
                     top_right,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
@@ -209,7 +207,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
         if i == 10:
             burst_trigger = (step * 5 - 2500) * 2
             entries.append(
-                spawn_at(
+                spawn(
                     edges.right,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
@@ -218,7 +216,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
                 ),
             )
             entries.append(
-                spawn_at(
+                spawn(
                     edges.left,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
@@ -291,12 +289,11 @@ def build_1_6_the_random_factor(
     full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    center = center_point(ctx.width, ctx.height)
-    edges = edge_midpoints(ctx.width, ctx.height)
+    edges = edge_midpoints(ctx.width, ctx.width)
     trigger = 1500
     while trigger < 101500:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_RANDOM_1D,
@@ -305,7 +302,7 @@ def build_1_6_the_random_factor(
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_RANDOM_1D,
@@ -322,7 +319,7 @@ def build_1_6_the_random_factor(
         ):
             entries.append(
                 spawn(
-                    Vec2(center.x, edges.bottom.y),
+                    Vec2(edges.bottom.x, NATIVE_TERRAIN_SIZE + 64.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
                     trigger_ms=trigger,
@@ -342,11 +339,11 @@ def build_1_6_the_random_factor(
 )
 def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width, ctx.height)
+    edges = edge_midpoints(ctx.width, ctx.width)
     trigger = 1500
     while trigger < 100500:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
@@ -564,11 +561,11 @@ def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_versio
             count=1,
         ),
     ]
-    top_left, top_right, bottom_left, bottom_right = corner_points(ctx.width, ctx.height, offset=25.0)
+    top_left, top_right, bottom_left, bottom_right = corner_points(NATIVE_TERRAIN_SIZE, offset=25.0)
     trigger = 6000
     while trigger < 36800:
         entries.append(
-            spawn_at(
+            spawn(
                 top_left,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
@@ -577,7 +574,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 top_right,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
@@ -586,7 +583,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 bottom_left,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
@@ -595,7 +592,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 bottom_right,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,

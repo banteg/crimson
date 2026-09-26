@@ -6,13 +6,16 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
-from ..math_parity import f32
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
+    NATIVE_CENTER,
+    angle_step,
+    line_points,
+    ring_point,
     ring_points,
     spawn,
-    spawn_exact,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -131,9 +134,9 @@ def build_5_2_the_spanking_of_the_dead(
     trigger = 5000
     step_index = 0
     while trigger < 0xA988:
-        angle = step_index * 0.33333334
-        radius = 512.0 - step_index * 3.8
-        pos = Vec2.from_polar(angle, radius).offset(dx=512.0, dy=512.0)
+        angle = angle_step(step_index, 0.33333334)
+        radius = x87_pc24_sub(512.0, x87_pc24_mul(float(step_index), f32(3.8)))
+        pos = ring_point(NATIVE_CENTER, radius, angle)
         entries.append(
             spawn(
                 pos,
@@ -178,7 +181,7 @@ def build_5_2_the_spanking_of_the_dead(
 def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     half_height = float(ctx.height) * 0.5
     entries: list[SpawnEntry] = [
-        spawn_exact(
+        spawn(
             Vec2(-50.0, half_height),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
@@ -190,10 +193,10 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
     trigger = 1100
     y_seed = 0x200
     while trigger < 0x14B4:
-        y = float(f32(y_seed * 0.125 + 256.0))
+        y = x87_pc24_add(x87_pc24_mul(float(y_seed), 0.125), 256.0)
         entries.append(
-            spawn_exact(
-                Vec2(768.0, float(y)),
+            spawn(
+                Vec2(768.0, y),
                 heading=0.0,
                 spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
                 trigger_ms=trigger,
@@ -205,16 +208,16 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
 
     entry_count = 8
     x_seed = 0x180
-    one_sixth = float(f32(0.16666667))
+    one_sixth = f32(0.16666667)
     while x_seed < 0x901:
         trigger = entry_count * 600 + 0x157C
         for row in range(1, 7):
             if row != 1 or x_seed not in (0x480, 0x600):
-                x = float(f32(x_seed * one_sixth + 256.0))
-                y = float(f32(512.0 - (row * 0x180) * one_sixth))
+                x = x87_pc24_add(x87_pc24_mul(float(x_seed), one_sixth), 256.0)
+                y = x87_pc24_sub(512.0, x87_pc24_mul(float(row * 0x180), one_sixth))
                 entries.append(
-                    spawn_exact(
-                        Vec2(float(x), float(y)),
+                    spawn(
+                        Vec2(x, y),
                         heading=0.0,
                         spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                         trigger_ms=trigger,
@@ -238,14 +241,14 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
 def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     half_height = float(ctx.height) * 0.5
     entries: list[SpawnEntry] = [
-        spawn_exact(
+        spawn(
             Vec2(-150.0, half_height),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=100,
             count=1,
         ),
-        spawn_exact(
+        spawn(
             Vec2(1174.0, half_height),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
@@ -257,7 +260,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
     trigger = 5500
     for _ in range(10):
         entries.append(
-            spawn_exact(
+            spawn(
                 Vec2(1174.0, half_height),
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
@@ -268,7 +271,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
         trigger += 4000
 
     entries.append(
-        spawn_exact(
+        spawn(
             Vec2(512.0, 1152.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
@@ -280,7 +283,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
     trigger = 59500
     while trigger < 0x184AC:
         entries.append(
-            spawn_exact(
+            spawn(
                 Vec2(-150.0, half_height),
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
@@ -291,7 +294,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
         trigger += 4000
 
     entries.append(
-        spawn_exact(
+        spawn(
             Vec2(512.0, 1152.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
@@ -608,11 +611,10 @@ def build_5_8_monster_blues(ctx: QuestContext, *, rng: CrandLike, full_version: 
 def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
-    center = Vec2(512.0, 512.0)
-    for pos, angle in ring_points(center, 128.0, 8, step=0.7853982):
+    for pos, angle in ring_points(NATIVE_CENTER, 128.0, 8, step=0.7853982):
         entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=2000, count=1))
 
-    for pos, angle in ring_points(center, 178.0, 12, step=0.5235988):
+    for pos, angle in ring_points(NATIVE_CENTER, 178.0, 12, step=0.5235988):
         entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=8000, count=1))
 
     trigger = 13000
@@ -656,11 +658,10 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
 
     last_wave = max(wave - 1, 0)
     base_left = (last_wave + 0x97 + wave * 4) * 0xA0
-    for idx in range(6):
-        y = idx * 85.333336 + 256.0
+    for pos in line_points(Vec2(64.0, 256.0), Vec2(0.0, 85.333336), 6):
         entries.append(
             spawn(
-                Vec2(64.0, y),
+                pos,
                 heading=0.0,
                 spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                 trigger_ms=base_left,
@@ -670,11 +671,10 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         base_left += 100
 
     base_right = wave * 800 + 25000
-    for idx in range(6):
-        y = idx * 85.333336 + 256.0
+    for pos in line_points(Vec2(960.0, 256.0), Vec2(0.0, 85.333336), 6):
         entries.append(
             spawn(
-                Vec2(960.0, y),
+                pos,
                 heading=0.0,
                 spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                 trigger_ms=base_right,

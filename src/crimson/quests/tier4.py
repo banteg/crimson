@@ -4,14 +4,17 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
+from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
 from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
-    center_point,
+    NATIVE_CENTER,
+    NATIVE_TERRAIN_SIZE,
+    angle_step,
     edge_midpoints,
+    ring_point,
     ring_points,
     spawn,
-    spawn_at,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -26,11 +29,11 @@ from .types import QuestContext, SpawnEntry
 )
 def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints(NATIVE_TERRAIN_SIZE)
     trigger = 4000
     for offset in range(0, 0x5DC, 0xF):
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
@@ -39,7 +42,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.top,
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
@@ -66,7 +69,7 @@ def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     trigger = 1500
     while trigger < 0x17CDC:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -75,7 +78,7 @@ def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -101,7 +104,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
     wave = 0
     while trigger < 0x1BB5C:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -110,7 +113,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -153,12 +156,13 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
 def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
+    top = edge_midpoints(NATIVE_TERRAIN_SIZE).top
     trigger = 1500
     wave = 0
     while trigger < 0x2B55C:
-        count = int(wave * 0.8 + 7)
+        count = int(x87_pc24_add(x87_pc24_mul(float(wave), f32(0.8)), 7.0))
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.AI1_ALIEN_BLUE_TINT_1A,
@@ -167,7 +171,7 @@ def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_versi
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.bottom,
                 heading=0.0,
                 spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
@@ -176,7 +180,7 @@ def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_versi
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
@@ -185,8 +189,8 @@ def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_versi
             ),
         )
         entries.append(
-            spawn_at(
-                edges.top,
+            spawn(
+                top,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
@@ -213,7 +217,7 @@ def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: b
     wave = 0
     while trigger < 0x1656C:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -223,7 +227,7 @@ def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: b
         )
         if wave % 2 == 0:
             entries.append(
-                spawn_at(
+                spawn(
                     edges_wide.right,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
@@ -396,6 +400,14 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_versio
     return entries
 
 
+def _gauntlet_ring(radius: float, count: int) -> list[Vec2]:
+    # `(float)index * 6.2831855f / (float)count`, each x87 op rounded (0x004369de).
+    return [
+        ring_point(NATIVE_CENTER, radius, x87_pc24_div(x87_pc24_mul(float(index), NATIVE_TAU), float(count)))
+        for index in range(count)
+    ]
+
+
 @register_quest(
     level="4.7",
     title="Gauntlet",
@@ -406,13 +418,12 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_versio
 def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if ctx.hardcore else 0)
-    center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width)
 
     ring_count = player_count + 9
     if ring_count > 0:
         trigger = 0
-        for pos, _angle in ring_points(center, 158.0, ring_count):
+        for pos in _gauntlet_ring(158.0, ring_count):
             entries.append(
                 spawn(
                     pos,
@@ -428,7 +439,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
         trigger = 4000
         for count in range(2, ring_count + 2):
             entries.append(
-                spawn_at(
+                spawn(
                     edges.right,
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -437,7 +448,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
                 ),
             )
             entries.append(
-                spawn_at(
+                spawn(
                     edges.left,
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -446,7 +457,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
                 ),
             )
             entries.append(
-                spawn_at(
+                spawn(
                     edges.bottom,
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -455,7 +466,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
                 ),
             )
             entries.append(
-                spawn_at(
+                spawn(
                     edges.top,
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -468,7 +479,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
     outer_count = player_count + 0x11
     if outer_count > 0:
         trigger = 42500
-        for pos, _angle in ring_points(center, 258.0, outer_count):
+        for pos in _gauntlet_ring(258.0, outer_count):
             entries.append(
                 spawn(
                     pos,
@@ -616,10 +627,8 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
         ),
     ]
 
-    center = Vec2(512.0, 512.0)
-
     trigger = 13000
-    for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976):
+    for pos, _angle in ring_points(NATIVE_CENTER, 80.0, 6, step=1.0471976):
         entries.append(
             spawn(
                 pos,
@@ -660,7 +669,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
         y += 0x80
 
     trigger = 43000
-    for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976, start=0.5235988):
+    for pos, _angle in ring_points(NATIVE_CENTER, 80.0, 6, step=1.0471976, start=0.5235988):
         entries.append(
             spawn(
                 pos,
@@ -675,8 +684,8 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
     if ctx.hardcore:
         trigger = 62800
         for ring_index in range(12):
-            angle = float(ring_index + 1) * 0.5235988
-            pos = center + Vec2.from_angle(angle) * 180.0
+            # `((float)ring_index + 1.0f) * 0.5235988f`
+            pos = ring_point(NATIVE_CENTER, 180.0, angle_step(ring_index + 1, 0.5235988))
             entries.append(
                 spawn(
                     pos,

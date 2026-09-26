@@ -4,17 +4,18 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
+    NATIVE_CENTER,
     center_point,
     edge_midpoints,
-    line_points,
     radial_points,
+    random_angle,
     ring_points,
     spawn,
-    spawn_at,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -31,14 +32,14 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
     edges = edge_midpoints(ctx.width)
     edges_wide = edge_midpoints(ctx.width, offset=128.0)
     entries = [
-        spawn_at(
+        spawn(
             edges_wide.right,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
             trigger_ms=1500,
             count=2,
         ),
-        spawn_at(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
+        spawn(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
         spawn(
             Vec2(896.0, 128.0),
             heading=0.0,
@@ -73,7 +74,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
     for wave in range(8):
         if wave in (2, 4):
             entries.append(
-                spawn_at(
+                spawn(
                     edges_wide.left,
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
@@ -83,7 +84,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
             )
         if wave in (3, 5):
             entries.append(
-                spawn_at(
+                spawn(
                     Vec2(1152.0, edges_wide.right.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
@@ -95,7 +96,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
         edge = wave % 5
         if edge == 0:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.right,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -106,7 +107,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
             trigger += 15000
         elif edge == 1:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.left,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -117,7 +118,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
             trigger += 15000
         elif edge == 2:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.bottom,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -128,7 +129,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
             trigger += 15000
         elif edge == 3:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.top,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -149,7 +150,6 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
     unlock_weapon_id=WeaponId.MULTI_PLASMA,
 )
 def build_3_2_lizard_kings(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    center = center_point(ctx.width, ctx.height)
     entries = [
         spawn(
             Vec2(1152.0, 512.0),
@@ -174,7 +174,7 @@ def build_3_2_lizard_kings(ctx: QuestContext, *, rng: CrandLike, full_version: b
         ),
     ]
     trigger = 1500
-    for pos, angle in ring_points(center, 256.0, 28, step=0.34906587):
+    for pos, angle in ring_points(NATIVE_CENTER, 256.0, 28, step=0.34906587):
         entries.append(
             spawn(
                 pos,
@@ -239,7 +239,7 @@ def build_3_3_the_killing(
         edge = wave % 5
         if edge == 0:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.right,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -249,7 +249,7 @@ def build_3_3_the_killing(
             )
         elif edge == 1:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.left,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -259,7 +259,7 @@ def build_3_3_the_killing(
             )
         elif edge == 2:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.bottom,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -269,7 +269,7 @@ def build_3_3_the_killing(
             )
         elif edge == 3:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.top,
                     heading=0.0,
                     spawn_id=spawn_id,
@@ -317,24 +317,29 @@ def build_3_3_the_killing(
 def build_3_4_hidden_evil(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     return [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_1_21, trigger_ms=500, count=50),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=15000, count=30),
-        spawn_at(
+        spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_1_21, trigger_ms=500, count=50),
+        spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=15000, count=30),
+        spawn(
             edges.bottom,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_HIDDEN_3_23,
             trigger_ms=25000,
             count=20,
         ),
-        spawn_at(
+        spawn(
             edges.bottom,
             heading=0.0,
             spawn_id=SpawnId.ALIEN_HIDDEN_3_23,
             trigger_ms=30000,
             count=30,
         ),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=35000, count=30),
+        spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=35000, count=30),
     ]
+
+
+def _surrounded_by_reptiles_axes() -> list[float]:
+    # `(float)line_offset * 0.2f + 256.0f` for line_offset = 0, 512, ... 2048.
+    return [x87_pc24_add(x87_pc24_mul(float(offset), f32(0.2)), 256.0) for offset in range(0, 5 * 512, 512)]
 
 
 @register_quest(
@@ -352,10 +357,10 @@ def build_3_5_surrounded_by_reptiles(
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1000
-    for pos in line_points(Vec2(256.0, 256.0), Vec2(0.0, 102.4), 5):
+    for axis in _surrounded_by_reptiles_axes():
         entries.append(
             spawn(
-                Vec2(256.0, pos.y),
+                Vec2(256.0, axis),
                 heading=0.0,
                 spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
@@ -364,7 +369,7 @@ def build_3_5_surrounded_by_reptiles(
         )
         entries.append(
             spawn(
-                Vec2(768.0, pos.y),
+                Vec2(768.0, axis),
                 heading=0.0,
                 spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
@@ -374,10 +379,10 @@ def build_3_5_surrounded_by_reptiles(
         trigger += 800
 
     trigger = 8000
-    for pos in line_points(Vec2(256.0, 256.0), Vec2(102.4, 0.0), 5):
+    for axis in _surrounded_by_reptiles_axes():
         entries.append(
             spawn(
-                Vec2(pos.x, 256.0),
+                Vec2(axis, 256.0),
                 heading=0.0,
                 spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
@@ -386,7 +391,7 @@ def build_3_5_surrounded_by_reptiles(
         )
         entries.append(
             spawn(
-                Vec2(pos.x, 768.0),
+                Vec2(axis, 768.0),
                 heading=0.0,
                 spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
@@ -411,7 +416,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_versio
     for wave in range(10):
         count = wave + 6
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
@@ -420,7 +425,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
@@ -453,7 +458,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     edges = edge_midpoints(ctx.width)
     center = center_point(ctx.width, ctx.height)
     entries = [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, trigger_ms=500, count=1),
+        spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, trigger_ms=500, count=1),
         spawn(
             Vec2(center.x + 64.0, edges.bottom.y),
             heading=0.0,
@@ -461,7 +466,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             trigger_ms=500,
             count=1,
         ),
-        spawn_at(edges.top, heading=0.0, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=500, count=4),
+        spawn(edges.top, heading=0.0, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=500, count=4),
     ]
 
     trigger = 17000
@@ -469,7 +474,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     while trigger < 107000:
         count = step_count // 2 + 3
         entries.append(
-            spawn_at(
+            spawn(
                 edges.bottom,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
@@ -478,7 +483,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.top,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
@@ -504,7 +509,7 @@ def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     trigger = 1500
     while trigger < 91500:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
@@ -513,7 +518,7 @@ def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.LIZARD_RANDOM_2E,
@@ -564,18 +569,11 @@ def build_3_9_deja_vu(
     full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = (
-            float(
-                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE)
-                % 612,
-            )
-            * 0.01
-        )
-        for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
+        angle = random_angle(rng.rand_tagged(RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE))
+        for pos in radial_points(NATIVE_CENTER, angle, 0x54, 0xFC, 0x2A):
             entries.append(
                 spawn(
                     pos,

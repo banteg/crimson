@@ -1,5 +1,6 @@
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("../runtime/native_math.zig");
 const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const tier3_builders = [_]common.LevelBuilder{
@@ -136,13 +137,13 @@ fn build302LizardKings(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
+    _ = ctx;
     _ = rng;
-    const center = common.centerPoint(ctx.width, ctx.height);
 
     try common.appendSpawn(
         out_entries,
         len,
-        common.squareEdgeMidpoints(ctx.width, 128.0).right,
+        .{ .x = 1152.0, .y = 512.0 },
         0.0,
         common.SpawnId.formation_chain_lizard_4_11,
         1500,
@@ -170,13 +171,13 @@ fn build302LizardKings(
     var trigger: i32 = 1500;
     var idx: i32 = 0;
     while (idx < 28) : (idx += 1) {
-        const angle = @as(f64, @floatFromInt(idx)) * 0.34906587;
-        const point = common.ringPoint(center, 256.0, angle);
+        const angle = common.angleStep(idx, 0.34906587, 0.0);
+        const point = common.ringPoint(common.native_center, 256.0, angle);
         try common.appendSpawn(
             out_entries,
             len,
             point,
-            @floatCast(-angle),
+            -angle,
             common.SpawnId.lizard_random_31,
             trigger,
             1,
@@ -290,6 +291,11 @@ fn build304HiddenEvil(
     );
 }
 
+/// `(float)line_offset * 0.2f + 256.0f` for line_offset = index * 512.
+fn surroundedByReptilesAxis(index: i32) f32 {
+    return native_math.pc24Add(native_math.pc24Mul(@as(f32, @floatFromInt(index * 512)), @as(f32, 0.2)), 256.0);
+}
+
 fn build305SurroundedByReptiles(
     ctx: common.BuildContext,
     rng: *common.QuestRng,
@@ -298,18 +304,12 @@ fn build305SurroundedByReptiles(
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
     _ = rng;
-    const vertical_start_left: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 256.0 };
-    const vertical_start_right: spawn_runtime.Vec2 = .{ .x = 768.0, .y = 256.0 };
-    const vertical_step: spawn_runtime.Vec2 = .{ .x = 0.0, .y = 102.4 };
-    const horizontal_start_top: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 256.0 };
-    const horizontal_start_bottom: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 768.0 };
-    const horizontal_step: spawn_runtime.Vec2 = .{ .x = 102.4, .y = 0.0 };
-
     var trigger: i32 = 1000;
     var idx: i32 = 0;
     while (idx < 5) : (idx += 1) {
-        const left_pos = common.linePointAt(vertical_start_left, vertical_step, idx);
-        const right_pos = common.linePointAt(vertical_start_right, vertical_step, idx);
+        const axis = surroundedByReptilesAxis(idx);
+        const left_pos: spawn_runtime.Vec2 = .{ .x = 256.0, .y = axis };
+        const right_pos: spawn_runtime.Vec2 = .{ .x = 768.0, .y = axis };
         try common.appendSpawn(
             out_entries,
             len,
@@ -334,8 +334,9 @@ fn build305SurroundedByReptiles(
     trigger = 8000;
     idx = 0;
     while (idx < 5) : (idx += 1) {
-        const top_pos = common.linePointAt(horizontal_start_top, horizontal_step, idx);
-        const bottom_pos = common.linePointAt(horizontal_start_bottom, horizontal_step, idx);
+        const axis = surroundedByReptilesAxis(idx);
+        const top_pos: spawn_runtime.Vec2 = .{ .x = axis, .y = 256.0 };
+        const bottom_pos: spawn_runtime.Vec2 = .{ .x = axis, .y = 768.0 };
         try common.appendSpawn(
             out_entries,
             len,
@@ -533,7 +534,7 @@ fn build309DejaVu(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const center = common.centerPoint(ctx.width, ctx.height);
+    _ = ctx;
     var trigger: i32 = 2000;
     var step: i32 = 2000;
     while (step > 560) : (step -= 0x50) {
@@ -541,11 +542,11 @@ fn build309DejaVu(
         try common.appendRadialSpawns(
             out_entries,
             len,
-            center,
+            common.native_center,
             angle,
-            84.0,
-            252.0,
-            42.0,
+            84,
+            252,
+            42,
             .zero,
             common.SpawnId.den_lizard_weak_slower_0d,
             trigger,

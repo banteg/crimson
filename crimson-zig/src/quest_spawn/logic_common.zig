@@ -1,8 +1,14 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 
-const math_runtime = @import("../runtime/math.zig");
+const native_math = @import("../runtime/native_math.zig");
 const spawn_runtime = @import("../runtime/spawn.zig");
+
+/// Most builders bake the 1024x1024 quest terrain into float literals (1088.0
+/// for `1024 + 64`, 512.0 for the center) instead of reading
+/// `terrain_texture_width`.
+pub const native_terrain_size: f32 = 1024.0;
+pub const native_center: spawn_runtime.Vec2 = .{ .x = 512.0, .y = 512.0 };
 
 pub const QuestSpawnBuildError = error{
     InvalidQuestSpawnTable,
@@ -79,26 +85,6 @@ pub inline fn appendSpawn(
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
-    try appendSpawnExact(
-        out_entries,
-        len,
-        .{ .x = nativeEntryCoord(pos.x), .y = nativeEntryCoord(pos.y) },
-        heading,
-        spawn_id,
-        trigger_ms,
-        count,
-    );
-}
-
-pub inline fn appendSpawnExact(
-    out_entries: []spawn_runtime.QuestSpawnEntry,
-    len: *usize,
-    pos: spawn_runtime.Vec2,
-    heading: f32,
-    spawn_id: SpawnId,
-    trigger_ms: i32,
-    count: i32,
-) QuestSpawnBuildError!void {
     try appendEntry(out_entries, len, .{
         .pos = pos,
         .heading = heading,
@@ -167,23 +153,22 @@ pub inline fn cornerPointBottomRight(width: f32, height: f32, offset: f32) spawn
     return .{ .x = width + offset, .y = height + offset };
 }
 
-pub inline fn randomAngle(rng: *QuestRng) f64 {
-    // Quest scripts draw a 15-bit CRT random value, modulo 612, then scale by
-    // 0.01 radians.
-    return @as(f64, @floatFromInt(rng.randBelow(0x264))) * 0.01;
+/// `(float)(crt_rand() % 612) * 0.01f`, rounded by the x87 `fmul`.
+pub inline fn randomAngle(rng: *QuestRng) f32 {
+    return native_math.pc24Mul(@as(f32, @floatFromInt(rng.randBelow(0x264))), @as(f32, 0.01));
 }
 
-pub inline fn nativeEntryCoord(value: f32) f32 {
-    // Native quest spawn entries store integer coordinates: computed positions
-    // are truncated on write and headings derive from the truncated point.
-    return @trunc(value);
+/// `(float)index * step + start` with each x87 op rounded to float32.
+pub inline fn angleStep(index: i32, step: f32, start: f32) f32 {
+    const angle = native_math.pc24Mul(@as(f32, @floatFromInt(index)), step);
+    return if (start != 0.0) native_math.pc24Add(angle, start) else angle;
 }
 
+/// `atan2(pos - center) - 1.5707964f` on the stored float32 position: `fpatan`
+/// stays wide and the `fsub` rounds (`quest_build_target_practice` 0x00437a00).
 pub inline fn headingFromCenter(point: spawn_runtime.Vec2, center: spawn_runtime.Vec2) f32 {
-    const tx = nativeEntryCoord(point.x);
-    const ty = nativeEntryCoord(point.y);
-    const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
-    return @floatCast(math_runtime.atan2(@as(f64, ty - center.y), @as(f64, tx - center.x)) - @as(f64, native_half_pi));
+    const angle = native_math.fpatan(native_math.pc24Sub(point.y, center.y), native_math.pc24Sub(point.x, center.x));
+    return native_math.pc24Sub(angle, native_math.native_half_pi);
 }
 
 pub inline fn addVec(a: spawn_runtime.Vec2, b: spawn_runtime.Vec2) spawn_runtime.Vec2 {
@@ -207,21 +192,16 @@ pub inline fn mulVec(vec: spawn_runtime.Vec2, scalar: f32) spawn_runtime.Vec2 {
     };
 }
 
-pub inline fn toAngle(vec: spawn_runtime.Vec2) f32 {
-    return math_runtime.atan2(vec.y, vec.x);
-}
-
 pub inline fn linePointAt(start: spawn_runtime.Vec2, step: spawn_runtime.Vec2, idx: i32) spawn_runtime.Vec2 {
     return addVec(start, mulVec(step, @as(f32, @floatFromInt(idx))));
 }
 
-/// The spawn-entry point `radius` away from `center` at `angle`. Quest
-/// scripts place these in double precision and store the truncated integer
-/// coordinates.
-pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f64, angle: f64) spawn_runtime.Vec2 {
+/// `(float)cos(angle) * radius + center`: `fcos`/`fsin` stay wide, the `fmul`
+/// and `fadd` round.
+pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f32, angle: f32) spawn_runtime.Vec2 {
     return .{
-        .x = @floatCast(@trunc(@as(f64, center.x) + std.math.cos(angle) * radius)),
-        .y = @floatCast(@trunc(@as(f64, center.y) + std.math.sin(angle) * radius)),
+        .x = native_math.pc24Add(native_math.pc24Mul(@cos(@as(f64, angle)), radius), center.x),
+        .y = native_math.pc24Add(native_math.pc24Mul(@sin(@as(f64, angle)), radius), center.y),
     };
 }
 
@@ -244,10 +224,10 @@ pub fn appendRingSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     center: spawn_runtime.Vec2,
-    radius: f64,
+    radius: f32,
     count: i32,
-    step: f64,
-    start_angle: f64,
+    step: f32,
+    start_angle: f32,
     heading_mode: RingHeadingMode,
     spawn_id: SpawnId,
     trigger_start: i32,
@@ -258,10 +238,10 @@ pub fn appendRingSpawns(
     var trigger = trigger_start;
     var idx: i32 = 0;
     while (idx < count) : (idx += 1) {
-        const angle = start_angle + @as(f64, @floatFromInt(idx)) * step;
+        const angle = angleStep(idx, step, start_angle);
         const heading: f32 = switch (heading_mode) {
             .zero => 0.0,
-            .angle => @floatCast(angle),
+            .angle => angle,
         };
         try appendSpawn(
             out_entries,
@@ -280,19 +260,28 @@ pub fn appendRadialSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     center: spawn_runtime.Vec2,
-    angle: f64,
-    radius_start: f64,
-    radius_end: f64,
-    radius_step: f64,
+    angle: f32,
+    radius_start: i32,
+    radius_end: i32,
+    radius_step: i32,
     heading_mode: RadialHeadingMode,
     spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
-    if (radius_step <= 0.0 or radius_end < radius_start) return error.InvalidQuestSpawnTable;
+    if (radius_step <= 0 or radius_end < radius_start) return error.InvalidQuestSpawnTable;
+    // `quest_build_sweep_stakes` (0x00437810) and `quest_build_deja_vu`
+    // (0x00437920) spill `cos(angle)` to a float local but keep `sin(angle)`
+    // on the x87 stack.
+    const cos_f32 = native_math.roundF32(@cos(@as(f64, angle)));
+    const sin_wide = @sin(@as(f64, angle));
     var radius = radius_start;
     while (radius < radius_end) : (radius += radius_step) {
-        const pos = ringPoint(center, radius, angle);
+        const r: f32 = @floatFromInt(radius);
+        const pos: spawn_runtime.Vec2 = .{
+            .x = native_math.pc24Add(native_math.pc24Mul(r, cos_f32), center.x),
+            .y = native_math.pc24Add(native_math.pc24Mul(r, sin_wide), center.y),
+        };
         const heading = switch (heading_mode) {
             .zero => 0.0,
             .from_center => headingFromCenter(pos, center),

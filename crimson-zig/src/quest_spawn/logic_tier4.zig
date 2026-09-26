@@ -1,7 +1,6 @@
-const std = @import("std");
-
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("../runtime/native_math.zig");
 const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const tier4_builders = [_]common.LevelBuilder{
@@ -23,7 +22,8 @@ fn build_401_major_alien_breach(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    _ = ctx;
+    const edges = common.squareEdgeMidpoints(common.native_terrain_size, 64.0);
     var trigger: i32 = 4000;
     var offset: i32 = 0;
     while (offset < 0x5DC) : (offset += 0xF) {
@@ -150,10 +150,11 @@ fn build_404_the_collaboration(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const top = common.squareEdgeMidpoints(common.native_terrain_size, 64.0).top;
     var trigger: i32 = 1500;
     var wave: i32 = 0;
     while (trigger < 0x2B55C) {
-        const count = @as(i32, @intFromFloat(@as(f32, @floatFromInt(wave)) * 0.8 + 7.0));
+        const count: i32 = @intFromFloat(native_math.pc24Add(native_math.pc24Mul(@as(f32, @floatFromInt(wave)), @as(f32, 0.8)), 7.0));
         try common.appendSpawn(
             out_entries,
             len,
@@ -184,7 +185,7 @@ fn build_404_the_collaboration(
         try common.appendSpawn(
             out_entries,
             len,
-            edges.top,
+            top,
             0.0,
             common.SpawnId.zombie_random_41,
             trigger,
@@ -311,26 +312,11 @@ fn build_407_gauntlet(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const player_count = ctx.player_count + if (ctx.hardcore) @as(i32, 4) else 0;
-    const center = common.centerPoint(ctx.width, ctx.height);
     const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
 
     const ring_count = player_count + 9;
     if (ring_count > 0) {
-        const step = std.math.tau / @as(f64, @floatFromInt(ring_count));
-        try common.appendRingSpawns(
-            out_entries,
-            len,
-            center,
-            158.0,
-            ring_count,
-            step,
-            0.0,
-            .zero,
-            common.SpawnId.den_spider_basic_0a,
-            0,
-            200,
-            1,
-        );
+        try appendGauntletRing(out_entries, len, 158.0, ring_count, 0, 200);
     }
 
     if (ring_count > 0) {
@@ -352,21 +338,37 @@ fn build_407_gauntlet(
 
     const outer_count = player_count + 0x11;
     if (outer_count > 0) {
-        const step = std.math.tau / @as(f64, @floatFromInt(outer_count));
-        try common.appendRingSpawns(
+        try appendGauntletRing(out_entries, len, 258.0, outer_count, 42_500, 500);
+    }
+}
+
+/// Den ring at `(float)index * 6.2831855f / (float)count`, each x87 op
+/// rounded (`quest_build_gauntlet` 0x004369de).
+fn appendGauntletRing(
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+    radius: f32,
+    count: i32,
+    trigger_start: i32,
+    trigger_step: i32,
+) common.QuestSpawnBuildError!void {
+    var trigger = trigger_start;
+    var index: i32 = 0;
+    while (index < count) : (index += 1) {
+        const angle = native_math.pc24Div(
+            native_math.pc24Mul(@as(f32, @floatFromInt(index)), native_math.native_tau),
+            @as(f32, @floatFromInt(count)),
+        );
+        try common.appendSpawn(
             out_entries,
             len,
-            center,
-            258.0,
-            outer_count,
-            step,
+            common.ringPoint(common.native_center, radius, angle),
             0.0,
-            .zero,
             common.SpawnId.den_spider_basic_0a,
-            42_500,
-            500,
+            trigger,
             1,
         );
+        trigger += trigger_step;
     }
 }
 
@@ -592,7 +594,8 @@ fn build_410_the_end_of_all(
         var trigger: i32 = 62_800;
         var ring_index: i32 = 0;
         while (ring_index < 12) : (ring_index += 1) {
-            const angle = @as(f64, @floatFromInt(ring_index + 1)) * 0.5235988;
+            // `((float)ring_index + 1.0f) * 0.5235988f`
+            const angle = common.angleStep(ring_index + 1, 0.5235988, 0.0);
             try common.appendSpawn(
                 out_entries,
                 len,

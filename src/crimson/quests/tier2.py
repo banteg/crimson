@@ -8,13 +8,14 @@ from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
 from .helpers import (
-    center_point,
+    NATIVE_CENTER,
+    NATIVE_TERRAIN_SIZE,
     edge_midpoints,
     heading_from_center,
     line_points,
     radial_points,
+    random_angle,
     spawn,
-    spawn_at,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -34,7 +35,7 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
         trigger = (wave - 1) * 13000 + 1500
         count = wave
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_32,
@@ -43,7 +44,7 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_RED_33,
@@ -52,7 +53,7 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.bottom,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP1_RANDOM_GREEN_34,
@@ -61,7 +62,7 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.top,
                 heading=0.0,
                 spawn_id=SpawnId.SPIDER_SP2_RANDOM_35,
@@ -71,7 +72,7 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
         )
         if wave == 4:
             entries.append(
-                spawn_at(
+                spawn(
                     edges.top,
                     heading=0.0,
                     spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
@@ -244,7 +245,7 @@ def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         trigger_a = wave * 2000 + 1000
         trigger_b = (wave * 5 + 5) * 400
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.AI1_ALIEN_BLUE_TINT_1A,
@@ -253,7 +254,7 @@ def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: boo
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
@@ -318,19 +319,12 @@ def build_2_5_sweep_stakes(
     full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    center = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 720:
-        angle = (
-            float(
-                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE)
-                % 612,
-            )
-            * 0.01
-        )
-        for pos in radial_points(center, angle, 0x54, 0xFC, 0x2A):
-            heading = heading_from_center(pos, center)
+        angle = random_angle(rng.rand_tagged(RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE))
+        for pos in radial_points(NATIVE_CENTER, angle, 0x54, 0xFC, 0x2A):
+            heading = heading_from_center(pos, NATIVE_CENTER)
             entries.append(
                 spawn(
                     pos,
@@ -364,7 +358,7 @@ def build_2_6_evil_zombies_at_large(
     count = 4
     while count <= 13:
         entries.append(
-            spawn_at(
+            spawn(
                 edges.right,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -373,7 +367,7 @@ def build_2_6_evil_zombies_at_large(
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.left,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -382,7 +376,7 @@ def build_2_6_evil_zombies_at_large(
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.bottom,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -391,7 +385,7 @@ def build_2_6_evil_zombies_at_large(
             ),
         )
         entries.append(
-            spawn_at(
+            spawn(
                 edges.top,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
@@ -520,13 +514,14 @@ def build_2_8_land_of_lizards(ctx: QuestContext, *, rng: CrandLike, full_version
 )
 def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width, ctx.height, offset=128.0)
+    edges = edge_midpoints(ctx.width, ctx.width, offset=128.0)
+    fixed_right_x = edge_midpoints(NATIVE_TERRAIN_SIZE, offset=128.0).right.x
     entries.append(
-        spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
+        spawn(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
     )
     trigger = 2500
     for i in range(12):
-        x = edges.left.x if i % 2 == 0 else edges.right.x
+        x = edges.left.x if i % 2 == 0 else fixed_right_x
         entries.append(
             spawn(
                 Vec2(x, edges.left.y),

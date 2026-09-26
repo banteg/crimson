@@ -76,6 +76,7 @@ stores a wider double where native stores a float32.
 | `test_spawn_template` | `creature_spawn_template` `0x00430af0`, every template × hardcore × retry count | `CreaturePool.spawn_template` |
 | `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `player_fire_weapon` `0x00444980` | `ProjectilePool.spawn`, `fire_weapon` |
 | `test_typo_spawn` | Typ-o spawn block `0x00445a62..0x00445c85` with `creature_spawn_tinted` | `typo_mid_step` |
+| `test_quest_builders` | All 50 `quest_build_*` functions (`0x00434480..0x004390d0`) across seeds, terrain sizes, player counts and hardcore | `QuestDefinition.builder` spawn tables |
 
 ## Limitations
 

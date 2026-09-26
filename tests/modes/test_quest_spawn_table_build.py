@@ -64,7 +64,8 @@ def test_fortress_uses_native_half_height() -> None:
     assert len(entries) == 42
     assert entries[0].pos == Vec2(-50.0, 1024.5)
     assert entries[8].pos == Vec2(320.0, 448.0)
-    assert entries[13].pos == Vec2(320.0, 127.99998474121094)
+    # Native rounds `(float)(row * 0x180) * 0.16666667f` before `512.0f - ...` (oracle-checked).
+    assert entries[13].pos == Vec2(320.0, 128.0)
 
 
 def test_alien_squads_far_corner_stays_at_native_fixed_coordinate() -> None:
@@ -121,8 +122,9 @@ def test_end_of_all_stays_in_native_fixed_coordinate_space() -> None:
         rng=Crand(0),
         full_version=True,
     )
-    assert hardcore_entries[26].pos == Vec2(332.0, 511.0)
-    assert hardcore_entries[31].pos == Vec2(667.0, 422.0)
+    # Native float32 ring positions, untruncated (oracle-checked).
+    assert hardcore_entries[26].pos == Vec2(332.0, 511.9999694824219)
+    assert hardcore_entries[31].pos == Vec2(667.8845825195312, 422.00006103515625)
 
 
 def test_gathering_edges_stay_at_native_fixed_coordinates() -> None:

@@ -91,9 +91,10 @@ fn build22SpiderSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
+    _ = ctx;
     _ = rng;
-    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
-    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const corners = common.insetCornerPoints(common.native_terrain_size, common.native_terrain_size, 128.0);
+    const edges = common.squareEdgeMidpoints(common.native_terrain_size, 64.0);
     try common.appendSpawn(
         out_entries,
         len,
@@ -341,7 +342,7 @@ fn build25SweepStakes(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const center = common.centerPoint(ctx.width, ctx.height);
+    _ = ctx;
     var trigger: i32 = 2_000;
     var step: i32 = 2_000;
     while (step > 720) {
@@ -349,11 +350,11 @@ fn build25SweepStakes(
         try common.appendRadialSpawns(
             out_entries,
             len,
-            center,
+            common.native_center,
             angle,
-            84.0,
-            252.0,
-            42.0,
+            84,
+            252,
+            42,
             .from_center,
             common.SpawnId.alien_ai7_orbiter_36,
             trigger,
@@ -587,7 +588,8 @@ fn build29GhostPatrols(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.height, 128.0);
+    const edges = common.edgeMidpoints(ctx.width, ctx.width, 128.0);
+    const fixed_right_x = common.edgeMidpoints(common.native_terrain_size, common.native_terrain_size, 128.0).right.x;
     try common.appendSpawn(
         out_entries,
         len,
@@ -601,7 +603,7 @@ fn build29GhostPatrols(
     var trigger: i32 = 2_500;
     var i: i32 = 0;
     while (i < 12) : (i += 1) {
-        const x = if (@mod(i, 2) == 0) edges.left.x else edges.right.x;
+        const x = if (@mod(i, 2) == 0) edges.left.x else fixed_right_x;
         try common.appendSpawn(
             out_entries,
             len,
@@ -642,7 +644,7 @@ fn build210Spideroids(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(common.native_terrain_size, 64.0);
     try common.appendSpawn(
         out_entries,
         len,

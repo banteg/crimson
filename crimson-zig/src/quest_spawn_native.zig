@@ -26,6 +26,7 @@ const QuestDumpRequest = struct {
     height: f32 = 1024.0,
     player_count: i32 = 1,
     seed: u32 = 0,
+    hardcore: bool = false,
     sort: bool = false,
     show_plan: bool = false,
 };
@@ -113,6 +114,7 @@ fn runQuestDump(
             .width = request.width,
             .height = request.height,
             .player_count = request.player_count,
+            .hardcore = request.hardcore,
         },
         &rng,
         entries_storage[0..],
@@ -297,6 +299,10 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         }
         if (std.mem.startsWith(u8, arg, "--seed=")) {
             request.seed = parseSeed(arg["--seed=".len..]) orelse return .{ .invalid = "invalid --seed value" };
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "--hardcore")) {
+            request.hardcore = true;
             continue;
         }
         if (std.mem.eql(u8, arg, "--sort")) {

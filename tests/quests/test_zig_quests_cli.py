@@ -64,26 +64,35 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
     assert payload["start_weapon_id"] == int(quest.start_weapon_id)
     assert payload["entry_count"] == len(expected_entries)
     payload_entries = cast("list[dict[str, Any]]", payload["entries"])
-    for actual, expected in zip(_payload_entries(payload_entries), _expected_entries(expected_entries), strict=True):
-        assert actual[0:3] == pytest.approx(expected[0:3], abs=1e-4)
-        assert actual[3:] == expected[3:]
+    assert _payload_entries(payload_entries) == _expected_entries(expected_entries)
+
+
+# (seed, player count, terrain width, terrain height, hardcore)
+_EXACT_CASES = (
+    (0, 1, 1024, 1024, False),
+    (3, 4, 1024, 1024, False),
+    (0xBEEF, 1, 1024, 1024, True),
+    (0x1337, 2, 2048, 2048, False),
+    (0xDEADBEEF, 3, 512, 512, True),
+    (0x1234, 2, 1600, 900, False),
+)
 
 
 @pytest.mark.parametrize("level", [QuestLevel(major, minor) for major in range(1, 6) for minor in range(1, 11)], ids=str)
 def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None:
-    # Ring and radial placements must truncate the same double-precision
-    # coordinates as Python (e.g. 3.2 lands on 639, not 640).
+    # Positions and headings are the float32 values native stores (Python's
+    # builders are checked bit for bit against them in
+    # tests/native_oracle/test_quest_builders.py), so both ports must agree exactly.
     quest = quest_by_level(level)
     assert quest is not None
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
 
-    for seed, player_count in ((0, 1), (3, 4), (0xBEEF, 1)):
-        expected_entries = build_quest_spawn_table(
-            quest,
-            QuestContext(width=1024, height=1024, player_count=player_count),
-            rng=Crand(seed),
-            hardcore=False,
+    for seed, player_count, width, height, hardcore in _EXACT_CASES:
+        rng = Crand(seed)
+        expected_entries = quest.builder(
+            QuestContext(width=width, height=height, player_count=player_count, hardcore=hardcore),
+            rng=rng,
             full_version=True,
         )
         result = dbg_record._run_process(
@@ -93,18 +102,23 @@ def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None
                 level.text,
                 "--format",
                 "json",
+                "--width",
+                str(width),
+                "--height",
+                str(height),
                 "--player-count",
                 str(player_count),
                 "--seed",
                 str(seed),
+                *(["--hardcore"] if hardcore else []),
             ],
             cwd=dbg_record._REPO_ROOT,
         )
 
         assert result.returncode == 0, dbg_record._command_detail(result)
+        case = (seed, player_count, width, height, hardcore)
         payload_entries = cast("list[dict[str, Any]]", json.loads(result.stdout)["entries"])
-        expected = [(*map(f32, row[:3]), *row[3:]) for row in _expected_entries(expected_entries)]
-        assert _payload_entries(payload_entries) == expected, (seed, player_count)
+        assert _payload_entries(payload_entries) == _expected_entries(expected_entries), case
 
 
 def test_zig_quests_human_output_reports_unknown_level() -> None:
@@ -168,11 +182,12 @@ def _payload_entries(entries: list[dict[str, Any]]) -> list[tuple[float, float, 
     rows: list[tuple[float, float, float, int, int, int]] = []
     for entry in entries:
         pos = cast("dict[str, Any]", entry["pos"])
+        # JSON carries the shortest float32 repr; parse it back to float32.
         rows.append(
             (
-                float(pos["x"]),
-                float(pos["y"]),
-                float(entry["heading"]),
+                f32(float(pos["x"])),
+                f32(float(pos["y"])),
+                f32(float(entry["heading"])),
                 int(entry["spawn_id"]),
                 int(entry["trigger_ms"]),
                 int(entry["count"]),

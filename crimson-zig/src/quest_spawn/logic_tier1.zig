@@ -25,7 +25,7 @@ fn build_1_1_land_hostile(
 ) common.QuestSpawnBuildError!void {
     _ = rng;
     const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
-    const corners = common.cornerPoints(ctx.width, ctx.height, default_edge_offset);
+    const corners = common.cornerPoints(common.native_terrain_size, common.native_terrain_size, default_edge_offset);
 
     try common.appendSpawn(out_entries, len, edges.bottom, 0.0, common.SpawnId.alien_small_gray_26, 500, 1);
     try common.appendSpawn(out_entries, len, corners.bottom_left, 0.0, common.SpawnId.alien_small_gray_26, 2500, 2);
@@ -104,13 +104,14 @@ fn build_1_3_target_practice(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const center = common.centerPoint(ctx.width, ctx.height);
+    _ = ctx;
+    const center = common.native_center;
     var trigger: i32 = 2000;
     var step: i32 = 2000;
 
     while (true) {
         const angle = common.randomAngle(rng);
-        const radius = @as(f64, @floatFromInt(rng.randBelow(8) + 2)) * 32.0;
+        const radius: f32 = @floatFromInt((rng.randBelow(8) + 2) * 32);
         const point = common.ringPoint(center, radius, angle);
         const heading = common.headingFromCenter(point, center);
 
@@ -137,8 +138,10 @@ fn build_1_4_frontline_assault(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
-    const corners = common.cornerPoints(ctx.width, ctx.height, default_edge_offset);
+    const edges = common.edgeMidpoints(common.native_terrain_size, common.native_terrain_size, default_edge_offset);
+    // Only the bottom lane's x reads `terrain_texture_width`.
+    const bottom: spawn_runtime.Vec2 = .{ .x = @floor(ctx.width / 2.0), .y = edges.bottom.y };
+    const corners = common.cornerPoints(common.native_terrain_size, common.native_terrain_size, default_edge_offset);
     var step: i32 = 2500;
 
     for (2..22) |i_usize| {
@@ -151,7 +154,7 @@ fn build_1_4_frontline_assault(
             common.SpawnId.alien_small_gray_26;
         const trigger = i * step - 5000;
 
-        try common.appendSpawn(out_entries, len, edges.bottom, 0.0, spawn_id, trigger, 1);
+        try common.appendSpawn(out_entries, len, bottom, 0.0, spawn_id, trigger, 1);
 
         if (i > 4) {
             try common.appendSpawn(
@@ -231,8 +234,7 @@ fn build_1_6_the_random_factor(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const center = common.centerPoint(ctx.width, ctx.height);
-    const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
+    const edges = common.edgeMidpoints(ctx.width, ctx.width, default_edge_offset);
     var trigger: i32 = 1500;
 
     while (trigger < 101500) {
@@ -259,7 +261,7 @@ fn build_1_6_the_random_factor(
             try common.appendSpawn(
                 out_entries,
                 len,
-                .{ .x = center.x, .y = edges.bottom.y },
+                .{ .x = edges.bottom.x, .y = common.native_terrain_size + default_edge_offset },
                 0.0,
                 common.SpawnId.alien_big_gray_29,
                 trigger,
@@ -278,7 +280,7 @@ fn build_1_7_spider_wave_syndrome(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
+    const edges = common.edgeMidpoints(ctx.width, ctx.width, default_edge_offset);
     var trigger: i32 = 1500;
 
     while (trigger < 100500) {
@@ -409,14 +411,14 @@ fn build_1_10_8_legged_terror(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = ctx.width - 256.0, .y = @floor(ctx.height / 2.0) },
+        .{ .x = ctx.width - 256.0, .y = @floor(ctx.width / 2.0) },
         0.0,
         common.SpawnId.spider_boss_3a,
         1000,
         1,
     );
 
-    const corners = common.cornerPoints(ctx.width, ctx.height, 25.0);
+    const corners = common.cornerPoints(common.native_terrain_size, common.native_terrain_size, 25.0);
 
     var trigger: i32 = 6000;
     while (trigger < 36800) {
