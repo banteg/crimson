@@ -23,7 +23,7 @@ Short version:
    `(speed + 1.0f) * 4.0f`, `fld; fadd [1.0]; fmul [4.0]`, but without the scheduler node. [verified]
 4. The FROUND is the only codeless tuple that reaches the scheduler in normal code. In 47,756 window
    tuples across every saved trace (player_update, projectile_render, highscore, ui_element_render and
-   snail's initialize_star_field), the only IL pseudo ops were 0x162, labels 0x1ae (which end a
+   one Snail Mail function), the only IL pseudo ops were 0x162, labels 0x1ae (which end a
    window) and 0x1b5 (which stops a window before itself). REGUSE 0x19e, MOVE 0x1ad, 0x1b2, 0x145 and
    0x190 never appeared. The other codeless nodes are machine tuples that post-schedule passes delete
    ([x87-scheduling.md](x87-scheduling.md) §2). [verified for this corpus]
@@ -58,9 +58,10 @@ returned 1 only for `s->c = s->a * 4.0f + 4.0f` and returned 0 for `(s->a + 1.0f
 constant term is treated as `1 * c`, so `x*4 + 4`, `4*x + 4`, `x*4 + 1*4` and `x/0.25 + 4` all become
 `(x + 1)*4`. `x*4 + 1` stays `fmul; fadd`.
 
-## 2. Probe results (micro functions appended to a snail scratch, /O2 /G5)
+## 2. Probe results (micro functions, /O2 /G5)
 
-FROUND counts are nodes in the scheduled window (`sched_all.py` in the work dir):
+FROUND counts are nodes in the scheduled window (`sched_trace.py`). The micro functions were
+compiled appended to a Snail Mail scratch; they use only a local `MicroS` struct.
 
 | Source | FROUNDs | Code |
 |---|---|---|
@@ -107,49 +108,19 @@ parentheses around a non-leaf float subexpression. Removing a pair is only safe 
 it for precedence; otherwise use `float(…)` / `static_cast<float>(…)` or the factored spelling. Check
 the new FROUND's own cycle: it can still reorder its own window (§4).
 
-## 4. Case: snail initialize_star_field (0x434310)
+## 4. Using it on a residual
 
-The source line `sprite->corner_scale = (entries[index].speed + 1.0f) * 4.0f;` gave 99.19%, prefix 29.
-The residual: native has `lea eax,[edi+edx]; fmul [4.0]; mov eax,[eax+0x1c]`, and ours loads the sprite
-pointer before the fmul.
-
-- **Trace, window 12** (C2 line 73 = source line 90). `fld [eax+0x20]` at c2, `fadd` at c3, `lea eax` at
-  c4. At c6 the paren FROUND (h55, pri 450560) and the sprite load `mov eax,[eax+0x1c]` (h52, pri
-  491520) are both ready. The load wins. The fmul (pri 507904) waits for the FROUND and issues at c8.
-- **Window-cut probes do not help.** A FROUND added upstream moves `mov ecx,[eax+0x60]` into window 12,
-  but the load still beats the FROUND (as the snail session also found). Tested: redundant parentheses
-  around the line-70 travel product, `(float)` on the travel product, on `random_scale + 0.3f`, on the
-  camera and position lanes, on `Magnitude()`, and on `size_start`/`size_end`. All give 99.19%.
-- **Fix: drop the parentheses.** With no FROUND, the fmul (507904) is ready at c6 and beats the load
-  (491520). This is native's order.
-
-| Spelling of line 90 | FROUND in window 12 | Result |
-|---|---|---|
-| `(entries[index].speed + 1.0f) * 4.0f` (base) | 1 | 99.19%, prefix 29 |
-| `entries[index].speed * 4.0f + 4.0f` | 0 | **100%, byte-exact, 247/247, 26/26 masks** |
-| `4.0f * entries[index].speed + 4.0f` | 0 | 100%, byte-exact |
-| `entries[index].speed * 4.0f + 1.0f * 4.0f` | 0 | 100%, byte-exact |
-| `float(entries[index].speed + 1.0f) * 4.0f` | 0 | 100%, byte-exact |
-| `static_cast<float>(entries[index].speed + 1.0f) * 4.0f` | 0 | 100%, byte-exact |
-
-The function's other FROUNDs fit the rule and match native:
-
-- `((float)gRMathRand2() - 16384.0f) * c` gives the fsub→FROUND→fmul at lines 41, 57 and 58.
-- Seven come from forward propagation of Vector3 constructor parameters (lines 48-58).
-- One comes from `random_scale`.
-
-So native's author parenthesized the random lanes but not the corner scale. The likely original is
-`speed * 4 + 4`.
+A paren FROUND between an `fadd` and an `fmul` delays the `fmul` by one issue cycle, so a ready load
+with a lower priority than the `fmul` but a higher one than the FROUND can issue first. Dropping the
+parentheses (the factored spelling `x * 4.0f + 4.0f`, or `float(…)`) removes the FROUND without
+changing the arithmetic, and the `fmul` wins again. (Verified byte-exact on Snail Mail's
+initialize_star_field, where native's other parenthesized lanes keep their FROUNDs.)
 
 ## Tools
 
-The work-dir helpers (not committed) are `run_tool.py`, which runs a crimson tracer on a snail scratch
-through `snail-mail/tools/match/c2/trace.py`, and `sched_all.py`, which gives FROUND and node counts for
-every function in a scratch. The same can be done with the committed tools:
-
 ```sh
-uv run python scripts/c2/il_stage_trace.py --snail <scratch> --out <dir> --lines 73-73   # 'round' at glob entry
-uv run python scripts/c2/sched_trace.py <scratch> --out <dir> --lines 71-79             # window nodes, FROUND cycles
+uv run python scripts/c2/il_stage_trace.py <scratch> --out <dir> --lines 73-73   # 'round' at glob entry
+uv run python scripts/c2/sched_trace.py <scratch> --out <dir> --lines 71-79      # window nodes, FROUND cycles
 ```
 
 ## Open questions
@@ -157,8 +128,6 @@ uv run python scripts/c2/sched_trace.py <scratch> --out <dir> --lines 71-79     
 - Where C1XX emits the paren round. It is not located, and C1 (plain C) was not tested.
 - EH state tuples (/GX with destructors) were not probed. /O2 without /GX emitted no EH pseudo tuples
   for a local with a destructor.
-- Options (b) and (c) from the snail question were not needed. A delayed `lea`, or a lower-priority
-  sprite load, would need a different window shape.
 
 ## Corrections to other notes
 

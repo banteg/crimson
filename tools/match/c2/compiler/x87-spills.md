@@ -101,10 +101,10 @@ Traced values:
 | micro `float h = a*0.5f; g[0]=h+b; g[1]=h*h; g[2]=h;` | def 2 + last `fld h` → `fstp` 1 | 3 |
 | same with `double` | 4 + 1 + 1 + 1 + 2 | 9 |
 | float `h` defined and used inside a loop, last use `fmul` | 2 × 2 | 4 |
-| draw_textured_quad `half_width`, `half_height`, `cos_radius` (several uses each) | def only | 2 |
-| update_subgoldy `window` (3 defs, dies on one edge) | 6 − 1 | 5 |
-| update_subgoldy `speed` (1 def, dies on one edge) | 2 − 1 | 1 |
-| update_backdrop CSE temp in a 2-deep loop | (2 − 1) × 4 | 4 |
+| float locals with one def and several uses | def only | 2 |
+| float with 3 defs that dies on one edge | 6 − 1 | 5 |
+| float with 1 def that dies on one edge | 2 − 1 | 1 |
+| CSE temp in a 2-deep loop that dies on one edge | (2 − 1) × 4 | 4 |
 | parameters, candidate constants (reload only) | −1 or −2 | dropped |
 
 So for floats **the number of uses does not matter**. What matters is the number of definitions,
@@ -126,8 +126,8 @@ fails, and inserts a split marker for the candidate at the conflict point, in th
 | `last-use-expression-defines` | 0x10765aff (0x10765cc4) | The expression containing our last use defines another candidate before the use |
 | `def-depth-mismatch` | 0x10778675 (0x1077869b, 0x10778756) | Our defs sit at different expression depths or stack positions [read only] |
 
-Ranges ending at the **same** tuple nest fine. That is why `half_width` and `half_height`, both last
-used in the radius expression, both stay on the stack.
+Ranges ending at the **same** tuple nest fine. Two half extents both last used in one radius
+expression (`Sqrt(hw*hw + hh*hh)`) both stay on the stack.
 
 After a failure the range is split at the markers (`split_live_ranges_at_markers` 0x107204d6, class
 1). The pieces are re-scored and pruned with no protection:
@@ -159,82 +159,62 @@ A dropped or split-away variable is a normal memory local:
 - the result is `fst [m]; fadd …; …; fld [m]`.
 
 Its frame slot comes from the reference-count sort and the slot packer. The packer puts it in a
-dead parameter's home when the two do not interfere ([frame-model.md](frame-model.md) §4). In the
-S4 variant below, `half_height` lands in `width`'s home `[esp+0x3c]`, which is where native keeps
-it too.
+dead parameter's home when the two do not interfere ([frame-model.md](frame-model.md) §4), for example a float
+local split away by §4 landing in a dead `width` parameter's home.
 
-## 7. Worked cases
+## 7. Worked patterns
 
-### update_backdrop (snail, exact): a CSE temp in memory
+These were traced on Snail Mail functions; the rules above explain each one.
 
-`phase = phase_step + phase; if (phase > 2π) phase -= 2π;` inside a doubly nested loop. There are
-two candidates: the store temporary `t539` (score 12 = (2 + 1) × 4) and the CSE temporary `t240` of
-the sum (score 4 = (2 − 1) × 4).
+### A CSE temp in memory inside a loop (byte-exact)
 
-- `t539` is placed first.
-- `t240` is born while `t539` is live and outlives it, so it fails `below-dies-inside` and is split.
-  Its pieces score 0 and −8.
-- The sum therefore lives at `[esp+0x10]`: `fadd; fst [esp+0x10]; fstp [esi]; fld [esp+0x10]; fcomp`.
+`p = step + p; if (p > 2π) p -= 2π;` with `p` a field, inside a doubly nested loop. The store
+temporary scores (2 + 1) × 4 = 12 and is placed first. The CSE temporary of the sum scores
+(2 − 1) × 4 = 4, is born while the store temporary is live and outlives it, so it fails
+`below-dies-inside` and is split; its pieces score 0 and −8. The sum lives in memory:
+`fadd; fst [m]; fstp [field]; fld [m]; fcomp`.
 
-This matches native byte for byte.
+### A clamp local that a redefined range crosses
 
-### update_subgoldy completion clamp (snail Q1a): confirmed
+```cpp
+float window = rate*0.17f; float speed = v.z;
+if (speed >= window) { window = rate*0.5f; if (speed <= window) window = speed; }
+v.z = window;
+```
 
-In the source, `float window = rate*0.17f; float speed = velocity.z; if (speed >= window) { window = rate*0.5f; if (speed <= window) window = speed; } velocity.z = window;`
-
-- `speed` has three reaching uses, so it is not forward-propagated and becomes a candidate
-  scoring 1 (2 − 1).
-- `window` scores 5 and is placed first.
+- `speed` has three reaching uses, so it is not forward-propagated and scores 1 (2 − 1). `window`
+  scores 5 and is placed first.
 - `speed` fails `below-dies-inside` and `below-ends-inside`, because `window` is redefined and dies
   on an edge inside `speed`'s range.
-- Split pieces:
-  - the def piece, whose last use is `fld speed` into the first `fcomp`, scores 2 − 2 + 1 = 1 and
-    stays on the stack;
-  - the reload pieces at the inner compare and at `window = speed` score 0 and go to memory.
-- That is the candidate's `fld [ebp+0x418]; fst [esp+0x10]; fcomp st(1)` … `fld [esp+0x10]`.
+- The def piece, whose last use is `fld speed` into the first `fcomp`, scores 2 − 2 + 1 = 1 and stays
+  on the stack. The reload pieces score 0 and go to memory: `fld [v.z]; fst [m]; fcomp st(1)` …
+  `fld [m]`.
 
-Native has no `speed` variable. Each read is a single-use value: forward-propagated, with a FROUND,
-and loaded right at its use, as in `fld [ebp+0x418]; fcomp st(1)`. The compare needs a stack
-temporary as its left operand. A plain member read is a memory operand, so it gives
-`fcom [ebp+0x418]` instead.
+To get one load per use (`fld [v.z]; fcomp st(1)`), each read must be a single-use value:
+forward-propagated, with a FROUND, and loaded right at its use. The compare needs a stack temporary
+as its left operand; a plain member read is a memory operand and gives `fcom [v.z]` instead. An
+inline float accessor at each use does it (`fld [m]; FROUND; fcomp` at both compares and
+`fld [m]; fstp window` for the assignment). An inline helper that takes `v.z` by value does not.
+[Verified]
 
-- Verified: an inline float accessor `Speed(velocity)` at each use gives `fld [0x418]; FROUND; fcomp`
-  at both compares and `fld [0x418]; fstp window` for the assignment. The first clamp then matches
-  native (99.28% → 99.40% with only that clamp changed).
-- An inline `ClampWindow(velocity.z, rate)` helper does not reproduce it (91.83%).
+### A stack range that starts at a reload
 
-### draw_textured_quad_immediate `height*0.5` (snail Q1b)
+Native code of the form `fmul [0.5]; fst [m]; fadd [y0]; fstp [cy]; fld [m]; fld st(0); fmul st(1); …;
+fstp st(0); fstp st(0)` has a memory variable `m` and **another** stack range that starts at
+`fld [m]` and is popped by the second `fstp st(0)`. By §4 that range cannot be a reload piece of the
+same float, because a float reload piece scores at most 0. It must be a separate candidate whose
+**definition** is the load from `m`: a copy or a CSE temporary of a memory-resident value, placed
+before the variable defined at `fmul`.
 
-Ours: `half_width` and `half_height` both score 2. Both end at the radius argument store, so they
-nest and both stay on the stack. That gives `fld st(0); fadd [y0]` for `half_height`.
-
-Native: `fmul [0.5]; fst [esp+0x3c]; fadd [y0]; fstp [cy]; fld [esp+0x3c]; fld st(0); fmul st(1);
-fld st(2); fmul st(3); faddp; fstp [esp]; fstp st(0); fstp st(0)`. That means:
-
-- the half-height value defined at `fmul` is a memory variable in `width`'s dead home;
-- **another** stack range starts at `fld [esp+0x3c]` and is popped by the second `fstp st(0)`.
-
-By §4 that second range cannot be a reload piece of `half_height`, because a float reload piece
-scores at most 0. It must be a separate candidate whose **definition** is the load from `m`: a
-copy or a CSE temporary of a memory-resident value. It must also be placed before the variable
-defined at `fmul`.
-
-Variants compiled on a copy (98.34% baseline):
-
-| Variant | Result |
-|---|---|
-| Reordered declarations, radius spelled via temps, `+=` accumulation, inline `hypot`/`Square` helpers (by value or `const&`), struct/array half extents, `double` copies, parameter reuse (`width = …`, `height *= …`, `float& = width`) | 96.83–98.34%; the half-height stays on the stack or everything changes order |
-| **S4:** `center_y = y0 + height * 0.5f` while keeping `half_height = height * 0.5f` for the radius | 97.58%. The CSE temp of `height*0.5` (placed first, ends at `center_y`) crosses `half_height` (`below-dies-inside`, `below-ends-inside`). `half_height` becomes memory in `width`'s home, and native's first half appears exactly: `fst [esp+0x3c]; fadd [esp+0x20]; fstp [esp+0x20]; fld [esp+0x3c]`. The radius then reads `fmul [esp+0x3c]` instead of `fld st(0); fmul st(1)`, and one `fstp st(0)` is missing |
-| `keep_address(&half_height)` (escape) | `half_height` is memory everywhere, and the radius is `fld [m]; fmul [m]`. Symbol reads are not CSE'd |
-
-So native needs:
-
-- a value computed at `height*0.5`, used by `center_y` directly from the stack, and stored to a
-  memory variable `m`;
-- `m` read again after `center_y` into a distinct stack candidate.
-
-No spelling tried produces the second candidate. Scalar copies are coalesced or propagated, and
-inline by-value parameters are replaced by their argument symbol.
+- Writing the first use as its own expression (`cy = y0 + h * 0.5f` while keeping
+  `hh = h * 0.5f` for the radius) makes the CSE temporary of `h*0.5` win the stack and end at `cy`.
+  It crosses `hh`, which fails `below-dies-inside` and `below-ends-inside` and becomes memory in a dead
+  parameter's home. The first half of the native shape then appears exactly, but the radius reads
+  `fmul [m]` and one `fstp st(0)` is missing.
+- Taking the address of `hh` makes it memory everywhere, and the radius becomes `fld [m]; fmul [m]`:
+  symbol reads are not CSE'd.
+- Scalar copies are coalesced or propagated, and inline by-value parameters are replaced by their
+  argument symbol, so neither gives the second candidate.
 
 ## Tool
 
@@ -258,14 +238,11 @@ The whole COFF object must stay identical. For each function with float candidat
 - each verdict with the check that failed and where;
 - the IL after allocation, in which dropped ranges appear as `sNNN` memory operands.
 
-It runs in about 3 s for draw_textured_quad_immediate and 7 s for update_subgoldy. `run(scratch,
-out, c2=module)` accepts another `match_c2` module. That is how Snail scratches were traced: through
-snail-mail's `tools/match/c2/trace.py` adapter, with a stub `crimson` package that points at the
-adapter's `c2` and `replay`.
+It runs in a few seconds per function.
 
 ## Open questions
 
-- A natural source for native draw_textured_quad's second stack range (§7).
+- A natural source for a stack range whose definition is a reload of a memory variable (§7).
 - `0x10765225`, which runs after the loop, was not read. The traces show its effect only through the
   final IL.
 - `def-depth-mismatch` (0x10778756) and REGUSE end extension (0x1077999d) never fired in the traced

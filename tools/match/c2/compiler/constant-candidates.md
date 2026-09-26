@@ -2,9 +2,8 @@
 
 C2.DLL 12.00.8966 (image base 0x10700000), `/O2` (so `/Ot`). This note decodes how the global allocator turns
 immediates into class-13 constant candidates, which uses give a constant its benefit, and why the stores of a
-`bool` local that is passed to a `bool` parameter always count. It ends with the set_snail_weapon case from
-snail-mail. The allocator itself is in [regalloc.md](regalloc.md). Snail's chooser and constant sections are in
-`snail-mail/tools/match/c2/global-allocation.md`.
+`bool` local that is passed to a `bool` parameter always count. The allocator itself is in
+[regalloc.md](regalloc.md).
 
 Everything marked *verified* was observed with `scripts/c2/const_trace.py` on real compiles. The rest comes from
 reading the disassembly.
@@ -47,8 +46,8 @@ table at 0x107281a0 for opcodes 1..0x2d.
 | refused outright | `enter`, `imul` (6, and `_imul3` 0xa3, `_imul2` 0xc1), `ret`, `in`, `out`, `rcl rcr rol ror sar shl shr` (0x25..0x2b), `shld`/`shrd` (0xca/0xcb), 0x11a (`LDZERO`), 0x166, 0x178 |
 | everything else | Allowed. This includes `push`, `xchg`, `and`, `or`, `xor`, `test`, `adc`, `inc`/`dec` forms, and IL opcodes above 0xcb. |
 
-*Verified:* in set_snail_weapon every `push imm`, every `mov target, 0/1` into a candidate, every `mov flag, 0/1`,
-the switch's `sub eax, 0` and `cmp any_channel_changed, 0` were promoted. No tuple in that function was refused.
+*Verified* (on Snail Mail's set_snail_weapon): every `push imm`, `mov candidate, 0/1`, byte store of 0/1, a
+switch's `sub eax, 0` and a `cmp mem, 0` were promoted, and no tuple was refused.
 
 **One symbol per value.** Symbols are hashed by `value % 64` (0x1079d750). A symbol matches when the kind
 matches and the low dword matches; the high dword is masked to 0. Type is ignored. A value first used once is
@@ -75,17 +74,11 @@ block weight `1 << depth`.
 So **`benefit(v) = Σ w·[store of v to memory, or read-modify-write/compare of memory with v] − Σ w·LOADCONST(v)`**.
 Pushes, register moves and compares against registers add nothing.
 
-*Verified* (`const_trace.py`, first scoring pass, snail `uniform-channel2-tail-no-channel-ref` lead):
+*Verified* with `const_trace.py` on the first scoring pass (on Snail Mail's set_snail_weapon): a value used only
+in pushes, register moves and compares against registers is queued at −1, its one load.
 
-| Value | Uses that save 1 | Loads | Queued benefit |
-|---|---|---|---|
-| 0 | 6 × `transition_immediate = 0` (`mov [2:#8], 0`) | 1, at the entry (`any_channel_changed = 0`) | 5 |
-| 1 | 3 × `transition_immediate = 1` | 1, at the mapping switch head | 2 |
-| 2, 3, 4, 8, −1 | none | 1 | −1 |
-
-Every other use of 0 and 1 saved 0: about 25 pushes, the target moves, `mov cl,1`, `sub eax,0` and the final
-`cmp any_channel_changed,0`. Both ranges were allowed only ebx (byte-only and live across calls). Every range
-that interferes with them is therefore charged `100 × (5 + 2) = 700` on ebx by the chooser (0x10732f7c).
+A byte-only constant range that is live across calls is allowed only ebx. The chooser (0x10732f7c) then charges
+every range that interferes with it `100 × benefit` on ebx.
 
 ## 4. Why a bool passed to a bool parameter always stores to memory
 
@@ -97,8 +90,8 @@ placeholder home). Three steps then send its stores to memory before scoring. *V
    esp destination, retypes the argument to a dword. For a kind-1 or kind-2 symbol source, it replaces the symbol
    with `symbol_get_part(sym, dword, 4)` (0x107232b2). For a 1-byte local this creates a 4-byte root that takes
    over the front-end name. The local becomes part `+0` of it.
-   - In set_snail_weapon the push becomes `push [1:2004 #9 'transition_immediate' z4]`, and the stores stay
-     `mov [1:2001 #8^9+0 z1], imm`.
+   - The push then reads the dword root `#9`, while the stores stay byte stores to its part `#8`
+     (`mov [#8^9+0 z1], imm`).
    - This happens in `lower_pending_arg_copies` (0x1072c275) during `pass_lower_function`.
 2. **The byte stores mark the container partially written** (§1.1). As a result, the byte part `#8` gets its own
    candidate index (§1.2) and is never read: the pushes read `#9`.
@@ -111,8 +104,8 @@ placeholder home). Three steps then send its stores to memory before scoring. *V
      - a pending constant load is reverted to immediates;
      - a dead single-def temp is deleted;
      - a local's def gets `operand_make_sym` (0x10702edf), which makes it a **memory store**.
-   - All nine `#8` stores and all six `#9` reloads in front of the pushes are demoted this way (the hook log
-     lists each one).
+   - Every `#8` store and every `#9` reload in front of the pushes is demoted this way (the hook log lists each
+     one).
 
 At scoring, the flag's stores are therefore `mov [2:#8], [1:constant]`, and each saves 1 for its constant. The
 final code is the familiar `mov byte [esp+x], imm` and `mov reg, dword [esp+x]; push reg`.
@@ -126,60 +119,13 @@ own width, has all of its immediate stores counted as memory stores.
   parameter goes through `!= 0`, which reads the local. The local then stays a register candidate, and its stores
   become register moves that save 0. That changes the code: the flag gets a register plus `setne`.
 
-Checks of the rule:
-- **set_snail_weapon lead:** prediction 5 and 2. Observed 5 and 2.
-- **SetJetPack (snail `set_snail_jetpack`, byte-exact):** the same `bool immediate` pattern, with one `= 1`
-  store and one `= 0` store. Prediction 1 − 1 = 0 for both values. Observed 0 and 0, with both stores logged as
-  demoted. Nothing competes for ebx there, so it matches.
-- **char flag variant (negative control):** prediction −1 and −1. Observed −1 and −1. The flag is in `al`, with
-  `setne` at each push.
+Checked on Snail Mail's set_snail_weapon and SetJetPack (predicted and traced benefits agree), with a `char`
+flag as the negative control.
 
-## 5. set_snail_weapon (snail-mail) walkthrough
-
-The lead (channel 0 without the `Weapon&` borrow, channel 2 with a shared `if (changed) Play(25)`) differs from
-native only in two registers: target1 is ebx and the channel-0 case pointers are ebp, where native has the
-reverse. The priority-36 case pointers (lr 18/19) are coloured after `this`, target0 and the channel-1/2
-pointers. They are coloured before target1 (priority 8), with allowed {ebx, ebp} and costs ebx +700, ebp 0.
-
-Diagnostics. Each one patches allocator state inside the observer. The harness then reports "Observation
-changed the whole COFF object", and the observed object is scored with the snail matcher. These are
-interventions, not traces. The intervention scripts are not kept in the repo; `scripts/c2/const_trace.py`
-reproduces the observations they patch.
-
-| Intervention | Result |
-|---|---|
-| none (lead) | 41.00% (the matcher also loses the byte lookup table) |
-| benefit of constants 0 and 1 set to −1 at the initial queue | **100%, body byte-exact** |
-| the same with 0 | **100%, byte-exact** |
-| the same with 1 | lead (unchanged) |
-| only constant 1 set to −1, or only constant 0 | lead (unchanged). Both must be ≤ 0, as the chooser rule predicts. |
-| clear the container's partial-write mark (`#9+5 &= 0x7f` before 0x10727bd3) | constants go to −1 and −1, but the flag gets eax (34%) |
-| clear the mark and force the three flag webs to benefit −100 | **100%, byte-exact** |
-| set the flag part's class to 3 before promotion (so its writes do not mark the root) | same as clearing the mark: −1 and −1, flag in eax |
-
-So the lead is native except for the positive benefit of constants 0 and 1. No other hidden allocator input
-differs. Native's allocation needs benefit(0) ≤ 0 and benefit(1) ≤ 0 when the case pointers are chosen. For
-example, the flag could be a candidate whose writes are not marked partial and whose webs are unprofitable, so
-it stays in memory.
-
-Source search. None of these reproduces native's registers while keeping native's flag code:
-- a 216-variant grid (`constant-candidates/gen.py`): any_channel_changed initialised at the top, at the
-  declaration or after the switch; function-level or channel-scoped flag; reused, direct or scoped
-  `selected_state`; switch or if/else for the reverse and target dispatch; shared or returning channel-2 tail;
-  the reset before or inside the `if`;
-- targeted forms: the flag as `int`, `char` or `unsigned char`; `true`/`false`; `register`; `volatile`; a
-  pointer or reference alias; the zero store before the call; `Weapon&` borrows at six positions; three
-  inline-helper factorings.
-- One of those inline helpers is reached through `this` and reproduces the lead exactly (40.54%). Its inlined
-  `bool` is class 4 like any local and is demoted the same way (traced benefits 5 and 2).
-
-The char, unsigned char and int forms give native's registers only by putting the flag in a register.
-
-## 6. Tool
+## 5. Tool
 
 ```sh
-# from snail-mail (uses snail's trace adapter); from crimson it uses crimson's harness
-uv run python /Users/banteg/dev/banteg/crimson/scripts/c2/const_trace.py <scratch> --out <new dir> [--il]
+uv run python scripts/c2/const_trace.py <scratch> --out <new dir> [--il]
 ```
 
 The tool prints, per value:
@@ -191,12 +137,6 @@ It also lists every block-end demotion. `--il` dumps the IL at the stock pass bo
 `build_live_ranges` and entering the global colourer. The run is fully preserving (whole-COFF, replay and
 missing-stream checks).
 
-## 7. Open questions
+## 6. Open questions
 
-- Which source gives native set_snail_weapon constants 0 and 1 a non-positive benefit and still keeps the
-  flag's code? The interventions narrow this to the flag's IL. Either its stores are not memory at scoring, or
-  it has no more counted stores than loads. If its stores are register moves, the flag webs (benefit 10 in the
-  mark-cleared and class-3 runs) must still end up in memory. A class-3 writer alone is not enough: the class-3
-  intervention puts the flag in eax. Inline-expanded locals are class 4 anyway. Untested: forms where a counted
-  store is created only after allocation.
 - 0x1072e5b9 (join loads) was not decoded. In every trace here each value got exactly one load.

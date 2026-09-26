@@ -12,8 +12,7 @@ block weight, and the benefit the range was queued with.
     uv run python scripts/c2/const_trace.py <scratch-dir> --out <new-dir> [--il]
 
 It runs through the preserving `c2-trace` harness (whole-COFF, replay and missing-stream checks
-unchanged). In a Snail checkout (`uv run python <this file>` from snail-mail) it uses Snail's
-`tools/match/c2/trace.py` adapter, so Snail scratches, compilers and metrics are used. `--il` also
+unchanged). `--il` also
 dumps the IL at the stock pass boundaries, entering `build_live_ranges` and the global colourer. Only the pinned msvc6.5 C2 is
 supported (the profile hash is checked by the harness).
 """
@@ -21,7 +20,6 @@ supported (the profile hash is checked by the harness).
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import re
 import sys
@@ -29,16 +27,6 @@ from collections import defaultdict
 from pathlib import Path
 
 BASE = 0x10700000
-
-
-def c2_module():
-    """Crimson's preserving harness, or Snail's adapter of it when run inside snail-mail."""
-    try:
-        from snail import match as snail_match
-    except ImportError:
-        return importlib.import_module("crimson.match_c2")
-    sys.path.insert(0, str(Path(snail_match.__file__).resolve().parents[2] / "tools/match/c2"))
-    return importlib.import_module("trace").c2
 
 
 # (call site VA, callee VA, name, return hook, mode). Modes: 3 dumps the IL at entry (with --il),
@@ -279,7 +267,8 @@ def decode(data, _profile):
 
 
 def trace(scratch: Path, out: Path, *, il: bool = False):
-    c2 = c2_module()
+    from crimson import match_c2 as c2
+
     profile = profile_with_hooks(c2, il)
     stock = (c2.load_profile, c2.observer_source, c2.decode_trace)
     c2.load_profile = lambda: profile

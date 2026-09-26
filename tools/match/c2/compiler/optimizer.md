@@ -249,7 +249,7 @@ This covers the pass driver calls `0x1070fc45(ctx,1)` (before globopt) and `0x10
 - Compare with shifted or masked operands is rewritten as an and-mask compare.
 - It runs only in loop B, or on 0x17d nodes in loop A. Distribution and factoring can therefore undo each other; the loop converges because of the per-stage 100-iteration limit and the change flags.
 
-### Cost and ordering: 0x1070d90c / 0x1070da9a / 0x1070db59 / 0x1070e114 (high confidence; confirms and refines the snail-mail notes)
+### Cost and ordering: 0x1070d90c / 0x1070da9a / 0x1070db59 / 0x1070e114 (high confidence)
 - **Packed cost at +0x0c** = `need<<24 | size<<16 | hash16`.
   - Leaf: size 1 (0 for constants of kinds 7-9), need 0.
   - Node:

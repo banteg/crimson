@@ -1,8 +1,8 @@
 # Translation-unit preludes: what a real DirectX 8.1 SDK prelude changes (C2.DLL 8966)
 
-Snail-mail's `read_repeating_text_input_key_code` became byte-exact only after a prelude of the real DirectX 8.1
-SDK headers moved `RstrASC`'s frontend id into a wrapping window ([call-operand-order.md](call-operand-order.md),
-[frontend-ids.md](frontend-ids.md)). This note tests whether the same prelude (`<windows.h>`, `<d3d8.h>`,
+A callee's frontend id can decide which of two calls runs first when the call hash wraps
+([call-operand-order.md](call-operand-order.md), [frontend-ids.md](frontend-ids.md)); Snail Mail needed a real
+DirectX 8.1 SDK prelude for exactly that. This note tests whether the same prelude (`<windows.h>`, `<d3d8.h>`,
 `<d3dx8.h>` in front of the Crimsonland headers) matters for Crimson:
 
 1. whether it moves the id-keyed residuals of `player_update` and `projectile_render`;
@@ -35,8 +35,8 @@ with each scratch's own flags (`/O2 /GB /W3 /GR-` for the two targets). Evidence
    and it constrains only the id of its first string literal **mod 64**: 58 of 64 residues are exact. No site
    ties to `player_update`'s or `projectile_render`'s translation unit, so no prelude can be pinned for them.
    The mechanism is new: C2 frees unused constant-candidate live ranges in bucket order of a hash keyed on the
-   frontend id mod 64 (§3). Every C++ scratch was also scanned for call-hash ties, the snail-mail mechanism
-   (§4.3).
+   frontend id mod 64 (§3). Every C++ scratch was also scanned for call-hash ties, the call-operand-order.md
+   mechanism (§4.3).
 3. **No.** `D3DXVECTOR2`'s operators give byte-identical code and exactly the same class count as the 2003 MOD
    SDK `vec2_t` operators already measured in [pu-alias-budget-sources.md](pu-alias-budget-sources.md).
    Rewriting the 81 `player_update_vec2_set` sites adds 184 classes with either set (first pointer class
@@ -68,8 +68,8 @@ unchanged.
 
 ## 2. Q1: prelude variants on the two targets
 
-Frontend ids measured with `fe_id_probe.py ids`. The SDK headers are the DirectX 8.1 SDK set that snail-mail
-uses (`fetch_dx81_sdk.sh`), passed as `/I<dx81>`, so they come ahead of MSVC's `Include` and `third_party/headers`.
+Frontend ids measured with `fe_id_probe.py ids`. The SDK headers are the DirectX 8.1 SDK (the pinned archive.org
+`dx81sdk_full.exe`), passed as `/I<dx81>`, so they come ahead of MSVC's `Include` and `third_party/headers`.
 
 | Variant | `player_update` id | `crt_rand` id | `projectile_render` id |
 |---|---|---|---|
@@ -83,8 +83,9 @@ uses (`fetch_dx81_sdk.sh`), passed as `/I<dx81>`, so they come ahead of MSVC's `
 | + `mmsystem.h`, `dinput.h` (0x0800), `dsound.h` | 0xda15 | 0xd7ad | 0xd9ff |
 | the three after the Crimsonland headers | 0xcbfc | 0xeb7 | 0xcbe6 |
 
-The three-header prelude is +47,834 ids in front of `player_update`. That is less than snail's 48,169, because
-`math.h` is already counted in the base.
+The three-header prelude is +47,834 ids in front of `player_update`. That is less than the 48,169 the same
+headers consume in an empty translation unit ([frontend-ids.md](frontend-ids.md) §4), because `math.h` is already
+counted in the base.
 
 Every row compiles to the base listing (md5-identical `crimson match dump`), so the scores are those of cf7f728f3:
 
@@ -204,10 +205,10 @@ target with an open residual, so nothing pins the player or projectile prelude.
 ### 4.3 Call-hash ties codebase-wide
 
 `sort_trace.py` and `su_order_trace.py` were run on all 613 base scratches. The scan looked for decisions
-where two call-bearing operands (need ≥ 7) tie on need and size, which is the snail-mail `RstrASC` shape.
+where two call-bearing operands (need ≥ 7) tie on need and size, the shape in call-operand-order.md.
 **None exist.** The scan covered 49,670 SU decisions plus every commutative sort. Only 4 SU decisions had
 call-bearing operands on both sides, and each was decided by need or size. So no crimsonland C++ function has
-a call-hash window like snail's. [verified]
+a call-hash window. [verified]
 
 ## 5. Q3: `D3DXVECTOR2` operators and the alias budget
 
@@ -245,14 +246,12 @@ The operators come from one of three sources:
 No prelude or rewrite improves any score, so there is no `best.diff`. The conflict fixes are in
 `scratchpad/tu-prelude/sdk-compat.diff`, for reference. If the prelude is adopted anyway:
 
-- **The SDK files.** They are gitignored in snail-mail, fetched by `tools/match/fetch_dx81_sdk.sh` (the pinned
-  archive.org `dx81sdk_full.exe`, sha256 73f6…2d02). Crimson would need the same fetch step, or a path to
-  snail's copy.
+- **The SDK files.** Crimson would need a fetch step for the pinned archive.org `dx81sdk_full.exe`
+  (sha256 73f6…2d02), kept out of git.
 - **The include path.** `scratch.conf` has no include key. Options:
   - a `/I` in `CFLAGS` (works today; this is how every variant here was built);
   - a new cl.sh `INCLUDE` entry;
-  - a `tools/match/include/crimson_prelude.h` that includes the SDK by relative path, as snail's
-    `rshell_prelude.h` does.
+  - a `tools/match/include/crimson_prelude.h` that includes the SDK by relative path.
 
   `CRIMSON_MATCH_INCLUDE_OVERLAY` is not usable for this: `compile_scratch` pops it from the environment and
   sets it only from `ScratchConfig.include_overlay`, which only `mutate --source` fills.

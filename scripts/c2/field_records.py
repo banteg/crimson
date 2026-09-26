@@ -17,11 +17,6 @@ unchanged) with two extra return hooks:
 See tools/match/c2/compiler/alias-field-records.md.
 
     uv run python scripts/c2/field_records.py tools/match/scratches/<name> --out <new-dir> [--class 0x2d3]
-
-A Snail scratch runs from the snail-mail checkout with its adapter (it compiles and measures with Snail):
-
-    cd ../snail-mail && uv run python ../crimson/scripts/c2/field_records.py <scratch-dir> \
-        --out <new-dir> --snail .
 """
 
 from __future__ import annotations
@@ -29,7 +24,6 @@ from __future__ import annotations
 import argparse
 import json
 import struct
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -141,23 +135,16 @@ def observer(profile, stock_source):
     return source.replace(anchors[2], "    CloseHandle(field_file);\n" + anchors[2])
 
 
-def run(scratch: Path, out: Path, snail: Path | None):
-    if snail:
-        sys.path.insert(0, str((snail / "tools/match/c2").resolve()))
-        import trace as adapter  # Snail's adapter: Crimson's observer, Snail's compiler and metrics
+def run(scratch: Path, out: Path):
+    from crimson import match_c2 as c2
 
-        c2, runner = adapter.c2, lambda: adapter.trace(scratch, out)[0]
-    else:
-        from crimson import match_c2 as c2
-
-        runner = lambda: c2.trace(scratch, out)
     stock_source = c2.observer_source
     profile = dict(c2.load_profile(), name="msvc6.5-c2-field-records", hooks=HOOKS)
     with (
         patch.object(c2, "load_profile", return_value=profile),
         patch.object(c2, "observer_source", side_effect=lambda p: observer(p, stock_source)),
     ):
-        manifest = runner()
+        manifest = c2.trace(scratch, out)
     return manifest, (out / "observed/fields.bin").read_bytes()
 
 
@@ -229,7 +216,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("scratch", type=Path)
     parser.add_argument("--out", type=Path, required=True, help="new directory for the preserving trace")
-    parser.add_argument("--snail", type=Path, help="snail-mail checkout: trace a Snail scratch with its adapter")
     parser.add_argument("--function", help="substring of the function symbol (default: the most field ranges)")
     parser.add_argument(
         "--class",
@@ -241,7 +227,7 @@ def main():
     parser.add_argument("--line-offset", type=int, default=0, help="added to C2 line labels when printing")
     parser.add_argument("--json", action="store_true", help="write fields.json next to the trace")
     args = parser.parse_args()
-    manifest, data = run(args.scratch, args.out, args.snail)
+    manifest, data = run(args.scratch, args.out)
     rows = decode(data)
     functions = {r["function"] for r in rows}
     name = next((f for f in functions if args.function and args.function in f), None) or max(

@@ -57,7 +57,7 @@ inputs were not traced, and **[L]** means the role is inferred. Addresses are VA
    - **Doubles are only 4-aligned** unless the frame is aligned.
 7. Frame size is set by `compute_frame_size` 0x10734032: fsym+0x5b = `align_up(-cursor, 4)`.
 
-The snail and crimson notes agree with this. Two refinements: the tie-break rule within a size group, and the fact that inline-asm blocks add a reference to every member of their alias set.
+Two refinements to the earlier notes: the tie-break rule within a size group, and the fact that inline-asm blocks add a reference to every member of their alias set.
 
 ## 2. Frame-pointer decisions [H]
 

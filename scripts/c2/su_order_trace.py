@@ -11,9 +11,7 @@ emitted first and why. The simplifier runs twice (before and after globopt); the
 Runs through Crimson's preserving observer (`crimson match c2-trace`: whole-COFF, replay and missing-stream
 controls unchanged).
 
-    uv run python scripts/c2/su_order_trace.py <crimson-scratch> --out <new-dir> [--lines A-B]
-    # a snail-mail scratch, run from the snail-mail checkout (it provides the `snail` package):
-    uv run python ../crimson/scripts/c2/su_order_trace.py --snail <scratch> --out <new-dir> [--calls]
+    uv run python scripts/c2/su_order_trace.py <scratch> --out <new-dir> [--lines A-B]
     uv run python scripts/c2/su_order_trace.py --reuse <trace-dir> [--lines A-B] [--calls]
 
 See tools/match/c2/compiler/call-operand-order.md.
@@ -112,8 +110,6 @@ def main() -> None:
     parser.add_argument("scratch", nargs="?", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reuse", type=Path, help="Re-render an existing trace directory")
-    parser.add_argument("--snail", action="store_true", help="Trace a snail-mail scratch through its adapter")
-    parser.add_argument("--match-root", type=Path, help="snail-mail: compile against another tools/match root")
     parser.add_argument("--lines", help="only decisions whose operand defs carry a C2 line label in A-B")
     parser.add_argument("--calls", action="store_true", help="only decisions between two call subtrees")
     args = parser.parse_args()
@@ -124,7 +120,7 @@ def main() -> None:
     else:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = stage.load_modules(args.snail, args.match_root)
+        c2, iv = stage.load_modules()
         result = stage.trace(c2, iv, args.scratch, args.out, "su")
         print("metrics:", result["metrics"])
         out = args.out

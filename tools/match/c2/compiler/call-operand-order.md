@@ -1,7 +1,7 @@
 # Which call runs first in `f(a) == f(b)` (C2.DLL 8966)
 
 This note explains how C2 orders two call subtrees that are the operands of one binary operator, for
-example `if (RstrASC(key) == RstrASC(g_old_key))`. Addresses are virtual addresses in the pinned
+example `if (fold(key) == fold(g_old_key))`. Addresses are virtual addresses in the pinned
 C2.DLL (image base 0x10700000). "Verified" means confirmed by a preserving compiler trace
 ([`scripts/c2/su_order_trace.py`](../../../../scripts/c2/su_order_trace.py), IL dumps through
 `il_stage_trace.py` hooks) or by compiles with a matcher result. "Read" means static reading only.
@@ -79,9 +79,8 @@ hash(call f(x)) = (callee + 2 * (hash(x) + 0x15) + 0x3f) mod 0x10000
 
 `fe->id` is the frontend record id (core.md, fe record +0x28). Verified behaviour: it grows by 1 per
 enumerator and by 2 per `void f(int);` declaration placed **before** the callee's declaration. Padding
-placed after the declaration changes nothing. In the snail scratch it is 0x10a with the project
-headers only, 0xa3cf with `<windows.h>` in front, and 0xb60d with windows, mmsystem, ddraw, dinput,
-dsound, stdio, stdlib, string and math in front.
+placed after the declaration changes nothing. [frontend-ids.md](frontend-ids.md) measures what each
+declaration consumes.
 
 ## 3. Symbol ids
 
@@ -117,62 +116,14 @@ For `lhs == rhs`, where both sides are `f(one plain symbol argument)` of the sam
   first. It also moves the local and narrows the push load, so it does not help matching. A pointer
   borrow `*p` splits the same way in pass 1, but `globopt_fold_adjacent_copies` 0x10726654 folds the
   load back before pass 2, so it is neutral.
+- For ids 0x10000..0x1ffff the fold is `(id & 0xffff) ^ 1`, so the next window is shifted with its edge
+  ids swapped pairwise.
 
-## 5. Snail-mail: `read_repeating_text_input_key_code` (0x4327e0)
+The window rule was verified to the exact edge ids, with matcher results and traced keys, on Snail Mail's
+`read_repeating_text_input_key_code`.
 
-Native tail:
+## 5. Open questions
 
-```
-mov eax, dword [esp+8]   ; key (stack home)
-push eax
-call RstrASC
-mov cl, byte [g_last]
-mov dl, al               ; first result, expression temp
-push ecx
-mov byte [esp+0xf], dl   ; spilled around the second call
-call RstrASC
-mov dl, byte [esp+0xf]
-add esp, 8
-cmp dl, al               ; cmp key_fold, last_fold
-```
-
-Traced keys in the scratch (`RstrASC(key)` on the left):
-
-| Build | fe id `c` | key(key call) | key(global call) | Order |
-|---|---|---|---|---|
-| retained two-byte source (`repeat_code` #2, global #33) | 0x10a | 0x080501f3 | 0x080509b3 | global first (99.09%, or 99.32% with the global on the left) |
-| one `result` variable (#1) | 0x10a | 0x080501b3 | 0x080509b3 | global first |
-| two-byte source, 64044-enumerator enum before `#include "rstring.h"` | 0xfb37 | 0x0805fc20 | 0x080503e0 | **key first, 100.00%** |
-| one variable, 64044-enumerator enum before `#include "rstring.h"` | 0xfb37 | 0x0805fbe0 | 0x080503e0 | **key first, 100.00%** |
-
-Window checks with the two-variable source and `RstrASC(repeat_code) == RstrASC(g)` (L = 0xe9,
-R = 0x8a9, predicted window 0xf757..0xff16): c = 0xf756 gives 99.09%, 0xf757 gives 100.00%, 0xff16 gives
-100.00% and 0xff17 gives 99.09%. With one variable (L = 0xa9) the predicted upper edge 0xff56 holds:
-0xff56 gives 100.00% and 0xff57 gives 99.09%. Padding after the includes gives 99.09%. With the global
-on the left inside the window, the calls run in native order but the compare becomes `cmp al, dl`
-(99.77%). The native source therefore had the key on the left, as the Android and iOS ports do.
-
-Also verified: the separate `repeat_code` byte is not needed. Dropping it and comparing
-`RstrASC(result)` gives exactly the same 440 instructions. The `[esp+8]` byte and the `mov [esp+8], bl`
-after every assignment are the register allocator's memory home for `result`. That matches the
-mobile ports, which have one key variable.
-
-Rejected shapes, all with the calls in the wrong order (compiled, on copies): casts and no-op
-arithmetic on either argument or result (`(char)`, `(int)`, `(unsigned char)`, `(short)`, `+0`,
-`|0`, `^0`, `&0xff`, `*&x`, `(&x)[0]`, comma), `!(a != b)`, `(char)(a - b) == 0`, callee spelled
-`(*f)`/`(&f)`, parameter or global signedness changes, one-byte array or struct wrappers, pointer and
-reference borrows, and global definitions in the TU. These are all folded before costing, or they add
-the same node to both sides. Wider returns and int parameters change the frame. Inline helpers give
-their parameters stack homes, and subtraction changes the frame. A named fold local runs the key call
-first, but stores AL to its home instead of the `mov dl, al` temp (98.98%).
-
-## 6. Open questions
-
-- Which declarations the original RShell translation unit had before `RstrASC`. The window is 1984 fe
-  ids wide in the two-variable scratch and 2048 in the one-variable scratch. For ids 0x10000..0x1ffff
-  the fold is `(id & 0xffff) ^ 1`, so the next window is shifted with its edge ids swapped pairwise.
-  VC6's own Win32 and DirectX 5 headers reach 0xb60d; snail-mail matched it with the DirectX 8.1 SDK
-  headers plus a counted stand-in.
 - Resolved: which declarations consume ids is measured in [frontend-ids.md](frontend-ids.md).
   Parameters are numbered before their function, and a callee's first declaration fixes its id.
 - The same wrap affects every tree that contains a call or label operand. It can reorder mixed

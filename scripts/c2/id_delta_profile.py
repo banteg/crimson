@@ -24,7 +24,7 @@ What it does:
 2. **Probe** (`--probe`, interventions, never match credit): per deciding id, one compile per residue class that
    reverses something:
    - pool E: M ids burned right before that slot and the complement (to 4 or 1024) right after it, so only that
-     id's residue moves (`n:M,n+1:4-M`), as in cse_slot_trace --phantom;
+     id's residue moves (`n:M,n+1:4-M`);
    - pool B: its leaves re-keyed as if it had another id (burning class-4 records crashes C2);
    - creation-order and square pairs: that one node's pair swapped by key.
    Each object is matched. The verdict comes first from a data-flow window (stack reads renamed by the value their

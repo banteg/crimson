@@ -31,10 +31,9 @@ Short version:
 | Id decoder | `il_read_id` 0x107416cd | Two bytes little-endian; if bit 7 of the second byte is set, four bytes `b0 \| (b1 & 0x7f) << 8 \| (b2 << 16 \| b3 << 24) >> 1` (read; the two-byte form is verified by decoding streams). A different decoder, 0x1079690d, is used when 0x107ac6d4 is set (PCH path; not examined). |
 | Hash | `hash_operand` 0x1070db59, kind 4 | `v = fe->id; v>>16 ^ v&0xffff` (call-operand-order.md). |
 
-Verified link between the stream and the hash: in snail's `read_repeating_text_input_key_code` scratch
-the stream gives `?RstrASC@@YADD@Z` id 0xfb59. The trace shows the local-argument call key
-hash 0xfc02 = 0xfb59 + 0xa9, and the global-argument call 0x0402 = (0xfb59 + 0x8a9) mod 0x10000.
-Four more builds at the window edges (section 5) agree the same way.
+Verified link between the stream and the hash: the callee id decoded from the stream is exactly the
+callee term of the traced call hashes, including when the sum wraps (five builds of Snail Mail's
+`read_repeating_text_input_key_code`).
 
 In an empty translation unit, `int F(int);` gets id 0x109, so the first free id is 0x108. Ids
 0x100..0x107 (if the counter starts at 0x100) are used before the first user declaration; what uses
@@ -148,48 +147,20 @@ sweep equals its emitted twin), so bodies are numbered at parse time.
    `d3dx8math.h` (inline default constructor, 3 constructors, 16 operators, a friend, 2 members,
    2 typedef names) predicts 50 and measures 50. A mixed C header block (struct, enum, handle, prototype,
    function-pointer typedef and class) predicts 51 and measures 51.
+4. Measured system headers, each in front of the previous ones (`F` is 0x109 with nothing in front):
+
+   | Prefix | `F` id after it | Consumed |
+   |---|---|---|
+   | `<windows.h>` (`<mmsystem.h>` adds 0: already included) | 0xa3ce | 41669 (headers, files and main file) |
+   | + `d3d8.h` (DirectX 8.1) | 0xabc0 | 2034 |
+   | + `d3dx8.h` | 0xbd32 | 4466 |
+   | + `dinput.h` (`DIRECTINPUT_VERSION` 0x0800) | 0xc594 | 2146 |
 
 The order of declarations matters only through the callee: what counts is everything before the
 callee's **first** declaration. Declarations after it, and ids consumed later by redeclarations or
 bodies, only move later callees.
 
-## 5. Snail-mail: RShell's `RstrASC`
-
-Measured ids in the current prelude (`tools/match/include/rshell_prelude.h`, in snail-mail):
-
-| Prefix | `F` id after it | Consumed |
-|---|---|---|
-| nothing | 0x109 | 0 |
-| `<windows.h>` (`<mmsystem.h>` adds 0: already included) | 0xa3ce | 41669 (headers, files and main file) |
-| + `d3d8.h` (DirectX 8.1) | 0xabc0 | 2034 |
-| + `d3dx8.h` | 0xbd32 | 4466 |
-| + `dinput.h` (`DIRECTINPUT_VERSION` 0x0800) | 0xc594 | 2146 |
-| The same four as a header file (`rshell_prelude.h` without its stand-in) | 0xc595 | +1 (the prelude file) |
-| + the stand-in enum (1 + 13762 enumerators) | 0xfb58 | 13763 |
-
-`RstrASC` is the first declaration in `rstring.h`: file 1 + parameter 1, so its id is 0xfb59.
-
-The call hash puts the key call first when `0xf757 <= id <= 0xff56` (one-variable source,
-call-operand-order.md section 4). The edges were checked with the matcher and traced keys, on copies
-with the prelude written directly into `scratch.cpp` (one file record fewer):
-
-| Stand-in enumerators (inline prelude) | `RstrASC` id | Keys (key call, global call) | Result |
-|---|---|---|---|
-| 12735 | 0xf755 | 0xf7fe, 0xfffe | 99.09% |
-| 12736 | 0xf756 | 0xf7ff, 0xffff | 99.09% |
-| 14783 | 0xff55 | 0xfffe, 0x07fe | 100.00% |
-| 14784 | 0xff56 | 0xffff, 0x07ff | 100.00% |
-
-So with `rshell_prelude.h` as a header, RShell's own declarations between `dinput.h` and the first
-declaration of `RstrASC` must consume **12,737 to 14,784 ids** (the stand-in is 13,763). Each of
-RShell's own header files counts 1 toward that. If the original `RShell.h` included `rstring.h` before
-the engine headers, only what precedes that include counts.
-
-For ids from 0x10000 to 0x1ffff the fold is `(id & 0xffff) ^ 1`, so the next window is about
-0x1f756..0x1ff57 (the xor swaps the edge ids pairwise). That needs about 65,000 more ids and is not
-plausible here.
-
-## 6. Open questions
+## 5. Open questions
 
 - What uses ids 0x100..0x107 before the first user declaration.
 - The decomposition of the class base cost (8) and of the non-trivial destructor (+4), virtual (+3) and

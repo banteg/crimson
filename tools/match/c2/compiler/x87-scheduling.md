@@ -26,7 +26,7 @@ Short version:
 
 | Stage | Where | Effect on x87 order |
 |---|---|---|
-| Expression sort | `compute_tree_cost_and_sort` 0x1070d90c, `merge_sort_operand_list` 0x1070f584, `compare_operand_cost_desc` 0x1070f6ae | Orders the operands of commutative nodes (fadd/fmul are IL 0x16d/0x16f) by packed cost, descending and stable. The first operand is evaluated first. [optimizer.md](optimizer.md), and snail-mail's `tools/match/c2/x87-order.md` for the cost table |
+| Expression sort | `compute_tree_cost_and_sort` 0x1070d90c, `merge_sort_operand_list` 0x1070f584, `compare_operand_cost_desc` 0x1070f6ae | Orders the operands of commutative nodes (fadd/fmul are IL 0x16d/0x16f) by packed cost, descending and stable. The first operand is evaluated first. [optimizer.md](optimizer.md) |
 | Forward propagation | `forward_propagate_definitions` 0x10711afa | Moves the expression tree of a single-use variable to its use, and inserts FROUND before the use for float-class types (§3) |
 | x87 lowering | `lower_x87_tuple` 0x10762fc3, `lower_x87_binary_op` 0x10763d93 | Emits `fld` for the first sorted operand unless an operand is already on the stack (§5). Binds every x87 value to `g_reg_symbols[0x1f]` (ST(0)), with `[0x20]` for ST(1) when both operands are on the stack |
 | fxch rewriting | `x87_block_fxch_scheduling` 0x107392c7, called from `local_color_registers` (0x10733756), under /Ot and only when fn+0x34 bit 3 (function uses FP) is set | Per block: deletes every fxch, recomputes st(i), and inserts fxch only where an operation needs its operand in st(0) ([frame.md](frame.md) §5). Arithmetic is not reordered |
@@ -204,8 +204,7 @@ rule predicted all 79 two-square sites in 20 player_update builds.
      so the whole `id << 5` hash compares and the larger id wins.
    - **A float local:** `0x10000 | id << 5`.
    - **Constants** sort last. **Expressions** sort before leaves.
-   - Sources: snail-mail `x87-order.md` and `address-order.md`. The `sched_trace.py` float-op report
-     confirms each key.
+   - The `sched_trace.py` float-op report confirms each key.
 2. **Lowering** (`lower_x87_binary_op` 0x10763d93) [read]. A "stack temp" is a class-3 temp with a def,
    meaning its value is on the x87 stack.
    - Neither operand is a stack temp: `emit_x87_load_operand` loads the **first** operand, and the
@@ -225,7 +224,7 @@ rule predicted all 79 two-square sites in 20 player_update builds.
 So a residual of the form `fld [A]; fadd [B]` against native `fld [B]; fadd [A]` is always a sort-key
 decision between two leaves.
 
-**Slot ids.** Pool-B ids hold locals, parameters and inline copies (snail-mail `address-order.md`).
+**Slot ids.** Pool-B ids hold locals, parameters and inline copies.
 IL locals get their ids before the inline copies made for inlined operators and constructors.
 
 - A named local anywhere in the body, even after the site, shifts every later inline-copy id by one.

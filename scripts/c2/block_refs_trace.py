@@ -22,8 +22,6 @@ blocks, prints the referenced ranges and the tuples each stage removed:
 rescorings that decide split pieces.
 
     uv run python scripts/c2/block_refs_trace.py <scratch> --out <new-dir> --block 1
-    # a snail-mail scratch, from the snail-mail checkout:
-    uv run python ../crimson/scripts/c2/block_refs_trace.py --snail <scratch> --out <new-dir> --block 1
     uv run python scripts/c2/block_refs_trace.py --reuse <trace-dir> --block 1 --block 7
 
 See tools/match/c2/compiler/invisible-ranges.md.
@@ -181,8 +179,6 @@ def main():
     parser.add_argument("scratch", nargs="?", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reuse", type=Path, help="report an existing trace directory")
-    parser.add_argument("--snail", action="store_true", help="trace a snail-mail scratch through its adapter")
-    parser.add_argument("--match-root", type=Path, help="snail-mail: compile against another tools/match root")
     parser.add_argument("--block", action="append", default=[], help="block number (repeatable; default 1)")
     parser.add_argument("--class", dest="cls", type=int, default=0, help="register class: 0 integer, 1 x87")
     parser.add_argument("--rescore", action="store_true", help="also dump at every rescoring after a split")
@@ -192,7 +188,7 @@ def main():
     if trace_dir is None:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = stage.load_modules(args.snail, args.match_root)
+        c2, iv = stage.load_modules()
         stage.profile = lambda c2_module, preset: profile(c2_module, args.rescore)
         stage.observer_source = observer_source(stage.observer_source)
         result = stage.trace(c2, iv, args.scratch, args.out, "block-refs")

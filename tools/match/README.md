@@ -1,8 +1,8 @@
 # Matching Decompilation
 
-This is the Crimsonland version of the Snail Mail matching-islands workflow:
-write a small C/C++ scratch for one native function, compile it with the
-original-era MSVC toolchain, then diff normalized x86 assembly against the
+Matching works in islands: write a small C/C++ scratch for one native
+function, compile it with the original-era MSVC toolchain, then diff
+normalized x86 assembly against the
 function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 `grim.dll`.
 

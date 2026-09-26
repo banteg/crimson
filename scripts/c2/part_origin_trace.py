@@ -21,9 +21,7 @@ inliner recursion and formal substitution, and at the globopt stages of `il_stag
 For every float add/sub/mul/div tuple on the chosen C2 lines at lowering entry it prints each symbol operand
 with its class, parent+offset, name, sort key and origin.
 
-    uv run python scripts/c2/part_origin_trace.py <crimson-scratch> --out <new-dir> --lines 160-170
-    # a snail-mail scratch, run from the snail-mail checkout:
-    uv run python ../crimson/scripts/c2/part_origin_trace.py --snail <scratch> --out <new-dir> --lines 160-170
+    uv run python scripts/c2/part_origin_trace.py <scratch> --out <new-dir> --lines 160-170
     uv run python scripts/c2/part_origin_trace.py --reuse <trace-dir> --lines 160-170
 
 See tools/match/c2/compiler/scale-operand-rank.md.
@@ -147,8 +145,6 @@ def main():
     parser.add_argument("scratch", nargs="?", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reuse", type=Path, help="Re-render an existing trace directory")
-    parser.add_argument("--snail", action="store_true", help="Trace a snail-mail scratch through its adapter")
-    parser.add_argument("--match-root", type=Path, help="snail-mail: compile against another tools/match root")
     parser.add_argument("--lines", required=True, help="C2 line-label range A-B (as printed by sched_trace.py)")
     args = parser.parse_args()
     lines = tuple(int(x) for x in args.lines.split("-"))
@@ -157,7 +153,7 @@ def main():
     else:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = ist.load_modules(args.snail, args.match_root)
+        c2, iv = ist.load_modules()
         result = trace(c2, iv, args.scratch, args.out)
         print(json.dumps({k: result[k] for k in ("function", "metrics", "events")}))
         out = args.out

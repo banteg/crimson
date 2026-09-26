@@ -3,24 +3,16 @@
 Covers C2.DLL 12.00.8966 (image base 0x10700000). All addresses are VAs. Unless marked *(inferred)* or *(uncertain)*, each statement comes from reading the HLIL or disassembly. Annotations are in [`analysis/binary_ninja/c2`](../../../../analysis/binary_ninja/c2).
 
 The flag names used below:
-- `/Ot` means `[0x107ac0b4]`. The snail notes call it "/O2".
-- `/Og` means `[0x107ac058]`. The snail notes call it "g5 split enabled", which is wrong.
+- `/Ot` means `[0x107ac0b4]`.
+- `/Og` means `[0x107ac058]`.
 - `/Oy` means `[0x107ac054]`.
 
-## 0. Corrections to the earlier snail and crimson notes
+## 0. Corrections to the earlier crimson notes
 
 | Earlier claim | What the code shows |
 |---|---|
-| 0x10730308, 0x107306c1 and 0x10730a40 are "live-range builders a/b/c" | Live ranges are built earlier, by **0x10726d75** (webs, through 0x1072f55d → `new_live_range` 0x10723758). Constant candidates are built by 0x10727f41. The three functions do other jobs: 0x10730308 coalesces copies, 0x107306c1 forward-substitutes single-def ranges, and 0x10730a40 initialises per-block register sets. |
-| A read or write saves 1, and a store saves 1 or 2 | Under /Ot, **every non-constant reference saves 2**: 0x10725751 and 0x107254dc both return 2, and a spill or reload costs 2. Constants save 1 per load, and 0 or 1 when folded into the instruction. Without /Ot, all of these values are byte counts (see §3.5). |
-| The pressure P counts candidates "referenced or live" in the block | P counts only the distinct candidate ranges **referenced** in the block: coloured ones, queued ones, and fresh ones. A range that is live through the block does not add to P, but it is charged −P·w there. |
-| 0x10762f4a spills | It **splits** a range whose allowed set is empty: it places split markers and returns {id}. The next loop iteration splits the range with 0x107204d6. |
-| 0x10732216 splits | It **builds the interference neighbour set** for the chooser and inserts pressure split markers. It does not split anything itself. |
-| 0x107ac190 and 0x107ac194 are masks for "flagged ranges" | They are the **byte-register set {eax,ecx,edx,ebx}** and the **non-byte set {ebp,esi,edi}**. |
-| 0x10726d75 is "assign_symbol_homes / demote temps" (crimson) | It is the web and live-range builder. Kind-1 operands with the placeholder home 0x107ae040 are rewritten to `c2_live_range*`. |
-| 0x10730a40 lowers float copies to mov (crimson) | That change happens in 0x1072fef2, the x87 fld/fstp folding, which runs between the same two hook points. 0x10730a40 only allocates block bitsets. |
-
-The rest of the snail chooser, queue and rotation description checks out exactly. Details are added below.
+| 0x10726d75 is "assign_symbol_homes / demote temps" | It is the web and live-range builder. Kind-1 operands with the placeholder home 0x107ae040 are rewritten to `c2_live_range*`. |
+| 0x10730a40 lowers float copies to mov | That change happens in 0x1072fef2, the x87 fld/fstp folding, which runs between the same two hook points. 0x10730a40 only allocates block bitsets. |
 
 ## 1. Pipeline
 
@@ -33,7 +25,7 @@ The driver is 0x10757fc2. The steps in order:
    - No predecessor may end in kind 0x13 or carry flag bit 8.
    - Condition: **#preds × tail_len ≤ 8**.
    - When it applies, the tail is cloned (0x10714605) onto the end of every predecessor. A conditional-branch predecessor gets an edge block first (0x10726481 or 0x10711198). The last predecessor receives the original list.
-   - *Matching:* a short `return x;` tail really is copied into each branch before allocation. Each copy consumes local rotation slots, even when the jump optimiser later cross-jumps the copies back into one tail. This explains the "invisible slot" in the snail `update_subgame` notes.
+   - *Matching:* a short `return x;` tail really is copied into each branch before allocation. Each copy consumes local rotation slots, even when the jump optimiser later cross-jumps the copies back into one tail.
 2. **0x10726d75 `build_live_ranges`** (color.c). See §2.
 3. **0x1072f8fc `choose_frame_pointer_mode`**. See §5.
 4. **0x1072fb58 `global_color_registers`**. See §3.
@@ -64,7 +56,7 @@ views and escaped locals to memory ([post-promotion-stores.md](post-promotion-st
    - the def in the latest block, in layout order;
    - within that block, the earliest def.
 
-   The snail observation "target0 = 41, target1 = 40, target2 = 39, `this` = 10" matches this rule. Split pieces copy the tie key of their parent (0x107211b8).
+   Split pieces copy the tie key of their parent (0x107211b8).
 
 ## 3. Global colouring (0x1072fb58)
 
@@ -211,7 +203,7 @@ Operands of local temps point (`+0x18`) to class-3 temp symbols. These have exac
    - Without /Og, or when global colouring was skipped, the forward variant 0x10751166 runs instead.
    - Both variants set the used flag `desc.flags|=0x10` and the constant score `desc.const_score`.
 2. **Walk.** The cursor is reset once per function (0x1073375e). Tuples are walked in current layout order. Each tuple handles its sources first (0x107384c2) and then its destinations (0x1073855d).
-3. **Selector** 0x1073c97c, as described by snail:
+3. **Selector** 0x1073c97c:
    1. Preference. If it is unset, it is derived from the defining tuple: `mov t, reg(1..8, not esp)` or `lea t, [base(+disp)]`. Taking the preference does not move the cursor.
    2. **Rotation, under /Ot only.** It tries eax, ecx, edx from the cursor and advances the cursor. Choosing edx wraps it to eax.
    3. First free register in the order eax, ecx, edx, esi, edi, ebx, ebp.

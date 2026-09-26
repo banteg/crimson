@@ -48,8 +48,8 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [scale-operand-rank.md](scale-operand-rank.md) | Why a lane of an inlined vector scale loads the field or the scale first: symbol part-record creation order, and the lockstep address records a field read creates |
 | [pu-firecough-heading.md](pu-firecough-heading.md) | What the single-use propagation pass really refuses (registration, kills, range checks), and how storing a value into a call's output vector keeps it computed early |
 | [sib-operand-order.md](sib-operand-order.md) | Which address-sum operand becomes the SIB base, how loads through CSE'd vs fresh addresses rank, and what source kills the address CSE |
-| [cse-slot-count.md](cse-slot-count.md) | Where CSE temp ids come from, why a first `this->f = v` takes two slots, and a phantom-slot tool that tests which id shift a SIB order needs |
-| [cse-id-push.md](cse-id-push.md) | Byte-exact CSE id windows for the snail path builders, why C0 (the first CSE id) moves only in 32-id blocks set by IL size, and measured block costs of natural constructs |
+| [cse-slot-count.md](cse-slot-count.md) | Where CSE temp ids come from, why a first `this->f = v` takes two slots, and phantom-slot interventions that test which id shift a sort order needs |
+| [cse-id-push.md](cse-id-push.md) | Why C0 (the first CSE id) moves only in 32-id blocks set by the whole function's IL size, measured block costs of natural constructs, and single-slot vs whole-function id shifts |
 | [pr-spill-order.md](pr-spill-order.md) | Why a loop pointer used after its loop survives forward substitution and gets a stack home, how reference weights decide 4-byte slot grouping, and a packer what-if tool |
 | [pr-residual-map.md](pr-residual-map.md) | projectile_render residual map by mechanism (slot order, window cap, cross-jump survivor, sort keys), the unstable density-sort tie, and the source changes that reach 94% |
 | [qst-dead-store.md](qst-dead-store.md) | What produces a dead pointer-store triplet (block-end demotion of a dead local definition, phase-1 fold refusal), why stock source cannot keep such a definition past the final dead-code pass, and an intervention tool |
@@ -181,12 +181,7 @@ This is a digest; the detailed notes give the evidence and exceptions.
 
 ## Relation to earlier notes
 
-The deep reading corrects several earlier readings:
-
-- Snail-mail's `global-allocation.md`: under /Ot each reference saves 2, not 1. The pressure P counts
-  candidates referenced in a block, not those live in it. Live ranges are built by 0x10726d75.
-- Snail-mail's tools label 0x107ac058 as the /G5 split flag. It is /Og.
-- Crimson's `expand_constant_multiplies` 0x107281cd narrows byte lanes. Multiplies are
-  `pass_strength_reduce_mul_div` 0x107290aa.
+The deep reading corrects earlier readings. For example, `expand_constant_multiplies` 0x107281cd
+narrows byte lanes; multiplies are `pass_strength_reduce_mul_div` 0x107290aa.
 
 [regalloc.md](regalloc.md) lists all the corrections to earlier notes.

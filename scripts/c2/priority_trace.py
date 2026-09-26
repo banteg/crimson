@@ -17,8 +17,6 @@ difference between two consecutive records is exactly that block's contribution.
 return it records the per-block live-in/live-out/referenced range sets and every live range.
 
     uv run python scripts/c2/priority_trace.py <scratch> --out <new-dir> [--constant 0] [--symbol 549]
-    # a snail-mail scratch, from the snail-mail checkout:
-    uv run python ../crimson/scripts/c2/priority_trace.py --snail <scratch> --out <new-dir> --constant 0
     uv run python scripts/c2/priority_trace.py --reuse <trace-dir> --constant 0 --symbol 549
 
 The report prints the colouring order (every chooser call with its priority, block span, allowed set
@@ -238,8 +236,6 @@ def main():
     parser.add_argument("scratch", nargs="?", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reuse", type=Path, help="report an existing trace directory")
-    parser.add_argument("--snail", action="store_true", help="trace a snail-mail scratch through its adapter")
-    parser.add_argument("--match-root", type=Path, help="snail-mail: compile against another tools/match root")
     parser.add_argument("--constant", action="append", default=[], help="report ranges of this constant value")
     parser.add_argument("--symbol", action="append", default=[], help="report ranges of this symbol id")
     parser.add_argument("--range", action="append", default=[], help="report this live-range id")
@@ -250,7 +246,7 @@ def main():
     if trace_dir is None:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = stage.load_modules(args.snail, args.match_root)
+        c2, iv = stage.load_modules()
         stage.observer_source = observer_source(args.bump_constant, args.bonus)
         try:
             result = stage.trace(c2, iv, args.scratch, args.out, "priority")

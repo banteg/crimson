@@ -1,8 +1,8 @@
 # By-value struct results, copy temporaries and tail merging (C2.DLL 8966)
 
 This note explains when a by-value vector result costs a stack temporary and a copy, and when C2
-deletes the copy. It also answers two snail-mail layout questions (§6 and §7) that were traced with
-the same tool. Addresses are virtual addresses in the pinned C2.DLL (image base 0x10700000).
+deletes the copy. It also covers two layout rules traced with the same tool: switch-tail
+cross-jumping (§6) and the block order of a short-circuit `if` (§7). Addresses are virtual addresses in the pinned C2.DLL (image base 0x10700000).
 
 Evidence labels:
 
@@ -43,7 +43,8 @@ Evidence labels:
 
 ## 2. How C1XX materializes a by-value result
 
-Observed in the globopt-entry dump (after inlining) of a mini scratch and of Worm:
+Observed in the globopt-entry dump (after inlining) of a mini scratch and of a real vector-heavy
+function (Snail Mail's Worm path builder):
 
 | Source | IL after inlining |
 |---|---|
@@ -55,13 +56,13 @@ Observed in the globopt-entry dump (after inlining) of a mini scratch and of Wor
 | by-value `tVector` parameter of an inline function | `blkcopy param <= argument`; a temporary argument is constructed in place |
 | by-value parameter when the class has a user-declared copy constructor | **not inlined**: the operator and the copy constructor become calls |
 
-Each inline expansion gets its own `result` symbol (`#1123`, `#1132` in the Worm trace), each with its
-own alias class (§5). `purge_unreferenced_temps` does not touch them; only CSE plus DCE removes them.
+Each inline expansion gets its own `result` symbol, each with its own alias class (§5).
+`purge_unreferenced_temps` does not touch them; only CSE plus DCE removes them.
 
 ## 3. How the copies disappear
 
-`--preset globopt` of the tool dumps the IL after each globopt sub-pass. For Worm with a
-copy-constructor header, `base_plus_right = pos + t` produces `bpr.{x,y,z} = result.{x,y,z}`:
+`--preset globopt` of the tool dumps the IL after each globopt sub-pass. With a copy-constructor
+header, `base_plus_right = pos + t` produces `bpr.{x,y,z} = result.{x,y,z}`:
 
 - `canon`..`vn`: the three field copies are still there, and `vertex = bpr + up` reads `bpr` parts.
 - `cse1`: the reads of `bpr.x/y/z` are rewritten to `result.x/y/z`.
@@ -98,10 +99,9 @@ mov  eax,[result.y]  mov ecx,[result.z]
 mov  [vertex.y],eax  mov [vertex.z],ecx
 ```
 
-Worm, verified: the copy-constructor header (87.80%, frame 0x74) and the stock header with
-`vertices[k] = Vector3(&vertex.x)` (87.80%, frame 0x74, the same normalized listing) both reproduce native's
-`C → D` copy exactly (`fstp [0x34]; mov eax,[0x8c]; mov ecx,[0x90]; mov [0x38],eax; mov [0x3c],ecx`
-in native).
+A copy-constructor header and the stock header with `vertices[k] = Vector3(&vertex.x)` both give
+this shape, with the same listing. [Verified on Snail Mail's Worm path builder, where it matches
+native's copy exactly]
 
 ### 4.2 A write that kills availability
 
@@ -121,104 +121,76 @@ and the `vertex.y`/`vertex.z` reads stay. The block copy survives and is lowered
 
 Field copies are recorded per part, so an in-place write to `b.x` does not kill `b.y = a.y`.
 
-### 4.3 What does not keep a copy (Worm controls, all at 0x68 or 0x74)
+`avail_transfer_tuple` also clears `g_alias_class_kill_sets2[class]` on writes to memory-resident
+parts, so a memory write in the copy's alias class kills it too.
+
+### 4.3 What does not keep a copy
+
+None of these kept a copy whose destination has only field reads (controls on one function, each
+compiled with both headers):
 
 Named versus unnamed intermediates, `v = v + x`, `+=`, `const&` binding, declare-then-assign,
 function-scope declarations, a pointer to the output, by-value `lhs`/`rhs`/both, member `operator+`,
 constructor-return `operator+`, `result = lhs; result += rhs`, a user destructor, and
-`tVector(float*)` round trips through named pointers. Headers that add a user-declared
-`operator=` change unrelated code (695 instructions) and were dropped.
+`tVector(float*)` round trips through named pointers.
 
-## 5. The Worm vertex (snail-mail `initialize_worm_path_template_pair`)
+## 5. A field copy that survives only in part
 
-Native `0x4207e8..0x420958`, candidate frame 0x68 against native 0x80. Four 12-byte objects, named
-here by role (stack offsets in the native frame):
+Native code can show a copy with the field-copy signature (no x lane; y and z by integer moves) whose
+destination has **only field reads**, which are then re-read from the copy:
 
-| Object | Offsets | What native does |
-|---|---|---|
-| A = `pos + t` (`result` of the first `operator+`) | 0x70..0x78 | x kept in st(0); y and z stored |
-| B | 0x7c..0x84 | `B.y = A.y`, `B.z = A.z` by integer moves; **no B.x**; y and z re-read by the next add |
-| C = `B + up` | 0x88..0x90 | x kept in st(0); y and z stored |
-| D | 0x34..0x3c | `D.x` from st(0), `D.y/D.z` by integer moves, then the block copy to `vertices[k]` |
+```
+mov r,[esp+a]; mov [esp+b],r; …; fld/fadd [esp+b]
+```
 
-The candidate has only A and D (D is the second `result`). The stock header deletes both copies.
+By §3 and §4 such a copy is rewritten away unless its availability dies between the x-lane read and
+the y-lane read, or its field reads cannot be rewritten. A kill there needs a write that overlaps the
+source or the destination, or a memory write in one of their alias classes (§4.2). Each inline
+`result` has its own class, so separate operator results do not kill each other.
 
-- `C → D` is §4.1: field copies whose destination is block-copied. Both the copy-constructor header
-  and `vertices[k] = Vector3(&vertex.x)` reproduce it. [Verified]
-- `A → B` has the field-copy signature (no x lane). But B's only uses are field reads, and every field
-  copy with field-only uses was rewritten away in every variant tried. None of the roughly 300 compiled
-  variants (the controls in §4.3, crossed with both headers and both D forms) produced B.
-  [Verified negative]
+No source form that produces this has been found. About 300 variants (the §4.3 controls crossed with
+both headers) all rewrote the copy away. [Verified negative, on Snail Mail's Worm path builder]
 
-Native therefore needs a field copy `B = A` whose availability dies after the x-lane read and before
-the y-lane read, or field reads that CSE cannot rewrite. The first candidate write between those two
-reads is `C.x`. Such a kill needs C to overlap A or B, or a memory write in A's or B's alias class
-(`avail_transfer_tuple` also clears `g_alias_class_kill_sets2[class]` on writes to memory-resident
-parts). In the traced copy-constructor candidate A, C, `up_component` and `vertex` have distinct classes (92, 93, 63
-and 67), so no kill happens. Which native construct produced that kill is still open (§8).
+## 6. Switch tails: which case tails merge
 
-A scan of the 785 functions listed in snail-mail STATUS.md found this signature (`mov r,[esp+a];
-mov [esp+b],r; …; fld/fadd [esp+b]`) only in Worm, so no exact sibling shows the source form.
-
-Practical guidance for Worm: the retained source should stay. The copy-constructor header and
-`Vector3(&vertex.x)` both recover native's D copy but lose score without B (87.80% against 90.64%).
-The best frame-correct control found, a by-value `operator+` with `tVector(float*)` operands, reaches
-0x80 and 91.38%. It does so by copying `position` into the parameter, which native does not do, so it
-matches the frame by coincidence and is not evidence.
-
-## 6. `set_immediate_blend_mode`: which case tails merge
-
-`--preset jumpopt` reports every cross-jump attempt. Rules, verified on this function:
+`--preset jumpopt` reports every cross-jump attempt. Rules (verified on Snail Mail's
+set_immediate_blend_mode, a switch whose cases each make one or two device vtable calls):
 
 1. **Registers decide identity.** `tuples_equal` 0x1073d365 compares opcode, size, destination and
-   source chains (and a call's `+0x20`). The vtbl loads get ecx/edx from the local rotation, which
-   follows the IL order. Every case block has an odd number of rotating loads, so blocks alternate
-   ecx-first/edx-first in source order. The source order `0, 1, 2, 4, 14, 6, 9/12, 5/8/11/13,
-   3/7/15` reproduces native's register pattern in every block.
+   source chains (and a call's `+0x20`). Loads that get their register from the local rotation
+   ([regalloc.md](regalloc.md) §4) follow the IL order. A case block with an odd number of rotating
+   loads flips the next block between ecx-first and edx-first, so identical case bodies can get
+   different registers depending on their source position, and the case order in source decides
+   which tails can merge.
 2. **`cross_jump_into_fallthrough` 0x1073d701 has no size threshold.** Any jump whose code before
    `jmp L_exit` ends like the block that falls into `L_exit` (the last case) is merged, even for
-   one matching tuple. That is how cases 2 and 14 join the 3/7/15 tail at `push 0x13`, in native and in
-   the candidate. Short merges (case 0, 9/12) are later undone: block mover loop 2 copies the ≤20-byte
-   tail back.
+   one matching tuple. Short merges are later undone: block mover loop 2 copies the ≤20-byte tail
+   back.
 3. **`cross_jump_label_refs` 0x1073d211** takes the references of `L_exit` in list order (newest
    jump first). Each reference in turn is an anchor tried against every later one with
    `cross_jump_pair` 0x1071dfc6. Word counters at `jmp+0x12` are cleared on entry.
 4. **Profitability of `cross_jump_pair` under /Ot** (disassembly 0x1071e15c..0x1071e20f):
    - If the first unmatched tuple on either side is an unconditional `jmp` or `ret`, the whole block
-     is covered and it merges at any size. This is why identical cases 1 and 4 always merge.
+     is covered and it merges at any size. Two identical case blocks therefore always merge.
    - Otherwise it adds the encoded lengths of the matched real tuples, starting at the first matched
      tuple, and **stops as soon as the sum reaches 20**. It then adds `max(counter(J1), counter(J2))`
      and merges only if the total is **> 20**. A merge sets the anchor's counter to
      `max(20, total + counter(J2))`.
    - So a common tail of exactly 20 bytes, or any tail whose running sum lands exactly on 20, is
-     never merged when the counters are zero. Case 6 against 5/8/11/13 is such a tail: `push 0x13` 2,
-     `push eax` 1, `call [r+0xc8]` 6, `mov eax,[dev]` 5, `mov edx,[eax]` 2, `push 2` 2,
-     `push 0x14` 2 → 20.
-   - Control: changing the last value in both blocks to `0x102` (a 5-byte push) makes the running sum
-     21, and case 6 then merges at exactly native's point (`mov eax,[dev]; push 2; mov ecx,[eax];
-     jmp L144`). [Verified]
+     never merged when the counters are zero. Widening one matched instruction (a `push` of a value
+     that needs 5 bytes instead of 2) makes such a tail merge. [Verified]
 
-Native merges cases 2 and 14 into 3/7/15 and case 6 into 5/8/11/13, and keeps cases 1 and 4 as two
-full blocks. With uniform `switch`/`return` source this cannot happen:
+So when native merges a tail that the candidate does not, or keeps two identical case blocks apart,
+the IL at jump-optimizer time differed: a tuple that a later pass deletes, or a different operand
+symbol. Neither shows in the final bytes. `break` versus `return`, returning the call result, an
+explicit `default`, and case-selector arithmetic folded by the switch branch facts do not change the
+IL here. [Verified]
 
-- every one of the 2,880 source orders that give native's registers (5! × 4! orders with ecx-first
-  blocks at even positions) was compiled. None reproduces native; the best is native's own order at
-  77.70% (127 instructions), because 1 and 4 merge and 6 does not. [Verified]
-- `break` instead of `return`, returning the call result, an explicit `default`/`case 10`, and
-  case-selector arithmetic for the values (`blend_mode + 4`, folded by the switch branch facts) are
-  byte-identical. [Verified]
-- Loading the device through a *different symbol* in case 4 (same address) keeps 1 and 4 apart and
-  reproduces native's whole jump table, except the case-6 merge (86.98%, 146 instructions).
-  [Verified; the extra symbol is not evidenced and was only a control]
+## 7. Short-circuit `if`: why the first arm can land last
 
-So in native, cases 1 and 4 differ in IL at jump-optimizer time, and the case-6 tail is longer than 20
-bytes then, or its anchor had a counter. Neither difference shows in the final bytes. See §8.
-
-## 7. `update_subgoldy` ghost z: why `records[0]` comes second, and the source that fixes it
-
-The C1XX reader emits `if (!anchor || (cursor = …) == 0) A; else B;` in source order: T1
-`jcc(anchor==0) → LA`, T2 `cursor = …; jcc(cursor!=0) → LB`, A, `jmp J`, B, J. (Trace:
-`branch_trace.py` phase `read`.)
+The C1XX reader emits `if (!a || (c = …) == 0) A; else B;` in source order: T1
+`jcc(a==0) → LA`, T2 `c = …; jcc(c!=0) → LB`, A, `jmp J`, B, J. (Trace: `branch_trace.py` phase
+`read`.)
 
 `cfg_build_edges` walks blocks in order. For each block it prepends the fall-through edge, then one
 edge per reference to the block's label. So:
@@ -228,77 +200,57 @@ edge per reference to the block's label. So:
 
 The DFS in `cfg_dfs_rpo` visits the list head first. It reaches A from T1 before T2, so A finishes
 early and lands after B. The resulting order is T1, T2, B, A, J; T2's branch is inverted to `je A` and
-falls into B. That is the candidate. Every one-copy spelling that keeps A before T2 in source gives
-the same lists.
+falls into B. Every one-copy spelling that keeps A before T2 in source gives the same lists.
 
-Native (`je A; …; jne B; A; jmp J; B`) needs T1's successor list to be [T2, A] and T2's to be
+The order `je A; …; jne B; A; jmp J; B` needs T1's successor list to be [T2, A] and T2's to be
 [B, A]. Then DFS goes T1 → T2 → B → J, then A. That needs A **before** T2 in the reader IL, with T2
 reaching A by a **backward** jump, which in C means a backward `goto`:
 
 ```cpp
-float ghost_z;
-if (!anchor) {
-first_record:
-    ghost_z = MathType16to32(
-        (unsigned short)TIME_TRIAL_RECORD_AT(record_block)->run_records[0].delta_z, 32.0f);
+if (!a) {
+first:
+    A;
 } else {
-    cursor = TIME_TRIAL_RECORD_AT(record_block)->replay_start_cursor - anchor + cursor;
-    if (cursor == 0)
-        goto first_record;
-    ghost_z = MathType16to32(
-                  (unsigned short)TIME_TRIAL_RECORD_AT(record_block)->run_records[cursor].delta_z,
-                  32.0f)
-            + g_subgoldy_ghost_z;
+    c = …;
+    if (c == 0)
+        goto first;
+    B;
 }
 ```
 
-Verified: reader IL T1 → `LA_else`, A (`first_record`), `jmp J`, T2 (`jcc(cursor!=0) → B; jmp
-first_record`), B. After `optimize_flow_graph_initial` the order is T1, T2, A, B, J, and every branch
-and label in the block equals native's (`je L1c2c`, `jne L1c43`, `jmp L1c62`). The block mover does not
-touch it.
+Verified: reader IL T1 → `LA_else`, A (`first`), `jmp J`, T2 (`jcc(c!=0) → B; jmp first`), B. After
+`optimize_flow_graph_initial` the order is T1, T2, A, B, J. The block mover does not touch it.
 
-Spelling the condition as an embedded assignment, `else if`, `anchor == 0` or `!cursor` compiles to
-the same object. A forward `goto` or a label alone is byte-neutral elsewhere.
-
-Cost, on a copy of the current scratch: structural 99.28% → **99.55%** (changed 14/16 → 8/11), raw
-99.28% → 96.06%, 2,089 → 2,090 instructions. The drop comes from two things outside the branch
-structure:
-
-- the local rotation is one step behind native from `records[0]` onwards (`rotation.py`: native
-  cursor minus ours goes +0 → +1 at the `records[0]` temporary and back to +0 at line 1031);
-- the two completion clamps before it now keep `speed` in `[esp+0x10]` (`fst`) instead of re-reading
-  `velocity.z`.
-
-Why a backward goto changes those was not traced.
+Spelling the condition as an embedded assignment, `else if`, `a == 0` or `!c` compiles to the same
+object. A forward `goto` or a label alone is byte-neutral elsewhere. The backward goto did change code
+outside the branch in the traced function (a local rotation step and an x87 spill); why was not
+traced.
 
 ## 8. Open questions
 
-- **Worm B.** Which construct makes `B = A` (field copies) survive with only the x lane rewritten?
-  The trace needs a kill between the x and y reads (overlap or alias class) or unrewritable reads.
-  Next step: trace the alias classes (`@a` in the tool) of a candidate that forces a shared class,
-  for example two operator results of the same inline expansion bound through one reference.
-- **blend case 6 / cases 1 and 4.** What IL difference, invisible after scheduling and the late
-  passes, separates 1 from 4 and lengthens the 6 ∥ 5/8/11/13 tail past 20 bytes?
-  Candidates: a tuple that `late_register_value_cse` 0x10736b27 or the mover later deletes (a
-  redundant device load would add 5 bytes and change the rotation), or a different device
+- **Partial field copies (§5).** Which construct makes a field copy survive with only the x lane
+  rewritten? The trace needs a kill between the x and y reads (overlap or alias class) or
+  unrewritable reads. Next step: trace the alias classes (`@a` in the tool) of a candidate that forces
+  a shared class, for example two operator results of the same inline expansion bound through one
+  reference.
+- **Hidden case-tail differences (§6).** Candidates for an IL difference that is invisible after
+  scheduling and the late passes: a tuple that `late_register_value_cse` 0x10736b27 or the mover later
+  deletes (a redundant load would add bytes and change the rotation), or a different operand
   expression per case.
 - The x-lane forwarding of surviving field copies happens after globopt (the IL still has
   `D.x = C.x` at `final`). The lowering copy propagation `propagate_lowered_copy` 0x1072a632 and the
   allocator's `forward_substitute_single_def_ranges` 0x107306c1 are the candidates.
-- **Ghost z.** The rotation step and the `speed` spill that the backward goto introduces.
+- **Backward goto (§7).** Why it moves the local rotation and x87 spills outside the branch.
 
 ## 9. Tool
 
 ```sh
-# globopt stages for a line range (snail-mail scratch, run from the snail-mail checkout)
-uv run python ../crimson/scripts/c2/il_stage_trace.py --snail <scratch> --out <new-dir> --lines 189-191
+# globopt stages for a line range
+uv run python scripts/c2/il_stage_trace.py <scratch> --out <new-dir> --lines 189-191
 # every tail-merge attempt
-uv run python ../crimson/scripts/c2/il_stage_trace.py --snail <scratch> --out <new-dir> --preset jumpopt
+uv run python scripts/c2/il_stage_trace.py <scratch> --out <new-dir> --preset jumpopt
 ```
 
-- `--match-root` compiles against another `tools/match` root, for example one with an edited
-  `include/vector3.h`.
 - `--reuse <dir>` re-renders a trace without compiling.
-- Crimson scratches work without `--snail`.
-- Crimson's `branch_trace.py` currently raises `TypeError` in `lineage()` on `update_subgoldy` (a
-  `repair.jmp.ret` event with no new jump). Its trace data is still written and readable.
+- `branch_trace.py` can raise `TypeError` in `lineage()` on a `repair.jmp.ret` event with no new
+  jump. Its trace data is still written and readable.

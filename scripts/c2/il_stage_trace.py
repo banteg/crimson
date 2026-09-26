@@ -31,10 +31,7 @@ entry (0x107584bc) and emit (0x107585b1), and reports every cross_jump_into_fall
 cross_jump_pair (0x1071dfc6, called from cross_jump_label_refs) and sink_common_tail_pair
 (0x1074d84f) attempt with its two jumps (ecx/edx), the tuples before them and the verdict.
 
-    uv run python scripts/c2/il_stage_trace.py <crimson-scratch> --out <new-dir> --lines 12-20
-    # a snail-mail scratch, run from the snail-mail checkout (it provides the `snail` package):
-    uv run python ../crimson/scripts/c2/il_stage_trace.py --snail <scratch> --out <new-dir> \
-        [--match-root <alternate tools/match root>] [--preset jumpopt]
+    uv run python scripts/c2/il_stage_trace.py <scratch> --out <new-dir> --lines 12-20 [--preset jumpopt]
     uv run python scripts/c2/il_stage_trace.py --reuse <trace-dir> --lines 12-20
 
 See tools/match/c2/compiler/aggregate-temporaries.md.
@@ -47,13 +44,10 @@ import importlib
 import json
 import re
 import sys
-import types
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 BASE = 0x10700000
-CRIMSON = HERE.parents[1]
-SNAIL = CRIMSON.parent / "snail-mail"
 
 # (call site VA, callee VA, name, return hook, mode) with iv_trace modes: 1 dumps on return, 3 on entry,
 # 0 records only the event head (registers and stack arguments at entry, eax at return).
@@ -104,26 +98,12 @@ OPNAMES = {
 }
 
 
-def load_modules(snail: bool, match_root: Path | None):
-    """Return (match_c2, iv_trace) for Crimson, or through snail-mail's adapter."""
-    if not snail:
-        sys.path.insert(0, str(HERE))
-        from crimson import match_c2
-
-        return match_c2, importlib.import_module("iv_trace")
-    sys.path.insert(0, str(SNAIL / "tools/match/c2"))
-    adapter = importlib.import_module("trace")
-    if match_root is not None:
-        from snail import match as m
-
-        root = match_root.resolve()
-        adapter.facade.compile_scratch = lambda config, force=False: m.compile_scratch(config, root)
-    stub = types.ModuleType("crimson")
-    stub.match_c2 = adapter.c2
-    sys.modules.setdefault("crimson", stub)
-    sys.modules.setdefault("crimson.match_c2", adapter.c2)
+def load_modules():
+    """Return (match_c2, iv_trace)."""
     sys.path.insert(0, str(HERE))
-    return adapter.c2, importlib.import_module("iv_trace")
+    from crimson import match_c2
+
+    return match_c2, importlib.import_module("iv_trace")
 
 
 def profile(c2, preset: str):
@@ -295,8 +275,6 @@ def main():
     parser.add_argument("scratch", nargs="?", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reuse", type=Path, help="Re-render an existing trace directory")
-    parser.add_argument("--snail", action="store_true", help="Trace a snail-mail scratch through its adapter")
-    parser.add_argument("--match-root", type=Path, help="snail-mail: compile against another tools/match root")
     parser.add_argument("--lines", help="globopt: C2 line-label range A-B to print")
     parser.add_argument("--function-ordinal", type=int)
     parser.add_argument("--preset", choices=sorted(PRESETS), default="globopt")
@@ -310,7 +288,7 @@ def main():
     else:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = load_modules(args.snail, args.match_root)
+        c2, iv = load_modules()
         result = trace(c2, iv, args.scratch, args.out, args.preset)
         print(json.dumps({k: result[k] for k in ("function", "metrics", "events")}))
         events = decode((args.out / "observed/phases.bin").read_bytes(), result_profile(args.out))
@@ -325,7 +303,7 @@ def result_profile(out: Path):
 
 
 def decode(data: bytes, prof):
-    """Same format as iv_trace.decode, without importing Crimson (usable from snail-mail's env)."""
+    """Same format as iv_trace.decode, without importing Crimson."""
     text = data.decode("latin-1")
     events = []
     for block in text.split("EVENT ")[1:]:
