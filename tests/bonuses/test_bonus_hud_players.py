@@ -57,8 +57,9 @@ def test_repickup_reverses_a_sliding_out_slot_instead_of_restarting_it() -> None
     assert slot.slide_x == -82.0
 
 
-def test_repickup_of_a_parked_slot_keeps_its_offscreen_position() -> None:
-    state = GameplayState()
+@pytest.mark.parametrize(("preserve_bugs", "parked_x"), [(True, -1602.0), (False, -185.0)])
+def test_repickup_of_a_parked_slot_reverses_from_its_parked_position(preserve_bugs: bool, parked_x: float) -> None:
+    state = GameplayState(preserve_bugs=preserve_bugs)
     players = [PlayerState(index=0, pos=Vec2())]
     _apply(state, players, BonusId.REFLEX_BOOST)
     _apply(state, players, BonusId.ENERGIZER)
@@ -68,8 +69,11 @@ def test_repickup_of_a_parked_slot_keeps_its_offscreen_position() -> None:
         bonus_hud_update(state, players, dt=1.0)
     parked = state.bonus_hud.slots[0]
     assert parked.active
-    assert parked.slide_x == -1602.0
+    assert parked.slide_x == parked_x
 
     _apply(state, players, BonusId.REFLEX_BOOST)
-    assert parked.slide_x == -1602.0
+    assert parked.slide_x == parked_x
     assert not state.bonus_hud.slots[2].active
+    bonus_hud_update(state, players, dt=0.1)
+    # Visible again (right of the hidden edge) only when the parking offset was clamped.
+    assert (parked.slide_x > -184.0) is not preserve_bugs

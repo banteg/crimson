@@ -610,7 +610,9 @@ Why it's likely a bug:
 
 Rewrite behavior:
 
-- Documented and preserved in both ports; it only affects HUD presentation.
+- Default: a parked slot stops just past the hidden edge, so a re-picked bonus
+  slides back in right away. It only affects HUD presentation.
+- `--preserve-bugs`: parked slots keep drifting left as in the original.
 
 ## 26) Bonus HUD dedupe scans one slot past the table (latent)
 

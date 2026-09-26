@@ -22,6 +22,8 @@ class BonusHudSlot(msgspec.Struct):
 
 
 BONUS_HUD_SLOT_COUNT = 16
+# Slots at or left of this offset are hidden and may be released.
+BONUS_HUD_HIDDEN_X = -184.0
 
 
 class BonusHudState(msgspec.Struct):
@@ -38,8 +40,8 @@ class BonusHudState(msgspec.Struct):
 
         Active slots always form a prefix, so the native timer-pointer dedupe keeps an
         existing slot and drops the new one. The kept slot reverses from its current
-        `slide_x`, even when it is parked far below -184 (original bug #25). A full
-        table drops the activation.
+        `slide_x`; with preserved bugs that can be far below -184 (original bug #25).
+        A full table drops the activation.
         """
         if any(slot.active and slot.bonus_id == bonus_id for slot in self.slots):
             return
@@ -90,11 +92,14 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: fl
             slot.slide_x += dt * 350.0
         else:
             slot.slide_x -= dt * 320.0
+            if not state.preserve_bugs:
+                # Bug #25: park just past the hidden edge so a re-pick slides straight back.
+                slot.slide_x = max(slot.slide_x, BONUS_HUD_HIDDEN_X - 1.0)
 
         if slot.slide_x > -2.0:
             slot.slide_x = -2.0
 
-        if slot.slide_x < -184.0 and not any(other.active for other in state.bonus_hud.slots[slot_index + 1 :]):
+        if slot.slide_x < BONUS_HUD_HIDDEN_X and not any(other.active for other in state.bonus_hud.slots[slot_index + 1 :]):
             slot.active = False
             slot.bonus_id = BonusId.UNUSED
             slot.label = ""

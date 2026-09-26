@@ -271,6 +271,8 @@ const HudRuntimeState = struct {
         return smoothed;
     }
 
+    const bonus_hidden_x: f32 = -184.0;
+
     fn update(self: *HudRuntimeState, frame_dt: f32, session: *const runtime_session.DeterministicSession) void {
         const xp_target = if (session.playersConst().len > 0) session.playersConst()[0].experience else 0;
         _ = self.smoothXp(xp_target, @max(frame_dt, 0.0) * 1000.0);
@@ -307,6 +309,8 @@ const HudRuntimeState = struct {
             if (!slot.active or matched[idx]) continue;
             @memset(&slot.timers.values, 0.0);
             slot.slide_x -= @max(frame_dt, 0.0) * 320.0;
+            // Bug #25: park just past the hidden edge so a re-pick slides straight back.
+            if (!session.state.preserve_bugs) slot.slide_x = @max(slot.slide_x, bonus_hidden_x - 1.0);
             var later_active = false;
             for (self.bonus_slots[idx + 1 ..]) |other| {
                 if (other.active) {
@@ -314,7 +318,7 @@ const HudRuntimeState = struct {
                     break;
                 }
             }
-            if (slot.slide_x < -184.0 and !later_active) {
+            if (slot.slide_x < bonus_hidden_x and !later_active) {
                 slot.* = .{};
             }
         }
