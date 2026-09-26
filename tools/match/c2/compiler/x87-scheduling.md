@@ -182,6 +182,10 @@ inspected.
 
 ## 5. Commutative fadd/fmul operand order, end to end
 
+**Field leaves after globopt.** Value numbering gives an address like `player+0x68` its own owner
+temp, so a `p->field` leaf sorts as `[owner+0]` keyed `0x10007 | (owner&3)<<14`: only the owner id
+mod 4 matters ([pu-factor-order.md](pu-factor-order.md)).
+
 **Equal-shape expression operands** (for example the two squares in `sqrt(dy*dy + dx*dx)`) tie on
 need and size, so the 16-bit tuple hash decides; higher sorts first and ties keep source order. For
 `t*t` of a compiler (CSE) temp the key is `(192*id + 0x2a) & 0xffff`, which wraps about every 341

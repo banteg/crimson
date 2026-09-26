@@ -46,7 +46,7 @@ Other notes:
 4. **Commutative operand order.** It is a stable descending sort on the packed cost `need<<24 | size<<16 | hash16`.
    - Constants always go last.
    - On a tie, the operand whose symbol id gives the higher hash goes first: about `id<<5` for user symbols and `id<<6` for temps. Declaration order and temp numbering therefore matter.
-   - Integer `a-b` is canonicalized as `a+(-b)`, and add/mul/and/or/xor chains are flattened, sorted and re-emitted left-deep. Parenthesization and operand order of these ops are largely irrelevant.
+   - Integer `a-b` is canonicalized as `a+(-b)`, and add/mul/and/or/xor chains are flattened, sorted and re-emitted left-deep. Parenthesization and operand order of these ops are largely irrelevant for integers; for floats an explicit parenthesized subexpression makes the front end emit a FROUND that ends the chain ([codeless-tuples.md](codeless-tuples.md), [pu-factor-order.md](pu-factor-order.md)).
 5. **Temporaries and direct expressions.**
    - A `t = e; v = t` copy is coalesced.
    - A single-def/single-last-use temp is forward-substituted only within the same innermost loop, when its def dominates the use, and with no call or aliased memory access in between. A direct store to a sibling field of the same local aggregate also kills a pending def, because pending defs are tracked per parent symbol; a scalar local is its own parent ([x87-memory-values.md](x87-memory-values.md)).
