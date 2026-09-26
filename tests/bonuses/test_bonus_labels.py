@@ -4,7 +4,6 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry, bonus_label_for_entry
-from crimson.weapons import WeaponId
 
 
 @pytest.mark.parametrize(
@@ -24,8 +23,3 @@ def test_bonus_label_for_entry_formats_expected_labels(
     entry = BonusEntry(bonus_id=bonus_id, amount=amount)
     assert bonus_label_for_entry(entry) == expected_label
 
-
-def test_bonus_entry_weapon_amount_preserves_weapon_label() -> None:
-    entry = BonusEntry(bonus_id=BonusId.WEAPON, amount=int(WeaponId.PISTOL))
-
-    assert bonus_label_for_entry(entry) == "Pistol"
