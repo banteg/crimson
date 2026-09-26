@@ -3,31 +3,85 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.bonuses import BonusId
-from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
+from crimson.effects import FxQueue, FxQueueRotated
+from crimson.effects_atlas import EffectId
+from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import BonusPickupEvent, PlayerState
+from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldEvents, WorldState
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.factories import RecordingCreatureDamageRuntime
-from tests.support.helpers import ScriptedCrand
 from tests.support.world_runtime import WorldRuntimeHost
+
+_PICKUP_BURST = [
+    RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION,
+    RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X,
+    RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y,
+] * 12
+
+
+def _step_world_over_bonuses(
+    bonuses: list[tuple[Vec2, BonusId]],
+) -> tuple[WorldState, WorldEvents, list[RngCallerStatic]]:
+    """Step one real world tick with a player at (512, 512) over `bonuses`; return `bonus_apply` RNG callers."""
+    world = WorldState.build(world_size=1024.0, demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+    state = world.state
+    for pos, bonus_id in bonuses:
+        assert state.bonus_pool.spawn_at(pos=pos, bonus_id=bonus_id, state=state, emit_burst=False) is not None
+    rng = state.rng
+    assert isinstance(rng, Crand)
+    rng.srand(0x150767)
+    callers: list[RngCallerStatic] = []
+    rng.set_trace_sink(
+        lambda _before, _after, _value, caller: callers.append(RngCallerStatic(caller)) if caller is not None else None,
+    )
+    events = world.step(
+        0.016,
+        inputs=None,
+        world_size=1024.0,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+    return world, events, [caller for caller in callers if caller.name.startswith("BONUS_APPLY_")]
 
 
 def test_bonus_pickup_burst_tags_inlined_native_callers() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(rng=rng)
+    _world, events, callers = _step_world_over_bonuses([(Vec2(512.0, 512.0), BonusId.POINTS)])
 
-    emit_bonus_pickup_effects(
-        state=state,
-        pickups=[BonusPickupEvent(player_index=0, bonus_id=BonusId.POINTS, amount=1, pos=Vec2())],
-        detail_preset=5,
+    assert [pickup.bonus_id for pickup in events.pickups] == [BonusId.POINTS]
+    assert callers == _PICKUP_BURST
+
+
+def test_reflex_boost_and_freeze_pickups_spawn_ring_and_burst() -> None:
+    world, events, _callers = _step_world_over_bonuses(
+        [(Vec2(500.0, 512.0), BonusId.REFLEX_BOOST), (Vec2(524.0, 512.0), BonusId.FREEZE)],
     )
 
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION,
-        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X,
-        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y,
-    ] * 12
+    assert [pickup.bonus_id for pickup in events.pickups] == [BonusId.REFLEX_BOOST, BonusId.FREEZE]
+    effect_ids = [int(effect.effect_id) for effect in world.state.effects.iter_active()]
+    assert effect_ids.count(int(EffectId.BURST)) == 24
+    assert effect_ids.count(int(EffectId.RING)) == 2
+
+
+def test_second_pickup_in_a_tick_draws_after_the_first_pickup_burst() -> None:
+    # Two kill drops land 34 units apart, both inside the 26-unit pickup radius.
+    # Native `bonus_update` applies both in slot order, and `bonus_apply` draws
+    # each pickup burst before returning, so the Points burst precedes Nuke's
+    # draws. Nuke itself skips the burst.
+    _world, events, callers = _step_world_over_bonuses(
+        [(Vec2(495.0, 512.0), BonusId.POINTS), (Vec2(529.0, 512.0), BonusId.NUKE)],
+    )
+
+    assert [pickup.bonus_id for pickup in events.pickups] == [BonusId.POINTS, BonusId.NUKE]
+    assert callers[: len(_PICKUP_BURST) + 1] == [*_PICKUP_BURST, RngCallerStatic.BONUS_APPLY_NUKE_BULLET_COUNT]
+    assert [caller for caller in callers if caller in _PICKUP_BURST] == _PICKUP_BURST
 
 
 def test_bonus_pickup_spawns_burst_effect() -> None:

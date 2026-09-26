@@ -81,7 +81,10 @@ def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
         detail_preset=5,
     )
     assert not corpse.active
-    assert len(state.effects.iter_active()) == 16
+    freeze_effects = [
+        entry for entry in state.effects.iter_active() if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
+    ]
+    assert len(freeze_effects) == 16
 
 
 def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:

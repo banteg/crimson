@@ -1,53 +1,13 @@
 from __future__ import annotations
 
-from crimson.bonuses import BonusId
-from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import plan_world_presentation_step, queue_projectile_decals
-from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
-
-
-def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:
-    state = GameplayState()
-    pickups = [
-        BonusPickupEvent(
-            player_index=0,
-            bonus_id=BonusId.REFLEX_BOOST,
-            amount=3,
-            pos=Vec2(100.0, 100.0),
-        ),
-        BonusPickupEvent(
-            player_index=0,
-            bonus_id=BonusId.FREEZE,
-            amount=5,
-            pos=Vec2(200.0, 200.0),
-        ),
-        BonusPickupEvent(
-            player_index=0,
-            bonus_id=BonusId.NUKE,
-            amount=0,
-            pos=Vec2(300.0, 300.0),
-        ),
-    ]
-
-    emit_bonus_pickup_effects(
-        state=state,
-        pickups=pickups,
-        detail_preset=5,
-    )
-
-    active = state.effects.iter_active()
-    burst_count = sum(1 for effect in active if int(effect.effect_id) == int(EffectId.BURST))
-    ring_count = sum(1 for effect in active if int(effect.effect_id) == int(EffectId.RING))
-    assert burst_count == 24  # reflex + freeze each emit 12 burst particles; nuke skips burst
-    assert ring_count == 2
 
 
 def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:

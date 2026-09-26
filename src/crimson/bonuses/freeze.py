@@ -2,16 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-"""Freeze bonus behavior shared by sim, apply, and presentation steps."""
-
-
 from grim.color import RGBA
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
 from ..math_parity import f32
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import BonusPickupEvent
 from .apply_context import BonusApplyCtx
 
 if TYPE_CHECKING:
@@ -45,18 +41,14 @@ def apply_freeze(ctx: BonusApplyCtx) -> None:
         )
         creature.active = False
 
+    ctx.state.effects.spawn_ring(
+        pos=ctx.origin_pos,
+        detail_preset=ctx.detail_preset,
+        color=RGBA(0.3, 0.5, 0.8, 1.0),
+    )
     ctx.state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, ctx.origin_pos))
 
 
 def freeze_bonus_active(*, state: GameplayState) -> bool:
     """Return whether Freeze timer is currently active."""
     return float(state.bonuses.freeze) > 0.0
-
-
-def apply_freeze_pickup_fx(*, state: GameplayState, pickup: BonusPickupEvent, detail_preset: int) -> None:
-    """Spawn the freeze-tinted ring used by Freeze bonus pickups."""
-    state.effects.spawn_ring(
-        pos=pickup.pos,
-        detail_preset=int(detail_preset),
-        color=RGBA(0.3, 0.5, 0.8, 1.0),
-    )

@@ -10,7 +10,6 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..bonuses.pickup_fx import emit_bonus_pickup_effects
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.anim import creature_anim_advance_phase
@@ -433,12 +432,6 @@ class WorldState(msgspec.Struct):
             detail_preset=int(detail_preset),
             creature_damage_runtime=step_runtime,
         )
-        if pickups:
-            emit_bonus_pickup_effects(
-                state=self.state,
-                pickups=pickups,
-                detail_preset=int(detail_preset),
-            )
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
