@@ -92,7 +92,7 @@
   "0x107017eb": {
    "name": "symbol_alloc",
    "prototype": "c2_symbol* __fastcall symbol_alloc(uint8_t cls)",
-   "comment": "Allocate a 0x54-byte storage symbol from the per-class pool (free lists 0x1079bc60/bc84), id preserved. Ids come from 32-entry chunks allocated per class on demand; in every function locals take 1..31 and globals start at 32 (even when a global is referenced first), temps follow, and a 32nd local opens a later chunk (192 in a probe). Ids are per function and assigned at the reader's first reference. Trace-verified with IL dumps. Pool B's free list is LIFO: an inline formal copy (e.g. the scale of v * (a - b)) reuses an id freed by an earlier expansion, so it can rank below part records created by earlier expansions (traverse_path_follow_golb: the scale copy is 0x1fd, created after the inline part 0x245)."
+   "comment": "Allocate a 0x54-byte storage symbol from the per-class pool (free lists 0x1079bc60/bc84), id preserved. Ids come from 32-entry chunks allocated per class on demand; in every function locals take 1..31 and globals start at 32 (even when a global is referenced first), temps follow, and a 32nd local opens a later chunk (192 in a probe). Ids are per function and assigned at the reader's first reference. Trace-verified with IL dumps. Pool B's free list is LIFO: an inline formal copy (e.g. the scale of v * (a - b)) reuses an id freed by an earlier expansion, so it can rank below part records created by earlier expansions (traverse_path_follow_golb: the scale copy is 0x1fd, created after the inline part 0x245). Pool chunks come from one shared counter. A pool-B record opens a new chunk at the counter's current value when its chunk is full: 100 dead locals before player_update's rocket_heading moved it from #1883 to #3199, and C0 by +0x60 (verified, pu-id-delta-profile.md 1.1). Observer burns of class 15 are safe; burns of class 4 before a reader allocation make C2 die in globopt (15/15 probes gave an empty object)."
   },
   "0x10701961": {
    "name": "avail_gen_expression",
@@ -1155,7 +1155,7 @@
   "0x1070f584": {
    "name": "merge_sort_operand_list",
    "prototype": "void* __fastcall merge_sort_operand_list(void* head, void* cmp)",
-   "comment": "Stable bottom-up merge sort of the operand list (next at +0)."
+   "comment": "Stable bottom-up merge sort of the operand list (next at +0). After purge_unreferenced_temps every commutative node is sorted exactly once (929 nodes in player_update). Rewriting operand+0x0c keys at the call 0x1070da8d before the sort is a clean per-node order intervention (id_delta_profile.py --phantom O/K)."
   },
   "0x1070f65c": {
    "name": "merge_operand_lists",
@@ -6613,7 +6613,7 @@
   "0x1070d12e": "&sym+const folded into symbol piece when offset in bounds and not -dlp",
   "0x1070d4ca": "factor_out_common_operand(tree, 0x16f mul, 0x161 neg): verified to return 1 for s->c = s->a*4.0f + 4.0f (factored to (a+1)*4 with no FROUND) and 0 for (s->a+1.0f)*4.0f",
   "0x1070d981": "only commutative nodes get their operands sorted",
-  "0x1070da8d": "compute_tree_cost_and_sort: sorts the commutative node's flattened operand list (node+0x18) via merge_sort_operand_list(ecx=list, edx=compare_operand_cost_desc); ebx = node. Hooked by scripts/c2/sort_trace.py (verified: PRE/POST lists with packed keys at +0xc).",
+  "0x1070da8d": "compute_tree_cost_and_sort: sorts the commutative node's flattened operand list (node+0x18) via merge_sort_operand_list(ecx=list, edx=compare_operand_cost_desc); ebx = node. Hooked by scripts/c2/sort_trace.py (verified: PRE/POST lists with packed keys at +0xc). Post-purge sort call: the last operand-order decision for fadd/fmul/add. The leaf key model (symbol 0x10000|H(id); memory fold(disp)+7+(H(base)<<8)) reproduced every leaf of the 353 need/size ties in player_update, and the product key h0+(h1<<1)+0x2a matched the child node of all 8 square pairs (id_delta_profile.py).",
   "0x1070da92": "stable descending merge sort on packed cost",
   "0x1070db13": "need byte: running max, +1 on ties (depends on operand order)",
   "0x1070db22": "cost bump: +7 call kind 0xe, +5 kind 0x12",

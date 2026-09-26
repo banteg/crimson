@@ -97,6 +97,8 @@ Per-site order is therefore unchanged in every variant:
 
 - **`player_update` `move_speed` lanes.** 19 of the 25 `fmul [edi+0x68]` directly follow `fsin`/`fcos`;
   native has 18. So one lane is still in the wrong order, the same one as at cf7f728f3.
+  Correction ([pu-id-delta-profile.md](pu-id-delta-profile.md)): all 25 `fmul [edi+0x68]` sit where native's do; the 19-vs-18 count is an x87
+  hold shape. The real lane residual is the turn factor before `scalar`, hidden under stack masking.
 - **`player_update` square order.** Unchanged.
 - **`projectile_render` K6 and K7.** The same regions remain: K6 at 0x424c5e, K7 at 0x424cd0, 0x424d75,
   0x424e37 and 0x424efd.

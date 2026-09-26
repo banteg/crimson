@@ -230,6 +230,9 @@ IL locals get their ids before the inline copies made for inlined operators and 
 
 - A named local anywhere in the body, even after the site, shifts every later inline-copy id by one.
 - An unused local declaration allocates no id.
+- A pool-B record that overflows its 32-id chunk takes the shared chunk counter's current value, so
+  adding locals can move later locals by hundreds of ids, and each new chunk also moves C0 by 32
+  ([pu-id-delta-profile.md](pu-id-delta-profile.md)).
 - A dead-stored local (`int pad = 0;`) does allocate one.
 
 Blocks are 32 slots, so a shift of s moves every residue by s mod 8.

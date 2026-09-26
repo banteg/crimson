@@ -37,6 +37,8 @@ Temporary hashes use `id mod 1024`. A C0 change of −k blocks therefore ranks e
 +(32 − k)-block change. A `0:M` phantom (burn M ids before slot 0) reproduces that for all temps, but locals do
 not move.
 
+Pool-B chunks opened by locals and parts move C0 as well ([pu-id-delta-profile.md](pu-id-delta-profile.md)).
+
 ## 2. The windows (intervention)
 
 `cse_id_window.py <scratch> --out <dir> 28:830..850 0:832..848 0:832,28:3..14 ...`:

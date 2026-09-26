@@ -106,6 +106,6 @@ commutative node it prints the operand list before (PRE) and after (POST) the so
 
 - In all 8 four-factor lanes native puts the turn factor before scalar, and one slot ([esp+0x20]) serves
   all four arms. With our ids scalar outranks movement_input.x/scratch_pos.x. Native's turn variable
-  probably has a larger pool-B id than scalar, meaning it is first referenced after scalar. Reusing
+  has a larger pool-B id than scalar (verified for all 8 lanes, [pu-id-delta-profile.md](pu-id-delta-profile.md)), meaning it is first referenced after scalar. Reusing
   angle_step makes C2 hold the value on the x87 stack (`fmul st(1)`), which is not native.
 - The +32 owner shift in the parenthesis build is attributed to one more frontend temp block; not traced.
