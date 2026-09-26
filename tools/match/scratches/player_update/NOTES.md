@@ -2,6 +2,45 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## SDK-style vector type and float math (2026-09-26)
+
+`player_update_vec2_t` is now `struct vec2_t : vec2f_t`, with default and
+two-float constructors. The math calls use the float overloads `cosf`, `sinf`,
+`sqrtf` and `atan2f` in place of `(float)cos(...)` casts, and
+`muzzle_flash_alpha` is declared at first use. This follows the 2003 SDK
+`vec2_t` value style (`cltypes.h`). The object moves toward native in three
+places, including the `fst` of the auto-aim `sqrtf`. All other matched lines
+are unchanged.
+
+74.36% to **74.40%**; references unchanged at 863/0/0; stack-masked structural
+94.04 to 94.11%.
+
+crimson-88 measured how the alias-class count forms
+(`pu-alias-budget-sources.md`, `scripts/c2/alias_class_census.py`,
+`inline_budget_trace.py`):
+
+- The count is scope markers + 3 + root symbols; the base is 515.
+- Measured class costs:
+  - function-scope local: 1;
+  - first local in a block: 2;
+  - inline formal bound to a global, field or expression: 2;
+  - `vec2_set`: 3;
+  - `&(a + b)` operator temporary: 5;
+  - `v = vec2_t(x, y)`: 5;
+  - float overloads, in total: `cosf` +30, `sinf` +30, `atan2f` +24, `sqrtf` +10.
+- This change adds 94 classes. The best natural rewrite adds 307 of the 509
+  needed to collapse the pointer roots at 0x400, which is not enough.
+
+Below the budget, spellings that are native under collapse score worse. So
+earlier rejections of vector-operator and swap-helper probes were judged in the
+wrong regime. For example, `pu_swap(player->alt_X, player->X)` × 7, a reference
+swap helper, reproduces native's Alternate Weapon block exactly under collapse:
+the `lea eax,[edi+0x2c0]` and `lea ecx,[edi+0x2d0]` are the helper's reference
+parameters. It scores 73.72% below the budget.
+
+Native's `vec2_sub`/`vec2_length` were not refused by the inline budget
+(14,228 of 28,456). They were most likely defined out of line.
+
 ## Auto-aim target copy and the alias-class budget (2026-09-26)
 
 In the auto-aim block, the target is named once:

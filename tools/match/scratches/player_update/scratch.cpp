@@ -6,14 +6,14 @@
 #include "crimsonland_terrain_owner.h"
 #include "grim2d_cpp.h"
 
-typedef vec2f_t player_update_vec2_t;
-
-struct vec2_t {
-    float x;
-    float y;
+struct vec2_t : vec2f_t {
+    vec2_t() {}
+    vec2_t(float _x, float _y) { x = _x; y = _y; }
 
     float *vec2_sub(float *dst, float *rhs);
 };
+
+typedef vec2_t player_update_vec2_t;
 
 extern "C" {
 extern unsigned char console_open_flag;
@@ -163,7 +163,6 @@ extern "C" void player_update(void)
 
     player_state_t *player = &player_state_table[player_index];
     vec2f_t *player_position = &player->position;
-    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;
     previous_pos.x = player_position->x;
     previous_pos.y = player_position->y;
 
@@ -180,9 +179,9 @@ extern "C" void player_update(void)
         player->low_health_timer = player->low_health_timer - frame_dt;
         if (player->low_health_timer < 0.0f) {
             scratch_pos.x =
-                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;
+                cosf(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;
             scratch_pos.y =
-                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;
+                sinf(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;
             scratch_pos.x += player_position->x;
             scratch_pos.y += player_position->y;
             float angle = player->aim_heading;
@@ -197,6 +196,7 @@ extern "C" void player_update(void)
         }
     }
 
+    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;
     *muzzle_flash_alpha = *muzzle_flash_alpha - (frame_dt + frame_dt);
     if (*muzzle_flash_alpha < 0.0f) {
         *muzzle_flash_alpha = 0.0f;
@@ -283,8 +283,8 @@ extern "C" void player_update(void)
 
             float aim_heading = player->aim_heading;
             float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;
-            movement_input.x = (float)cos(muzzle_heading) * 16.0f;
-            movement_input.y = (float)sin(muzzle_heading) * 16.0f;
+            movement_input.x = cosf(muzzle_heading) * 16.0f;
+            movement_input.y = sinf(muzzle_heading) * 16.0f;
 
             player_state_t *fire_player =
                 &player_state_table[render_overlay_player_index];
@@ -297,9 +297,9 @@ extern "C" void player_update(void)
             spread_radius = (float)(crt_rand() & 0x1ff)
                 * (spread_radius * fire_player->spread_heat)
                 * 0.001953125f;
-            random_offset.x = (float)cos(spread_angle) * spread_radius
+            random_offset.x = cosf(spread_angle) * spread_radius
                 + random_offset.x;
-            random_offset.y = (float)sin(spread_angle) * spread_radius
+            random_offset.y = sinf(spread_angle) * spread_radius
                 + random_offset.y;
 
             float *shot_delta = ((vec2_t *)&fire_player->position)->vec2_sub(
@@ -313,8 +313,8 @@ extern "C" void player_update(void)
                 PROJECTILE_TYPE_FIRE_BULLETS,
                 owner_id);
 
-            move_delta.x = (float)cos(aim_heading) * 25.0f;
-            move_delta.y = (float)sin(aim_heading) * 25.0f;
+            move_delta.x = cosf(aim_heading) * 25.0f;
+            move_delta.y = sinf(aim_heading) * 25.0f;
             player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);
             int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);
             effect_color_t &effect_color =
@@ -406,7 +406,7 @@ extern "C" void player_update(void)
                 - creature_pool[target_index].position.y;
             float dx = player_position->x
                 - creature_pool[target_index].position.x;
-            nearest_distance = (float)sqrt(dy * dy + dx * dx);
+            nearest_distance = sqrtf(dy * dy + dx * dx);
         }
 
         int creature_index = 0;
@@ -417,7 +417,7 @@ extern "C" void player_update(void)
                     &creature_pool[creature_index].position;
                 float dy = player_position->y - position->y;
                 float dx = player_position->x - position->x;
-                float distance = (float)sqrt(dy * dy + dx * dx);
+                float distance = sqrtf(dy * dy + dx * dx);
                 if (distance < nearest_distance - 64.0f) {
                     player->auto_target = creature_index;
                     nearest_distance = distance;
@@ -446,8 +446,8 @@ extern "C" void player_update(void)
             if (player->move_target.x != -1.0f) {
                 float dy = player_position->y - player->move_target.y;
                 float dx = player_position->x - player->move_target.x;
-                if ((float)sqrt(dy * dy + dx * dx) > 20.0f) {
-                    movement_heading = (float)atan2(dy, dx) - 1.5707964f;
+                if (sqrtf(dy * dy + dx * dx) > 20.0f) {
+                    movement_heading = atan2f(dy, dx) - 1.5707964f;
                     while (movement_heading < 0.0f) {
                         movement_heading = movement_heading + 6.2831855f;
                     }
@@ -461,9 +461,9 @@ extern "C" void player_update(void)
                             &movement_input,
                             3.1415927f - angle_step,
                             player->heading - 1.5707964f);
-                        player->move_dx = (float)cos(movement_input.y) * player->move_speed * movement_input.x
+                        player->move_dx = cosf(movement_input.y) * player->move_speed * movement_input.x
                             * scalar * 7.957747f;
-                        player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed
+                        player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                             * movement_input.x * scalar * 7.957747f;
                         pu_move_scaled(&movement_input, frame_dt, player->movement);
                         player_apply_move_with_spawn_avoidance(
@@ -478,10 +478,10 @@ extern "C" void player_update(void)
             if (!moving_to_target) {
                 player_decelerate_move_speed(player);
                 player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
+                    cosf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
+                    sinf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 pu_move_scaled(&movement_input, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -499,13 +499,13 @@ extern "C" void player_update(void)
                 -grim_interface_ptr->grim_get_config_float( player->input.axis_move_y));
 
             movement_heading = -1.0f;
-            if ((float)sqrt(
+            if (sqrtf(
                     movement_input.x * movement_input.x
                     + movement_input.y * movement_input.y)
                 > 0.2f) {
                 D3DXVec2Normalize(&movement_input, &movement_input);
                 movement_heading =
-                    (float)atan2(movement_input.y, movement_input.x)
+                    atan2f(movement_input.y, movement_input.x)
                     - 1.5707964f;
                 while (movement_heading < 0.0f) {
                     movement_heading = movement_heading + 6.2831855f;
@@ -520,9 +520,9 @@ extern "C" void player_update(void)
 
                 scratch_pos.y = player->heading - 1.5707964f;
                 scratch_pos.x = 3.1415927f - angle_step;
-                player->move_dx = (float)cos(scratch_pos.y) * player->move_speed * scratch_pos.x
+                player->move_dx = cosf(scratch_pos.y) * player->move_speed * scratch_pos.x
                     * scalar * 7.957747f;
-                player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed
+                player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                     * scratch_pos.x * scalar * 7.957747f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -532,10 +532,10 @@ extern "C" void player_update(void)
             } else {
                 player_decelerate_move_speed(player);
                 player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
+                    cosf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
+                    sinf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -588,10 +588,10 @@ extern "C" void player_update(void)
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
                 player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
+                    cosf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
+                    sinf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -606,10 +606,10 @@ extern "C" void player_update(void)
                 player_accelerate_move_speed(player);
                 movement_heading = -1.0f;
                 player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
+                    cosf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * -25.0f;
                 player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
+                    sinf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * -25.0f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -622,10 +622,10 @@ extern "C" void player_update(void)
                 }
                 player_decelerate_move_speed(player);
                 player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
+                    cosf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
+                    sinf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 const float movement_dt = frame_dt;
                 move_delta.x = movement_dt * player->move_dx;
@@ -711,9 +711,9 @@ extern "C" void player_update(void)
                     &scratch_pos,
                     3.1415927f - angle_step,
                     player->heading - 1.5707964f);
-                player->move_dx = (float)cos(scratch_pos.y) * player->move_speed * scratch_pos.x
+                player->move_dx = cosf(scratch_pos.y) * player->move_speed * scratch_pos.x
                     * scalar * 7.957747f;
-                player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed
+                player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                     * scratch_pos.x * scalar * 7.957747f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -723,10 +723,10 @@ extern "C" void player_update(void)
             } else {
                 player_decelerate_move_speed(player);
                 player->move_dx =
-                    (float)cos(player->heading - 1.5707964f)
+                    cosf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 player->move_dy =
-                    (float)sin(player->heading - 1.5707964f)
+                    sinf(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
                 pu_move_scaled(&move_delta, frame_dt, player->movement);
                 player_apply_move_with_spawn_avoidance(
@@ -740,11 +740,11 @@ extern "C" void player_update(void)
     } else {
         if (player->auto_target < 0
             || creature_pool[player->auto_target].health <= 0.0f) {
-            movement_heading = (float)atan2(
+            movement_heading = atan2f(
                 player_position->y - 512.0f,
                 player_position->x - 512.0f) + 3.1415927f;
         } else {
-            if ((float)sqrt(
+            if (sqrtf(
                     (player_position->y - 512.0f)
                             * (player_position->y - 512.0f)
                         + (player_position->x - 512.0f)
@@ -760,7 +760,7 @@ extern "C" void player_update(void)
                     player_position->y - creature_pool[player->auto_target].position.y);
                 movement_input = scratch_pos;
             }
-            movement_heading = (float)atan2(
+            movement_heading = atan2f(
                 movement_input.y,
                 movement_input.x) - 1.5707964f;
         }
@@ -775,9 +775,9 @@ extern "C" void player_update(void)
                 &scratch_pos,
                 3.1415927f - angle_step,
                 player->heading - 1.5707964f);
-            player->move_dx = (float)cos(scratch_pos.y) * player->move_speed * scratch_pos.x
+            player->move_dx = cosf(scratch_pos.y) * player->move_speed * scratch_pos.x
                 * scalar * 7.957747f;
-            player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed
+            player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                 * scratch_pos.x * scalar * 7.957747f;
             pu_move_scaled(&move_delta, frame_dt, player->movement);
             player_apply_move_with_spawn_avoidance(
@@ -787,10 +787,10 @@ extern "C" void player_update(void)
         } else {
             player_decelerate_move_speed(player);
             player->move_dx =
-                (float)cos(player->heading - 1.5707964f)
+                cosf(player->heading - 1.5707964f)
                 * player->move_speed * scalar * 25.0f;
             player->move_dy =
-                (float)sin(player->heading - 1.5707964f)
+                sinf(player->heading - 1.5707964f)
                 * player->move_speed * scalar * 25.0f;
             pu_move_scaled(&move_delta, frame_dt, player->movement);
             player_apply_move_with_spawn_avoidance(
@@ -905,7 +905,7 @@ extern "C" void player_update(void)
                 mouse_screen->y - camera_offset_y);
             player->aim = scratch_pos;
             player->aim_heading =
-                (float)atan2(
+                atan2f(
                     player_position->y - player->aim.y,
                     player_position->x - player->aim.x)
                 - 1.5707964f;
@@ -916,7 +916,7 @@ extern "C" void player_update(void)
             movement_input.x = grim_interface_ptr->grim_get_config_float(
                 player->input.axis_aim_x);
             movement_input.y = scalar;
-            float length = (float)sqrt(
+            float length = sqrtf(
                 movement_input.x * movement_input.x
                 + scalar * scalar);
             if (1.0f < length) {
@@ -933,7 +933,7 @@ extern "C" void player_update(void)
                 scalar * movement_input.y + player_position->y);
             player->aim = scratch_pos;
             player->aim_heading =
-                (float)atan2(
+                atan2f(
                     player_position->y - player->aim.y,
                     player_position->x - player->aim.x)
                 - 1.5707964f;
@@ -948,18 +948,18 @@ extern "C" void player_update(void)
                 stick_screen->y - 200.0f);
             if (movement_input.x != 0.0f || movement_input.y != 0.0f) {
                 player->aim_heading =
-                    (float)atan2(movement_input.y, movement_input.x)
+                    atan2f(movement_input.y, movement_input.x)
                     + 1.5707964f;
                 previous_pos.x = player->aim_heading - 1.5707964f;
-                float aim_direction_x = (float)cos(previous_pos.x);
-                move_delta.y = (float)sin(previous_pos.x);
+                float aim_direction_x = cosf(previous_pos.x);
+                move_delta.y = sinf(previous_pos.x);
                 player_update_vec2_set(
                     &scratch_pos,
                     aim_direction_x * 60.0f + player_position->x,
                     move_delta.y * 60.0f + player_position->y);
                 player->aim = scratch_pos;
             }
-            if ((float)sqrt(
+            if (sqrtf(
                     movement_input.x * movement_input.x
                     + movement_input.y * movement_input.y)
                 > 30.0f) {
@@ -990,8 +990,8 @@ extern "C" void player_update(void)
                         player->aim_heading - frame_dt * 3.0f;
                 }
                 previous_pos.x = player->aim_heading - 1.5707964f;
-                float aim_direction_x = (float)cos(previous_pos.x);
-                move_delta.y = (float)sin(previous_pos.x);
+                float aim_direction_x = cosf(previous_pos.x);
+                move_delta.y = sinf(previous_pos.x);
                 player_update_vec2_set(
                     &scratch_pos,
                     aim_direction_x * 60.0f + player_position->x,
@@ -1009,8 +1009,8 @@ extern "C" void player_update(void)
                     player->aim_heading + frame_dt * 4.0f;
             }
             previous_pos.x = player->aim_heading - 1.5707964f;
-            float aim_direction_x = (float)cos(previous_pos.x);
-            move_delta.y = (float)sin(previous_pos.x);
+            float aim_direction_x = cosf(previous_pos.x);
+            move_delta.y = sinf(previous_pos.x);
             player_update_vec2_set(
                 &scratch_pos,
                 aim_direction_x * 60.0f + player_position->x,
@@ -1025,7 +1025,7 @@ extern "C" void player_update(void)
             &movement_input,
             target_position->x - auto_aim->x,
             target_position->y - auto_aim->y);
-        scalar = (float)sqrt(
+        scalar = sqrtf(
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
         if (!(scalar >= 4.0f)) {
@@ -1044,7 +1044,7 @@ extern "C" void player_update(void)
     }
 
     player->aim_heading =
-        (float)atan2(
+        atan2f(
             player_position->y - player->aim.y,
             player_position->x - player->aim.x)
         - 1.5707964f;
@@ -1140,8 +1140,8 @@ extern "C" void player_update(void)
 
         angle_step = movement_heading - 1.5707964f;
         scalar = angle_step - 0.150915f;
-        movement_input.x = (float)cos(scalar) * 16.0f;
-        movement_input.y = (float)sin(scalar) * 16.0f;
+        movement_input.x = cosf(scalar) * 16.0f;
+        movement_input.y = sinf(scalar) * 16.0f;
 
         if ((weapon_table[player->weapon_id].flags & 1) != 0) {
             effect_color_t smoke_color;
@@ -1156,8 +1156,8 @@ extern "C" void player_update(void)
             effect_template.color = smoke_color;
             effect_template.lifetime = 0.15f;
             effect_template.age = 0.0f;
-            move_delta.x = (float)cos(angle_step) * scalar;
-            move_delta.y = (float)sin(angle_step) * scalar;
+            move_delta.x = cosf(angle_step) * scalar;
+            move_delta.y = sinf(angle_step) * scalar;
             effect_template.half_extent.x = 2.0f;
             effect_template.half_extent.y = 2.0f;
             effect_template.rotation =
@@ -1197,10 +1197,10 @@ extern "C" void player_update(void)
         angle_step = (float)(crt_rand() & 0x1ff)
             * (angle_step * player->spread_heat) * 0.001953125f;
         random_offset.x =
-            (float)cos(spread_angle) * angle_step + random_offset.x;
+            cosf(spread_angle) * angle_step + random_offset.x;
         random_offset.y =
-            (float)sin(spread_angle) * angle_step + random_offset.y;
-        angle_step = (float)atan2(
+            sinf(spread_angle) * angle_step + random_offset.y;
+        angle_step = atan2f(
             player_position->y - random_offset.y,
             player_position->x - random_offset.x) - 1.5707964f;
 
@@ -1245,8 +1245,8 @@ extern "C" void player_update(void)
                     owner_id);
             }
 
-            move_delta.x = (float)cos(movement_heading) * 25.0f;
-            move_delta.y = (float)sin(movement_heading) * 25.0f;
+            move_delta.x = cosf(movement_heading) * 25.0f;
+            move_delta.y = sinf(movement_heading) * 25.0f;
             player_update_vec2_set(
                 &scratch_pos,
                 movement_input.x + player_position->x,
@@ -1283,9 +1283,9 @@ extern "C" void player_update(void)
                     angle_step,
                     PROJECTILE_TYPE_SHRINKIFIER,
                     owner_id);
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1317,9 +1317,9 @@ extern "C" void player_update(void)
                     angle_step,
                     PROJECTILE_TYPE_PISTOL,
                     owner_id);
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1342,9 +1342,9 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
             } else if (player->weapon_id == WEAPON_ID_ASSAULT_RIFLE) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1376,9 +1376,9 @@ extern "C" void player_update(void)
                     PROJECTILE_TYPE_ASSAULT_RIFLE,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_SHOTGUN) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1419,8 +1419,8 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_JACKHAMMER) {
-                move_delta.x = (float)cos(movement_heading) * 15.0f;
-                move_delta.y = (float)sin(movement_heading) * 15.0f;
+                move_delta.x = cosf(movement_heading) * 15.0f;
+                move_delta.y = sinf(movement_heading) * 15.0f;
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1449,9 +1449,9 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_SAWED_OFF_SHOTGUN) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1531,9 +1531,9 @@ extern "C" void player_update(void)
                 }
                 scalar = 0.05f;
             } else if (player->weapon_id == WEAPON_ID_SUBMACHINE_GUN) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1719,9 +1719,9 @@ extern "C" void player_update(void)
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_GAUSS_SHOTGUN) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1762,9 +1762,9 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 80) * 0.01f + 1.4f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_GAUSS_GUN) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1796,9 +1796,9 @@ extern "C" void player_update(void)
                     PROJECTILE_TYPE_GAUSS_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_ROCKET_LAUNCHER) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1826,9 +1826,9 @@ extern "C" void player_update(void)
                     movement_input.y + player_position->y);
                 fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MINI_ROCKET_SWARMERS) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
@@ -1868,8 +1868,8 @@ extern "C" void player_update(void)
                 }
                 scalar = player->ammo;
             } else if (player->weapon_id == WEAPON_ID_ROCKET_MINIGUN) {
-                move_delta.x = (float)cos(movement_heading) * 25.0f;
-                move_delta.y = (float)sin(movement_heading) * 25.0f;
+                move_delta.x = cosf(movement_heading) * 25.0f;
+                move_delta.y = sinf(movement_heading) * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
                     movement_input.x + player_position->x,
@@ -1885,9 +1885,9 @@ extern "C" void player_update(void)
                     movement_input.y + player_position->y);
                 fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
             } else if (player->weapon_id == WEAPON_ID_SEEKER_ROCKETS) {
-                random_offset.x = (float)cos(movement_heading);
+                random_offset.x = cosf(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
+                random_offset.y = sinf(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 player_update_vec2_set(
                     &scratch_pos,
