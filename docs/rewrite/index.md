@@ -17,6 +17,7 @@ Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or
 
 - [Module map](module-map.md): package boundaries, screen ownership, and runtime components.
 - [Deterministic session](deterministic-step-pipeline.md): live/replay tick order, input, and presentation.
+- [Timing domains and mode scheduling](timing.md): original clocks, mode differences, and Python counterparts.
 - [Run startup](replay-run-start.md): shared initialization, native capture boundary, and terrain RNG.
 - [Perks architecture](perks-architecture.md): explicit effect phases and ordering.
 - [Rendering pipeline](rendering-pipeline.md) and [terrain](terrain.md): drawing and decal application.

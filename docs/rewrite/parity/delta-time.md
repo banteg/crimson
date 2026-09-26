@@ -8,6 +8,9 @@ tags:
 
 This page is the source of truth for delta-time semantics used by Python/Zig rewrites and parity tooling.
 
+For the original engine clocks, mode-specific scheduling, and current Python
+counterparts, see [timing domains and mode scheduling](../timing.md).
+
 ## Runtime timing model overview
 
 - `frame_dt`: per-tick seconds-domain delta (`float`/`f32`) used for simulation math.
