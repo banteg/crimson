@@ -198,3 +198,7 @@ plausible here.
   costs certainly differ.
 - The PCH path (0x107ac6d4 set, decoder 0x1079690d) was not examined.
 - Template instantiation and implicit-member generation costs were measured for one shape each.
+
+Frontend ids also reach C2 through address constants: `make_constant_candidate_operand` buckets a
+string literal by its frontend id mod 64, and freed constant ranges are reused last-in-first-out,
+which can change register-allocation ties ([tu-prelude.md](tu-prelude.md)).

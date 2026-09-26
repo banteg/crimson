@@ -1846,7 +1846,7 @@
   "0x10723758": {
    "name": "new_live_range",
    "prototype": "c2_live_range* __fastcall new_live_range(c2_symbol* sym)",
-   "comment": "Allocates 0x44 range (free list g_live_range_free_list), id from g_next_live_range_id, kind 2, allowed = class set, adds to class candidate set and hash."
+   "comment": "Allocates 0x44 range (free list g_live_range_free_list), id from g_next_live_range_id, kind 2, allowed = class set, adds to class candidate set and hash. Pops g_live_range_free_list first (reusing the freed range's id), else arena-allocates 0x44 bytes with id g_next_live_range_id++; sets allowed set from the type class, marks the class-candidate bit and hashes the range by id & 0x3ff."
   },
   "0x107237f9": {
    "name": "hash_live_range",
@@ -1927,7 +1927,7 @@
   "0x10724a85": {
    "name": "free_live_range",
    "prototype": "int __fastcall free_live_range(c2_live_range* lr, int unlink_from_queue)",
-   "comment": "color.c 5601: frees allowed set, optionally unlinks from colour queue, unhashes, memsets, keeps id, pushes on free list."
+   "comment": "color.c 5601: frees allowed set, optionally unlinks from colour queue, unhashes, memsets, keeps id, pushes on free list. Frees the allowed bitset, optionally unlinks from g_colour_queue, removes the range from g_live_range_hash[id & 0x3ff], zeroes it, restores its id and pushes it on g_live_range_free_list (LIFO)."
   },
   "0x10724b00": {
    "name": "operand_list_has_same_reg",
@@ -2083,7 +2083,7 @@
   },
   "0x10727f41": {
    "name": "make_constant_candidate_operand",
-   "comment": "One class-0xd symbol per distinct value (hash g_constant_symbol_hash[value%64]); creates its live range immediately; operand -> placeholder home."
+   "comment": "One class-0xd symbol per distinct value (hash g_constant_symbol_hash[value%64]); creates its live range immediately; operand -> placeholder home. One class-0xd symbol per distinct constant. Bucket (g_constant_symbol_hash, 64 chains via +0x2c) = value%64 for kind 7 (int), fe_id(*(sym->parent)+0x28)%64 for kind 3 (&sym: string literals and globals carry C1XX frontend ids), sym+0xc %64 otherwise; new symbols are pushed at the bucket head and get a live range immediately (new_live_range). Frontend-id dependence of the bucket makes live-range ids depend on the TU id offset mod 64 (tu-prelude.md s3)."
   },
   "0x107281cd": {
    "name": "pass_narrow_byte_lanes",
@@ -2329,7 +2329,7 @@
   },
   "0x1072f55d": {
    "name": "create_web_live_ranges",
-   "comment": "For every web of every candidate symbol creates one live range (0x10723758) and maps def numbers -> range; drops unused constant ranges."
+   "comment": "For every web of every candidate symbol creates one live range (0x10723758) and maps def numbers -> range; drops unused constant ranges. First walks g_constant_symbol_hash buckets 0..63 (each chain head first) and frees every constant range whose candidate info has def < 1 (free_live_range pushes it on g_live_range_free_list keeping its id, and clears its candidate bit); then creates one live range per web of every candidate symbol, which pops recycled ids LIFO. So web range ids follow the reverse bucket-walk order of the freed constants (tu-prelude.md s3)."
   },
   "0x1072f8fc": {
    "name": "choose_frame_pointer_mode",
@@ -5347,7 +5347,7 @@
   "0x1079d750": {
    "name": "g_constant_symbol_hash",
    "type": "struct c2_symbol*[64]",
-   "comment": "candidate constant symbols by value%64 (chain +0x2c)"
+   "comment": "candidate constant symbols by value%64 (chain +0x2c) constant candidate symbols; bucket = value%64 (int), frontend id%64 (&sym), sym+0xc %64 (other); walked in bucket order by create_web_live_ranges to free unused constant ranges"
   },
   "0x1079d850": {
    "name": "g_candidate_count",
@@ -6713,6 +6713,7 @@
   "0x1072e22b": "short args promoted to dword push",
   "0x1072e7cb": "Traced (boundary): after this call a promoted uint view is back in memory form when an overlapping float view of the same object is stored in memory (4-byte aggregate copy of a float member; player_render_overlays alpha).",
   "0x1072eb81": "block end: each candidate still pending (def/reload never used) and not live-out -> demote_unused_candidate_def(fn, sym, 0) Block-end demotion call: candidates still pending and not live-out go to demote_unused_candidate_def. For a local this turns a dead def into a memory store that no later pass deletes (the quest_spawn_timeline_update pointer store; qst-dead-store.md).",
+  "0x1072f568": "bucket walk of g_constant_symbol_hash: freeing order of unused constant ranges decides which recycled live-range ids later webs receive (frontend-id offset mod 64 dependence, verified on dx_get_version_fallback_from_files)",
   "0x1072f667": "tie key = ordinal of defining tuple (blocks forward, tuples backward within block; last write wins)",
   "0x1072f6cc": "Store-back: a promoted definition gets a 0x164 'home <- lr' after it when its storage is read later as memory (a kind-2 read of an overlapping part, or the alias class of an indirect read or call), when the operand is volatile (+0x11 & 8), or when the parent has flags6 & 1. Traced: (float)s on a promoted int inserts one after each definition; global colouring then demotes s.",
   "0x1072f957": "/Oy and no EH/naked flags: frame pointer omitted -> ebp allocatable (fn+0x34 |= 0x10)",

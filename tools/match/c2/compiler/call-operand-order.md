@@ -176,5 +176,5 @@ first, but stores AL to its home instead of the `mov dl, al` temp (98.98%).
 - Resolved: which declarations consume ids is measured in [frontend-ids.md](frontend-ids.md).
   Parameters are numbered before their function, and a callee's first declaration fixes its id.
 - The same wrap affects every tree that contains a call or label operand. It can reorder mixed
-  call/non-call operands only when needs and sizes tie, which is rare. It has not been surveyed in
-  Crimson.
+  call/non-call operands only when needs and sizes tie, which is rare. A survey of 613 crimsonland
+  C++ scratches found no such tie ([tu-prelude.md](tu-prelude.md)).

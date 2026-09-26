@@ -35,6 +35,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [weapon-arm-schedule.md](weapon-arm-schedule.md) | How a cast-inserted FROUND and fst/AGI latency penalties decide integer store placement in a scheduling window, and a tail merge refused at exactly 20 bytes |
 | [guard-placement.md](guard-placement.md) | Where loop-cursor inits land relative to the inverted guard, and how the extra preheader block shifts register priorities |
 | [frontend-ids.md](frontend-ids.md) | How many translation-unit-wide frontend ids each declaration consumes, measured, with a probe to count a header |
+| [tu-prelude.md](tu-prelude.md) | Negative result: a real DirectX 8.1 SDK prelude shifts frontend ids but moves no crimsonland residual; the one id-sensitive path (address-constant buckets) and an offset sweep tool |
 | [codeless-tuples.md](codeless-tuples.md) | Which tuples count toward the 81-node windows without emitting code: parenthesized float expressions make C1 emit a FROUND |
 | [iv-cursor-merge.md](iv-cursor-merge.md) | Why hand-written loop cursors always challenge last in the IV merge, and the pointer-after-test shape that anchors a loop at the struct base |
 | [tail-merge-rotation.md](tail-merge-rotation.md) | Statements written once after an if/else that the block mover copies back into a jumping arm after allocation, sharing registers without a rotation slot |
