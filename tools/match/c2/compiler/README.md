@@ -41,6 +41,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [slot-sharing-symbols.md](slot-sharing-symbols.md) | Cross-jumping compares stack operands by symbol, why function-scope address-taken vectors block slot sharing, and label-offset scoring effects |
 | [load-recompute.md](load-recompute.md) | Why a repeated load is recomputed or merged between lanes (value-number owners, forward-propagation rounds), and when a held x87 lane spills |
 | [native-slot-partition.md](native-slot-partition.md) | Mapping a native frame slot by slot, and why never-killed float locals force native's shared variables |
+| [invisible-ranges.md](invisible-ranges.md) | Exactly which live ranges count toward a block's register pressure P, and which of them emit no instruction |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |

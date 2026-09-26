@@ -149,6 +149,10 @@ The savings values:
 
 `+0x24` counts references.
 
+Constant loads, reloads (0x163) and spill stores (0x164) count toward P but not S, physical-register
+operands never count, and ranges pruned after the first scoring drop out of later rescorings
+([invisible-ranges.md](invisible-ranges.md)).
+
 ### 3.6 Pruning (0x10725b42)
 
 - A range with fewer than 2 references is demoted back to memory or local temps (0x10725eed). The exception is a range whose benefit is above 0 and whose last or def tuple is a reload.

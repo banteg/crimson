@@ -171,6 +171,6 @@ itself is fully preserving (whole-COFF, replay and missing-stream checks).
   judged with the tied loop is worth rerunning with the guarded loop and this criterion. Under the tied
   loop the cursor supplied the fourteenth range.
 - The exact membership of P: 0x10724c3b popcounts the referenced ranges, then adds the def list and the
-  referenced entries of the live list. The count equalled |block+0x48| in every Dip block measured, but
+  referenced entries of the live list. (Corrected in [invisible-ranges.md](invisible-ranges.md): P is not |block+0x48|, which holds ranges referenced or live of every class.) The count equalled |block+0x48| in every Dip block measured, but
   the def-list path was not isolated.
 - The Turnunder form that keeps a single basic IV and the native receiver order.
