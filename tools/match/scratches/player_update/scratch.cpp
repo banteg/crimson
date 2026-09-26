@@ -396,8 +396,7 @@ extern "C" void player_update(void)
     scalar = player->speed_multiplier;
     scratch_pos.x = 0.0f;
     scratch_pos.y = 0.0f;
-    player->move_dx = scratch_pos.x;
-    player->move_dy = scratch_pos.y;
+    player->movement = scratch_pos;
     if (time_scale_active != 0) {
         frame_dt = (0.6f / time_scale_factor) * frame_dt;
     }
@@ -415,15 +414,11 @@ extern "C" void player_update(void)
             || creature_pool[target_index].health <= 0.0f) {
             nearest_distance = 100000.0f;
         } else {
-            nearest_distance = (float)sqrt(
-                (player_position->y
-                    - creature_pool[target_index].position.y)
-                        * (player_position->y
-                            - creature_pool[target_index].position.y)
-                    + (player_position->x
-                        - creature_pool[target_index].position.x)
-                        * (player_position->x
-                            - creature_pool[target_index].position.x));
+            float dy = player_position->y
+                - creature_pool[target_index].position.y;
+            float dx = player_position->x
+                - creature_pool[target_index].position.x;
+            nearest_distance = (float)sqrt(dy * dy + dx * dx);
         }
 
         int creature_index = 0;

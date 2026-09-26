@@ -2,6 +2,29 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Zeroed movement copy and target distance locals (2026-09-26)
+
+The prologue now writes `player->movement = scratch_pos;` after zeroing
+`scratch_pos`. That is native's aggregate copy: both lanes are reloaded
+through integer registers. The auto-target clamp then loses the forwarded
+`ecx = 0` and matches native (`mov eax,[edi+0x320]; test eax,eax`).
+
+The `target_index` distance names its deltas:
+`float dy = ...; float dx = ...; sqrt(dy * dy + dx * dx)`. crimson-88 traced
+why (`answer_pu-sqrt-hold.md`). The two squares have equal need, so their
+order comes from a 16-bit tuple hash of the operands. For CSE temps that hash
+is `(192*id + 0x2a) & 0xffff`, so any change in the temp count can wrap it and
+flip the order. Named locals hash by their small local ids and stay in native
+order. `dy` must be assigned first.
+
+73.64% to **74.66%**, references 855/0/0 to **857/0/0**.
+
+Open: the same hash decides the order of the `* player->move_speed` factors
+in 14 movement lanes. Native multiplies `cos * move_speed` first. Both this
+build and the previous one put `move_speed` after the two locals. The
+locals-only variant (without the struct copy) gets them native, but only by
+id coincidence, and it adds a reference mismatch.
+
 ## Flat aim schemes (2026-09-26)
 
 crimson-88's g6 pass (`answer_pu-g6-merges.md`) lands on top of the index loop:
