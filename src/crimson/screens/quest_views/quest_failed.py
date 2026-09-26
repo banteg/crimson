@@ -15,6 +15,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -34,7 +35,6 @@ from .shared import (
     QUEST_FAILED_PANEL_H,
     QUEST_FAILED_PANEL_POS_X,
     QUEST_FAILED_PANEL_POS_Y,
-    QUEST_FAILED_PANEL_SLIDE_DURATION_MS,
     QUEST_FAILED_PANEL_W,
     QUEST_FAILED_SCORE_X_OFFSET,
     QUEST_FAILED_SCORE_Y_OFFSET,
@@ -104,7 +104,11 @@ class QuestFailedView:
                 self._action = self._close_action
                 self._close_action = None
             return
-        self._intro_ms = min(QUEST_FAILED_PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
+        panel_was_hidden = self._intro_ms < RESULTS_PANEL_VISIBLE_MS
+        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
+        if panel_was_hidden and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS and self.state.audio is not None:
+            # ui_element_update clicks as the panel element becomes enabled.
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
         outcome = self._outcome
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -273,31 +277,13 @@ class QuestFailedView:
             QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y,
         )
 
-    def _panel_slide_x(self) -> float:
-        if QUEST_FAILED_PANEL_SLIDE_DURATION_MS <= 1e-6:
-            return 0.0
-        t = float(self._intro_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
-        if t < 0.0:
-            t = 0.0
-        elif t > 1.0:
-            t = 1.0
-        eased = 1.0 - (1.0 - t) ** 3
-        return -QUEST_FAILED_PANEL_W * (1.0 - eased)
-
     def _world_entity_alpha(self) -> float:
         if not self._closing:
             return 1.0
-        if QUEST_FAILED_PANEL_SLIDE_DURATION_MS <= 1e-6:
-            return 0.0
-        alpha = float(self._intro_ms) / QUEST_FAILED_PANEL_SLIDE_DURATION_MS
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
+        return world_fade_alpha(self._intro_ms)
 
     def _panel_top_left(self) -> Vec2:
-        return self._panel_origin().offset(dx=self._panel_slide_x())
+        return self._panel_origin().offset(dx=results_panel_slide_x(self._intro_ms, width=QUEST_FAILED_PANEL_W))
 
     def _failure_message(self) -> str:
         retry_count = int(self.state.quest_fail_retry_count)
@@ -415,7 +401,6 @@ class QuestFailedView:
 
 
 __all__ = [
-    "QUEST_FAILED_PANEL_SLIDE_DURATION_MS",
     "QUEST_FAILED_PANEL_W",
     "QuestFailedView",
 ]

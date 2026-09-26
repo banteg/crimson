@@ -14,7 +14,8 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
-from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
+from crimson.screens.results.game_over import GameOverUi
+from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS
 from grim.assets import RuntimeResources
 from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
@@ -55,7 +56,7 @@ def _runtime_resources_stub(*, tex: rl.Texture | None = None) -> RuntimeResource
 def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.phase = 1
-    ui._intro_ms = PANEL_SLIDE_DURATION_MS - 60.0
+    ui._intro_ms = RESULTS_PANEL_VISIBLE_MS - 60.0
     ui._panel_open_sfx_played = False
 
     play_sfx = mocker.Mock()

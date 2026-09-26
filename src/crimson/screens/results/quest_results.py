@@ -7,7 +7,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.screens.actions import ResultAction
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -67,12 +67,6 @@ QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT = 30.0
 
 INPUT_BOX_W = 166.0
 INPUT_BOX_H = 18.0
-
-# Capture (1024x768) shows the quest results panel uses the same ui_element
-# timeline pattern as other screens: fully hidden until 100ms, then slides in
-# over 300ms (end=100, start=400).
-PANEL_SLIDE_START_MS = 400.0
-PANEL_SLIDE_END_MS = 100.0
 
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
@@ -230,20 +224,7 @@ class QuestResultsUi(msgspec.Struct):
     def world_entity_alpha(self) -> float:
         if not self._closing:
             return 1.0
-        t_ms = float(self._intro_ms)
-        if t_ms <= PANEL_SLIDE_END_MS:
-            return 0.0
-        if t_ms >= PANEL_SLIDE_START_MS:
-            return 1.0
-        span = float(PANEL_SLIDE_START_MS - PANEL_SLIDE_END_MS)
-        if span <= 1e-6:
-            return 1.0
-        alpha = (t_ms - PANEL_SLIDE_END_MS) / span
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
+        return world_fade_alpha(self._intro_ms)
 
     def _text_width(self, font: SmallFontData, text: str, scale: float) -> float:
         del scale
@@ -360,13 +341,7 @@ class QuestResultsUi(msgspec.Struct):
         )
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> _QuestResultsPanelLayout:
-        _, panel_slide_x = ui_element_anim(
-            self._intro_ms,
-            index=1,
-            start_ms=PANEL_SLIDE_START_MS,
-            end_ms=PANEL_SLIDE_END_MS,
-            width=QUEST_RESULTS_PANEL_W,
-        )
+        panel_slide_x = results_panel_slide_x(self._intro_ms, width=QUEST_RESULTS_PANEL_W)
 
         panel_pos = Vec2((QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x) * scale, 0.0)
         layout_w = screen_w / scale if scale else screen_w
@@ -406,8 +381,8 @@ class QuestResultsUi(msgspec.Struct):
                 return action
             return None
 
-        self._intro_ms = min(PANEL_SLIDE_START_MS, self._intro_ms + dt_ms)
-        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= PANEL_SLIDE_START_MS - 1e-3:
+        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS:
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
         if self._consume_enter:

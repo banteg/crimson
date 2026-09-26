@@ -13,10 +13,10 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
-from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
     END_NOTE_AFTER_BODY_Y_GAP,
@@ -51,7 +51,6 @@ class EndNoteView:
         self._action: ScreenAction | None = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
         self._close_action: ScreenAction | None = None
 
@@ -64,7 +63,6 @@ class EndNoteView:
         self._action = None
         self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
-        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
         self._close_action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
@@ -90,9 +88,13 @@ class EndNoteView:
                     self._close_action = None
             return
         if dt_ms > 0:
-            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+            panel_was_hidden = self._timeline_ms < RESULTS_PANEL_VISIBLE_MS
+            self._timeline_ms = min(RESULTS_PANEL_VISIBLE_MS, self._timeline_ms + dt_ms)
+            if panel_was_hidden and self._timeline_ms >= RESULTS_PANEL_VISIBLE_MS and self.state.audio is not None:
+                # ui_element_update clicks as the panel element becomes enabled.
+                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
-        enabled = self._timeline_ms >= self._timeline_max_ms
+        enabled = self._timeline_ms >= RESULTS_PANEL_VISIBLE_MS
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(Route.MENU)
             return
@@ -100,16 +102,8 @@ class EndNoteView:
         if not enabled:
             return
 
-        screen_w = float(rl.get_screen_width())
         scale = 1.0
-
-        layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
-
-        panel_top_left = Vec2(
-            (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
-            (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale,
-        )
+        panel_top_left = self._panel_top_left()
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
 
         resources = require_runtime_resources(self.state)
@@ -186,15 +180,8 @@ class EndNoteView:
 
         resources = require_runtime_resources(self.state)
 
-        screen_w = float(rl.get_screen_width())
         scale = 1.0
-        layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
-
-        panel_top_left = Vec2(
-            (END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X) * scale,
-            (END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + widescreen_shift_y) * scale,
-        )
+        panel_top_left = self._panel_top_left()
         panel = rl.Rectangle(
             panel_top_left.x,
             panel_top_left.y,
@@ -279,18 +266,18 @@ class EndNoteView:
         self._action = None
         return action
 
+    def _panel_top_left(self) -> Vec2:
+        # game_update_victory_screen offsets the panel and its text by slot 35's slide.
+        slide_x = results_panel_slide_x(self._timeline_ms, width=END_NOTE_PANEL_W)
+        return Vec2(
+            END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X + slide_x,
+            END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + menu_widescreen_y_shift(float(rl.get_screen_width())),
+        )
+
     def _world_entity_alpha(self) -> float:
         if not self._closing:
             return 1.0
-        span = PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS
-        if span <= 0:
-            return 0.0
-        alpha = (float(self._timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
+        return world_fade_alpha(self._timeline_ms)
 
     def _begin_close_transition(self, action: ScreenAction, *, fade_to_black: bool = False) -> None:
         if self._closing:

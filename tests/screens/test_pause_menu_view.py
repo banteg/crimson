@@ -5,7 +5,8 @@ from typing import cast
 
 import crimson.screens.pause_menu as pause_menu_module
 from crimson.screens.actions import Route
-from crimson.screens.pause_menu import PAUSE_MENU_TO_MAIN_MENU_FADE_MS, PauseMenuView
+from crimson.screens.pause_menu import PauseMenuView
+from crimson.ui.animation import WORLD_FADE_SPAN_MS
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 from tests.support.screens import install_background
@@ -40,7 +41,7 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     view._is_open = True
     view._transition.closing = True
     view._transition.action = Route.MENU
-    view._transition.timeline_ms = PAUSE_MENU_TO_MAIN_MENU_FADE_MS // 2
+    view._transition.timeline_ms = WORLD_FADE_SPAN_MS // 2
 
     mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)

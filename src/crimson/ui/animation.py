@@ -32,3 +32,28 @@ def ui_element_anim(
     if index == 0:
         angle = -abs(angle)
     return angle, offset_x
+
+
+# Result panels (`ui_element_slot_30` game over, `ui_element_slot_35` quest results,
+# quest failed and end note) are hidden until 100 ms of the UI timeline and fully
+# visible at 400 ms: the element default 0..300 window shifted by 100 in
+# `ui_menu_layout_init`. The timeline stops at 400, the latest active element end.
+RESULTS_PANEL_HIDDEN_MS = 100
+RESULTS_PANEL_VISIBLE_MS = 400
+# `gameplay_render_world` fades world entities by timeline / `ui_element_slot_28` span.
+WORLD_FADE_SPAN_MS = 500
+
+
+def results_panel_slide_x(timeline_ms: float, *, width: float) -> float:
+    _angle, slide_x = ui_element_anim(
+        timeline_ms,
+        index=1,
+        start_ms=RESULTS_PANEL_VISIBLE_MS,
+        end_ms=RESULTS_PANEL_HIDDEN_MS,
+        width=width,
+    )
+    return slide_x
+
+
+def world_fade_alpha(timeline_ms: float) -> float:
+    return min(1.0, max(0.0, float(timeline_ms) / WORLD_FADE_SPAN_MS))

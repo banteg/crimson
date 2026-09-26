@@ -10,7 +10,8 @@ from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, StartRun
-from crimson.screens.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
+from crimson.screens.quest_views import QUEST_FAILED_PANEL_W, QuestFailedView
+from crimson.ui.animation import WORLD_FADE_SPAN_MS
 from crimson.weapons import WeaponId
 from grim import music as grim_music
 from grim import sfx as grim_sfx
@@ -111,6 +112,9 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, quest_failed_state,
     assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W
 
     view._intro_ms = 250.0
+    assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W * 0.5
+
+    view._intro_ms = 400.0
     assert view._panel_top_left().x == base.x
 
 
@@ -269,7 +273,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
 
     view.open()
     view._closing = True
-    view._intro_ms = QUEST_FAILED_PANEL_SLIDE_DURATION_MS * 0.5
+    view._intro_ms = WORLD_FADE_SPAN_MS * 0.5
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

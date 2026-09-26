@@ -5,8 +5,8 @@ from typing import cast
 
 import crimson.screens.quest_views.end_note as end_note_module
 from crimson.screens.actions import Route
-from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.quest_views import EndNoteView
+from crimson.ui.animation import WORLD_FADE_SPAN_MS
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -43,9 +43,8 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
 
     view = EndNoteView(state)
     view.open()
-    view.update(0.1)
-    view.update(0.1)
-    view.update(0.1)
+    for _ in range(4):
+        view.update(0.1)
 
     mocker.patch.object(
         end_note_module.rl,
@@ -54,7 +53,7 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     )
     view.update(0.1)
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_BUTTONCLICK]
+    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
 
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
@@ -85,7 +84,7 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
     view = EndNoteView(state)
     view.open()
     view._closing = True
-    view._timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view._timeline_ms = WORLD_FADE_SPAN_MS // 2
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

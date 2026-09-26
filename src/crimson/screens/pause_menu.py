@@ -6,7 +6,7 @@ from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, draw_screen_cursor
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, world_fade_alpha
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
 from crimson.ui.menu_layout import (
@@ -40,8 +40,6 @@ from grim.sfx_map import SfxId
 from ..game.types import GameState
 from .assets import require_runtime_resources
 from .transitions import _draw_screen_fade
-
-PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 
 
 class PauseMenuView:
@@ -181,12 +179,7 @@ class PauseMenuView:
         # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
         if (not self._transition.closing) or (self._transition.action != Route.MENU):
             return 1.0
-        alpha = float(self._transition.timeline_ms) / float(PAUSE_MENU_TO_MAIN_MENU_FADE_MS)
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
+        return world_fade_alpha(self._transition.timeline_ms)
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):

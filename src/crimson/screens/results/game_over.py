@@ -25,6 +25,7 @@ from ...persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
+from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_ordinal, format_time_mm_ss
 from ...ui.layout import menu_widescreen_y_shift, ui_scale
@@ -60,8 +61,6 @@ GAME_OVER_BANNER_X_OFFSET = 214.0
 INPUT_BOX_W = 166.0  # `game_over_name_input_state_width_px = 0xa6` before `ui_text_input_update`
 INPUT_BOX_H = 18.0
 
-PANEL_SLIDE_DURATION_MS = 250.0
-
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_SCORE_LABEL = rl.Color(230, 230, 230, 255)
@@ -92,11 +91,6 @@ def _draw_texture_centered(tex: rl.Texture, pos: Vec2, w: float, h: float, alpha
     dst = rl.Rectangle(pos.x, pos.y, float(w), float(h))
     tint = rl.Color(255, 255, 255, int(255 * max(0.0, min(1.0, alpha))))
     rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
-
-
-def _ease_out_cubic(t: float) -> float:
-    t = max(0.0, min(1.0, float(t)))
-    return 1.0 - (1.0 - t) ** 3
 
 
 class GameOverUi(msgspec.Struct):
@@ -176,14 +170,7 @@ class GameOverUi(msgspec.Struct):
     def world_entity_alpha(self) -> float:
         if not self._closing:
             return 1.0
-        if PANEL_SLIDE_DURATION_MS <= 1e-6:
-            return 0.0
-        alpha = float(self._intro_ms) / float(PANEL_SLIDE_DURATION_MS)
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
+        return world_fade_alpha(self._intro_ms)
 
     def _text_width(self, font: SmallFontData, text: str, scale: float) -> float:
         del scale
@@ -195,9 +182,7 @@ class GameOverUi(msgspec.Struct):
 
     def _panel_layout(self, *, screen_w: float, scale: float) -> _GameOverPanelLayout:
         # Keep consistent with the main menu panel offsets.
-        t = self._intro_ms / PANEL_SLIDE_DURATION_MS if PANEL_SLIDE_DURATION_MS > 1e-6 else 1.0
-        eased = _ease_out_cubic(t)
-        panel_slide_x = -GAME_OVER_PANEL_W * (1.0 - eased)
+        panel_slide_x = results_panel_slide_x(self._intro_ms, width=GAME_OVER_PANEL_W)
 
         panel_pos = Vec2((GAME_OVER_PANEL_X + panel_slide_x) * scale, 0.0)
         layout_w = screen_w / scale if scale else screen_w
@@ -243,11 +228,11 @@ class GameOverUi(msgspec.Struct):
                 return action
             return None
 
-        self._intro_ms = min(PANEL_SLIDE_DURATION_MS, self._intro_ms + dt_ms)
+        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
         if (
             (not self._panel_open_sfx_played)
             and play_sfx is not None
-            and self._intro_ms >= PANEL_SLIDE_DURATION_MS - 1e-3
+            and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS
         ):
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
